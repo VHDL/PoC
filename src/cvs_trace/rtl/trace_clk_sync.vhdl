@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_clk_sync
 -- Author(s): Stefan Alex
--- 
+--
 ------------------------------------------------------
 -- Bring a signal to another clock-domain.          --
 -- The component instantiates a register-chain      --
@@ -51,4 +51,4 @@ begin
 
   value_out <= value_delay_2;
 
-end rtl; 
+end rtl;

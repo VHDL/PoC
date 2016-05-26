@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Module:				 	TODO
 --
 -- Authors:				 	Patrick Lehmann
--- 
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@
 -- ============================================================================
 
 
- 
+
 -- Summary:
 -- ============
 --  This function package parses *.VCD files and drives simulation stimulies.
@@ -41,7 +41,7 @@
 --	"VCD_ReadLine" reads a line from *.vcd file.
 --	"VCD_Read_StdLogic" parses a vcd one bit value to std_logic.
 --	"VCD_Read_StdLogicVector" parses a vcd N bit value to std_logic_vector with N bits.
---	
+--
 --	See ../tb/Test_vcd_example_tb.vhd for example code.
 --
 -- Dependancies:
@@ -75,7 +75,7 @@ PACKAGE sim_value_change_dump IS
 
 	PROCEDURE VCD_ReadHeader(FILE VCDFile : TEXT; VCDLine : INOUT T_VCDLINE);
 	PROCEDURE VCD_ReadLine(FILE VCDFile : TEXT; VCDLine : OUT STRING);
-	
+
 	PROCEDURE VCD_Read_StdLogic(VCDLine : STRING; SIGNAL sl : OUT STD_LOGIC; WaveName : STRING);
 	PROCEDURE VCD_Read_StdLogicVector(VCDLine : STRING; SIGNAL slv : OUT STD_LOGIC_VECTOR; WaveName : STRING; def : STD_LOGIC := '0');
 
@@ -112,13 +112,13 @@ PACKAGE BODY sim_value_change_dump IS
 					EXIT;
 				END IF;
 			END LOOP;
-				
+
 			RETURN Result;
 		ELSE
 			RETURN -1;
 		END IF;
 	END;
-	
+
 	FUNCTION to_sl(Value : BOOLEAN) RETURN STD_LOGIC IS
 	BEGIN
 		IF (Value = TRUE) THEN
@@ -170,7 +170,7 @@ PACKAGE BODY sim_value_change_dump IS
 				l := l + 1;
 			END IF;
 		END LOOP;
-		
+
 		RETURN str'length;
 	END;
 
@@ -182,7 +182,7 @@ PACKAGE BODY sim_value_change_dump IS
 				RETURN FALSE;
 			END IF;
 		END LOOP;
-	
+
 		RETURN TRUE;
 	END;
 
@@ -198,7 +198,7 @@ PACKAGE BODY sim_value_change_dump IS
 	BEGIN
 		WHILE (NOT endfile(VCDFile)) LOOP
 			VCD_ReadLine(VCDFile, VCDLine);
-			
+
 			IF (VCDLine(1) = '#') THEN
 				ASSERT (FALSE) REPORT "Header passed" SEVERITY NOTE;
 				EXIT;
@@ -212,30 +212,30 @@ PACKAGE BODY sim_value_change_dump IS
 		VARIABLE is_string	: BOOLEAN;
 	BEGIN
 		readline(VCDFile, l);
-		
+
 		-- clear VCDLine
 		FOR I in VCDLine'range LOOP
 			VCDLine(I)		:= NUL;
 		END LOOP;
-    
+
 		-- TODO: use imin of ranges, not 'range
 		FOR I IN VCDLine'range LOOP
 			read(l, c, is_string);
 			IF NOT is_string THEN
 				EXIT;
 			END IF;
-			
+
 			VCDLine(I)	:= c;
 		END LOOP;
 	END;
-	
+
 	PROCEDURE VCD_Read_StdLogic(VCDLine : STRING; SIGNAL sl : OUT STD_LOGIC; WaveName : STRING) IS
 	BEGIN
 		IF (str_equal(VCDLine(2 TO VCDLine'high), WaveName)) THEN
 			sl	<= to_sl(VCDLine(1));
 		END IF;
 	END;
-	
+
 	PROCEDURE VCD_Read_StdLogicVector(VCDLine : STRING; SIGNAL slv : OUT STD_LOGIC_VECTOR; WaveName : STRING; def : STD_LOGIC := '0') IS
 		VARIABLE Result	: STD_LOGIC_VECTOR(slv'range)			:= (OTHERS => def);
 		VARIABLE k			: NATURAL													:= 0;

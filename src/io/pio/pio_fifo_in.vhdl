@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Patrick Lehmann
 --
 -- Module:					Parallel Input/Output
--- 
+--
 -- Description:
 -- ------------------------------------
 --
@@ -14,13 +14,13 @@
 -- ============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,11 +44,11 @@ entity pio_fifo_in is
 	port (
 		Clock				: in	STD_LOGIC;
 		Reset				: in	STD_LOGIC;
-		
+
 		got					: in	STD_LOGIC;
 		DataOut			: out	STD_LOGIC_VECTOR(BITS - 1 downto 0);
 		Valid				: out	STD_LOGIC;
-		
+
 		Pad_Clock		: in	STD_LOGIC;
 		Pad_DataIn	: in	STD_LOGIC_VECTOR(BITS downto 0);
 		Pad_DataOut	: out	STD_LOGIC_VECTOR(0 downto 0)
@@ -89,7 +89,7 @@ begin
 		);
 
 	FIFO_Ack	<= not FIFO_Full;
-		
+
 	PIOIn : entity PoC.pio_in
 		generic map (
 			DATARATE		=> DATARATE,
@@ -100,10 +100,10 @@ begin
 			Clock				=> Clock_i,
 			DataOut			=> PIO_DataOut,
 			DataIn(0)		=> FIFO_Ack,
-			
+
 			Pad_Clock		=> Pad_Clock,
 			Pad_DataIn	=> Pad_DataIn,
 			Pad_DataOut	=> Pad_DataOut
 		);
-	
+
 end architecture;

@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -47,16 +47,16 @@ architecture behavioral of reset_sync_tb3 is
 
   -- component ports
   signal rst_a : std_logic;
-  
+
   signal clk_lcd : std_logic := '0';
   signal rst_lcd : std_logic;
-  
+
   signal clk_eth : std_logic := '0';
   signal rst_eth : std_logic;
-  
+
   signal clk_dsp : std_logic := '0';
   signal rst_dsp : std_logic;
-  
+
 begin  -- behavioral
 
   -- component instantiation

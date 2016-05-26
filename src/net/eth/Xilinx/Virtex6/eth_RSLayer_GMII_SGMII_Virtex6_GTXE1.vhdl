@@ -19,13 +19,13 @@ ENTITY eth_RSLayer_GMII_SGMII_Virtex6_GTXE1 IS
 	PORT (
 		Clock											: IN	STD_LOGIC;
 		Reset											: IN	STD_LOGIC;
-		
+
 		-- GEMAC-GMII interface
 		RS_TX_Clock								: IN	STD_LOGIC;
 		RS_TX_Valid								: IN	STD_LOGIC;
 		RS_TX_Data								: IN	T_SLV_8;
 		RS_TX_Error								: IN	STD_LOGIC;
-		
+
 		RS_RX_Clock								: OUT	STD_LOGIC;
 		RS_RX_Valid								: OUT	STD_LOGIC;
 		RS_RX_Data								: OUT	T_SLV_8;
@@ -41,11 +41,11 @@ BEGIN
 --		PORT MAP (
 --			-- MAC-GMII interface
 --			sgmii_clk						=> GMII_ClockOut,										-- Clock for client MAC (125Mhz, 12.5MHz or 1.25MHz).
---			
+--
 --			gmii_txd						=> GMII_TX_Data,										-- Transmit data from client MAC.
 --			gmii_tx_en					=> GMII_TX_Valid,										-- Transmit control signal from client MAC.
 --			gmii_tx_er					=> GMII_TX_Error,										-- Transmit control signal from client MAC.
---			
+--
 --			gmii_rxd						=> GMII_RX_Data, 										-- Received Data to client MAC.
 --			gmii_rx_dv					=> GMII_RX_Valid,										-- Received control signal to client MAC.
 --			gmii_rx_er					=> GMII_RX_Error										-- Received control signal to client MAC.

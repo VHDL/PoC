@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
--- 
+--
 -- Description:
 -- ------------------------------------
 --		For detailed documentation see below.
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -62,33 +62,33 @@ USE			PoC.xil.ALL;
 
 ENTITY sata_Transceiver_Virtex5_GTP_Configurator IS
 	GENERIC (
-		DEBUG											: BOOLEAN											:= FALSE;																-- 
-		DRPCLOCK_FREQ							: FREQ												:= 100 MHz;															-- 
+		DEBUG											: BOOLEAN											:= FALSE;																--
+		DRPCLOCK_FREQ							: FREQ												:= 100 MHz;															--
 		PORTS											: POSITIVE										:= 1;																		-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => C_SATA_GENERATION_MAX)		-- initial SATA Generation
 	);
 	PORT (
 		DRP_Clock								: IN	STD_LOGIC;
 		DRP_Reset								: IN	STD_LOGIC;
-		
+
 		SATA_Clock							: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		
+
 		Reconfig								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @SATA_Clock
 		SATAGeneration					: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);			-- @SATA_Clock
 		ReconfigComplete				: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @SATA_Clock
 		ConfigReloaded					: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @SATA_Clock
 		Lock										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @SATA_Clock
 		Locked									: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @SATA_Clock
-		
+
 		NoDevice								: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);							-- @DRP_Clock
-			
+
 		GTP_DRP_en							: OUT	STD_LOGIC;																				-- @DRP_Clock
 		GTP_DRP_Address					: OUT	T_XIL_DRP_ADDRESS;																-- @DRP_Clock
 		GTP_DRP_we							: OUT	STD_LOGIC;																				-- @DRP_Clock
 		GTP_DRP_DataIn					: IN	T_XIL_DRP_DATA;																		-- @DRP_Clock
 		GTP_DRP_DataOut					: OUT	T_XIL_DRP_DATA;																		-- @DRP_Clock
 		GTP_DRP_Ack							: IN	STD_LOGIC;																				-- @DRP_Clock
-		
+
 		GTP_ReloadConfig				: OUT	STD_LOGIC;																				-- @DRP_Clock
 		GTP_ReloadConfigDone		: IN	STD_LOGIC																					-- @DRP_Clock
 	);
@@ -109,7 +109,7 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP_Configurator IS
 	BEGIN
 		RETURN Result;
 	END FUNCTION;
-	
+
 	FUNCTION ins(value: STD_LOGIC_VECTOR; Length : NATURAL) RETURN STD_LOGIC_VECTOR IS
 		VARIABLE Result		: STD_LOGIC_VECTOR(Length - 1 DOWNTO 0)		:= (OTHERS => '0');
 	BEGIN
@@ -130,7 +130,7 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP_Configurator IS
 		PLL_RXDIVSEL_OUT_1		: UNSIGNED(1 DOWNTO 0);			-- Port 1: PLL RX ClockDivider
 	END RECORD;
 	TYPE GTP_GENERICS_VECTOR IS ARRAY(NATURAL RANGE <>) OF GTP_GENERICS;
-	
+
 	-- 2. assign each GENERIC for each speed configuration
 	-- *DIVSEL_OUT_*:		0 -> divide by 1,		1 -> divide by 2
 	--
@@ -147,7 +147,7 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP_Configurator IS
 					PLL_TXDIVSEL_OUT_1 => to_unsigned(0, 2),
 					PLL_RXDIVSEL_OUT_1 => to_unsigned(0, 2))
 		);
-		
+
 	-- 3. convert GENERICs into ConfigROM enties for each config set and each speed configuration
 	CONSTANT XILDRP_CONFIG_ROM								: T_XIL_DRP_CONFIG_ROM := (
 		-- Port 0, SATA Generation 1
@@ -181,44 +181,44 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP_Configurator IS
 							 OTHERS => C_XIL_DRP_CONFIG_EMPTY),
 					LastIndex => 3)
 		);
-	
+
 	CONSTANT XILDRP_CONFIGSELECT_BITS	: POSITIVE										:= log2ceilnz(XILDRP_CONFIG_ROM'length);
-	
+
 	TYPE T_STATE IS (
 		ST_IDLE,
 		ST_LOCKED,
 		ST_LOCKED_RECONFIG,
-		
+
 		ST_RECONFIG_PORT0,	ST_RECONFIG_PORT0_WAIT,
 		ST_RECONFIG_PORT1,	ST_RECONFIG_PORT1_WAIT,
 		ST_RELOAD,					ST_RELOAD_WAIT
 	);
-	
+
 	-- GTP_DualConfiguration - Statemachine
 	SIGNAL State											: T_STATE											:= ST_IDLE;
 	SIGNAL NextState									: T_STATE;
 	ATTRIBUTE FSM_ENCODING	OF State	: SIGNAL IS getFSMEncoding_gray(DEBUG);
-	
+
 	SIGNAL Reconfig_DRP								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL ReconfigComplete_i					: STD_LOGIC;
 	SIGNAL ConfigReloaded_i						: STD_LOGIC;
 	SIGNAL SATAGeneration_DRP					: T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0)	:= INITIAL_SATA_GENERATIONS;
-	
+
 	SIGNAL Lock_DRP										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL Locked_i										: STD_LOGIC;
-	
+
 	SIGNAL doReconfig									: STD_LOGIC;
 	SIGNAL doLock											: STD_LOGIC;
-	
+
 	SIGNAL ReloadConfig_i							: STD_LOGIC;
-	
+
 	SIGNAL XilDRP_Reconfig						: STD_LOGIC;
 	SIGNAL XilDRP_ReconfigDone				: STD_LOGIC;
 	SIGNAL XilDRP_ConfigSelect				: STD_LOGIC_VECTOR(XILDRP_CONFIGSELECT_BITS - 1 DOWNTO 0);
 
 BEGIN
 	ASSERT (PORTS <= 2)	REPORT "to many ports per transceiver"	SEVERITY FAILURE;
-	
+
 	-- cross clock domain bit synchronisation
 	genSyncSATA_DRP : FOR I IN 0 TO PORTS - 1 GENERATE
 		SIGNAL Lock_i								: STD_LOGIC;
@@ -245,7 +245,7 @@ BEGIN
 
 		-- register SATAGeneration in old clock domain
 		SATAGeneration_SATA	<= SATAGeneration(I) WHEN rising_edge(SATA_Clock(I));
-		
+
 		-- sample SATAGeneration in new clock domain if Reconfig occurs (SATAGeneration was stable for several cycles)
 		PROCESS(DRP_Clock)
 		BEGIN
@@ -269,8 +269,8 @@ BEGIN
 				Input(0)		=> Locked_i,
 				Output(0)		=> Locked(I)
 			);
-		
-		-- synchronize ReconfigComplete, ConfigReloaded, Locked from DRP_Clock to SATA_Clock		
+
+		-- synchronize ReconfigComplete, ConfigReloaded, Locked from DRP_Clock to SATA_Clock
 		sync2 : ENTITY PoC.sync_Strobe
 			GENERIC MAP (
 				BITS				=> 2
@@ -306,14 +306,14 @@ BEGIN
 		Locked_i								<= '0';
 		ReconfigComplete_i			<= '0';
 		ConfigReloaded_i				<= '0';
-		
+
 		-- GTP shared port
 		ReloadConfig_i					<= '0';
-		
+
 		-- internal modules
 		XilDRP_Reconfig					<= '0';
 		XilDRP_ConfigSelect			<= to_slv(0, XILDRP_CONFIGSELECT_BITS);
-		
+
 		CASE State IS
 			WHEN ST_IDLE =>
 				IF (doLock = '1') THEN
@@ -330,7 +330,7 @@ BEGIN
 
 			WHEN ST_LOCKED =>
 				Locked_i								<= '1';									-- expose lock-state
-			
+
 				IF (doReconfig = '1') THEN
 					IF (doLock = '1') THEN												-- do reconfig, but lock is set
 						NextState						<= ST_LOCKED_RECONFIG;
@@ -347,7 +347,7 @@ BEGIN
 
 			WHEN ST_LOCKED_RECONFIG =>
 				Locked_i								<= '1';									-- expose lock-state
-			
+
 				IF (doLock = '0') THEN													-- no lock is set, start reconfig
 					NextState							<= ST_RECONFIG_PORT0;		-- do reconfig only for port 0
 				END IF;
@@ -359,10 +359,10 @@ BEGIN
 				XilDRP_ConfigSelect		<= ite((SATAGeneration_DRP(0) = SATA_GENERATION_1), to_slv(0, XILDRP_CONFIGSELECT_BITS), to_slv(1, XILDRP_CONFIGSELECT_BITS));
 
 				NextState							<= ST_RECONFIG_PORT0_WAIT;
-			
+
 			WHEN ST_RECONFIG_PORT0_WAIT =>
 				XilDRP_ConfigSelect		<= ite((SATAGeneration_DRP(0) = SATA_GENERATION_1), to_slv(0, XILDRP_CONFIGSELECT_BITS), to_slv(1, XILDRP_CONFIGSELECT_BITS));
-				
+
 				IF (XilDRP_ReconfigDone = '1') THEN
 					IF (PORTS = 2) THEN
 						NextState						<= ST_RECONFIG_PORT1;
@@ -371,16 +371,16 @@ BEGIN
 						NextState						<= ST_RELOAD;
 					END IF;
 				END IF;
-				
+
 			WHEN ST_RECONFIG_PORT1 =>
 				XilDRP_Reconfig				<= '1';
 				XilDRP_ConfigSelect		<= ite((SATAGeneration_DRP(imin(1, PORTS - 1)) = SATA_GENERATION_1), to_slv(2, XILDRP_CONFIGSELECT_BITS), to_slv(3, XILDRP_CONFIGSELECT_BITS));
 
 				NextState							<= ST_RECONFIG_PORT1_WAIT;
-			
+
 			WHEN ST_RECONFIG_PORT1_WAIT =>
 				XilDRP_ConfigSelect		<= ite((SATAGeneration_DRP(imin(1, PORTS - 1)) = SATA_GENERATION_1), to_slv(2, XILDRP_CONFIGSELECT_BITS), to_slv(3, XILDRP_CONFIGSELECT_BITS));
-				
+
 				IF (XilDRP_ReconfigDone = '1') THEN
 					ReconfigComplete_i	<= '1';
 					NextState						<= ST_RELOAD;
@@ -390,19 +390,19 @@ BEGIN
 			-- assign ReloadConfig until ReloadConfigDone goes to '0'
 			WHEN ST_RELOAD =>
 				ReloadConfig_i				<= '1';
-				
+
 				IF (GTP_ReloadConfigDone = '0') THEN
 					NextState						<= ST_RELOAD_WAIT;
 				END IF;
-			
+
 			-- wait for ReloadConfigDone
 			WHEN ST_RELOAD_WAIT =>
 				IF (GTP_ReloadConfigDone = '1') THEN
 					ConfigReloaded_i		<= '1';
-				
+
 					NextState						<= ST_IDLE;
 				END IF;
-			
+
 		END CASE;
 	END PROCESS;
 
@@ -415,20 +415,20 @@ BEGIN
 		PORT MAP (
 			Clock						=> DRP_Clock,
 			Reset						=> DRP_Reset,
-			
+
 			Reconfig				=> XilDRP_Reconfig,
 			ReconfigDone		=> XilDRP_ReconfigDone,
 			ConfigSelect		=> XilDRP_ConfigSelect,
-			
+
 			DRP_en					=> GTP_DRP_en,
 			DRP_Address			=> GTP_DRP_Address,
 			DRP_we					=> GTP_DRP_we,
 			DRP_DataIn			=> GTP_DRP_DataIn,
 			DRP_DataOut			=> GTP_DRP_DataOut,
-			DRP_Ack					=> GTP_DRP_Ack	
+			DRP_Ack					=> GTP_DRP_Ack
 		);
-		
+
 	-- GTP_ReloadConfig**** interface
 	GTP_ReloadConfig	<= ReloadConfig_i;
-	
+
 END;

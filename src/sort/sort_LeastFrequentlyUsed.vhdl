@@ -14,10 +14,10 @@ entity sort_LeastFrequentlyUsed is
 	port (
 		Clock					: in	STD_LOGIC;
 		Reset					: in	STD_LOGIC;
-		
+
 		Access				: in	STD_LOGIC;
 		Key						: in	STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
-		
+
 		LFU_Valid			: out	STD_LOGIC;
 		LFU_Key				: out	STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0)
 	);
@@ -30,17 +30,17 @@ architecture rtl of sort_LeastFrequentlyUsed is
 		Counter_us	: UNSIGNED(COUNTER_BITS - 1 downto 0);
 		Valid				: STD_LOGIC;
 	end record;
-	
+
 	type T_ELEMENT_VECTOR is array(NATURAL range <>) of T_ELEMENT;
-	
+
 	constant C_ELEMENT_EMPTY	: T_ELEMENT		:= (Data => (others => '0'), Counter_us => (others => '0'), Valid => '0');
-	
+
 	signal List_d					: T_ELEMENT_VECTOR(ELEMENTS - 1 downto 0)		:= (others => C_ELEMENT_EMPTY);
 	signal List_AddSub		: T_ELEMENT_VECTOR(ELEMENTS - 1 downto 0);
 	signal List_OddSort		: T_ELEMENT_VECTOR(ELEMENTS - 1 downto 0);
 	signal List_EvenSort	: T_ELEMENT_VECTOR(ELEMENTS - 1 downto 0);
 begin
-	
+
 	genAddSub : for i in 0 to ELEMENTS - 1 generate
 		process(List_d, Data, Access, New)
 		begin
@@ -94,10 +94,9 @@ begin
 			end if;
 		end process;
 	end generate;
-	
+
 	LFU_Valid		<= List_d(0).Valid;
 	LFU_Key			<= List_d(0).Key;
 	LFU_Data		<= List_d(0).Data;
-	
+
 end architecture;
-		

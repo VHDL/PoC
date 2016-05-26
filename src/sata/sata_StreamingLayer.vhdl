@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
@@ -29,13 +29,13 @@
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -81,12 +81,12 @@ entity sata_StreamingLayer is
 
 		-- for measurement purposes only
 		Config_BurstSize							: in	T_SLV_16;
-		
+
 		-- address interface (valid on Command /= *_NONE)
 		Address_AppLB									: in	T_SLV_48;
 		BlockCount_AppLB							: in	T_SLV_48;
-		
-		-- 
+
+		--
 		DriveInformation							: out T_SATA_DRIVE_INFORMATION;
 		IDF_Bus												: out	T_SATA_IDF_BUS;
 
@@ -110,11 +110,11 @@ entity sata_StreamingLayer is
 		Trans_Command									: out	T_SATA_TRANS_COMMAND;
 		Trans_Status									: in	T_SATA_TRANS_STATUS;
 		Trans_Error										: in	T_SATA_TRANS_ERROR;
-	
+
 		-- ATA registers
 		Trans_ATAHostRegisters				: out	T_SATA_ATA_HOST_REGISTERS;
 		Trans_ATADeviceRegisters			: in	T_SATA_ATA_DEVICE_REGISTERS;
-	
+
 		-- TX path
 		Trans_TX_Valid								: out	STD_LOGIC;
 		Trans_TX_Data									: out	T_SLV_32;
@@ -138,7 +138,7 @@ architecture rtl of sata_StreamingLayer is
 
 	-- my reset
 	signal MyReset 													: STD_LOGIC;
-	
+
 	-- ===========================================================================
 	-- CommandLayer configurations
 	-- ===========================================================================
@@ -153,7 +153,7 @@ architecture rtl of sata_StreamingLayer is
 	signal SFSM_TX_en												: STD_LOGIC;
 	SIGNAL SFSM_TX_ForceEOT									: STD_LOGIC;
 	SIGNAL SFSM_TX_FIFO_ForceGot						: STD_LOGIC;
-	
+
 	signal SFSM_RX_SOR											: STD_LOGIC;
 	signal SFSM_RX_EOR											: STD_LOGIC;
 	signal SFSM_RX_ForcePut									: STD_LOGIC;
@@ -161,7 +161,7 @@ architecture rtl of sata_StreamingLayer is
 	signal SFSM_DebugPortOut								: T_SATADBG_STREAMING_SFSM_OUT;
 
 	signal ATA_CommandCategory							: T_SATA_COMMAND_CATEGORY;
-	
+
 	-- AddressCalculation
 	-- ==========================================================================
 	signal AdrCalc_Address_DevLB						: T_SLV_48;
@@ -174,13 +174,13 @@ architecture rtl of sata_StreamingLayer is
 	signal TX_FIFO_got											: STD_LOGIC;
 	signal TX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 downto 0);
 	signal TX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 downto 0);
-	
+
 	-- TX path data interface after TX_FIFO
 	signal TX_FIFO_Data											: T_SLV_32;
 	signal TX_FIFO_SOR											: STD_LOGIC;
 	signal TX_FIFO_EOR											: STD_LOGIC;
-	signal TX_FIFO_Valid										: STD_LOGIC;		
-	
+	signal TX_FIFO_Valid										: STD_LOGIC;
+
 	-- TX path
 	-- ==========================================================================
 	signal TC_TX_Ack												: STD_LOGIC;
@@ -189,7 +189,7 @@ architecture rtl of sata_StreamingLayer is
 	signal TC_TX_SOT												: STD_LOGIC;
 	signal TC_TX_EOT												: STD_LOGIC;
 	signal TC_TX_InsertEOT									: STD_LOGIC;
-	
+
 	-- RX_FIFO
 	-- ==========================================================================
 	signal RX_FIFO_put											: STD_LOGIC;
@@ -205,7 +205,7 @@ architecture rtl of sata_StreamingLayer is
 	signal IDF_Enable												: STD_LOGIC;
 	signal IDF_Error												: STD_LOGIC;
 	signal IDF_Finished											: STD_LOGIC;
-	
+
 	signal IDF_Valid												: STD_LOGIC;
 	signal IDF_Data													: T_SLV_32;
 	signal IDF_SOT													: STD_LOGIC;
@@ -215,14 +215,14 @@ architecture rtl of sata_StreamingLayer is
 	-- Internal version of output signals
 	-- ========================================================================
 	signal Trans_RX_Ack_i										: STD_LOGIC;
-	
+
 begin
 	-- Reset sub-components until initial reset of SATAController has been
 	-- completed. Allow synchronous 'Reset' only when ClockEnable = '1'.
 	-- ===========================================================================
 	MyReset <= (not Trans_ResetDone) or (Reset and ClockEnable);
 
-	
+
 	-- ================================================================
 	-- logical block address calculations
 	-- ================================================================
@@ -236,16 +236,16 @@ begin
 
 		Address_AppLB_Shifted(0)					<= Address_AppLB;
 		BlockCount_AppLB_Shifted(0)				<= BlockCount_AppLB;
-		
+
 		genShifted : for i in 1 to SHIFT_WIDTH - 1 generate
 			Address_AppLB_Shifted(i)				<= Address_AppLB(Address_AppLB'high - i downto 0)			& (i - 1 downto 0 => '0');
 			BlockCount_AppLB_Shifted(i)			<= BlockCount_AppLB(Address_AppLB'high - i downto 0)	& (i - 1 downto 0 => '0');
 		end generate;
-		
+
 		AdrCalc_Address_DevLB 						<= Address_AppLB_Shifted(to_index(Shift_us, Address_AppLB_Shifted'length));
 		AdrCalc_BlockCount_DevLB					<= BlockCount_AppLB_Shifted(to_index(Shift_us, BlockCount_AppLB_Shifted'length));
 	end block;
-	
+
 
 	-- ================================================================
 	-- Streaming Controller FSM
@@ -254,7 +254,7 @@ begin
 		generic map (
 			ENABLE_DEBUGPORT 							=> ENABLE_DEBUGPORT,
 			SIM_EXECUTE_IDENTIFY_DEVICE		=> SIM_EXECUTE_IDENTIFY_DEVICE,
-			DEBUG													=> DEBUG					
+			DEBUG													=> DEBUG
 		)
 		port map (
 			Clock													=> Clock,
@@ -262,14 +262,14 @@ begin
 
 			-- for measurement purposes only
 			Config_BurstSize							=> Config_BurstSize,
-			
-			-- CommandLayer interface			
+
+			-- CommandLayer interface
 			Command												=> Command,
 			Status												=> Status_i,
 			Error													=> Error_i,
 
 			DebugPortOut                  => SFSM_DebugPortOut,
-			
+
 			Address_LB										=> AdrCalc_Address_DevLB,
 			BlockCount_LB									=> AdrCalc_BlockCount_DevLB,
 
@@ -280,20 +280,20 @@ begin
 			Trans_TX_Ack 									=> Trans_TX_Ack,
 			TX_en													=> SFSM_TX_en,
 			TX_ForceEOT										=> SFSM_TX_ForceEOT,
-			
+
 			RX_SOR												=> SFSM_RX_SOR,
 			RX_EOR												=> SFSM_RX_EOR,
 			RX_ForcePut										=> SFSM_RX_ForcePut,
-			
+
 			-- TransportLayer interface
 			Trans_Command									=> Trans_Command,
 			Trans_Status									=> Trans_Status,
-			
+
 			Trans_ATAHostRegisters				=> Trans_ATAHostRegisters,
-			
+
 			Trans_RX_SOT									=> Trans_RX_SOT,
 			Trans_RX_EOT									=> Trans_RX_EOT,
-			
+
 			-- IdentifyDeviceFilter interface
 			IDF_Enable										=> IDF_Enable,
 			IDF_Error											=> IDF_Error,
@@ -307,15 +307,15 @@ begin
 
 	TX_FIFO_put																<= TX_Valid;
 	TX_FIFO_got																<= TC_TX_Ack or SFSM_TX_FIFO_ForceGot;
-		
+
 	TX_FIFO_DataIn(TX_Data'range)							<= TX_Data;
 	TX_FIFO_DataIn(TX_Data'length	+ 0)				<= TX_SOR;
 	TX_FIFO_DataIn(TX_Data'length	+ 1)				<= TX_EOR;
-		
+
 	TX_FIFO_Data															<= TX_FIFO_DataOut(TX_FIFO_Data'range);
 	TX_FIFO_SOR																<= TX_FIFO_DataOut(TX_Data'length	+ 0);
 	TX_FIFO_EOR																<= TX_FIFO_DataOut(TX_Data'length	+ 1);
-		
+
 	-- Commandlayer TX_FIFO
 	TX_FIFO : entity PoC.fifo_glue
 		generic map (
@@ -324,7 +324,7 @@ begin
 		port map (
 			clk							=> Clock,
 			rst							=> MyReset,
-			
+
 			-- write interface
 			put							=> TX_FIFO_put,
 			di							=> TX_FIFO_DataIn,
@@ -342,12 +342,12 @@ begin
 	-- ===========================================================================
 	TransportCutter : block
 		signal TC_TX_DataFlow								: STD_LOGIC;
-		
+
 		signal InsertEOT_d									: STD_LOGIC						:= '0';
 		signal InsertEOT_re									: STD_LOGIC;
 		signal InsertEOT_re_d								: STD_LOGIC						:= '0';
 		signal InsertEOT_re_d2							: STD_LOGIC						:= '0';
-		
+
 		signal IEOTC_Load										: STD_LOGIC;
 		signal IEOTC_inc										: STD_LOGIC;
 		signal IEOTC_uf											: STD_LOGIC;
@@ -369,14 +369,14 @@ begin
 
 		IEOTC_Load					<= TC_TX_SOT				and TC_TX_Valid;
 		IEOTC_inc						<= TC_TX_DataFlow		and not IEOTC_uf;
-		
+
 		IEOTC : block	-- InsertEOTCounter
 			constant MIN_TRANSFER_SIZE_ldB  	: POSITIVE															:= log2ceilnz(C_SATA_ATA_MAX_BLOCKCOUNT)+9;
 			constant MIN_TRANSFER_SIZE_B			: POSITIVE															:= 2**MIN_TRANSFER_SIZE_ldB;
 			constant MAX_TRANSFER_SIZE_ldB		: POSITIVE															:= MIN_TRANSFER_SIZE_ldB + (SHIFT_WIDTH - 1);
 			constant IEOT_COUNTER_START				: POSITIVE															:= (MIN_TRANSFER_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOT - 3;		-- FIXME: replace with dynamic calculation
 			constant IEOT_COUNTER_BITS				: POSITIVE															:= MAX_TRANSFER_SIZE_ldB - 2;
-			
+
 			signal Counter_s									: SIGNED(IEOT_COUNTER_BITS downto 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);
 		begin
 			process(Clock)
@@ -391,17 +391,17 @@ begin
 					end if;
 				end if;
 			end process;
-			
+
 			IEOTC_uf					<= Counter_s(Counter_s'high);
 		end block;	-- InsertEOTCounter
 
 		TC_TX_InsertEOT			<= IEOTC_uf;
-		
+
 		Trans_TX_Valid			<= TC_TX_Valid or SFSM_TX_ForceEOT;
 		Trans_TX_Data				<= TC_TX_Data;
 		Trans_TX_SOT				<= TC_TX_SOT;
 		Trans_TX_EOT				<= TC_TX_EOT   or SFSM_TX_ForceEOT;
-		
+
 	end block;	-- TransferCutter
 
 	-- CommandLayer RX_FIFO
@@ -415,7 +415,7 @@ begin
 	RX_Data																		<= RX_FIFO_DataOut(RX_Data'range);
 	RX_SOR																		<= RX_FIFO_DataOut(RX_Data'length	+ 0);
 	RX_EOR																		<= RX_FIFO_DataOut(RX_Data'length	+ 1);
-	
+
 	RX_FIFO : entity PoC.fifo_glue
 		generic map (
 			D_BITS						=> RX_FIFO_DataIn'length
@@ -434,12 +434,12 @@ begin
 			vld						=> RX_FIFO_Valid,
 			do						=> RX_FIFO_DataOut
 		);
-	
+
 	Trans_RX_Ack_i	 	<= (not RX_FIFO_Full) when (IDF_Enable = '0') else '1';					-- RX_Ack	 multiplexer
 	Trans_RX_Ack      <= Trans_RX_Ack_i;
 	RX_Valid					<= RX_FIFO_Valid;
 
-	
+
 	-- ================================================================
 	-- LoopControl
 	-- ================================================================
@@ -454,7 +454,7 @@ begin
 	--	b) remainer based calculatation
 	--		1. calculate oustanding blocks
 	--		2. generate transfer
-	
+
 	-- ================================================================
 	-- IdentifyDeviceFilter
 	-- ================================================================
@@ -463,24 +463,24 @@ begin
 	IDF_Data		<= Trans_RX_Data;
 	IDF_SOT			<= Trans_RX_SOT;
 	IDF_EOT			<= Trans_RX_EOT;
-	
+
 	IDF : entity PoC.sata_ATA_IdentifyDeviceFilter
 		generic map (
-			DEBUG										=> DEBUG					
+			DEBUG										=> DEBUG
 		)
 		port map (
 			Clock										=> Clock,
 			Reset										=> IDF_Reset,
-			
+
 			Enable									=> IDF_Enable,
 			Error										=> IDF_Error,
 			Finished								=> IDF_Finished,
-		
+
 			Valid										=> IDF_Valid,
 			Data										=> IDF_Data,
 			SOT											=> IDF_SOT,
 			EOT											=> IDF_EOT,
-			
+
 			DriveInformation				=> IDF_DriveInformation,
 			IDF_Bus									=> IDF_Bus
 		);
@@ -499,7 +499,7 @@ begin
 				end loop;
 				return  l.all;
 			end function;
-			
+
 			function dbg_generateStatusEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
@@ -509,7 +509,7 @@ begin
 				end loop;
 				return  l.all;
 			end function;
-			
+
 			function dbg_generateErrorEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
@@ -519,7 +519,7 @@ begin
 				end loop;
 				return  l.all;
 			end function;
-		
+
 			constant dummy : T_BOOLVEC := (
 				0 => dbg_ExportEncoding("Streaming Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Stream_Command.tok"),
 				1 => dbg_ExportEncoding("Streaming Layer - Status Enum",	dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Stream_Status.tok"),
@@ -527,7 +527,7 @@ begin
 			);
 		begin
 		end generate;
-	
+
     DebugPortOut.Command         		 <= Command;
     DebugPortOut.Status          		 <= Status_i;
     DebugPortOut.Error           		 <= Error_i;
@@ -561,7 +561,7 @@ begin
     DebugPortOut.SFSM_RX_SOR		<= SFSM_RX_SOR;
     DebugPortOut.SFSM_RX_EOR		<= SFSM_RX_EOR;
     DebugPortOut.SFSM_RX_Ack		<= not RX_FIFO_Full;
-		
+
 		-- RX datapath between demultiplexer and IDF
 		-- is same as input from transport layer
 
@@ -574,7 +574,7 @@ begin
 
 		-- TX ----------------------------------------------------------------
     DebugPortOut.SFSM_TX_ForceEOT	<= SFSM_TX_ForceEOT;
-		
+
     -- TX datapath to upper layer
 		DebugPortOut.TX_Valid 			<= TX_Valid;
     DebugPortOut.TX_Data  			<= TX_Data;
@@ -587,7 +587,7 @@ begin
 		DebugPortOut.TC_TX_Data				<= TC_TX_Data;
 		DebugPortOut.TC_TX_SOT				<= TC_TX_SOT;
 		DebugPortOut.TC_TX_EOT				<= TC_TX_EOT;
-		DebugPortOut.TC_TX_Ack				<= TC_TX_Ack;	
+		DebugPortOut.TC_TX_Ack				<= TC_TX_Ack;
 		DebugPortOut.TC_TX_InsertEOT	<= TC_TX_InsertEOT;
 
 	end generate;

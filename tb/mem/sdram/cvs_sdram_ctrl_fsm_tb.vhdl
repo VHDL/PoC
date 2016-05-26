@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: sdram_ctrl_fsm_tb
 -- Author(s): Martin Zabel
--- 
+--
 -- Testbench for generic SDAM memory controller.
 --
 -- Revision:    $Revision: 1.3 $
@@ -146,29 +146,29 @@ begin  -- tb
     -- insert signal assignments here
     rst <= '1';
     wait until rising_edge(clk);
-    
+
     wait until rising_edge(clk);
     rst <= '0';
     user_cmd_valid <= '1';
     user_addr <= "10" & "101010101010" & "01010101";
     user_write <= '1';
     user_wdata_valid <= '1';
-    
+
     wait until rising_edge(clk) and user_got_cmd = '1';
     user_cmd_valid <= '1';
     user_addr <= not user_addr;
     user_write <= '0';
     user_wdata_valid <= '0';
-    
+
     wait until rising_edge(clk) and user_got_cmd = '1';
     user_cmd_valid <= '0';
     user_addr <= (others => '-');
     user_write <= '-';
     user_wdata_valid <= '0';
-    
+
     wait;                               -- forever
   end process WaveGen_Proc;
 
-  
+
 
 end tb;

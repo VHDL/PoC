@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Module:				 	TODO
 --
 -- Authors:				 	Patrick Lehmann
--- 
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ ENTITY misc_Sequencer IS
   PORT (
 	  Clock								: IN	STD_LOGIC;
 		Reset								: IN	STD_LOGIC;
-		
+
 		Input								: IN	STD_LOGIC_VECTOR(INPUT_BITS - 1 DOWNTO 0);
 		rst									:	IN	STD_LOGIC;
 		rev									:	IN	STD_LOGIC;
@@ -63,13 +63,13 @@ ARCHITECTURE rtl OF misc_Sequencer IS
 
 	SUBTYPE T_CHUNK				IS STD_LOGIC_VECTOR(OUTPUT_BITS - 1 DOWNTO 0);
 	TYPE		T_MUX					IS ARRAY (NATURAL RANGE <>) OF T_CHUNK;
-	
+
 	SIGNAL Mux_Data				: T_MUX(CHUNKS - 1 DOWNTO 0);
 	SIGNAL Mux_Data_d			: T_MUX(CHUNKS - 1 DOWNTO 0);
 	SIGNAL Mux_sel_us			: UNSIGNED(COUNTER_BITS - 1 DOWNTO 0)		:= (OTHERS => '0');
-	
+
 	SIGNAL rev_l					: STD_LOGIC															:= '0';
-	
+
 BEGIN
 	genMuxData : FOR I IN 0 TO CHUNKS - 1 GENERATE
 		Mux_Data(I)		<= Input(((I + 1) * OUTPUT_BITS) - 1 DOWNTO I * OUTPUT_BITS);
@@ -90,13 +90,13 @@ BEGIN
 	genRegistered1 : IF (REGISTERED = FALSE) GENERATE
 		Mux_Data_d		<= Mux_Data;
 	END GENERATE;
-	
+
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF ((Reset OR rst) = '1') THEN
 				rev_l							<= rev;
-			
+
 				IF (rev = '0') THEN
 					Mux_sel_us			<= to_unsigned(0,							Mux_sel_us'length);
 				ELSE
@@ -113,6 +113,6 @@ BEGIN
 			END IF;
 		END IF;
 	END PROCESS;
-	
+
 	Output		<= Mux_Data_d(ite((SIMULATION = TRUE), imin(to_integer(Mux_sel_us), CHUNKS - 1), to_integer(Mux_sel_us)));
 END;

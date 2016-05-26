@@ -80,10 +80,10 @@ begin  -- tb
         report "Content Mismatch."
         severity error;
     end loop;  -- a
-    
+
     report "Test completed." severity note;
     wait;
-    
+
   end process;
 
 end tb;

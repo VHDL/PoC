@@ -68,7 +68,7 @@ architecture Behavioral of trace_testbed is
   signal async_rst     : std_logic;
   signal rst_sys       : std_logic;
   signal rst_delayctrl : std_logic;
-  
+
   -- ethernet-signals
   signal tr_data  : std_logic_vector(7 downto 0);
   signal tr_sof_n : std_logic;
@@ -80,7 +80,7 @@ architecture Behavioral of trace_testbed is
   signal re_eof_n : std_logic;
   signal re_vld_n : std_logic;
   signal re_rdy_n : std_logic;
-  
+
   -- fifo-signals
   signal trc_got        : std_logic;
   signal trc_valid      : std_logic;
@@ -277,7 +277,7 @@ begin
       -- A new bytecode every 4 clock cycles.
       addr         <= tv1(33 downto 2);
       bcode_stb(i) <= '1' when tv1(1 downto 0) = "11" else '0';
-      
+
       bcode((i+1)*32-1 downto (i*32))    <= addr;
 
       -- possible branch address

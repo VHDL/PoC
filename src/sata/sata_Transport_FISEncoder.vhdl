@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
@@ -25,13 +25,13 @@
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,14 +61,14 @@ entity sata_FISEncoder IS
 	port (
 		Clock												: in	STD_LOGIC;
 		Reset												: in	STD_LOGIC;
-		
+
 		FISType											: in	T_SATA_FISTYPE;
 		Status											: out	T_SATA_FISENCODER_STATUS;
 		ATARegisters								: in	T_SATA_ATA_HOST_REGISTERS;
-		
+
 		-- debugPort
 		DebugPortOut								: out	T_SATADBG_TRANS_FISE_OUT;
-		
+
 		-- writer interface
 		TX_Ack											: out	STD_LOGIC;
 		TX_SOP											: in	STD_LOGIC;
@@ -76,10 +76,10 @@ entity sata_FISEncoder IS
 		TX_Data											: in	T_SLV_32;
 		TX_Valid										: in	STD_LOGIC;
 		TX_InsertEOP								: out	STD_LOGIC;
-		
+
 		-- LinkLayer CSE
 		Link_Status									: IN	T_SATA_LINK_STATUS;
-		
+
 		-- LinkLayer FIFO interface
 		Link_TX_Ack									: in	STD_LOGIC;
 		Link_TX_Data								: out	T_SLV_32;
@@ -87,7 +87,7 @@ entity sata_FISEncoder IS
 		Link_TX_EOF									: out STD_LOGIC;
 		Link_TX_Valid								: out	STD_LOGIC;
 		Link_TX_InsertEOF						: in	STD_LOGIC;
-		
+
 		Link_TX_FS_Ack							: out	STD_LOGIC;
 		Link_TX_FS_SendOK						: in	STD_LOGIC;
 		Link_TX_FS_SyncEsc					: in	STD_LOGIC;
@@ -106,7 +106,7 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 		ST_EVALUATE_FRAMESTATE,
 		ST_STATUS_SEND_OK, ST_STATUS_SEND_ERROR, ST_STATUS_SYNC_ESC
 	);
-	
+
 	-- Alias-Definitions for FISType Register Transfer Host => Device (27h)
 	-- ====================================================================================
 	-- Word 0
@@ -114,7 +114,7 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	ALIAS Alias_FlagC											: STD_LOGIC												IS Link_TX_Data(15);
 	ALIAS Alias_CommandReg								: T_SLV_8													IS Link_TX_Data(23 DOWNTO 16);			-- Command register
 	ALIAS Alias_FeatureReg								: T_SLV_8													IS Link_TX_Data(31 DOWNTO 24);			-- Feature register
-	
+
 	-- Word 1
 	ALIAS Alias_LBA0											: T_SLV_8													IS Link_TX_Data(7 DOWNTO 0);				-- Sector Number
 	ALIAS Alias_LBA8											: T_SLV_8													IS Link_TX_Data(15 DOWNTO 8);				-- Sector Number expanded
@@ -122,12 +122,12 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	ALIAS Alias_Head											: T_SLV_4													IS Link_TX_Data(27 DOWNTO 24);			-- Head number
 	ALIAS Alias_Device										: STD_LOGIC_VECTOR(0 DOWNTO 0)		IS Link_TX_Data(28 DOWNTO 28);			-- Device number
 	ALIAS Alias_FlagLBA48									: STD_LOGIC												IS Link_TX_Data(30);								-- is LBA-48 address
-	
+
 	-- Word 2
 	ALIAS Alias_LBA24											: T_SLV_8													IS Link_TX_Data(7 DOWNTO 0);				-- Cylinder Low expanded
 	ALIAS Alias_LBA32											: T_SLV_8													IS Link_TX_Data(15 DOWNTO 8);				-- Cylinder High
 	ALIAS Alias_LBA40											: T_SLV_8													IS Link_TX_Data(23 DOWNTO 16);			-- Cylinder High expanded
-	
+
 	-- Word 3
 	ALIAS Alias_SecCount0									: T_SLV_8													IS Link_TX_Data(7 DOWNTO 0);				-- Sector Count
 	ALIAS Alias_SecCount8									: T_SLV_8													IS Link_TX_Data(15 DOWNTO 8);				-- Sector Count expanded
@@ -135,11 +135,11 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 
 	-- Word 4
 --	ALIAS Alias_TransferCount							: T_SLV_16												IS Link_TX_Data(15 DOWNTO 0);				-- Transfer Count
-	
+
 	SIGNAL State													: T_STATE													:= ST_RESET;
 	SIGNAL NextState											: T_STATE;
 	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
-	
+
 BEGIN
 
 	PROCESS(Clock)
@@ -152,16 +152,16 @@ BEGIN
 			END IF;
 		END IF;
 	END PROCESS;
-	
+
 	PROCESS(State, Link_Status, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_SyncEsc, Link_TX_InsertEOF)
 	BEGIN
 		NextState										<= State;
-		
+
 		Status											<= SATA_FISE_STATUS_SENDING;
-		
+
 		TX_Ack											<= '0';
     TX_InsertEOP                <= '0';
-		
+
 		Link_TX_Valid								<= '0';
 		Link_TX_EOF									<= '0';
 		Link_TX_SOF									<= '0';
@@ -182,16 +182,16 @@ BEGIN
 		Alias_Head									<= x"0";													-- Head number
 		Alias_Device								<=  "0";													-- Device number
 		Alias_FlagLBA48							<=	'0';													-- LBA-48 adressing mode
-	
+
 		-- Word 2
 		Alias_LBA8									<= x"00";													-- Sector Number expanded
 		Alias_LBA24									<= x"00";													-- Cylinder Low expanded
 		Alias_LBA40									<= x"00";													-- Cylinder High expanded
-	
+
 		-- Word 3
 		Alias_SecCount0							<= x"00";													-- Sector Count
 		Alias_SecCount8							<= x"00";													-- Sector Count expanded
-		Alias_ControlReg						<= x"00";													-- Control register		
+		Alias_ControlReg						<= x"00";													-- Control register
 
 		CASE State IS
 			when ST_RESET =>
@@ -201,66 +201,66 @@ BEGIN
 				-- b) Link_Status is constant and not equal to SATA_LINK_STATUS_IDLE
 				--    This may happen during reconfiguration due to speed negotiation.
         Status										<= SATA_FISE_STATUS_RESET;
-        
+
         if (Link_Status = SATA_LINK_STATUS_IDLE) then
 					NextState <= ST_IDLE;
         end if;
-				
+
 			WHEN ST_IDLE =>
 				Status										<= SATA_FISE_STATUS_IDLE;
-			
+
 				CASE FISType IS
 					WHEN SATA_FISTYPE_REG_HOST_DEV =>
 						-- send "Register-FIS - Host to Device"
 						Link_TX_Valid					<= '1';
 						Link_TX_SOF						<= '1';
-						
+
 						Alias_FISType					<= to_slv(SATA_FISTYPE_REG_HOST_DEV);
 						Alias_FlagC						<= ATARegisters.Flag_C;
 						Alias_CommandReg			<= ATARegisters.Command;
 						Alias_FeatureReg			<= x"00";
 
-						if (Link_TX_Ack = '1') then							
+						if (Link_TX_Ack = '1') then
 							NextState						<= ST_FIS_REG_HOST_DEV_WORD_1;
 						else
 							NextState						<= ST_FIS_REG_HOST_DEV_WORD_0;
 						END IF;
-					
+
 					WHEN SATA_FISTYPE_DATA =>
 						-- send "Data-FIS - Host to Device"
 						Link_TX_Valid					<= '1';
 						Link_TX_SOF						<= '1';
-						
+
 						Alias_FISType					<= to_slv(SATA_FISTYPE_DATA);
-					
+
 						if (Link_TX_Ack = '1') then
 							NextState						<= ST_DATA_N;
 						else
 							NextState						<= ST_DATA_0;
 						end if;
-						
+
 					WHEN OTHERS =>
 						NULL;
-						
+
 				END CASE;
 
 			WHEN ST_FIS_REG_HOST_DEV_WORD_0 =>
 				-- send "Register-FIS - Host to Device"
 				Link_TX_Valid							<= '1';
 				Link_TX_SOF								<= '1';
-				
+
 				Alias_FISType							<= to_slv(SATA_FISTYPE_REG_HOST_DEV);
 				Alias_FlagC								<= ATARegisters.Flag_C;
 				Alias_CommandReg					<= ATARegisters.Command;
 				Alias_FeatureReg					<= x"00";
 
-				if (Link_TX_Ack = '1') then					
+				if (Link_TX_Ack = '1') then
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_1;
 				END IF;
 
 			WHEN ST_FIS_REG_HOST_DEV_WORD_1 =>
 				Link_TX_Valid							<= '1';
-				
+
 				Alias_LBA0								<= ATARegisters.LBlockAddress(7 DOWNTO 0);
 				Alias_LBA8								<= ATARegisters.LBlockAddress(15 DOWNTO 8);
 				Alias_LBA16								<= ATARegisters.LBlockAddress(23 DOWNTO 16);
@@ -268,10 +268,10 @@ BEGIN
 				Alias_Device							<=  "0";																								-- Device number
 				Alias_FlagLBA48						<= is_LBA48_Command(to_sata_ata_command(ATARegisters.Command));	-- LBA-48 adressing mode
 
-				if (Link_TX_Ack = '1') then					
+				if (Link_TX_Ack = '1') then
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_2;
 				END IF;
-					
+
 			WHEN ST_FIS_REG_HOST_DEV_WORD_2 =>
 				Link_TX_Valid							<= '1';
 
@@ -279,21 +279,21 @@ BEGIN
 				Alias_LBA32								<= ATARegisters.LBlockAddress(39 DOWNTO 32);
 				Alias_LBA40								<= ATARegisters.LBlockAddress(47 DOWNTO 40);
 
-				if (Link_TX_Ack = '1') then					
+				if (Link_TX_Ack = '1') then
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_3;
 				END IF;
-				
+
 			WHEN ST_FIS_REG_HOST_DEV_WORD_3 =>
 				Link_TX_Valid							<= '1';
-				
+
 				Alias_SecCount0						<= ATARegisters.SectorCount(7 DOWNTO 0);					-- Sector Count
 				Alias_SecCount8						<= ATARegisters.SectorCount(15 DOWNTO 8);					-- Sector Count expanded
-				Alias_ControlReg					<= ATARegisters.Control;													-- Control register		
+				Alias_ControlReg					<= ATARegisters.Control;													-- Control register
 
-				if (Link_TX_Ack = '1') then					
+				if (Link_TX_Ack = '1') then
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_4;
 				END IF;
-					
+
 			WHEN ST_FIS_REG_HOST_DEV_WORD_4 =>
 				Link_TX_Valid							<= '1';
 				Link_TX_EOF								<= '1';
@@ -301,12 +301,12 @@ BEGIN
 				if (Link_TX_Ack = '1') then
 					NextState								<= ST_EVALUATE_FRAMESTATE;
 				END IF;
-				
+
 			WHEN ST_DATA_0 =>
 				-- Send Data FIS Header until Link_TX_Ack.
 				Link_TX_Valid					<= '1';
 				Link_TX_SOF						<= '1';
-						
+
 				Alias_FISType					<= to_slv(SATA_FISTYPE_DATA);
 
 				if (Link_TX_Ack = '1') then
@@ -320,7 +320,7 @@ BEGIN
 				TX_InsertEOP							<= Link_TX_InsertEOF;
 				Link_TX_EOF								<= TX_EOP;
 				Link_TX_Valid							<= TX_Valid;
-				
+
 				if (TX_Valid and Link_TX_Ack and TX_EOP) = '1' then
 					-- Frame transmission complete.
 					NextState 							<= ST_EVALUATE_FRAMESTATE;
@@ -333,12 +333,12 @@ BEGIN
 				-- Abort frame now. Remaining data is discarded by TransportFSM later.
 				Link_TX_EOF 							<= '1';
 				Link_TX_Valid 						<= '1';
-				
+
 				if (Link_TX_Ack = '1') then
 					-- accepted by LinkLayer
 					NextState						<= ST_EVALUATE_FRAMESTATE;
 				end if;
-				
+
 			when ST_EVALUATE_FRAMESTATE =>
 				if (Link_TX_FS_Valid = '1') then
 					if (Link_TX_FS_SendOK = '1') then
@@ -354,19 +354,19 @@ BEGIN
 						NextState							<= ST_STATUS_SEND_ERROR;
 					end if;
 				end if;
-			
+
 			when ST_STATUS_SEND_OK =>
 				Status								<= SATA_FISE_STATUS_SEND_OK;
 				NextState							<= ST_IDLE;
-				
+
 			when ST_STATUS_SEND_ERROR =>
 				Status								<= SATA_FISE_STATUS_SEND_ERROR;
 				NextState							<= ST_IDLE;
-				
+
 			when ST_STATUS_SYNC_ESC =>
 				Status								<= SATA_FISE_STATUS_SYNC_ESC;
 				NextState							<= ST_IDLE;
-			
+
 		end case;
 	end process;
 
@@ -378,7 +378,7 @@ BEGIN
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
-		
+
 	begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
 			function dbg_GenerateStateEncodings return string is
@@ -390,7 +390,7 @@ BEGIN
 				end loop;
 				return  l.all;
 			end function;
-			
+
 			function dbg_GenerateStatusEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
@@ -400,14 +400,14 @@ BEGIN
 				end loop;
 				return  l.all;
 			end function;
-			
+
 			constant dummy : T_BOOLVEC := (
 				0 => dbg_ExportEncoding("Transport Layer FIS-Encoder - FSM", dbg_GenerateStateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISE.tok"),
 				1 => dbg_ExportEncoding("Transport Layer FIS-Encoder - Status", dbg_GenerateStatusEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_FISE_Status.tok")
 			);
 		begin
 		end generate;
-		
+
 		DebugPortOut.FSM		<= dbg_EncodeState(State);
 	end generate;
 end;

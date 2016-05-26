@@ -1,10 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
--- 
+--
 -- Module:				 	TODO
 --
 -- Description:
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,15 +42,15 @@ use			PoC.net.all;
 
 entity icmpv6_TX is
 	port (
-		Clock											: in	STD_LOGIC;																	-- 
-		Reset											: in	STD_LOGIC;																	-- 
-		
+		Clock											: in	STD_LOGIC;																	--
+		Reset											: in	STD_LOGIC;																	--
+
 		TX_Valid									: out	STD_LOGIC;
 		TX_Data										: out	T_SLV_8;
 		TX_SOF										: out	STD_LOGIC;
 		TX_EOF										: out	STD_LOGIC;
 		TX_Ack										: in	STD_LOGIC;
-		
+
 		Send_EchoResponse					: in	STD_LOGIC;
 		Send_Complete							: OUT STD_LOGIC
 	);
@@ -59,7 +59,7 @@ end entity;
 
 architecture rtl of icmpv6_TX is
 	attribute FSM_ENCODING						: STRING;
-	
+
 	type T_STATE		is (
 		ST_IDLE,
 			ST_SEND_ECHOREQUEST_TYPE,
@@ -94,7 +94,7 @@ begin
 	process(State, Send_EchoResponse, TX_Ack)
 	begin
 		NextState							<= State;
-		
+
 		TX_Valid							<= '1';
 		TX_Data								<= (others => '0');
 		TX_SOF								<= '0';
@@ -107,37 +107,37 @@ begin
 				if (Send_EchoResponse = '1') then
 					NextState				<= ST_SEND_ECHOREQUEST_TYPE;
 				end if;
-			
+
 			when ST_SEND_ECHOREQUEST_TYPE =>
 				null;
-			
+
 			when ST_SEND_ECHOREQUEST_CODEFIELD =>
 				null;
-			
+
 			when ST_SEND_ECHOREQUEST_CHECKSUM_0 =>
 				null;
-			
+
 			when ST_SEND_ECHOREQUEST_CHECKSUM_1 =>
 				null;
-			
+
 			when ST_SEND_ECHOREQUEST_IDENTIFIER_0 =>
 				null;
-			
+
 			when ST_SEND_ECHOREQUEST_IDENTIFIER_1 =>
 				null;
-			
+
 			when ST_SEND_ECHOREQUEST_SEQUENCENUMBER_0 =>
 				null;
-			
+
 			when ST_SEND_ECHOREQUEST_SEQUENCENUMBER_1 =>
 				null;
-			
+
 			when ST_SEND_DATA =>
 				null;
-			
+
 			when ST_COMPLETE =>
 				null;
-			
+
 		end case;
 	end process;
 
