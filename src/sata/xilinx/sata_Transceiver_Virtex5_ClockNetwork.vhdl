@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
--- 
+--
 -- Description:
 -- ------------------------------------
 --		For detailed documentation see below.
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,9 +55,9 @@ ENTITY sata_Transceiver_Virtex5_GTP_ClockNetwork IS
 
 		ClockNetwork_Reset				: IN	STD_LOGIC;
 		ClockNetwork_ResetDone		:	OUT	STD_LOGIC;
-		
+
 		SATAGeneration						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-		
+
 		GTP_Clock_1X							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 		GTP_Clock_4X							: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0)
 	);
@@ -78,23 +78,23 @@ ARCHITECTURE rtl OF sata_Transceiver_Virtex5_GTP_ClockNetwork IS
 --	SIGNAL DCM_Locked_d1								: STD_LOGIC		:= '0';
 --	SIGNAL DCM_Locked_d2								: STD_LOGIC		:= '0';
 	SIGNAL DCM_Locked_i									: STD_LOGIC;
-	
+
 	SIGNAL DCM_Clock_37_5MHz						: STD_LOGIC;
 	SIGNAL DCM_Clock_75MHz							: STD_LOGIC;
 	SIGNAL DCM_Clock_150MHz							: STD_LOGIC;
 	SIGNAL DCM_Clock_300MHz							: STD_LOGIC;
-	
+
 	SIGNAL GTP_Clock_1X_i								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 	SIGNAL GTP_Clock_4X_i								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	
+
 BEGIN
 	ASSERT (PORTS <= 2)	REPORT "to many ports per transceiver"	SEVERITY FAILURE;
-	
+
 	-- reset generation
 	-- ======================================================================
 	-- clock network resets
-	ClkNet_Reset_i							<= ClockNetwork_Reset;																					-- @async: 
-	
+	ClkNet_Reset_i							<= ClockNetwork_Reset;																					-- @async:
+
 	-- D-FF @ClockIn_150MHz with async reset
 	PROCESS(ClockIn_150MHz)
 	BEGIN
@@ -110,15 +110,15 @@ BEGIN
 			END IF;
 		END IF;
 	END PROCESS;
-	
-	ClkNet_Reset								<= ClkNet_Reset_r3;																							-- @ClockIn_150MHz: 
-	DCM_Reset										<= ClkNet_Reset;																								-- @ClockIn_150MHz: 
-	
+
+	ClkNet_Reset								<= ClkNet_Reset_r3;																							-- @ClockIn_150MHz:
+	DCM_Reset										<= ClkNet_Reset;																								-- @ClockIn_150MHz:
+
 	-- calculate when all clocknetwork components are stable
 --	DCM_Locked_d1						<= DCM_Locked_i		WHEN rising_edge(ClockIn_150MHz);
 --	DCM_Locked_d2						<= DCM_Locked_d1	WHEN rising_edge(ClockIn_150MHz);
 --	DCM_Locked							<= DCM_Locked_d2;
-	
+
 	ClockNetwork_ResetDone	<= DCM_Locked_i;
 
 -- ==================================================================
@@ -128,7 +128,7 @@ BEGIN
 		SIGNAL SATAGeneration_d1				: T_SATA_GENERATION		:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
 		SIGNAL SATAGeneration_d2				: T_SATA_GENERATION		:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
 		SIGNAL MuxControl								: STD_LOGIC;
-		
+
 		ATTRIBUTE KEEP OF MuxControl		: SIGNAL IS DEBUG;
 	BEGIN
 		SATAGeneration_d1		<= SATAGeneration(I) WHEN rising_edge(ClockIn_150MHz);
@@ -174,9 +174,9 @@ BEGIN
 
 			CLKIN										=> ClockIn_150MHz,
 			CLKFB										=> '0',
-			
+
 			CLKFX										=> DCM_Clock_37_5MHz,
-			CLKFX180								=> OPEN,			
+			CLKFX180								=> OPEN,
 			CLKDV										=> DCM_Clock_75MHz,		-- OPEN,
 			CLK0										=> DCM_Clock_150MHz,
 			CLK90										=> OPEN,
@@ -184,7 +184,7 @@ BEGIN
 			CLK270									=> OPEN,
 			CLK2X										=> DCM_Clock_300MHz,
 			CLK2X180								=> OPEN,
-			
+
 			LOCKED									=> DCM_Locked_i
 		);
 
@@ -193,7 +193,7 @@ BEGIN
 
 	genCSP : IF (DEBUG = TRUE) GENERATE
 		SIGNAL DBG_Clock_300MHz								: STD_LOGIC;
-		
+
 		ATTRIBUTE KEEP OF DBG_Clock_300MHz		: SIGNAL IS TRUE;
 	BEGIN
 		BUFG_Clock_300MHz : BUFG

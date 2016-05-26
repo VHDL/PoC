@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Thomas Frank
@@ -35,13 +35,13 @@
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -105,17 +105,17 @@ entity sata_TransceiverLayer is
 
 		OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 		OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+		OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 		OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		OOB_AlignDetected    			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		
+
 		TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 		TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
 		RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
 		RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
 		RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		
+
 		-- vendor specific signals
 		VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 		VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
@@ -132,7 +132,7 @@ architecture rtl of sata_TransceiverLayer is
 	signal TX_Data_i 		: T_SLVV_32(PORTS - 1 downto 0);
 	signal RX_Data_i 		: T_SLVV_32(PORTS - 1 downto 0);
 	signal RX_CharIsK_i : T_SLVV_4(PORTS - 1 downto 0);
-	
+
 begin
 	genreport : for i in 0 to PORTS - 1 generate
 		assert FALSE report "port:    " & INTEGER'image(i)																										severity NOTE;
@@ -143,17 +143,17 @@ begin
 -- assert statements
 -- ==================================================================
 	assert ((C_DEVICE_INFO.Vendor = VENDOR_ALTERA) or
-					(C_DEVICE_INFO.Vendor = VENDOR_XILINX)) 
+					(C_DEVICE_INFO.Vendor = VENDOR_XILINX))
 		report "Vendor not yet supported."
 		severity FAILURE;
-		
+
 	assert ((C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_ZYNQ) or
 					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_KINTEX) or
-					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_VIRTEX) or 
+					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_VIRTEX) or
 					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_STRATIX))
 		report "Device family not yet supported."
 		severity FAILURE;
-		
+
 	assert ((C_DEVICE_INFO.Device = DEVICE_VIRTEX5) or
 					(C_DEVICE_INFO.Device = DEVICE_ZYNQ7) or
 					(C_DEVICE_INFO.Device = DEVICE_KINTEX7) or
@@ -162,13 +162,13 @@ begin
 					(C_DEVICE_INFO.Device = DEVICE_STRATIX4))
 		report "Device not yet supported."
 		severity FAILURE;
-		
+
 	assert ((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTP_DUAL) or
 					(C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2) or
 					(C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB))
 		report "Transceiver not yet supported."
 		severity FAILURE;
-		
+
 	assert (((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTP_DUAL)	and (PORTS <= 2)) or
 					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE1)		and (PORTS <= 4)) or
 					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2)		and (PORTS <= 4)) or
@@ -176,13 +176,13 @@ begin
 		report "To many ports per transceiver."
 		severity FAILURE;
 
-	
+
 -- ==================================================================
 -- insert bit errors
 -- ==================================================================
 
 	RX_CharIsK <= RX_CharIsK_i;
-	
+
 	genBitError : if (ENABLE_DEBUGPORT = TRUE) generate
 		-- Insert BitErrors
 		genPort : for i in 0 to PORTS - 1 generate
@@ -198,11 +198,11 @@ begin
 		RX_Data 	<= RX_Data_i;
 	end generate;
 
-	
+
 -- ==================================================================
 -- transeiver instances
 -- ==================================================================
-	
+
 	genXilinx : if (C_DEVICE_INFO.Vendor = VENDOR_XILINX) generate
 		genGPT_DUAL : if (C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTP_DUAL) generate
 			Trans : sata_Transceiver_Virtex5_GTP
@@ -243,11 +243,11 @@ begin
 
 					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
-					
+
 					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
-					
+
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
 					VSS_Private_In						=> VSS_Private_In,
@@ -293,11 +293,11 @@ begin
 
 					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
-					
+
 					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
-					
+
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
 					VSS_Private_In						=> VSS_Private_In,
@@ -346,11 +346,11 @@ begin
 
 					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
-					
+
 					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
-					
+
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
 					VSS_Private_In						=> VSS_Private_In,
@@ -397,11 +397,11 @@ begin
 
 					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
-					
+
 					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
-					
+
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
 					VSS_Private_In						=> VSS_Private_In,
@@ -446,11 +446,11 @@ begin
 
 					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
-					
+
 					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
-					
+
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
 					VSS_Private_In						=> VSS_Private_In,
@@ -458,11 +458,11 @@ begin
 				);
 		end generate;	-- Altera.Stratix4.GXB
 	end generate;		-- Altera.*
-	
+
 -- ==================================================================
 -- debugport
 -- ==================================================================
-	
+
 	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_generateCommandEncodings return string is
 			variable  l : STD.TextIO.line;
@@ -473,7 +473,7 @@ begin
 			end loop;
 			return  l.all;
 		end function;
-		
+
 		function dbg_generateStatusEncodings return string is
 			variable  l : STD.TextIO.line;
 		begin
@@ -483,7 +483,7 @@ begin
 			end loop;
 			return  l.all;
 		end function;
-		
+
 		function dbg_generateCommonErrorEncodings return string is
 			variable  l : STD.TextIO.line;
 		begin
@@ -493,7 +493,7 @@ begin
 			end loop;
 			return  l.all;
 		end function;
-		
+
 		function dbg_generateTXErrorEncodings return string is
 			variable  l : STD.TextIO.line;
 		begin
@@ -503,7 +503,7 @@ begin
 			end loop;
 			return  l.all;
 		end function;
-		
+
 		function dbg_generateRXErrorEncodings return string is
 			variable  l : STD.TextIO.line;
 		begin

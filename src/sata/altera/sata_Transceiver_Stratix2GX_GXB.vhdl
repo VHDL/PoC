@@ -33,11 +33,11 @@ entity sata_Transceiver_Stratix2GX_GXB is
 		Command			: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
 		Status			: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
 		Error				: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-	
+
 		-- debug ports
 --		DebugPortIn		: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 --		DebugPortOut		: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
-	
+
 		SATA_Clock		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 		RP_Reconfig		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -54,7 +54,7 @@ entity sata_Transceiver_Stratix2GX_GXB is
 
 		TX_Data			: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		TX_CharIsK		: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
-		
+
 		RX_Data			: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		RX_CharIsK		: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		RX_Valid		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -76,7 +76,7 @@ ARCHITECTURE rtl OF sata_Transceiver_Stratix2GX_GXB IS
 
 	signal reconf_clk	: std_logic;
 	signal refclk		: std_logic;
-	
+
 BEGIN
 -- ==================================================================
 -- Assert statements
@@ -87,13 +87,13 @@ BEGIN
 	ASSERT (PORTS <= 2)			REPORT "To many ports per transceiver."		SEVERITY FAILURE;
 
 -- 	Common modules shared by all ports
-	clk_div : clock_div 
+	clk_div : clock_div
 	port map (
 		clk => refclk,
 		clk2 => open,
 		clk4 => reconf_clk
 	);
-	cal_unit : gxb_calib 
+	cal_unit : gxb_calib
 	port map (
 		clk => reconf_clk
 	);
@@ -141,7 +141,7 @@ BEGIN
 		signal nodevice		: std_logic;
 		signal newdevice	: std_logic;
 		signal ll_newdevice	: std_logic;
-		
+
 	begin
 		SATA_Clock(i) <= ll_clk;
 		ResetDone(i) <= '1';
@@ -154,7 +154,7 @@ BEGIN
 		RP_Locked(i) <= '0';
 		RP_ReconfigComplete(i) <= config_state(14);
 		RP_ConfigReloaded(i) <= config_state(15);
-		
+
 		-- TODO ? : Status Statemachine -> see SATATransceiver_Virtex5_GTP.vhd
 		Status(i) <=	SATA_TRANSCEIVER_STATUS_RESETING when Command(i) = SATA_TRANSCEIVER_CMD_RESET else
 				SATA_TRANSCEIVER_STATUS_RECONFIGURING when gxb_busy = '1' or pll_busy = '1' else
@@ -194,7 +194,7 @@ BEGIN
 				end if;
 			end if;
 		end process;
-		
+
 		config_sync : entity PoC.EventSyncVector
 		generic map (
 			BITS => 2,
@@ -214,8 +214,8 @@ BEGIN
 			src => newdevice,
 			strobe => ll_newdevice
 		);
-		
-		sata_oob_unit : entity PoC.sata_oob 
+
+		sata_oob_unit : entity PoC.sata_oob
 		port map (
 			clk => refclk,
 			rx_oob_status => rx_oob_status,
@@ -225,7 +225,7 @@ BEGIN
 			tx_oob_complete => tx_oob_complete
 		);
 
-		output_adapter : sata_tx_adapter 
+		output_adapter : sata_tx_adapter
 		port map (
 			tx_datain => sata_tx_data,
 			tx_ctrlin => sata_tx_ctrl,
@@ -235,7 +235,7 @@ BEGIN
 			sata_gen => sata_gen
 		);
 
-		input_adapter : sata_rx_adapter 
+		input_adapter : sata_rx_adapter
 		port map (
 			rx_clkin => rx_clkout,
 			rx_ctrlin => rx_ctrlout,
@@ -248,7 +248,7 @@ BEGIN
 			sata_gen => sata_gen
 		);
 
-		sata_io : sata_basic 
+		sata_io : sata_basic
 		port map (
 			inclk => refclk,
 			reset => '0',--reset,
@@ -270,7 +270,7 @@ BEGIN
 			busy => gxb_busy
 		);
 
-		sata_clk : sata_pll 
+		sata_clk : sata_pll
 		port map (
 			inclk => refclk,
 			reset => '0', --reset,
@@ -295,6 +295,6 @@ BEGIN
 			NoDevice => nodevice,
 			NewDevice => newdevice
 		);
-		
+
 	end generate;
 END;

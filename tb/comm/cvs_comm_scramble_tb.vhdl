@@ -47,21 +47,21 @@ architecture tb of comm_scramble_tb is
     generic (
       GEN  : bit_vector;
       BITS : positive
-    ); 
+    );
     port (
       clk  : in  std_logic;
       set  : in  std_logic;
       din  : in  std_logic_vector(GEN'length-2 downto 0);
       step : in  std_logic;
       mask : out std_logic_vector(BITS-1 downto 0)
-    ); 
+    );
   end component;
 
   -- Connectivity
   signal clk       : std_logic;
   signal rst, step : std_logic;
   signal mask      : std_logic_vector(15 downto 0);
-  
+
 begin
 
   -- DUT
@@ -91,7 +91,7 @@ begin
     end cycle;
 
     variable errors : natural;
-    
+
   begin
     clk <= '0';
 

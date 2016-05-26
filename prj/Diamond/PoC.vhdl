@@ -16,7 +16,7 @@ entity Dummy is
 	port (
 		clk		: in	STD_LOGIC;
 		rst		: in	STD_LOGIC;
-		
+
 		led		: out	STD_LOGIC
 	);
 end entity;
@@ -26,10 +26,10 @@ architecture rtl of Dummy is
 	signal rst1		: STD_LOGIC;
 	signal clk2		: STD_LOGIC;
 	signal rst2		: STD_LOGIC;
-	
+
 	signal shiftchain_in		: STD_LOGIC_VECTOR(7 downto 0)	:= (others => '0');
 	signal shiftchain_out		: STD_LOGIC_VECTOR(6 downto 0);
-	
+
 begin
 	clk1	<= clk;
 	clk2	<= not clk;
@@ -42,7 +42,7 @@ begin
 			shiftchain_in		<= (shiftchain_in(6 downto 0) xor shiftchain_out) & '1';
 		end if;
 	end process;
-	
+
 	led							<= shiftchain_in(7);
 
 	blkFIFO : block
@@ -50,14 +50,14 @@ begin
 		signal chain_out	: STD_LOGIC_VECTOR(62 downto 0);
 	begin
 		shiftchain_out(0)	<= chain_in(chain_in'high);
-		
+
 		process(clk1)
 		begin
 			if rising_edge(clk1) then
 				chain_in		<= (chain_in(62 downto 0) xor chain_out) & shiftchain_in(0);
 			end if;
 		end process;
-		
+
 		fifo1 : entity PoC.fifo_glue
 			generic map (
 				D_BITS => 8
@@ -137,7 +137,7 @@ begin
       --valid  : out std_logic;
       --dout   : out std_logic_vector(D_BITS - 1 downto 0));
   --end component;
-  
+
 		fifo5 : entity PoC.fifo_ic_got
 			generic map (
 				D_BITS					=> 8,
@@ -218,23 +218,23 @@ begin
 				commit		=> '1',
 				rollback	=> '0'
 			);
-	
+
 	end block;
 
 	blkIO : block
-	
+
 		signal chain_in		: STD_LOGIC_VECTOR(63 downto 0);
 		signal chain_out	: STD_LOGIC_VECTOR(62 downto 0);
 	begin
 		shiftchain_out(1)	<= chain_in(chain_in'high);
-		
+
 		process(clk1)
 		begin
 			if rising_edge(clk1) then
 				chain_in		<= (chain_in(62 downto 0) xor chain_out) & shiftchain_in(1);
 			end if;
 		end process;
-		
+
 		io1 : entity PoC.io_7SegmentMux_BCD
 			generic map (
 				CLOCK_FREQ			=> 100 MHz,
@@ -243,17 +243,17 @@ begin
 			)
 			port map (
 				Clock						=> clk1,
-				
+
 				BCDDigits				=> (3 => T_BCD(chain_in(15 downto 12)),
 														2 => T_BCD(chain_in(11 downto 8)),
 														1 => T_BCD(chain_in(7 downto 4)),
 														0 => T_BCD(chain_in(3 downto 0))),
 				BCDDots					=> chain_in(19 downto 16),
-				
+
 				SegmentControl	=> chain_out(7 downto 0),
 				DigitControl		=> chain_out(11 downto 8)
 			);
-			
+
 		io2 : entity PoC.io_7SegmentMux_HEX
 			generic map (
 				CLOCK_FREQ			=> 100 MHz,
@@ -262,19 +262,19 @@ begin
 			)
 			port map (
 				Clock						=> clk1,
-				
+
 				HEXDigits				=> (3 => chain_in(35 downto 32),
 														2 => chain_in(31 downto 28),
 														1 => chain_in(27 downto 24),
 														0 => chain_in(23 downto 20)),
 				HEXDots					=> chain_in(39 downto 36),
-				
+
 				SegmentControl	=> chain_out(19 downto 12),
 				DigitControl		=> chain_out(23 downto 20)
 			);
-	
+
 		blkUART : block
-		
+
 		begin
 			uart : entity PoC.uart_fifo
 				generic map (
@@ -291,13 +291,13 @@ begin
 					TX_Data				=> chain_in(48 downto 41),
 					TX_Full				=> chain_out(24),
 					TX_EmptyState	=> open,
-					
+
 					RX_Valid			=> chain_out(25),
 					RX_Data				=> chain_out(33 downto 26),
 					RX_got				=> chain_in(49),
 					RX_FullState	=> open,
 					RX_Overflow		=> chain_out(34),
-					
+
 					-- External pins
 					UART_TX				=> chain_out(35),
 					UART_RX				=> chain_in(50),
@@ -306,21 +306,21 @@ begin
 				);
 		end block;
 	end block;
-	
+
 	blkMisc : block
-	
+
 		signal chain_in		: STD_LOGIC_VECTOR(63 downto 0);
 		signal chain_out	: STD_LOGIC_VECTOR(62 downto 0);
 	begin
 		shiftchain_out(2)	<= chain_in(chain_in'high);
-		
+
 		process(clk1)
 		begin
 			if rising_edge(clk1) then
 				chain_in		<= (chain_in(62 downto 0) xor chain_out) & shiftchain_in(2);
 			end if;
 		end process;
-		
+
 		misc1 : entity PoC.misc_Delay
 			generic map (
 				BITS			=> 8,
@@ -333,7 +333,7 @@ begin
 				DataIn		=> chain_in(8 downto 1),
 				DataOut		=> open		-- chain_out(7 downto 0)
 			);
-		
+
 		misc3 : entity PoC.misc_PulseTrain
 			generic map (
 				PULSE_TRAIN				=> "101000101010"
@@ -344,7 +344,7 @@ begin
 				SequenceCompleted	=> chain_out(8),
 				Output						=> chain_out(9)
 			);
-		
+
 		misc4 : entity PoC.WordAligner
 			generic map (
 				REGISTERED		=> TRUE,
@@ -358,9 +358,9 @@ begin
 				O							=> chain_out(41 downto 10),
 				Valid					=> chain_out(42)
 			);
-	
+
 		blkSync : block
-		
+
 		begin
 			sync1 : entity PoC.sync_Vector
 				generic map (
@@ -375,7 +375,7 @@ begin
 					Busy					=> open,
 					Changed				=> open
 				);
-			
+
 			sync2 : entity PoC.sync_Command
 				generic map (
 					BITS					=> 8
@@ -389,7 +389,7 @@ begin
 					Changed				=> open
 				);
 		end block;
-	
+
 	end block;
 end architecture;
 

@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -22,7 +22,7 @@
 --
 -- Entity: jtag
 -- Author(s): Thomas B. Preusser
--- 
+--
 -- JTAG UART for Spartan-Devices
 --
 -- Revision:    $Revision: 1.2 $
@@ -104,15 +104,15 @@ begin
     signal jt_sel     : std_logic;
     signal jt_capture : std_logic;      -- Strobed to avoid reloading of output
     signal jt_shift   : std_logic;
-    
+
   begin
 
     blkBSCAN: block
-      
+
       signal bs_clk   : std_logic;
       signal jt_clk   : std_logic;
       signal jt_clk_d : std_logic;
-      
+
       signal bs_capture : std_logic;
       signal jt_cap     : std_logic;
       signal jt_cap_d   : std_logic;
@@ -120,8 +120,8 @@ begin
       signal bs_sel     : std_logic;
       signal bs_shift   : std_logic;
       signal bs_tdi     : std_logic;
-      
-    begin      
+
+    begin
       BSCAN : BSCAN_SPARTAN3
         port map (
           CAPTURE => bs_capture,          -- CAPTURE output from TAP controller
@@ -145,7 +145,7 @@ begin
           jt_clk    <= bs_clk;
           jt_cap_d  <= jt_cap;
           jt_cap    <= bs_capture;
-          
+
           jt_sel     <= bs_sel;
           jt_shift   <= bs_shift;
           jt_tdi     <= bs_tdi;
@@ -153,7 +153,7 @@ begin
       end process;
       jt_strobe  <= jt_clk and not jt_clk_d;
       jt_capture <= jt_cap and not jt_cap_d;
-      
+
     end block blkBSCAN;
 
     blkSM: block
@@ -168,7 +168,7 @@ begin
       -- Counting down to -1
       signal ShiftCount : signed(log2ceil(max(DAT_LEN, CRC_LEN)-1) downto 0);
       signal CntZZ      : std_logic;
-      
+
     begin
 
       -- State Register
@@ -217,19 +217,19 @@ begin
         SetFinish  <= '0';
 
         if jt_sel = '1' then
-          
+
           if jt_capture = '1' then
-            
+
             Capture   <= '1';
             NextState <= ShiftData;
-            
+
           elsif jt_shift = '1' and jt_strobe = '1' then
 
             Shift <= '1';
             case State is
               when Idling =>
                 null;
-                
+
               when ShiftData =>
                 Phase <= PhData;
 
@@ -267,12 +267,12 @@ begin
 
       end process;
     end block blkSM;
-    
+
   end block blkJTAG;
 
   -- Data Input
   blkInput: block
-    
+
     -- Data Register
     signal RegDatIn : std_logic_vector(DAT_LEN-1 downto 0);
     signal crc_ok   : std_logic;
@@ -288,7 +288,7 @@ begin
         if Shift = '1' and Phase = PhData then
           RegDatIn <= RegDatIn(RegDatIn'left-1 downto 0) & jt_tdi;
         end if;
-        
+
       end if;
     end process;
 
@@ -319,7 +319,7 @@ begin
     signal RegDatOut : std_logic_vector(DAT_LEN-1         downto 0);
     signal rmd       : std_logic_vector(max(CRC_LEN-1, 0) downto 0);
   begin
-    
+
     -- Data Output Register
     process(clk)
     begin
@@ -335,7 +335,7 @@ begin
         elsif Shift = '1' then
           RegDatOut <= RegDatOut(RegDatOut'left-1 downto 0) & '0';
         end if;
-        
+
       end if;
     end process;
     rd_got <= Capture;
@@ -359,5 +359,5 @@ begin
     jt_tdo <= RegDatOut(RegDatOut'left);
 
   end block blkOutput;
-  
+
 end jtag_impl;

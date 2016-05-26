@@ -170,7 +170,7 @@ package trace_config is
                                           MM_MOV_CMD_PORT, ENABLE_PORT);
 
   constant STATISTIC_PORTS   : tPorts := (BYTECODE_LENGTH_PORT, MC_METRIC_PORT);
-  
+
   -----------------------------------------------------------------------------
   -- Events
   -----------------------------------------------------------------------------
@@ -200,11 +200,11 @@ package trace_config is
 
   -- List all single events.
   constant SINGLE_EVENT_RECORDS : tSingleEvent_array := (SE_ENABLE, SE_METHOD);
-  
+
   -----------------------------------------------------------------------------
   -- Trigger
   -----------------------------------------------------------------------------
-  
+
   constant TRIG_ENABLE : tTrigger := (ID               => 1,
                                       SINGLE_EVENT_IDS => (SE_ENABLE.ID, 0, 0, 0, 0),
                                       COMPLEX_EVENTS   => NULL_COMPLEX_EVENTS,
@@ -220,7 +220,7 @@ package trace_config is
 
   -- List all trigger
   constant TRIGGER_RECORDS : tTrigger_array := (TRIG_ENABLE, TRIG_METHOD);
-  
+
   -----------------------------------------------------------------------------
   -- Tracer
   --
@@ -345,7 +345,7 @@ package trace_config is
                                                         INSTANTIATE => TRC_MM_MOV);
 
   -- List all tracer by type
-  
+
   constant INST_TRACER_GENS    : tInstGens    := (SHAP_BYTECODE,
                                                   SHAP_MICROCODE);
   constant MEM_TRACER_GENS     : tMemGens     := (SHAP_MMCDP, SHAP_WISHBONE);

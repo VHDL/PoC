@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_eth
 -- Author(s): Stefan Alex
--- 
+--
 ------------------------------------------------------
 -- Ethernet-Module with Transmitter and Receiver    --
 --
@@ -50,7 +50,7 @@ entity trace_eth is
     clk_eth : in  std_logic;
     rst_eth : in  std_logic;
     tr_finish  : out std_logic;
-    
+
     -- MAC-output
     tr_data  : out std_logic_vector(7 downto 0);
     tr_sof_n : out std_logic;
@@ -213,12 +213,12 @@ begin
               finish_packet <= '1';
               cnt_set_gap   <= '1';
               next_state    <= GAP;
-              
+
             elsif tr_fifo_valid = '1' then
               -- check if data is available
               tr_fifo_got <= '1';
               send_byte   <= '1';
-              
+
               if cnt_0 = '1' then       -- packet full
                 finish_packet <= '1';
                 cnt_set_gap   <= '1';

@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_compression
 -- Author(s): Stefan Alex
--- 
+--
 ------------------------------------------------------
 -- trace_compression.vhdl                           --
 -- Xor-, Diff- or Trim-Compression                  --
@@ -95,18 +95,18 @@ begin
     end generate mark_gen;
 
     -- cut
-    
+
     len_mark_i(NUM_BYTES-1) <= mark(NUM_BYTES-1);
-    
+
     cut_gen : for i in NUM_BYTES-2 downto 0 generate
     begin
       len_mark_i(i) <= mark(i) or len_mark_i(i+1);
     end generate cut_gen;
 
     -- count bytes
-    
+
     com_proc : process(len_mark_i)
-      variable cnt : natural;    
+      variable cnt : natural;
     begin
       cnt := 0;
       for i in NUM_BYTES-1 downto 0 loop
@@ -122,11 +122,11 @@ begin
     with compress select
       len <= len_i                              when '1',
              to_unsigned(NUM_BYTES, len'length) when others;
-              
+
     with compress select
       len_mark <= len_mark_i                    when '1',
                   (NUM_BYTES-1 downto 0 => '1') when others;
-                  
+
     data_out <= data_in;
 
   end generate xor_gen;
@@ -238,26 +238,26 @@ begin
 
     mark_gen : for i in NUM_BYTES-1 downto 1 generate
     begin
-      mark(i) <= '0' when data_in(8*(i+1)-1 downto 8*i) = (7 downto 0 => cmp) 
+      mark(i) <= '0' when data_in(8*(i+1)-1 downto 8*i) = (7 downto 0 => cmp)
                       and data_in(8*i-1) = cmp
                      else '1';
     end generate mark_gen;
-    
+
     mark(0) <= '0' when unsigned(data_in(7 downto 0)) = 0 and cmp = '0' else '1';
 
     -- cut
-    
+
     len_mark_i(NUM_BYTES-1) <= mark(NUM_BYTES-1);
-    
+
     cut_gen : for i in NUM_BYTES-2 downto 0 generate
     begin
       len_mark_i(i) <= mark(i) or len_mark_i(i+1);
     end generate cut_gen;
 
     -- count bytes
-    
+
     com_proc : process(len_mark_i)
-      variable cnt : natural;    
+      variable cnt : natural;
     begin
       cnt := 0;
       for i in NUM_BYTES-1 downto 0 loop
@@ -273,11 +273,11 @@ begin
     with compress select
       len <= len_i                              when '1',
              to_unsigned(NUM_BYTES, len'length) when others;
-              
+
     with compress select
       len_mark <= len_mark_i                    when '1',
                   (NUM_BYTES-1 downto 0 => '1') when others;
-                  
+
     data_out <= data_in;
 
   end generate trim_gen;
