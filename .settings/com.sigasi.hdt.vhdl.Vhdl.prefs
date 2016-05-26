@@ -1,0 +1,4 @@
+eclipse.preferences.version=1
+task.caseSensitive=true
+task.priorities=NORMAL,HIGH,NORMAL,LOW
+task.tags=TODO,FIXME,QUESTION,WORKAROUND
