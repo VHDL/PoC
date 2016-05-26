@@ -46,6 +46,9 @@ class SourceCodePosition:
 		self.Column =    column
 		self.Absolute =  absolute
 
+	def __str__(self):
+		return "(line: {0}, col: {1})".format(self.Row, self.Column)
+
 
 class Token:
 	def __init__(self, previousToken, value, start, end=None):
@@ -77,6 +80,9 @@ class Token:
 	@property
 	def Length(self):
 		return len(self)
+
+	def __repr__(self):
+		return str(self) + " at " + str(self.Start)
 
 
 class StartOfDocumentToken(Token):
@@ -169,6 +175,9 @@ class Tokenizer:
 		absolute =      0
 		column =        0
 		row =           1
+
+		yield previousToken
+
 		for char in iterable:
 			absolute +=   1
 			column +=     1

@@ -1,95 +1,364 @@
 from collections import deque
 from enum import Enum
 
-from lib.Parser     import Token, Tokenizer, CharacterToken, StringToken
+from lib.Parser     import Token, CharacterToken, StringToken, ParserException, SpaceToken
 
 
 class VHDLToken(Token):
 	pass
 
-class CommentToken(VHDLToken):
-	def __init__(self, previousToken, commentText, start, end=None):
-		super().__init__(previousToken, commentText, start, end)
+class KeywordToken(VHDLToken):
+	__KEYWORD__ = None
+
+	def __init__(self, stringToken):
+		super().__init__(stringToken.PreviousToken, self.__KEYWORD__, stringToken.Start, stringToken.End)
 
 	def __str__(self):
-		return "<CommentToken: '{0}'>".format(self.Value)
+		return "<Keyword: {0}>".format(self.__KEYWORD__.upper())
 
-class Block(Token):
-	pass
+class CommentKeyword(VHDLToken):
+	__KEYWORD__ = "--"
 
-class KeywordToken(VHDLToken):
-	pass
+	def __init__(self, characterToken):
+		super().__init__(characterToken.PreviousToken, self.__KEYWORD__, characterToken.Start, characterToken.NextToken.End)
 
 class LibraryKeyword(KeywordToken):
-	def __init__(self, stringToken):
-		super().__init__(stringToken.PreviousToken, None, stringToken.Start, stringToken.End)
+	__KEYWORD__ = "library"
+
+class UseKeyword(KeywordToken):
+	__KEYWORD__ = "use"
+
+class EntityKeyword(KeywordToken):
+	__KEYWORD__ = "entity"
+
+class IsKeyword(KeywordToken):
+	__KEYWORD__ = "is"
+
+class GenericKeyword(KeywordToken):
+	__KEYWORD__ = "generic"
+
+class PortKeyword(KeywordToken):
+	__KEYWORD__ = "port"
+
+class EndKeyword(KeywordToken):
+	__KEYWORD__ = "end"
+
+class ArchitectureKeyword(KeywordToken):
+	__KEYWORD__ = "architecture"
+
+class BeginEntityKeyword(KeywordToken):
+	__KEYWORD__ = "begin"
+
+
+class Block(object):
+	def __init__(self, previousBlock, startToken, endToken=None):
+		previousBlock.NextBlock = self
+		self._previousBlock =     previousBlock
+		self._nextBlock =         None
+		self.StartToken =         startToken
+		self._endToken =          endToken
+
+	def __len__(self):
+		return self.EndToken.End.Absolute - self.StartToken.Start.Absolute + 1
+
+	def __iter__(self):
+		token = self.StartToken
+		while (token is not self.EndToken):
+			yield token
+			token = token.NextToken
+		yield self.EndToken
+
+	def __repr__(self):
+		buffer = ""
+		for token in self:
+			if isinstance(token, CharacterToken):
+				buffer += str(token)
+			else:
+				buffer += token.Value
+
+		return buffer
+
+	@property
+	def PreviousBlock(self):
+		return self._previousBlock
+	@PreviousBlock.setter
+	def PreviousBlock(self, value):
+		self._previousBlock = value
+		value.NextBlock = self
+
+	@property
+	def NextBlock(self):
+		return self._nextBlock
+	@NextBlock.setter
+	def NextBlock(self, value):
+		self._nextBlock = value
+
+	@property
+	def EndToken(self):
+		return self._endToken
+	@EndToken.setter
+	def EndToken(self, value):
+		self._endToken = value
+
+	@property
+	def Length(self):
+		return len(self)
+
+class StartOfDocumentBlock(Block):
+	def __init__(self, startToken):
+		self._previousBlock =     None
+		self._nextBlock =         None
+		self.StartToken =         startToken
+		self._endToken =          None
+
+	def __len__(self):
+		return 0
 
 	def __str__(self):
-		return "<Keyword: LIBRARY>"
+		return "[StartOfDocumentBlock]"
+
+class EmptyLineBlock(Block):
+	def __str__(self):
+		return "[EmptyLineBlock]"
+
+class IndentationBlock(Block):
+	def __str__(self):
+		return "[IndentationBlock: length={len}]".format(len=len(self))
+
+class CommentBlock(Block):
+	def __str__(self):
+		return "[CommentBlock: '{stream!r}' at {start!s} .. {end!s}]".format(stream=self, start=self.StartToken.Start, end=self.EndToken.End)
 
 class LibraryBlock(Block):
-
 	def __str__(self):
-		return "{LIBRARY ...}"
+		return "[LIBRARY: '{stream!r}' at {start!s} .. {end!s}]".format(stream=self, start=self.StartToken.Start, end=self.EndToken.End)
+
+class UseBlock(Block):
+	def __str__(self):
+		return "[USE: '{stream!r}' at {start!s} .. {end!s}]".format(stream=self, start=self.StartToken.Start, end=self.EndToken.End)
+
+class GenericBlock(Block):
+	def __str__(self):
+		return "[GENERIC: '{stream!r}' at {start!s} .. {end!s}]".format(stream=self, start=self.StartToken.Start, end=self.EndToken.End)
+
+class PortBlock(Block):
+	def __str__(self):
+		return "[PORT: '{stream!r}' at {start!s} .. {end!s}]".format(stream=self, start=self.StartToken.Start, end=self.EndToken.End)
 
 
-class VHDLTokenizer:
+class ParserStack:
+	def __init__(self, topElement):
+		tokenBuffer =       deque()
+		self._stack =       [(topElement, tokenBuffer)]
+		self.Top =          topElement
+		self.TokenBuffer =  tokenBuffer
+
+	def Register(self, push, pop):
+		self.__push = push
+		self.__pop =  pop
+
+	def Pop(self, n=1):
+		for i in range(n):
+			self._stack.pop()
+		self.Top, self.TokenBuffer = self._stack[-1]
+		self.__pop()
+		return self.TokenBuffer
+
+	def __eq__(self, other):
+		return self.Top is other
+
+	def __add__(self, other):
+		self._stack.append(other)
+		self.Top =          other
+		self.__push()
+		return self
+
+	def __lshift__(self, other):
+		self._stack[-1] = other
+		self.Top =        other
+		return self
+
+	# Method aliases
+	Push =  __add__
+
+class TokenBuffer:
+	def __init__(self, parserStack):
+		parserStack.Register(self.Push, self.Pop)
+
+		newTokenBuffer = deque()
+		self._stack =       [newTokenBuffer]
+		self._top =         newTokenBuffer
+
+	def Push(self):
+		newTokenBuffer = deque()
+		self._stack.append(newTokenBuffer)
+		self._top = newTokenBuffer
+
+	def Pop(self):
+		if (len(self._top) > 0):
+			raise ParserException("TokenBuffer is not empty.")
+		self._stack.pop()
+		self._top = self._stack[-1]
+
+	def Get(self):
+		return self._top.popleft()
+
+	def __add__(self, other):
+		self._top.append(other)
+		return self
+
+
+class VHDL:
 	class State(Enum):
-		DocumentRoot =      0
-		CommentStart1 =     1
-		CommentStart2 =     2
-		EndOfLine =         3
-		LibraryStatement =  4
+		DocumentRoot =            0
+		PossibleCommentStart =    1
+		ConsumeComment =          2
+		EndOfLine =               3
+		LibraryStatement =        4
+		UseStatement =            5
+		EntityDeclaration =       6
+		GenericList =             7
+		PortList =                8
+		ArchitectureDeclaration = 10
 
 	@classmethod
-	def Transform(cls, rawTokenGenerator):
-		tokenBuffer = deque()
-		strBuffer =   ""
-		stack =       [cls.State.DocumentRoot]
-		newToken =    None
+	def TransformTokensToBlocks(cls, rawTokenGenerator):
+		iterator = iter(rawTokenGenerator)
 
-		for token in rawTokenGenerator:
+		parserState = ParserStack(cls.State.DocumentRoot)
+		tokenBuffer = TokenBuffer(parserState)
+		lastBlock =   StartOfDocumentBlock(next(iterator))
+		newToken =    None
+		newBlock =    None
+
+		yield lastBlock
+
+		for token in iterator:
+			if newBlock is not None:
+				# print("  yield block")
+				yield newBlock
+				lastBlock = newBlock
+				newBlock =  None
+
 			if newToken is not None:
+				# print("  linking new token")
 				token.PreviousToken = newToken
 				newToken =            None
 
-			state = stack[-1]
-			if (state is cls.State.DocumentRoot):
+			print("Parser loop: state={state!s} token={token!s} ".format(state=parserState.Top, token=token))
+
+			if (parserState == cls.State.DocumentRoot):
 				if isinstance(token, CharacterToken):
-					tokenBuffer.append(token)
-					if (token.Value == "-"):
-						stack.append(cls.State.CommentStart1)
+					if (token.Value == "\n"):
+						newBlock = EmptyLineBlock(lastBlock, token, endToken=token)
 						continue
+					elif (token.Value == "-"):
+						parserState += cls.State.PossibleCommentStart
+						tokenBuffer += token
+						continue
+				elif isinstance(token, SpaceToken):
+					newBlock = IndentationBlock(lastBlock, token, endToken=token)
+					continue
 				elif isinstance(token, StringToken):
 					keyword = token.Value.lower()
 					if (keyword == "library"):
-						stack.append(cls.State.LibraryStatement)
-						newToken = LibraryKeyword(token)
-						tokenBuffer.append(newToken)
-				else:
-					yield token
-			elif (state is cls.State.CommentStart1):
+						parserState +=  cls.State.LibraryStatement
+						newToken =      LibraryKeyword(token)
+						tokenBuffer +=  newToken
+						continue
+					elif (keyword == "use"):
+						parserState +=  cls.State.UseStatement
+						newToken =      UseKeyword(token)
+						tokenBuffer +=  newToken
+						continue
+					elif (keyword == "entity"):
+						parserState +=  cls.State.EntityDeclaration
+						newToken =      EntityKeyword(token)
+						tokenBuffer +=  newToken
+						continue
+					elif (keyword == "architecture"):
+						parserState +=  cls.State.ArchitectureDeclaration
+						newToken =      ArchitectureKeyword(token)
+						tokenBuffer +=  newToken
+						continue
+					else:
+						raise ParserException("Unknown keyword: '{0}'".format(token.Value))
+				else: # tokenType
+					raise ParserException("TokenType not supported here: {0!s}".format(token))
+			elif (parserState == cls.State.PossibleCommentStart):
 				if isinstance(token, CharacterToken):
 					if (token.Value == "-"):
-						stack[-1] =     cls.State.CommentStart2
-						strBuffer = "--"
+						parserState <<= cls.State.ConsumeComment
+						startToken =    tokenBuffer.Get()
+						newToken =      CommentKeyword(startToken)
+						tokenBuffer +=  newToken
 						continue
-				yield token
-			elif (state is cls.State.CommentStart2):
+				raise NotImplementedError("State=CommentStart1: {0!r}".format(token))
+			elif (parserState == cls.State.ConsumeComment):
 				if isinstance(token, CharacterToken):
 					if (token.Value == "\n"):
-						startToken = tokenBuffer.popleft()
-						newToken = CommentToken(startToken.PreviousToken, strBuffer, startToken.Start, token.PreviousToken.End)
-						yield newToken
-						stack.pop()
+						startToken =    tokenBuffer.Get()
+						newBlock =      CommentBlock(lastBlock, startToken, endToken=token)
+						parserState.Pop()
 						continue
-				strBuffer += token.Value
-			elif (state is cls.State.LibraryStatement):
+					# consume everything until ";"
+			elif (parserState == cls.State.LibraryStatement):
 				if isinstance(token, CharacterToken):
 					if (token.Value == ";"):
-						startToken = tokenBuffer.popleft()
-						newToken = LibraryBlock()
+						startToken =    tokenBuffer.Get()
+						newBlock =      LibraryBlock(lastBlock, startToken, endToken=token)
+						parserState.Pop()
 						continue
-				tokenBuffer.append(token)
+				# consume everything until ";"
+			elif (parserState == cls.State.UseStatement):
+				if isinstance(token, CharacterToken):
+					if (token.Value == ";"):
+						startToken =    tokenBuffer.Get()
+						newBlock =      UseBlock(lastBlock, startToken, endToken=token)
+						parserState.Pop()
+						continue
+				# consume everything until ";"
+			elif (parserState == cls.State.EntityDeclaration):
+				if isinstance(token, StringToken):
+					if (token.Value == "generic"):
+						parserState +=  cls.State.GenericList
+						newToken =      GenericKeyword(token)
+						tokenBuffer +=  newToken
+						continue
+					elif (token.Value == "port"):
+						parserState +=  cls.State.PortList
+						newToken =      PortKeyword(token)
+						tokenBuffer +=  newToken
+						continue
+					elif (token.Value == "end"):
+						parserState += cls.State.EntityDeclarationEnd
+						newToken =     EndKeyword(token)
+						tokenBuffer += newToken
+						continue
+					# else:
+					# 	raise ParserException("Expected keywords: generic, port or end.")
+			elif (parserState == cls.State.GenericList):
+				if isinstance(token, CharacterToken):
+					if (token.Value == ";"):
+						startToken =    tokenBuffer.Get()
+						newBlock =      GenericBlock(lastBlock, startToken, endToken=token)
+						parserState.Pop()
+						continue
+			elif (parserState == cls.State.PortList):
+				if isinstance(token, CharacterToken):
+					if (token.Value == ";"):
+						startToken = tokenBuffer.Get()
+						newBlock = PortBlock(lastBlock, startToken, endToken=token)
+						parserState.Pop()
+						continue
+
+
+
+					# startToken = tokenBuffer.popleft()
+						# newBlock = UseBlock(lastBlock, startToken, endToken=token)
+						# tokenBuffer.clear()
+						# parserState.Pop()
+						# continue
+				# consume everything until ";"
 			else:
-				raise RuntimeError("Unknown Tokenizer state.")
+				raise RuntimeError("Unknown Tokenizer state: {0!s}.".format(parserState.Top))

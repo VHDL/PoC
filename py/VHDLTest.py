@@ -3,9 +3,9 @@ from enum      import Enum, unique		# EnumMeta
 from time      import time
 from colorama  import init, Fore
 
-from Parser.VHDLParser import VHDLTokenizer
+from Parser.VHDLParser import VHDL
 from lib.CodeDOM import CodeDOMObject
-from lib.Parser import MatchingParserResult, SpaceToken, CharacterToken, MismatchingParserResult, StringToken, NumberToken
+from lib.Parser import MatchingParserResult, SpaceToken, CharacterToken, MismatchingParserResult, StringToken, NumberToken, ParserException
 
 from lib.Parser     import Tokenizer
 
@@ -20,6 +20,7 @@ content = """\
 
 library ieee;
 use     ieee.std_logic_1164.all;
+  use   ieee.numeric_std.all;
 
 entity test is
 	port (
@@ -45,13 +46,18 @@ begin
 		end if;
 	end process;
 end architecture;
-"""
+""".replace("\r\n", "\n")
 
 wordTokenStream = Tokenizer.GetWordTokenizer(content)
-vhdlTokenStream = VHDLTokenizer.Transform(wordTokenStream)
+vhdlBlockStream = VHDL.TransformTokensToBlocks(wordTokenStream)
 
-for vhdlToken in vhdlTokenStream:
-	print(vhdlToken)
+try:
+	for vhdlBlock in vhdlBlockStream:
+		print(vhdlBlock)
+except ParserException as ex:
+	print("ERROR: " + str(ex))
+except NotImplementedError as ex:
+	print("NotImplementedError: " + str(ex))
 
 #
 #
