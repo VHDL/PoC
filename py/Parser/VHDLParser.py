@@ -1,10 +1,10 @@
 from collections import deque
 from enum import Enum
 
-from lib.Parser     import Token, CharacterToken, StringToken, ParserException, SpaceToken
+from lib.Parser     import ValuedToken, CharacterToken, StringToken, ParserException, SpaceToken
 
 
-class VHDLToken(Token):
+class VHDLToken(ValuedToken):
 	pass
 
 class KeywordToken(VHDLToken):
@@ -21,6 +21,10 @@ class CommentKeyword(VHDLToken):
 
 	def __init__(self, characterToken):
 		super().__init__(characterToken.PreviousToken, self.__KEYWORD__, characterToken.Start, characterToken.NextToken.End)
+
+class CommentToken(VHDLToken):
+	def __init__(self, commentKeyword):
+		super().__init__(commentKeyword.PreviousToken, None, commentKeyword.Start)
 
 class LibraryKeyword(KeywordToken):
 	__KEYWORD__ = "library"
@@ -40,14 +44,14 @@ class GenericKeyword(KeywordToken):
 class PortKeyword(KeywordToken):
 	__KEYWORD__ = "port"
 
-class EndKeyword(KeywordToken):
-	__KEYWORD__ = "end"
-
 class ArchitectureKeyword(KeywordToken):
 	__KEYWORD__ = "architecture"
 
-class BeginEntityKeyword(KeywordToken):
+class BeginKeyword(KeywordToken):
 	__KEYWORD__ = "begin"
+
+class EndKeyword(KeywordToken):
+	__KEYWORD__ = "end"
 
 
 class Block(object):
@@ -119,7 +123,11 @@ class StartOfDocumentBlock(Block):
 
 class EmptyLineBlock(Block):
 	def __str__(self):
-		return "[EmptyLineBlock]"
+		buffer = ""
+		for token in self:
+			buffer += token.Value
+		buffer = buffer.replace("\t", "\\t").replace("\n", "\\n")
+		return "[EmptyLineBlock: '{0}']".format(buffer)
 
 class IndentationBlock(Block):
 	def __str__(self):
@@ -251,6 +259,7 @@ class VHDL:
 		Port =                    14
 		EntityDeclarationEnd =    19
 		ArchitectureDeclaration = 20
+		ArchitectureDeclarationEnd = 21
 
 	@classmethod
 	def TransformTokensToBlocks(cls, rawTokenGenerator):
@@ -285,7 +294,11 @@ class VHDL:
 			if (parserState == cls.State.DocumentRoot):
 				if isinstance(token, CharacterToken):
 					if (token.Value == "\n"):
-						newBlock = EmptyLineBlock(lastBlock, token, endToken=token)
+						# fuse Indentation and EmptyLine blocks
+						if isinstance(lastBlock, IndentationBlock):
+							lastBlock = EmptyLineBlock(lastBlock.PreviousBlock, lastBlock.StartToken, endToken=token)
+						else:
+							newBlock = EmptyLineBlock(lastBlock, token, endToken=token)
 						continue
 					elif (token.Value == "-"):
 						parserState += cls.State.PossibleCommentStart
@@ -313,6 +326,11 @@ class VHDL:
 						continue
 					elif (keyword == "architecture"):
 						parserState +=  cls.State.ArchitectureDeclaration
+						newToken =      ArchitectureKeyword(token)
+						tokenBuffer +=  newToken
+						continue
+					elif (keyword == "package"):
+						parserState +=  cls.State.PackageDeclaration
 						newToken =      ArchitectureKeyword(token)
 						tokenBuffer +=  newToken
 						continue
@@ -367,7 +385,6 @@ class VHDL:
 						parserState +=  cls.State.GenericList
 						newToken =      GenericKeyword(token)
 						tokenBuffer +=  newToken
-
 						continue
 					elif (token.Value == "port"):
 						if (not isinstance(lastBlock, EntityBlock)):
@@ -377,6 +394,15 @@ class VHDL:
 						parserState +=  cls.State.PortList
 						newToken =      PortKeyword(token)
 						tokenBuffer +=  newToken
+						continue
+					elif (token.Value == "begin"):
+						if (not isinstance(lastBlock, EntityBlock)):
+							startToken = tokenBuffer.Get()
+							newBlock = EntityBlock(lastBlock, startToken, endToken=token.PreviousToken)
+
+						parserState <<= cls.State.EntityDeclarationBegin
+						newToken =     BeginKeyword(token)
+						tokenBuffer += newToken
 						continue
 					elif (token.Value == "end"):
 						if (not isinstance(lastBlock, EntityBlock)):
@@ -467,8 +493,36 @@ class VHDL:
 						newBlock =      PortBlock(lastBlock, startToken, endToken=token.PreviousToken)
 						parserState.Pop()
 						parserState +=  cls.State.Port
+			elif (parserState == cls.State.ArchitectureDeclaration):
+				if isinstance(token, StringToken):
+					if (token.Value == "begin"):
+						if (not isinstance(lastBlock, EntityBlock)):
+							startToken = tokenBuffer.Get()
+							newBlock = EntityBlock(lastBlock, startToken, endToken=token.PreviousToken)
 
+						parserState += cls.State.GenericList
+						newToken = GenericKeyword(token)
+						tokenBuffer += newToken
 
+						continue
+					elif (token.Value == "port"):
+						if (not isinstance(lastBlock, EntityBlock)):
+							startToken = tokenBuffer.Get()
+							newBlock = EntityBlock(lastBlock, startToken, endToken=token.PreviousToken)
+
+						parserState += cls.State.PortList
+						newToken = PortKeyword(token)
+						tokenBuffer += newToken
+						continue
+					elif (token.Value == "end"):
+						if (not isinstance(lastBlock, EntityBlock)):
+							startToken = tokenBuffer.Get()
+							newBlock = EntityBlock(lastBlock, startToken, endToken=token.PreviousToken)
+
+						parserState <<= cls.State.EntityDeclarationEnd
+						newToken = EndKeyword(token)
+						tokenBuffer += newToken
+						continue
 
 					# startToken = tokenBuffer.popleft()
 						# newBlock = UseBlock(lastBlock, startToken, endToken=token)

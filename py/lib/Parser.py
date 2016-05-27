@@ -51,11 +51,10 @@ class SourceCodePosition:
 
 
 class Token:
-	def __init__(self, previousToken, value, start, end=None):
+	def __init__(self, previousToken, start, end=None):
 		previousToken.NextToken = self
 		self._previousToken =     previousToken
-		self._nextToken =         None
-		self.Value =              value
+		self.NextToken =          None
 		self.Start =              start
 		self.End =                end
 
@@ -70,12 +69,12 @@ class Token:
 		self._previousToken = value
 		value.NextToken =     self
 
-	@property
-	def NextToken(self):
-		return self._nextToken
-	@NextToken.setter
-	def NextToken(self, value):
-		self._nextToken = value
+	# @property
+	# def NextToken(self):
+	# 	return self._nextToken
+	# @NextToken.setter
+	# def NextToken(self, value):
+	# 	self._nextToken = value
 		
 	@property
 	def Length(self):
@@ -84,8 +83,26 @@ class Token:
 	def __repr__(self):
 		return str(self) + " at " + str(self.Start)
 
+class SuperToken(Token):
+	def __init__(self, startToken, endToken=None):
+		super().__init__(startToken.PreviousToken, startToken.Start, endToken.End if endToken else None)
+		self.StartToken = startToken
+		self.EndToken =   endToken
 
-class StartOfDocumentToken(Token):
+	def __iter__(self):
+		token = self.StartToken
+		while (token is not self.EndToken):
+			yield token
+			token = token.NextToken
+		yield self.EndToken
+
+class ValuedToken(Token):
+	def __init__(self, previousToken, value, start, end=None):
+		super().__init__(previousToken, start, end)
+		self.Value =  value
+
+
+class StartOfDocumentToken(ValuedToken):
 	def __init__(self):
 		self._previousToken =     None
 		self._nextToken =         None
@@ -100,7 +117,7 @@ class StartOfDocumentToken(Token):
 		return "<StartOfDocumentToken>"
 
 
-class CharacterToken(Token):
+class CharacterToken(ValuedToken):
 	def __init__(self, previousToken, value, start):
 		if (len(value) != 1):    raise ValueError()
 		super().__init__(previousToken, value, start=start, end=start)
@@ -126,19 +143,19 @@ class CharacterToken(Token):
 			return self.Value
 
 
-class SpaceToken(Token):
+class SpaceToken(ValuedToken):
 	def __str__(self):
 		return "<SpaceToken '{0}'>".format(self.Value)
 
-class DelimiterToken(Token):
+class DelimiterToken(ValuedToken):
 	def __str__(self):
 		return "<DelimiterToken '{0}'>".format(self.Value)
 
-class NumberToken(Token):
+class NumberToken(ValuedToken):
 	def __str__(self):
 		return "<NumberToken '{0}'>".format(self.Value)
 
-class StringToken(Token):
+class StringToken(ValuedToken):
 	def __str__(self):
 		return "<StringToken '{0}'>".format(self.Value)
 
@@ -164,9 +181,13 @@ class Tokenizer:
 			if (char == "\n"):
 				column =  0
 				row +=    1
-	
+
+	__ALPHA_CHARS__ = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	__NUMBER_CHARS__ = "0123456789"
+	__SPACE_CHARS__ = "\t\n"
+
 	@classmethod
-	def GetWordTokenizer(cls, iterable):
+	def GetWordTokenizer(cls, iterable, alphaCharacters=__ALPHA_CHARS__, numberCharacters=__NUMBER_CHARS__, whiteSpaceCharacters=__SPACE_CHARS__):
 		previousToken = StartOfDocumentToken()
 		tokenKind =     cls.TokenKind.OtherChars
 		start =         SourceCodePosition(1, 1, 1)
@@ -183,16 +204,16 @@ class Tokenizer:
 			column +=     1
 			
 			if (tokenKind is cls.TokenKind.SpaceChars):
-				if ((char == " ") or (char == "\t")):
+				if (char in whiteSpaceCharacters):
 					buffer += char
 				else:
 					previousToken = SpaceToken(previousToken, buffer, start, end)
 					yield previousToken
 					
-					if (char in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"):
+					if (char in alphaCharacters):
 						buffer = char
 						tokenKind = cls.TokenKind.AlphaChars
-					elif (char in "0123456789"):
+					elif (char in numberCharacters):
 						buffer = char
 						tokenKind = cls.TokenKind.NumberChars
 					else:
@@ -200,7 +221,7 @@ class Tokenizer:
 						previousToken = CharacterToken(previousToken, char, SourceCodePosition(row, column, absolute))
 						yield previousToken
 			elif (tokenKind is cls.TokenKind.AlphaChars):
-				if (char in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"):
+				if (char in alphaCharacters):
 					buffer += char
 				else:
 					previousToken = StringToken(previousToken, buffer, start, end)
@@ -209,7 +230,7 @@ class Tokenizer:
 					if (char in " \t"):
 						buffer = char
 						tokenKind = cls.TokenKind.SpaceChars
-					elif (char in "0123456789"):
+					elif (char in numberCharacters):
 						buffer = char
 						tokenKind = cls.TokenKind.NumberChars
 					else:
@@ -217,7 +238,7 @@ class Tokenizer:
 						previousToken = CharacterToken(previousToken, char, SourceCodePosition(row, column, absolute))
 						yield previousToken
 			elif (tokenKind is cls.TokenKind.NumberChars):
-				if (char in "0123456789"):
+				if (char in numberCharacters):
 					buffer += char
 				else:
 					previousToken = NumberToken(previousToken, buffer, start, end)
@@ -226,8 +247,8 @@ class Tokenizer:
 					if (char in " \t"):
 						buffer = char
 						tokenKind = cls.TokenKind.SpaceChars
-					elif (char in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"):
-						buffer = char
+					elif (char in alphaCharacters):
+						buffer =    char
 						tokenKind = cls.TokenKind.AlphaChars
 					else:
 						tokenKind = cls.TokenKind.OtherChars
@@ -235,14 +256,14 @@ class Tokenizer:
 						yield previousToken
 			elif (tokenKind is cls.TokenKind.OtherChars):
 				if (char in " \t"):
-					buffer = char
-					tokenKind = cls.TokenKind.SpaceChars
-				elif (char in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"):
-					buffer = char
-					tokenKind = cls.TokenKind.AlphaChars
-				elif (char in "0123456789"):
-					buffer = char
-					tokenKind = cls.TokenKind.NumberChars
+					buffer =      char
+					tokenKind =   cls.TokenKind.SpaceChars
+				elif (char in alphaCharacters):
+					buffer =      char
+					tokenKind =   cls.TokenKind.AlphaChars
+				elif (char in numberCharacters):
+					buffer =      char
+					tokenKind =   cls.TokenKind.NumberChars
 				else:
 					previousToken = CharacterToken(previousToken, char, SourceCodePosition(row, column, absolute))
 					yield previousToken

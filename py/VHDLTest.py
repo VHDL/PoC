@@ -3,8 +3,9 @@ from enum      import Enum, unique		# EnumMeta
 from time      import time
 from colorama  import init, Fore
 
-from Parser.VHDLParser import VHDL
+from Parser.VHDLParser import VHDL, EmptyLineBlock
 from lib.CodeDOM import CodeDOMObject
+from lib.Functions import Init
 from lib.Parser import MatchingParserResult, SpaceToken, CharacterToken, MismatchingParserResult, StringToken, NumberToken, ParserException
 
 from lib.Parser     import Tokenizer
@@ -21,7 +22,7 @@ content = """\
 library ieee;
 use     ieee.std_logic_1164.all;
   use   ieee.numeric_std.all;
-
+				
 entity test is
 	generic (
 		BITS : integer range 0 to 15
@@ -35,29 +36,32 @@ entity test is
 end entity;
 
 architecture rtl of test is
-	subtype T_SLV is std_logic_vector(7 downto 0);
-  type T_STATE is (ST_IDLE, ST_FINISH);
-  type T_Record is record
-		Member1 : STD_LOGIC;
-		Member2 : BOOLEAN
-	end record;
+--	subtype T_SLV is std_logic_vector(7 downto 0);
+--  type T_STATE is (ST_IDLE, ST_FINISH);
+--  type T_Record is record
+--		Member1 : STD_LOGIC;
+--		Member2 : BOOLEAN
+--	end record;
 begin
 
-	process(Clock)
-	begin
-		if (Reset = '1') then
-			-- foo
-		end if;
-	end process;
+--	process(Clock)
+--	begin
+--		if (Reset = '1') then
+--			-- foo
+--		end if;
+--	end process;
 end architecture;
-""".replace("\r\n", "\n")
+""".replace("\r\n", "\n") # make it universal newline compatible
 
 wordTokenStream = Tokenizer.GetWordTokenizer(content)
 vhdlBlockStream = VHDL.TransformTokensToBlocks(wordTokenStream)
 
 try:
 	for vhdlBlock in vhdlBlockStream:
-		print(vhdlBlock)
+		if isinstance(vhdlBlock, EmptyLineBlock):
+			print("{DARK_GRAY}{block}{NOCOLOR}".format(block=vhdlBlock, **Init.Foreground))
+		else:
+			print(vhdlBlock)
 except ParserException as ex:
 	print("ERROR: " + str(ex))
 except NotImplementedError as ex:
