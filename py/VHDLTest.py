@@ -3,7 +3,7 @@ from enum      import Enum, unique		# EnumMeta
 from time      import time
 from colorama  import init, Fore
 
-from Parser.VHDLParser import VHDL, EmptyLineBlock
+from Parser.VHDLParser import VHDL, EmptyLineBlock, IndentationBlock, CommentBlock
 from lib.CodeDOM import CodeDOMObject
 from lib.Functions import Init
 from lib.Parser import MatchingParserResult, SpaceToken, CharacterToken, MismatchingParserResult, StringToken, NumberToken, ParserException
@@ -15,9 +15,12 @@ init(convert=True)
 DEBUG =   True
 DEBUG2 =  True
 
+print("{RED}{line}{NOCOLOR}".format(line="="*160, **Init.Foreground))
+
 content = """\
 -- one first comment line
 -- a second comment line
+	-- the third comment
 
 library ieee;
 use     ieee.std_logic_1164.all;
@@ -25,7 +28,8 @@ use     ieee.std_logic_1164.all;
 				
 entity test is
 	generic (
-		BITS : integer range 0 to 15
+		BITS  : integer range 0 to 15;
+		DEPTH : natural := 5
 	);
 	port (
 		Clock    : in	 std_logic;   -- a line comment
@@ -53,15 +57,17 @@ begin
 end architecture;
 """.replace("\r\n", "\n") # make it universal newline compatible
 
-wordTokenStream = Tokenizer.GetWordTokenizer(content)
+wordTokenStream = Tokenizer.GetWordTokenizer(content, alphaCharacters=Tokenizer.__ALPHA_CHARS__+"_")
 vhdlBlockStream = VHDL.TransformTokensToBlocks(wordTokenStream)
 
 try:
 	for vhdlBlock in vhdlBlockStream:
-		if isinstance(vhdlBlock, EmptyLineBlock):
+		if isinstance(vhdlBlock, (EmptyLineBlock, IndentationBlock)):
 			print("{DARK_GRAY}{block}{NOCOLOR}".format(block=vhdlBlock, **Init.Foreground))
+		elif isinstance(vhdlBlock, CommentBlock):
+			print("{DARK_GREEN}{block}{NOCOLOR}".format(block=vhdlBlock, **Init.Foreground))
 		else:
-			print(vhdlBlock)
+			print("{YELLOW}{block}{NOCOLOR}".format(block=vhdlBlock, **Init.Foreground))
 except ParserException as ex:
 	print("ERROR: " + str(ex))
 except NotImplementedError as ex:

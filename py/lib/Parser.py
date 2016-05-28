@@ -80,8 +80,8 @@ class Token:
 	def Length(self):
 		return len(self)
 
-	def __repr__(self):
-		return str(self) + " at " + str(self.Start)
+	def __str__(self):
+		return repr(self) + " at " + str(self.Start)
 
 class SuperToken(Token):
 	def __init__(self, startToken, endToken=None):
@@ -132,11 +132,11 @@ class CharacterToken(ValuedToken):
 		" ":     "SPACE"
 	}
 
-	def __repr(self):
-		return "<CharacterToken char={char} at pos={pos}; line={line}; col={col}>".format(
-						char=self.__str__(), pos=self.Start.Absolute, line=self.Start.Row, col=self.Start.Column)
-
 	def __str__(self):
+		return "<CharacterToken '{char}' at {line}:{col}>".format(
+						char=self.__repr__(), pos=self.Start.Absolute, line=self.Start.Row, col=self.Start.Column)
+
+	def __repr__(self):
 		if (self.Value in self.__CHARACTER_TRANSLATION__):
 			return self.__CHARACTER_TRANSLATION__[self.Value]
 		else:
@@ -145,19 +145,23 @@ class CharacterToken(ValuedToken):
 
 class SpaceToken(ValuedToken):
 	def __str__(self):
-		return "<SpaceToken '{0}'>".format(self.Value)
+		return "<SpaceToken '{value}' at {line}:{col}>".format(
+						value=self.Value, pos=self.Start.Absolute, line=self.Start.Row, col=self.Start.Column)
 
 class DelimiterToken(ValuedToken):
 	def __str__(self):
-		return "<DelimiterToken '{0}'>".format(self.Value)
+		return "<DelimiterToken '{value}' at {line}:{col}>".format(
+						value=self.Value, pos=self.Start.Absolute, line=self.Start.Row, col=self.Start.Column)
 
 class NumberToken(ValuedToken):
 	def __str__(self):
-		return "<NumberToken '{0}'>".format(self.Value)
+		return "<NumberToken '{value}' at {line}:{col}>".format(
+						value=self.Value, pos=self.Start.Absolute, line=self.Start.Row, col=self.Start.Column)
 
 class StringToken(ValuedToken):
 	def __str__(self):
-		return "<StringToken '{0}'>".format(self.Value)
+		return "<StringToken '{value}' at {line}:{col}>".format(
+						value=self.Value, pos=self.Start.Absolute, line=self.Start.Row, col=self.Start.Column)
 
 class Tokenizer:
 	class TokenKind(Enum):
@@ -184,7 +188,7 @@ class Tokenizer:
 
 	__ALPHA_CHARS__ = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	__NUMBER_CHARS__ = "0123456789"
-	__SPACE_CHARS__ = "\t\n"
+	__SPACE_CHARS__ = " \t"
 
 	@classmethod
 	def GetWordTokenizer(cls, iterable, alphaCharacters=__ALPHA_CHARS__, numberCharacters=__NUMBER_CHARS__, whiteSpaceCharacters=__SPACE_CHARS__):
