@@ -62,11 +62,54 @@ begin
 end architecture;
 """.replace("\r\n", "\n") # make it universal newline compatible
 
+def Strip(generator):
+	iterator = iter(generator)
+	lastBlock = next(iterator)
+	yield lastBlock
+
+	for block in iterator:
+		if isinstance(block, (IndentationBlock, CommentBlock, EmptyLineBlock)):
+			continue
+		# if isinstance(block, IndentationBlock):
+		# 	print("strip ident")
+		# elif isinstance(block, CommentBlock):
+		# 	print("strip comment")
+		# elif isinstance(block, EmptyLineBlock):
+		# 	print("strip emty line")
+		else:
+			lastBlock.NextBlock = block
+			lastBlock.EndToken.NextToken = block.StartToken
+			block.PreviousBlock = lastBlock
+			block.StartToken.PreviousToken = lastBlock.EndToken
+			yield block
+			lastBlock = block
+
+
 wordTokenStream = Tokenizer.GetWordTokenizer(content, alphaCharacters=Tokenizer.__ALPHA_CHARS__+"_")
 vhdlBlockStream = VHDL.TransformTokensToBlocks(wordTokenStream)
 
 try:
 	for vhdlBlock in vhdlBlockStream:
+		if isinstance(vhdlBlock, (EmptyLineBlock, IndentationBlock)):
+			print("{DARK_GRAY}{block}{NOCOLOR}".format(block=vhdlBlock, **Init.Foreground))
+		elif isinstance(vhdlBlock, CommentBlock):
+			print("{DARK_GREEN}{block}{NOCOLOR}".format(block=vhdlBlock, **Init.Foreground))
+		else:
+			print("{YELLOW}{block}{NOCOLOR}".format(block=vhdlBlock, **Init.Foreground))
+except ParserException as ex:
+	print("ERROR: " + str(ex))
+except NotImplementedError as ex:
+	print("NotImplementedError: " + str(ex))
+
+
+print("{RED}{line}{NOCOLOR}".format(line="="*160, **Init.Foreground))
+
+wordTokenStream = Tokenizer.GetWordTokenizer(content, alphaCharacters=Tokenizer.__ALPHA_CHARS__+"_")
+vhdlBlockStream = VHDL.TransformTokensToBlocks(wordTokenStream)
+strippedBlockStream = Strip(vhdlBlockStream)
+
+try:
+	for vhdlBlock in strippedBlockStream:
 		if isinstance(vhdlBlock, (EmptyLineBlock, IndentationBlock)):
 			print("{DARK_GRAY}{block}{NOCOLOR}".format(block=vhdlBlock, **Init.Foreground))
 		elif isinstance(vhdlBlock, CommentBlock):

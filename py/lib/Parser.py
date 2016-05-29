@@ -195,7 +195,6 @@ class Tokenizer:
 		previousToken = StartOfDocumentToken()
 		tokenKind =     cls.TokenKind.OtherChars
 		start =         SourceCodePosition(1, 1, 1)
-		end =           start
 		buffer =        ""
 		absolute =      0
 		column =        0
@@ -211,72 +210,67 @@ class Tokenizer:
 				if (char in whiteSpaceCharacters):
 					buffer += char
 				else:
-					previousToken = SpaceToken(previousToken, buffer, start, end)
+					previousToken = SpaceToken(previousToken, buffer, start, SourceCodePosition(row, column, absolute))
 					yield previousToken
 					
+					start =  SourceCodePosition(row, column, absolute)
+					buffer = char
 					if (char in alphaCharacters):
-						buffer = char
 						tokenKind = cls.TokenKind.AlphaChars
 					elif (char in numberCharacters):
-						buffer = char
 						tokenKind = cls.TokenKind.NumberChars
 					else:
 						tokenKind = cls.TokenKind.OtherChars
-						previousToken = CharacterToken(previousToken, char, SourceCodePosition(row, column, absolute))
+						previousToken = CharacterToken(previousToken, char, start)
 						yield previousToken
 			elif (tokenKind is cls.TokenKind.AlphaChars):
 				if (char in alphaCharacters):
 					buffer += char
 				else:
-					previousToken = StringToken(previousToken, buffer, start, end)
+					previousToken = StringToken(previousToken, buffer, start, SourceCodePosition(row, column, absolute))
 					yield previousToken
-				
+
+					start = SourceCodePosition(row, column, absolute)
+					buffer = char
 					if (char in " \t"):
-						buffer = char
 						tokenKind = cls.TokenKind.SpaceChars
 					elif (char in numberCharacters):
-						buffer = char
 						tokenKind = cls.TokenKind.NumberChars
 					else:
 						tokenKind = cls.TokenKind.OtherChars
-						previousToken = CharacterToken(previousToken, char, SourceCodePosition(row, column, absolute))
+						previousToken = CharacterToken(previousToken, char, start)
 						yield previousToken
 			elif (tokenKind is cls.TokenKind.NumberChars):
 				if (char in numberCharacters):
 					buffer += char
 				else:
-					previousToken = NumberToken(previousToken, buffer, start, end)
+					previousToken = NumberToken(previousToken, buffer, start,SourceCodePosition(row, column, absolute))
 					yield previousToken
-				
+
+					start = SourceCodePosition(row, column, absolute)
+					buffer = char
 					if (char in " \t"):
-						buffer = char
 						tokenKind = cls.TokenKind.SpaceChars
 					elif (char in alphaCharacters):
-						buffer =    char
 						tokenKind = cls.TokenKind.AlphaChars
 					else:
 						tokenKind = cls.TokenKind.OtherChars
-						previousToken = CharacterToken(previousToken, char, SourceCodePosition(row, column, absolute))
+						previousToken = CharacterToken(previousToken, char, start)
 						yield previousToken
 			elif (tokenKind is cls.TokenKind.OtherChars):
+				start = SourceCodePosition(row, column, absolute)
+				buffer =      char
 				if (char in " \t"):
-					buffer =      char
 					tokenKind =   cls.TokenKind.SpaceChars
 				elif (char in alphaCharacters):
-					buffer =      char
 					tokenKind =   cls.TokenKind.AlphaChars
 				elif (char in numberCharacters):
-					buffer =      char
 					tokenKind =   cls.TokenKind.NumberChars
 				else:
-					previousToken = CharacterToken(previousToken, char, SourceCodePosition(row, column, absolute))
+					previousToken = CharacterToken(previousToken, char, start)
 					yield previousToken
 			else:
 				raise ParserException("Unknown state.")
-			
-			end.Row =       row
-			end.Column =    column
-			end.Absolute =  absolute
 			
 			if (char == "\n"):
 				column =  0

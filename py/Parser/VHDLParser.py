@@ -134,7 +134,7 @@ class StartOfDocumentBlock(Block):
 		self._previousBlock =     None
 		self._nextBlock =         None
 		self.StartToken =         startToken
-		self._endToken =          None
+		self._endToken =          startToken
 
 	def __len__(self):
 		return 0
@@ -342,7 +342,7 @@ class VHDL:
 			if (not tokenBuffer):
 				tokenBuffer += token
 
-			print("Parser loop: state={state!s} token={token!s} ".format(state=parserState.Top, token=token))
+			# print("Parser loop: state={state!s} token={token!s} ".format(state=parserState.Top, token=token))
 
 			if (parserState == cls.State.DocumentRoot):
 				if isinstance(token, CharacterToken):
@@ -506,6 +506,9 @@ class VHDL:
 						continue
 					else:
 						raise ParserException("Expected ';'.")
+				elif isinstance(token, StringToken):
+					if (token.Value.lower == "entity"):
+						newToken = EntityKeyword(token)
 					# consume everything until ";"
 			# ========================================================================
 			# Generic List
