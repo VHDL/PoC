@@ -36,6 +36,13 @@ class IdentifierToken(VHDLToken):
 		return "<Identifier '{value}' at {line}:{col}>".format(
 			value=self.Value, pos=self.Start.Absolute, line=self.Start.Row, col=self.Start.Column)
 
+class DelimiterToken(ValuedToken):
+	def __init__(self, characterToken):
+		super().__init__(characterToken.PreviousToken, characterToken.Value, characterToken.Start, characterToken.End)
+
+	def __str__(self):
+		return "<DelimiterToken '{value}' at {line}:{col}>".format(
+						value=self.Value, pos=self.Start.Absolute, line=self.Start.Row, col=self.Start.Column)
 
 class LibraryKeyword(KeywordToken):
 	__KEYWORD__ = "library"
@@ -80,7 +87,10 @@ class Block(object):
 		token = self.StartToken
 		while (token is not self.EndToken):
 			yield token
+			if (token.NextToken is None):
+				raise ParserException("Token after {0} is None.".format(token))
 			token = token.NextToken
+
 		yield self.EndToken
 
 	def __repr__(self):
@@ -288,14 +298,14 @@ class VHDL:
 		GenericList_WhiteSpace1 =             111
 		GenericList_OpeningParenthesis =      112
 		GenericList_ClosingParenthesis =      113
-		GenericList_ItemIdentifier =          114
+		GenericList_ItemDelimiter =           114
 		GenericList_ItemRemainder =           115
 
 		PortList_KeywordPort =                120
 		PortList_WhiteSpace1 =                121
 		PortList_OpeningParenthesis =         122
 		PortList_ClosingParenthesis =         123
-		PortList_ItemIdentifier =             124
+		PortList_ItemDelimiter =              124
 		PortList_ItemRemainder =              125
 
 		EntityDeclaration_KeywordBegin =      150
@@ -332,7 +342,7 @@ class VHDL:
 			if (not tokenBuffer):
 				tokenBuffer += token
 
-			# print("Parser loop: state={state!s} token={token!s} ".format(state=parserState.Top, token=token))
+			print("Parser loop: state={state!s} token={token!s} ".format(state=parserState.Top, token=token))
 
 			if (parserState == cls.State.DocumentRoot):
 				if isinstance(token, CharacterToken):
@@ -448,6 +458,7 @@ class VHDL:
 			elif (parserState == cls.State.EntityDeclaration_DeclarativeRegion):
 				if ((isinstance(token, CharacterToken) and (token.Value == "\n")) or (isinstance(token, SpaceToken))):
 					newBlock = IndentationBlock(lastBlock, token, token)
+					continue
 				elif isinstance(token, StringToken):
 					if (token.Value == "generic"):
 						parserState +=  cls.State.GenericList_KeywordGeneric
@@ -468,13 +479,14 @@ class VHDL:
 						parserState <<= cls.State.EntityDeclaration_KeywordEnd
 						newToken =     EndKeyword(token)
 						tokenBuffer += newToken
+						continue
 					else:
 						raise ParserException("Expected one of these keywords: generic, port, begin, end.")
 					
-					if (not isinstance(lastBlock, EntityBlock)):
-						startToken = tokenBuffer.Get()
-						newBlock = EntityBlock(lastBlock, startToken, endToken=token.PreviousToken)
-						continue
+				if (not isinstance(lastBlock, EntityBlock)):
+					startToken = tokenBuffer.Get()
+					newBlock = EntityBlock(lastBlock, startToken, endToken=token.PreviousToken)
+					continue
 				else:
 					raise ParserException("Expected one of these keywords: generic, port, begin, end.")
 			# ------------------------------------------------------------------------
@@ -501,8 +513,10 @@ class VHDL:
 			elif (parserState == cls.State.GenericList_KeywordGeneric):
 				if isinstance(token, CharacterToken):
 					if (token == "("):
-						parserState <<= cls.State.GenericList_OpeningParenthesis
-						parserState +=  cls.State.GenericList_ItemIdentifier
+						parserState <<= cls.State.GenericList_ClosingParenthesis
+						startToken =    tokenBuffer.Get()
+						newBlock =      GenericList_OpenBlock(lastBlock, startToken, endToken=token)
+						parserState +=  cls.State.GenericList_OpeningParenthesis
 						openParenthesisCount = 1
 						continue
 				if (not isinstance(token, SpaceToken)):
@@ -511,10 +525,10 @@ class VHDL:
 			elif (parserState == cls.State.GenericList_WhiteSpace1):
 				if isinstance(token, CharacterToken):
 					if (token.Value == "("):
-						parserState <<= cls.State.GenericList_OpeningParenthesis
+						parserState <<= cls.State.GenericList_ClosingParenthesis
 						startToken =    tokenBuffer.Get()
 						newBlock =      GenericList_OpenBlock(lastBlock, startToken, endToken=token)
-						parserState +=  cls.State.GenericList_ItemIdentifier
+						parserState +=  cls.State.GenericList_OpeningParenthesis
 						openParenthesisCount = 1
 						continue
 					raise ParserException("Expected '(' after keyword GENERIC.")
@@ -523,7 +537,10 @@ class VHDL:
 					continue
 				if isinstance(token, CharacterToken):
 					if (token.Value == ")"):
-						parserState <<= cls.State.GenericList_ClosingParenthesis
+						startToken = tokenBuffer.Get()
+						if (startToken != token):
+							newBlock =    IndentationBlock(lastBlock, startToken, token.PreviousToken)
+						parserState.Pop()
 						tokenBuffer +=  token
 						continue
 
@@ -531,22 +548,26 @@ class VHDL:
 					raise ParserException("Expected generic name (identifier).")
 
 				startToken =        tokenBuffer.Get()
-				newBlock =          IndentationBlock(lastBlock, startToken, token)
+				if (startToken != token):
+					newBlock =        IndentationBlock(lastBlock, startToken, token)
 
 				parserState <<= cls.State.GenericList_ItemRemainder
 				newToken =          IdentifierToken(token)
 				tokenBuffer +=      newToken
-			elif (parserState == cls.State.GenericList_ItemIdentifier):
+			elif (parserState == cls.State.GenericList_ItemDelimiter):
+				startToken = tokenBuffer.Get()
+				newToken1 =         DelimiterToken(startToken)
+				newBlock =          GenericList_DelimiterBlock(lastBlock, newToken1, newToken1)
+
 				if ((isinstance(token, CharacterToken) and (token.Value == "\n")) or (isinstance(token, SpaceToken))):
+					parserState <<=   cls.State.GenericList_OpeningParenthesis
 					continue
 				if (not isinstance(token, StringToken)):
 					raise ParserException("Expected generic name (identifier).")
 
-				startToken =        tokenBuffer.Get()
-				newBlock =          IndentationBlock(lastBlock, startToken, token)
-
 				parserState <<=     cls.State.GenericList_ItemRemainder
 				newToken =          IdentifierToken(token)
+				newToken.PreviousToken = newToken1
 				tokenBuffer +=      newToken
 			elif (parserState == cls.State.GenericList_ItemRemainder):
 				if isinstance(token, CharacterToken):
@@ -558,13 +579,12 @@ class VHDL:
 							startToken =  tokenBuffer.Get()
 							newBlock =    GenericList_ItemBlock(lastBlock, startToken, endToken=token.PreviousToken)
 							parserState.Pop()
-							parserState <<= cls.State.GenericList_ClosingParenthesis
 							tokenBuffer += token
 					elif (token.Value == ";"):
 						if (openParenthesisCount == 1):
 							startToken =    tokenBuffer.Get()
 							newBlock =      GenericList_ItemBlock(lastBlock, startToken, endToken=token.PreviousToken)
-							parserState.Pop()
+							parserState <<= cls.State.GenericList_ItemDelimiter
 						else:
 							raise ParserException("Mismatch in opening and closing parenthesis: open={0}".format(openParenthesisCount))
 			elif (parserState == cls.State.GenericList_ClosingParenthesis):
@@ -581,8 +601,10 @@ class VHDL:
 			elif (parserState == cls.State.PortList_KeywordPort):
 				if isinstance(token, CharacterToken):
 					if (token == "("):
-						parserState <<= cls.State.PortList_OpeningParenthesis
-						parserState += cls.State.PortList_ItemIdentifier
+						parserState <<= cls.State.PortList_ClosingParenthesis
+						startToken = tokenBuffer.Get()
+						newBlock = PortList_OpenBlock(lastBlock, startToken, endToken=token)
+						parserState += cls.State.PortList_OpeningParenthesis
 						openParenthesisCount = 1
 						continue
 				if (not isinstance(token, SpaceToken)):
@@ -591,31 +613,49 @@ class VHDL:
 			elif (parserState == cls.State.PortList_WhiteSpace1):
 				if isinstance(token, CharacterToken):
 					if (token.Value == "("):
-						parserState <<= cls.State.PortList_OpeningParenthesis
+						parserState <<= cls.State.PortList_ClosingParenthesis
 						startToken = tokenBuffer.Get()
 						newBlock = PortList_OpenBlock(lastBlock, startToken, endToken=token)
-						parserState += cls.State.PortList_ItemIdentifier
+						parserState += cls.State.PortList_OpeningParenthesis
 						openParenthesisCount = 1
 						continue
 					raise ParserException("Expected '(' after keyword PORT.")
 			elif (parserState == cls.State.PortList_OpeningParenthesis):
-				if isinstance(token, CharacterToken):
-					if (token.Value == ")"):
-						parserState <<= cls.State.PortList_ClosingParenthesis
-						continue
-				startToken = tokenBuffer.Get()
-				newBlock = PortList_DelimiterBlock(lastBlock, startToken, endToken=startToken)
-			elif (parserState == cls.State.PortList_ItemIdentifier):
 				if ((isinstance(token, CharacterToken) and (token.Value == "\n")) or (isinstance(token, SpaceToken))):
 					continue
+				if isinstance(token, CharacterToken):
+					if (token.Value == ")"):
+						startToken = tokenBuffer.Get()
+						if (startToken != token):
+							newBlock = IndentationBlock(lastBlock, startToken, token.PreviousToken)
+						parserState.Pop()
+						tokenBuffer += token
+						continue
+				
 				if (not isinstance(token, StringToken)):
 					raise ParserException("Expected port name (identifier).")
 				
 				startToken = tokenBuffer.Get()
-				newBlock = IndentationBlock(lastBlock, startToken, token)
+				if (startToken != token):
+					newBlock = IndentationBlock(lastBlock, startToken, token)
 				
 				parserState <<= cls.State.PortList_ItemRemainder
 				newToken = IdentifierToken(token)
+				tokenBuffer += newToken
+			elif (parserState == cls.State.PortList_ItemDelimiter):
+				startToken = tokenBuffer.Get()
+				newToken1 = DelimiterToken(startToken)
+				newBlock = PortList_DelimiterBlock(lastBlock, newToken1, newToken1)
+				
+				if ((isinstance(token, CharacterToken) and (token.Value == "\n")) or (isinstance(token, SpaceToken))):
+					parserState <<= cls.State.PortList_OpeningParenthesis
+					continue
+				if (not isinstance(token, StringToken)):
+					raise ParserException("Expected port name (identifier).")
+				
+				parserState <<= cls.State.PortList_ItemRemainder
+				newToken = IdentifierToken(token)
+				newToken.PreviousToken = newToken1
 				tokenBuffer += newToken
 			elif (parserState == cls.State.PortList_ItemRemainder):
 				if isinstance(token, CharacterToken):
@@ -627,17 +667,16 @@ class VHDL:
 							startToken = tokenBuffer.Get()
 							newBlock = PortList_ItemBlock(lastBlock, startToken, endToken=token.PreviousToken)
 							parserState.Pop()
-							parserState <<= cls.State.PortList_ClosingParenthesis
 							tokenBuffer += token
 					elif (token.Value == ";"):
 						if (openParenthesisCount == 1):
 							startToken = tokenBuffer.Get()
 							newBlock = PortList_ItemBlock(lastBlock, startToken, endToken=token.PreviousToken)
-							parserState.Pop()
+							parserState <<= cls.State.PortList_ItemDelimiter
 						else:
 							raise ParserException("Mismatch in opening and closing parenthesis: open={0}".format(openParenthesisCount))
 			elif (parserState == cls.State.PortList_ClosingParenthesis):
-				if isinstance(token, SpaceToken):
+				if ((isinstance(token, CharacterToken) and (token.Value == "\n")) or (isinstance(token, SpaceToken))):
 					continue
 				if isinstance(token, CharacterToken):
 					if (token.Value == ";"):
@@ -646,12 +685,6 @@ class VHDL:
 						parserState.Pop()
 			elif (parserState == cls.State.ArchitectureDeclaration):
 				pass
-
-					# startToken = tokenBuffer.popleft()
-						# newBlock = UseBlock(lastBlock, startToken, endToken=token)
-						# tokenBuffer.clear()
-						# parserState.Pop()
-						# continue
-				# consume everything until ";"
 			else:
 				raise RuntimeError("Unknown Tokenizer state: {0!s}.".format(parserState.Top))
+

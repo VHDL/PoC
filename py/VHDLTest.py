@@ -32,12 +32,17 @@ entity test is
 		DEPTH : natural := 5
 	);
 	port (
-		Clock    : in	 std_logic;   -- a line comment
-		Reset    : in  std_logic;		-- 2. line comment
-		ClockDiv : out              -- bad comment
+		Clock    : in	 std_logic;
+		Reset
+		  : in  std_logic;
+		ClockDiv : out
 									 std_logic_vector(8-1 downto 0)
 	);
 end entity;
+--		Clock    : in	 std_logic;   -- a line comment
+--		Reset    : in  std_logic;		-- 2. line comment
+--		ClockDiv : out              -- bad comment
+--									 std_logic_vector(8-1 downto 0)
 
 architecture rtl of test is
 --	subtype T_SLV is std_logic_vector(7 downto 0);
