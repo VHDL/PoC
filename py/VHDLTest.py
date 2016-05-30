@@ -26,7 +26,18 @@ library ieee;
 use     ieee.std_logic_1164.all;
   use   ieee.numeric_std.all;
 				
-entity test is
+entity test1 is
+end;
+
+entity test2 is
+	port (
+		Clock    : in	 std_logic;
+		Reset	   : in  std_logic;
+		ClockDiv : out std_logic;
+	);
+end entity;
+
+entity test3 is
 	generic (
 		BITS  : integer range 0 to 15;
 		DEPTH : natural := 5
@@ -38,7 +49,8 @@ entity test is
 		ClockDiv : out
 									 std_logic_vector(8-1 downto 0)
 	);
-end entity;
+end entity test3 ;
+
 --		Clock    : in	 std_logic;   -- a line comment
 --		Reset    : in  std_logic;		-- 2. line comment
 --		ClockDiv : out              -- bad comment
@@ -85,7 +97,8 @@ def Strip(generator):
 			lastBlock = block
 
 
-wordTokenStream = Tokenizer.GetWordTokenizer(content, alphaCharacters=Tokenizer.__ALPHA_CHARS__+"_")
+alphaCharacters = Tokenizer.__ALPHA_CHARS__ + "_" + Tokenizer.__NUMBER_CHARS__
+wordTokenStream = Tokenizer.GetWordTokenizer(content, alphaCharacters=alphaCharacters)
 vhdlBlockStream = VHDL.TransformTokensToBlocks(wordTokenStream)
 
 try:
@@ -104,7 +117,7 @@ except NotImplementedError as ex:
 
 print("{RED}{line}{NOCOLOR}".format(line="="*160, **Init.Foreground))
 
-wordTokenStream = Tokenizer.GetWordTokenizer(content, alphaCharacters=Tokenizer.__ALPHA_CHARS__+"_")
+wordTokenStream = Tokenizer.GetWordTokenizer(content, alphaCharacters=alphaCharacters)
 vhdlBlockStream = VHDL.TransformTokensToBlocks(wordTokenStream)
 strippedBlockStream = Strip(vhdlBlockStream)
 
