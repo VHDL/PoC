@@ -23,13 +23,20 @@ content = """\
 	-- the third comment
 
 library ieee;
-use     ieee.std_logic_1164.all;
+-- comment four
+use     ieee.std_logic_1164.all;  -- comment five
   use   ieee.numeric_std.all;
-				
+
+library  -- libcom1
+  PoC    -- libcom2
+  ;
+
 entity test1 is
+  -- comment six
 end;
 
 entity test2 is
+  -- comment seven
 	port (
 		Clock    : in	 std_logic;
 		Reset	   : in  std_logic;
@@ -74,23 +81,28 @@ begin
 end architecture;
 """.replace("\r\n", "\n") # make it universal newline compatible
 
-def Strip(generator):
-	iterator = iter(generator)
+def StripAndFuse(generator):
+	iterator =  iter(generator)
 	lastBlock = next(iterator)
 	yield lastBlock
 
 	for block in iterator:
 		if isinstance(block, (IndentationBlock, CommentBlock, EmptyLineBlock)):
 			continue
-		# if isinstance(block, IndentationBlock):
-		# 	print("strip ident")
-		# elif isinstance(block, CommentBlock):
-		# 	print("strip comment")
-		# elif isinstance(block, EmptyLineBlock):
-		# 	print("strip emty line")
 		else:
-			lastBlock.NextBlock = block
-			lastBlock.EndToken.NextToken = block.StartToken
+			if (block.MultiPart == True):
+				while True:
+					nextBlock = next(iterator)
+					if isinstance(nextBlock, (IndentationBlock, CommentBlock, EmptyLineBlock)):
+						continue
+					if (type(block) is not type(nextBlock)):
+						raise ParserException("Error in multipart blocks. {0} <-> {1}".format(type(block), type(nextBlock)))
+
+					nextBlock.StartToken.PreviousToken = block.EndToken
+					block.EndToken = nextBlock.EndToken
+					if (nextBlock.MultiPart == False):
+						break
+
 			block.PreviousBlock = lastBlock
 			block.StartToken.PreviousToken = lastBlock.EndToken
 			yield block
@@ -119,7 +131,7 @@ print("{RED}{line}{NOCOLOR}".format(line="="*160, **Init.Foreground))
 
 wordTokenStream = Tokenizer.GetWordTokenizer(content, alphaCharacters=alphaCharacters)
 vhdlBlockStream = VHDL.TransformTokensToBlocks(wordTokenStream)
-strippedBlockStream = Strip(vhdlBlockStream)
+strippedBlockStream = StripAndFuse(vhdlBlockStream)
 
 try:
 	for vhdlBlock in strippedBlockStream:

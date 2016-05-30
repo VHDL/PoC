@@ -73,12 +73,13 @@ class EndKeyword(KeywordToken):
 
 
 class Block(object):
-	def __init__(self, previousBlock, startToken, endToken=None):
+	def __init__(self, previousBlock, startToken, endToken=None, multiPart=False):
 		previousBlock.NextBlock = self
 		self._previousBlock =     previousBlock
 		self._nextBlock =         None
 		self.StartToken =         startToken
 		self._endToken =          endToken
+		self.MultiPart =          multiPart
 
 	def __len__(self):
 		return self.EndToken.End.Absolute - self.StartToken.Start.Absolute + 1
@@ -135,6 +136,7 @@ class StartOfDocumentBlock(Block):
 		self._nextBlock =         None
 		self.StartToken =         startToken
 		self._endToken =          startToken
+		self.MultiPart =          False
 
 	def __len__(self):
 		return 0
@@ -399,7 +401,7 @@ class VHDL:
 						newToken =      CommentKeyword(startToken)
 						tokenBuffer +=  newToken
 						continue
-				raise NotImplementedError("State=CommentStart1: {0!r}".format(token))
+				raise NotImplementedError("State=PossibleCommentStart: {0!r}".format(token))
 			elif (parserState == cls.State.ConsumeComment):
 				if isinstance(token, CharacterToken):
 					if (token.Value == "\n"):
@@ -416,6 +418,9 @@ class VHDL:
 						parserState.Pop()
 						continue
 					elif (token.Value == "-"):
+						startToken =    tokenBuffer.Get()
+						newBlock =      LibraryBlock(lastBlock, startToken, endToken=token.PreviousToken, multiPart=True)
+
 						parserState +=  cls.State.PossibleCommentStart
 						tokenBuffer +=  token
 						continue
@@ -427,24 +432,60 @@ class VHDL:
 						newBlock =      UseBlock(lastBlock, startToken, endToken=token)
 						parserState.Pop()
 						continue
+					elif (token.Value == "-"):
+						startToken = tokenBuffer.Get()
+						newBlock = UseBlock(lastBlock, startToken, endToken=token.PreviousToken, multiPart=True)
+
+						parserState += cls.State.PossibleCommentStart
+						tokenBuffer += token
+						continue
+
 					# consume everything until ";"
 			# ========================================================================
 			# ENTITY Declaration
 			# ========================================================================
 			elif (parserState == cls.State.EntityDeclaration_KeywordEntity):
+				if isinstance(token, CharacterToken):
+					if (token.Value == "-"):
+						startToken =    tokenBuffer.Get()
+						newBlock =      EntityBlock(lastBlock, startToken, endToken=token.PreviousToken, multiPart=True)
+						parserState +=  cls.State.PossibleCommentStart
+						tokenBuffer +=  token
+						continue
 				if (not isinstance(token, SpaceToken)):
 					raise ParserException("Expected whitespace after keyword ENTITY.")
 				parserState <<=     cls.State.EntityDeclaration_WhiteSpace1
 			elif (parserState == cls.State.EntityDeclaration_WhiteSpace1):
+				if isinstance(token, CharacterToken):
+					if (token.Value == "-"):
+						startToken = tokenBuffer.Get()
+						newBlock = EntityBlock(lastBlock, startToken, endToken=token.PreviousToken, multiPart=True)
+						parserState += cls.State.PossibleCommentStart
+						tokenBuffer += token
+						continue
 				if (not isinstance(token, StringToken)):
 					raise ParserException("Expected entity name (identifier).")
 				parserState <<=   cls.State.EntityDeclaration_Identifier
 				newToken =        IdentifierToken(token)
 			elif (parserState == cls.State.EntityDeclaration_Identifier):
+				if isinstance(token, CharacterToken):
+					if (token.Value == "-"):
+						startToken = tokenBuffer.Get()
+						newBlock = EntityBlock(lastBlock, startToken, endToken=token.PreviousToken, multiPart=True)
+						parserState += cls.State.PossibleCommentStart
+						tokenBuffer += token
+						continue
 				if (not isinstance(token, SpaceToken)):
 					raise ParserException("Expected whitespace after keyword ENTITY.")
 				parserState <<= cls.State.EntityDeclaration_WhiteSpace2
 			elif (parserState == cls.State.EntityDeclaration_WhiteSpace2):
+				if isinstance(token, CharacterToken):
+					if (token.Value == "-"):
+						startToken = tokenBuffer.Get()
+						newBlock = EntityBlock(lastBlock, startToken, endToken=token.PreviousToken, multiPart=True)
+						parserState += cls.State.PossibleCommentStart
+						tokenBuffer += token
+						continue
 				if (not isinstance(token, StringToken)):
 					raise ParserException("Expected keyword IS after entity name.")
 				parserState <<=   cls.State.EntityDeclaration_DeclarativeRegion
@@ -456,7 +497,17 @@ class VHDL:
 			# ENTITY Declarative Part
 			# ------------------------------------------------------------------------
 			elif (parserState == cls.State.EntityDeclaration_DeclarativeRegion):
-				if ((isinstance(token, CharacterToken) and (token.Value == "\n")) or (isinstance(token, SpaceToken))):
+				if isinstance(token, CharacterToken):
+					if (token.Value == "-"):
+						startToken = tokenBuffer.Get()
+						newBlock = IndentationBlock(lastBlock, startToken, endToken=token.PreviousToken)
+						parserState += cls.State.PossibleCommentStart
+						tokenBuffer += token
+						continue
+					elif (token.Value == "\n"):
+						newBlock = EmptyLineBlock(lastBlock, token, token)
+						continue
+				elif isinstance(token, SpaceToken):
 					newBlock = IndentationBlock(lastBlock, token, token)
 					continue
 				elif isinstance(token, StringToken):
@@ -536,8 +587,20 @@ class VHDL:
 						continue
 					raise ParserException("Expected '(' after keyword GENERIC.")
 			elif (parserState == cls.State.GenericList_OpeningParenthesis):
-				if ((isinstance(token, CharacterToken) and (token.Value == "\n")) or (isinstance(token, SpaceToken))):
+				if isinstance(token, CharacterToken):
+					if (token.Value == "-"):
+						startToken = tokenBuffer.Get()
+						newBlock = IndentationBlock(lastBlock, startToken, endToken=token.PreviousToken)
+						parserState += cls.State.PossibleCommentStart
+						tokenBuffer += token
+						continue
+					elif (token.Value == "\n"):
+						newBlock = EmptyLineBlock(lastBlock, token, token)
+						continue
+				elif isinstance(token, SpaceToken):
+					newBlock = IndentationBlock(lastBlock, token, token)
 					continue
+
 				if isinstance(token, CharacterToken):
 					if (token.Value == ")"):
 						startToken = tokenBuffer.Get()
