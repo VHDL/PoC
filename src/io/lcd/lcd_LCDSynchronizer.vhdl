@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Module:				 	TODO
 --
 -- Authors:				 	Patrick Lehmann
--- 
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,14 +47,14 @@ ENTITY lcd_LCDSynchronizer IS
 	PORT (
 		Clock								: IN	STD_LOGIC;
 		Reset								: IN	STD_LOGIC;
-		
+
 		Synchronize					: IN	STD_LOGIC;
 		Synchronized				: OUT	STD_LOGIC;
-		
+
 		Column							: OUT	T_LCD_COLUMN_INDEX;
 		Row									:	OUT	T_LCD_ROW_INDEX;
 		Char								: IN	T_LCD_CHAR;
-		
+
 		-- LCD interface
 		LCD_en							:	OUT	STD_LOGIC;
 		LCD_rw							: OUT	STD_LOGIC;
@@ -82,7 +82,7 @@ ARCHITECTURE rtl OF lcd_LCDSynchronizer IS
 		ST_WRITE_CHAR, ST_WRITE_CHAR_WAIT,
 		ST_FINISHED
 	);
-		
+
 	SIGNAL State			: T_STATE			:= ST_RESET;
 	SIGNAL NextState	: T_STATE;
 
@@ -123,81 +123,81 @@ BEGIN
 			END IF;
 		END IF;
 	END PROCESS;
-	
-	
+
+
 	PROCESS(State, LCDI_Ready, Synchronize, Char, RowAC_Address, ColAC_Finished, RowAC_Finished)
 	BEGIN
 		NextState					<= State;
-		
+
 		Synchronized			<= '0';
-		
+
 		ColAC_inc					<= '0';
 		ColAC_Load				<= '0';
 		RowAC_inc					<= '0';
 		RowAC_Load				<= '0';
-		
+
 		LCDI_Strobe				<= '0';
 		LCDI_Address			<= '0';
 		LCDI_Data					<= KS0066U_CMD_NONE;
-		
+
 		CSP_Trigger_1			<= '0';
-		
+
 		CASE State IS
 			WHEN ST_RESET =>
 				IF (LCDI_Ready = '1') THEN
 					CSP_Trigger_1	<= '1';
-					
+
 					NextState			<= ST_INIT_SET_FUNCTION;
 				END IF;
-	
+
 			WHEN ST_INIT_SET_FUNCTION =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
 				LCDI_Data				<= KS0066U_CMD_SET_FUNCTION;
-				
+
 				NextState				<= ST_INIT_SET_FUNCTION_WAIT;
-			
+
 			WHEN ST_INIT_SET_FUNCTION_WAIT =>
 				IF (LCDI_Ready = '1') THEN
 					NextState			<= ST_INIT_DISPLAY_ON;
 				END IF;
-			
+
 			WHEN ST_INIT_DISPLAY_ON =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
 				LCDI_Data				<= lcd_display_on(FALSE, FALSE);
-				
+
 				NextState				<= ST_INIT_DISPLAY_ON_WAIT;
-			
+
 			WHEN ST_INIT_DISPLAY_ON_WAIT =>
 				IF (LCDI_Ready = '1') THEN
 					NextState			<= ST_INIT_DISPLAY_CLEAR;
 				END IF;
-			
+
 			WHEN ST_INIT_DISPLAY_CLEAR =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
 				LCDI_Data				<= KS0066U_CMD_DISPLAY_CLEAR;
-				
+
 				NextState				<= ST_INIT_DISPLAY_CLEAR_WAIT;
-			
+
 			WHEN ST_INIT_DISPLAY_CLEAR_WAIT =>
 				IF (LCDI_Ready = '1') THEN
 					NextState			<= ST_INIT_ENTRY_MODE;
 				END IF;
-			
+
 			WHEN ST_INIT_ENTRY_MODE =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
 				LCDI_Data				<= KS0066U_CMD_ENTRY_MODE;
-				
+
 				NextState				<= ST_INIT_ENTRY_MODE_WAIT;
-			
+
 			WHEN ST_INIT_ENTRY_MODE_WAIT =>
 				IF (LCDI_Ready = '1') THEN
 					NextState			<= ST_IDLE;
 				END IF;
-			
+
 			WHEN ST_IDLE =>
 				IF (Synchronize = '1') THEN
 					ColAC_Load			<= '1';
@@ -205,52 +205,52 @@ BEGIN
 
 					NextState			<= ST_GO_HOME;
 				END IF;
-			
+
 			WHEN ST_GO_HOME =>
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '0';
 				LCDI_Data				<= lcd_go_home(RowAC_Address);
-				
+
 				NextState				<= ST_GO_HOME_WAIT;
-			
+
 			WHEN ST_GO_HOME_WAIT =>
 				IF (LCDI_Ready = '1') THEN
 					NextState			<= ST_WRITE_CHAR;
 				END IF;
-	
+
 			WHEN ST_WRITE_CHAR =>
 				ColAC_inc				<= '1';
-			
+
 				LCDI_Strobe			<= '1';
 				LCDI_Address		<= '1';
 				LCDI_Data				<= LCD_Char2Bin(Char);
-				
+
 				NextState				<= ST_WRITE_CHAR_WAIT;
-			
+
 			WHEN ST_WRITE_CHAR_WAIT =>
 				IF (LCDI_Ready = '1') THEN
 					IF (ColAC_Finished = '1') THEN
 						IF (RowAC_Finished = '1') THEN
 							ColAC_Load	<= '1';
 							RowAC_Load	<= '1';
-							
+
 							NextState		<= ST_FINISHED;
 						ELSE
 							ColAC_Load	<= '1';
 							RowAC_inc		<= '1';
-				
+
 							NextState		<= ST_GO_HOME;
 						END IF;
 					ELSE
 						NextState			<= ST_WRITE_CHAR;
 					END IF;
 				END IF;
-	
+
 			WHEN ST_FINISHED =>
 				Synchronized			<= '1';
-				
+
 				NextState					<= ST_IDLE;
-	
+
 		END CASE;
 	END PROCESS;
 
@@ -317,7 +317,7 @@ BEGIN
 		  cmd     		=> LCDI_Address,
 			dat      		=> LCDI_Data,
 			rdy      		=> LCDI_Ready,
-			
+
 			-- LCD Connections
 			lcd_e   		=> LCD_en,
 			lcd_rs  		=> LCD_rs,

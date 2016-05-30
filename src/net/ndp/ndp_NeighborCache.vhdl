@@ -17,21 +17,21 @@ ENTITY ndp_NeighborCache IS
 		INITIAL_CACHE_CONTENT			: T_NET_NDP_NEIGHBORCACHE_VECTOR
 	);
 	PORT (
-		Clock											: IN	STD_LOGIC;																	-- 
-		Reset											: IN	STD_LOGIC;																	-- 
+		Clock											: IN	STD_LOGIC;																	--
+		Reset											: IN	STD_LOGIC;																	--
 
 		Lookup										: IN	STD_LOGIC;
 		IPv6Address_rst						: OUT	STD_LOGIC;
 		IPv6Address_nxt						: OUT	STD_LOGIC;
 		IPv6Address_Data					: IN	T_SLV_8;
-		
+
 		CacheResult								: OUT	T_CACHE_RESULT;
 		MACAddress_rst						: IN	STD_LOGIC;
 		MACAddress_nxt						: IN	STD_LOGIC;
 		MACAddress_Data						: OUT	T_SLV_8;
-		
+
 		Reachability							: OUT	T_NET_NDP_REACHABILITY_STATE
-	);	
+	);
 END;
 
 ARCHITECTURE rtl OF ndp_NeighborCache IS
@@ -42,11 +42,11 @@ ARCHITECTURE rtl OF ndp_NeighborCache IS
 	CONSTANT DATA_BITS								:	POSITIVE			:= 48;		-- MAC address
 	CONSTANT TAGCHUNK_BITS						: POSITIVE			:= 8;
 	CONSTANT DATACHUNK_BITS						: POSITIVE			:= 8;
-	
+
 	CONSTANT DATACHUNKS								: POSITIVE	:= div_ceil(DATA_BITS, DATACHUNK_BITS);
 	CONSTANT DATACHUNK_INDEX_BITS			: POSITIVE	:= log2ceilnz(DATACHUNKS);
 	CONSTANT CACHEMEMORY_INDEX_BITS		: POSITIVE	:= log2ceilnz(CACHE_LINES);
-	
+
 	FUNCTION to_TagData(CacheContent : T_NET_NDP_NEIGHBORCACHE_VECTOR) RETURN T_SLM IS
 		VARIABLE slvv		: T_SLVV_128(CACHE_LINES - 1 DOWNTO 0)	:= (OTHERS => (OTHERS => '0'));
 	BEGIN
@@ -55,7 +55,7 @@ ARCHITECTURE rtl OF ndp_NeighborCache IS
 		END LOOP;
 		RETURN to_slm(slvv);
 	END FUNCTION;
-	
+
 	FUNCTION to_CacheData_slvv_48(CacheContent : T_NET_NDP_NEIGHBORCACHE_VECTOR) RETURN T_SLVV_48 IS
 		VARIABLE slvv		: T_SLVV_48(CACHE_LINES - 1 DOWNTO 0)	:= (OTHERS => (OTHERS => '0'));
 	BEGIN
@@ -64,7 +64,7 @@ ARCHITECTURE rtl OF ndp_NeighborCache IS
 		END LOOP;
 		RETURN slvv;
 	END FUNCTION;
-	
+
 	FUNCTION to_CacheMemory(CacheContent : T_NET_NDP_NEIGHBORCACHE_VECTOR) RETURN T_SLVV_8 IS
 		CONSTANT BYTES_PER_LINE	: POSITIVE																				:= 6;
 		CONSTANT slvv						: T_SLVV_48(CACHE_LINES - 1 DOWNTO 0)							:= to_CacheData_slvv_48(CacheContent);
@@ -77,34 +77,34 @@ ARCHITECTURE rtl OF ndp_NeighborCache IS
 		END LOOP;
 		RETURN result;
 	END FUNCTION;
-	
+
 	CONSTANT INITIAL_TAGS					: T_SLM			:= to_TagData(INITIAL_CACHE_CONTENT);
 	CONSTANT INITIAL_DATALINES		: T_SLVV_8	:= to_CacheMemory(INITIAL_CACHE_CONTENT);
-	
-	
+
+
 	SIGNAL ReadWrite					: STD_LOGIC;
-	
+
 	SIGNAL Insert							: STD_LOGIC;
-		
+
 	SIGNAL TU_NewTag_rst			: STD_LOGIC;
 	SIGNAL TU_NewTag_nxt			: STD_LOGIC;
 	SIGNAL NewTag_Data				: T_SLV_8;
-	
+
 	SIGNAL NewCacheLine_Data	: T_SLV_8;
-		
+
 	SIGNAL TU_Tag_rst					: STD_LOGIC;
 	SIGNAL TU_Tag_nxt					: STD_LOGIC;
 	SIGNAL TU_Tag_Data				: T_SLV_8;
 	SIGNAL CacheHit						: STD_LOGIC;
 	SIGNAL CacheMiss					: STD_LOGIC;
-	
+
 	SIGNAL TU_Index						: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
 	SIGNAL TU_Index_d					: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
 	SIGNAL TU_Index_us				: UNSIGNED(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	
+
 	SIGNAL TU_NewIndex				: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
 	SIGNAL TU_Replace					: STD_LOGIC;
-	
+
 	SIGNAL TU_TagHit					: STD_LOGIC;
 	SIGNAL TU_TagMiss					: STD_LOGIC;
 
@@ -114,16 +114,16 @@ ARCHITECTURE rtl OF ndp_NeighborCache IS
 	SIGNAL MemoryIndex_us			: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 DOWNTO 0);
 	SIGNAL ReplaceIndex_us		: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 DOWNTO 0);
 	SIGNAL ReplacedIndex_us		: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 DOWNTO 0);
-	
+
 BEGIN
 --	PROCESS(Command)
 --	BEGIN
 --		Insert		<= '0';
---		
+--
 --		CASE Command IS
 --			WHEN NDP_NDP_NeighborCache_CMD_NONE =>		NULL;
 --			WHEN NDP_NDP_NeighborCache_CMD_ADD =>		Insert <= '1';
---			
+--
 --		END CASE;
 --	END PROCESS;
 
@@ -133,7 +133,7 @@ BEGIN
 	ReadWrite						<= '0';
 	NewTag_Data					<= (OTHERS => '0');
 	NewCacheLine_Data		<= (OTHERS => '0');
-	
+
 	TU_Tag_Data					<= IPv6Address_Data;
 	IPv6Address_rst			<= TU_Tag_rst;
 	IPv6Address_nxt			<= TU_Tag_nxt;
@@ -156,7 +156,7 @@ BEGIN
 		PORT MAP (
 			Clock											=> Clock,
 			Reset											=> Reset,
-			
+
 			Replace										=> Insert,
 			Replace_NewTag_rst				=> TU_NewTag_rst,
 			Replace_NewTag_rev				=> OPEN,
@@ -164,7 +164,7 @@ BEGIN
 			Replace_NewTag_Data				=> NewTag_Data,
 			Replace_NewIndex					=> TU_NewIndex,
 			Replaced									=> TU_Replace,
-			
+
 			Request										=> Lookup,
 			Request_ReadWrite					=> '0',
 			Request_Invalidate				=> '0',--Invalidate,
@@ -176,10 +176,10 @@ BEGIN
 			Request_TagHit						=> TU_TagHit,
 			Request_TagMiss						=> TU_TagMiss
 		);
-	
+
 	-- latch TU_Index on TagHit
 	TU_Index_us		<= unsigned(TU_Index) WHEN rising_edge(Clock) AND (TU_TagHit = '1');
-	
+
 	-- ChunkIndex counter
 	PROCESS(Clock)
 	BEGIN
@@ -208,17 +208,17 @@ BEGIN
 	MemoryIndex_us		<= resize(DataChunkIndex_us,			MemoryIndex_us'length)
 												+ resize(TU_Index_us & "00",	MemoryIndex_us'length)
 												+ resize(TU_Index_us & '0',		MemoryIndex_us'length);
-	
+
 	-- Cache Memory - port 2
 	ReplaceIndex_us		<= unsigned(TU_NewIndex) & DataChunkIndex_us;
-	
+
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
 			IF ((Memory_ReadWrite AND TU_TagHit) = '1') THEN
 --					CacheMemory(to_integer(MemoryIndex_us))	<= CacheLineIn;
 			END IF;
-			
+
 			IF (TU_Replace = '1') THEN
 --					CacheMemory(to_integer(ReplaceIndex_us))	<= newCacheLine_Data;
 			END IF;

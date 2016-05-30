@@ -1,0 +1,6 @@
+default.ucf
+leds.ucf
+buttons.ucf
+switches.ucf
+uart.ucf
+vga.ucf

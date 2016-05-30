@@ -1,29 +1,29 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Martin Zabel
 --									Patrick Lehmann
--- 
+--
 -- Package:					VHDL package for component declarations, types and
 --									functions associated to the PoC.io.vga namespace
 --
 -- Description:
 -- ------------------------------------
 --		For detailed documentation see below.
---	
+--
 -- License:
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --											Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -86,9 +86,9 @@ package vga is
 		hs_pol		: std_logic;					-- hsync polarity
 		vs_pol		: std_logic;					-- vsync_polarity
   end record;
-	
+
 	function io_vga_GetParameters(Mode : T_IO_VGA_MODE; CVT : BOOLEAN) return T_VGA_PARAMETERS;
-	
+
   -- Control signals which must be passed from the timing module through
   -- the data processing pipeline to the physical layer controller.
   type T_IO_VGA_PHY_CTRL is record
@@ -96,7 +96,7 @@ package vga is
     vsync		: std_logic;
     beam_on	: std_logic;
   end record;
-  
+
 	component vga_timing
 		generic (
 			MODE				: T_IO_VGA_MODE		:= VGA_MODE_VGA;
@@ -114,7 +114,7 @@ package vga is
 			ypos				: out	unsigned(10 downto 0)
 		);
 	end component;
-	
+
 	component vga_phy
 		generic (
 			COLOR_BITS : positive
@@ -128,7 +128,7 @@ package vga is
 			pixel_data_out	: out	std_logic_vector(COLOR_BITS - 1 downto 0)
 		);
 	end component;
-	
+
 	component vga_phy_ch7301c is
 		port (
 			clk0				: in	std_logic;
@@ -159,7 +159,7 @@ package body vga is
 				res.htotal_e	:= 800-1;
 				res.hsync_b 	:= res.haddr+16;						-- + h_front_porch
 				res.hs_pol		:= '0';
-				
+
 				if CVT then
 						res.vtotal_e	:= 500-1;
 						res.hsync_e 	:= res.hsync_b+64-1;
@@ -173,7 +173,7 @@ package body vga is
 						res.vsync_e 	:= res.vsync_b+2-1;
 						res.vs_pol		:= '0';
 				end if;
-		
+
 			when VGA_MODE_1280X720 | VGA_MODE_HD720 =>		-- HD 720p 1280x720
 				res.haddr			:= 1280;
 				res.htotal_e	:= 1664-1;							-- hor_total -1
@@ -185,9 +185,9 @@ package body vga is
 				res.vsync_e 	:= res.vsync_b+5-1;			-- + ver_sync -1
 				res.hs_pol		:= '0';									-- negative
 				res.vs_pol		:= '1';									-- positive
-				
+
 			when VGA_MODE_1920X1080 | VGA_MODE_HD1080 =>	-- HD 720p 1280x720
-				res.haddr			:= 1920;								
+				res.haddr			:= 1920;
 				res.htotal_e	:= 2080-1;							-- hor_total -1
 				res.hsync_b 	:= res.haddr+48;				-- + h_front_porch
 				res.hsync_e 	:= res.hsync_b+32-1;		-- + hor_sync -1
@@ -197,13 +197,13 @@ package body vga is
 				res.vsync_e 	:= res.vsync_b+5-1;			-- + ver_sync -1
 				res.hs_pol		:= '1';									-- positive
 				res.vs_pol		:= '0';									-- negative
-			
+
 			when others =>
 				report "MODE " & T_IO_VGA_MODE'image(Mode) & " is not supported!"
 					severity failure;
-					
+
 		end case;
-		
+
 		return res;
   end function;
 

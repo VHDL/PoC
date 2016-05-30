@@ -3,7 +3,7 @@
 -- Entity: comm_bitwidth_converter
 -- Author(s): Patrick Lehmann
 --						Max Koehler
--- 
+--
 -- Summary:
 -- ========
 --  This module convertes std_logic_vectors with different bit widths.
@@ -67,7 +67,7 @@ BEGIN
 		SIGNAL MuxOutput				: STD_LOGIC_VECTOR(BITS2 - 1 DOWNTO 0);
 		SIGNAL MuxCounter_us		: UNSIGNED(COUNTER_BITS - 1 DOWNTO 0)					:= (OTHERS => '0');
 		SIGNAL MuxSelect_us			: UNSIGNED(COUNTER_BITS - 1 DOWNTO 0);
-		
+
 	BEGIN
 		-- input register @Clock1
 		PROCESS(Clock1)
@@ -76,22 +76,22 @@ BEGIN
 				I_d	<= I;
 			END IF;
 		END PROCESS;
-		
+
 		-- selection multiplexer
 		gen11 : FOR J IN 2**COUNTER_BITS - 1 DOWNTO 0 GENERATE
 			MuxInput(J)	<= I_d(((J + 1) * BITS_2) - 1 DOWNTO (J * BITS_2));
 		END GENERATE;
-		
+
 		-- multiplexer
 		MuxOutput <= MuxInput(to_integer(MuxSelect_us));
-		
+
 		-- word boundary T-FF @Clock1 and D-FF @Clock2
 		WordBoundary		<= NOT WordBoundary WHEN rising_edge(Clock1) ELSE WordBoundary;
 		WordBoundary_d	<= WordBoundary			WHEN rising_edge(Clock2) ELSE WordBoundary_d;
-		
+
 		-- generate Align_i signal
 		Align_i <= WordBoundary XOR WordBoundary_d;
-		
+
 		-- multiplexer control @Clock2
 		PROCESS(Clock2)
 		BEGIN
@@ -103,9 +103,9 @@ BEGIN
 				END IF;
 			END IF;
 		END PROCESS;
-		
+
 		MuxSelect_us <= (OTHERS => '0') WHEN (Align_i = '1') ELSE MuxCounter_us;
-		
+
 		-- add output register @Clock2
 		gen121 : IF (REGISTERED = TRUE) GENERATE
 			PROCESS(Clock2)
@@ -128,7 +128,7 @@ BEGIN
 		SIGNAL I_d									:	STD_LOGIC_VECTOR(BITS2 - BITS1 - 1 DOWNTO 0);
 		SIGNAL Collected						: STD_LOGIC_VECTOR(BITS2 - 1 DOWNTO 0);
 		SIGNAL Collected_d					: STD_LOGIC_VECTOR(BITS2 - 1 DOWNTO 0);
-		
+
 	BEGIN
 		-- byte alignment counter @Clock1
 		PROCESS(Clock1)
@@ -141,9 +141,9 @@ BEGIN
 				END IF;
 			END IF;
 		END PROCESS;
-	
+
 		I_Select_us <= (OTHERS => '0') WHEN (Align = '1') ELSE I_Counter_us;
-	
+
 		-- delay registers @Clock1
 		PROCESS(Clock1)
 		BEGIN
@@ -157,10 +157,10 @@ BEGIN
 				END LOOP;
 			END IF;
 		END PROCESS;
-		
+
 		-- collect signals
 		Collected <= I & I_d;
-		
+
 		-- register collected signals again @Clock1
 		PROCESS(Clock1)
 		BEGIN
@@ -170,7 +170,7 @@ BEGIN
 				END IF;
 			END IF;
 		END PROCESS;
-		
+
 		-- add output register @Clock2
 		gen211 : IF (REGISTERED = TRUE) GENERATE
 			PROCESS(Clock2)

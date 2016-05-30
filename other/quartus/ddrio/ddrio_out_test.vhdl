@@ -29,7 +29,7 @@ begin
       inclk0 => Clock,
       c0     => MyClock,
       locked => MyClockEnable);
-  
+
   i : ddrio_out
     generic map (
       NO_OUTPUT_ENABLE => NO_OUTPUT_ENABLE,

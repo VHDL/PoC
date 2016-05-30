@@ -4,9 +4,9 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Authors: Thomas B. Preusser, Martin Zabel, Peter Reichel
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -41,7 +41,7 @@ package config is
 
   constant MEM_ADDR_BITS : positive := 18;
   constant BASE_BITS     : positive := MEM_ADDR_BITS-ALIGNMENT;
-  
+
   -----------------------------------------------------------------------------
   -- Tracing Mode  (new, from Stefan Alex)
 

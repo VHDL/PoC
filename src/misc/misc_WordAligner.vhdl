@@ -26,22 +26,22 @@ END;
 
 ARCHITECTURE rtl OF WordAligner IS
 	CONSTANT SEGMENT_COUNT	: POSITIVE																	:= INPUT_BITS / WORD_BITS;
-	
+
 	TYPE T_SEGMENTS IS ARRAY(NATURAL RANGE <>) OF STD_LOGIC_VECTOR(WORD_BITS - 1 DOWNTO 0);
-	
+
 	SIGNAL I_d						: STD_LOGIC_VECTOR(I'high DOWNTO WORD_BITS)		:= (OTHERS => '0');
-	
+
 	SIGNAL O_i						: STD_LOGIC_VECTOR(I'range);
 	SIGNAL Align_d				: STD_LOGIC_VECTOR(Align'range)								:= (0 => '1', others => '0');
 	SIGNAL Align_i				: STD_LOGIC_VECTOR(Align'range);
 	SIGNAL Hold						: STD_LOGIC;
 	SIGNAL Changed				: STD_LOGIC;
 	SIGNAL Valid_i				: STD_LOGIC;
-	
+
 	SIGNAL MuxCtrl				: STD_LOGIC_VECTOR(Align'range);
 	SIGNAL bin						: INTEGER;
-	
-	
+
+
 	FUNCTION onehot2bin(slv : STD_LOGIC_VECTOR) RETURN NATURAL IS
 	BEGIN
 		FOR I IN 0 TO slv'length - 1 LOOP
@@ -49,10 +49,10 @@ ARCHITECTURE rtl OF WordAligner IS
 				RETURN I + 1;
 			END IF;
 		END LOOP;
-		
+
 		RETURN 1;
 	END;
-	
+
 	FUNCTION onehot2muxctrl(slv : STD_LOGIC_VECTOR) RETURN STD_LOGIC_VECTOR IS
 		VARIABLE Result		: STD_LOGIC_VECTOR(slv'range);
 		VARIABLE Flag			: STD_LOGIC													:= '0';
@@ -61,9 +61,9 @@ ARCHITECTURE rtl OF WordAligner IS
 			Flag						:= Flag OR slv(I);
 			Result(I)				:= Flag;
 		END LOOP;
-		
+
 		Result(slv'high)	:= '1';
-		
+
 		RETURN Result;
 	END;
 BEGIN
@@ -75,9 +75,9 @@ BEGIN
 		Changed		<= to_sl(Align /= Align_d);
 		Valid_i		<= Hold OR Align(Align'low);
 		Align_i		<= Align WHEN (Hold = '0') ELSE Align_d;
-	
+
 		O_i		<= I WHEN (Align_i = "01") ELSE I(WORD_BITS - 1 DOWNTO 0) & I_d;
-	
+
 	-- add output register @Clock2
 	gen11 : IF (REGISTERED = TRUE) GENERATE
 		O				<= O_i			WHEN rising_edge(Clock);
@@ -86,7 +86,7 @@ BEGIN
 	gen12 : IF (REGISTERED = FALSE) GENERATE
 		O				<= O_i;
 		Valid		<= Valid_i;
-	END GENERATE;	
+	END GENERATE;
 END;
 
 --	 0 1	0 0

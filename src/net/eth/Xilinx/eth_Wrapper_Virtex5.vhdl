@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Module:				 	TODO
 --
 -- Authors:				 	Patrick Lehmann
--- 
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,11 +45,11 @@ USE			PoC.net.ALL;
 
 ENTITY eth_Wrapper_Virtex5 IS
 	GENERIC (
-		DEBUG											: BOOLEAN														:= FALSE;															-- 
+		DEBUG											: BOOLEAN														:= FALSE;															--
 		CLOCK_FREQ_MHZ						: REAL															:= 125.0;															-- 125 MHz
-		ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
-		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
-		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
+		ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
+		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		--
+		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		--
 	);
 	PORT (
 		-- clock interface
@@ -62,9 +62,9 @@ ENTITY eth_Wrapper_Virtex5 IS
 
 		-- reset interface
 		Reset											: IN	STD_LOGIC;
-		
+
 		-- Command-Status-Error interface
-		
+
 		-- MAC LocalLink interface
 		TX_Valid									: IN	STD_LOGIC;
 		TX_Data										: IN	T_SLV_8;
@@ -77,7 +77,7 @@ ENTITY eth_Wrapper_Virtex5 IS
 		RX_SOF										: OUT	STD_LOGIC;
 		RX_EOF										: OUT	STD_LOGIC;
 		RX_Ack										: In	STD_LOGIC;
-		
+
 		PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
 	);
 END ENTITY;
@@ -118,16 +118,16 @@ END ENTITY;
 ARCHITECTURE rtl OF eth_Wrapper_Virtex5 IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 
-	SIGNAL Reset_async							: STD_LOGIC;		-- FIXME: 
+	SIGNAL Reset_async							: STD_LOGIC;		-- FIXME:
 
-	SIGNAL TX_Reset									: STD_LOGIC;		-- FIXME: 
-	SIGNAL RX_Reset									: STD_LOGIC;		-- FIXME: 
+	SIGNAL TX_Reset									: STD_LOGIC;		-- FIXME:
+	SIGNAL RX_Reset									: STD_LOGIC;		-- FIXME:
 
 BEGIN
-	
+
 	-- XXX: review reset-tree and clock distribution
 	Reset_async		<= Reset;
-	
+
 	-- ==========================================================================================================================================================
 	-- Xilinx Virtex 5 Tri-Mode MAC_MDIOC MAC (TEMAC) HardIP
 	-- ==========================================================================================================================================================
@@ -136,19 +136,19 @@ BEGIN
 		SIGNAL TX_FIFO_Valid					: STD_LOGIC;
 		SIGNAL TX_FIFO_Overflow				: STD_LOGIC;
 		SIGNAL TX_FIFO_Status					: STD_LOGIC_VECTOR(3 DOWNTO 0);
-		
+
 		SIGNAL RX_FIFO_Overflow				: STD_LOGIC;
 		SIGNAL RX_FIFO_Status					: STD_LOGIC_VECTOR(3 DOWNTO 0);
-				
+
 		SIGNAL Eth_TX_Reset						: STD_LOGIC;
 		SIGNAL Eth_TX_Enable					: STD_LOGIC;
 		SIGNAL Eth_TX_Ack							: STD_LOGIC;
 		SIGNAL Eth_TX_Collision				: STD_LOGIC;
 		SIGNAL Eth_TX_Retransmit			: STD_LOGIC;
 
-		SIGNAL Eth_RX_Reset						: STD_LOGIC;		
+		SIGNAL Eth_RX_Reset						: STD_LOGIC;
 		SIGNAL Eth_RX_Enable					: STD_LOGIC;
-		
+
 		SIGNAL Eth_RX_Data						: T_SLV_8;
 		SIGNAL Eth_RX_Data_r					: T_SLV_8								:= (OTHERS	=> '0');
 		SIGNAL Eth_RX_Valid						: STD_LOGIC;
@@ -157,20 +157,20 @@ BEGIN
 		SIGNAL Eth_RX_GoodFrame_r			: STD_LOGIC							:= '0';
 		SIGNAL Eth_RX_BadFrame				: STD_LOGIC;
 		SIGNAL Eth_RX_BadFrame_r			: STD_LOGIC							:= '0';
-		
-		
+
+
 	BEGIN
 		genReset	: BLOCK
 			SIGNAL TX_Reset_shift				: T_SLV_8;
 			SIGNAL RX_Reset_shift				: T_SLV_8;
-			
+
 			SIGNAL Eth_TX_Reset_shift		: T_SLV_8;
 			SIGNAL Eth_RX_Reset_shift		: T_SLV_8;
-			
+
 			ATTRIBUTE async_reg												: BOOLEAN;
 			ATTRIBUTE async_reg OF TX_Reset_shift			: SIGNAL IS TRUE;
 			ATTRIBUTE async_reg OF RX_Reset_shift			: SIGNAL IS TRUE;
-			
+
 			ATTRIBUTE async_reg OF Eth_TX_Reset_shift	: SIGNAL IS TRUE;
 			ATTRIBUTE async_reg OF Eth_RX_Reset_shift	: SIGNAL IS TRUE;
 
@@ -255,13 +255,13 @@ BEGIN
 				PORT MAP (
 					wr_clk						=> TX_Clock,								-- Local link write clock
 					wr_sreset					=> TX_Reset,								-- synchronous reset (wr_clock)
-					
+
 					-- Transmitter Local Link Interface
 					wr_data						=> TX_Data,									-- Data to TX FIFO
-					wr_sof_n					=> TX_SOF_n,							
-					wr_eof_n					=> TX_EOF_n,							
-					wr_src_rdy_n			=> TX_Valid_n,						
-					wr_dst_rdy_n			=> TX_Ack_n,						
+					wr_sof_n					=> TX_SOF_n,
+					wr_eof_n					=> TX_EOF_n,
+					wr_src_rdy_n			=> TX_Valid_n,
+					wr_dst_rdy_n			=> TX_Ack_n,
 					wr_fifo_status		=> TX_FIFO_Status,					-- FIFO memory status
 
 					-- Transmitter MAC Client Interface
@@ -275,20 +275,20 @@ BEGIN
 					tx_retransmit			=> Eth_TX_Retransmit,				-- Retransmit signal from MAC transmitter
 					overflow					=> TX_FIFO_Overflow					-- FIFO overflow indicator from FIFO
 				);
-			
+
 			-- Receiver FIFO and LocalLink adapter
 			RX_FIFO	: ENTITY PoC.eth_TEMAC_RX_FIFO_Virtex5
 				PORT MAP (
 					rd_clk						=> RX_Clock,								-- Local link read clock
 					rd_sreset					=> RX_Reset,								-- synchronous reset (rd_clock)
-					
+
 					-- Receiver Local Link Interface
 					rd_data_out				=> RX_Data,									-- Data from RX FIFO
-					rd_sof_n					=> RX_SOF_n,						
-					rd_eof_n					=> RX_EOF_n,						
-					rd_src_rdy_n			=> RX_Valid_n,					
-					rd_dst_rdy_n			=> RX_Ack_n,					
-					
+					rd_sof_n					=> RX_SOF_n,
+					rd_eof_n					=> RX_EOF_n,
+					rd_src_rdy_n			=> RX_Valid_n,
+					rd_dst_rdy_n			=> RX_Ack_n,
+
 					-- Receiver MAC Client Interface
 					wr_clk						=> Eth_RX_Clock,						-- MAC receive clock
 					wr_sreset					=> Eth_RX_Reset,						-- Synchronous reset (wr_clk)
@@ -301,7 +301,7 @@ BEGIN
 					rx_fifo_status		=> RX_FIFO_Status						-- FIFO memory status [3:0]
 				);
 		END BLOCK;
-	
+
 
 		-- ========================================================================================================================================================
 		-- reconcilation sublayer (RS) interface	: GMII
@@ -311,23 +311,23 @@ BEGIN
 			SIGNAL RS_TX_Valid					: STD_LOGIC;
 			SIGNAL RS_TX_Data						: T_SLV_8;
 			SIGNAL RS_TX_Error					: STD_LOGIC;
-				
+
 			SIGNAL RS_RX_Valid					: STD_LOGIC;
 			SIGNAL RS_RX_Data						: T_SLV_8;
 			SIGNAL RS_RX_Error					: STD_LOGIC;
 		BEGIN
-			
+
 			-- Instantiate the EMAC Wrapper (v5temac_gmii.vhd)
 			TEMAC_V5	: ENTITY PoC.eth_TEMAC_GMII_Virtex5
 				PORT MAP (
 					-- Asynchronous Reset
 					RESET														=> Reset_async,
 					DCM_LOCKED_0										=> '1',														-- TODO: should this signals be connected to ClockNet/DCM_locked?
-				
+
 					-- Client Receiver Interface - EMAC0
 					CLIENTEMAC0RXCLIENTCLKIN				=> Eth_RX_Clock,
 					EMAC0CLIENTRXCLIENTCLKOUT				=> OPEN,													-- SOURCE: UG194, page 147
-					
+
 					EMAC0CLIENTRXD									=> Eth_RX_Data,
 					EMAC0CLIENTRXDVLD								=> Eth_RX_Valid,
 					EMAC0CLIENTRXDVLDMSW						=> OPEN,
@@ -341,7 +341,7 @@ BEGIN
 					-- Client Transmitter Interface - EMAC0
 					CLIENTEMAC0TXCLIENTCLKIN				=> Eth_TX_Clock,
 					EMAC0CLIENTTXCLIENTCLKOUT				=> OPEN,
-					
+
 					CLIENTEMAC0TXD									=> TX_FIFO_Data,
 					CLIENTEMAC0TXDVLD								=> TX_FIFO_Valid,
 					CLIENTEMAC0TXDVLDMSW						=> '0',
@@ -370,12 +370,12 @@ BEGIN
 					GMII_TX_EN_0										=> RS_TX_Valid,
 					GMII_TX_ER_0										=> RS_TX_Error,
 
-					GMII_RX_CLK_0										=> RS_RX_Clock,				
+					GMII_RX_CLK_0										=> RS_RX_Clock,
 					GMII_RXD_0											=> RS_RX_Data,
 					GMII_RX_DV_0										=> RS_RX_Valid,
 					GMII_RX_ER_0										=> RS_RX_Error
 				);
-			
+
 			-- default assignments for the MDIO interface
 			-- FIXME: connect HardMacro TEMAC to MDIO Bus
 --		PHY_Interface.MDIO.Clock_o
@@ -384,7 +384,7 @@ BEGIN
 --		PHY_Interface.MDIO.Data_i
 --			PHY_Interface.MDIO.Data_o			<= '0';
 --			PHY_Interface.MDIO.Data_t			<= '1';
-			
+
 			-- Register the receiver outputs from TEMAC before routing to the FIFO
 			-- ======================================================================================================================================================
 			PROCESS(RX_Clock, Reset_async)
@@ -403,14 +403,14 @@ BEGIN
 					END IF;
 				END IF;
 			END PROCESS;
-			
+
 			-- ========================================================================================================================================================
 			-- FPGA-PHY inferface: MII
 			-- ========================================================================================================================================================
 			genPHY_MII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_MII) GENERATE
 				ASSERT FALSE REPORT "Physical interface MII is not supported!" SEVERITY FAILURE;
 			END GENERATE;
-			
+
 			-- ========================================================================================================================================================
 			-- FPGA-PHY inferface: GMII
 			-- ========================================================================================================================================================
@@ -419,18 +419,18 @@ BEGIN
 					PORT MAP (
 						RS_TX_Clock								=> RS_TX_Clock,
 						RS_RX_Clock								=> RS_RX_Clock,
-						
-						Reset_async								=> Reset_async,																		-- @async: 
-						
+
+						Reset_async								=> Reset_async,																		-- @async:
+
 						-- RS-GMII interface
 						RS_TX_Valid								=> RS_TX_Valid,
 						RS_TX_Data								=> RS_TX_Data,
 						RS_TX_Error								=> RS_TX_Error,
-						
+
 						RS_RX_Valid								=> RS_RX_Valid,
 						RS_RX_Data								=> RS_RX_Data,
 						RS_RX_Error								=> RS_RX_Error,
-						
+
 						-- PHY-GMII interface
 						PHY_Interface							=> PHY_Interface.GMII
 					);
@@ -444,17 +444,17 @@ BEGIN
 				SIGNAL RS_TX_Valid					: STD_LOGIC;
 				SIGNAL RS_TX_Data						: T_SLV_8;
 				SIGNAL RS_TX_Error					: STD_LOGIC;
-					
+
 				SIGNAL RS_RX_Valid					: STD_LOGIC;
 				SIGNAL RS_RX_Data						: T_SLV_8;
 				SIGNAL RS_RX_Error					: STD_LOGIC;
 			BEGIN
 				ASSERT FALSE REPORT "Physical interface SGMII is not implemented!" SEVERITY FAILURE;
-			
+
 				PCS : ENTITY PoC.eth_GMII_SGMII_PCS_Virtex5
 					PORT MAP (
 						dcm_locked						=> 'X',
-						
+
 						reset									=> 'X',
 
 						-- status
@@ -463,15 +463,15 @@ BEGIN
 						-- configuration interface (disabled)
 						configuration_vector	=> (others => '0'),
 						configuration_valid		=> '0',
-					
+
 						-- auto-negotiation
 						an_restart_config			=> '0',
 						an_adv_config_val			=> '0',
 						an_adv_config_vector	=> (others => '0'),
 						an_interrupt					=> open,
-						
+
 						link_timer_value			=> (others => '0'),
-					
+
 						-- GMII Interface
 						gmii_isolate					=> open,
 						gmii_txd							=> RS_TX_Data,			-- Transmit data from client MAC.
@@ -480,13 +480,13 @@ BEGIN
 						gmii_rxd							=> RS_RX_Data, 			-- Received Data to client MAC.
 						gmii_rx_dv						=> RS_RX_Valid,			-- Received control signal to client MAC.
 						gmii_rx_er						=> RS_RX_Error,			-- Received control signal to client MAC.
-						
+
 						phyad									=> PCS_MDIO_ADDRESS(4 downto 0),
 						mdc										=> MDIO_Clock,
 						mdio_in								=> MDIO_Data_i,
 						mdio_out							=> MDIO_Data_o,
 						mdio_tri							=> MDIO_Data_t,
-						
+
 						-- TRANS interface
 						powerdown							=> PCS_PowerDown,
 						mgt_tx_reset					=> PCS_TX_Reset,
@@ -494,14 +494,14 @@ BEGIN
 						userclk								=> PCS_UserClock,
 						userclk2							=> PCS_UserClock2,
 						enablealign						=> PCS_EnableAlign,
-						
+
 						-- TRANS TX interface
 						txdata								=> PCS_TX_Data,
 						txcharisk							=> PCS_TX_CharIsK,
 						txchardispmode				=> PCS_TX_CharDisparityMode,
 						txchardispval					=> PCS_TX_CharDisparityValue,
 						txbuferr							=> Trans_TX_BufferError,
-						
+
 						-- TRANS RX interface
 						rxdata								=> Trans_RX_Data,
 						rxcharisk							=> Trans_RX_CharIsK,
@@ -515,12 +515,12 @@ BEGIN
 
 						-- optical light detected in optical transceiver
 						signal_detect					=> '1'
-						
+
 
 			--			sgmii_clk0					: out std_logic;										-- Clock for client MAC (125Mhz, 12.5MHz or 1.25MHz).
 
 					);
-			
+
 			Trans : entity PoC.eth_Transceiver_Virtex5_GTP
 				generic map (
 					DEBUG										=> DEBUG,
@@ -534,14 +534,14 @@ BEGIN
 					UserClock								=> PCS_UserClock,
 					UserClock2							=> PCS_UserClock2,
 					EnableAlignment					=> PCS_EnableAlign,
-					
+
 					-- TRANS TX interface
 					TX_Data									=> PCS_TX_Data,
 					TX_CharIsK							=> PCS_TX_CharIsK,
 					TX_CharDisparityMode		=> PCS_TX_CharDisparityMode,
 					TX_CharDisparityValue		=> PCS_TX_CharDisparityValue,
 					TX_BufferError					=> Trans_TX_BufferError,
-					
+
 					-- TRANS RX interface
 					RX_Data									=> Trans_RX_Data,
 					RX_CharIsK							=> Trans_RX_CharIsK,
@@ -551,7 +551,7 @@ BEGIN
 					RX_NotInTable						=> Trans_RX_NotInTable,
 					RX_RunningDisparity			=> Trans_RX_RunningDisparity,
 					RX_ClockCorrectionCount	=> Trans_RX_ClockCorrectionCount,
-					
+
 					TX_n										=> open,
 					TX_p										=> open,
 					RX_n										=> 'X',
@@ -560,7 +560,7 @@ BEGIN
 
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: GMII
-		
+
 		-- ========================================================================================================================================================
 		-- reconcilation sublayer (RS) interface	: TRANSCEIVER
 		-- ========================================================================================================================================================
@@ -571,7 +571,7 @@ BEGIN
 			SIGNAL Trans_LoopBack_MSB									: STD_LOGIC;
 			SIGNAL Trans_Interrupt										: STD_LOGIC;
 			SIGNAL Trans_SignalDetect									: STD_LOGIC;
-			
+
 			-- TX signals
 			SIGNAL Trans_TX_MGTReset									: STD_LOGIC;
 			SIGNAL Trans_TX_Data											: T_SLV_8;
@@ -597,10 +597,10 @@ BEGIN
 			SIGNAL Trans_1														: STD_LOGIC;
 			SIGNAL Trans_2														: STD_LOGIC;
 			SIGNAL Trans_3														: STD_LOGIC;
-		
+
 		BEGIN
 			Trans_PHY_MDIOAddress		<= "00111";
-		
+
 			TEMAC_V5	: ENTITY PoC.eth_TEMAC_TRANS_Virtex5
 				PORT MAP (
 					--					-- Asynchronous Reset
@@ -611,7 +611,7 @@ BEGIN
 					-- Client Receiver Interface - EMAC0
 					CLIENTEMAC0RXCLIENTCLKIN				=> Eth_RX_Clock,
 					EMAC0CLIENTRXCLIENTCLKOUT				=> OPEN,													-- SOURCE: UG194, page 147
-					
+
 					EMAC0CLIENTRXD									=> Eth_RX_Data,
 					EMAC0CLIENTRXDVLD								=> Eth_RX_Valid,
 					EMAC0CLIENTRXDVLDMSW						=> OPEN,
@@ -625,7 +625,7 @@ BEGIN
 					-- Client Transmitter Interface - EMAC0
 					CLIENTEMAC0TXCLIENTCLKIN				=> Eth_TX_Clock,
 					EMAC0CLIENTTXCLIENTCLKOUT				=> OPEN,
-					
+
 					CLIENTEMAC0TXD									=> TX_FIFO_Data,
 					CLIENTEMAC0TXDVLD								=> TX_FIFO_Valid,
 					CLIENTEMAC0TXDVLDMSW						=> '0',
@@ -655,7 +655,7 @@ BEGIN
 					LOOPBACKMSB_0										=> Trans_LoopBack_MSB,
 					AN_INTERRUPT_0									=> Trans_Interrupt,
 					SIGNAL_DETECT_0									=> Trans_SignalDetect,
-					
+
 					-- TX signals
 					MGTTXRESET_0										=> Trans_TX_MGTReset,
 					TXDATA_0												=> Trans_TX_Data,
@@ -688,9 +688,9 @@ BEGIN
 					MDIO_0_O												=> PHY_Interface.MDIO.Data_ts.O,
 					MDIO_0_T												=> PHY_Interface.MDIO.Data_ts.T
 				);
-			
+
 			PHY_Interface.MDIO.Clock_ts.T	<= '0';
-			
+
 			-- ========================================================================================================================================================
 			-- FPGA-PHY inferface: MII
 			-- ========================================================================================================================================================
@@ -709,7 +709,7 @@ BEGIN
 			genPHY_SGMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_SGMII) GENERATE
 
 			BEGIN
-			
+
 				Trans : entity PoC.eth_Transceiver_Virtex5_GTP
 					generic map (
 						DEBUG										=> DEBUG,
@@ -723,14 +723,14 @@ BEGIN
 						UserClock								=> PCS_UserClock,
 						UserClock2							=> PCS_UserClock2,
 						EnableAlignment					=> PCS_EnableAlign,
-						
+
 						-- TRANS TX interface
 						TX_Data									=> PCS_TX_Data,
 						TX_CharIsK							=> PCS_TX_CharIsK,
 						TX_CharDisparityMode		=> PCS_TX_CharDisparityMode,
 						TX_CharDisparityValue		=> PCS_TX_CharDisparityValue,
 						TX_BufferError					=> Trans_TX_BufferError,
-						
+
 						-- TRANS RX interface
 						RX_Data									=> Trans_RX_Data,
 						RX_CharIsK							=> Trans_RX_CharIsK,
@@ -740,17 +740,17 @@ BEGIN
 						RX_NotInTable						=> Trans_RX_NotInTable,
 						RX_RunningDisparity			=> Trans_RX_RunningDisparity,
 						RX_ClockCorrectionCount	=> Trans_RX_ClockCorrectionCount,
-						
+
 						TX_n										=> open,
 						TX_p										=> open,
 						RX_n										=> '0',
 						RX_p										=> '0'
 					);
-			
+
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: TRANSCEIVER
 	END GENERATE;		-- MAC_IP: IPSTYLE_HARD
-	
+
 	-- ==========================================================================================================================================================
 	-- Gigabit MAC_MDIOC MAC (GEMAC) - SoftIP
 	-- ==========================================================================================================================================================
@@ -765,7 +765,7 @@ BEGIN
 			SIGNAL RS_TX_Valid					: STD_LOGIC;
 			SIGNAL RS_TX_Data						: T_SLV_8;
 			SIGNAL RS_TX_Error					: STD_LOGIC;
-				
+
 			SIGNAL RS_RX_Valid					: STD_LOGIC;
 			SIGNAL RS_RX_Data						: T_SLV_8;
 			SIGNAL RS_RX_Error					: STD_LOGIC;
@@ -773,16 +773,16 @@ BEGIN
 			GEMAC	: ENTITY PoC.Eth_GEMAC_GMII
 				GENERIC MAP (
 					DEBUG														=> TRUE,
-					CLOCK_FREQ_MHZ									=> CLOCK_FREQ_MHZ,			-- 
-				
+					CLOCK_FREQ_MHZ									=> CLOCK_FREQ_MHZ,			--
+
 					TX_FIFO_DEPTH										=> 2048,								-- 2 kiB TX Buffer
-					TX_INSERT_CROSSCLOCK_FIFO				=> true,								-- TODO: 
-					TX_SUPPORT_JUMBO_FRAMES					=> FALSE,								-- TODO: 
+					TX_INSERT_CROSSCLOCK_FIFO				=> true,								-- TODO:
+					TX_SUPPORT_JUMBO_FRAMES					=> FALSE,								-- TODO:
 					TX_DISABLE_UNDERRUN_PROTECTION	=> false,								-- TODO: 							true: no protection; false: store complete frame in buffer befor transmitting it
-					
+
 					RX_FIFO_DEPTH										=> 4096,								-- 4 kiB TX Buffer
-					RX_INSERT_CROSSCLOCK_FIFO				=> TRUE,								-- TODO: 
-					RX_SUPPORT_JUMBO_FRAMES					=> FALSE								-- TODO: 
+					RX_INSERT_CROSSCLOCK_FIFO				=> TRUE,								-- TODO:
+					RX_SUPPORT_JUMBO_FRAMES					=> FALSE								-- TODO:
 				)
 				PORT MAP (
 					-- clock interface
@@ -792,7 +792,7 @@ BEGIN
 					Eth_RX_Clock							=> Eth_RX_Clock,
 					RS_TX_Clock								=> RS_TX_Clock,
 					RS_RX_Clock								=> RS_RX_Clock,
-					
+
 					TX_Reset									=> Reset,
 					RX_Reset									=> Reset,
 					RS_TX_Reset								=> Reset,
@@ -801,7 +801,7 @@ BEGIN
 					TX_BufferUnderrun					=> OPEN,
 					RX_FrameDrop							=> OPEN,
 					RX_FrameCorrupt						=> OPEN,
-					
+
 					-- MAC LocalLink interface
 					TX_Valid									=> TX_Valid,
 					TX_Data										=> TX_Data,
@@ -814,17 +814,17 @@ BEGIN
 					RX_SOF										=> RX_SOF,
 					RX_EOF										=> RX_EOF,
 					RX_Ack										=> RX_Ack,
-					
+
 					-- RS-GMII interface
 					RS_TX_Valid								=> RS_TX_Valid,
 					RS_TX_Data								=> RS_TX_Data,
 					RS_TX_Error								=> RS_TX_Error,
-					
+
 					RS_RX_Valid								=> RS_RX_Valid,
 					RS_RX_Data								=> RS_RX_Data,
 					RS_RX_Error								=> RS_RX_Error
 				);
-		
+
 			-- ========================================================================================================================================================
 			-- FPGA-PHY inferface: MII
 			-- ========================================================================================================================================================
@@ -835,41 +835,41 @@ BEGIN
 			-- FPGA-PHY inferface: GMII
 			-- ========================================================================================================================================================
 			genPHY_GMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_GMII) GENERATE
-			
+
 			BEGIN
 				GMII	: ENTITY PoC.eth_RSLayer_GMII_GMII_Xilinx
 					PORT MAP (
 						RS_TX_Clock								=> RS_TX_Clock,
-						RS_RX_Clock								=> RS_RX_Clock,						
-						
-						Reset_async								=> Reset_async,																		-- @async: 
-						
+						RS_RX_Clock								=> RS_RX_Clock,
+
+						Reset_async								=> Reset_async,																		-- @async:
+
 						-- RS-GMII interface
 						RS_TX_Valid								=> RS_TX_Valid,
 						RS_TX_Data								=> RS_TX_Data,
 						RS_TX_Error								=> RS_TX_Error,
-						
+
 						RS_RX_Valid								=> RS_RX_Valid,
 						RS_RX_Data								=> RS_RX_Data,
 						RS_RX_Error								=> RS_RX_Error,
-						
+
 						-- PHY-GMII interface
 						PHY_Interface							=> PHY_Interface.GMII
 					);
 			END GENERATE;		-- PHY_DATA_INTERFACE: GMII
-		
+
 			-- ========================================================================================================================================================
 			-- FPGA-PHY inferface: SGMII
 			-- ========================================================================================================================================================
 			genPHY_SGMII	: IF (PHY_DATA_INTERFACE = NET_ETH_PHY_DATA_INTERFACE_SGMII) GENERATE
-			
+
 			BEGIN
-			
-			
+
+
 				PCS : entity PoC.eth_GMII_SGMII_PCS_Virtex5
 					port map (
 						dcm_locked						=> 'X',
-						
+
 						reset									=> 'X',
 
 						-- status
@@ -878,15 +878,15 @@ BEGIN
 						-- configuration interface (disabled)
 						configuration_vector	=> (others => '0'),
 						configuration_valid		=> '0',
-					
+
 						-- auto-negotiation
 						an_restart_config			=> '0',
 						an_adv_config_val			=> '0',
 						an_adv_config_vector	=> (others => '0'),
 						an_interrupt					=> open,
-						
+
 						link_timer_value			=> (others => '0'),
-					
+
 						-- GMII Interface
 						gmii_isolate					=> open,
 						gmii_txd							=> RS_TX_Data,			-- Transmit data from client MAC.
@@ -895,13 +895,13 @@ BEGIN
 						gmii_rxd							=> RS_RX_Data, 			-- Received Data to client MAC.
 						gmii_rx_dv						=> RS_RX_Valid,			-- Received control signal to client MAC.
 						gmii_rx_er						=> RS_RX_Error,			-- Received control signal to client MAC.
-						
+
 						phyad									=> PCS_MDIO_ADDRESS(4 downto 0),
 						mdc										=> MDIO_Clock,
 						mdio_in								=> MDIO_Data_i,
 						mdio_out							=> MDIO_Data_o,
 						mdio_tri							=> MDIO_Data_t,
-						
+
 						-- TRANS interface
 						powerdown							=> PCS_PowerDown,
 						mgt_tx_reset					=> PCS_TX_Reset,
@@ -909,14 +909,14 @@ BEGIN
 						userclk								=> PCS_UserClock,
 						userclk2							=> PCS_UserClock2,
 						enablealign						=> PCS_EnableAlign,
-						
+
 						-- TRANS TX interface
 						txdata								=> PCS_TX_Data,
 						txcharisk							=> PCS_TX_CharIsK,
 						txchardispmode				=> PCS_TX_CharDisparityMode,
 						txchardispval					=> PCS_TX_CharDisparityValue,
 						txbuferr							=> Trans_TX_BufferError,
-						
+
 						-- TRANS RX interface
 						rxdata								=> Trans_RX_Data,
 						rxcharisk							=> Trans_RX_CharIsK,
@@ -930,12 +930,12 @@ BEGIN
 
 						-- optical light detected in optical transceiver
 						signal_detect					=> '1'
-						
+
 
 			--			sgmii_clk0					: out std_logic;										-- Clock for client MAC (125Mhz, 12.5MHz or 1.25MHz).
 
 					);
-				
+
 				Trans : entity PoC.eth_Transceiver_Virtex5_GTP
 					generic map (
 						DEBUG										=> DEBUG,
@@ -949,14 +949,14 @@ BEGIN
 						UserClock								=> PCS_UserClock,
 						UserClock2							=> PCS_UserClock2,
 						EnableAlignment					=> PCS_EnableAlign,
-						
+
 						-- TRANS TX interface
 						TX_Data									=> PCS_TX_Data,
 						TX_CharIsK							=> PCS_TX_CharIsK,
 						TX_CharDisparityMode		=> PCS_TX_CharDisparityMode,
 						TX_CharDisparityValue		=> PCS_TX_CharDisparityValue,
 						TX_BufferError					=> Trans_TX_BufferError,
-						
+
 						-- TRANS RX interface
 						RX_Data									=> Trans_RX_Data,
 						RX_CharIsK							=> Trans_RX_CharIsK,
@@ -966,7 +966,7 @@ BEGIN
 						RX_NotInTable						=> Trans_RX_NotInTable,
 						RX_RunningDisparity			=> Trans_RX_RunningDisparity,
 						RX_ClockCorrectionCount	=> Trans_RX_ClockCorrectionCount,
-						
+
 						TX_n										=> open,
 						TX_p										=> open,
 						RX_n										=> '0',
@@ -974,7 +974,7 @@ BEGIN
 					);
 			END GENERATE;		-- PHY_DATA_INTERFACE: SGMII
 		END GENERATE;		-- RS_DATA_INTERFACE: GMII
-		
+
 		-- ========================================================================================================================================================
 		-- reconcilation sublayer (RS) interface	: TRANSCEIVER
 		-- ========================================================================================================================================================

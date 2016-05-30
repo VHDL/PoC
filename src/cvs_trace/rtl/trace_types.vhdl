@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Package: trace_types
 -- Author(s): Stefan Alex
--- 
+--
 -- Types for Configuration
 --
 -- Revision:    $Revision: 1.2 $
@@ -111,7 +111,7 @@ package trace_types is
 
   type tSingleEvent_array is array(natural range<>) of tSingleEvent;
   type tComplexEvent_array is array(natural range<>) of tNat_array(0 to MAX_SINGLE_EVENTS-1);
-  
+
   type tTrigger is
     record
       ID               : natural;
@@ -120,7 +120,7 @@ package trace_types is
       TYPE_INIT        : tTriggerType;
       MODE_INIT        : tTriggerMode;
     end record;
-    
+
   type tTrigger_array is array(natural range<>) of tTrigger;
 
   -- null-values
@@ -133,7 +133,7 @@ package trace_types is
                                                     REG2_INIT => (others => '0'),
                                                     CMP1_INIT => greaterThan,
                                                     CMP2_INIT => betweenEqualRange);
- 
+
   constant NULL_SINGLE_EVENTS    : tSingleEvent_array
                                  := (0 to MAX_SINGLE_EVENTS-1 => NULL_SINGLE_EVENT);
 
@@ -144,22 +144,22 @@ package trace_types is
                                  := (0 to MAX_COMPLEX_EVENTS-1 => NULL_SINGLE_EVENT_IDS);
 
   constant NULL_TRIGGER          : tTrigger := (ID               => 0,
-                                                SINGLE_EVENT_IDS => NULL_SINGLE_EVENT_IDS,                                                
+                                                SINGLE_EVENT_IDS => NULL_SINGLE_EVENT_IDS,
                                                 COMPLEX_EVENTS   => NULL_COMPLEX_EVENTS,
                                                 TYPE_INIT        => normal,
                                                 MODE_INIT        => PointTrigger);
-                                                
+
   constant NULL_TRIGGERS         : tTrigger_array := (0 to MAX_TRIGGER-1 => NULL_TRIGGER);
 
   constant NULL_TRIGGER_IDS      : tNat_array(0 to MAX_TRIGGER-1) := (others => 0);
-  
+
   ------------
   -- tracer --
   ------------
 
   type tInstGen is
     record
-      ADR_PORT      : tPort;    -- adress-port     
+      ADR_PORT      : tPort;    -- adress-port
       BRANCH_PORT   : tPort;    -- infer branchs
       COUNTER_BITS  : positive; -- instruction-counter-bits
       HISTORY_BYTES : natural;  -- use history-encoding

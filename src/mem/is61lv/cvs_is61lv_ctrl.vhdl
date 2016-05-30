@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: is61lv_ctrl
 -- Author(s): Martin Zabel
--- 
+--
 -- Controller for IS61LV Asynchronous SRAM.
 --
 -- Configuration:
@@ -122,7 +122,7 @@ architecture rtl of is61lv_ctrl is
       sram_addr : out   unsigned(A_BITS-1 downto 0);
       sram_data : inout std_logic_vector(D_BITS-1 downto 0));
   end component;
-  
+
 begin
 
   gXilinx: if VENDOR = VENDOR_XILINX generate
@@ -151,7 +151,7 @@ begin
         sram_we_n => sram_we_n,
         sram_addr => sram_addr,
         sram_data => sram_data);
-    
+
   end generate gXilinx;
 
   -- Requires two cycles for writing, because dual-data-rate I/O FFs
@@ -168,7 +168,7 @@ begin
     -- ready register
     signal rdy_r   : std_logic;
     signal rdy_nxt : std_logic;
-    
+
     -- address register
     signal addr_r   : unsigned(A_BITS-1 downto 0);
     signal addr_nxt : unsigned(A_BITS-1 downto 0);
@@ -176,14 +176,14 @@ begin
     -- byte enable register
     signal be_r_n   : std_logic_vector(BE_CNT-1 downto 0);
     signal be_nxt_n : std_logic_vector(BE_CNT-1 downto 0);
-    
+
     -- write data register
     signal wdata_r   : std_logic_vector(D_BITS-1 downto 0);
     signal wdata_nxt : std_logic_vector(D_BITS-1 downto 0);
 
     -- sample user address and data
     signal get_user : std_logic;
-    
+
     -- signals whether a read operation is currently executed
     signal reading_r   : std_logic;
     signal reading_nxt : std_logic;
@@ -211,7 +211,7 @@ begin
       be_nxt_n  <= not be;
       addr_nxt  <= addr;
       wdata_nxt <= wdata;
-      
+
       -------------------------------------------------------------------------
       -- FSM
       -------------------------------------------------------------------------
@@ -232,7 +232,7 @@ begin
           when RUNNING =>
             -- due to fsm_ns <= fsm_cs by default
             rdy_nxt <= '1';
-            
+
             if req = '1' then
               get_user <= '1';
 
@@ -255,7 +255,7 @@ begin
                 reading_nxt   <= '1';
               end if;
             end if;
-            
+
           when WAR =>
             -- write to SRAM after data-bus direction changed
             own_oe_nxt_n  <= '0';
@@ -269,7 +269,7 @@ begin
             sram_we_nxt_n <= '1';
             fsm_ns        <= RUNNING;
             rdy_nxt       <= '1';
-            
+
         end case;
       end process;
 
@@ -302,7 +302,7 @@ begin
           end if;
         end if;
       end process;
-      
+
       -------------------------------------------------------------------------
       -- Outputs
       -------------------------------------------------------------------------
@@ -321,7 +321,7 @@ begin
             if reading_r = '1' then             -- don't collect garbage
               rdata <= sram_data;
             end if;
-            
+
             if rst = '1' then
               rstb <= '0';
             else
@@ -333,7 +333,7 @@ begin
 
       sram_be_n <= be_r_n;
       sram_addr <= addr_r;
-      
+
       l1: for i in 0 to D_BITS-1 generate
         -- each bit needs its own output enable
         sram_data(i) <= wdata_r(i) when own_oe_r_n(i) = '0' else 'Z';

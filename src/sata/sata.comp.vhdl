@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
@@ -21,13 +21,13 @@
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -76,12 +76,12 @@ package satacomp is
 
 			-- for measurement purposes only
 			Config_BurstSize							: in	T_SLV_16;
-			
+
 			-- address interface (valid on Command /= *_NONE)
 			Address_AppLB									: in	T_SLV_48;
 			BlockCount_AppLB							: in	T_SLV_48;
-			
-			-- 
+
+			--
 			DriveInformation							: out T_SATA_DRIVE_INFORMATION;
 
 			-- TX path
@@ -104,11 +104,11 @@ package satacomp is
 			SATAC_Command									: out	T_SATA_TRANS_COMMAND;
 			SATAC_Status									: in	T_SATA_SATACONTROLLER_STATUS;
 			SATAC_Error										: in	T_SATA_SATACONTROLLER_ERROR;
-			
+
 			-- ATA registers
 			SATAC_ATAHostRegisters				: out	T_SATA_ATA_HOST_REGISTERS;
 			SATAC_ATADeviceRegisters			: in	T_SATA_ATA_DEVICE_REGISTERS;
-			
+
 			-- TX path
 			SATAC_TX_Valid								: out	STD_LOGIC;
 			SATAC_TX_Data									: out	T_SLV_32;
@@ -124,7 +124,7 @@ package satacomp is
 			SATAC_RX_Ack									: out	STD_LOGIC
 		);
 	end component;
-	
+
 	component sata_SATAController IS
 		generic (
 			DEBUG														: BOOLEAN											:= FALSE;
@@ -150,17 +150,17 @@ package satacomp is
 		port (
 			ClockNetwork_Reset					: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			asynchronous reset
 			ClockNetwork_ResetDone			: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			all clocks are stable
-			PowerDown										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			
+			PowerDown										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:
 			Reset												: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock:	synchronous reset, done in next cycle
 			ResetDone										: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock: layers have been resetted after powerup / hard reset
-			
-			SATAGenerationMin						: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		-- 
-			SATAGenerationMax						: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		-- 
+
+			SATAGenerationMin						: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		--
+			SATAGenerationMax						: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		--
 			SATAGeneration          	  : out T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
-			
+
 			SATA_Clock									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			SATA_Clock_Stable						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			Command											: in	T_SATA_TRANS_COMMAND_VECTOR(PORTS - 1 downto 0);
 			Status											: out T_SATA_SATACONTROLLER_STATUS_VECTOR(PORTS - 1 downto 0);
 			Error												: out	T_SATA_SATACONTROLLER_ERROR_VECTOR(PORTS - 1 downto 0);
@@ -170,21 +170,21 @@ package satacomp is
 			-- Debug PORTS
 			DebugportIn									: in	T_SATADBG_SATACONTROLLER_IN_VECTOR(PORTS - 1 downto 0);
 			DebugportOut								: out	T_SATADBG_SATACONTROLLER_OUT_VECTOR(PORTS - 1 downto 0);
-			
+
 			-- TX port
 			TX_SOT											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			TX_EOT											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			TX_Valid										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			TX_Data											: in	T_SLVV_32(PORTS - 1 downto 0);
 			TX_Ack											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			-- RX port
 			RX_SOT											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			RX_EOT											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			RX_Valid										: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			RX_Data											: out	T_SLVV_32(PORTS - 1 downto 0);
 			RX_Ack											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			-- vendor specific signals
 			VSS_Common_In								: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 			VSS_Private_In							: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 downto 0);
@@ -226,16 +226,16 @@ package satacomp is
 
 			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
 			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
 			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
 			RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			-- vendor specific signals
 			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
@@ -277,23 +277,23 @@ package satacomp is
 
 			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
 			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
 			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
 			RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			-- vendor specific signals
 			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
 			VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 		);
 	end component;
-	
+
 	component sata_Transceiver_Series7_GTXE2 IS
 		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
@@ -329,24 +329,24 @@ package satacomp is
 
 			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			OOB_AlignDetected    			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
 			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
 			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
 			RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			-- vendor specific signals
 			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
 			VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 		);
 	end component;
-	
+
 	component sata_Transceiver_Stratix2GX_GXB IS
 		generic (
 			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
@@ -379,23 +379,23 @@ package satacomp is
 
 			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
 			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
 			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
 			RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			-- vendor specific signals
 			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
 			VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 		);
 	end component;
-	
+
 	component sata_Transceiver_Stratix4GX_GXB IS
 		generic (
 			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
@@ -428,16 +428,16 @@ package satacomp is
 
 			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);		
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
 			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
 			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
 			RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-			
+
 			-- vendor specific signals
 			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);

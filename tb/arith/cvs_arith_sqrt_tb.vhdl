@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -24,7 +24,7 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 entity arith_sqrt_tb is
-  
+
 end arith_sqrt_tb;
 
 architecture tb of arith_sqrt_tb is
@@ -50,7 +50,7 @@ architecture tb of arith_sqrt_tb is
 
   constant N : positive := 10;
 
-  
+
   signal hlt : std_logic := '0';
   signal clk : std_logic := '0';
   signal rst : std_logic;
@@ -79,7 +79,7 @@ begin  -- tb
       start <= '0';
 
       wait until rising_edge(clk) and rdy = '1';
-      
+
       assert  to_integer(unsigned(res))   **2 <= i and
              (to_integer(unsigned(res))+1)**2 >  i
         report "Square root failed for " & integer'image(i)
@@ -102,5 +102,5 @@ begin  -- tb
       sqrt  => res,
       rdy   => rdy
     );
-  
+
 end tb;

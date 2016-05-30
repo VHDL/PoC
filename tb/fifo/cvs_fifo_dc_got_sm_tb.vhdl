@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: fifo_dc_got_sm_tb
 -- Author(s): Martin Zabel
--- 
+--
 -- Testbench for fifo_dc_got_sm.
 --
 -- Revision:    $Revision: 1.1 $
@@ -101,7 +101,7 @@ begin  -- behavioral
     wait for 100 ns;
     wait until falling_edge(clk_wr);
     rst_wr <= '0';
-    
+
     -- insert signal assignments here
     wait until falling_edge(clk_wr) and full = '0';
     put <= '1';
@@ -109,7 +109,7 @@ begin  -- behavioral
     wait until falling_edge(clk_wr);
     put <= '0';
     wait until falling_edge(clk_wr);
-    
+
     put <= '1';
     din <= x"10";
     wait until falling_edge(clk_wr);
@@ -165,7 +165,7 @@ begin  -- behavioral
     -- wait for FIFO to be cleared
     wait for 2000 ns;
     wait until falling_edge(clk_wr);
-    
+
     -- continues write
     for i in 0 to 10000 loop
       while full /= '0' loop           -- catch also 'X', ...
@@ -178,7 +178,7 @@ begin  -- behavioral
     end loop;  -- i
     put <= '0';
     wait until falling_edge(clk_wr);
-    
+
     wait;
   end process Write_Proc;
 
@@ -191,7 +191,7 @@ begin  -- behavioral
     wait for 100 ns;
     wait until falling_edge(clk_rd);
     rst_rd <= '0';
-      
+
     -- insert signal assignments here
     wait until falling_edge(clk_rd) and valid = '1';
     got <= '1';
@@ -202,7 +202,7 @@ begin  -- behavioral
     -- wait for FIFO to be filled
     wait for 1000 ns;
     wait until falling_edge(clk_rd);
-    
+
     for i in 0 to 15 loop
       -- last "got" will be ignored
       got <= '1';
@@ -225,7 +225,7 @@ begin  -- behavioral
     end loop;  -- i
     got <= '0';
     wait until falling_edge(clk_rd);
-    
+
     wait;
   end process Read_Proc;
 

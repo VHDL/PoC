@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_triggerDoubleRegister
 -- Author(s): Stefan Alex
--- 
+--
 ------------------------------------------------------
 -- A double register for trigger-inputs             --
 ------------------------------------------------------
@@ -59,9 +59,9 @@ end trace_triggerDoubleRegister;
 
 architecture rtl of trace_triggerDoubleRegister is
 
-  constant REG1_INIT_I : std_logic_vector(WIDTH-1 downto 0) := ifThenElse(REG1_INIT'length = 1, (WIDTH-1 downto 0 => REG1_INIT(0)), 
+  constant REG1_INIT_I : std_logic_vector(WIDTH-1 downto 0) := ifThenElse(REG1_INIT'length = 1, (WIDTH-1 downto 0 => REG1_INIT(0)),
                                                                           REG1_INIT(WIDTH-1 downto 0));
-  constant REG2_INIT_I : std_logic_vector(WIDTH-1 downto 0) := ifThenElse(REG2_INIT'length = 1, (WIDTH-1 downto 0 => REG2_INIT(0)), 
+  constant REG2_INIT_I : std_logic_vector(WIDTH-1 downto 0) := ifThenElse(REG2_INIT'length = 1, (WIDTH-1 downto 0 => REG2_INIT(0)),
                                                                           REG2_INIT(WIDTH-1 downto 0));
 
   signal reg1_r   : std_logic_vector(WIDTH-1 downto 0) := REG1_INIT_I;
@@ -120,4 +120,4 @@ begin
     end if;
   end process clk_proc;
 
-end rtl; 
+end rtl;

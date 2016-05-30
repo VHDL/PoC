@@ -10,7 +10,7 @@
 
 -- Entity: uart_wb
 -- Author(s): Martin Zabel
--- 
+--
 -- Wrapper module for "uart_rx" and "uart_tx" to support Wishbone interface.
 --
 -- See notes on uart_fifo_wb for commands and adresses.
@@ -38,7 +38,7 @@ entity uart_wb is
 		rst				: in	std_logic;
 
 		-- FIFO interface
-		
+
 		wb_adr_i	: in	std_logic_vector(1 downto 0);
 		wb_cyc_i	: in	std_logic;
 		wb_dat_i	: in	std_logic_vector(7 downto 0);
@@ -48,10 +48,10 @@ entity uart_wb is
 		wb_dat_o	: out	std_logic_vector(31 downto 0);
 		wb_err_o	: out	std_logic;
 		wb_rty_o	: out	std_logic;
-		
+
 		-- debugging
 		overflow	: out	std_logic;
-		
+
 		-- External Pins
 		rxd				: in	std_logic;
 		txd				: out	std_logic
@@ -66,12 +66,12 @@ architecture rtl of uart_wb is
   signal tf_got   : std_logic;
   signal tf_valid : std_logic;
   signal tf_dout  : std_logic_vector(7 downto 0);
-  
+
   signal bclk_r    : std_logic;
   signal bclk_x8_r : std_logic;
 
   signal overflow_r : std_logic;
-  
+
 begin  -- rtl
 
   fifo2wb: uart_fifo_wb

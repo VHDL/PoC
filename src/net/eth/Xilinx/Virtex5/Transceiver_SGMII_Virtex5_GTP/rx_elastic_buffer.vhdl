@@ -52,22 +52,22 @@
 -- PART OF THIS FILE AT ALL TIMES.
 --
 ------------------------------------------------------------------------
--- Description: This is the Receiver Elastic Buffer for the design 
---              example of the Virtex-5 Ethernet MAC Wrappers. 
+-- Description: This is the Receiver Elastic Buffer for the design
+--              example of the Virtex-5 Ethernet MAC Wrappers.
 --
 --              The FIFO is created from Block Memory, is of data width
---              32 (2 characters wide plus status) and is of depth 64 
+--              32 (2 characters wide plus status) and is of depth 64
 --              words.  This is twice the size of the elastic buffer in
 --              the RocketIO which has been bypassed,
 --
---              When the write clock is a few parts per million faster 
+--              When the write clock is a few parts per million faster
 --              than the read clock, the occupancy of the FIFO will
---              increase and Idles should be removed. 
---              
---              When the read clock is a few parts per million faster 
+--              increase and Idles should be removed.
+--
+--              When the read clock is a few parts per million faster
 --              than the write clock, the occupancy of the FIFO will
---              decrease and Idles should be inserted.  The logic in  
---              this example design will always insert as many idles as  
+--              decrease and Idles should be inserted.  The logic in
+--              this example design will always insert as many idles as
 --              necessary in every Inter-frame Gap period to restore the
 --              FIFO occupancy.
 --
@@ -75,31 +75,31 @@
 --              correction character.  This is made up from a /K28.5/
 --              followed by a /D16.2/ character.
 
-																							 
-																							 
+
+
 library ieee;
-use ieee.std_logic_1164.all;																         
-use ieee.numeric_std.all;																	  
-																							  
-																							 
-library unisim;																				  
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+
+library unisim;
 use unisim.vcomponents.all;
-																	 
-																							  
 
-entity rx_elastic_buffer is																		                      
 
-   port ( 
+
+entity rx_elastic_buffer is
+
+   port (
 
       -- Signals received from the RocketIO on RXRECCLK.
 
       rxrecclk                  : in  std_logic;
       reset                     : in  std_logic;
       rxchariscomma_rec         : in  std_logic;
-      rxcharisk_rec             : in  std_logic;       
-      rxdisperr_rec             : in  std_logic;       
-      rxnotintable_rec          : in  std_logic; 
-      rxrundisp_rec             : in  std_logic;    
+      rxcharisk_rec             : in  std_logic;
+      rxdisperr_rec             : in  std_logic;
+      rxnotintable_rec          : in  std_logic;
+      rxrundisp_rec             : in  std_logic;
       rxdata_rec                : in  std_logic_vector(7 downto 0);
 
       -- Signals reclocked onto RXUSRCLK2.
@@ -107,12 +107,12 @@ entity rx_elastic_buffer is
       rxusrclk2                 : in  std_logic;
       rxreset                   : in  std_logic;
       rxchariscomma_usr         : out std_logic;
-      rxcharisk_usr             : out std_logic;       
-      rxdisperr_usr             : out std_logic;       
-      rxnotintable_usr          : out std_logic; 
-      rxrundisp_usr             : out std_logic;    
-      rxclkcorcnt_usr           : out std_logic_vector(2 downto 0);    
-      rxbuferr                  : out std_logic;    
+      rxcharisk_usr             : out std_logic;
+      rxdisperr_usr             : out std_logic;
+      rxnotintable_usr          : out std_logic;
+      rxrundisp_usr             : out std_logic;
+      rxclkcorcnt_usr           : out std_logic_vector(2 downto 0);
+      rxbuferr                  : out std_logic;
       rxdata_usr                : out std_logic_vector(7 downto 0)
    );
 
@@ -134,7 +134,7 @@ architecture structural of rx_elastic_buffer is
       return std_logic_vector is
 
       variable gray : std_logic_vector(bin'range);
-      
+
    begin
 
       for i in bin'range loop
@@ -157,7 +157,7 @@ architecture structural of rx_elastic_buffer is
       return std_logic_vector is
 
       variable binary : std_logic_vector(gray'range);
-      
+
    begin
 
       for i in gray'high downto gray'low loop
@@ -169,7 +169,7 @@ architecture structural of rx_elastic_buffer is
       end loop;  -- i
 
       return binary;
-      
+
    end gray_to_bin;
 
 
@@ -191,7 +191,7 @@ architecture structural of rx_elastic_buffer is
    -- Signal Declarations
    ---------------------------------------------------------------------
 
-   -- Write domain logic (RXRECCLK) 
+   -- Write domain logic (RXRECCLK)
 
    attribute ASYNC_REG          : string;
 
@@ -201,11 +201,11 @@ architecture structural of rx_elastic_buffer is
    signal next_wr_addr          : unsigned(6 downto 0);                 -- Next FIFO write address (to reduce latency in gray code logic).
    signal wr_addr               : unsigned(9 downto 0);                -- FIFO write address.
    signal wr_enable             : std_logic;                            -- write enable for FIFO.
-   signal wr_addr_gray          : std_logic_vector(6 downto 0);         -- wr_addr is converted to a gray code. 
+   signal wr_addr_gray          : std_logic_vector(6 downto 0);         -- wr_addr is converted to a gray code.
 
    signal wr_rd_addr_gray       : std_logic_vector(6 downto 0);         -- read address pointer (gray coded) reclocked onto the write clock domain).
    signal wr_rd_addr_gray_reg   : std_logic_vector(6 downto 0);         -- read address pointer (gray coded) registered on write clock for the 2nd time.
-   signal wr_rd_addr            : unsigned(6 downto 0);                 -- wr_rd_addr_gray converted back to binary (on the write clock domain). 
+   signal wr_rd_addr            : unsigned(6 downto 0);                 -- wr_rd_addr_gray converted back to binary (on the write clock domain).
    signal wr_occupancy          : unsigned(6 downto 0);                 -- The occupancy of the FIFO in write clock domain.
    signal filling               : std_logic;                            -- FIFO is filling up: Idles should be removed.
 
@@ -219,18 +219,18 @@ architecture structural of rx_elastic_buffer is
    signal remove_idle_reg       : std_logic;
 
 
-   -- Read domain logic (RXUSRCLK2) 
+   -- Read domain logic (RXUSRCLK2)
 
    signal rd_data               : std_logic_vector(15 downto 0);        -- Date read out of the block RAM.
    signal rd_data_reg           : std_logic_vector(15 downto 0);        -- rd_data is registered for logic pipeline.
    signal next_rd_addr          : unsigned(6 downto 0);                 -- Next FIFO read address (to reduce latency in gray code logic).
    signal rd_addr               : unsigned(9 downto 0);                 -- FIFO read address.
    signal rd_enable             : std_logic;                            -- read enable for FIFO.
-   signal rd_addr_gray          : std_logic_vector(6 downto 0);         -- rd_addr is converted to a gray code. 
+   signal rd_addr_gray          : std_logic_vector(6 downto 0);         -- rd_addr is converted to a gray code.
 
    signal rd_wr_addr_gray       : std_logic_vector(6 downto 0);         -- write address pointer (gray coded) reclocked onto the read clock domain).
    signal rd_wr_addr_gray_reg   : std_logic_vector(6 downto 0);         -- write address pointer (gray coded) registered on read clock for the 2nd time.
-   signal rd_wr_addr            : unsigned(6 downto 0);                 -- rd_wr_addr_gray converted back to binary (on the read clock domain). 
+   signal rd_wr_addr            : unsigned(6 downto 0);                 -- rd_wr_addr_gray converted back to binary (on the read clock domain).
    signal rd_occupancy          : unsigned(6 downto 0);                 -- The occupancy of the FIFO in read clock domain.
    signal emptying              : std_logic;                            -- FIFO is emptying: Idles should be inserted.
    signal overflow              : std_logic;                            -- FIFO has filled up to overflow.
@@ -248,7 +248,7 @@ architecture structural of rx_elastic_buffer is
    signal insert_idle           : std_logic;                            -- An Idle is inserted whilst reading it out of the FIFO.
    signal insert_idle_reg       : std_logic;                            -- insert_idle is registered.
    signal rd_enable_reg         : std_logic;                            -- Read enable is registered.
-   signal rxclkcorcnt           : std_logic_vector(2 downto 0);         -- derive RXCLKCORCNT to mimic RocketIO behaviour.    
+   signal rxclkcorcnt           : std_logic_vector(2 downto 0);         -- derive RXCLKCORCNT to mimic RocketIO behaviour.
 
 
 
@@ -290,15 +290,15 @@ begin
 
 
   -- Detect /K28.5/ character in upper half of the word from RocketIO
-  k28p5_wr <= '1' when (wr_data(7 downto 0) = "10111100" 
+  k28p5_wr <= '1' when (wr_data(7 downto 0) = "10111100"
                   and wr_data(11) = '1') else '0';
 
   -- Detect /D16.2/ character in upper half of the word from RocketIO
-  d16p2_wr <= '1' when (wr_data(7 downto 0)   = "01010000" 
+  d16p2_wr <= '1' when (wr_data(7 downto 0)   = "01010000"
                   and wr_data(11) = '0') else '0';
 
   gen_k_d_pipe : process(rxrecclk)
-  begin 
+  begin
     if rxrecclk'event and rxrecclk = '1' then
       if reset = '1' then
         k28p5_wr_pipe      <= (others => '0');
@@ -322,7 +322,7 @@ begin
         remove_idle_reg   <= '0';
       else
         remove_idle_reg <= remove_idle;
-       
+
         -- Idle removal (always leave the first /I2/ Idle, then every
         -- alternate Idle can be removed.
         if (d16p2_wr = '1' and k28p5_wr_pipe(0) = '1' and
@@ -348,7 +348,7 @@ begin
         wr_addr(6 downto 0) <= "1000000";
       else
         if wr_enable = '1' then
-          next_wr_addr        <= next_wr_addr + 1;           
+          next_wr_addr        <= next_wr_addr + 1;
           wr_addr(6 downto 0) <= next_wr_addr;
 	    end if;
 	  end if;
@@ -373,7 +373,7 @@ begin
 
 
   ----------------------------------------------------------------------
-  -- Instantiate a dual port Block RAM    
+  -- Instantiate a dual port Block RAM
   ----------------------------------------------------------------------
 
   dual_port_block_ram0: RAMB16_S18_S18
@@ -413,20 +413,20 @@ begin
      if rxusrclk2'event and rxusrclk2 = '1' then
         if rxreset = '1' then
            rd_data_reg   <= (others => '0');
-        elsif rd_enable_reg = '1' then 
+        elsif rd_enable_reg = '1' then
            rd_data_reg   <= rd_data;
-        end if;			  
+        end if;
 	  end if;
   end process reg_rd_data;
 
 
 
   -- Detect /K28.5/ character in upper half of the word read from FIFO
-  k28p5_rd <= '1' when (rd_data_reg(7 downto 0) = "10111100" 
+  k28p5_rd <= '1' when (rd_data_reg(7 downto 0) = "10111100"
                   and rd_data_reg(11) = '1') else '0';
 
   -- Detect /D16.2/ character in lower half of the word read from FIFO
-  d16p2_rd <= '1' when (rd_data(7 downto 0) = "01010000" 
+  d16p2_rd <= '1' when (rd_data(7 downto 0) = "01010000"
                   and rd_data(11) = '0') else '0';
 
 
@@ -461,7 +461,7 @@ begin
 
   rd_enable <= not(insert_idle or insert_idle_reg);
 
-            
+
   -- Create the FIFO read address pointer.
   gen_rd_addr: process (rxusrclk2)
   begin
@@ -470,16 +470,16 @@ begin
            next_rd_addr(6 downto 0) <= "0000001";
            rd_addr(6 downto 0)      <= "0000000";
 
-        elsif rd_enable = '1' then                                        
-           next_rd_addr(6 downto 0) <= next_rd_addr(6 downto 0) + 1;           
+        elsif rd_enable = '1' then
+           next_rd_addr(6 downto 0) <= next_rd_addr(6 downto 0) + 1;
            rd_addr(6 downto 0)      <= next_rd_addr;
-        end if;			  
+        end if;
 	  end if;
   end process gen_rd_addr;
 
   -- Not all of the block RAM memory is required
   rd_addr(9 downto 7) <= "000";
-		 
+
   -- Convert read address pointer into a gray code
   rd_addrgray_bits: process (rxusrclk2)
   begin
@@ -507,29 +507,29 @@ begin
         rxrundisp_usr       <= '0';
         rxdata_usr          <= X"00";
       else
-        if rd_enable_reg = '0' and even = '0' then                                        
+        if rd_enable_reg = '0' and even = '0' then
           rxchariscomma_usr <= '0';
           rxcharisk_usr     <= '0';
           rxdisperr_usr     <= '0';
           rxnotintable_usr  <= '0';
           rxrundisp_usr     <= rd_data_reg(8);
           rxdata_usr        <= "01010000";
-        elsif rd_enable_reg = '0' and even = '1' then                                        
+        elsif rd_enable_reg = '0' and even = '1' then
           rxchariscomma_usr <= '1';
           rxcharisk_usr     <= '1';
           rxdisperr_usr     <= '0';
           rxnotintable_usr  <= '0';
           rxrundisp_usr     <= rd_data(8);
           rxdata_usr        <= "10111100";
-        else                      
+        else
           rxchariscomma_usr <= rd_data_reg(12);
           rxcharisk_usr     <= rd_data_reg(11);
           rxdisperr_usr     <= rd_data_reg(10);
           rxnotintable_usr  <= rd_data_reg(9);
           rxrundisp_usr     <= rd_data_reg(8);
           rxdata_usr        <= rd_data_reg(7 downto 0);
-        end if;			  
-      end if;			  
+        end if;
+      end if;
 	end if;
   end process gen_mux;
 
@@ -548,8 +548,8 @@ begin
            rxclkcorcnt   <= "111";
         else
            rxclkcorcnt   <= "000";
-        end if;			  
-      end if;			  
+        end if;
+      end if;
 	end if;
   end process gen_rxclkcorcnt;
 
@@ -564,9 +564,9 @@ begin
 
 
   -- Reclock the write address pointer (gray code) onto the read domain.
-  -- By reclocking the gray code, the worst case senario is that 
-  -- the reclocked value is only in error by -1, since only 1 bit at a  
-  -- time changes between gray code increments. 
+  -- By reclocking the gray code, the worst case senario is that
+  -- the reclocked value is only in error by -1, since only 1 bit at a
+  -- time changes between gray code increments.
   reclock_wr_addrgray: process (rxusrclk2)
   begin
      if rxusrclk2'event and rxusrclk2 = '1' then
@@ -574,17 +574,17 @@ begin
            rd_wr_addr_gray     <= "1100001";
            rd_wr_addr_gray_reg <= "1100000";
         else
-           rd_wr_addr_gray     <= wr_addr_gray;  
+           rd_wr_addr_gray     <= wr_addr_gray;
            rd_wr_addr_gray_reg <= rd_wr_addr_gray;
         end if;
      end if;
   end process reclock_wr_addrgray;
 
-   
+
 
   -- Convert the resync'd Write Address Pointer grey code back to binary
   rd_wr_addr <=unsigned(gray_to_bin(std_logic_vector(rd_wr_addr_gray_reg)));
-															   
+
 
 
   --Determine the occupancy of the FIFO as observed in the read domain.
@@ -601,7 +601,7 @@ begin
 
 
 
-  -- Set emptying flag if FIFO occupancy is less than LOWER_THRESHOLD. 
+  -- Set emptying flag if FIFO occupancy is less than LOWER_THRESHOLD.
   gen_emptying : process (rd_occupancy)
   begin
      if rd_occupancy < lower_threshold then
@@ -613,7 +613,7 @@ begin
 
 
 
-  -- Set underflow if FIFO occupancy is less than UNDERFLOW_THRESHOLD. 
+  -- Set underflow if FIFO occupancy is less than UNDERFLOW_THRESHOLD.
   gen_underflow : process (rd_occupancy)
   begin
      if rd_occupancy < underflow_threshold then
@@ -625,7 +625,7 @@ begin
 
 
 
-  -- Set overflow if FIFO occupancy is less than OVERFLOW_THRESHOLD. 
+  -- Set overflow if FIFO occupancy is less than OVERFLOW_THRESHOLD.
   gen_overflow : process (rd_occupancy)
   begin
      if rd_occupancy > overflow_threshold then
@@ -659,9 +659,9 @@ begin
 
 
   -- Reclock the read address pointer (gray code) onto the write domain.
-  -- By reclocking the gray code, the worst case senario is that 
-  -- the reclocked value is only in error by -1, since only 1 bit at a  
-  -- time changes between gray code increments. 
+  -- By reclocking the gray code, the worst case senario is that
+  -- the reclocked value is only in error by -1, since only 1 bit at a
+  -- time changes between gray code increments.
   reclock_rd_addrgray: process (rxrecclk)
   begin
      if rxrecclk'event and rxrecclk = '1' then
@@ -669,17 +669,17 @@ begin
           wr_rd_addr_gray     <= (others => '0');
           wr_rd_addr_gray_reg <= (others => '0');
        else
-          wr_rd_addr_gray     <= rd_addr_gray;  
+          wr_rd_addr_gray     <= rd_addr_gray;
           wr_rd_addr_gray_reg <= wr_rd_addr_gray;
        end if;
      end if;
   end process reclock_rd_addrgray;
 
-   
+
 
   -- Convert the resync'd Read Address Pointer grey code back to binary
   wr_rd_addr <=unsigned(gray_to_bin(std_logic_vector(wr_rd_addr_gray_reg)));
-															   
+
 
 
   --Determine the occupancy of the FIFO as observed in the write domain.
@@ -696,7 +696,7 @@ begin
 
 
 
-  -- Set filling flag if FIFO occupancy is greated than UPPER_THRESHOLD. 
+  -- Set filling flag if FIFO occupancy is greated than UPPER_THRESHOLD.
   gen_filling : process (wr_occupancy)
   begin
      if wr_occupancy > upper_threshold then

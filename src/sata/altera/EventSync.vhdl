@@ -26,7 +26,7 @@ BEGIN
 			sreg <= src;
 		END IF;
 	END PROCESS;
-		
+
 	-- D-FFs @Clock2
 	PROCESS(Clock2)
 	BEGIN

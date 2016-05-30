@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_sendmux
 -- Author(s): Martin Zabel
--- 
+--
 -- Multiplex between data-packets and control-packets (command answer) during
 -- sending the trace to the host PC.
 --
@@ -25,13 +25,13 @@
 -- - MIN_DATA_PACKET_SIZE = 2  is current minimum (might be extended to 1)
 --
 -- 'eth_last' signals last byte of current packet. This terminates the current
--- packet, to allow switching between data-packets and control-packets. 
+-- packet, to allow switching between data-packets and control-packets.
 --
 -- 'data_fifo_clear' writes out any pending data even if minimum size of last
 -- packet is not reached. Handle carefully.
 --
 -- This module's logic was formerly included in trace_ctrl (fifo_blk). But now,
--- it has 
+-- it has
 -- been separated to allow separate simulation. It has been also been
 -- reimplemented and should be usable also for other communication channels
 -- than ethernet. It might be integrated into the communication module itself
@@ -49,7 +49,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 
 entity trace_sendmux is
-  
+
   generic (
     MIN_DATA_PACKET_SIZE : integer range 2 to 128);
 
@@ -63,13 +63,13 @@ entity trace_sendmux is
     data_fifo_din   : in  std_logic_vector(7 downto 0);
     data_fifo_full  : out std_logic;
     data_fifo_empty : out std_logic;
-    
+
     -- control-packet signaling
     ctrl_valid : in  std_logic;
     ctrl_data  : in  std_logic_vector(7 downto 0);
     ctrl_last  : in  std_logic;
     ctrl_got   : out std_logic;
-    
+
     -- outgoing messages
     eth_valid   : out std_logic;
     eth_last    : out std_logic;
@@ -90,7 +90,7 @@ architecture rtl of trace_sendmux is
   type FSM_TYPE is (IDLE, SEND_CTRL, SEND_DATA);
   signal fsm_cs : FSM_TYPE;
   signal fsm_ns : FSM_TYPE;
-  
+
   -- Data-Fifo control signals
   signal data_fifo_fstate : std_logic_vector(log2ceil(MIN_DATA_PACKET_SIZE+1)-1 downto 0);
   signal data_fifo_minavl : std_logic;
@@ -104,7 +104,7 @@ architecture rtl of trace_sendmux is
 
   -- real valid data byte
   signal data_valid : std_logic;
-  
+
 begin  -- rtl
 
   -----------------------------------------------------------------------------
@@ -155,7 +155,7 @@ begin  -- rtl
     data_fifo_got <= '0';
     data_last     <= '0';
     data_valid    <= '0';
-    
+
     case fsm_cs is
       when IDLE =>
         -- no packet in transmission
@@ -171,7 +171,7 @@ begin  -- rtl
       when SEND_CTRL =>
         -- ctrl-packet in transmission
         ctrl_got <= eth_got;
-        
+
         if (ctrl_last and eth_got) = '1' then
           fsm_ns <= IDLE;
         end if;
@@ -185,13 +185,13 @@ begin  -- rtl
         if data_fifo_1entry = '0' then
           -- more than one byte left
           data_valid <= '1';
-          
+
           if eth_finish = '1' then      -- implies eth_got
             -- maximum packet size reached
             -- just switch to new state to shorten critical path!
             fsm_ns <= IDLE;
           end if;
-          
+
         else
           -- only one byte left
           if (ctrl_valid or data_fifo_clear) = '1' then
@@ -221,7 +221,7 @@ begin  -- rtl
   -- Output Multiplexer
   -----------------------------------------------------------------------------
   header <= '1' when fsm_cs = SEND_CTRL else '0';
-  
+
   with fsm_cs select eth_dout <=
     ctrl_data      when SEND_CTRL,
     data_fifo_dout when others;         -- '0'

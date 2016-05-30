@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
@@ -13,18 +13,18 @@
 -- See notes on module 'sata_LinkLayer'.
 --
 -- For input 'MyReset' see assignment in module 'sata_LinkLayer'.
--- 
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -60,7 +60,7 @@ entity sata_LinkLayerFSM is
 
 		Status									: out	T_SATA_LINK_STATUS;
 		Error										: out	T_SATA_LINK_ERROR;
-			
+
 		-- DebugPort
 		DebugPortOut						: out	T_SATADBG_LINK_LLFSM_OUT;
 
@@ -75,13 +75,13 @@ entity sata_LinkLayerFSM is
 		Trans_RX_SOF						: out	STD_LOGIC;
 		Trans_RX_EOF						: out	STD_LOGIC;
 		--TODO Feature Request: Trans_RX_Abort					: in	STD_LOGIC; -- SyncEscape from Transport Layer
-		
+
 		Trans_RXFS_CRCOK				: out	STD_LOGIC;
 		Trans_RXFS_SyncEsc			: out	STD_LOGIC;
 
 		-- physical layer interface
 		Phy_Status							: in	T_SATA_PHY_STATUS;
-		
+
 		TX_Primitive						: out	T_SATA_PRIMITIVE;
 		RX_Primitive						: in	T_SATA_PRIMITIVE;
 
@@ -104,7 +104,7 @@ entity sata_LinkLayerFSM is
 		RX_FIFO_rollback				: out	STD_LOGIC;
 		RX_FIFO_Full						: in	STD_LOGIC;
 		RX_FIFO_SpaceAvailable	: in	STD_LOGIC;
-		
+
 		-- RX FIFO input/hold register interface
 		RX_DataReg_shift				: out	STD_LOGIC;
 
@@ -117,21 +117,21 @@ entity sata_LinkLayerFSM is
 		RX_CRC_rst							: out	STD_LOGIC;
 		RX_CRC_Valid						: out	STD_LOGIC;
 		RX_CRC_OK								: in	STD_LOGIC;
-		
+
 		-- TX_CRC interface
 		TX_CRC_rst							: out	STD_LOGIC;
 		TX_CRC_Valid						: out	STD_LOGIC;
-		
+
 		-- TX scrambler interface
 		DataScrambler_en				: out	STD_LOGIC;
 		DataScrambler_rst				: out	STD_LOGIC;
 --		DummyScrambler_en				: out	STD_LOGIC;
 --		DummyScrambler_rst			: out	STD_LOGIC;
-		
+
 		-- RX scrambler interface
 		DataUnscrambler_en			: out	STD_LOGIC;
 		DataUnscrambler_rst			: out	STD_LOGIC;
-		
+
 		-- TX MUX interface
 		CRCMux_ctrl							: out	STD_LOGIC--;
 --		ScramblerMux_ctrl				: out	STD_LOGIC
@@ -142,10 +142,10 @@ architecture rtl of sata_LinkLayerFSM is
 	attribute KEEP									: BOOLEAN;
 	attribute FSM_ENCODING					: STRING;
 	attribute SYN_ENCODING					: STRING;				-- Altera: FSM_ENCODING
-	
+
 	constant LONG_FRAME_WORDS					: POSITIVE		:= 8;
 	constant SHORT_FRAME_RETRY_COUNT	: POSITIVE		:= 16;
-	
+
 	type T_STATE is (
 		ST_RESET,
 		ST_NO_COMMUNICATION,
@@ -174,11 +174,11 @@ architecture rtl of sata_LinkLayerFSM is
 		ST_RX_SEND_R_ERROR
 	);
 	attribute SYN_ENCODING	of T_STATE		: type is "gray";		-- altera state machine encoding
-	
+
 	-- LinkLayer - Statemachines
 	signal State										: T_STATE																		:= ST_RESET;
 	signal NextState								: T_STATE;
-	
+
 	attribute FSM_ENCODING	of State		: signal is getFSMEncoding_gray(DEBUG);
 
 	constant INSERT_ALIGN_COUNTER_BITS	: POSITIVE															:= log2ceilnz(INSERT_ALIGN_INTERVAL);
@@ -188,7 +188,7 @@ architecture rtl of sata_LinkLayerFSM is
 	signal TX_WordCounter_rst						: STD_LOGIC;
 	signal TX_WordCounter_inc						: STD_LOGIC;
 	signal TX_IsLongFrame								: STD_LOGIC;
-	
+
 	signal TX_RetryCounter_rst					: STD_LOGIC;
 	signal TX_RetryCounter_inc					: STD_LOGIC;
 	signal TX_RetryFailed								: STD_LOGIC;
@@ -206,14 +206,14 @@ architecture rtl of sata_LinkLayerFSM is
 
 	signal RX_FIFO_put_i 						: STD_LOGIC;
 	signal RX_FIFO_Overflow_r 			: STD_LOGIC 																:= '0';
-	
+
 	signal RX_SOFReg_d1							: STD_LOGIC																	:= '0';
 	signal RX_SOFReg_d2							: STD_LOGIC																	:= '0';
-	
+
 	signal RX_CRC_OKReg_set					: STD_LOGIC;
 	signal RX_CRC_OKReg_rst					: STD_LOGIC;
 	signal RX_CRC_OKReg_r						: STD_LOGIC																	:= '0';
-	
+
 begin
 
 -- ==================================================================
@@ -238,7 +238,7 @@ begin
 		NextState											<= State;
 		Status 												<= SATA_LINK_STATUS_IDLE;
 		Error 												<= SATA_LINK_ERROR_NONE;
-		
+
 		-- primitive interface
 		TX_Primitive									<= SATA_PRIMITIVE_NONE;
 
@@ -249,26 +249,26 @@ begin
 		TX_FIFO_Rollback							<= '0';
 		TX_FSFIFO_rst									<= '0';
 		TX_FSFIFO_put									<= '0';
-		
+
 		Trans_TXFS_SendOK							<= '0';
 		Trans_TXFS_SyncEsc						<= '0';
-		
+
 		TX_WordCounter_rst						<= '0';
 		TX_WordCounter_inc						<= '0';
-		
+
 		TX_RetryCounter_rst						<= '0';
 		TX_RetryCounter_inc						<= '0';
-		
+
 		-- TX CRC interface
 		TX_CRC_rst										<= '0';
 		TX_CRC_Valid									<= '0';
-		
+
 		-- TX scrambler interface
 		DataScrambler_en							<= '0';
 		DataScrambler_rst							<= '0';
 --		DummyScrambler_en							<= '0';
 --		DummyScrambler_rst						<= '0';
-		
+
 		-- TX MUX interface
 		CRCMux_ctrl										<= '0';
 --		ScramblerMux_ctrl							<= '0';
@@ -282,18 +282,18 @@ begin
 		RX_IsEOF											<= '0';
 		RX_FSFIFO_rst									<= '0';
 		RX_FSFIFO_put									<= '0';
-		
+
 		Trans_RXFS_CRCOK							<= '0';
 		Trans_RXFS_SyncEsc						<= '0';
-		
+
 		-- RX CRC interface
 		RX_CRC_rst										<= '0';
 		RX_CRC_Valid									<= '0';
-		
+
 		-- RX scrambler interface
 		DataUnscrambler_en						<= '0';
 		DataUnscrambler_rst						<= '0';
-		
+
 		case State is
 			-- ----------------------------------------------------------
 			when ST_RESET =>
@@ -305,12 +305,12 @@ begin
 				RX_FSFIFO_rst									<= '1';
 				TX_RetryCounter_rst						<= '1';
 				NextState											<= ST_NO_COMMUNICATION;
-				
+
 				-- ----------------------------------------------------------
 			when ST_NO_COMMUNICATION =>
 				Status												<= SATA_LINK_STATUS_NO_COMMUNICATION;
 				TX_Primitive									<= SATA_PRIMITIVE_ALIGN;
-				
+
 				if (Phy_Status = SATA_PHY_STATUS_COMMUNICATING) then
 					NextState										<= ST_IDLE;
 				end if;
@@ -329,26 +329,26 @@ begin
 				-- agreement with above layer, e.g. clear FIFOs, reset RetryCounter and
 				-- so on.
 				-- TODO Feature Request: Re-initialize via Command.
-				
+
 				--TX_RetryCounter_rst						<= '1';
 				--RX_FIFO_rollback							<= '1';
 				--TX_FIFO_Commit								<= '1'; -- TODO: Discard?
 				NextState											<= ST_NO_COMMUNICATION_ERROR;
-				
+
 				-- ----------------------------------------------------------
 			when ST_IDLE =>
 				Status 												<= SATA_LINK_STATUS_IDLE;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					
+
 					-- All cases are handled after InsertAlign is '0' again.
 
 				else	-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_SYNC;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then								-- transmission attempt received
-						if (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) then						-- 
+						if (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_HOST) then						--
 							if (RX_FIFO_SpaceAvailable = '1') and (RX_FSFIFO_Full = '0') then		-- RX FIFOs have space => send RX_RDY
 								TX_Primitive					<= SATA_PRIMITIVE_RX_RDY;
 								NextState							<= ST_RX_SEND_RX_RDY;
@@ -377,34 +377,34 @@ begin
 						end if;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_SYNC_ESCAPE =>
 				Status 												<= SATA_LINK_STATUS_SYNC_ESCAPE;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					
+
 					-- All cases are handled after InsertAlign is '0' again.
 
 				else	-- InsertAlign
 					TX_Primitive 								<= SATA_PRIMITIVE_SYNC;
-					
+
 					if ((RX_Primitive = SATA_PRIMITIVE_TX_RDY) or
 							(RX_Primitive = SATA_PRIMITIVE_SYNC)) then
 						NextState <= ST_IDLE;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 				-- sending
 				-- ----------------------------------------------------------
 			when ST_TX_SEND_TX_RDY =>
 				Status												<= SATA_LINK_STATUS_SENDING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_RX_RDY) then										-- other side is ready to receive
 						null; -- just send align, transistion after InsertAlign = '0'
 					elsif (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then									-- transmission attempt from other side
@@ -421,12 +421,12 @@ begin
 
 				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_TX_RDY;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_RX_RDY) then										-- other side is ready to receive
 						TX_Primitive							<= SATA_PRIMITIVE_SOF;
 						TX_WordCounter_rst				<= '1';
 						TX_CRC_rst								<= '1';
-						
+
 						DataScrambler_rst					<= '1';
 --							DummyScrambler_rst				<= '1';
 						NextState						<= ST_TX_SEND_DATA;
@@ -444,14 +444,14 @@ begin
 						end if;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_TX_SEND_DATA =>
 				Status												<= SATA_LINK_STATUS_SENDING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					
+
 					-- Receiving HOLD and SYNC is handled after InsertAlign is low again.
 
 				else	-- InsertAlign
@@ -462,7 +462,7 @@ begin
 						TX_FIFO_Commit 						<= TX_IsLongFrame;
 						TX_CRC_Valid							<= '1';
 						DataScrambler_en					<= '1';
-						
+
 						if (Trans_TX_EOF = '1') then																-- last payload word in Frame
 							if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 							-- abort
 								-- SyncEscape by receiver.
@@ -503,14 +503,14 @@ begin
 						end if;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_TX_SEND_HOLD =>
 				Status												<= SATA_LINK_STATUS_SENDING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					
+
 					-- Receiving HOLD and SYNC is handled after InsertAlign is low again.
 
 				else	-- InsertAlign
@@ -521,7 +521,7 @@ begin
 						TX_FIFO_Commit 						<= TX_IsLongFrame;
 						TX_CRC_Valid							<= '1';
 						DataScrambler_en					<= '1';
-						
+
 						if (Trans_TX_EOF = '1') then																-- last payload word in frame
 							if (RX_Primitive = SATA_PRIMITIVE_SYNC) then 							-- abort
 								-- SyncEscape by receiver.
@@ -561,20 +561,20 @@ begin
 						end if;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_TX_RECEIVED_HOLD =>
 				-- assert(TX_Fifo_Valid = '1')
 				Status												<= SATA_LINK_STATUS_SENDING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					
+
 					-- Receiving HOLD and SYNC is handled after InsertAlign is low again.
-					
+
 				else	-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_HOLD_ACK;
-					
+
 					if ((RX_Primitive = SATA_PRIMITIVE_HOLD) or
 							(RX_Primitive = SATA_PRIMITIVE_ALIGN))	then
 						null;
@@ -598,11 +598,11 @@ begin
 						end if;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_TX_SEND_CRC =>
 				Status												<= SATA_LINK_STATUS_SENDING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					-- Receiving SYNC is handled after InsertAlign is low again.
@@ -623,11 +623,11 @@ begin
 						NextState									<= ST_TX_SEND_EOF;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_TX_SEND_EOF =>
 				Status												<= SATA_LINK_STATUS_SENDING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					-- Receiving SYNC is handled after InsertAlign is low again.
@@ -650,14 +650,14 @@ begin
 				-- ----------------------------------------------------------
 			when ST_TX_WAIT =>
 				Status												<= SATA_LINK_STATUS_SENDING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					-- Handle primitives after InsertAlign is low again.
 
 				else	-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_WAIT_TERM;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_R_OK) then
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						TX_RetryCounter_rst				<= '1';										-- frame successfully delivered -> reset counter
@@ -667,7 +667,7 @@ begin
 						NextState									<= ST_IDLE;
 					elsif (RX_Primitive = SATA_PRIMITIVE_R_ERROR) then
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
-						
+
 						if ((TX_IsLongFrame = '0') and 											-- retry short frame
 								(TX_RetryFailed = '0')) then										-- try again
 							TX_RetryCounter_inc			<= '1';
@@ -677,7 +677,7 @@ begin
 							TX_RetryCounter_rst			<= '1';										-- frame finally failed -> reset counter
 							TX_FIFO_Commit					<= '1';										-- Commit data FIFO
 							TX_FSFIFO_put						<= '1';										-- update frame state FIFO
-							NextState								<= ST_IDLE;						
+							NextState								<= ST_IDLE;
 						end if;
 					elsif (RX_Primitive = SATA_PRIMITIVE_SYNC) then 			-- abort
 						-- SyncEscape by receiver.
@@ -697,27 +697,27 @@ begin
 				else
 					TX_Primitive								<= SATA_PRIMITIVE_SYNC;
 				end if;
-				
+
 				TX_RetryCounter_rst						<= '1';												-- frame finally failed -> reset counter
 				TX_FIFO_got										<= '1';
 				TX_FIFO_Commit 								<= '1';
 				if (Trans_TX_EOF = '1') then																-- last payload word in frame
 					NextState 									<= ST_IDLE;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 				-- receiving
 				-- ----------------------------------------------------------
 			when ST_RX_WAIT_FIFO =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					-- All cases are handled after InsertAlign is deasserted.
-					
+
 				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_SYNC;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_TX_RDY) then
 						if (RX_FIFO_SpaceAvailable = '1') and (RX_FSFIFO_Full = '0') then
 							TX_Primitive						<= SATA_PRIMITIVE_RX_RDY;
@@ -729,17 +729,17 @@ begin
 						-- no frame started yet
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						NextState									<= ST_IDLE;
-					end if;				
+					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_RX_SEND_RX_RDY =>
 				-- assert(RX_FIFO_SpaceAvailable = '1')
 				Status												<= SATA_LINK_STATUS_RECEIVING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_SOF) then
 						RX_IsSOF 									<= '1';
 						RX_CRC_rst								<= '1';
@@ -750,7 +750,7 @@ begin
 
 				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_RX_RDY;
-					
+
 					if ((RX_Primitive = SATA_PRIMITIVE_TX_RDY) or
 							(RX_Primitive = SATA_PRIMITIVE_ALIGN))
 					then
@@ -766,14 +766,14 @@ begin
 						NextState									<= ST_IDLE;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_RX_RECEIVE_DATA =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive 								<= SATA_PRIMITIVE_ALIGN;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
 						RX_IsData									<= '1';
 						RX_CRC_Valid							<= '1';
@@ -789,12 +789,12 @@ begin
 						RX_IsEOF 									<= '1';
 						NextState 								<= ST_RX_RECEIVED_EOF;
 					end if;
-					
+
 					-- WTRM and SYNC are handled after InsertAlign is low again.
 
 				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_R_IP;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
 						RX_IsData										<= '1';
 						RX_CRC_Valid								<= '1';
@@ -827,14 +827,14 @@ begin
 						NextState									<= ST_IDLE;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_RX_SEND_HOLD =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive 								<= SATA_PRIMITIVE_ALIGN;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
 						RX_IsData									<= '1';
 						RX_CRC_Valid							<= '1';
@@ -852,7 +852,7 @@ begin
 
 				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_HOLD;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 						-- data
 						RX_IsData									<= '1';
 						RX_CRC_Valid							<= '1';
@@ -900,14 +900,14 @@ begin
 						end if;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_RX_RECEIVED_HOLD =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then
 						RX_IsData									<= '1';
 						RX_CRC_Valid							<= '1';
@@ -917,12 +917,12 @@ begin
 						RX_IsEOF 									<= '1';
 						NextState 								<= ST_RX_RECEIVED_EOF;
 					end if;
-					
+
 					-- All other primitives are handled after InsertAlign is low again.
 
 				else		-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_HOLD_ACK;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_NONE) then 							-- data
 						TX_Primitive							<= SATA_PRIMITIVE_R_IP;
 						RX_IsData									<= '1';
@@ -956,18 +956,18 @@ begin
 						NextState								<= ST_RX_RECEIVE_DATA;
 					end if;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 				-- Frame Received
 				-- ----------------------------------------------------------
 			when ST_RX_RECEIVED_EOF =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
-				
+
 				-- Last data word already inserted with EOF. Check error conditions.
 				-- RX_FSFIFO_Full is checked before receive begins.
 				if ((RX_CRC_OKReg_r = '0') or 			-- caused by bit errors
 						(RX_FIFO_Overflow_r = '1') or 	-- send HOLD failed
-						(RX_DataReg_Valid2 = '0')) 			-- frame too short	
+						(RX_DataReg_Valid2 = '0')) 			-- frame too short
 				then
 					if (InsertAlign = '1') then
 						TX_Primitive 							<= SATA_PRIMITIVE_ALIGN;
@@ -988,18 +988,18 @@ begin
 					Trans_RXFS_CRCOK 						<= '1';
 					NextState 									<= ST_RX_SEND_R_OK;
 				end if;
-				
+
 				-- ----------------------------------------------------------
 			when ST_RX_SEND_R_OK =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					-- All cases are handled after InsertAlign is deasserted
 
 				else	-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_R_OK;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_SYNC) then
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						NextState									<= ST_IDLE;
@@ -1009,14 +1009,14 @@ begin
 				-- ----------------------------------------------------------
 			when ST_RX_SEND_R_ERROR =>
 				Status												<= SATA_LINK_STATUS_RECEIVING;
-				
+
 				if (InsertAlign = '1') then
 					TX_Primitive								<= SATA_PRIMITIVE_ALIGN;
 					-- All cases are handled after InsertAlign is deasserted
 
 				else	-- InsertAlign
 					TX_Primitive								<= SATA_PRIMITIVE_R_ERROR;
-					
+
 					if (RX_Primitive = SATA_PRIMITIVE_SYNC) then
 						TX_Primitive							<= SATA_PRIMITIVE_SYNC;
 						NextState									<= ST_IDLE;
@@ -1057,14 +1057,14 @@ begin
 	RX_CRC_OKReg_rst	<= to_sl(RX_Primitive = SATA_PRIMITIVE_SYNC) or (not RX_CRC_OK and RX_IsData);
 
 	RX_CRC_OKReg_r 		<= ffsr(q => RX_CRC_OKReg_r, set => RX_CRC_OKReg_set, rst => RX_CRC_OKReg_rst) when rising_edge(Clock);
-	
+
 	-- register for RX_FIFO overflow
 	-- -----------------------------
 	-- If other side continous sending data even if we send HOLD, then the
 	-- RX_FIFO might overflow.
 	-- Reset flag when back in IDLE to allow error processing.
-	RX_FIFO_Overflow_r <= ffrs(q => RX_FIFO_Overflow_r, rst => to_sl(State = ST_IDLE), set => RX_FIFO_put_i and RX_FIFO_Full) when rising_edge(Clock); 
-	
+	RX_FIFO_Overflow_r <= ffrs(q => RX_FIFO_Overflow_r, rst => to_sl(State = ST_IDLE), set => RX_FIFO_put_i and RX_FIFO_Full) when rising_edge(Clock);
+
 -- ==================================================================
 -- insert align counter
 -- ==================================================================
@@ -1077,7 +1077,7 @@ begin
 
 		signal RetryCounter_inc					: STD_LOGIC;
 		signal RetryCounter_us					: UNSIGNED(4 downto 0)																:= (others => '0');
-		
+
 	begin
 		InsertAlign_rst							<= InsertAlign when rising_edge(Clock);		-- delay reload by one cycle -> asserts InsertAlign for 2 cycles.
 		InsertAlign_Counter_us			<= upcounter_next(cnt => InsertAlign_Counter_us, rst => InsertAlign_rst, en => not InsertAlign) when rising_edge(Clock);
@@ -1114,10 +1114,10 @@ begin
 			end if;
 		end if;
 	end process;
-	
+
 	RX_FIFO_put_i			<= (RX_IsData or RX_IsEOF) and RX_DataReg_Valid2;
 	RX_FIFO_put 			<= RX_FIFO_put_i;
-	
+
 	Trans_RX_SOF			<= RX_SOFReg_d2;
 	Trans_RX_EOF			<= RX_IsEOF;
 
@@ -1128,7 +1128,7 @@ begin
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
-		
+
 	begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
 			function dbg_GenerateStateEncodings return string is
@@ -1150,14 +1150,14 @@ begin
 				end loop;
 				return  l.all;
 			end function;
-		
+
 			constant dummy : T_BOOLVEC := (
 				0 => dbg_ExportEncoding("Link Layer - FSM", 						dbg_GenerateStateEncodings,			PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer.tok"),
 				1 => dbg_ExportEncoding("Link Layer - Primitive Enum",	dbg_GeneratePrimitiveEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Primitive.tok")
 			);
 		begin
 		end generate;
-		
+
 		DebugPortOut.FSM						<= dbg_EncodeState(State);
 		DebugPortOut.TX_IsLongFrame <= TX_IsLongFrame;
 		DebugPortOut.TX_RetryFailed <= TX_RetryFailed;

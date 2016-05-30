@@ -1,10 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
--- 
+--
 -- Module:				 	TODO
 --
 -- Description:
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS is" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,20 +48,20 @@ package net_comp is
 	-- ==========================================================================================================================================================
 	component eth_RSLayer_GMII_GMII_Xilinx is
 		port (
-			Reset_async								: in	STD_LOGIC;																	-- @async: 
-			
+			Reset_async								: in	STD_LOGIC;																	-- @async:
+
 			-- RS-GMII interface
 			RS_TX_Clock								: in	STD_LOGIC;
 			RS_TX_Valid								: in	STD_LOGIC;
 			RS_TX_Data								: in	T_SLV_8;
 			RS_TX_Error								: in	STD_LOGIC;
-			
+
 			RS_RX_Clock								: in	STD_LOGIC;
 			RS_RX_Valid								: out	STD_LOGIC;
 			RS_RX_Data								: out	T_SLV_8;
 			RS_RX_Error								: out	STD_LOGIC;
 
-			-- PHY-GMII interface		
+			-- PHY-GMII interface
 			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_GMII
 		);
 	end component;
@@ -73,19 +73,19 @@ package net_comp is
 		port (
 			Clock											: in	STD_LOGIC;
 			Reset											: in	STD_LOGIC;
-			
+
 			-- GEMAC-GMII interface
 			RS_TX_Clock								: in	STD_LOGIC;
 			RS_TX_Valid								: in	STD_LOGIC;
 			RS_TX_Data								: in	T_SLV_8;
 			RS_TX_Error								: in	STD_LOGIC;
-			
+
 			RS_RX_Clock								: in	STD_LOGIC;
 			RS_RX_Valid								: out	STD_LOGIC;
 			RS_RX_Data								: out	T_SLV_8;
 			RS_RX_Error								: out	STD_LOGIC;
-			
-			-- PHY-SGMII interface		
+
+			-- PHY-SGMII interface
 			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
 		);
 	end component;
@@ -97,19 +97,19 @@ package net_comp is
 		port (
 			Clock											: in	STD_LOGIC;
 			Reset											: in	STD_LOGIC;
-			
+
 			-- GEMAC-GMII interface
 			RS_TX_Clock								: in	STD_LOGIC;
 			RS_TX_Valid								: in	STD_LOGIC;
 			RS_TX_Data								: in	T_SLV_8;
 			RS_TX_Error								: in	STD_LOGIC;
-			
+
 			RS_RX_Clock								: in	STD_LOGIC;
 			RS_RX_Valid								: out	STD_LOGIC;
 			RS_RX_Data								: out	T_SLV_8;
 			RS_RX_Error								: out	STD_LOGIC;
-			
-			-- PHY-SGMII interface		
+
+			-- PHY-SGMII interface
 			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
 		);
 	end component;
@@ -121,19 +121,19 @@ package net_comp is
 		port (
 			Clock											: in	STD_LOGIC;
 			Reset											: in	STD_LOGIC;
-			
+
 			-- GEMAC-GMII interface
 			RS_TX_Clock								: in	STD_LOGIC;
 			RS_TX_Valid								: in	STD_LOGIC;
 			RS_TX_Data								: in	T_SLV_8;
 			RS_TX_Error								: in	STD_LOGIC;
-			
+
 			RS_RX_Clock								: in	STD_LOGIC;
 			RS_RX_Valid								: out	STD_LOGIC;
 			RS_RX_Data								: out	T_SLV_8;
 			RS_RX_Error								: out	STD_LOGIC;
-			
-			-- PHY-SGMII interface		
+
+			-- PHY-SGMII interface
 			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
 		);
 	end component;
@@ -207,11 +207,11 @@ package net_comp is
 	-- ==========================================================================================================================================================
 	component eth_Wrapper_Virtex5 is
 		generic (
-			DEBUG											: BOOLEAN														:= FALSE;															-- 
+			DEBUG											: BOOLEAN														:= FALSE;															--
 			CLOCKIN_FREQ							: FREQ															:= 125 MHz;													-- 125 MHz
-			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
-			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
-			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
+			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
+			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		--
+			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		--
 		);
 		port (
 			-- clock interface
@@ -224,9 +224,9 @@ package net_comp is
 
 			-- reset interface
 			Reset											: in	STD_LOGIC;
-			
+
 			-- Command-Status-Error interface
-			
+
 			-- MAC LocalLink interface
 			TX_Valid									: in	STD_LOGIC;
 			TX_Data										: in	T_SLV_8;
@@ -239,19 +239,19 @@ package net_comp is
 			RX_SOF										: out	STD_LOGIC;
 			RX_EOF										: out	STD_LOGIC;
 			RX_Ack										: In	STD_LOGIC;
-			
+
 			-- PHY-SGMII interface
 			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
 		);
 	end component;
-	
+
 	component eth_Wrapper_Virtex6 is
 		generic (
-			DEBUG											: BOOLEAN														:= FALSE;															-- 
+			DEBUG											: BOOLEAN														:= FALSE;															--
 			CLOCKIN_FREQ							: FREQ															:= 125 MHz;													-- 125 MHz
-			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
-			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
-			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
+			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
+			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		--
+			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		--
 		);
 		port (
 			-- clock interface
@@ -261,12 +261,12 @@ package net_comp is
 			Eth_RX_Clock							: in	STD_LOGIC;
 			TX_Clock									: in	STD_LOGIC;
 			RX_Clock									: in	STD_LOGIC;
-			
+
 			-- reset interface
 			Reset											: in	STD_LOGIC;
-			
+
 			-- Command-Status-Error interface
-			
+
 			-- MAC LocalLink interface
 			TX_Valid									: in	STD_LOGIC;
 			TX_Data										: in	T_SLV_8;
@@ -279,20 +279,20 @@ package net_comp is
 			RX_SOF										: out	STD_LOGIC;
 			RX_EOF										: out	STD_LOGIC;
 			RX_Ack										: In	STD_LOGIC;
-			
+
 			-- PHY-SGMII interface
 			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
 		);
 	end component;
-	
+
 	component eth_Wrapper_Series7 is
 		generic (
-			DEBUG											: BOOLEAN														:= FALSE;															-- 
+			DEBUG											: BOOLEAN														:= FALSE;															--
 
 			CLOCKIN_FREQ							: FREQ															:= 125 MHz;													-- 125 MHz
-			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
-			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
-			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
+			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
+			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		--
+			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		--
 		);
 		port (
 			-- clock interface
@@ -302,12 +302,12 @@ package net_comp is
 			Eth_RX_Clock							: in	STD_LOGIC;
 			TX_Clock									: in	STD_LOGIC;
 			RX_Clock									: in	STD_LOGIC;
-			
+
 			-- reset interface
 			Reset											: in	STD_LOGIC;
-			
+
 			-- Command-Status-Error interface
-			
+
 			-- MAC LocalLink interface
 			TX_Valid									: in	STD_LOGIC;
 			TX_Data										: in	T_SLV_8;
@@ -320,12 +320,12 @@ package net_comp is
 			RX_SOF										: out	STD_LOGIC;
 			RX_EOF										: out	STD_LOGIC;
 			RX_Ack										: In	STD_LOGIC;
-			
+
 			-- PHY-SGMII interface
 			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
 		);
 	end component;
-	
+
 	-- ==========================================================================================================================================================
 	-- Ethernet: MAC Data-Link-Layer
 	-- ==========================================================================================================================================================
@@ -388,17 +388,17 @@ package net_comp is
 	-- ==========================================================================================================================================================
 	-- eth_Wrapper: configuration data structures
 	-- ==========================================================================================================================================================
-	
+
 	-- ==========================================================================================================================================================
 	-- local network: sequence and flow control protocol (SFC)
 	-- ==========================================================================================================================================================
-	
+
 	-- ==========================================================================================================================================================
 	-- internet layer: Internet Protocol Version 4 (IPv4)
 	-- ==========================================================================================================================================================
-	
+
 	-- ==========================================================================================================================================================
 	-- internet layer: Address Resolution Protocol (ARP)
 	-- ==========================================================================================================================================================
-	
+
 end package;

@@ -52,23 +52,23 @@
 -- PART OF THIS FILE AT ALL TIMES.
 --
 --------------------------------------------------------------------------------
--- Description:  This wrapper file instantiates the full Virtex-5 Ethernet 
+-- Description:  This wrapper file instantiates the full Virtex-5 Ethernet
 --               MAC (EMAC) primitive.  For one or both of the two Ethernet MACs
 --               (EMAC0/EMAC1):
 --
 --               * all unused input ports on the primitive will be tied to the
 --                 appropriate logic level;
 --
---               * all unused output ports on the primitive will be left 
+--               * all unused output ports on the primitive will be left
 --                 unconnected;
 --
---               * the Tie-off Vector will be connected based on the options 
+--               * the Tie-off Vector will be connected based on the options
 --                 selected from CORE Generator;
 --
---               * only used ports will be connected to the ports of this 
+--               * only used ports will be connected to the ports of this
 --                 wrapper file.
 --
---               This simplified wrapper should therefore be used as the 
+--               This simplified wrapper should therefore be used as the
 --               instantiation template for the EMAC in customer designs.
 --------------------------------------------------------------------------------
 
@@ -168,86 +168,86 @@ architecture core of eth_TEMAC_TRANS_Virtex6 is
     --------
     -- Configure the PCS/PMA logic
     -- PCS/PMA Reset not asserted (normal operating mode)
-    constant EMAC0_PHYRESET : boolean := FALSE;  
+    constant EMAC0_PHYRESET : boolean := FALSE;
     -- PCS/PMA Auto-Negotiation Enable (enabled)
-    constant EMAC0_PHYINITAUTONEG_ENABLE : boolean := TRUE;  
+    constant EMAC0_PHYINITAUTONEG_ENABLE : boolean := TRUE;
     -- PCS/PMA Isolate (not enabled)
-    constant EMAC0_PHYISOLATE : boolean := FALSE;  
+    constant EMAC0_PHYISOLATE : boolean := FALSE;
     -- PCS/PMA Powerdown (not in power down: normal operating mode)
-    constant EMAC0_PHYPOWERDOWN : boolean := FALSE;  
+    constant EMAC0_PHYPOWERDOWN : boolean := FALSE;
     -- PCS/PMA Loopback (not enabled)
-    constant EMAC0_PHYLOOPBACKMSB : boolean := FALSE;  
+    constant EMAC0_PHYLOOPBACKMSB : boolean := FALSE;
     -- Do not allow over/underflow in the GTP during auto-negotiation
-    constant EMAC0_CONFIGVEC_79 : boolean := TRUE; 
+    constant EMAC0_CONFIGVEC_79 : boolean := TRUE;
     -- GT loopback (not enabled)
-    constant EMAC0_GTLOOPBACK : boolean := FALSE; 
+    constant EMAC0_GTLOOPBACK : boolean := FALSE;
     -- Do not allow TX without having established a valid link
-    constant EMAC0_UNIDIRECTION_ENABLE : boolean := FALSE; 
+    constant EMAC0_UNIDIRECTION_ENABLE : boolean := FALSE;
     constant EMAC0_LINKTIMERVAL : bit_vector := x"032";
 
     -- Configure the MAC operating mode
     -- MDIO is enabled
-    constant EMAC0_MDIO_ENABLE : boolean := TRUE;  
+    constant EMAC0_MDIO_ENABLE : boolean := TRUE;
     -- Speed is defaulted to 1000Mb/s
     constant EMAC0_SPEED_LSB : boolean := FALSE;
-    constant EMAC0_SPEED_MSB : boolean := TRUE; 
+    constant EMAC0_SPEED_MSB : boolean := TRUE;
     constant EMAC0_USECLKEN : boolean := FALSE;
     constant EMAC0_BYTEPHY : boolean := FALSE;
-   
+
     constant EMAC0_RGMII_ENABLE : boolean := FALSE;
     -- SGMII is used to connect to PHY
-    constant EMAC0_SGMII_ENABLE : boolean := TRUE;  
+    constant EMAC0_SGMII_ENABLE : boolean := TRUE;
     constant EMAC0_1000BASEX_ENABLE : boolean := FALSE;
     -- The Host I/F is not  in use
-    constant EMAC0_HOST_ENABLE : boolean := FALSE;  
+    constant EMAC0_HOST_ENABLE : boolean := FALSE;
     -- 8-bit interface for Tx client
     constant EMAC0_TX16BITCLIENT_ENABLE : boolean := FALSE;
-    -- 8-bit interface for Rx client  
-    constant EMAC0_RX16BITCLIENT_ENABLE : boolean := FALSE;  
+    -- 8-bit interface for Rx client
+    constant EMAC0_RX16BITCLIENT_ENABLE : boolean := FALSE;
     -- The Address Filter (not enabled)
-    constant EMAC0_ADDRFILTER_ENABLE : boolean := FALSE;  
+    constant EMAC0_ADDRFILTER_ENABLE : boolean := FALSE;
 
     -- MAC configuration defaults
     -- Rx Length/Type checking enabled (standard IEEE operation)
-    constant EMAC0_LTCHECK_DISABLE : boolean := FALSE;  
+    constant EMAC0_LTCHECK_DISABLE : boolean := FALSE;
     -- Rx Flow Control (enabled)
-    constant EMAC0_RXFLOWCTRL_ENABLE : boolean := TRUE;  
+    constant EMAC0_RXFLOWCTRL_ENABLE : boolean := TRUE;
     -- Tx Flow Control (enabled)
-    constant EMAC0_TXFLOWCTRL_ENABLE : boolean := TRUE;  
+    constant EMAC0_TXFLOWCTRL_ENABLE : boolean := TRUE;
     -- Transmitter is not held in reset not asserted (normal operating mode)
-    constant EMAC0_TXRESET : boolean := FALSE;  
+    constant EMAC0_TXRESET : boolean := FALSE;
     -- Transmitter Jumbo Frames (enabled)
-    constant EMAC0_TXJUMBOFRAME_ENABLE : boolean := TRUE;    
+    constant EMAC0_TXJUMBOFRAME_ENABLE : boolean := TRUE;
     -- Transmitter In-band FCS (not enabled)
-    constant EMAC0_TXINBANDFCS_ENABLE : boolean := FALSE;  
+    constant EMAC0_TXINBANDFCS_ENABLE : boolean := FALSE;
     -- Transmitter Enabled
-    constant EMAC0_TX_ENABLE : boolean := TRUE;  
+    constant EMAC0_TX_ENABLE : boolean := TRUE;
     -- Transmitter VLAN mode (not enabled)
-    constant EMAC0_TXVLAN_ENABLE : boolean := FALSE;  
+    constant EMAC0_TXVLAN_ENABLE : boolean := FALSE;
     -- Transmitter Half Duplex mode (not enabled)
-    constant EMAC0_TXHALFDUPLEX : boolean := FALSE;  
+    constant EMAC0_TXHALFDUPLEX : boolean := FALSE;
     -- Transmitter IFG Adjust (not enabled)
-    constant EMAC0_TXIFGADJUST_ENABLE : boolean := FALSE;  
+    constant EMAC0_TXIFGADJUST_ENABLE : boolean := FALSE;
     -- Receiver is not held in reset not asserted (normal operating mode)
-    constant EMAC0_RXRESET : boolean := FALSE;  
+    constant EMAC0_RXRESET : boolean := FALSE;
     -- Receiver Jumbo Frames (enabled)
-    constant EMAC0_RXJUMBOFRAME_ENABLE : boolean := TRUE;    
+    constant EMAC0_RXJUMBOFRAME_ENABLE : boolean := TRUE;
     -- Receiver In-band FCS (not enabled)
-    constant EMAC0_RXINBANDFCS_ENABLE : boolean := FALSE;  
+    constant EMAC0_RXINBANDFCS_ENABLE : boolean := FALSE;
     -- Receiver Enabled
-    constant EMAC0_RX_ENABLE : boolean := TRUE;  
+    constant EMAC0_RX_ENABLE : boolean := TRUE;
     -- Receiver VLAN mode (not enabled)
-    constant EMAC0_RXVLAN_ENABLE : boolean := FALSE;  
+    constant EMAC0_RXVLAN_ENABLE : boolean := FALSE;
     -- Receiver Half Duplex mode (not enabled)
-    constant EMAC0_RXHALFDUPLEX : boolean := FALSE;  
+    constant EMAC0_RXHALFDUPLEX : boolean := FALSE;
 
     -- Set the Pause Address Default
     constant EMAC0_PAUSEADDR : bit_vector := x"FFEEDDCCBBAA";
 
     constant EMAC0_UNICASTADDR : bit_vector := x"000000000000";
- 
+
     constant EMAC0_DCRBASEADDR : bit_vector := X"00";
- 
+
 
     ----------------------------------------------------------------------------
     -- Signals Declarations
@@ -493,14 +493,14 @@ begin
 
         EMAC1SPEEDIS10100               => open,
 
-        -- Host Interface 
+        -- Host Interface
         HOSTCLK                         => '0',
- 
+
         HOSTOPCODE                      => gnd_v48_i(1 downto 0),
         HOSTREQ                         => '0',
         HOSTMIIMSEL                     => '0',
         HOSTADDR                        => gnd_v48_i(9 downto 0),
-        HOSTWRDATA                      => gnd_v48_i(31 downto 0), 
+        HOSTWRDATA                      => gnd_v48_i(31 downto 0),
         HOSTMIIMRDY                     => open,
         HOSTRDDATA                      => open,
         HOSTEMAC1SEL                    => '0',
