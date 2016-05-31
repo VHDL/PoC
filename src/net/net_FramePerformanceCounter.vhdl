@@ -16,7 +16,7 @@ ENTITY LocalLink_PerformanceCounter IS
 	PORT (
 		Clock											: IN	STD_LOGIC;
 		Reset											: IN	STD_LOGIC;
-		
+
 		In_Valid									: IN	STD_LOGIC;
 		In_Data										: IN	T_SLV_8;
 		In_SOF										: IN	STD_LOGIC;
@@ -28,7 +28,7 @@ ENTITY LocalLink_PerformanceCounter IS
 		Out_SOF										: OUT	STD_LOGIC;
 		Out_EOF										: OUT	STD_LOGIC;
 		Out_Ack										: IN	STD_LOGIC;
-		
+
 		PacketsPerSecond					: OUT	T_SLV_32;
 		BytesPerSecond						: OUT	T_SLV_32
 	);
@@ -39,10 +39,10 @@ ARCHITECTURE rtl OF LocalLink_PerformanceCounter IS
 	ATTRIBUTE FSM_ENCODING						: STRING;
 
 	SIGNAL In_Ack_i									: STD_LOGIC;
-	
+
 	SIGNAL Is_NewPacket								: STD_LOGIC;
 	SIGNAL Is_DataFlow								: STD_LOGIC;
-	
+
 	SIGNAL PacketCounter_rst					: STD_LOGIC;
 	SIGNAL PacketCounter_en						: STD_LOGIC;
 	SIGNAL PacketCounter_us						: UNSIGNED(31 DOWNTO 0)			:= (OTHERS => '0');
@@ -50,7 +50,7 @@ ARCHITECTURE rtl OF LocalLink_PerformanceCounter IS
 	SIGNAL ByteCounter_rst						: STD_LOGIC;
 	SIGNAL ByteCounter_en							: STD_LOGIC;
 	SIGNAL ByteCounter_us							: UNSIGNED(31 DOWNTO 0)			:= (OTHERS => '0');
-	
+
 	SIGNAL TimeBaseCounter_rst				: STD_LOGIC;
 	SIGNAL TimeBaseCounter_en					: STD_LOGIC;
 	SIGNAL TimeBaseCounter_us					: UNSIGNED(31 DOWNTO 0)			:= (OTHERS => '0');
@@ -64,21 +64,21 @@ BEGIN
 	Out_Data		<= In_Data;
 	Out_SOF			<= In_SOF;
 	Out_EOF			<= In_EOF;
-	
+
 	In_Ack_i	<= Out_Ack;
 	In_Ack			<= In_Ack_i;
-	
+
 	-- triggers
 	Is_NewPacket	<= In_Valid AND In_SOF;
 	Is_DataFlow		<= In_Valid AND In_Ack_i;
-	
+
 	-- counter control
 	PacketCounter_rst	<= TimeBaseCounter_ov;
 	ByteCounter_rst		<= TimeBaseCounter_ov;
-	
+
 	PacketCounter_en	<= Is_NewPacket;
 	ByteCounter_en		<= Is_DataFlow;
-	
+
 	-- packet and byte counters
 	PROCESS(Clock)
 	BEGIN
@@ -90,7 +90,7 @@ BEGIN
 					PacketCounter_us			<= PacketCounter_us + 1;
 				END IF;
 			END IF;
-			
+
 			IF ((Reset OR ByteCounter_rst)= '1') THEN
 				ByteCounter_us					<= (OTHERS => '0');
 			ELSE
@@ -100,7 +100,7 @@ BEGIN
 			END IF;
 		END IF;
 	END PROCESS;
-	
+
 	-- timebase
 	PROCESS(Clock)
 	BEGIN
@@ -114,9 +114,9 @@ BEGIN
 			END IF;
 		END IF;
 	END PROCESS;
-	
+
 	TimeBaseCounter_ov		<= to_sl(TimeBaseCounter_us = TimingToCycles(AGGREGATION_INTERVAL, CLOCK_IN_FREQ));
-	
+
 	PROCESS(Clock)
 	BEGIN
 		IF rising_edge(Clock) THEN
@@ -131,7 +131,7 @@ BEGIN
 			END IF;
 		END IF;
 	END PROCESS;
-	
+
 	PacketsPerSecond		<= std_logic_vector(PacketsPerSecond_d(29 DOWNTO 0))	& "00";
 	BytesPerSecond			<= std_logic_vector(BytesPerSecond_d(29 DOWNTO 0))		& "00";
 END ARCHITECTURE;

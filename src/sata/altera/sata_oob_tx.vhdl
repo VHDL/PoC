@@ -33,7 +33,7 @@ begin
 			-- detect oob-signals
 			counter <= counter + 1;
 			last_oob_command <= tx_oob_command;
-			
+
 			if last_oob_command = SATA_OOB_NONE and tx_oob_command /= SATA_OOB_NONE then
 				counter <= (others => '0');
 				burstcounter <= (others => '0');
@@ -41,7 +41,7 @@ begin
 				tx_oob_idle <= '1';
 				active_oob_command <= tx_oob_command;
 			end if;
-				
+
 			if active_oob_command =	SATA_OOB_COMRESET then
 				if tx_oob_idle = '0' then
 					if counter >= to_unsigned(15,8) then -- burst: 106.7ns
@@ -73,7 +73,7 @@ begin
 						tx_oob_idle <= '1';
 					end if;
 				else -- tx_oob_idle = '1'
-					if burstcounter < to_unsigned(6,3) then 
+					if burstcounter < to_unsigned(6,3) then
 						if counter >= to_unsigned(15,8) then -- elecidle: 106.7ns
 							counter <= (others =>'0');
 							tx_oob_idle <= '0';
@@ -85,9 +85,9 @@ begin
 							active_oob_command <= SATA_OOB_NONE;
 						end if;
 					end if;
-				end if; 
+				end if;
 			end if;
 		end if;
 	end process;
-	
+
 end;

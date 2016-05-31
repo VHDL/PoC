@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Package: trace_internals
 -- Author(s): Stefan Alex
--- 
+--
 -- Internal Components and Constants for Trace-Unit
 --
 -- Revision:    $Revision: 1.11 $

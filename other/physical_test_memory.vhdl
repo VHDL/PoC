@@ -1,15 +1,15 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Martin Zabel
 --                  Patrick Lehmann
--- 
+--
 -- Module:					Sub-module for test of physical type `MEMORY` and conversion
 -- 									routines defined in `physical.pkg.vhdl`.
 --
--- 
+--
 -- Description:
 -- ------------------------------------
 -- Synthesis reports a multiple driver error / critical-warning when
@@ -26,13 +26,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ library poc;
 use poc.physical.all;
 
 entity physical_test_memory is
-  
+
 	generic (
 		CONST_1_BYTE		 : memory		:= 1 Byte;
 		CONST_1_KIB			 : memory		:= 1 KiB;
@@ -94,7 +94,7 @@ architecture rtl of physical_test_memory is
 		report "msum(SOME_MEMORYS)= " & MEMORY'image(msum(SOME_MEMORYS)) severity note;
 	return true;
 	end f;
-	
+
 	constant C : boolean := f;
 
 begin  -- architecture rtl
@@ -108,32 +108,32 @@ begin  -- architecture rtl
 	checkConst1Byte: if CONST_1_BYTE <= 0 Byte generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1KiB: if CONST_1_KIB <= 0 Byte or CONST_1_KIB /= 1024 Byte generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125KiB: if CONST_1p125_KIB <= 0 Byte or CONST_1p125_KIB /= 1152 Byte generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1MiB: if CONST_1_MIB <= 0 Byte or CONST_1_MIB /= 1024 KiB generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125MiB: if CONST_1p125_MIB <= 0 Byte or CONST_1p125_MIB /= 1152 KiB generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1GiB: if CONST_1_GIB <= 0 Byte or CONST_1_GIB /= 1024 MiB generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125GiB: if CONST_1p125_GIB <= 0 Byte or CONST_1p125_GIB /= 1152 MiB generate
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkCvt1ByteInt: if CVT_1_BYTE_INT /= 1 generate
 		y <= '1';
@@ -165,7 +165,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkMax: if mmax(SOME_MEMORYS) /= 1 GiB generate
 		y <= '1';

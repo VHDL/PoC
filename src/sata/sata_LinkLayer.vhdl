@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
@@ -12,7 +12,7 @@
 -- ------------------------------------
 -- Represents the Link Layer of the SATA stack and provides a logical link for
 -- transmitting frames. The frames are transmitted across the physical link
--- provided by the Physical Layer (sata_PhysicalLayer). 
+-- provided by the Physical Layer (sata_PhysicalLayer).
 --
 -- The SATA Transport Layer and Link layer are connected via the TX_* path for
 -- sending frames and RX_* path for receiving frames. Success or failure of a
@@ -29,13 +29,13 @@
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -72,7 +72,7 @@ entity sata_LinkLayer is
 		Clock										: in	STD_LOGIC;
 		ClockEnable							: in	STD_LOGIC;
 		Reset										: in	STD_LOGIC;
-		
+
 		Command									: in	T_SATA_LINK_COMMAND;
 		Status									: out	T_SATA_LINK_STATUS;
 		Error										: out	T_SATA_LINK_ERROR;
@@ -80,7 +80,7 @@ entity sata_LinkLayer is
 		-- Debug ports
 		DebugPortIn						 	: in  T_SATADBG_LINK_IN;
 		DebugPortOut					 	: out T_SATADBG_LINK_OUT;
-		
+
 		-- TX port
 		TX_SOF									: in	STD_LOGIC;
 		TX_EOF									: in	STD_LOGIC;
@@ -88,19 +88,19 @@ entity sata_LinkLayer is
 		TX_Data									: in	T_SLV_32;
 		TX_Ack									: out	STD_LOGIC;
 		TX_InsertEOF						: out	STD_LOGIC;
-		
+
 		TX_FS_Ack								: in	STD_LOGIC;
 		TX_FS_Valid							:	OUT	STD_LOGIC;
 		TX_FS_SendOK						: out	STD_LOGIC;
 		TX_FS_SyncEsc						: OUT	STD_LOGIC;
-		
+
 		-- RX port
 		RX_SOF									: out	STD_LOGIC;
 		RX_EOF									: out	STD_LOGIC;
 		RX_Valid								: out	STD_LOGIC;
 		RX_Data									: out	T_SLV_32;
 		RX_Ack									: in	STD_LOGIC;
-		
+
 		RX_FS_Ack								: in	STD_LOGIC;
 		RX_FS_Valid							:	OUT	STD_LOGIC;
 		RX_FS_CRCOK							: out	STD_LOGIC;
@@ -109,10 +109,10 @@ entity sata_LinkLayer is
 		-- physical layer interface
 		Phy_ResetDone 					: in  STD_LOGIC;
 		Phy_Status							: in	T_SATA_PHY_STATUS;
-		
+
 		Phy_RX_Data							: in	T_SLV_32;
 		Phy_RX_CharIsK					: in	T_SLV_4;
-		
+
 		Phy_TX_Data							: out	T_SLV_32;
 		Phy_TX_CharIsK					: out	T_SLV_4
 
@@ -125,7 +125,7 @@ architecture rtl of sata_LinkLayer is
 -- ==================================================================
 -- LinkLayer configuration
 -- ==================================================================
--- TX path																							
+-- TX path
 	constant INSERT_ALIGN_INTERVAL			: POSITIVE				:= 256;
 
 	constant TX_SOF_BIT									: NATURAL					:= 32;
@@ -137,7 +137,7 @@ architecture rtl of sata_LinkLayer is
 	constant TX_FSFIFO_BITS							: POSITIVE				:= 2;
 	constant TX_FSFIFO_DEPTH						: POSITIVE				:= 4;
 	constant TX_FSFIFO_EMPTYSTATE_BITS	: POSITIVE				:= log2ceilnz(TX_FSFIFO_DEPTH);
-	
+
 -- RX path
 	constant RX_SOF_BIT									: NATURAL					:= 32;
 	constant RX_EOF_BIT									: NATURAL					:= 33;
@@ -164,7 +164,7 @@ architecture rtl of sata_LinkLayer is
 
 	-- internal version of transport layer outputs
 	signal TX_InsertEOF_i 							: STD_LOGIC;
-		
+
 	-- transport layer interface below FIFO
 	signal Trans_TX_SOF									: STD_LOGIC;
 	signal Trans_TX_EOF									: STD_LOGIC;
@@ -177,11 +177,11 @@ architecture rtl of sata_LinkLayer is
 
 	signal Trans_RXFS_CRCOK							: STD_LOGIC;
 	signal Trans_RXFS_SyncEsc						: STD_LOGIC;
-	
+
 	-- TX FSM section
 	signal CRCMux_ctrl									: STD_LOGIC;
 --	signal ScramblerMux_ctrl						: STD_LOGIC;
-	
+
 	-- FIFO section
 	signal TX_FIFO_rst								: STD_LOGIC;
 	signal TX_FIFO_put								: STD_LOGIC;
@@ -193,7 +193,7 @@ architecture rtl of sata_LinkLayer is
 	signal TX_FIFO_DataOut						: STD_LOGIC_VECTOR(TX_FIFO_BITS - 1 downto 0);
 	signal TX_FIFO_Commit							: STD_LOGIC;
 	signal TX_FIFO_Rollback						: STD_LOGIC;
-	
+
 	signal TX_FSFIFO_rst							: STD_LOGIC;
 	signal TX_FSFIFO_put							: STD_LOGIC;
 	signal TX_FSFIFO_EmptyState				: STD_LOGIC_VECTOR(TX_FSFIFO_EMPTYSTATE_BITS - 1 downto 0);
@@ -202,7 +202,7 @@ architecture rtl of sata_LinkLayer is
 	signal TX_FSFIFO_Valid						: STD_LOGIC;
 	signal TX_FSFIFO_DataIn						: STD_LOGIC_VECTOR(TX_FSFIFO_BITS - 1 downto 0);
 	signal TX_FSFIFO_DataOut					: STD_LOGIC_VECTOR(TX_FSFIFO_BITS - 1 downto 0);
-	
+
 	signal RX_FIFO_rst								: STD_LOGIC;
 	signal RX_FIFO_put								: STD_LOGIC;
 	signal RX_FIFO_commit							: STD_LOGIC;
@@ -242,24 +242,24 @@ architecture rtl of sata_LinkLayer is
 	signal RX_CRC_DataOut							: T_SLV_32;
 
 	signal RX_CRC_OK									: STD_LOGIC;
-	
+
 	-- scrambler section
 	signal DataScrambler_en						: STD_LOGIC;
 	signal DataScrambler_rst					: STD_LOGIC;
 	signal DataScrambler_DataIn				: T_SLV_32;
 	signal DataScrambler_DataOut			: T_SLV_32;
-	
+
 	-- TODO Feature Request: To be implemeted to reduce EMI.
 --	signal DummyScrambler_en					: STD_LOGIC;
 --	signal DummyScrambler_rst					: STD_LOGIC;
 --	signal DummyScrambler_DataIn			: T_SLV_32;
 --	signal DummyScrambler_DataOut			: T_SLV_32;
-	
+
 	signal DataUnscrambler_en					: STD_LOGIC;
 	signal DataUnscrambler_rst				: STD_LOGIC;
 	signal DataUnscrambler_DataIn			: T_SLV_32;
 	signal DataUnscrambler_DataOut		: T_SLV_32;
-	
+
 
 	-- primitive section
 	signal PM_DataIn									: T_SLV_32;
@@ -277,12 +277,12 @@ architecture rtl of sata_LinkLayer is
 
 	-- DebugPort
 	signal LLFSM_DebugPortOut					: T_SATADBG_LINK_LLFSM_OUT;
-	
+
 begin
 	-- Reset this unit until initial reset of lower layer has been completed.
 	-- Allow synchronous 'Reset' only when ClockEnable = '1'.
 	MyReset <= (not Phy_ResetDone) or (Reset and ClockEnable);
-	
+
 
   -- ================================================================
 	-- link layer control FSM
@@ -320,7 +320,7 @@ begin
 
 			-- physical layer interface
 			Phy_Status							=> Phy_Status,
-			
+
 			-- primitive interface
 			TX_Primitive						=> TX_Primitive,
 			RX_Primitive						=> RX_Primitive_d,
@@ -343,7 +343,7 @@ begin
 			RX_FIFO_commit					=> RX_FIFO_commit,
 			RX_FIFO_rollback				=> RX_FIFO_rollback,
 			RX_FIFO_Full						=> RX_FIFO_Full,
-			RX_FIFO_SpaceAvailable	=> RX_FIFO_SpaceAvailable,		-- lack of space 
+			RX_FIFO_SpaceAvailable	=> RX_FIFO_SpaceAvailable,		-- lack of space
 
 			-- RX FIFO input/hold register interface
 			RX_DataReg_shift				=> RX_DataReg_shift,
@@ -361,17 +361,17 @@ begin
 			RX_CRC_rst							=> RX_CRC_rst,
 			RX_CRC_Valid						=> RX_CRC_Valid,
 			RX_CRC_OK								=> RX_CRC_OK,
-			
+
 			-- TX scrambler interface
 			DataScrambler_en				=> DataScrambler_en,
 			DataScrambler_rst				=> DataScrambler_rst,
 --			DummyScrambler_en				=> DummyScrambler_en,
 --			DummyScrambler_rst			=> DummyScrambler_rst,
-			
+
 			-- RX scrambler interface
 			DataUnscrambler_en			=> DataUnscrambler_en,
 			DataUnscrambler_rst			=> DataUnscrambler_rst,
-			
+
 			-- TX MUX interface
 			CRCMux_ctrl							=> CRCMux_ctrl--,
 --			ScramblerMux_ctrl				=> ScramblerMux_ctrl
@@ -385,43 +385,43 @@ begin
 	TX_FIFO_DataIn							<= TX_EOF & TX_SOF & TX_Data;
 	TX_FIFO_put									<= TX_Valid;
 	TX_Ack											<= not TX_FIFO_Full;
-	
+
 	Trans_TX_SOF								<= TX_FIFO_DataOut(TX_SOF_BIT);
 	Trans_TX_EOF								<= TX_FIFO_DataOut(TX_EOF_BIT);
 
 	-- TX frame status FIFO
 	TX_FSFIFO_got								<= TX_FS_Ack;
 	TX_FS_Valid									<= TX_FSFIFO_Valid;
-	
+
 	TX_FSFIFO_DataIn						<= (TX_SENDOK_BIT =>	Trans_TXFS_SendOK,
 																	TX_SYNCESC_BIT =>	Trans_TXFS_SyncEsc);
 	TX_FS_SendOK								<= TX_FSFIFO_DataOut(TX_SENDOK_BIT);
 	TX_FS_SyncEsc								<= TX_FSFIFO_DataOut(TX_SYNCESC_BIT);
-	
+
 	-- RX path
 	RX_Data											<= RX_FIFO_DataOut(RX_Data'range);
 	RX_SOF											<= RX_FIFO_DataOut(RX_SOF_BIT);
 	RX_EOF											<= RX_FIFO_DataOut(RX_EOF_BIT);
 	RX_Valid										<= RX_FIFO_Valid;
 	RX_FIFO_got									<= RX_Ack;
-	
+
 	RX_FIFO_DataIn							<= Trans_RX_EOF & Trans_RX_SOF & RX_DataReg_DataOut;
-	
+
 	-- RX frame status FIFO
 	RX_FSFIFO_got								<= RX_FS_Ack;
 	RX_FS_Valid									<= RX_FSFIFO_Valid;
-	
+
 	RX_FSFIFO_DataIn						<= (RX_CRCOK_BIT 		=> Trans_RXFS_CRCOK,
 																	RX_SYNCESC_BIT 	=> Trans_RXFS_SyncEsc);
 	RX_FS_CRCOK									<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
 	RX_FS_SyncEsc								<= RX_FSFIFO_DataOut(RX_SYNCESC_BIT);
 
-	-- ==========================================================================	
+	-- ==========================================================================
 	-- TX path input pre-processing
-	-- ==========================================================================	
+	-- ==========================================================================
 	FrameCutter : block
 		signal FC_TX_DataFlow								: STD_LOGIC;
-		
+
 		signal IEOFC_Load										: STD_LOGIC;
 		signal IEOFC_inc										: STD_LOGIC;
 		signal IEOFC_uf											: STD_LOGIC;
@@ -430,11 +430,11 @@ begin
 
 		IEOFC_Load					<= TX_SOF;
 		IEOFC_inc						<= FC_TX_DataFlow and not IEOFC_uf;
-		
+
 		IEOFC : BLOCK	-- InsertEOFCounter
 			constant IEOF_COUNTER_START				: POSITIVE															:= (to_int(MAX_FRAME_SIZE, 1 Byte) / 4) - AHEAD_CYCLES_FOR_INSERT_EOF - 3;
 			constant IEOF_COUNTER_BITS				: POSITIVE															:= log2ceilnz(IEOF_COUNTER_START);
-			
+
 			signal Counter_s									: SIGNED(IEOF_COUNTER_BITS downto 0)		:= to_signed(IEOF_COUNTER_START, IEOF_COUNTER_BITS + 1);
 		begin
 			process(Clock)
@@ -447,14 +447,14 @@ begin
 					end if;
 				end if;
 			end process;
-			
+
 			IEOFC_uf			<= Counter_s(Counter_s'high);
 		end block;	-- InsertEOFCounter
 
 		TX_InsertEOF_i		<= IEOFC_uf;
 		TX_InsertEOF 			<= TX_InsertEOF_i;
 	end block;	-- FrameCutter
-	
+
 	-- ==========================================================================
 	-- fifo section
 	-- ================================================================
@@ -482,11 +482,11 @@ begin
 			valid						=> TX_FIFO_Valid,
 			dout						=> TX_FIFO_DataOut,
 			fstate_rd				=> open,
-			
+
 			commit					=> TX_FIFO_Commit,
 			rollback				=> TX_FIFO_Rollback
 		);
-	
+
 	-- TX frame status path
 	TX_FSFIFO : entity PoC.fifo_cc_got
 		generic map (
@@ -501,20 +501,20 @@ begin
 		port map (
 			clk							=> Clock,
 			rst							=> TX_FSFIFO_rst,
-			
+
 			-- Write Interface
 			put							=> TX_FSFIFO_put,
 			din							=> TX_FSFIFO_DataIn,
 			full						=> TX_FSFIFO_Full,
 			estate_wr				=> TX_FSFIFO_EmptyState,
-			
+
 			-- Read Interface
 			got							=> TX_FSFIFO_got,
 			valid						=> TX_FSFIFO_Valid,
 			dout						=> TX_FSFIFO_DataOut,
 			fstate_rd				=> open
 		);
-	
+
 	-- RX path
 	RX_FIFO : entity PoC.fifo_cc_got_tempput
 		generic map (
@@ -536,16 +536,16 @@ begin
 			full						=> RX_FIFO_Full,
 			commit 					=> RX_FIFO_commit,
 			rollback 				=> RX_FIFO_rollback,
-			
+
 			-- Read Interface
 			got							=> RX_FIFO_got,
 			valid						=> RX_FIFO_Valid,
 			dout						=> RX_FIFO_DataOut,
 			fstate_rd				=> open
 		);
-	
+
 	RX_FIFO_SpaceAvailable <= to_sl(RX_FIFO_EmptyState /= (RX_FIFO_EmptyState'range => '0'));
-	
+
 	RX_DataReg_DataIn		<= DataUnscrambler_DataOut;
 	RX_DataReg_d				<= RX_DataReg_DataIn	when (rising_edge(Clock) and (RX_DataReg_shift = '1'));
 	RX_DataReg_d2				<= RX_DataReg_d				when (rising_edge(Clock) and (RX_DataReg_shift = '1'));
@@ -565,13 +565,13 @@ begin
 		port map (
 			clk							=> Clock,
 			rst							=> RX_FSFIFO_rst,
-			
+
 			-- Write Interface
 			put							=> RX_FSFIFO_put,
 			din							=> RX_FSFIFO_DataIn,
 			full						=> RX_FSFIFO_Full,
 			estate_wr				=> RX_FSFIFO_EmptyState,
-			
+
 			-- Read Interface
 			got							=> RX_FSFIFO_got,
 			valid						=> RX_FSFIFO_Valid,
@@ -591,9 +591,9 @@ begin
 		)
 		port map (
 			clk							=> Clock,														-- Clock
-			
+
 			set							=> TX_CRC_rst,											-- Parallel Preload of Remainder
-			init						=> CRC32_INIT,											
+			init						=> CRC32_INIT,
 			step						=> TX_CRC_Valid,										-- Process Input Data (MSB first)
 			din							=> TX_CRC_DataIn,
 
@@ -602,8 +602,8 @@ begin
 		);
 
 	DataScrambler_DataIn <= mux(CRCMux_ctrl, TX_CRC_DataIn, TX_CRC_DataOut);
-	
-	
+
+
 	-- RX path
 	RX_CRC : entity PoC.comm_crc
 		generic map (
@@ -612,19 +612,19 @@ begin
 		)
 		port map (
 			clk							=> Clock,														-- Clock
-			
+
 			set							=> RX_CRC_rst,											-- Parallel Preload of Remainder
-			init						=> CRC32_INIT,											
+			init						=> CRC32_INIT,
 			step						=> RX_CRC_Valid,										-- Process Input Data (MSB first)
 			din							=> DataUnscrambler_DataOut,
 
 			rmd							=> RX_CRC_DataOut,									-- Remainder
 			zero						=> open															-- Remainder is Zero
 		);
-	
+
 	RX_CRC_OK <= to_sl(RX_CRC_DataOut = DataUnscrambler_DataOut);
-	
-	
+
+
 	-- scrambler section
 	-- ================================================================
 	-- TX path
@@ -638,14 +638,14 @@ begin
 			Clock										=> Clock,
 			Enable									=> DataScrambler_en,
 			Reset										=> DataScrambler_rst,
-			
+
 			DataIn									=> DataScrambler_DataIn,
 			DataOut									=> DataScrambler_DataOut
 		);
 
   --TODO Feature Request: To be implemented to reduce EMI.
 --  DummyScrambler_DataIn <= (others => '0');
-	
+
 --	DummyScrambler : entity PoC.sata_Scrambler
 --		generic map (
 --			POLYNOMIAL							=> x"1A011",
@@ -669,11 +669,11 @@ begin
 		PM_DataIn(0) 						<= mux(DebugPortIn.InsertBitErrorHeaderTX and Trans_TX_SOF, -- only for FIS Header
 																	 data(0), not data(0));
 	end generate;
-	
+
 	genNoBitError : if not(ENABLE_DEBUGPORT = TRUE) generate
 		PM_DataIn <= DataScrambler_DataOut;-- WHEN (ScramblerMux_ctrl = '0') ELSE DummyScrambler_DataOut;
 	end generate;
-	
+
 	-- RX path
 	DataUnscrambler : entity PoC.sata_Scrambler
 		generic map (
@@ -685,7 +685,7 @@ begin
 			Clock										=> Clock,
 			Enable									=> DataUnscrambler_en,
 			Reset										=> DataUnscrambler_rst,
-		
+
 			DataIn									=> DataUnscrambler_DataIn,
 			DataOut									=> DataUnscrambler_DataOut
 		);
@@ -705,18 +705,18 @@ begin
 			PM_CharIsK		<= "0001";											-- mark primitive with K-symbols
 		end if;
 	end process;
-	
+
 	-- RX path
 	PD : entity PoC.sata_PrimitiveDetector
 		port map (
 			Clock									=> Clock,
-			
+
 			RX_DataIn							=> PD_DataIn,
 			RX_CharIsK						=> PD_CharIsK,
-			
+
 			Primitive							=> RX_Primitive
 		);
-	
+
 	RX_Primitive_d	<= 	RX_Primitive when rising_edge(Clock);
 
 	-- ================================================================
@@ -725,12 +725,12 @@ begin
 	-- TX path
 	Phy_TX_Data								<= PM_DataOut;
 	Phy_TX_CharIsK						<= PM_CharIsK;
-	
-	
+
+
 	-- RX path
 	PD_DataIn									<= Phy_RX_Data;
 	PD_CharIsK								<= Phy_RX_CharIsK;
-	
+
 	DataUnscrambler_DataIn		<= Phy_RX_Data when rising_edge(Clock);
 
 	-- ================================================================
@@ -748,7 +748,7 @@ begin
 				end loop;
 				return  l.all;
 			end function;
-			
+
 			function dbg_generateStatusEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
@@ -758,7 +758,7 @@ begin
 				end loop;
 				return  l.all;
 			end function;
-			
+
 			function dbg_generateErrorEncodings return string is
 				variable  l : STD.TextIO.line;
 			begin
@@ -768,7 +768,7 @@ begin
 				end loop;
 				return  l.all;
 			end function;
-		
+
 			constant dummy : T_BOOLVEC := (
 				0 => dbg_ExportEncoding("Link Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Command.tok"),
 				1 => dbg_ExportEncoding("Link Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Status.tok"),
@@ -776,9 +776,9 @@ begin
 			);
 		begin
 		end generate;
-	
+
 		DebugPortOut.LLFSM											<= LLFSM_DebugPortOut;
-	
+
 		-- from physical layer
 		DebugPortOut.Phy_Ready									<= to_sl(Phy_Status = SATA_PHY_STATUS_COMMUNICATING);
 		-- RX: from physical layer
@@ -813,7 +813,7 @@ begin
 		DebugPortOut.RX_FS_Ack									<= RX_FS_Ack;
 		DebugPortOut.RX_FS_CRCOK								<= RX_FSFIFO_DataOut(RX_CRCOK_BIT);
 		DebugPortOut.RX_FS_SyncEsc							<= RX_FSFIFO_DataOut(RX_SYNCESC_BIT);
-		--																			
+		--
 		-- TX: from Link Layer
 		DebugPortOut.TX_Data										<= TX_Data;
 		DebugPortOut.TX_Valid										<= TX_Valid;

@@ -19,18 +19,18 @@ ENTITY eth_RSLayer_GMII_SGMII_Series7 IS
 	PORT (
 		Clock											: IN		STD_LOGIC;
 		Reset											: IN		STD_LOGIC;
-		
+
 		-- GEMAC-GMII interface
 		RS_TX_Clock								: IN		STD_LOGIC;
 		RS_TX_Valid								: IN		STD_LOGIC;
 		RS_TX_Data								: IN		T_SLV_8;
 		RS_TX_Error								: IN		STD_LOGIC;
-		
+
 		RS_RX_Clock								: IN		STD_LOGIC;
 		RS_RX_Valid								: OUT		STD_LOGIC;
 		RS_RX_Data								: OUT		T_SLV_8;
 		RS_RX_Error								: OUT		STD_LOGIC;
-		
+
 		-- PHY-SGMII interface
 		PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII;
 		PHY_Management						: INOUT	T_NET_ETH_PHY_INTERFACE_MDIO
@@ -42,22 +42,22 @@ ARCHITECTURE rtl OF eth_RSLayer_GMII_SGMII_Series7 IS
 
 	SIGNAL MMCM_Reset						: STD_LOGIC;
 	SIGNAL MMCM_Locked					: STD_LOGIC;
-	
+
 	SIGNAL MMCM_RefClock_In			: STD_LOGIC;
 	SIGNAL MMCM_Clock_FB				: STD_LOGIC;
-	
+
 	SIGNAL MMCM_Clock_62_5_MHz	: STD_LOGIC;
 	SIGNAL MMCM_Clock_125_MHz		: STD_LOGIC;
-	
+
 	SIGNAL Clock_62_5_MHz				: STD_LOGIC;
 	SIGNAL Clock_125_MHz				: STD_LOGIC;
-	
+
 	SIGNAL SGMII_RefClock_Out		: STD_LOGIC;
 	SIGNAL SGMII_ResetDone			: STD_LOGIC;
-	
+
 	SIGNAL SGMII_Status					: T_SLV_16;
 	ATTRIBUTE KEEP OF SGMII_Status		: SIGNAL IS TRUE;
-	
+
 BEGIN
 	MMCM_RefClock_In		<= SGMII_RefClock_Out;
 
@@ -153,7 +153,7 @@ BEGIN
 		CONSTANT PCSCORE_MDIO_ADDRESS						: STD_LOGIC_VECTOR(4 DOWNTO 0)		:= "00101";
 		CONSTANT PCSCORE_CONFIGURATION					: BOOLEAN													:= TRUE;
 		CONSTANT PCSCORE_CONFIGURATION_VECTOR		: STD_LOGIC_VECTOR(4 DOWNTO 0)		:= "10000";
-	
+
 		-- Core <=> Transceiver interconnect
 		SIGNAL plllock           : STD_LOGIC;                        -- The PLL Locked status of the Transceiver
 		SIGNAL mgt_rx_reset      : STD_LOGIC;                        -- Reset for the receiver half of the Transceiver
@@ -181,7 +181,7 @@ BEGIN
 		SIGNAL PCSCore_RX_Data				: T_SLV_8;											-- Internal gmii_rxd SIGNAL (between core and SGMII adaptation module).
 		SIGNAL PCSCore_RX_Valid				: STD_LOGIC;										-- Internal gmii_rx_dv SIGNAL (between core and SGMII adaptation module).
 		SIGNAL PCSCore_RX_Error				: STD_LOGIC;										-- Internal gmii_rx_er SIGNAL (between core and SGMII adaptation module).
-		
+
 		SIGNAL SGMII_Status_i					: T_SLV_16;
 	BEGIN
 --		Adapter : ENTITY L_Ethernet.GMII_SGMII_sgmii_adapt
@@ -251,16 +251,16 @@ BEGIN
 				gmii_rx_dv           => PCSCore_RX_Valid,								-- Received control SIGNAL to client MAC.
 				gmii_rx_er           => PCSCore_RX_Error,								-- Received control SIGNAL to client MAC.
 				gmii_isolate         => OPEN,														-- Tristate control to electrically isolate GMII
-				
+
 				phyad                => PCSCORE_MDIO_ADDRESS,
 				mdc                  => PHY_Management.Clock_ts.i,					-- PHY_Management Data Clock
 				mdio_in              => PHY_Management.Data_ts.i,					-- PHY_Management Data In
 				mdio_out             => PHY_Management.Data_ts.o,					-- PHY_Management Data Out
 				mdio_tri             => PHY_Management.Data_ts.t,					-- PHY_Management Data Tristate
-				
+
 				configuration_vector => PCSCORE_CONFIGURATION_VECTOR,
 				configuration_valid  => to_sl(PCSCORE_CONFIGURATION),
-				
+
 				an_restart_config    => '0',
 				an_adv_config_vector => (OTHERS => '0'),
 				an_adv_config_val    => '0',
@@ -276,15 +276,15 @@ BEGIN
 			PORT MAP (
 				independent_clock    => PHY_Interface.DGB_SystemClock_In,
 				gtrefclk             => PHY_Interface.SGMII_RefClock_In,
-				
+
 				txoutclk             => SGMII_RefClock_Out,
 				plllkdet             => plllock,
-				
+
 				usrclk               => Clock_62_5_MHz,
 				usrclk2              => Clock_125_MHz,
 				mmcm_locked          => MMCM_Locked,
 
-				pmareset             => '0',																-- TODO: 
+				pmareset             => '0',																-- TODO:
 				txreset              => mgt_tx_reset,
 				rxreset              => mgt_rx_reset,
 				resetdone            => SGMII_ResetDone,
@@ -321,37 +321,37 @@ BEGIN
 		 -- Unused
 		 rxbufstatus(0) <= '0';
 	END GENERATE;
-	
+
 --	genPCS : IF (FALSE) GENERATE
---	
+--
 --	BEGIN
 --		PCS : ENTITY L_Ethernet.Ethernet_PCS_GMII_TRANS_1000Base_X
 --			PORT MAP (
 --				TX_Clock											=> TX_Clock,
 --				RX_Clock											=> RX_Clock,
---				
+--
 --				TX_Reset											=> TX_Reset,
 --				RX_Reset											=> RX_Reset,
---				
+--
 --				-- GMII interface
 --				TX_Valid									=> TX_Valid,
 --				TX_Data										=> TX_Data,
 --				TX_Error									=> TX_Error,
---				
+--
 --				RX_Valid									=> RX_Valid,
 --				RX_Data										=> RX_Data,
 --				RX_Error									=> RX_Error,
---				
+--
 --				-- TRANS interface
 --				Trans_TX_Data							=> PCS_TX_Data,
 --				Trans_TX_CharIsK					=> PCS_TX_CharIsK,
 --				Trans_TX_RunningDisparity	=> Trans_TX_RunningDisparity,
---				
+--
 --				Trans_RX_Data							=> Trans_RX_Data,
 --				Trans_RX_CharIsK					=> Trans_RX_CharIsK,
 --				Trans_RX_RunningDisparity	=> Trans_RX_RunningDisparity
 --			);
---			
+--
 --		Trans : ENTITY L_Ethernet.Ethernet_SGMIITransceiver_Virtex7
 --			GENERIC MAP (
 --				PORTS											=> 1
@@ -361,23 +361,23 @@ BEGIN
 --				RX_RefClock_In						=> PHY_Interface.SGMII_RefClock_In,
 --				TX_RefClock_Out						=> PHY_Interface.SGMII_TXRefClock_Out,
 --				RX_RefClock_Out						=> PHY_Interface.SGMII_TXRefClock_Out,
---				
+--
 --				ClockNetwork_Reset				=> ClkNet_Reset,
 --				ClockNetwork_ResetDone		=> ClkNet_ResetDone,
---				
+--
 ----				Command										=> Trans_Command,
 ----				Status										=> Trans_Status,
 ----				TX_Error									=> Trans_TX_Error,
 ----				RX_Error									=> Trans_RX_Error,
---				
+--
 --				TX_Data										=> PCS_TX_Data,
 --				TX_CharIsK								=> PCS_TX_CharIsK,
 --				TX_RunningDisparity				=> Trans_TX_RunningDisparity,
---				
+--
 --				RX_Data										=> Trans_RX_Data,
 --				RX_CharIsK								=> Trans_RX_CharIsK,
 --				RX_RunningDisparity				=> Trans_RX_RunningDisparity,
---				
+--
 --				TX_n											=> PHY_Interface.TX_n,
 --				TX_p											=> PHY_Interface.TX_p,
 --				RX_n											=> PHY_Interface.RX_n,

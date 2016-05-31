@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_top
 -- Author(s): Stefan Alex, Martin Zabel
--- 
+--
 ------------------------------------------------------
 -- Top-Level-Component                              --
 --
@@ -296,7 +296,7 @@ architecture Behavioral of trace_top is
   signal tracer_stbs        : std_logic_vector(TRACER_CNT-1 downto 0);
 
   signal trace_running_i : std_logic;
-  
+
   signal trc_enable_trig  : std_logic_vector(TRACER_CNT-1 downto 0);
   signal send_enable_trig : std_logic_vector(TRACER_CNT-1 downto 0);
 
@@ -612,9 +612,9 @@ begin
         TRIG_ACTIV_BITS           => TRIG_ACTIV_BITS,
         HAVE_ICE_TRIGGER          => HAVE_ICE_TRIGGER,
         TRIG_CMP1_BITS            => TRIG_CMP1_BITS,
-        TRIG_CMP2_BITS            => TRIG_CMP2_BITS,           
-        TRIG_MODE_BITS            => TRIG_MODE_BITS,           
-        TRIG_TYPE_BITS            => TRIG_TYPE_BITS,        
+        TRIG_CMP2_BITS            => TRIG_CMP2_BITS,
+        TRIG_MODE_BITS            => TRIG_MODE_BITS,
+        TRIG_TYPE_BITS            => TRIG_TYPE_BITS,
         TRACER_CNT                => TRACER_CNT,
         CYCLE_ACCURATE            => CYCLE_ACCURATE,
         OV_DANGER_REACTION        => OV_DANGER_REACTION_I,
@@ -687,7 +687,7 @@ begin
       );
 
     trace_running <= trace_running_i;
-    
+
     -- ice-trigger
 
     no_trigger_gen : if not HAVE_ICE_TRIGGER generate
@@ -862,7 +862,7 @@ begin
       constant FILL_BITS      : positive := log2ceilnz(OUT_BITS);
       constant FILL_INDEX     : natural  := sum(log2ceilnz(TRACER_DATA_BITS), GLOBAL_INDEX);
       constant BRANCH_INDEX   : natural := getPortValueIndex(PORTS, INST_TRACER.BRANCH_PORT.ID)+j*3;
-      
+
       -- Pipeline registers
       signal adr_stb : std_logic;
       signal adr     : std_logic_vector(INST_TRACER.ADR_PORT.WIDTH-1 downto 0);
@@ -890,7 +890,7 @@ begin
           end if;
 
           adr    <= port_values(ADR_INDEX_J+ADR_BITS-1 downto ADR_INDEX_J);
-          
+
           if BRANCH_INFO then
             branch <= port_values(BRANCH_INDEX+2 downto BRANCH_INDEX);
           end if;
@@ -900,7 +900,7 @@ begin
       no_branch_info_gen: if not BRANCH_INFO generate
         branch <= (others => '-');
       end generate no_branch_info_gen;
-      
+
       inst_tracer_inst : trace_instTracer
         generic map (
           ADR_PORT      => INST_TRACER.ADR_PORT,
@@ -1052,7 +1052,7 @@ begin
           end if;
         end if;
       end process;
-      
+
       no_src_gen : if SOURCE_BITS = 0 generate
         src <= "-";
       end generate no_src_gen;
@@ -1274,7 +1274,7 @@ begin
 
     trigger_top_inst : trace_trigger_top
       generic map (
-        SINGLE_EVENTS           => SINGLE_EVENTS,          
+        SINGLE_EVENTS           => SINGLE_EVENTS,
         TRIGGER_ARRAY           => TRIGGER_ARRAY,
         SINGLE_EVENTS_PORT_BITS => SINGLE_EVENTS_PORT_BITS,
         TRIGGER_OUT_BITS        => TRIGGER_OUT_BITS,
@@ -1314,18 +1314,18 @@ begin
     -- (triggers in trigger_records, that are not instantiiated, are tied to zero)
     trigger_out_gen : for i in 0 to countTriggerNoDoublings(TRIGGER_RECORDS_ALL)-1 generate
       constant LEVEL       : positive := getTriggerLevel(TRIGGER_RECORDS_ALL(i), SINGLE_EVENTS_ALL);
-      constant OUT_INDEX   : natural  := sumTriggerOutBits(TRIGGER_RECORDS_ALL, SINGLE_EVENTS_ALL, i);  
-    begin  
-    
+      constant OUT_INDEX   : natural  := sumTriggerOutBits(TRIGGER_RECORDS_ALL, SINGLE_EVENTS_ALL, i);
+    begin
+
       inst_gen : if containsTrigger(TRIGGER_ARRAY, TRIGGER_RECORDS_ALL(i).ID) generate
         constant ARRAY_INDEX : natural  := getTriggerIndex(TRIGGER_ARRAY, TRIGGER_RECORDS_ALL(i).ID);
         constant SIG_INDEX   : natural  := sumTriggerOutBits(TRIGGER_ARRAY, SINGLE_EVENTS, ARRAY_INDEX);
       begin
-        trigger_out(OUT_INDEX+LEVEL-1 downto OUT_INDEX) <= trigger_send_starts(SIG_INDEX+LEVEL-1 downto SIG_INDEX) or 
-                                                           trigger_send_stops(SIG_INDEX+LEVEL-1 downto SIG_INDEX) or 
+        trigger_out(OUT_INDEX+LEVEL-1 downto OUT_INDEX) <= trigger_send_starts(SIG_INDEX+LEVEL-1 downto SIG_INDEX) or
+                                                           trigger_send_stops(SIG_INDEX+LEVEL-1 downto SIG_INDEX) or
                                                            trigger_send_dos(SIG_INDEX+LEVEL-1 downto SIG_INDEX);
       end generate inst_gen;
-      
+
       no_inst_gen : if not containsTrigger(TRIGGER_ARRAY, TRIGGER_RECORDS_ALL(i).ID) generate
       begin
         trigger_out(OUT_INDEX+LEVEL-1 downto OUT_INDEX) <= (others => '0');

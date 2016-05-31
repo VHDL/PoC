@@ -1,12 +1,12 @@
 -- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Patrick Lehmann
 --
 -- Module:					TODO
--- 
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -20,13 +20,13 @@
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										Chair for VLSI-Design, Diagnostics and Architecture
 >>>>>>> Stashed changes
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,18 +52,18 @@ ENTITY Eth_RSLayer_GMII_SGMII_Virtex5 IS
 	PORT (
 		Clock											: IN		STD_LOGIC;
 		Reset											: IN		STD_LOGIC;
-		
+
 		-- GEMAC-GMII interface
 		RS_TX_Clock								: IN		STD_LOGIC;
 		RS_TX_Valid								: IN		STD_LOGIC;
 		RS_TX_Data								: IN		T_SLV_8;
 		RS_TX_Error								: IN		STD_LOGIC;
-		
+
 		RS_RX_Clock								: IN		STD_LOGIC;
 		RS_RX_Valid								: OUT		STD_LOGIC;
 		RS_RX_Data								: OUT		T_SLV_8;
 		RS_RX_Error								: OUT		STD_LOGIC;
-		
+
 		-- PHY-SGMII interface
 		PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII;
 		PHY_Management						: INOUT	T_NET_ETH_PHY_INTERFACE_MDIO
@@ -76,7 +76,7 @@ ARCHITECTURE rtl OF Eth_RSLayer_GMII_SGMII_Virtex5 IS
 
 BEGIN
 
-	
+
 
 	Trans : ENTITY PoC.eth_GMII_SGMII_PCS_Virtex5_transceiver_A
 		generic map (

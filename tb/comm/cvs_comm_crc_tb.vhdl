@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- Copyright (c) 2011
 -- Technische Universitaet Dresden, Dresden, Germany
 -- Faculty of Computer Science
@@ -41,11 +41,11 @@ architecture tb of comm_crc_tb is
 		);
 		port (
 			clk	: in	std_logic;																-- Clock
-			
+
 			set	: in	std_logic;																-- Parallel Preload of Remainder
-			init : in	std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- 
+			init : in	std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	--
 			step : in	std_logic;																-- Process Input Data (MSB first)
-			din	: in	std_logic_vector(BITS-1 downto 0);				-- 
+			din	: in	std_logic_vector(BITS-1 downto 0);				--
 
 			rmd	: out std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- Remainder
 			zero : out std_logic																-- Remainder is Zero
@@ -58,7 +58,7 @@ architecture tb of comm_crc_tb is
   type tDAT is array (natural range<>) of std_logic_vector(0 to 31);
   constant DAT : tDAT := (
     -- RMD zero, RMD non-zero
-    x"01120a60", x"01120a68", 
+    x"01120a60", x"01120a68",
     x"01120abd", x"f1120abd",
     x"01120b8b", x"01126b8b",
     x"0112144b", x"0172144b",
@@ -104,7 +104,7 @@ begin
     end cycle;
 
     variable errors : natural;
-    
+
   begin
 
     clk <= '0';
@@ -132,7 +132,7 @@ begin
 
     report "Test completed: "&integer'image(errors)&" error(s)." severity note;
     wait;
-    
+
   end process;
 
 end tb;

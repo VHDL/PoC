@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_sendmux_tb
 -- Author(s): Martin Zabel
--- 
+--
 -- Check trace_sendmux
 --
 -- Revision:    $Revision: 1.2 $
@@ -105,7 +105,7 @@ begin  -- behavioral
   clk <= not clk after 5 ns;
 
   eth_got <= eth_valid;
-  
+
   -- waveform generation
   WaveGen_Proc: process
   begin
@@ -229,7 +229,7 @@ begin  -- behavioral
     wait until rising_edge(clk);
     wait until rising_edge(clk);
     wait until rising_edge(clk);
-    
+
     ---------------------------------------------------------------------------
     -- Add more data
     ---------------------------------------------------------------------------
@@ -271,16 +271,16 @@ begin  -- behavioral
     wait until rising_edge(clk);
     wait until rising_edge(clk);
     wait until rising_edge(clk);
-    
+
     ---------------------------------------------------------------------------
     -- Empty data fifo
     ---------------------------------------------------------------------------
     data_fifo_clear <= '1';
     wait until rising_edge(clk);
-    
+
     wait;
   end process WaveGen_Proc;
 
-  
+
 
 end behavioral;

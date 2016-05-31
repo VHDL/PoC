@@ -42,11 +42,11 @@ architecture tb of comm_crc_eth_tb is
 		);
 		port (
 			clk	: in	std_logic;																-- Clock
-			
+
 			set	: in	std_logic;																-- Parallel Preload of Remainder
-			init : in	std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- 
+			init : in	std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	--
 			step : in	std_logic;																-- Process Input Data (MSB first)
-			din	: in	std_logic_vector(BITS-1 downto 0);				-- 
+			din	: in	std_logic_vector(BITS-1 downto 0);				--
 
 			rmd	: out std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- Remainder
 			zero : out std_logic																-- Remainder is Zero
@@ -106,7 +106,7 @@ begin
     step <= '0';
     cycle;
     rst  <= '0';
-    
+
     step <= '1';
     for i in DAT'range loop
       din <= reverse(DAT(i));
@@ -122,7 +122,7 @@ begin
       report "Failure" severity error;
     end if;
     wait;
-    
+
   end process;
 
 end tb;

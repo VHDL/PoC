@@ -1,10 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
--- 
+--
 -- Module:				 	TODO
 --
 -- Description:
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,20 +45,20 @@ use			PoC.net.all;
 
 entity eth_RSLayer_GMII_GMII_Xilinx is
 	port (
-		Reset_async								: in		STD_LOGIC;			-- @async: 
-		
+		Reset_async								: in		STD_LOGIC;			-- @async:
+
 		-- RS-GMII interface
 		RS_TX_Clock								: in		STD_LOGIC;
 		RS_TX_Valid								: in		STD_LOGIC;
 		RS_TX_Data								: in		T_SLV_8;
 		RS_TX_Error								: in		STD_LOGIC;
-		
+
 		RS_RX_Clock								: in		STD_LOGIC;
 		RS_RX_Valid								: out		STD_LOGIC;
 		RS_RX_Data								: out		T_SLV_8;
 		RS_RX_Error								: out		STD_LOGIC;
 
-		-- PHY-GMII interface		
+		-- PHY-GMII interface
 		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
 	);
 end;
@@ -69,10 +69,10 @@ end;
 
 architecture rtl of eth_RSLayer_GMII_GMII_Xilinx is
 	attribute KEEP												: BOOLEAN;
-	
+
 	signal IODelay_RX_Clock								: STD_LOGIC;
 	attribute KEEP OF IODelay_RX_Clock		: signal is TRUE;
-	
+
 	signal IDelay_Data										: T_SLV_8;
 	signal IDelay_Valid										: STD_LOGIC;
 	signal IDelay_Error										: STD_LOGIC;
@@ -115,14 +115,14 @@ begin
 			INC							=> '0',
 			RST							=> '0'
 		);
-		
+
 	BUFG_RX_Clock : BUFG
 		port map (
 			I								=> IODelay_RX_Clock,
 			O								=> PHY_Interface.RX_RefClock
 		);
-	
-	-- Output Logic : Drive TX signals through IOBs onto PHY-GMII interface	
+
+	-- Output Logic : Drive TX signals through IOBs onto PHY-GMII interface
 	-- ==========================================================================================================================================================
 	process(RS_TX_Clock, Reset_async)
   begin
@@ -138,20 +138,20 @@ begin
 			end if;
 		end if;
 	end process;
-	
-	-- Input Logic : Receive RX signals through IDELAYs and IOBs from PHY-GMII interface	
+
+	-- Input Logic : Receive RX signals through IDELAYs and IOBs from PHY-GMII interface
 	-- ==========================================================================================================================================================
 	blkIDelay : block
 		constant RX_VALID_BIT		: NATURAL													:= 8;
 		constant RX_ERROR_BIT		: NATURAL													:= 9;
-	
+
 		signal IDelay_DataIn		: STD_LOGIC_VECTOR(9 downto 0);
 		signal IDelay_DataOut		: STD_LOGIC_VECTOR(9 downto 0);
 	begin
 		IDelay_DataIn(PHY_Interface.RX_Data'range)	<= PHY_Interface.RX_Data;
 		IDelay_DataIn(RX_VALID_BIT)									<= PHY_Interface.RX_Valid;
 		IDelay_DataIn(RX_ERROR_BIT)									<= PHY_Interface.RX_Error;
-	
+
 		genIDelay : for i in IDelay_DataIn'reverse_range generate
 			dly : IDELAY
 				generic map (
@@ -167,7 +167,7 @@ begin
 					RST							=> '0'
 				);
 		end generate;
-		
+
 		IDelay_Data				<= IDelay_DataOut(IDelay_Data'range);
 		IDelay_Valid			<= IDelay_DataOut(RX_VALID_BIT);
 		IDelay_Error			<= IDelay_DataOut(RX_ERROR_BIT);

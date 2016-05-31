@@ -1,22 +1,22 @@
 -- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================================================================================================
 -- Description:			Signed wide multiplication spanning multiple DSP or MULT blocks.
 --									Small partial products are calculated through LUTs.
 --									For detailed documentation see below.
--- 
+--
 -- Authors:					Martin Zabel
 -- ============================================================================================================================================================
 -- Copyright 2007-2014 Technische Universität Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,7 +34,7 @@ entity arith_muls_wide is
 		NA : integer range 2	to 18;-- 18;
 		NB : integer range 19 to 36;-- 26;
 		SPLIT : positive);					-- 17 or NB-18
-	
+
 	port (
 		a : in	signed(NA-1 downto 0);
 		b : in	signed(NB-1 downto 0);
@@ -64,7 +64,7 @@ end arith_muls_wide;
 --
 -- Example: NA=18,NB=26 on Virtex-4:
 --	 SPLIT = 17 gives more logic but less delay.
---	 SPLIT = NB-18 = 8 gives less logic but more delay. 
+--	 SPLIT = NB-18 = 8 gives less logic but more delay.
 --
 -- TODO: expand range of input widths
 
@@ -87,7 +87,7 @@ architecture rtl of arith_muls_wide is
 		end if;
 		return "block";
 	end f_mult_style;
-	
+
 	attribute mult_style : string;
 	attribute mult_style of pl : signal is f_mult_style(bl'length);
 	attribute mult_style of ph : signal is f_mult_style(bh'length);

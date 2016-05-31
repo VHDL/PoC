@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: ocram_wb_tb
 -- Author(s): Martin Zabel
--- 
+--
 -- Testbench for ocram_wb
 --
 -- Revision:    $Revision: 1.1 $
@@ -97,7 +97,7 @@ begin  -- behavior
     wb_stb_i <= '0';
     wait until rising_edge(clk); wait for 1 ns;
     rst      <= '0';
-    
+
     ---------------------------------------------------------------------------
     -- Classic write
     ---------------------------------------------------------------------------
@@ -109,7 +109,7 @@ begin  -- behavior
     wb_adr_i <= x"01";
     wb_dat_i <= x"0101";
     wait for 1 ns;
-    
+
     assert (wb_ack_o = '0') and (ram_ce = '0')
       report "Classic Write: Write too early." severity error;
     wait until rising_edge(clk); wait for 1 ns;
@@ -121,7 +121,7 @@ begin  -- behavior
     wait until rising_edge(clk); wait for 1 ns;
     wb_cyc_i <= '0';
     wb_stb_i <= '0';
-    
+
     ---------------------------------------------------------------------------
     -- Classic read
     ---------------------------------------------------------------------------
@@ -143,24 +143,24 @@ begin  -- behavior
     wait until rising_edge(clk); wait for 1 ns;
     wb_cyc_i <= '0';
     wb_stb_i <= '0';
-    
+
     ---------------------------------------------------------------------------
     -- Bus idle
     ---------------------------------------------------------------------------
     wb_cyc_i <= '0';
     wb_stb_i <= '0';
     wait for 1 ns;
-    
+
     assert (wb_ack_o = '0') and (ram_ce = '0')
       report "Bus not idle." severity error;
     wait until rising_edge(clk); wait for 1 ns;
-    
+
     assert (wb_ack_o = '0') and (ram_ce = '0')
       report "Bus not idle." severity error;
     wait until rising_edge(clk); wait for 1 ns;
     wb_cyc_i <= '0';
     wb_stb_i <= '0';
-    
+
     ---------------------------------------------------------------------------
     -- Burst write
     ---------------------------------------------------------------------------
@@ -172,7 +172,7 @@ begin  -- behavior
     wb_adr_i <= x"10";
     wb_dat_i <= x"1010";
     wait for 1 ns;
-    
+
     assert (wb_ack_o = '0') and (ram_ce = '0')
       report "Burst Write: Write too early." severity error;
     wait until rising_edge(clk); wait for 1 ns;
@@ -182,7 +182,7 @@ begin  -- behavior
            (ram_a = x"10") and (ram_d = x"1010")
       report "Burst Write: RAM write failed." severity error;
     wait until rising_edge(clk); wait for 1 ns;
-    
+
     wb_adr_i <= x"11";
     wb_dat_i <= x"1111";
     wb_stb_i <= '1';
@@ -200,7 +200,7 @@ begin  -- behavior
     wait for 1 ns;
 
     assert wb_ack_o = '1' report "Burst Write: ACK failed." severity error;
-    assert (ram_ce = '0') 
+    assert (ram_ce = '0')
       report "Burst Write: Invalid RAM write." severity error;
     wait until rising_edge(clk); wait for 1 ns;
 
@@ -214,7 +214,7 @@ begin  -- behavior
            (ram_a = x"12") and (ram_d = x"1212")
       report "Burst Write: RAM write failed." severity error;
     wait until rising_edge(clk); wait for 1 ns;
-    
+
     wb_adr_i <= (others => 'X');
     wb_dat_i <= (others => 'X');
     wb_cti_i <= "111";                  -- End-of-Burst
@@ -241,7 +241,7 @@ begin  -- behavior
     wb_cyc_i <= '0';
     wb_stb_i <= '0';
     wait for 1 ns;
-    
+
     assert (wb_ack_o = '0') and (ram_ce = '0')
       report "Burst Write: Bus not idle." severity error;
     wait until rising_edge(clk); wait for 1 ns;
@@ -258,7 +258,7 @@ begin  -- behavior
     wb_we_i  <= '0';
     wb_adr_i <= x"20";
     wait for 1 ns;
-    
+
     assert wb_ack_o = '0' report "Burst Read: ACK too early." severity error;
     assert (ram_ce = '1') and (ram_we = '0') and (ram_a = x"20")
       report "Burst Read: RAM read0 failed." severity error;
@@ -269,7 +269,7 @@ begin  -- behavior
     assert (ram_ce = '1') and (ram_we = '0') and (ram_a = x"21")
       report "Burst Read: RAM read1 failed." severity error;
     wait until rising_edge(clk); wait for 1 ns;
-    
+
     wb_adr_i <= x"21";
     wb_stb_i <= '1';
     wait for 1 ns;
@@ -321,11 +321,11 @@ begin  -- behavior
     assert (wb_ack_o = '1') and (wb_dat_o = x"2323")
       report "Burst Read: ACK failed or data invalid." severity error;
     wait until rising_edge(clk); wait for 1 ns;
-    
+
     wb_cyc_i <= '0';
     wb_stb_i <= '0';
     wait for 1 ns;
-    
+
     assert (wb_ack_o = '0') and (ram_ce = '0')
       report "Burst Write: Bus not idle." severity error;
     wait until rising_edge(clk); wait for 1 ns;
@@ -343,7 +343,7 @@ begin  -- behavior
     wb_adr_i <= x"31";
     wb_dat_i <= x"3131";
     wait for 1 ns;
-    
+
     assert (wb_ack_o = '0') and (ram_ce = '0')
       report "Single Write: Write too early." severity error;
     wait until rising_edge(clk); wait for 1 ns;
@@ -355,7 +355,7 @@ begin  -- behavior
     wait until rising_edge(clk); wait for 1 ns;
     wb_cyc_i <= '0';
     wb_stb_i <= '0';
-    
+
     ---------------------------------------------------------------------------
     -- Single-word burst read
     ---------------------------------------------------------------------------
@@ -377,7 +377,7 @@ begin  -- behavior
     wait until rising_edge(clk); wait for 1 ns;
     wb_cyc_i <= '0';
     wb_stb_i <= '0';
-    
+
     ---------------------------------------------------------------------------
     -- End
     ---------------------------------------------------------------------------

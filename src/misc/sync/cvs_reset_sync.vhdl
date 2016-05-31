@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: reset_sync
 -- Author(s): Martin Zabel
--- 
+--
 -- Reset synchronizer for multiple clock domains with synchronous resets.
 -- - Each reset output is synchronous to its associated clock.
 -- - Resets are asserted and removed synchronously.
@@ -59,7 +59,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity reset_sync is
-  
+
   generic (
     N : positive := 3);
 
@@ -109,7 +109,7 @@ begin  -- rtl
 
     -- Seperate assignment required for ISim.
     slow_clk <= clk(0);
-    
+
     -- Use slowest clock for impulse stretching.
     process (slow_clk)
     begin  -- process
@@ -128,7 +128,7 @@ begin  -- rtl
     begin
       -- Seperate assignment required for ISim.
       my_clk <= clk(i);
-      
+
       process (my_clk)
       begin  -- process
         if rising_edge(my_clk) then
