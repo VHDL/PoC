@@ -105,7 +105,7 @@ class Configuration(BaseConfiguration):
 		gitHooksSetupScript = pocInstallationPath / "tools/git/git-hooks.setup.py"
 
 		try:
-			call([str(gitHooksSetupScript)])
+			call(["python", str(gitHooksSetupScript)])
 		except OSError as ex:
 			raise ConfigurationException("Error while executing '{0!s}'.".format(gitHooksSetupScript)) from ex
 
