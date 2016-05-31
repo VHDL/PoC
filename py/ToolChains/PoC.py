@@ -42,11 +42,11 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.PoC")
 
 
-from os                   import environ,path
+from os                   import environ
 from pathlib              import Path
 from subprocess           import check_output, check_call, call, CalledProcessError
 
-from Base.Configuration   import Configuration as BaseConfiguration
+from Base.Configuration   import Configuration as BaseConfiguration, ConfigurationException
 
 
 class Configuration(BaseConfiguration):
@@ -101,7 +101,13 @@ class Configuration(BaseConfiguration):
 			return False
 
 	def RunPostConfigurationTasks(self):
-		call([path.join(self._host.PoCConfig['INSTALL.PoC']['InstallationDirectory'], 'tools/git/git-hooks.setup.py')])
+		pocInstallationPath = Path(self._host.PoCConfig['INSTALL.PoC']['InstallationDirectory'])
+		gitHooksSetupScript = pocInstallationPath / "tools/git/git-hooks.setup.py"
+
+		try:
+			call([str(gitHooksSetupScript)])
+		except OSError as ex:
+			raise ConfigurationException("Error while executing '{0!s}'.".format(gitHooksSetupScript)) from ex
 
 	# LOCAL = git rev-parse @
 	# PS G:\git\PoC> git rev-parse "@"
