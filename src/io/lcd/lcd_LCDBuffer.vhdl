@@ -43,7 +43,7 @@ USE			PoC.lcd.ALL;
 ENTITY lcd_LCDBuffer IS
 	GENERIC (
 		CLOCK_FREQ						: FREQ				:= 100 MHz;
-		MIN_REFRESH_PERIOD		: T_TIME			:= 100e-3
+		MIN_REFRESH_PERIOD		: T_TIME			:= 100.0e-3
 	);
 	PORT (
 		Clock				: IN	STD_LOGIC;
