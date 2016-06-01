@@ -1,0 +1,13 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
+# Package
+__init__.py
+
+# Modules
+Altera.py
+ModelSim.py
+Quartus.py

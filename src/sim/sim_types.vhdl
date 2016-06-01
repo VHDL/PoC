@@ -43,7 +43,10 @@ use			PoC.vectors.all;
 
 
 package sim_types is
-	constant C_SIM_VERBOSE					: BOOLEAN		:= TRUE;		-- POC_VERBOSE
+	attribute pocIsSimulation		: BOOLEAN;
+	attribute pocIsSimulation of sim_types			: package is TRUE;
+
+	constant C_SIM_VERBOSE					: BOOLEAN		:= FALSE;		-- POC_VERBOSE
 
 	-- ===========================================================================
   -- Simulation Task and Status Management
@@ -60,7 +63,8 @@ package sim_types is
 	type T_SIM_TEST_STATUS is (
 		SIM_TEST_STATUS_CREATED,
 		SIM_TEST_STATUS_ACTIVE,
-		SIM_TEST_STATUS_ENDED
+		SIM_TEST_STATUS_ENDED,
+		SIM_TEST_STATUS_ZOMBI
 	);
 	
 	type T_SIM_PROCESS_STATUS is (
@@ -99,14 +103,33 @@ package sim_types is
 	end record;
 
 	procedure randInitializeSeed(Seed : inout T_SIM_RAND_SEED);
+	procedure randInitializeSeed(Seed : inout T_SIM_RAND_SEED; SeedValue : in T_SIM_RAND_SEED);
+	procedure randInitializeSeed(Seed : inout T_SIM_RAND_SEED; SeedVector : in T_INTVEC);
+	procedure randInitializeSeed(Seed : inout T_SIM_RAND_SEED; SeedVector : in STRING);
+	function	randInitializeSeed return T_SIM_RAND_SEED;
+	function	randInitializeSeed(SeedValue : T_SIM_RAND_SEED) return T_SIM_RAND_SEED;
+	function	randInitializeSeed(SeedVector : T_INTVEC) return T_SIM_RAND_SEED;
+	function	randInitializeSeed(SeedVector : STRING) return T_SIM_RAND_SEED;
 	
-	procedure randUniformDistibutedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Minimum : REAL; Maximum : REAL);
+	attribute pocIsSimulation of randInitializeSeed[T_SIM_RAND_SEED] : procedure is TRUE;
 	
-	procedure randNormalDistibutedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; StandardDeviation : REAL := 1.0; Mean : REAL := 0.0);
-	procedure randNormalDistibutedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; StandardDeviation : in REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL);
+	-- Uniform distributed random values
+	-- ===========================================================================
+	procedure randUniformDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL);
+	procedure randUniformDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out INTEGER; Minimum : INTEGER; Maximum : INTEGER);
+	procedure randUniformDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Minimum : REAL; Maximum : REAL);
 	
-	procedure randPoissonDistibutedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Mean : in REAL);
-	procedure randPoissonDistibutedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL);
+	-- Normal / Gaussian distributed random values
+	-- ===========================================================================
+	procedure randNormalDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; StandardDeviation : REAL := 1.0; Mean : REAL := 0.0);
+	procedure randNormalDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out INTEGER; StandardDeviation : in REAL; Mean : in REAL; Minimum : in INTEGER; Maximum : in INTEGER);
+	procedure randNormalDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; StandardDeviation : in REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL);
+	
+	-- Poisson distributed random values
+	-- ===========================================================================
+	procedure randPoissonDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Mean : in REAL);
+	procedure randPoissonDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out INTEGER; Mean : in REAL; Minimum : in INTEGER; Maximum : in INTEGER);
+	procedure randPoissonDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL);
 	
 	-- ===========================================================================
 	-- Clock Generation
@@ -130,52 +153,6 @@ package sim_types is
 	subtype T_PHASE is T_DEGREE range	-360 deg to 360 deg;
 	
 	function ite(cond : BOOLEAN; value1 : T_DEGREE; value2 : T_DEGREE) return T_DEGREE;
-	
-	-- waveform generation
-	-- ===========================================================================
-	type T_SIM_WAVEFORM_TUPLE_SL is record
-		Delay		: TIME;
-		Value		: STD_LOGIC;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_8 is record
-		Delay		: TIME;
-		Value		: T_SLV_8;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_16 is record
-		Delay		: TIME;
-		Value		: T_SLV_16;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_24 is record
-		Delay		: TIME;
-		Value		: T_SLV_24;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_32 is record
-		Delay		: TIME;
-		Value		: T_SLV_32;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_48 is record
-		Delay		: TIME;
-		Value		: T_SLV_48;
-	end record;
-	
-	type T_SIM_WAVEFORM_TUPLE_SLV_64 is record
-		Delay		: TIME;
-		Value		: T_SLV_64;
-	end record;
-	
-	type T_SIM_WAVEFORM_SL			is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SL;
-	type T_SIM_WAVEFORM_SLV_8		is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_8;
-	type T_SIM_WAVEFORM_SLV_16	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_16;
-	type T_SIM_WAVEFORM_SLV_24	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_24;
-	type T_SIM_WAVEFORM_SLV_32	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_32;
-	type T_SIM_WAVEFORM_SLV_48	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_48;
-	type T_SIM_WAVEFORM_SLV_64	is array(NATURAL range <>) of T_SIM_WAVEFORM_TUPLE_SLV_64;
-	
 end package;
 
 
@@ -192,25 +169,133 @@ package body sim_types is
 	-- ===========================================================================
 	-- Random Numbers
 	-- ===========================================================================
+	constant MAX_SEED1_VALUE		: POSITIVE	:= 2147483562;
+	constant MAX_SEED2_VALUE		: POSITIVE	:= 2147483398;
+	
+	function randGenerateInitialSeed return T_SIM_RAND_SEED is
+	begin
+		return (
+			Seed1 => 5,
+			Seed2 => 3423
+		);
+	end function;
+	
+	function randBoundSeed(SeedValue : in T_SIM_RAND_SEED) return T_SIM_RAND_SEED is
+	begin
+		return (
+			Seed1	=> (SeedValue.Seed1 - 1 mod MAX_SEED1_VALUE) + 1,
+			Seed2	=> (SeedValue.Seed2 - 1 mod MAX_SEED2_VALUE) + 1
+		);
+	end function;
+	
 	procedure randInitializeSeed(Seed : inout T_SIM_RAND_SEED) is
 	begin
-		Seed.Seed1	:= 5;
-		Seed.Seed2	:= 3423;
+		Seed	:= randGenerateInitialSeed;
+	end procedure;
+	
+	procedure randInitializeSeed(Seed : inout T_SIM_RAND_SEED; SeedValue : in T_SIM_RAND_SEED) is
+	begin
+		Seed	:= randBoundSeed(SeedValue);
+	end procedure;
+	
+	procedure randInitializeSeed(Seed : inout T_SIM_RAND_SEED; SeedVector : in T_INTVEC) is
+	begin
+		if (SeedVector'length = 0) then
+			Seed	:= randGenerateInitialSeed;
+		elsif (SeedVector'length = 1) then
+			Seed	:= randBoundSeed(T_SIM_RAND_SEED'(
+				Seed1 => SeedVector(0),
+				Seed2 => 92346
+			));
+		elsif (SeedVector'length = 2) then
+			Seed	:= randBoundSeed(T_SIM_RAND_SEED'(
+				Seed1 => SeedVector(0),
+				Seed2 => SeedVector(1)
+			));
+		else
+			-- FIXME:
+			-- Seed.Seed1	:= SeedVector(0);
+			-- Seed.Seed2	:= SeedVector(1);
+		end if;
+	end procedure;
+	
+	procedure randInitializeSeed(Seed : inout T_SIM_RAND_SEED; SeedVector : in STRING) is
+	begin
+		if (SeedVector'length = 0) then
+			Seed	:= randGenerateInitialSeed;
+		elsif (SeedVector'length = 1) then
+			Seed	:= T_SIM_RAND_SEED'(
+				Seed1 => CHARACTER'pos(SeedVector(1)),
+				Seed2 => 39834
+			);
+		elsif (SeedVector'length = 2) then
+			Seed	:= T_SIM_RAND_SEED'(
+				Seed1 => CHARACTER'pos(SeedVector(1)),
+				Seed2 => CHARACTER'pos(SeedVector(2))
+			);
+		else
+			-- FIXME:
+			-- Seed.Seed1	:= CHARACTER'pos(SeedVector(0));
+			-- Seed.Seed2	:= CHARACTER'pos(SeedVector(1));
+		end if;
+	end procedure;
+	
+	function randInitializeSeed return T_SIM_RAND_SEED is
+	begin
+		return randGenerateInitialSeed;
+	end function;
+	
+	function randInitializeSeed(SeedValue : T_SIM_RAND_SEED) return T_SIM_RAND_SEED is
+	begin
+		return randBoundSeed(SeedValue);
+	end function;
+	
+	function randInitializeSeed(SeedVector : T_INTVEC) return T_SIM_RAND_SEED is
+		variable Result		: T_SIM_RAND_SEED;
+	begin
+		randInitializeSeed(Result, SeedVector);
+		return Result;
+	end function;
+	
+	function randInitializeSeed(SeedVector : STRING) return T_SIM_RAND_SEED is
+		variable Result		: T_SIM_RAND_SEED;
+	begin
+		randInitializeSeed(Result, SeedVector);
+		return Result;
+	end function;
+	
+	-- ===========================================================================
+	-- Uniform distributed random values
+	-- ===========================================================================
+	procedure randUniformDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL) is
+	begin
+		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, Value);
 	end procedure;
 
-	procedure randUniformDistibutedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Minimum : REAL; Maximum : REAL) is
+	procedure randUniformDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out INTEGER; Minimum : INTEGER; Maximum : INTEGER) is
 		variable rand : REAL;
 	begin
-		if (Maximum < Minimum) then			report "randUniformDistibutedValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
+		if (Maximum < Minimum) then			report "randUniformDistributedValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
 		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
 		Value := scale(rand, Minimum, Maximum);
-	end procedure ;
+	end procedure;
+	
+	procedure randUniformDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Minimum : REAL; Maximum : REAL) is
+		variable rand : REAL;
+	begin
+		if (Maximum < Minimum) then			report "randUniformDistributedValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
+		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand);
+		Value := scale(rand, Minimum, Maximum);
+	end procedure;
 
-	procedure randNormalDistibutedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; StandardDeviation : REAL := 1.0; Mean : REAL := 0.0) is
+	-- ===========================================================================
+	-- Normal / Gaussian distributed random values
+	-- ===========================================================================
+	procedure randNormalDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; StandardDeviation : REAL := 1.0; Mean : REAL := 0.0) is
 		variable rand1 : REAL;
 		variable rand2 : REAL;
 	begin
-		if StandardDeviation < 0.0 then	report "randNormalDistibutedValue: Standard deviation must be >= 0.0"			severity FAILURE;		end if;
+		if StandardDeviation < 0.0 then	report "randNormalDistributedValue: Standard deviation must be >= 0.0"			severity FAILURE;		end if;
 		-- Box Muller transformation
 		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand1);
 		ieee.math_real.Uniform(Seed.Seed1, Seed.Seed2, rand2);
@@ -218,19 +303,36 @@ package body sim_types is
 		Value := StandardDeviation * (sqrt(-2.0 * log(rand1)) * cos(MATH_2_PI * rand2)) + Mean;
 	end procedure;
 	
-	procedure randNormalDistibutedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; StandardDeviation : in REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL) is
+	procedure randNormalDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out INTEGER; StandardDeviation : in REAL; Mean : in REAL; Minimum : in INTEGER; Maximum : in INTEGER) is
+		variable rand_real		: REAL;
+		variable rand_int			: INTEGER;
+	begin
+		if (Maximum < Minimum) then			report "randNormalDistributedValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
+		if StandardDeviation < 0.0 then	report "randNormalDistributedValue: Standard deviation must be >= 0.0"			severity FAILURE;		end if;
+		while (TRUE) loop
+			randNormalDistributedValue(Seed, rand_real, StandardDeviation, Mean);
+			rand_int	:= integer(round(rand_real));
+			exit when ((Minimum <= rand_int) and (rand_int <= Maximum));
+		end loop;
+		Value := rand_int;
+	end procedure;
+	
+	procedure randNormalDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; StandardDeviation : in REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL) is
 		variable rand		: REAL;
 	begin
-		if (Maximum < Minimum) then			report "randNormalDistibutedValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
-		if StandardDeviation < 0.0 then	report "randNormalDistibutedValue: Standard deviation must be >= 0.0"			severity FAILURE;		end if;
+		if (Maximum < Minimum) then			report "randNormalDistributedValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
+		if StandardDeviation < 0.0 then	report "randNormalDistributedValue: Standard deviation must be >= 0.0"			severity FAILURE;		end if;
 		while (TRUE) loop
-			randNormalDistibutedValue(Seed, rand, StandardDeviation, Mean);
+			randNormalDistributedValue(Seed, rand, StandardDeviation, Mean);
 			exit when ((Minimum <= rand) and (rand <= Maximum));
 		end loop;
 		Value := rand;
 	end procedure;
 	
-	procedure randPoissonDistibutedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Mean : in REAL) is
+	-- ===========================================================================
+	-- Poisson distributed random values
+	-- ===========================================================================
+	procedure randPoissonDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Mean : in REAL) is
 		variable Product	: Real;
 		variable Bound		: Real;
 		variable rand			: Real;
@@ -240,7 +342,7 @@ package body sim_types is
 		Result	:= 0.0;
 		Bound		:= exp(-1.0 * Mean);
 		if ((Mean <= 0.0) or (Bound <= 0.0)) then
-			report "randPoissonDistibutedValue: Mean must be greater than 0.0." severity FAILURE;
+			report "randPoissonDistributedValue: Mean must be greater than 0.0." severity FAILURE;
 			return;
 		end if;
 		
@@ -252,12 +354,25 @@ package body sim_types is
 		Value	:= Result;
 	end procedure;
 	
-	procedure randPoissonDistibutedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL) is
+	procedure randPoissonDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out INTEGER; Mean : in REAL; Minimum : in INTEGER; Maximum : in INTEGER) is
+		variable rand_real		: REAL;
+		variable rand_int			: INTEGER;
+	begin
+		if (Maximum < Minimum) then			report "randPoissonDistributedValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
+		while (TRUE) loop
+			randPoissonDistributedValue(Seed, rand_real, Mean);
+			rand_int	:= integer(round(rand_real));
+			exit when ((Minimum <= rand_int) and (rand_int <= Maximum));
+		end loop;
+		Value := rand_int;
+	end procedure;
+	
+	procedure randPoissonDistributedValue(Seed : inout T_SIM_RAND_SEED; Value : out REAL; Mean : in REAL; Minimum : in REAL; Maximum : in REAL) is
 		variable rand		: REAL;
 	begin
-		if (Maximum < Minimum) then			report "randPoissonDistibutedValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
+		if (Maximum < Minimum) then			report "randPoissonDistributedValue: Maximum must be greater than Minimum."	severity FAILURE;		end if;
 		while (TRUE) loop
-			randPoissonDistibutedValue(Seed, rand, Mean);
+			randPoissonDistributedValue(Seed, rand, Mean);
 			exit when ((Minimum <= rand) and (rand <= Maximum));
 		end loop;
 		Value := rand;

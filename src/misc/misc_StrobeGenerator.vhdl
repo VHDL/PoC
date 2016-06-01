@@ -58,7 +58,7 @@ architecture rtl of misc_StrobeGenerator is
 	signal Counter_neg					: STD_LOGIC;
 	
 begin
-	Counter_s		<= downcounter_next(cnt => Counter_s, rst => Counter_neg, en => '1', init => COUNTER_INIT_VALUE) when rising_edge(Clock);
+	Counter_s		<= downcounter_next(cnt => Counter_s, rst => Counter_neg, en => '1', INIT => COUNTER_INIT_VALUE) when rising_edge(Clock);
 	Counter_neg	<= downcounter_neg(cnt => Counter_s);
 	O						<= Counter_neg;
 end;

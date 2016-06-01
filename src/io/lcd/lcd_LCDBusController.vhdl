@@ -36,6 +36,7 @@ LIBRARY	PoC;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
 USE			PoC.strings.ALL;
+use			PoC.physical.all;
 USE			PoC.io.ALL;
 USE			PoC.lcd.ALL;
 
@@ -43,7 +44,7 @@ USE			PoC.lcd.ALL;
 ENTITY lcd_LCDBusController IS
 	GENERIC (
 		SPEEDUP_SIMULATION				: BOOLEAN												:= TRUE;
-		CLOCK_FREQ_MHZ						: REAL													:= 125.0;					-- 125 MHz
+		CLOCK_FREQ								: FREQ													:= 100 MHz;
 		LCD_BUS_BITS							: POSITIVE											:= 4
 	);
 	PORT (
@@ -71,15 +72,15 @@ ARCHITECTURE rtl OF lcd_LCDBusController IS
 	ATTRIBUTE FSM_ENCODING										: STRING;
 	
 --	CONSTANT CLOCK_DUTY_CYCLE									: REAL			:= 0.50;		-- 50% high time
-	CONSTANT TIME_BUSENABLE_HIGH_NS						: REAL			:= 250.0;		--Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * 			CLOCK_DUTY_CYCLE);
-	CONSTANT TIME_BUSENABLE_LOW_NS						: REAL			:= 250.0;		--Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * (1 - CLOCK_DUTY_CYCLE));
+	CONSTANT TIME_BUSENABLE_HIGH							: T_TIME			:= 250e-9;		--Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * 			CLOCK_DUTY_CYCLE);
+	CONSTANT TIME_BUSENABLE_LOW								: T_TIME			:= 250e-9;		--Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * (1 - CLOCK_DUTY_CYCLE));
 
-	CONSTANT TIME_SETUP_REGSEL_NS							: REAL			:= 40.0;
-	CONSTANT TIME_SETUP_DATA_NS								: REAL			:= 80.0;
-	CONSTANT TIME_HOLD_REGSEL_NS							: REAL			:= 10.0;
-	CONSTANT TIME_HOLD_DATA_NS								: REAL			:= 10.0;
-	CONSTANT TIME_VALID_DATA_NS								: REAL			:= 5.0;
-	CONSTANT TIME_DELAY_DATA_NS								: REAL			:= 120.0;
+	CONSTANT TIME_SETUP_REGSEL								: T_TIME			:= 40e-9;
+	CONSTANT TIME_SETUP_DATA									: T_TIME			:= 80e-9;
+	CONSTANT TIME_HOLD_REGSEL									: T_TIME			:= 10e-9;
+	CONSTANT TIME_HOLD_DATA										: T_TIME			:= 10e-9;
+	CONSTANT TIME_VALID_DATA									: T_TIME			:= 5e-9;
+	CONSTANT TIME_DELAY_DATA									: T_TIME			:= 120e-9;
 
 	-- Timing table ID
 	CONSTANT TTID_BUSENABLE_LOW								: NATURAL		:= 0;
@@ -93,14 +94,14 @@ ARCHITECTURE rtl OF lcd_LCDBusController IS
 	
 	-- Timing table
 	CONSTANT TIMING_TABLE											: T_NATVEC	:= (
-		TTID_BUSENABLE_LOW	=> TimingToCycles_ns(TIME_BUSENABLE_LOW_NS,		Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_BUSENABLE_HIGH	=> TimingToCycles_ns(TIME_BUSENABLE_HIGH_NS,	Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_SETUP_REGSEL		=> TimingToCycles_ns(TIME_SETUP_REGSEL_NS,		Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_SETUP_DATA			=> TimingToCycles_ns(TIME_SETUP_DATA_NS,			Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_HOLD_REGSEL		=> TimingToCycles_ns(TIME_HOLD_REGSEL_NS,			Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_HOLD_DATA			=> TimingToCycles_ns(TIME_HOLD_DATA_NS,				Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_VALID_DATA			=> TimingToCycles_ns(TIME_VALID_DATA_NS,			Freq_MHz2Real_ns(CLOCK_FREQ_MHZ)),
-		TTID_DELAY_DATA			=> TimingToCycles_ns(TIME_DELAY_DATA_NS,			Freq_MHz2Real_ns(CLOCK_FREQ_MHZ))
+		TTID_BUSENABLE_LOW	=> TimingToCycles(TIME_BUSENABLE_LOW,		CLOCK_FREQ),
+		TTID_BUSENABLE_HIGH	=> TimingToCycles(TIME_BUSENABLE_HIGH,	CLOCK_FREQ),
+		TTID_SETUP_REGSEL		=> TimingToCycles(TIME_SETUP_REGSEL,		CLOCK_FREQ),
+		TTID_SETUP_DATA			=> TimingToCycles(TIME_SETUP_DATA,			CLOCK_FREQ),
+		TTID_HOLD_REGSEL		=> TimingToCycles(TIME_HOLD_REGSEL,			CLOCK_FREQ),
+		TTID_HOLD_DATA			=> TimingToCycles(TIME_HOLD_DATA,				CLOCK_FREQ),
+		TTID_VALID_DATA			=> TimingToCycles(TIME_VALID_DATA,			CLOCK_FREQ),
+		TTID_DELAY_DATA			=> TimingToCycles(TIME_DELAY_DATA,			CLOCK_FREQ)
 	);
 	
 	-- Bus TimingCounter (BusTC)
@@ -129,7 +130,7 @@ ARCHITECTURE rtl OF lcd_LCDBusController IS
 		ST_ERROR
 	);
 	
-	SIGNAL State								: T_STATE						:= ST_INIT;
+	SIGNAL State								: T_STATE						:= ST_IDLE;
 	SIGNAL NextState						: T_STATE;
 	
 	SIGNAL Reg_RegisterAddress_en		: STD_LOGIC;
@@ -140,7 +141,7 @@ ARCHITECTURE rtl OF lcd_LCDBusController IS
 	SIGNAL Reg_Data									: T_SLV_8						:= (OTHERS => '0');
 	
 BEGIN
-	ASSERT ((LCD_BUS_WIDTH = 4) OR (LCD_BUS_WIDTH = 8)) REPORT "LCD_BUS_WIDTH is out of range {4,8}" SEVERITY FAILURE;
+	ASSERT ((LCD_BUS_BITS = 4) OR (LCD_BUS_BITS = 8)) REPORT "LCD_BUS_WIDTH is out of range {4,8}" SEVERITY FAILURE;
 
 
 	PROCESS(Clock)
@@ -154,7 +155,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS(State, Strobe, ReadWrite)
+	PROCESS(State, Command)
 	BEGIN
 		NextState								<= State;
 	

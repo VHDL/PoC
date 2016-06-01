@@ -47,63 +47,99 @@ use			PoC.utils.all;
 
 
 package FileIO is
-	file GlobalLogFile		: TEXT;
-
-	subtype T_LOGFILE_OPEN_KIND is FILE_OPEN_KIND range WRITE_MODE to APPEND_MODE;
-	
-	procedure OpenLogFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE);
-	procedure CloseLogFile;
-	
 	-- Constant declarations
 	constant C_LINEBREAK : STRING;
 
+	
+	-- Log file
 	-- ===========================================================================
-	procedure stdout_Print    (str : STRING);
-	procedure stdout_PrintLine(str : STRING := "");
-	procedure stdout_Flush;
+	subtype T_LOGFILE_OPEN_KIND is FILE_OPEN_KIND range WRITE_MODE to APPEND_MODE;
+	
+	procedure				LogFile_Open(FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE);
+	procedure				LogFile_Open(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE);
+	impure function	LogFile_IsOpen return BOOLEAN;
+	procedure				LogFile_Print(str : STRING);
+	procedure				LogFile_PrintLine(str : STRING := "");
+	procedure				LogFile_Flush;
+	procedure				LogFile_Close;
+	
+	-- StdOut
+	-- ===========================================================================
+	procedure StdOut_Print(str : STRING);
+	procedure StdOut_PrintLine(str : STRING := "");
+	procedure StdOut_Flush;
 
 end package;
 
 
 package body FileIO is
-	-- ===========================================================================
 	constant C_LINEBREAK : STRING := ite(str_equal(MY_OPERATING_SYSTEM, "WINDOWS"), (CR & LF), (1 => LF));
-	
+
 	-- ===========================================================================
-	shared variable LogFile_IsOpen	: BOOLEAN		:= FALSE;
+	file						LogFile_FileHandle		: TEXT;
+	shared variable	LogFile_State_IsOpen	: BOOLEAN		:= FALSE;
+	shared variable LogFile_LineBuffer		: LINE;
 	
-	procedure OpenLogFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE) is
+	procedure LogFile_Open(FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE) is
 		variable OpenStatus		: FILE_OPEN_STATUS;
 	begin
-		file_open(OpenStatus, GlobalLogFile, FileName, OpenKind);
-		LogFile_IsOpen	:= (OpenStatus = OPEN_OK);
-		Status					:= OpenStatus;
-	end procedure; 
-	
-	procedure CloseLogFile is
-		begin
-			if (LogFile_IsOpen = TRUE) then
-				file_close(GlobalLogFile);
-				LogFile_IsOpen	:= FALSE;
-			end if;
-		end procedure;
-
-	shared variable stdout_LineBuffer : line;
-
-	procedure stdout_Print(str : STRING) is
-	begin
-		write(stdout_LineBuffer, str);
+		LogFile_Open(OpenStatus, FileName, OpenKind);
 	end procedure;
 	
-	procedure stdout_PrintLine(str : STRING := "") is
+	procedure LogFile_Open(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE) is
+		variable OpenStatus		: FILE_OPEN_STATUS;
 	begin
-		write(stdout_LineBuffer, str);
-		writeline(output, stdout_LineBuffer);
+		file_open(OpenStatus, LogFile_FileHandle, FileName, OpenKind);
+		LogFile_State_IsOpen	:= (OpenStatus = OPEN_OK);
+		Status								:= OpenStatus;
 	end procedure;
 	
-	procedure stdout_Flush is
+	impure function LogFile_IsOpen return BOOLEAN is
 	begin
-		writeline(output, stdout_LineBuffer);
+		return LogFile_State_IsOpen;
+	end function;
+	
+	procedure LogFile_Print(str : STRING) is
+	begin
+		write(LogFile_LineBuffer, str);
+	end procedure;
+	
+	procedure LogFile_PrintLine(str : STRING := "") is
+	begin
+		write(LogFile_LineBuffer, str);
+		writeline(LogFile_FileHandle, LogFile_LineBuffer);
+	end procedure;
+	
+	procedure LogFile_Flush is
+	begin
+		writeline(LogFile_FileHandle, LogFile_LineBuffer);
+	end procedure;
+	
+	procedure LogFile_Close is
+	begin
+		if (LogFile_State_IsOpen = TRUE) then
+			file_close(LogFile_FileHandle);
+			LogFile_State_IsOpen	:= FALSE;
+		end if;
+	end procedure;
+
+	-- ===========================================================================
+	shared variable StdOut_LineBuffer : line;
+
+	procedure StdOut_Print(str : STRING) is
+	begin
+		write(StdOut_LineBuffer, str);
+	end procedure;
+	
+	procedure StdOut_PrintLine(str : STRING := "") is
+	begin
+		write(StdOut_LineBuffer, str);
+		writeline(OUTPUT, StdOut_LineBuffer);
+	end procedure;
+	
+	procedure StdOut_Flush is
+	begin
+		writeline(OUTPUT, StdOut_LineBuffer);
 	end procedure;
 	
 end package body;

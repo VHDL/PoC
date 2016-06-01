@@ -1,0 +1,29 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Sat Mar 19 22:31:40 2016
+[*]
+[dumpfile] "G:\git\PoC\temp\ghdl\arith_firstone_tb.ghw"
+[dumpfile_mtime] "Sat Mar 19 22:30:14 2016"
+[dumpfile_size] 10940
+[savefile] "G:\git\PoC\sim\arith\arith_firstone_tb.gtkw"
+[timestart] 0
+[size] 1680 997
+[pos] -87 -87
+*-28.528830 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.arith_firstone_tb.
+[sst_width] 197
+[signals_width] 102
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.arith_firstone_tb.clock
+top.arith_firstone_tb.tin
+top.arith_firstone_tb.tout
+#{top.arith_firstone_tb.bin[2:0]} top.arith_firstone_tb.bin[2] top.arith_firstone_tb.bin[1] top.arith_firstone_tb.bin[0]
+@22
+#{top.arith_firstone_tb.grnt[7:0]} top.arith_firstone_tb.grnt[7] top.arith_firstone_tb.grnt[6] top.arith_firstone_tb.grnt[5] top.arith_firstone_tb.grnt[4] top.arith_firstone_tb.grnt[3] top.arith_firstone_tb.grnt[2] top.arith_firstone_tb.grnt[1] top.arith_firstone_tb.grnt[0]
+@23
+#{top.arith_firstone_tb.rqst[7:0]} top.arith_firstone_tb.rqst[7] top.arith_firstone_tb.rqst[6] top.arith_firstone_tb.rqst[5] top.arith_firstone_tb.rqst[4] top.arith_firstone_tb.rqst[3] top.arith_firstone_tb.rqst[2] top.arith_firstone_tb.rqst[1] top.arith_firstone_tb.rqst[0]
+[pattern_trace] 1
+[pattern_trace] 0

@@ -332,12 +332,12 @@ begin
 					when 58 =>
 						if (ATAWord_117_IsValid_r = '1') then
 							for i in 0 to 15 loop
-								if (Data(I + 16) = '1') then
-									LogicalBlockSize_ldB							<= to_unsigned(I + 1, LogicalBlockSize_ldB'length);			-- ShiftLeft(1) -> Data holds sector count in 16-Bit words
+								if (Data(i + 16) = '1') then
+									LogicalBlockSize_ldB							<= to_unsigned(i + 1, LogicalBlockSize_ldB'length);			-- ShiftLeft(1) -> Data holds sector count in 16-Bit words
 									exit;
 								end if;
 								
-								if (I = 15) then
+								if (i = 15) then
 									LogicalBlockSize_ldB							<= to_unsigned(9, LogicalBlockSize_ldB'length);
 									exit;
 								end if;

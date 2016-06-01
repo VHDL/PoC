@@ -36,7 +36,7 @@ use PoC.physical.all;
 
 entity lcd_dotmatrix is
   generic(
-    CLOCK_FREQ : freq;
+    CLOCK_FREQ : FREQ;
     DATA_WIDTH : positive;  				-- Width of data bus (4 or 8)
 
     T_W        : t_time     :=  500.0e-9; -- Minimum width of E pulse

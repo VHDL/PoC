@@ -1,11 +1,11 @@
-# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-# Authors:         		 Patrick Lehmann
+# Authors:               Patrick Lehmann
 # 
-# Python Main Module:  Entry point to the post-processing tools.
+# Python Main Module:    Entry point to the post-processing tools.
 # 
 # Description:
 # ------------------------------------
@@ -35,14 +35,14 @@ from pathlib import Path
 
 from lib.Functions import Exit
 from Base.Exceptions import *
-from Base.PoCBase import CommandLineProgram
-from PoC.Entity import *
-from PoC.Config import *
-from Processor import *
-from Processor.Exceptions import *
+from Base.Processor import ProcessorException, PostProcessorException
+from PoC.Entity import IPCore, FQN
+#from PoC.Config import *
+#from Processor import *
+from Base.Exceptions import PlatformNotSupportedException, EnvironmentException, NotConfiguredException
 from Processor.XST import *
 
-class PostProcessor(CommandLineProgram):
+class PostProcessor:
 	headLine = "The PoC-Library - PostProcessor Frontend"
 
 	#__netListConfigFileName = "configuration.ini"
@@ -62,17 +62,17 @@ class PostProcessor(CommandLineProgram):
 		# hard coded
 		projectName = "StreamDBTest_ML505"
 	
-		projectConfigurationFilePath =	self.Directories["SolutionRoot"] / self.config[projectName]['ConfigurationFile']
-		xstReportFilePath =							self.Directories["SolutionRoot"] / self.config[projectName]['XSTReportFile']
+		projectConfigurationFilePath =  self.Directories["SolutionRoot"] / self.config[projectName]['ConfigurationFile']
+		xstReportFilePath =              self.Directories["SolutionRoot"] / self.config[projectName]['XSTReportFile']
 		
 		self.Files["ProjectConfiguration"]	= projectConfigurationFilePath
-		self.Files["XSTReport"]	=							xstReportFilePath
+		self.Files["XSTReport"]	=              xstReportFilePath
 		
 		print("project ini: " + str(projectConfigurationFilePath))
 		
 		if not projectConfigurationFilePath.exists():
 			raise NotConfiguredException("Project configuration file does not exist. (%s)" % str(projectConfigurationFilePath))
-		if not xstReportFilePath.exists():							raise Exception("Compiler report file does not exist. (%s)" % str(xstReportFilePath))
+		if not xstReportFilePath.exists():              raise Exception("Compiler report file does not exist. (%s)" % str(xstReportFilePath))
 
 		self.printDebug("Reading project configuration from '%s'" % str(projectConfigurationFilePath))		
 		self.projectConfig = ConfigParser(interpolation=ExtendedInterpolation())
@@ -81,8 +81,8 @@ class PostProcessor(CommandLineProgram):
 	
 		self.projectConfig['PROJECT']['Name'] = self.config[projectName]['ProjectName']
 		
-		self.Directories['ChipScope'] =	self.Directories['SolutionRoot'] / self.projectConfig['Directories']['ChipScopeDirectory']
-		self.Directories['TokenFile'] =	self.Directories['SolutionRoot'] / self.projectConfig['Directories']['TokenFileDirectory']
+		self.Directories['ChipScope'] =  self.Directories['SolutionRoot'] / self.projectConfig['Directories']['ChipScopeDirectory']
+		self.Directories['TokenFile'] =  self.Directories['SolutionRoot'] / self.projectConfig['Directories']['TokenFileDirectory']
 			
 	def run(self, showLogs, showReport):
 		
@@ -148,9 +148,9 @@ class PostProcessor(CommandLineProgram):
 			regExpMatch = regExp.match(key)
 			if (regExpMatch is not None):
 				criticalWarningsFilterList.append({
-					'Process' :		regExpMatch.group('Process'),
-					'WarningID' :	int(regExpMatch.group('WarningID')),
-					'Pattern' :		self.projectConfig['CriticalWarnings'][key]
+					'Process' :    regExpMatch.group('Process'),
+					'WarningID' :  int(regExpMatch.group('WarningID')),
+					'Pattern' :    self.projectConfig['CriticalWarnings'][key]
 				})
 			else:
 				print("ERROR: '%s'" % key)
@@ -184,7 +184,7 @@ class PostProcessor(CommandLineProgram):
 			tokenFile = self.projectConfig[section]['TokenFileName']
 			tokenFilePath = self.Directories['SolutionRoot'] / tokenFile
 			
-			replacementRules =	self.projectConfig[section]['Replacements']
+			replacementRules =  self.projectConfig[section]['Replacements']
 			ruleList = replacementRules.split("\n")
 			
 			# prepare output string
@@ -215,33 +215,33 @@ class PostProcessor(CommandLineProgram):
 	def enableFSMTokenFileExtraction(self):
 		ext = XSTFSMTokenFileExtractor.Extractor
 		self.processors.append({
-			'Name' :					ext.__name__,
-			'RegExpString' :	ext.getInitializationRegExpString(),
-			'RegExp' :				None,
-			'Extractor' :			ext
+			'Name' :          ext.__name__,
+			'RegExpString' :  ext.getInitializationRegExpString(),
+			'RegExp' :        None,
+			'Extractor' :      ext
 		})
 	
 	def enableErrorExtraction(self):
 		ext = XSTErrorExtractor.Extractor
 		self.processors.append({
-			'Name' :					ext.__name__,
-			'RegExpString' :	ext.getInitializationRegExpString(),
-			'RegExp' :				None,
-			'Extractor' :			ext
+			'Name' :          ext.__name__,
+			'RegExpString' :  ext.getInitializationRegExpString(),
+			'RegExp' :        None,
+			'Extractor' :      ext
 		})
 	
 	def enableWarningExtraction(self):
 		ext = XSTWarningExtractor.Extractor
 		self.processors.append({
-			'Name' :					ext.__name__,
-			'RegExpString' :	ext.getInitializationRegExpString(),
-			'RegExp' :				None,
-			'Extractor' :			ext
+			'Name' :          ext.__name__,
+			'RegExpString' :  ext.getInitializationRegExpString(),
+			'RegExp' :        None,
+			'Extractor' :      ext
 		})
 
 class ActiveProcessor(object):
-	Name =			""
-	Processor =	None
+	Name =      ""
+	Processor =  None
 	
 	def __init__(self, Name, Processor):
 		self.Name = Name
@@ -273,9 +273,9 @@ def main():
 		# create a command line argument parser
 		argParser = argparse.ArgumentParser(
 			formatter_class = argparse.RawDescriptionHelpFormatter,
-			description = textwrap.dedent('''\
+			description = textwrap.dedent("""\
 				This is the PoC Library NetList Service Tool.
-				'''),
+				"""),
 			add_help=False)
 
 		# add arguments
@@ -290,7 +290,7 @@ def main():
 		group21 = group2.add_mutually_exclusive_group(required=True)
 		group21.add_argument('-h', '--help',												dest="help",				help='show this help message and exit',		action='store_const', const=True, default=False)
 		group211 = group21.add_mutually_exclusive_group()
-		group211.add_argument(		 '--tokenfiles', metavar="<FSM>", dest="tokenFiles",	help='extraxt FSM encodings for ChipScope token files (*.tok)')
+		group211.add_argument(     '--tokenfiles', metavar="<FSM>", dest="tokenFiles",	help='extraxt FSM encodings for ChipScope token files (*.tok)')
 
 		# parse command line options
 		args = argParser.parse_args()
@@ -302,7 +302,7 @@ def main():
 		PP = PostProcessor(args.debug, args.verbose, args.quiet)
 		#netList.dryRun = True
 	
-		if (args.help == True):
+		if (args.help is True):
 			argParser.print_help()
 			return
 		elif (args.tokenFiles is not None):
@@ -322,12 +322,12 @@ def main():
 		print(Fore.RESET + Back.RESET + Style.RESET_ALL)
 		exit(1)
 
-	except EnvironmentException as ex:					Exit.printEnvironmentException(ex)
-	except NotConfiguredException as ex:				Exit.printNotConfiguredException(ex)
-	except PlatformNotSupportedException as ex:	Exit.printPlatformNotSupportedException(ex)
-	except BaseException as ex:									Exit.printBaseException(ex)
-	except NotImplementedException as ex:				Exit.printNotImplementedException(ex)
-	except Exception as ex:											Exit.printException(ex)
+	except EnvironmentException as ex:          Exit.printEnvironmentException(ex)
+	except NotConfiguredException as ex:        Exit.printNotConfiguredException(ex)
+	except PlatformNotSupportedException as ex:  Exit.printPlatformNotSupportedException(ex)
+	except ExceptionBase as ex:                  Exit.printExceptionbase(ex)
+	except NotImplementedException as ex:        Exit.printNotImplementedError(ex)
+	except Exception as ex:                      Exit.printException(ex)
 			
 # entry point
 if __name__ == "__main__":

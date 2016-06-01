@@ -386,7 +386,7 @@ begin
 						OOB_AlignDetected			<= '1';
 						
 						if (AlignCounter_us = CONSECUTIVE_ALIGN_MIN - 1) then
-							nextstate						<= st_host_send_align;
+							NextState						<= ST_HOST_SEND_ALIGN;
 						end if;
 					end if;
 				
@@ -439,7 +439,7 @@ begin
 		port map (
 			Clock								=> Clock,
 			Enable							=> TC1_en,
-			Load								=> TC1_load,
+			Load								=> TC1_Load,
 			Slot								=> TC1_Slot,
 			Timeout							=> TC1_Timeout
 		);
@@ -452,7 +452,7 @@ begin
 		port map (
 			Clock								=> Clock,
 			Enable							=> TC2_en,
-			Load								=> TC2_load,
+			Load								=> TC2_Load,
 			Slot								=> TC2_Slot,
 			Timeout							=> TC2_Timeout
 		);

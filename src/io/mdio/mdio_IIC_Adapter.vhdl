@@ -37,8 +37,9 @@ LIBRARY PoC;
 --USE			PoC.config.ALL;
 USE			PoC.utils.ALL;
 USE			PoC.vectors.ALL;
-USE			PoC.io.ALL;
---USE			PoC.net.ALL;
+USE			PoC.io.ALL;				-- TODO: move MDIO types to a MDIO package
+USE			PoC.iic.ALL;
+USE			PoC.net.ALL;
 
 
 ENTITY mdio_IIC_Adapter IS
@@ -94,7 +95,7 @@ ARCHITECTURE rtl OF mdio_IIC_Adapter IS
 			ST_READ_BYTE_1,
 			ST_READ_WAIT_FOR_COMPLETION,
 			ST_READ_BYTES_COMPLETE,
-		ST_Write_REQUEST_BUS,
+		ST_WRITE_REQUEST_BUS,
 			ST_WRITE_SEND_COMMAND,
 			ST_WRITE_BYTE_0,
 			ST_WRITE_BYTE_1,

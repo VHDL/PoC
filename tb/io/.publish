@@ -24,4 +24,4 @@ vga/
 
 # --------------------------------------
 #io_7SegmentMux_tb.*
-#io_Debounce_tb.*
+io_Debounce_tb.*

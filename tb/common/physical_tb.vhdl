@@ -52,13 +52,13 @@ use			PoC.simulation.all;
 architecture tb of physical_tb is
 	signal SimQuiet		: BOOLEAN		:= true;
 	
-	constant CLOCK_FREQ		: FREQ		:= 100 MHz;
-	constant delay				: T_DELAY	:= 256.8 ns;
+	constant CLOCK_FREQ		: FREQ			:= 100 MHz;
+	constant delay				: T_DELAY		:= 256.8 ns;
 	
-	constant cycles				: T_CYCLE	:= TimingToCycles(delay, clock_freq);
+	constant cycles				: POSITIVE	:= TimingToCycles(delay, CLOCK_FREQ);
 	
-	constant Time1			: TIME			:= 10 ns;
-	constant Time2			: TIME			:= 0.5 us;
+	constant Time1				: TIME			:= 10 ns;
+	constant Time2				: TIME			:= 0.5 us;
 	
 begin
 	assert false report "CLOCK_FREQ: " & FREQ'image(CLOCK_FREQ) severity note;

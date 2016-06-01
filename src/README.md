@@ -2,7 +2,7 @@
 
 The namespace `PoC` is equal to the VHDL library name `PoC`. All implementations
 are categorized into sub-namespaces. Common packages are located in the `common`
-subdirectory.
+sub-directory, simulation packages are located in the `sim` sub-directory.
 
 
 ## Sub-Namespaces
@@ -13,6 +13,7 @@ subdirectory.
  -  [`PoC.cache`][cache] - contains caches.
  -  [`PoC.comm`][comm] - contains communication modules.
  -  [`PoC.common`][common] - contains common packages.
+ -  [`PoC.dstructs`][dstruct] - contains syntheziable data structures.
  -  [`PoC.fifo`][fifo] - contains FIFO implementations.
  -  [`PoC.io`][io] - contains low-speed I/O protocol implementations.
  -  [`PoC.mem`][mem] - contains memory abstractions and controllers.
@@ -28,7 +29,8 @@ subdirectory.
  [bus]:				bus
  [cache]:			cache
  [comm]:			comm
- [common]:		common
+ [common]:			common
+ [dstruct]:			dstruct
  [fifo]:			fifo
  [io]:				io
  [mem]:				mem

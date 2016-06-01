@@ -39,8 +39,6 @@ use			PoC.ProtectedTypes.all;
 
 
 package FileIO is
-	file GlobalLogFile		: TEXT;
-
 	subtype T_LOGFILE_OPEN_KIND is FILE_OPEN_KIND range WRITE_MODE to APPEND_MODE;
 	
 	-- Constant declarations
@@ -48,67 +46,103 @@ package FileIO is
 
 	-- ===========================================================================
 	type T_LOGFILE is protected
-		procedure OpenLogFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE);
-		procedure CloseLogFile;
+		procedure				OpenFile(FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE);
+		impure function	OpenFile(FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE) return FILE_OPEN_STATUS;
+		procedure				OpenFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE);
+		impure function IsOpen return BOOLEAN;
+		procedure				CloseFile;
 		
-		procedure Print(str : STRING);
-		procedure PrintLine(str : STRING := "");
-		procedure Flush;
+		procedure				Print(str : STRING);
+		procedure				PrintLine(str : STRING := "");
+		procedure				Flush;
 		-- procedure WriteLine(LineBuffer : inout LINE);
 	end protected;
 
 	-- ===========================================================================
 	type T_FILE is protected
-		procedure OpenFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : FILE_OPEN_KIND := WRITE_MODE);
-		procedure CloseFile;
+		procedure				OpenFile(FileName : STRING; OpenKind : FILE_OPEN_KIND := WRITE_MODE);
+		impure function	OpenFile(FileName : STRING; OpenKind : FILE_OPEN_KIND := WRITE_MODE) return FILE_OPEN_STATUS;
+		procedure				OpenFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : FILE_OPEN_KIND := WRITE_MODE);
+		impure function IsOpen return BOOLEAN;
+		procedure				CloseFile;
 		
-		procedure Print(str : STRING);
-		procedure PrintLine(str : STRING := "");
-		procedure Flush;
+		procedure				Print(str : STRING);
+		procedure				PrintLine(str : STRING := "");
+		procedure				Flush;
 		-- procedure WriteLine(LineBuffer : inout LINE);
 	end protected;
 	
 	type T_STDOUT is protected
-		procedure Print(str : STRING);
-		procedure PrintLine(str : STRING := "");
-		procedure Flush;
+		procedure				Print(str : STRING);
+		procedure				PrintLine(str : STRING := "");
+		procedure				Flush;
 	end protected;
 end package;
 
 
 package body FileIO is
-	-- ===========================================================================
 	constant C_LINEBREAK : STRING := ite(str_equal(MY_OPERATING_SYSTEM, "WINDOWS"), (CR & LF), (1 => LF));
 	
-	shared variable LogFile_IsOpen			: P_BOOLEAN;
+	-- ===========================================================================
+	file						Global_LogFile			: TEXT;
+	-- shared variable	LogFile_IsOpen			: P_BOOLEAN;
+	-- shared variable	LogFile							: T_LOGFILE;
+	-- shared variable	StdOut							: T_STDOUT;
 	-- shared variable LogFile_IsMirrored	: P_BOOLEAN;
 	
 	-- ===========================================================================
 	type T_LOGFILE is protected body
-		variable LineBuffer	: LINE;
+		variable LineBuffer			: LINE;
+		variable Local_IsOpen		: BOOLEAN;
+		variable Local_FileName	: STRING(1 to 256);
 		
-		procedure OpenLogFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE) is
+		procedure OpenFile(FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE) is
+			variable Status	: FILE_OPEN_STATUS;
 		begin
-			file_open(Status, GlobalLogFile, FileName, OpenKind);
-			LogFile_IsOpen.Set(Status = OPEN_OK);
+			OpenFile(Status, FileName, OpenKind);
 		end procedure;
 		
-		procedure CloseLogFile is
+		impure function OpenFile(FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE) return FILE_OPEN_STATUS is
+			variable Status	: FILE_OPEN_STATUS;
 		begin
-			if (LogFile_IsOpen.Get = TRUE) then
-				file_close(GlobalLogFile);
-				LogFile_IsOpen.Clear;
+			OpenFile(Status, FileName, OpenKind);
+			return Status;
+		end function;
+		
+		procedure OpenFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : T_LOGFILE_OPEN_KIND := WRITE_MODE) is
+			variable Status_i : FILE_OPEN_STATUS;
+		begin
+			if (Local_IsOpen = FALSE) then
+				file_open(Status_i, Global_LogFile, FileName, OpenKind);
+				Local_IsOpen		:= (Status_i = OPEN_OK);
+				Local_FileName	:= resize(FileName, Local_FileName'length);
+				Status 					:= Status_i;
+			else
+				report "Global log file '" & str_trim(Local_FileName) & "' is already open." severity ERROR;
+			end if;
+		end procedure;
+		
+		impure function IsOpen return BOOLEAN is
+		begin
+			return Local_IsOpen;
+		end function;
+		
+		procedure CloseFile is
+		begin
+			if (Local_IsOpen = TRUE) then
+				file_close(Global_LogFile);
+				Local_IsOpen	:= FALSE;
 			end if;
 		end procedure;
 
 		procedure WriteLine(LineBuffer : inout LINE) is
 		begin
-			if (LogFile_IsOpen.Get = FALSE) then
+			if (Local_IsOpen = FALSE) then
 				writeline(OUTPUT, LineBuffer);
 			-- elsif (LogFile_IsMirrored.Get = TRUE) then
-				-- tee(GlobalLogFile, LineBuffer);
+				-- tee(Global_LogFile, LineBuffer);
 			else
-				writeline(GlobalLogFile, LineBuffer);
+				writeline(Global_LogFile, LineBuffer);
 			end if ; 
 		end procedure; 
 		
@@ -130,27 +164,53 @@ package body FileIO is
 	end protected body;
 	
 	type T_FILE is protected body
-		file			LocalFile		: TEXT;
-		variable	LineBuffer	: LINE;
-		variable	IsOpen			: BOOLEAN;
+		file			LocalFile				: TEXT;
+		variable	LineBuffer			: LINE;
+		variable	Local_IsOpen		: BOOLEAN;
+		variable	Local_FileName	: STRING(1 to 256);
+		
+		procedure OpenFile(FileName : STRING; OpenKind : FILE_OPEN_KIND := WRITE_MODE) is
+			variable Status	: FILE_OPEN_STATUS;
+		begin
+			OpenFile(Status, FileName, OpenKind);
+		end procedure;
+		
+		impure function OpenFile(FileName : STRING; OpenKind : FILE_OPEN_KIND := WRITE_MODE) return FILE_OPEN_STATUS is
+			variable Status	: FILE_OPEN_STATUS;
+		begin
+			OpenFile(Status, FileName, OpenKind);
+			return Status;
+		end function;
+		
+		impure function IsOpen return BOOLEAN is
+		begin
+			return Local_IsOpen;
+		end function;
 		
 		procedure OpenFile(Status : out FILE_OPEN_STATUS; FileName : STRING; OpenKind : FILE_OPEN_KIND := WRITE_MODE) is
+			variable Status_i : FILE_OPEN_STATUS;
 		begin
-			file_open(Status, LocalFile, FileName, OpenKind);
-			IsOpen	:= (Status = OPEN_OK);
+			if (Local_IsOpen = FALSE) then
+				file_open(Status_i, LocalFile, FileName, OpenKind);
+				Local_IsOpen		:= (Status_i = OPEN_OK);
+				Local_FileName	:= resize(FileName, Local_FileName'length);
+				Status 					:= Status_i;
+			else
+				report "File '" & str_trim(Local_FileName) & "' is already open." severity ERROR;
+			end if;
 		end procedure;
 		
 		procedure CloseFile is
 		begin
-			if (IsOpen = TRUE) then
+			if (Local_IsOpen = TRUE) then
 				file_close(LocalFile);
-				IsOpen	:= FALSE;
+				Local_IsOpen	:= FALSE;
 			end if;
 		end procedure;
 		
 		procedure WriteLine(LineBuffer : inout LINE) is
 		begin
-			if (IsOpen = FALSE) then
+			if (Local_IsOpen = FALSE) then
 				report "File is not open." severity ERROR;
 			else
 				writeline(LocalFile, LineBuffer);

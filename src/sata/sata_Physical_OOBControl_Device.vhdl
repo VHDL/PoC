@@ -373,7 +373,7 @@ BEGIN
 		PORT MAP (
 			Clock								=> Clock,
 			Enable							=> TC1_en,
-			Load								=> TC1_load,
+			Load								=> TC1_Load,
 			Slot								=> TC1_Slot,
 			Timeout							=> TC1_Timeout
 		);
@@ -386,7 +386,7 @@ BEGIN
 		PORT MAP (
 			Clock								=> Clock,
 			Enable							=> TC2_en,
-			Load								=> TC2_load,
+			Load								=> TC2_Load,
 			Slot								=> TC2_Slot,
 			Timeout							=> TC2_Timeout
 		);

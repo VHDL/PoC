@@ -47,7 +47,7 @@ use			PoC.strings.all;
 use			PoC.physical.all;
 use			PoC.sata.all;
 use			PoC.satadbg.all;
-use			PoC.sata_transceivertypes.all;
+use			PoC.sata_TransceiverTypes.all;
 
 
 package satacomp is
@@ -212,8 +212,8 @@ package satacomp is
 			Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
 			-- debug PORTS
-			DebugportIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
-			DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
+			DebugPortIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+			DebugPortOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
 			SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
@@ -263,8 +263,8 @@ package satacomp is
 			Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
 			-- debug PORTS
-			DebugportIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
-			DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
+			DebugPortIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+			DebugPortOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
 			SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
@@ -297,7 +297,7 @@ package satacomp is
 	component sata_Transceiver_Series7_GTXE2 IS
 		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
-			ENABLE_DEBUGport					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
+			ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
 			REFCLOCK_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																				-- Number of PORTS per Transceiver
 			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)			-- intial SATA Generation
@@ -314,8 +314,8 @@ package satacomp is
 			Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
 			-- debug PORTS
-			DebugportIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
-			DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
+			DebugPortIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+			DebugPortOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
 			SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 			SATA_Clock_Stable					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);

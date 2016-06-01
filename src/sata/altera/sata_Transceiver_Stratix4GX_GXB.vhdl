@@ -110,9 +110,9 @@ BEGIN
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_ALTERA)							REPORT "Vendor not yet supported."				SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GXB)	REPORT "This is a GXB wrapper component."	SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_STRATIX4)						REPORT "Device not yet supported."				SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.Vendor = VENDOR_ALTERA)							REPORT "Vendor not yet supported."				SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB)	REPORT "This is a GXB wrapper component."	SEVERITY FAILURE;
+	ASSERT (C_DEVICE_INFO.Device = DEVICE_STRATIX4)						REPORT "Device not yet supported."				SEVERITY FAILURE;
 	ASSERT (PORTS <= 2)																				REPORT "To many ports per transceiver."		SEVERITY FAILURE;
 
 -- 	Common modules shared by all ports

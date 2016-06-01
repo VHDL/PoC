@@ -39,7 +39,7 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
-use			PoC.sata_transceivertypes.all;
+use			PoC.sata_TransceiverTypes.all;
 
 
 package sata is
@@ -548,14 +548,14 @@ package sata is
 	function to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') return T_SATA_FISTYPE;
 	function to_sata_ata_command(slv : T_SLV_8) return T_SATA_ATA_COMMAND;
 	function to_sata_cmdcat(cmd : T_SATA_ATA_COMMAND) return T_SATA_COMMAND_CATEGORY;
-	function is_lba48_command(cmd : T_SATA_ATA_COMMAND) return STD_LOGIC;
+	function is_LBA48_Command(cmd : T_SATA_ATA_COMMAND) return STD_LOGIC;
 	function to_sata_ata_device_flags(slv : T_SLV_8) return T_SATA_ATA_DEVICE_FLAGS;
 	function to_sata_ata_device_register_status(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_STATUS;
 	function to_sata_ata_device_register_error(slv : T_SLV_8) return T_SATA_ATA_DEVICE_REGISTER_ERROR;
+end package;
 
-END;
 
-PACKAGE BODY sata IS
+package body sata is
 	-- ===========================================================================
 	-- to_sata_*_command
 	-- ===========================================================================
@@ -686,7 +686,7 @@ PACKAGE BODY sata IS
 		return to_slv(T_SATA_PRIMITIVE'pos(Primitive), log2ceilnz(T_SATA_PRIMITIVE'pos(T_SATA_PRIMITIVE'high) + 1));
 	end function;
 	
-	function to_sata_word(Primitive : T_SATA_PRIMITIVE) return T_SLV_32 is	--																							K symbol
+	function to_sata_word(Primitive : T_SATA_PRIMITIVE) return T_SLV_32 is	--																				K symbol
 	begin																															-- primitive name				Byte 3	Byte 2	Byte 1	Byte 0
 		case Primitive is																								-- =======================================================
 			when SATA_PRIMITIVE_NONE =>				return x"00000000";					-- no primitive					
@@ -767,7 +767,7 @@ PACKAGE BODY sata IS
 
 	-- to_*
 	-- ===========================================================================
-	function to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') return T_SATA_FISType is
+	function to_sata_fistype(slv : T_SLV_8; valid : STD_LOGIC := '1') return T_SATA_FISTYPE is
 	begin
 		if (valid = '1') then
 			for i in T_SATA_FISTYPE loop
@@ -782,7 +782,7 @@ PACKAGE BODY sata IS
 	function to_sata_ata_command(slv : T_SLV_8) return T_SATA_ATA_COMMAND is
 	begin
 		for i in T_SATA_ATA_COMMAND loop
-			if (slv = to_slv(I)) then
+			if (slv = to_slv(i)) then
 				return i;
 			end if;
 		end loop;
