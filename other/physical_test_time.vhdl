@@ -1,15 +1,15 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Martin Zabel
 --                  Patrick Lehmann
--- 
+--
 -- Module:					Sub-module for test of physical type `TIME` and conversion
 -- 									routines defined in `physical.pkg.vhdl`.
 --
--- 
+--
 -- Description:
 -- ------------------------------------
 -- Synthesis reports a multiple driver error / critical-warning when
@@ -26,13 +26,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ library poc;
 use poc.physical.all;
 
 entity physical_test_time is
-  
+
 	generic (
 		CONST_1_FS		 : t_time := 1.0e-15;
 		CONST_1_PS		 : t_time := 1.0e-12;
@@ -136,7 +136,7 @@ architecture rtl of physical_test_time is
 		report "tsum(SOME_TIMES)  = " & T_TIME'image(tsum(SOME_TIMES)) severity note;
 	return true;
 	end f;
-	
+
 	constant C : boolean := f;
 
 begin  -- architecture rtl
@@ -150,56 +150,56 @@ begin  -- architecture rtl
 	checkConst1fs: if CONST_1_FS <= 0.0 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1ps: if CONST_1_PS <= 0.0 or CONST_1_PS /= 1000.0e-15 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125ps: if CONST_1p125_PS <= 0.0 or CONST_1p125_PS /= 1125.0e-15 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1ns: if CONST_1_NS <= 0.0 or CONST_1_NS /= 1000.0e-12 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125ns: if CONST_1p125_NS <= 0.0 or CONST_1p125_NS /= 1125.0e-12 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1us: if CONST_1_US <= 0.0 or CONST_1_US /= 1000.0e-9 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125us: if CONST_1p125_US <= 0.0 or CONST_1p125_US /= 1125.0e-9 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1ms: if CONST_1_MS <= 0.0 or CONST_1_MS /= 1000.0e-6 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125ms: if CONST_1p125_MS <= 0.0 or CONST_1p125_MS /= 1125.0e-6 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1sec: if CONST_1_SEC <= 0.0 or CONST_1_SEC /= 1000.0e-3 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125sec: if CONST_1p125_SEC <= 0.0 or CONST_1p125_SEC /= 1125.0e-3 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1min: if CONST_1_MIN <= 0.0 or CONST_1_MIN /= 60.0 generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1hr: if CONST_1_HR <= 0.0 or CONST_1_HR /= 3600.0 generate
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkCvtInt1fs: if CVT_INT_1_FS /= 1.0e-15 generate
 		y <= '1';
@@ -273,7 +273,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkCvt1p5psReal: if CVT_1p5_PS_REAL /= 1.5 generate
 		y <= '1';
@@ -295,7 +295,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkMax: if tmax(SOME_TIMES) /= 1.0e-6 generate
 		y <= '1';

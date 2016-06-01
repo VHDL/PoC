@@ -1,11 +1,11 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --									Thomas B. Preußer
--- 
+--
 -- Module:				 	TODO
 --
 -- Description:
@@ -16,13 +16,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,14 +41,14 @@ use			PoC.physical.all;
 
 
 package lcd is
-	
+
 	-- define array indices
 	constant MAX_LCD_COLUMN_COUNT			: POSITIVE			:= 16;
 	constant MAX_LCD_ROW_COUNT				: POSITIVE			:= 2;
-	
+
 	constant T_LCD_COLUMN_INDEX_BW		: POSITIVE			:= log2ceilnz(MAX_LCD_COLUMN_COUNT);
 	constant T_LCD_ROW_INDEX_BW				: POSITIVE			:= log2ceilnz(MAX_LCD_ROW_COUNT);
-	
+
 	subtype T_LCD_COLUMN_INDEX				is INTEGER range 0 to MAX_LCD_COLUMN_COUNT - 1;
 	subtype T_LCD_ROW_INDEX						is INTEGER range 0 to MAX_LCD_ROW_COUNT - 1;
 
@@ -56,19 +56,19 @@ package lcd is
 		LCD_CHAR_SPACE,
 		LCD_CHAR_DASH, LCD_CHAR_ASSIGN, LCD_CHAR_DOT, LCD_CHAR_CDOT, LCD_CHAR_COLON, LCD_CHAR_ARROW_R, LCD_CHAR_ARROW_L,
 		LCD_CHAR_AT, LCD_CHAR_EXMARK, LCD_CHAR_QMARK, LCD_CHAR_SHARP,
-		
+
 		LCD_CHAR_0, LCD_CHAR_1, LCD_CHAR_2, LCD_CHAR_3, LCD_CHAR_4, LCD_CHAR_5, LCD_CHAR_6, LCD_CHAR_7, LCD_CHAR_8, LCD_CHAR_9,
 		LCD_UCHAR_A, LCD_UCHAR_B, LCD_UCHAR_C, LCD_UCHAR_D, LCD_UCHAR_E, LCD_UCHAR_F, LCD_UCHAR_G, LCD_UCHAR_H, LCD_UCHAR_I, LCD_UCHAR_J,
 		LCD_UCHAR_K, LCD_UCHAR_L, LCD_UCHAR_M, LCD_UCHAR_N, LCD_UCHAR_O, LCD_UCHAR_P, LCD_UCHAR_Q, LCD_UCHAR_R, LCD_UCHAR_S, LCD_UCHAR_T,
 		LCD_UCHAR_U, LCD_UCHAR_V, LCD_UCHAR_W, LCD_UCHAR_X, LCD_UCHAR_Y, LCD_UCHAR_Z,
-		
+
 		LCD_LCHAR_a, LCD_LCHAR_b, LCD_LCHAR_c, LCD_LCHAR_d, LCD_LCHAR_e, LCD_LCHAR_f, LCD_LCHAR_g, LCD_LCHAR_h, LCD_LCHAR_i, LCD_LCHAR_j,
 		LCD_LCHAR_k, LCD_LCHAR_l, LCD_LCHAR_m, LCD_LCHAR_n, LCD_LCHAR_o, LCD_LCHAR_p, LCD_LCHAR_q, LCD_LCHAR_r, LCD_LCHAR_s, LCD_LCHAR_t,
 		LCD_LCHAR_u, LCD_LCHAR_v, LCD_LCHAR_w, LCD_LCHAR_x, LCD_LCHAR_y, LCD_LCHAR_z
 	);
 
-	type T_LCD_CHAR_VECTOR	is array(NATURAL range <>)	of T_LCD_CHAR;	
-	
+	type T_LCD_CHAR_VECTOR	is array(NATURAL range <>)	of T_LCD_CHAR;
+
 	subtype T_LCD_ROW				is T_RAWSTRING(0 to MAX_LCD_COLUMN_COUNT - 1);						-- don't use "IS ARRAY (T_LCD_COLUMN_INDEX)" => expression is not sliceable
 	type		T_LCD						is array (T_LCD_ROW_INDEX)	of T_LCD_ROW;
 
@@ -77,13 +77,13 @@ package lcd is
 		LCD_CTRL_KS0066U,					-- Samsung KS0066U - Dot Matrix LCD Driver
 		LCD_CTRL_ST7066U					-- Sitromix ST7066U - Dot Matrix LCD Controller/Driver (compatible to KS0066U)
 	);
-	
+
 	type T_LCD_BUSCTRL_COMMAND is (
 		LCD_BUSCTRL_CMD_NONE,
 		LCD_BUSCTRL_CMD_READ,
 		LCD_BUSCTRL_CMD_WRITE
 	);
-	
+
 	type T_LCD_BUSCTRL_STATUS is (
 		LCD_BUSCTRL_STATUS_IDLE,
 		LCD_BUSCTRL_STATUS_READING,
@@ -111,21 +111,21 @@ package lcd is
 		LCD_CTRL_STATUS_WRITING,
 		LCD_CTRL_STATUS_WRITE_COMPLETE
 	);
-	
-	
+
+
 	-- command bytes for a KS0066U LCD controller
 	-- ===========================================================================
 	constant KS0066U_REG_COMMAND							: STD_LOGIC	:= '0';
 	constant KS0066U_REG_DATA									: STD_LOGIC	:= '1';
-	
-	
+
+
 	-- command bytes for a KS0066U LCD controller
 	-- ===========================================================================
 	constant KS0066U_CMD_NONE									: T_SLV_8		:= x"00";			-- no command
 	constant KS0066U_CMD_DISPLAY_ON						: T_SLV_8		:= x"0C";			-- Display ON; cursor OFF; blink OFF
-	constant KS0066U_CMD_DISPLAY_CLEAR				: T_SLV_8		:= x"01";			-- 
-	constant KS0066U_CMD_return_HOME					: T_SLV_8		:= x"02";			-- 
-	constant KS0066U_CMD_GO_HOME							: T_SLV_8		:= x"10";			-- 
+	constant KS0066U_CMD_DISPLAY_CLEAR				: T_SLV_8		:= x"01";			--
+	constant KS0066U_CMD_return_HOME					: T_SLV_8		:= x"02";			--
+	constant KS0066U_CMD_GO_HOME							: T_SLV_8		:= x"10";			--
 	constant KS0066U_CMD_SET_FUNCTION					: T_SLV_8		:= x"2C";			-- (4 Bit interface, 2-line, 5x8 dots)
 	constant KS0066U_CMD_ENTRY_MODE						: T_SLV_8		:= x"06";			-- entry mode: move: RIGHT; shift OFF
 
@@ -175,16 +175,16 @@ package lcd is
 	function to_LCD_CHAR_VECTOR(slv : STD_LOGIC_VECTOR) return T_LCD_CHAR_VECTOR;
 	function to_LCD_CHAR_VECTOR(rawstr : T_RAWSTRING) return T_LCD_CHAR_VECTOR;
 	function to_LCD_CHAR_VECTOR(str : STRING) return T_LCD_CHAR_VECTOR;
-	
+
 	function to_LCD_CHAR(slv : T_SLV_4) return T_LCD_CHAR;
 	function to_LCD_CHAR2(rawchar : T_RAWCHAR) return T_LCD_CHAR;
 	function to_LCD_CHAR(char : CHARACTER) return T_LCD_CHAR;
-	
+
 	function LCD_CHAR2Bin(char : T_LCD_CHAR) return T_SLV_8;
-	
+
 	function lcd_go_home(row_us : std_logic_vector) return T_SLV_8;
 	function lcd_display_on(ShowCursor : BOOLEAN; Blink : BOOLEAN) return T_SLV_8;
-	
+
 	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) return T_LCD_CHAR;
 	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) return T_LCD_CHAR_VECTOR;
 
@@ -208,23 +208,23 @@ package body lcd is
 
 	FUNCTION to_LCD_CHAR_VECTOR(slv : STD_LOGIC_VECTOR) return T_LCD_CHAR_VECTOR IS
 		CONSTANT Segments		: POSITIVE																	:= calc_length(slv'length);
-		
+
 		VARIABLE Result			: T_LCD_CHAR_VECTOR(0 TO Segments - 1)	:= (OTHERS => LCD_CHAR_0);
 		VARIABLE SliceStart	: NATURAL;
 		VARIABLE Slice			: T_SLV_4;
 	BEGIN
 		FOR I IN Segments - 1 DOWNTO 0 LOOP
 			SliceStart				:= (I * 4) + slv'low;
-		
+
 			Slice							:= (OTHERS => '0');
 			FOR J IN 0 TO 3 LOOP
 				EXIT WHEN ((SliceStart + J) > slv'high);
 				Slice(J)				:= slv(SliceStart + J);
 			END LOOP;
-			
+
 			Result(I)					:= to_LCD_CHAR(Slice);
 		END LOOP;
-	
+
 		return Result;
 	END;
 
@@ -234,7 +234,7 @@ package body lcd is
 		FOR I IN 0 TO rawstr'length - 1 LOOP
 			Result(I)					:= to_LCD_CHAR2(rawstr(I));
 		END LOOP;
-	
+
 		return Result;
 	END;
 
@@ -244,7 +244,7 @@ package body lcd is
 		FOR I IN 1 TO str'length LOOP
 			Result(I - 1)			:= to_LCD_CHAR(str(I));
 		END LOOP;
-	
+
 		return Result;
 	END;
 
@@ -278,7 +278,7 @@ package body lcd is
 			when others =>	return LCD_UCHAR_X;
 		end case;
 	end;
-	
+
 	function to_LCD_CHAR(char : CHARACTER) return T_LCD_CHAR is
 	begin
 		case char is
@@ -294,7 +294,7 @@ package body lcd is
 			when '?' =>			return LCD_CHAR_QMARK;
 			when '#' =>			return LCD_CHAR_SHARP;
 			when '~' =>			return LCD_CHAR_CDOT;
-		
+
 			when '0' =>			return LCD_CHAR_0;
 			when '1' =>			return LCD_CHAR_1;
 			when '2' =>			return LCD_CHAR_2;
@@ -305,7 +305,7 @@ package body lcd is
 			when '7' =>			return LCD_CHAR_7;
 			when '8' =>			return LCD_CHAR_8;
 			when '9' =>			return LCD_CHAR_9;
-			
+
 			when 'A' =>			return LCD_UCHAR_A;
 			when 'B' =>			return LCD_UCHAR_B;
 			when 'C' =>			return LCD_UCHAR_C;
@@ -332,7 +332,7 @@ package body lcd is
 			when 'X' =>			return LCD_UCHAR_X;
 			when 'Y' =>			return LCD_UCHAR_Y;
 			when 'Z' =>			return LCD_UCHAR_Z;
-			
+
 			when 'a' =>			return LCD_LCHAR_a;
 			when 'b' =>			return LCD_LCHAR_b;
 			when 'c' =>			return LCD_LCHAR_c;
@@ -359,11 +359,11 @@ package body lcd is
 			when 'x' =>			return LCD_LCHAR_x;
 			when 'y' =>			return LCD_LCHAR_y;
 			when 'z' =>			return LCD_LCHAR_z;
-			
+
 			when others =>	return LCD_CHAR_SPACE;
 		end case;
 	end;
-	
+
 	function to_LCD_CHAR2(rawchar : T_RAWCHAR) return T_LCD_CHAR is
 	begin
 		case rawchar is
@@ -379,7 +379,7 @@ package body lcd is
 			when x"3F" =>		return LCD_CHAR_QMARK;
 			when x"23" =>		return LCD_CHAR_SHARP;
 			when x"7E" =>		return LCD_CHAR_CDOT;
-				
+
 			when x"30" =>		return LCD_CHAR_0;
 			when x"31" =>		return LCD_CHAR_1;
 			when x"32" =>		return LCD_CHAR_2;
@@ -390,7 +390,7 @@ package body lcd is
 			when x"37" =>		return LCD_CHAR_7;
 			when x"38" =>		return LCD_CHAR_8;
 			when x"39" =>		return LCD_CHAR_9;
-			
+
 			when x"41" =>		return LCD_UCHAR_A;
 			when x"42" =>		return LCD_UCHAR_B;
 			when x"43" =>		return LCD_UCHAR_C;
@@ -417,7 +417,7 @@ package body lcd is
 			when x"58" =>		return LCD_UCHAR_X;
 			when x"59" =>		return LCD_UCHAR_Y;
 			when x"5A" =>		return LCD_UCHAR_Z;
-			
+
 			when x"61" =>		return LCD_LCHAR_a;
 			when x"62" =>		return LCD_LCHAR_b;
 			when x"63" =>		return LCD_LCHAR_c;
@@ -444,11 +444,11 @@ package body lcd is
 			when x"78" =>		return LCD_LCHAR_x;
 			when x"79" =>		return LCD_LCHAR_y;
 			when x"7A" =>		return LCD_LCHAR_z;
-			
+
 			when others =>	return LCD_CHAR_SPACE;
 		end case;
 	end;
-	
+
 	function LCD_CHAR2Bin(char : T_LCD_CHAR) return T_SLV_8 is
 	begin
 		case char is
@@ -459,7 +459,7 @@ package body lcd is
 			when LCD_CHAR_COLON =>		return x"3A";
 			when LCD_CHAR_ARROW_R =>	return x"7E";
 			when LCD_CHAR_ARROW_L =>	return x"7F";
-			
+
 			when LCD_CHAR_AT =>				return x"40";
 			when LCD_CHAR_EXMARK =>		return x"21";
 			when LCD_CHAR_QMARK =>		return x"3F";
@@ -476,7 +476,7 @@ package body lcd is
 			when LCD_CHAR_7 =>		return x"37";
 			when LCD_CHAR_8 =>		return x"38";
 			when LCD_CHAR_9 =>		return x"39";
-			
+
 			when LCD_UCHAR_A =>		return x"41";
 			when LCD_UCHAR_B =>		return x"42";
 			when LCD_UCHAR_C =>		return x"43";
@@ -503,7 +503,7 @@ package body lcd is
 			when LCD_UCHAR_X =>		return x"58";
 			when LCD_UCHAR_Y =>		return x"59";
 			when LCD_UCHAR_Z =>		return x"5A";
-			
+
 			when LCD_LCHAR_a =>		return x"61";
 			when LCD_LCHAR_b =>		return x"62";
 			when LCD_LCHAR_c =>		return x"63";
@@ -530,7 +530,7 @@ package body lcd is
 			when LCD_LCHAR_x =>		return x"78";
 			when LCD_LCHAR_y =>		return x"79";
 			when LCD_LCHAR_z =>		return x"7A";
-			
+
 			when others =>				return x"FF";
 		end case;
 	end;
@@ -569,14 +569,14 @@ package body lcd is
 	BEGIN
 		Result(3)		:= '1';
 		Result(2)		:= '1';			-- display on/off bit
-	
+
 		IF (ShowCursor = TRUE) THEN
 			Result(1)	:= '1';			-- show cursor on/off bit
 		END IF;
 		IF (Blink = TRUE) THEN
 			Result(0)	:= '1';			-- blinking on/off bit
 		END IF;
-		
+
 		return Result;
 	END;
 
@@ -588,7 +588,7 @@ package body lcd is
 			return value2;
 		end if;
 	end;
-	
+
 	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) return T_LCD_CHAR_VECTOR is
 	begin
 		if (cond = TRUE) then
@@ -597,7 +597,7 @@ package body lcd is
 			return value2;
 		end if;
 	end;
-	
+
 	function Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) return T_BCD is
 	begin
 		if C_In = '0' then
@@ -630,5 +630,5 @@ package body lcd is
 			end case;
 		end if;
 	end;
-	
+
 end package body;

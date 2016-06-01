@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: is61lv_ctrl_wb
 -- Author(s): Martin Zabel
--- 
+--
 -- Wishbone Wrapper for Memory controller is61lv_ctrl.
 --
 -- Configuration:
@@ -60,7 +60,7 @@ library poc;
 use poc.is61lv.all;
 
 entity is61lv_ctrl_wb is
-  
+
   generic (
     WA_BITS  : positive;
     BA_BITS  : positive;
@@ -71,7 +71,7 @@ entity is61lv_ctrl_wb is
   port (
     clk : in std_logic;
     rst : in std_logic;
-    
+
     -- Wishbone Interface
     wb_cyc_i : in  std_logic;
     wb_stb_i : in  std_logic;
@@ -98,7 +98,7 @@ architecture rtl of is61lv_ctrl_wb is
   signal mem_req   : std_logic;
   signal mem_write : std_logic;
   signal mem_addr  : unsigned(WA_BITS-1 downto 0);
-  
+
 begin  -- rtl
   mctrl: is61lv_ctrl
     generic map (
@@ -127,7 +127,7 @@ begin  -- rtl
 
   -- Some tools do not like conversion inside component instantiation.
   mem_addr <= unsigned(wb_adr_i);
-  
+
   wbctrl: block
     type FSM_TYPE is (IDLE, READING, ACKING);
     signal fsm_cs : FSM_TYPE;
@@ -167,14 +167,14 @@ begin  -- rtl
             wb_ack_o   <= '1';
             fsm_ns     <= IDLE;
           end if;
-          
+
         when ACKING =>
           -- Wishbone bus cycle is terminated now.
           wb_ack_o <= '1';
           fsm_ns <= IDLE;
       end case;
     end process;
-    
+
     process (clk)
     begin  -- process
       if rising_edge(clk) then

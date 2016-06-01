@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
@@ -11,7 +11,7 @@
 -- Description:
 -- ------------------------------------
 -- See notes on module 'sata_TransportLayer'.
--- 
+--
 -- The Clock might be only unstable in the FSM state ST_RESET.
 -- During Power-up or a ClockNetwork_Reset this unit is hold in the
 -- reset state ST_RESET due to MyReset = '1'.
@@ -20,13 +20,13 @@
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -68,7 +68,7 @@ ENTITY sata_TransportFSM IS
 		Command														: IN	T_SATA_TRANS_COMMAND;
 		Status														: OUT	T_SATA_TRANS_STATUS;
 		Error															: OUT	T_SATA_TRANS_ERROR;
-		
+
 		-- DebugPort
 		DebugPortOut											: out	T_SATADBG_TRANS_TFSM_OUT;
 
@@ -77,26 +77,26 @@ ENTITY sata_TransportFSM IS
 		CopyATADeviceRegisterStatus				: OUT	STD_LOGIC;
 		ATAHostRegisters									: IN	T_SATA_ATA_HOST_REGISTERS;
 		ATADeviceRegisters								: IN	T_SATA_ATA_DEVICE_REGISTERS;
-		
+
 		TX_en															: OUT	STD_LOGIC;
 		TX_ForceAck												: OUT	STD_LOGIC;
 		TX_Valid													: IN	STD_LOGIC;
 		TX_EOT														: IN	STD_LOGIC;
-		
+
 		RX_LastWord												: OUT	STD_LOGIC;
 		RX_SOT														: OUT	STD_LOGIC;
 		RX_EOT														: OUT	STD_LOGIC;
-		
+
 		-- SATAController Status
 		Link_Status												: IN	T_SATA_LINK_STATUS;
 		SATAGeneration 										: in 	T_SATA_GENERATION;
-		
+
 		-- FIS-FSM interface
 		FISD_FISType											: IN	T_SATA_FISTYPE;
 		FISD_Status												: IN	T_SATA_FISDECODER_STATUS;
 		FISD_SOP													: IN	STD_LOGIC;
 		FISD_EOP													: IN	STD_LOGIC;
-		
+
 		FISE_FISType											: OUT	T_SATA_FISTYPE;
 		FISE_Status												: IN	T_SATA_FISENCODER_STATUS
 	);
@@ -137,11 +137,11 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 			ST_TRANSFER_OK,
 			ST_TRANSFER_ERROR
 	);
-	
+
 	SIGNAL State													: T_STATE													:= ST_RESET;
 	SIGNAL NextState											: T_STATE;
 	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
-	
+
 	SIGNAL ATA_Command_Category						: T_SATA_COMMAND_CATEGORY;
 	SIGNAL Error_nxt											: T_SATA_TRANS_ERROR;
 	signal Error_en 											: STD_LOGIC;
@@ -184,8 +184,8 @@ ARCHITECTURE rtl OF sata_TransportFSM IS
 		(NODATA_RETRY_TIMEOUT_SLOT+1) => TimingToCycles(NODATA_RETRY_TIMEOUT,	CLOCK_GEN2_FREQ),			-- slot 10
 		(NODATA_RETRY_TIMEOUT_SLOT+2) => TimingToCycles(NODATA_RETRY_TIMEOUT,	CLOCK_GEN3_FREQ)			-- slot 11
 	);
-	
-	
+
+
 	signal TC_DevResponse_Enable	 : STD_LOGIC;
 	signal TC_DevResponse_Load		 : STD_LOGIC;
 	signal TC_DevResponse_Slot		 : NATURAL range 0 to (TC_DEV_RESPONSE_TABLE'length - 1);
@@ -208,7 +208,7 @@ BEGIN
 				Error_r					<= SATA_TRANS_ERROR_NONE;
 			ELSE
 				State						<= NextState;
-				
+
 				if Error_en = '1' then
 					Error_r				<= Error_nxt;
 				end if;
@@ -219,25 +219,25 @@ BEGIN
 	END PROCESS;
 
 	Error <= Error_r;
-	
+
 	PROCESS(State, Command, ATA_Command_Category, ATADeviceRegisters, TC_DevResponse_Timeout, Error_r,
 					NoData_ResponseCRCError_r,
-					FISE_Status, FISD_Status, FISD_FISType, FISD_SOP, FISD_EOP, 
+					FISE_Status, FISD_Status, FISD_FISType, FISD_SOP, FISD_EOP,
           Link_Status, SATAGeneration, TX_Valid, TX_EOT)
 	BEGIN
 		NextState																<= State;
-		
+
 		Status																	<= SATA_TRANS_STATUS_TRANSFERING;
     Error_en 																<= '0';
 		Error_nxt																<= SATA_TRANS_ERROR_NONE;
-		
+
 		UpdateATAHostRegisters			            <= '0';
 		CopyATADeviceRegisterStatus	            <= '0';
-		
+
 		TX_en																		<= '0';
 		TX_ForceAck															<= '0';
 		FISE_FISType														<= SATA_FISTYPE_UNKNOWN;
-		
+
 		RX_LastWord															<= '0';
 		RX_SOT																	<= '0';
 		RX_EOT																	<= '0';
@@ -247,7 +247,7 @@ BEGIN
 		TC_DevResponse_Slot	 										<= 0;
 		NoData_ResponseCRCError_rst 						<= '0';
 		NoData_ResponseCRCError_set 						<= '0';
-		
+
 		CASE State IS
       WHEN ST_RESET =>
 				-- Clock might be unstable is this state. In this case either
@@ -256,7 +256,7 @@ BEGIN
 				-- b) Link_Status is constant and not equal to SATA_LINK_STATUS_IDLE
 				--    This may happen during reconfiguration due to speed negotiation.
         Status															<= SATA_TRANS_STATUS_RESET;
-        
+
         if (Link_Status = SATA_LINK_STATUS_IDLE) then
           IF (SIM_WAIT_FOR_INITIAL_REGDH_FIS = TRUE) THEN
             NextState 										<= ST_INIT_AWAIT_FIS;
@@ -266,7 +266,7 @@ BEGIN
             NextState <= ST_IDLE;
           END IF;
         end if;
-        
+
 			-- ============================================================
 			-- Receive initial register FIS
 			-- ============================================================
@@ -274,7 +274,7 @@ BEGIN
         -- Await initial RegDH FIS. Init TC_DevResponse before.
         Status														<= SATA_TRANS_STATUS_INITIALIZING;
 				TC_DevResponse_Enable 						<= '1';
-				
+
  				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_REG_DEV_HOST) THEN
 						NextState											<= ST_INIT_RECEIVE_FIS;
@@ -285,7 +285,7 @@ BEGIN
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
 					-- Register FIS with CRC error received, will be
-					-- automatically retried by device. Wait for FIS with valid CRC. 
+					-- automatically retried by device. Wait for FIS with valid CRC.
 					NULL;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					Error_en 												<= '1';
@@ -296,11 +296,11 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-     
+
       WHEN ST_INIT_RECEIVE_FIS =>
 				-- Register FIS with valid CRC received.
         Status															<= SATA_TRANS_STATUS_INITIALIZING;
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
 					-- register FIS with correct content, check ATADeviceRegisters
 					IF (ATADeviceRegisters.Status.Error = '1') THEN
@@ -311,12 +311,12 @@ BEGIN
 						NextState											<= ST_IDLE;
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
-					-- register FIS with invalid content 
+					-- register FIS with invalid content
 					Error_en 												<= '1';
 					Error_nxt												<= SATA_TRANS_ERROR_FISDECODER;
 					NextState												<= ST_ERROR;
 				END IF;
-      
+
 			-- ============================================================
 			-- IDLE / Check for command
 			-- ============================================================
@@ -338,68 +338,68 @@ BEGIN
 						NextState											<= ST_CMDCAT_NODATA_SEND_REGISTER_WAIT;
 						TC_DevResponse_Load 					<= '1';
 						TC_DevResponse_Slot 					<= TC_Slot(NODATA_RETRY_TIMEOUT_SLOT, SATAGeneration);
-						
+
 					WHEN SATA_CMDCAT_PIO_IN =>
 						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 						NextState											<= ST_CMDCAT_PIOIN_SEND_REGISTER_WAIT;
 						TC_DevResponse_Load 					<= '1';
 						TC_DevResponse_Slot 					<= TC_Slot(DATA_READ_TIMEOUT_SLOT, SATAGeneration);
-						
+
 --					WHEN ATA_CMDCAT_PIO_OUT =>
 --						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 --						NextState											<= ST_CMDCAT_PIOOUT_SEND_REGISTER_WAIT;
 --						TC_DevResponse_Load 					<= '1';
 --						TC_DevResponse_Slot 					<= TC_Slot(DATA_WRITE_TIMEOUT_SLOT, SATAGeneration);
-						
+
 					WHEN SATA_CMDCAT_DMA_IN =>
 						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 						NextState											<= ST_CMDCAT_DMAIN_SEND_REGISTER_WAIT;
 						TC_DevResponse_Load 					<= '1';
 						TC_DevResponse_Slot 					<= TC_Slot(DATA_READ_TIMEOUT_SLOT, SATAGeneration);
-						
+
 					WHEN SATA_CMDCAT_DMA_OUT =>
 						FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 						NextState											<= ST_CMDCAT_DMAOUT_SEND_REGISTER_WAIT;
 						TC_DevResponse_Load 					<= '1';
 						TC_DevResponse_Slot 					<= TC_Slot(DATA_WRITE_TIMEOUT_SLOT, SATAGeneration);
-						
+
 --						WHEN ATA_CMDCAT_DMA_IN_QUEUED =>
 --							FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 --							NextState											<= ST_CMDCAT_DMAINQ_SEND_REGISTER_WAIT;
-						
+
 --						WHEN ATA_CMDCAT_DMA_IN_QUEUED =>
 --							FISE_FISType									<= SATA_FISTYPE_REG_HOST_DEV;
 --							NextState											<= ST_CMDCAT_DMAOUTQ_SEND_REGISTER_WAIT;
-						
+
 --						WHEN ATA_CMDCAT_PACKET =>
 --							NextState									<= ST_IDLE;
-						
+
 --						WHEN ATA_CMDCAT_SERVICE =>
 --							NextState									<= ST_IDLE;
-						
+
 --						WHEN ATA_CMDCAT_DEVICE_RESET =>
 --							NextState									<= ST_IDLE;
-						
+
 --						WHEN ATA_CMDCAT_DEVICE_DIAGNOSTICS =>
 --							NextState									<= ST_IDLE;
-						
+
 --						WHEN ATA_CMDCAT_UNKNOWN =>
 --							NextState									<= ST_IDLE;
-						
+
 					WHEN OTHERS =>
 						Error_en 											<= '1';
 						Error_nxt											<= SATA_TRANS_ERROR_FSM;
 						NextState											<= ST_ERROR;
-						
+
 				END CASE;
-			
+
 			-- ============================================================
 			-- ATA command category: NO-DATA
 			-- ============================================================
 			WHEN ST_CMDCAT_NODATA_SEND_REGISTER_WAIT =>
 				-- Try to send register to device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_NODATA_AWAIT_FIS;
 					NoData_ResponseCRCError_rst 			<= '1'; -- reset flag
@@ -415,12 +415,12 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-				
+
 			WHEN ST_CMDCAT_NODATA_AWAIT_FIS =>
 				-- Wait for response from device. Init TC_DevResponse before.
 				-- Timeout only if response was once corrupted.
 				TC_DevResponse_Enable <= NoData_ResponseCRCError_r;
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_REG_DEV_HOST) THEN
 						NextState												<= ST_CMDCAT_NODATA_RECEIVE_REGISTER;
@@ -443,7 +443,7 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-				
+
 			WHEN ST_CMDCAT_NODATA_RECEIVE_REGISTER =>
 				-- Register FIS with valid CRC received.
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
@@ -454,20 +454,20 @@ BEGIN
 						NextState												<= ST_TRANSFER_OK;
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
-					-- register FIS with invalid content 
+					-- register FIS with invalid content
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			-- ============================================================
 			-- ATA command category: PIO-IN
-			-- Timer is reseted every time a data FIS is received completely.	
+			-- Timer is reseted every time a data FIS is received completely.
 			-- ============================================================
 			WHEN ST_CMDCAT_PIOIN_SEND_REGISTER_WAIT =>
 				-- Try to send register to device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_PIOIN_AWAIT_PIO_SETUP_F;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
@@ -480,11 +480,11 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_PIOIN_AWAIT_PIO_SETUP_F =>
 				-- Wait for response from device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_PIO_SETUP) THEN
 						NextState												<= ST_CMDCAT_PIOIN_RECEIVE_PIO_SETUP_F;
@@ -495,7 +495,7 @@ BEGIN
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
 					-- PIO setup FIS with CRC error received, will be
-					-- automatically retried by device. Wait for FIS with valid CRC. 
+					-- automatically retried by device. Wait for FIS with valid CRC.
 					NULL;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					Error_en 													<= '1';
@@ -506,12 +506,12 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-				
+
 			WHEN ST_CMDCAT_PIOIN_RECEIVE_PIO_SETUP_F =>
 				-- PIO setup FIS with valid CRC received.
 				-- Decode response from device. Keep timer running, but don't check.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
 					-- correct content, check ATADeviceRegisters
 					IF (ATADeviceRegisters.Status.Error = '1') THEN
@@ -524,7 +524,7 @@ BEGIN
 								 (ATADeviceRegisters.Status.DataRequest = '0')) THEN				-- (DataReady = 0) => something is wrong ....
 						Error_en 												<= '1';
 						Error_nxt												<= SATA_TRANS_ERROR_FSM;
-						NextState												<= ST_ERROR;					
+						NextState												<= ST_ERROR;
 					ELSE
 						NextState												<= ST_CMDCAT_PIOIN_AWAIT_DATA_F;
 					END IF;
@@ -534,11 +534,11 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_PIOIN_AWAIT_DATA_F =>
 				-- Wait for response from device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_DATA) THEN
 						NextState												<= ST_CMDCAT_PIOIN_RECEIVE_DATA_F;
@@ -561,13 +561,13 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_PIOIN_RECEIVE_DATA_F =>
 				-- Receiving data packet with valid CRC.
 				IF (FISD_SOP = '1') THEN
 					RX_SOT														<= '1';
 				END IF;
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
 					-- check ATADeviceRegisters
 					IF (ATADeviceRegisters.EndStatus.Error = '1') THEN
@@ -585,7 +585,7 @@ BEGIN
 						RX_EOT													<= '1';
 						Error_en 												<= '1';
 						Error_nxt												<= SATA_TRANS_ERROR_FSM;
-						NextState												<= ST_ERROR;	
+						NextState												<= ST_ERROR;
 					ELSE
 						IF (ATADeviceRegisters.EndStatus.Busy = '0') THEN
 							RX_LastWord										<= '1';
@@ -607,11 +607,11 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_ERROR;
 				END IF;
-				
+
 			WHEN ST_CMDCAT_PIOIN_AWAIT_PIO_SETUP_N =>
 				-- Wait for response from device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_PIO_SETUP) THEN
 						NextState												<= ST_CMDCAT_PIOIN_RECEIVE_PIO_SETUP_N;
@@ -640,12 +640,12 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-				
+
 			WHEN ST_CMDCAT_PIOIN_RECEIVE_PIO_SETUP_N =>
 				-- PIO setup FIS with valid CRC received.
 				-- Decode response from device. Keep timer running, but don't check.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
 					-- correct content, check ATADeviceRegisters
 					IF (ATADeviceRegisters.Status.Error = '1') THEN
@@ -665,7 +665,7 @@ BEGIN
 						RX_EOT													<= '1';
 						Error_en 												<= '1';
 						Error_nxt												<= SATA_TRANS_ERROR_FSM;
-						NextState												<= ST_ERROR;	
+						NextState												<= ST_ERROR;
 					ELSE
 						NextState												<= ST_CMDCAT_PIOIN_AWAIT_DATA_N;
 					END IF;
@@ -677,11 +677,11 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_PIOIN_AWAIT_DATA_N =>
 				-- Wait for response from device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_DATA) THEN
 						-- Next data frame starts, close previous one.
@@ -712,7 +712,7 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_PIOIN_RECEIVE_DATA_N =>
 				-- Receiving data packet with valid CRC.
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
@@ -726,7 +726,7 @@ BEGIN
 					ELSIF (ATADeviceRegisters.EndStatus.DataRequest = '1') THEN					-- (DataRequest = 1) => something is wrong ....
 						Error_en 												<= '1';
 						Error_nxt												<= SATA_TRANS_ERROR_FSM;
-						NextState												<= ST_ERROR;	
+						NextState												<= ST_ERROR;
 					ELSE
 						IF (ATADeviceRegisters.EndStatus.Busy = '0') THEN
 							RX_LastWord										<= '1';
@@ -747,15 +747,15 @@ BEGIN
 					NextState													<= ST_ERROR;
 				END IF;
 
-			
+
 			-- ============================================================
 			-- ATA command category: DMA-IN
-			-- Timer is reseted every time a data FIS is received completely.	
+			-- Timer is reseted every time a data FIS is received completely.
 			-- ============================================================
 			WHEN ST_CMDCAT_DMAIN_SEND_REGISTER_WAIT =>
 				-- Try to send register to device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_DMAIN_AWAIT_FIS_DATA;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
@@ -768,12 +768,12 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_DMAIN_AWAIT_FIS_DATA =>
 				-- SOT not yet set.
 				-- Wait for response from device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_DATA) THEN
 						NextState												<= ST_CMDCAT_DMAIN_RECEIVE_DATA_F;
@@ -787,7 +787,7 @@ BEGIN
 				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
 					-- Data or register FIS with CRC error received. Register FIS will be
 					-- automatically retried by device. Wait for register dev->host FIS with valid
-					-- CRC. 
+					-- CRC.
 					NULL;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					Error_en 													<= '1';
@@ -798,13 +798,13 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-				
+
 			WHEN ST_CMDCAT_DMAIN_RECEIVE_DATA_F =>
 				-- Receiving data packet with valid CRC.
 				IF (FISD_SOP = '1') THEN
 					RX_SOT													<= '1';
 				END IF;
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
 					-- End of packet. Closing of actual frame must be delayed until next
 					-- valid data / register frame starts. Start new timeout cycle.
@@ -818,11 +818,11 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_DMAIN_AWAIT_FIS =>
 				-- Wait for response from device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_DATA) THEN
 						-- Next data frame starts, close previous one.
@@ -843,7 +843,7 @@ BEGIN
 				ELSIF (FISD_Status = SATA_FISD_STATUS_CRC_ERROR) THEN
 					-- Data or register FIS with CRC error received. Register FIS will be
 					-- automatically retried by device. Wait for register dev->host FIS with valid
-					-- CRC. 
+					-- CRC.
 					NULL;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
 					RX_LastWord												<= '1';
@@ -856,7 +856,7 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_DMAIN_RECEIVE_DATA_N =>
 				-- Receiving data packet with valid CRC.
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
@@ -872,7 +872,7 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_DMAIN_RECEIVE_REGISTER =>
 				-- EOT already signaled or no SOT/EOT.
 				-- Register FIS with valid CRC received.
@@ -884,20 +884,20 @@ BEGIN
 						NextState												<= ST_TRANSFER_OK;
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
-					-- register FIS with invalid content 
+					-- register FIS with invalid content
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_ERROR;
 				END IF;
-			
+
 			-- ============================================================
 			-- ATA command category: DMA-OUT
-			-- Timer is reseted every time we send a new FIS to the device.	
+			-- Timer is reseted every time we send a new FIS to the device.
 			-- ============================================================
 			WHEN ST_CMDCAT_DMAOUT_SEND_REGISTER_WAIT =>
 				-- Try to send register to device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					NextState													<= ST_CMDCAT_DMAOUT_AWAIT_FIS;
 				ELSIF (FISE_Status = SATA_FISE_STATUS_SEND_ERROR) THEN
@@ -910,11 +910,11 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_DMAOUT_AWAIT_FIS =>
 				-- Wait for response from device. Init TC_DevResponse before.
 				TC_DevResponse_Enable <= '1';
-				
+
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVING) THEN
 					IF (FISD_FISType = SATA_FISTYPE_DMA_ACTIVATE) THEN
 						NextState												<= ST_CMDCAT_DMAOUT_RECEIVE_DMA_ACTIVATE;
@@ -939,7 +939,7 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_DMAOUT_RECEIVE_DMA_ACTIVATE =>
 				-- Receiving DMA activate with valid CRC.
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
@@ -953,13 +953,13 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_DMAOUT_SEND_DATA =>
 				-- Sending data. Might timeout if Data FIS is not recognized by device
 				-- due to transmission error in FIS header. Init TC_DevResponse before.
 				TX_en																<= '1';
 				TC_DevResponse_Enable 							<= '1';
-			
+
 				IF (FISE_Status = SATA_FISE_STATUS_SEND_OK) THEN
 					-- DMA Active FIS (if more data is required) or Register Dev->Host FIS
 					-- (if transfer is complete) follows.
@@ -982,7 +982,7 @@ BEGIN
 					Error_nxt													<= SATA_TRANS_ERROR_TIMEOUT;
 					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
 				END IF;
-			
+
 			WHEN ST_CMDCAT_DMAOUT_RECEIVE_REGISTER =>
 				-- Register FIS with valid CRC received.
 				IF (FISD_Status = SATA_FISD_STATUS_RECEIVE_OK) THEN
@@ -994,7 +994,7 @@ BEGIN
 						NextState												<= ST_TRANSFER_OK;
 					END IF;
 				ELSIF (FISD_Status = SATA_FISD_STATUS_ERROR) THEN
-					-- register FIS with invalid content 
+					-- register FIS with invalid content
 					Error_en 													<= '1';
 					Error_nxt													<= SATA_TRANS_ERROR_FISDECODER;
 					NextState													<= ST_CMDCAT_DMAOUT_DISCARD_TRANSFER;
@@ -1005,7 +1005,7 @@ BEGIN
 				-- Error already set.
 				Status 															<= SATA_TRANS_STATUS_DISCARD_TXDATA;
 				TX_ForceAck 												<= '1';
-				
+
 				if (TX_Valid and TX_EOT) = '1' then
 					if (Error_r /= SATA_TRANS_ERROR_NONE) then
 						-- fatal error occured
@@ -1014,32 +1014,32 @@ BEGIN
 						NextState 											<= ST_TRANSFER_ERROR;
 					end if;
 				end if;
-				
+
 			-- ============================================================
 			-- Finished
 			-- ============================================================
 			WHEN ST_TRANSFER_OK =>
 				-- assert(Error = ERROR_NONE)
 				Status			<= SATA_TRANS_STATUS_TRANSFER_OK;
-				
+
 				if (Command = SATA_TRANS_CMD_TRANSFER) then
 					UpdateATAHostRegisters 						<= '1';
 					NextState 												<= ST_CHECK_ATA_HOST_REG;
 				else
 					NextState		<= ST_IDLE;
 				end if;
-				
+
 			WHEN ST_TRANSFER_ERROR =>
 				-- assert(Error = ERROR_NONE)
 				Status			<= SATA_TRANS_STATUS_TRANSFER_ERROR;
-				
+
 				if (Command = SATA_TRANS_CMD_TRANSFER) then
 					UpdateATAHostRegisters 						<= '1';
 					NextState 												<= ST_CHECK_ATA_HOST_REG;
 				else
 					NextState		<= ST_IDLE;
 				end if;
-				
+
 			WHEN ST_ERROR =>
 				-- A fatal error occured. Notify above layers and stay here until the above layers
 				-- acknowledge this event, e.g. via a command.
@@ -1048,7 +1048,7 @@ BEGIN
 				-- so on.
 				-- TODO Feature Request: Re-initialize via Command.
 				Status			<= SATA_TRANS_STATUS_ERROR;
-				
+
 		END CASE;
 
 		-- ============================================================
@@ -1078,7 +1078,7 @@ BEGIN
 			Load		=> TC_DevResponse_Load,
 			Slot		=> TC_DevResponse_Slot,
 			Timeout => TC_DevResponse_Timeout);
-	
+
 	-- debug ports
 	-- ===========================================================================
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
@@ -1086,7 +1086,7 @@ BEGIN
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;
-		
+
 	begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
 			function dbg_GenerateEncodings return string is
@@ -1098,11 +1098,11 @@ BEGIN
 				end loop;
 				return  l.all;
 			end function;
-			
+
 			constant dummy : boolean := dbg_ExportEncoding("Transport Layer - TFSM", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_TFSM.tok");
 		begin
 		end generate;
-		
+
 		DebugPortOut.FSM		<= dbg_EncodeState(State);
 	end generate;
 END;

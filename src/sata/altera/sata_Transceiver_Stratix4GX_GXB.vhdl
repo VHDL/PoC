@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Package:					TODO
 --
@@ -10,18 +10,18 @@
 -- Description:
 -- ------------------------------------
 --		TODO
--- 
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,11 +61,11 @@ entity sata_Transceiver_Stratix4GX_GXB is
 		Command			: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
 		Status			: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
 		Error			: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
-	
+
 		-- debug ports
 --		DebugPortIn		: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
 --		DebugPortOut		: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
-	
+
 		SATA_Clock		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
 
 		RP_Reconfig		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -82,7 +82,7 @@ entity sata_Transceiver_Stratix4GX_GXB is
 
 		TX_Data			: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		TX_CharIsK		: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
-		
+
 		RX_Data			: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
 		RX_CharIsK		: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
 		RX_Valid		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
@@ -99,13 +99,13 @@ end;
 ARCHITECTURE rtl OF sata_Transceiver_Stratix4GX_GXB IS
 
 	CONSTANT NO_DEVICE_TIMEOUT					: T_TIME				:= 50.0e-3;			-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT					: T_TIME				:= 1000.0e-3;		-- 
+	CONSTANT NEW_DEVICE_TIMEOUT					: T_TIME				:= 1000.0e-3;		--
 
 	CONSTANT C_DEVICE_INFO							: T_DEVICE_INFO	:= DEVICE_INFO;
 
 	signal reconf_clk	: std_logic;
 	signal refclk		: std_logic;
-	
+
 BEGIN
 -- ==================================================================
 -- Assert statements
@@ -175,7 +175,7 @@ BEGIN
 		RP_Locked(i) <= '0';
 		RP_ReconfigComplete(i) <= config_state(14);
 		RP_ConfigReloaded(i) <= config_state(15);
-		
+
 		-- TODO ? : Status Statemachine -> see SATATransceiver_Virtex5_GTP.vhd
 		Status(i) <=	SATA_TRANSCEIVER_STATUS_RESETING when Command(i) = SATA_TRANSCEIVER_CMD_RESET else
 				SATA_TRANSCEIVER_STATUS_RECONFIGURING when gxb_busy = '1' or pll_busy = '1' else
@@ -236,7 +236,7 @@ BEGIN
 			strobe => ll_newdevice
 		);
 
-		sata_oob_unit : entity PoC.sata_oob 
+		sata_oob_unit : entity PoC.sata_oob
 		port map (
 			clk => tx_clkout,
 			rx_oob_status => rx_oob_status,
@@ -246,7 +246,7 @@ BEGIN
 			tx_oob_complete => tx_oob_complete
 		);
 
-		output_adapter : sata_tx_adapter 
+		output_adapter : sata_tx_adapter
 		port map (
 			tx_datain => sata_tx_data,
 			tx_ctrlin => sata_tx_ctrl,
@@ -256,7 +256,7 @@ BEGIN
 			sata_gen => sata_gen
 		);
 
-		input_adapter : sata_rx_adapter 
+		input_adapter : sata_rx_adapter
 		port map (
 			rx_clkin => rx_clkout,
 			rx_ctrlin => rx_ctrlout,
@@ -269,7 +269,7 @@ BEGIN
 			sata_gen => sata_gen
 		);
 
-		sata_io : sata_basic 
+		sata_io : sata_basic
 		port map (
 			inclk => refclk,
 			reset => '0',--reset,
@@ -291,7 +291,7 @@ BEGIN
 			busy => gxb_busy
 		);
 
-		sata_clk : sata_pll 
+		sata_clk : sata_pll
 		port map (
 			inclk => tx_clkout,
 			reset => '0', -- reset,

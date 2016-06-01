@@ -21,24 +21,24 @@ ENTITY Ethernet_SGMIITransceiver_Virtex7 IS
 		RX_RefClock_In						: IN		STD_LOGIC;
 		TX_RefClock_Out						: OUT		STD_LOGIC;
 		RX_RefClock_Out						: OUT		STD_LOGIC;
-		
+
 		ClockNetwork_Reset				: IN		STD_LOGIC;
 		ClockNetwork_ResetDone		: OUT		STD_LOGIC;
-		
+
 --		Command										: IN		T_ETHERNET_SGMIITRANSCEIVER_COMMAND;
 --		Status										: OUT		T_ETHERNET_SGMIITRANSCEIVER_STATUS;
 --		Error											: OUT		T_ETHERNET_SGMIITRANSCEIVER_ERROR;
-		
+
 		TX_Data										: IN		T_SLV_16;
 		TX_CharIsK								: IN		T_SLV_2;
 		TX_RunningDisparity				: OUT		STD_LOGIC;
-		
+
 		RX_Data										: OUT		T_SLV_16;
 		RX_CharIsK								: OUT		T_SLV_2;
 		RX_CharIsComma						: OUT		T_SLV_2;
 		RX_CharIsNotInTable				: OUT		T_SLV_2;
 		RX_RunningDisparity				: OUT		STD_LOGIC;
-		
+
 		TX_n											: OUT		STD_LOGIC;
 		TX_p											: OUT		STD_LOGIC;
 		RX_n											: IN		STD_LOGIC;
@@ -50,14 +50,14 @@ END;
 --				ATTENTION
 
 ARCHITECTURE rtl OF Ethernet_SGMIITransceiver_Virtex7 IS
-	
+
 	CONSTANT GT_SIM_GTRESET_SPEEDUP					: STRING			:= ite(SIM_SPEEDUP, "true", "false");
 
 	SIGNAL TX_Data_i												: T_SLV_64;
 	SIGNAL RX_Data_i												: T_SLV_64;
-	
+
 BEGIN
-	
+
 	TX_Data_i			<= resize(TX_Data, TX_Data_i'length);
 	RX_Data				<= resize(RX_Data_i, RX_Data'length);
 
@@ -69,8 +69,8 @@ BEGIN
 			SIM_RESET_SPEEDUP												=> GT_SIM_GTRESET_SPEEDUP,
 			SIM_TX_EIDLE_DRIVE_LEVEL								=> "Z",
 			SIM_CPLLREFCLK_SEL											=> "001",														-- ATTENTION: this signal must be the same as CPLLREFCLKSEL[2:0]
-			SIM_VERSION															=> "3.0", 
-			
+			SIM_VERSION															=> "3.0",
+
 		 ------------------RX Byte and Word Alignment Attributes---------------
 			ALIGN_COMMA_DOUBLE											=> "FALSE",
 			ALIGN_COMMA_ENABLE											=> "0001111111",

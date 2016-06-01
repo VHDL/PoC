@@ -17,7 +17,7 @@ entity sata_oob_rx is port (
 end sata_oob_rx;
 
 architecture rtl of sata_oob_rx is
-		
+
 	signal sig_count	: unsigned (3 downto 0) := (others => '0');
 	signal wake_count	: unsigned (3 downto 0) := (others => '0');
 	signal reset_count	: unsigned (3 downto 0) := (others => '0');
@@ -25,7 +25,7 @@ architecture rtl of sata_oob_rx is
 
 	signal rx_signal_async	: std_logic;
 	signal rx_signal	: std_logic_vector(1 downto 0);
-	
+
 begin
 	-- input is at rx clock domain, so sample it first
 	rx_signal_async <= rx_signaldetect when rising_edge(clk);
@@ -51,11 +51,11 @@ begin
 				end if;
 			else
 				-- signal length counter is beyond all limits -> reset
-				if ui_counter > to_unsigned(56,6) then 
+				if ui_counter > to_unsigned(56,6) then
 					sig_count <= (others => '0');
 					wake_count <= (others => '0');
 					reset_count <= (others => '0');
-				end if;	
+				end if;
 			end if;
 			-- signal length counter control
 			if rx_signal(1) /= rx_signal(0) then
@@ -88,5 +88,5 @@ begin
 			end if;
 		end if;
 	end process;
-	
+
 end;

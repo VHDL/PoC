@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_clk_sync_2
 -- Author(s): Martin Zabel (re-implemenation)
--- 
+--
 -- Transmit an event to another clock-domain.
 --
 -- 'signal_event' must be asserted for only one 'clk_from' cycle.
@@ -40,7 +40,7 @@ architecture rtl of trace_clk_sync_2 is
   ----
   -- power up registers with '0'
   ----
-  
+
   -- state inside the clk_from domain
   signal state_from_r : std_logic := '0';
 
@@ -85,7 +85,7 @@ begin
   end process;
 
   state_to <= sync_state_to_r(SYNC_STAGES);
-  
+
   -- edge detection
   process (clk_to)
   begin  -- process
@@ -96,4 +96,4 @@ begin
   end process;
 
   event_signaled <= state_to xor state_to_p1;
-end rtl; 
+end rtl;

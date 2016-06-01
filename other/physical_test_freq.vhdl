@@ -1,15 +1,15 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Martin Zabel
 --                  Patrick Lehmann
--- 
+--
 -- Module:					Sub-module for test of physical type `FREQ` and conversion
 -- 									routines defined in `physical.pkg.vhdl`.
 --
--- 
+--
 -- Description:
 -- ------------------------------------
 -- Synthesis reports a multiple driver error / critical-warning when
@@ -26,13 +26,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ library poc;
 use poc.physical.all;
 
 entity physical_test_freq is
-  
+
 	generic (
 		CONST_1_HZ			 : freq			 := 1 Hz;
 		CONST_1_KHZ			 : freq			 := 1 kHz;
@@ -108,7 +108,7 @@ architecture rtl of physical_test_freq is
 		report "tsum(SOME_FREQS)  = " & FREQ'image(fsum(SOME_FREQS)) severity note;
 	return true;
 	end f;
-	
+
 	constant C : boolean := f;
 
 begin  -- architecture rtl
@@ -122,32 +122,32 @@ begin  -- architecture rtl
 	checkConst1Hz: if CONST_1_HZ <= 0 Hz generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1kHz: if CONST_1_KHZ <= 0 Hz or CONST_1_KHZ /= 1000 Hz generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125kHz: if CONST_1p125_KHZ <= 0 Hz or CONST_1p125_KHZ /= 1125 Hz generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1MHz: if CONST_1_MHZ <= 0 Hz or CONST_1_MHZ /= 1000 kHz generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125MHz: if CONST_1p125_MHZ <= 0 Hz or CONST_1p125_MHZ /= 1125 kHz generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1GHz: if CONST_1_GHZ <= 0 Hz or CONST_1_GHZ /= 1000 MHz generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125GHz: if CONST_1p125_GHZ <= 0 Hz or CONST_1p125_GHZ /= 1125 MHz generate
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkCvtInt1Hz: if CVT_INT_1_HZ /= 1 Hz generate
 		y <= '1';
@@ -197,7 +197,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkCvt1p5kHzReal: if CVT_1p5_KHZ_REAL /= 1.5 generate
 		y <= '1';
@@ -211,7 +211,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkMax: if fmax(SOME_FREQS) /= 1000 MHz generate
 		y <= '1';

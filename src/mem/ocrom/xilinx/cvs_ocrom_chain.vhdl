@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -122,7 +122,7 @@ begin  -- rtl
 
     -- Final Scan Chain Output
     cdout <= cnct(M+R);
-    
+
   end generate genEQ4;
 
   genGT4: if ABITS > 4 generate
@@ -133,7 +133,7 @@ begin  -- rtl
     signal cnct : std_logic_vector(WIDTH*SUBS downto 0);
 
   begin
-    
+
     -- Initial Scan Chain Input
     cnct(0) <= cdin;
 
@@ -166,7 +166,7 @@ begin  -- rtl
 
     -- Final Scan Chain Output
     cdout <= cnct(WIDTH*SUBS);
-    
+
   end generate genGT4;
 
 end rtl;

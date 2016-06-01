@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Steffen Koehler
@@ -27,14 +27,14 @@
 -- The output SATA_Clock_Stable is synchronously asserted if the output
 -- SATA_Clock delivers a stable clock signal, so it can be used as clock
 -- enable. SATA_Clock_Stable is hight at least one cycle before ResetDone
--- is asserted. 
+-- is asserted.
 --
 -- SATA_Clock_Stable might be deasserted synchronously when a change of the
 -- SATA generation is needed and SATA_Clock is instable for a while. ResetDone
 -- is kept asserted because Status and Error are still valid but are not
 -- changing until the SATA_Clock is stable again. The inputs Command and
 -- (synchronous) Reset are ignored when SATA_Clock_Stable is low.
--- 
+--
 -- ClockNetwork_ResetDone is asserted asynchronously when all internal clock
 -- networks are stable. This signal can be used for debugging or if another
 -- PLL/DLL is connected to SATA_Clock.
@@ -50,7 +50,7 @@
 --   Completes with Status.TransportLayer:
 --   - *_TRANS_STATUS_TRANSFER_OK if successful. New commands can be applied
 --     	directly.
---     
+--
 --   - *_TRANS_STATUS_TRANSFER_ERROR if the device reports an error via the ATA
 --   		register block. New commands can be applied directly.
 
@@ -61,13 +61,13 @@
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -114,17 +114,17 @@ ENTITY sata_SATAController IS
 	PORT (
 		ClockNetwork_Reset					: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			asynchronous reset
 		ClockNetwork_ResetDone			: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			all clocks are stable
-		PowerDown										: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			
+		PowerDown										: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:
 		Reset												: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock:	synchronous reset, done in next cycle
 		ResetDone										: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock: layers have been resetted after powerup / hard reset
-		
-		SATAGenerationMin						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		-- 
-		SATAGenerationMax						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		-- 
+
+		SATAGenerationMin						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		--
+		SATAGenerationMax						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		--
 		SATAGeneration          	  : OUT T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
-		
+
 		SATA_Clock									: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		SATA_Clock_Stable						: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		
+
 		Command											: IN	T_SATA_TRANS_COMMAND_VECTOR(PORTS - 1 downto 0);
 		Status											: OUT T_SATA_SATACONTROLLER_STATUS_VECTOR(PORTS - 1 downto 0);
 		Error												: OUT	T_SATA_SATACONTROLLER_ERROR_VECTOR(PORTS - 1 downto 0);
@@ -134,21 +134,21 @@ ENTITY sata_SATAController IS
 		-- Debug ports
 		DebugPortIn									: IN	T_SATADBG_SATACONTROLLER_IN_VECTOR(PORTS - 1 downto 0);
 		DebugPortOut								: OUT	T_SATADBG_SATACONTROLLER_OUT_VECTOR(PORTS - 1 downto 0);
-    
+
 		-- TX port
 		TX_SOT											: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		TX_EOT											: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		TX_Valid										: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		TX_Data											: IN	T_SLVV_32(PORTS - 1 downto 0);
 		TX_Ack											: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		
+
 		-- RX port
 		RX_SOT											: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		RX_EOT											: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		RX_Valid										: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		RX_Data											: OUT	T_SLVV_32(PORTS - 1 downto 0);
 		RX_Ack											: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		
+
 		-- vendor specific signals
 		VSS_Common_In								: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 		VSS_Private_In							: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 downto 0);
@@ -172,7 +172,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	-- Clocking & ResetDone, provided by transceiver layer
 	signal SATA_Clock_i									: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 	signal SATA_Clock_Stable_i					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	
+
 	-- physical layer <=> transceiver layer signals
 	signal Phy_RP_Reconfig										: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 	signal Phy_RP_SATAGeneration							: T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
@@ -185,10 +185,10 @@ ARCHITECTURE rtl OF sata_SATAController IS
 	signal Transceiver_Error									: T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
 	signal Phy_OOB_TX_Command									: T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
-	signal Transceiver_OOB_TX_Complete				: STD_LOGIC_VECTOR(PORTS - 1 downto 0);	
+	signal Transceiver_OOB_TX_Complete				: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 	signal Transceiver_OOB_RX_Received				: T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
-	signal Phy_OOB_HandshakeComplete					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);	
-	signal Phy_OOB_AlignDetected    					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);	
+	signal Phy_OOB_HandshakeComplete					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal Phy_OOB_AlignDetected    					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
 	signal Phy_TX_Data												: T_SLVV_32(PORTS - 1 downto 0);
 	signal Phy_TX_CharIsK											: T_SLVV_4(PORTS - 1 downto 0);
@@ -198,7 +198,7 @@ ARCHITECTURE rtl OF sata_SATAController IS
 
 	signal Transceiver_DebugPortIn						: T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS - 1 downto 0);
 	signal Transceiver_DebugPortOut						: T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS - 1 downto 0);
-	
+
 	attribute KEEP of SATA_Clock_i			: signal is DEBUG;
 
 begin
@@ -217,21 +217,21 @@ begin
 		signal Transport_Command			: T_SATA_TRANS_COMMAND;
 		signal Transport_Status				: T_SATA_TRANS_STATUS;
 		signal Transport_Error				: T_SATA_TRANS_ERROR;
-		
+
 		-- TX glue FIFO signals to transport layer
 		signal TX_Glue_Data						: T_SLV_32;
 		signal TX_Glue_SOT						: STD_LOGIC;
 		signal TX_Glue_EOT						: STD_LOGIC;
 		signal TX_Glue_Valid					: STD_LOGIC;
 		signal RX_Glue_Ack						: STD_LOGIC;
-		
+
 		-- transport layer signals to glue FIFO
 		signal Transport_RX_Valid			: STD_LOGIC;
 		signal Transport_RX_Data			: T_SLV_32;
 		signal Transport_RX_SOT				: STD_LOGIC;
 		signal Transport_RX_EOT				: STD_LOGIC;
-		signal Transport_TX_Ack				: STD_LOGIC;			
-	
+		signal Transport_TX_Ack				: STD_LOGIC;
+
 		-- transport layer signals to link layer
 		signal Transport_TX_Data			: T_SLV_32;
 		signal Transport_TX_SOF				: STD_LOGIC;
@@ -240,7 +240,7 @@ begin
 		signal Transport_TX_FS_Ack		: STD_LOGIC;
 		signal Transport_RX_Ack				: STD_LOGIC;
 		signal Transport_RX_FS_Ack		: STD_LOGIC;
-		
+
 		-- link layer signals
 		signal Link_ResetDone 				: STD_LOGIC;
 		signal Link_Command						: T_SATA_LINK_COMMAND;
@@ -275,13 +275,13 @@ begin
 		-- physical layer signals to link layer
 		signal Phy_RX_Data						: T_SLV_32;
 		signal Phy_RX_CharIsK					: T_SLV_4;
-		
+
 		-- debug ports
 		signal Transport_DebugPortOut	: T_SATADBG_TRANS_OUT;
 		signal Link_DebugPortIn				: T_SATADBG_LINK_IN;
 		signal Link_DebugPortOut			: T_SATADBG_LINK_OUT;
 		signal Phy_DebugPortOut				: T_SATADBG_PHYSICAL_OUT;
-		
+
 	begin
 		-- =========================================================================
 		-- SATAController interface
@@ -289,14 +289,14 @@ begin
 		-- common signals
 		ResetDone(i) 									<= Transport_ResetDone;
 		SATAGeneration(i)							<= Phy_RP_SATAGeneration(i);
-		
+
 		Transport_Command							<= Command(i);
-		
+
 		Status(i).TransportLayer			<= Transport_Status;
 		Status(i).LinkLayer						<= Link_Status;
 		Status(i).PhysicalLayer				<= Phy_Status;
 		Status(i).TransceiverLayer		<= Transceiver_Status(i);
-		
+
 		Error(i).TransportLayer				<= Transport_Error;
 		Error(i).LinkLayer						<= Link_Error;
 		Error(i).PhysicalLayer				<= Phy_Error;
@@ -310,7 +310,7 @@ begin
 			TX_Glue_SOT		<= TX_SOT(i);
 			TX_Glue_EOT		<= TX_EOT(i);
 			TX_Ack(i)			<= Transport_TX_Ack;
-		
+
 			RX_Valid(i)		<= Transport_RX_Valid;
 			RX_Data(i) 		<= Transport_RX_Data;
 			RX_SOT(i) 		<= Transport_RX_SOT;
@@ -323,32 +323,32 @@ begin
 			signal TX_GlueFIFO_Full		: STD_LOGIC;
 			signal TX_GlueFIFO_DataIn	: STD_LOGIC_VECTOR(33 downto 0);
 			signal TX_GlueFIFO_DataOut	: STD_LOGIC_VECTOR(33 downto 0);
-			
+
 			signal RX_GlueFIFO_Full		: STD_LOGIC;
 			signal RX_GlueFIFO_DataIn	: STD_LOGIC_VECTOR(33 downto 0);
 			signal RX_GlueFIFO_DataOut	: STD_LOGIC_VECTOR(33 downto 0);
-			
+
 		begin
 			-- Reset FIFOs until initial reset of SATAController has been
 			-- completed. Allow synchronous 'Reset' only when ClockEnable = '1'.
 			FIFO_Reset <= (not Transport_ResetDone) or (Reset(i) and SATA_Clock_Stable_i(i));
-			
+
 			-- TX port
 			TX_FIFO : entity PoC.fifo_glue
-				generic map ( 
+				generic map (
 					D_BITS => TX_GlueFIFO_DataIn'length
 					)
 				port map (
 					clk => SATA_Clock_i(i),
 					rst => FIFO_Reset,
-					
+
 					di 	=> TX_GlueFIFO_DataIn,
 					ful => TX_GlueFIFO_Full,
 					put => TX_Valid(i),
-					
+
 					do 	=> TX_GlueFIFO_DataOut,
-					vld => TX_Glue_Valid, 
-					got => Transport_TX_Ack	
+					vld => TX_Glue_Valid,
+					got => Transport_TX_Ack
 				);
 
 			TX_Ack(i)													<= not TX_GlueFIFO_Full;
@@ -361,24 +361,24 @@ begin
 
 			-- RX port
 			RX_FIFO : entity PoC.fifo_glue
-				generic map ( 
+				generic map (
 					D_BITS => RX_GlueFIFO_DataIn'length
 					)
 				port map (
 					clk => SATA_Clock_i(i),
 					rst => FIFO_Reset,
-					
+
 					di 	=> RX_GlueFIFO_DataIn,
 					ful => RX_GlueFIFO_Full,
 					put => Transport_RX_Valid,
-					
+
 					do 	=> RX_GlueFIFO_DataOut,
 					vld => RX_Valid(i),
 					got => RX_Ack(i)
 				);
-			
+
 			RX_Glue_Ack											<= not RX_GlueFIFO_Full;
-			
+
 			RX_GlueFIFO_DataIn(31 downto 0) <= Transport_RX_Data;
 			RX_GlueFIFO_DataIn(32)					<= Transport_RX_SOT;
 			RX_GlueFIFO_DataIn(33)					<= Transport_RX_EOT;
@@ -405,33 +405,33 @@ begin
 				Command											=> Transport_Command,
 				Status											=> Transport_Status,
 				Error												=> Transport_Error,
-				
+
 				DebugPortOut								=> Transport_DebugPortOut,
-				
+
 				-- ATA registers
 				ATAHostRegisters						=> ATAHostRegisters(i),
 				ATADeviceRegisters					=> ATADeviceRegisters(i),
-				
+
 				-- TX path
 				TX_Valid										=> TX_Glue_Valid,
 				TX_Data											=> TX_Glue_Data,
 				TX_SOT											=> TX_Glue_SOT,
 				TX_EOT											=> TX_Glue_EOT,
 				TX_Ack											=> Transport_TX_Ack,
-				
+
 				-- RX path
 				RX_Valid										=> Transport_RX_Valid,
 				RX_Data											=> Transport_RX_Data,
 				RX_SOT											=> Transport_RX_SOT,
 				RX_EOT											=> Transport_RX_EOT,
 				RX_Ack											=> RX_Glue_Ack,
-				
+
 				-- LinkLayer interface
 				Link_ResetDone							=> Link_ResetDone,
 				Link_Command								=> Link_Command,
 				Link_Status									=> Link_Status,
 				SATAGeneration 							=> Phy_RP_SATAGeneration(i),
-				
+
 				-- TX path
 				Link_TX_Valid								=> Transport_TX_Valid,
 				Link_TX_Data								=> Transport_TX_Data,
@@ -439,19 +439,19 @@ begin
 				Link_TX_EOF									=> Transport_TX_EOF,
 				Link_TX_Ack									=> Link_TX_Ack,
 				Link_TX_InsertEOF						=> Link_TX_InsertEOF,				-- helper signal: insert EOF - max frame size reached
-				
+
 				Link_TX_FS_Valid						=> Link_TX_FS_Valid,
 				Link_TX_FS_SendOK						=> Link_TX_FS_SendOK,
 				Link_TX_FS_SyncEsc					=> Link_TX_FS_SyncEsc,
 				Link_TX_FS_Ack							=> Transport_TX_FS_Ack,
-				
+
 				-- RX path
 				Link_RX_Valid								=> Link_RX_Valid,
 				Link_RX_Data								=> Link_RX_Data,
 				Link_RX_SOF									=> Link_RX_SOF,
 				Link_RX_EOF									=> Link_RX_EOF,
 				Link_RX_Ack									=> Transport_RX_Ack,
-				
+
 				Link_RX_FS_Valid						=> Link_RX_FS_Valid,
 				Link_RX_FS_CRCOK						=> Link_RX_FS_CRCOK,
 				Link_RX_FS_SyncEsc					=> Link_RX_FS_SyncEsc,
@@ -459,7 +459,7 @@ begin
 			);
 
 
-		
+
 		-- The CSE interface of the TransportLayer is ready, when the CSE interface
 		-- of the LinkLayer is ready.
 		Transport_ResetDone <= Link_ResetDone;
@@ -479,15 +479,15 @@ begin
 				Clock										=> SATA_Clock_i(i),
 				ClockEnable							=> SATA_Clock_Stable_i(i),
 				Reset										=> Reset(i),
-				
+
 				Command									=> Link_Command,
 				Status									=> Link_Status,
 				Error										=> Link_Error,
-				
+
 				-- Debug ports
 				DebugPortIn						 	=> Link_DebugPortIn,
 				DebugPortOut					 	=> Link_DebugPortOut,
-				
+
 				-- TX port
 				TX_SOF									=> Transport_TX_SOF,
 				TX_EOF									=> Transport_TX_EOF,
@@ -495,31 +495,31 @@ begin
 				TX_Data									=> Transport_TX_Data,
 				TX_Ack									=> Link_TX_Ack,
 				TX_InsertEOF						=> Link_TX_InsertEOF,
-				
+
 				TX_FS_Ack								=> Transport_TX_FS_Ack,
 				TX_FS_Valid							=> Link_TX_FS_Valid,
 				TX_FS_SendOK						=> Link_TX_FS_SendOK,
 				TX_FS_SyncEsc						=> Link_TX_FS_SyncEsc,
-				
+
 				-- RX port
 				RX_SOF									=> Link_RX_SOF,
 				RX_EOF									=> Link_RX_EOF,
 				RX_Valid								=> Link_RX_Valid,
 				RX_Data									=> Link_RX_Data,
 				RX_Ack									=> Transport_RX_Ack,
-				
+
 				RX_FS_Ack								=> Transport_RX_FS_Ack,
 				RX_FS_Valid							=> Link_RX_FS_Valid,
 				RX_FS_CRCOK							=> Link_RX_FS_CRCOK,
 				RX_FS_SyncEsc						=> Link_RX_FS_SyncEsc,
-				
+
 				-- physical layer interface
 				Phy_ResetDone 					=> Phy_ResetDone,
 				Phy_Status							=> Phy_Status,
-				
+
 				Phy_RX_Data							=> Phy_RX_Data,
 				Phy_RX_CharIsK					=> Phy_RX_CharIsK,
-				
+
 				Phy_TX_Data							=> Link_TX_Data,
 				Phy_TX_CharIsK					=> Link_TX_CharIsK
 			);
@@ -528,7 +528,7 @@ begin
 		-- of the PHY is ready.
 		Link_ResetDone 	<= Phy_ResetDone;
 		Phy_Command 		<= SATA_PHY_CMD_NONE;
-		
+
 		-- =========================================================================
 		-- physical layer
 		-- =========================================================================
@@ -540,7 +540,7 @@ begin
 				ALLOW_SPEED_NEGOTIATION				=> ALLOW_SPEED_NEGOTIATION_I(i),
 				INITIAL_SATA_GENERATION				=> INITIAL_SATA_GENERATIONS_I(i),
 				ALLOW_STANDARD_VIOLATION			=> ALLOW_STANDARD_VIOLATION_I(i),
-				OOB_TIMEOUT										=> OOB_TIMEOUT_I(i),		--ite(SIMULATION, 15, OOB_TIMEOUT_US(i)),			-- simulation: limit OOBTimeout to 15 us 
+				OOB_TIMEOUT										=> OOB_TIMEOUT_I(i),		--ite(SIMULATION, 15, OOB_TIMEOUT_US(i)),			-- simulation: limit OOBTimeout to 15 us
 				GENERATION_CHANGE_COUNT				=> GENERATION_CHANGE_COUNT_I(i),
 				ATTEMPTS_PER_GENERATION				=> ATTEMPTS_PER_GENERATION_I(i)
 			)
@@ -556,34 +556,34 @@ begin
 				Error													=> Phy_Error,
 
 				DebugPortOut									=> Phy_DebugPortOut,
-				
+
 				Link_RX_Data									=> Phy_RX_Data,
 				Link_RX_CharIsK								=> Phy_RX_CharIsK,
-				
+
 				Link_TX_Data									=> Link_TX_Data,
 				Link_TX_CharIsK								=> Link_TX_CharIsK,
 
 				-- transceiver interface
 				Trans_ResetDone								=> Transceiver_ResetDone(i),
-				
+
 				Trans_Command									=> Transceiver_Command(i),
 				Trans_Status									=> Transceiver_Status(i),
 				Trans_Error										=> Transceiver_Error(i),
-				
+
 				-- reconfiguration interface
 				Trans_RP_Reconfig							=> Phy_RP_Reconfig(i),
 				Trans_RP_SATAGeneration				=> Phy_RP_SATAGeneration(i),
 				Trans_RP_ConfigReloaded				=> Transceiver_RP_ConfigReloaded(i),
-				
+
 				Trans_OOB_TX_Command					=> Phy_OOB_TX_Command(i),
 				Trans_OOB_TX_Complete					=> Transceiver_OOB_TX_Complete(i),
 				Trans_OOB_RX_Received					=> Transceiver_OOB_RX_Received(i),
 				Trans_OOB_HandshakeComplete		=> Phy_OOB_HandshakeComplete(i),
 				Trans_OOB_AlignDetected				=> Phy_OOB_AlignDetected(i),
-				
+
 				Trans_TX_Data									=> Phy_TX_Data(i),
 				Trans_TX_CharIsK							=> Phy_TX_CharIsK(i),
-				
+
 				Trans_RX_Data									=> Transceiver_RX_Data(i),
 				Trans_RX_CharIsK							=> Transceiver_RX_CharIsK(i),
 				Trans_RX_Valid								=> Transceiver_RX_Valid(i)
@@ -592,7 +592,7 @@ begin
 		-- The CSE interface of the PHY is ready, when the CSE interface
 		-- of the transceiver is ready.
 		Phy_ResetDone <= Transceiver_ResetDone(i);
-		
+
 		-- =========================================================================
 		-- debug port
 		-- =========================================================================
@@ -601,28 +601,28 @@ begin
 			DebugPortOut(i).TransportLayer						<= Transport_DebugPortOut;
 			DebugPortOut(i).Transport_Command					<= Transport_Command;
 			DebugPortOut(i).Transport_Status					<= Transport_Status;
-			DebugPortOut(i).Transport_Error						<= Transport_Error;			
-			
+			DebugPortOut(i).Transport_Error						<= Transport_Error;
+
 			-- Link Layer
 			Link_DebugPortIn											<= DebugPortIn(i).LinkLayer;
-			
+
 			DebugPortOut(i).LinkLayer							<= Link_DebugPortOut;				-- RX: 125 + TX: 120 bit
 			DebugPortOut(i).Link_Command					<= Link_Command;						-- 1 bit
 			DebugPortOut(i).Link_Status						<= Link_Status;							-- 3 bit
-			DebugPortOut(i).Link_Error						<= Link_Error;						
-			
+			DebugPortOut(i).Link_Error						<= Link_Error;
+
 			-- Physical Layer
-			DebugPortOut(i).PhysicalLayer					<= Phy_DebugPortOut;				-- 
-			DebugPortOut(i).Physical_Command			<= Phy_Command;							-- 
+			DebugPortOut(i).PhysicalLayer					<= Phy_DebugPortOut;				--
+			DebugPortOut(i).Physical_Command			<= Phy_Command;							--
 			DebugPortOut(i).Physical_Status				<= Phy_Status;							-- 3 bit
-			DebugPortOut(i).Physical_Error				<= Phy_Error;								-- 
+			DebugPortOut(i).Physical_Error				<= Phy_Error;								--
 
 			-- Transceiver Layer
 			Transceiver_DebugPortIn(i)						<= DebugPortIn(i).TransceiverLayer;
-			
-			DebugPortOut(i).TransceiverLayer			<= Transceiver_DebugPortOut(i);		-- 
-			DebugPortOut(i).Transceiver_Command		<= Transceiver_Command(i);				-- 
-			DebugPortOut(i).Transceiver_Status		<= Transceiver_Status(i);					-- 
+
+			DebugPortOut(i).TransceiverLayer			<= Transceiver_DebugPortOut(i);		--
+			DebugPortOut(i).Transceiver_Command		<= Transceiver_Command(i);				--
+			DebugPortOut(i).Transceiver_Status		<= Transceiver_Status(i);					--
 			DebugPortOut(i).Transceiver_Error			<= Transceiver_Error(i);					--
 
 		end generate;
@@ -631,7 +631,7 @@ begin
 			Transceiver_DebugPortIn(i)						<= C_SATADBG_TRANSCEIVER_IN_EMPTY;
 		end generate;
 	end generate;
-  
+
 	-- ===========================================================================
 	-- transceiver layer
 	-- ===========================================================================
@@ -649,7 +649,7 @@ begin
 
 			PowerDown									=> PowerDown,
 			Reset											=> Reset,
-			
+
 			-- CSE interface
 			ResetDone									=> Transceiver_ResetDone,
 			Command										=> Transceiver_Command,
@@ -662,25 +662,25 @@ begin
 
 			SATA_Clock								=> SATA_Clock_i,
 			SATA_Clock_Stable					=> SATA_Clock_Stable_i,
-			
+
 			RP_Reconfig								=> Phy_RP_Reconfig,
 			RP_SATAGeneration					=> Phy_RP_SATAGeneration,
 			RP_ConfigReloaded					=> Transceiver_RP_ConfigReloaded,
 			RP_Lock										=> (others => '0'),
-			
+
 			OOB_TX_Command						=> Phy_OOB_TX_Command,
 			OOB_TX_Complete						=> Transceiver_OOB_TX_Complete,
 			OOB_RX_Received						=> Transceiver_OOB_RX_Received,
 			OOB_HandshakeComplete			=> Phy_OOB_HandshakeComplete,
 			OOB_AlignDetected 				=> Phy_OOB_AlignDetected,
-			
+
 			TX_Data										=> Phy_TX_Data,
 			TX_CharIsK								=> Phy_TX_CharIsK,
 
 			RX_Data										=> Transceiver_RX_Data,
 			RX_CharIsK								=> Transceiver_RX_CharIsK,
 			RX_Valid									=> Transceiver_RX_Valid,
-			
+
 			-- vendor specific signals
 			VSS_Common_In							=> VSS_Common_In,
 			VSS_Private_In						=> VSS_Private_In,

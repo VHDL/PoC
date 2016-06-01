@@ -58,13 +58,13 @@
 -- -----------------------------------------------------------------------------
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -88,7 +88,7 @@ entity sata_Transceiver_ClockStable is
 
 		-- the clock of the SATA controller
 		SATA_Clock						: in	STD_LOGIC;
-		
+
 		-- @sync SATA_Clock, see exception in documentation
 		Kill_Stable						: in 	STD_LOGIC;
 		ResetDone							: out	STD_LOGIC;
@@ -101,7 +101,7 @@ architecture rtl of sata_Transceiver_ClockStable is
 	attribute ASYNC_REG				: STRING;
 	attribute SHREG_EXTRACT		: STRING;
 	attribute RLOC						: STRING;
-	
+
 	signal Locked_meta 			: std_logic;
 	signal Locked_sync1 		: std_logic;
 	signal Locked_sync2 		: std_logic;
@@ -110,7 +110,7 @@ architecture rtl of sata_Transceiver_ClockStable is
 	signal Clock_Stable			: std_logic;
 	signal Next_ResetDone		: std_logic;
 	signal ResetDone_i			: std_logic;
-	
+
 	-- Mark register Data_async's input as asynchronous
 	attribute ASYNC_REG			of Locked_meta	: signal is "TRUE";
 
@@ -118,11 +118,11 @@ architecture rtl of sata_Transceiver_ClockStable is
 	attribute SHREG_EXTRACT of Locked_meta	: signal is "NO";
 	attribute SHREG_EXTRACT of Locked_sync1	: signal is "NO";
 	attribute SHREG_EXTRACT of Locked_sync2	: signal is "NO";
-		
+
 	-- Assign synchronization FF pairs to the same slice -> minimal routing delay
 	attribute RLOC of Locked_meta						: signal is "X0Y0";
 	attribute RLOC of Locked_sync1					: signal is "X0Y0";
-	
+
 begin
 	-- Only FF1 has a metastability problem. At all other FFs input D and
 	-- output Q are the same (zero) when the asynchronous reset is deasserted.
@@ -154,7 +154,7 @@ begin
 			D				=> Locked_meta,
 			Q				=> Locked_sync1
 		);
-	
+
 	FF3 : FDCE
 		generic map (
 			INIT		=> '0'
@@ -173,7 +173,7 @@ begin
 	-- reset when Kill_Stable (high priority)
 	-- set   when Locked rises (low priority)
 	Next_Stable <= (Locked_rising or Clock_Stable) and not Kill_Stable;
-	
+
 	FF4 : FDCE
 		generic map (
 			INIT		=> '0'
@@ -187,7 +187,7 @@ begin
 		);
 
 	SATA_Clock_Stable <= Clock_Stable;
-	
+
 	-- Assert ResetDone one cycle after SATA_Clock_Stable to synchronously reset
 	-- the whole SATA stack with clock enabled.
 	Next_ResetDone <= ResetDone_i or Clock_Stable;

@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_value_sel
 -- Author(s): Stefan Alex
--- 
+--
 ------------------------------------------------------
 -- Select tracer-values, add time-information       --
 --                                                  --
@@ -98,7 +98,7 @@ architecture Behavioral of trace_value_sel is
   signal next_value_fill_i  : unsigned(log2ceil(max(TRACER_DATA_BITS)+ifThenElse(CYCLE_ACCURATE, TIME_BITS*TIME_CMP_LEVELS, 0))-1 downto 0);
   signal next_value_fill_r  : unsigned(log2ceil(max(TRACER_DATA_BITS)+ifThenElse(CYCLE_ACCURATE, TIME_BITS*TIME_CMP_LEVELS, 0))-1 downto 0);
   signal next_value_valid_i : std_logic;
-  signal next_value_valid_r : std_logic; 
+  signal next_value_valid_r : std_logic;
   signal next_value_got_i   : std_logic;
 
 begin
@@ -346,7 +346,7 @@ begin
       elsif next_value_got = '1' or next_value_valid_r = '0' then
         next_value_valid_r <= next_value_valid_i;
       end if;
-        
+
       if next_value_got = '1' or next_value_valid_r = '0' then
         next_value_r       <= next_value_i;
         next_value_fill_r  <= next_value_fill_i;

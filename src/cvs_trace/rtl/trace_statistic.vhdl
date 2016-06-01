@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_statistic
 -- Author(s): Stefan Alex, Martin Zabel
--- 
+--
 -- Event counter.
 --
 -- Reset and increment can be asserted at the same time. This counts as 1
@@ -65,7 +65,7 @@ begin
   counter_ov    <= '1' when counter_r = (COUNTER_BITS-1 downto 0 => '1') else '0';
   counter_stb_i <= (counter_ov and inc) or rst;
   counter_stb   <= counter_stb_i;
-  
+
   -- Intial value upon reset. Separate signal for correct counter-macro
   -- inference.
   g1: if COUNTER_BITS>1 generate

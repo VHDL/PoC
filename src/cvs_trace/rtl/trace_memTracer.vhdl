@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_memTracer
 -- Author(s): Stefan Alex
--- 
+--
 ------------------------------------------------------
 -- Memory Tracer                                    --
 --                                                  --
@@ -651,7 +651,7 @@ begin
               end if;
             end if;
           end process sync_proc;
-          
+
           -- compression
 
           comp_in <= fifo_dout(SRC_INDEX+BITS-1 downto SRC_INDEX+HEADER_VAL_BITS);

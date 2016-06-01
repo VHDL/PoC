@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: bresen
 -- Author: Thomas B. Preusser
--- 
+--
 -- Implements a Bresenham clock divider.
 -- Its output clock has edges synchronous to the input clock
 -- except for an additional skew delay by the output fliflop.
@@ -36,7 +36,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library poc;
-use poc.functions.all;                       
+use poc.functions.all;
 
 entity bresen is
   generic (
@@ -49,7 +49,7 @@ entity bresen is
   port (
     clk  : in  std_logic;               -- Input Clock
     rst  : in  std_logic;               -- Reset
-    
+
     cdiv : out std_logic                -- Output Clock
   );
 end bresen;
@@ -59,7 +59,7 @@ begin
   assert 2*P <= Q
     report "Division beyond 0.5 not possible."
     severity error;
-  
+
   -- Exact Division
   genExact: if T = 0 generate
     signal E : signed(log2ceil(imax(Q-2*P, 2*P)) downto 0);
@@ -91,7 +91,7 @@ begin
   begin
     C <= (EC(EC'left) or  ES(ES'left)) when T = 1 else
          (EC(EC'left) and ES(ES'left));
-    
+
     D <= unsigned(to_signed(2*P-Q, D'length)) when C = '1' else
          to_unsigned(2*P  , D'length);
 
@@ -115,8 +115,8 @@ begin
       end if;
     end process;
     cdiv <= Z;
-    
+
   end generate genCS;
 
 end bresen_impl;
-  
+
