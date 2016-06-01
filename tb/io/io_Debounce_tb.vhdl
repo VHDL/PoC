@@ -59,7 +59,7 @@ architecture tb of io_Debounce_tb is
 	signal EventCounter			: NATURAL				:= 0;
 	
 	-- unit Under Test (UUT) configuration
-	constant BOUNCE_TIME		:	TIME					:= 50 ns;
+	constant BOUNCE_TIME		:	T_TIME				:= 50.0e-9;
 	
 	signal RawInput					: STD_LOGIC			:= '0';
 	signal deb_out					: STD_LOGIC;

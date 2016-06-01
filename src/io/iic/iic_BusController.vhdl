@@ -94,7 +94,7 @@ architecture rtl of iic_BusController is
 		end case;
 	end function;
 	
-	function getBusFreeTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return TIME is
+	function getBusFreeTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return T_TIME is
 	begin
 		if SIMULATION then											return 500.0e-9;	end if;
 		case IIC_BUSMODE is
