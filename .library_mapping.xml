@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.sigasi.hdt.shared.librarymapping.model:LibraryMappings xmlns:com.sigasi.hdt.shared.librarymapping.model="com.sigasi.hdt.vhdl.scoping.librarymapping" Version="2">
+  <Mappings Location="Common Libraries/IEEE" Library="ieee"/>
+  <Mappings Location="Common Libraries/IEEE Synopsys" Library="ieee"/>
+  <Mappings Location="Common Libraries" Library="not mapped"/>
+  <Mappings Location="Common Libraries/unisim/primitive" Library="not mapped"/>
+  <Mappings Location="Common Libraries/unisim/secureip" Library="not mapped"/>
+  <Mappings Location="examples" Library="not mapped"/>
+  <Mappings Location="lib/cocotb" Library="not mapped"/>
+  <Mappings Location="lib/osvvm/demo" Library="not mapped"/>
+  <Mappings Location="lib/osvvm/doc" Library="not mapped"/>
+  <Mappings Location="lib/vunit" Library="not mapped"/>
+  <Mappings Location="netlist" Library="not mapped"/>
+  <Mappings Location="other" Library="not mapped"/>
+  <Mappings Location="prj" Library="not mapped"/>
+  <Mappings Location="py" Library="not mapped"/>
+  <Mappings Location="sim" Library="not mapped"/>
+  <Mappings Location="src/arith/xilinx/arith_inc_ovcy_xilinx.vhdl" Library="not mapped"/>
+  <Mappings Location="src/bus/stream/stream_FrameGenerator.vhdl" Library="not mapped"/>
+  <Mappings Location="src/bus/wb/wb_uart_wrapper.vhdl" Library="not mapped"/>
+  <Mappings Location="src/comm/remote" Library="not mapped"/>
+  <Mappings Location="src/common/fileio.v93.vhdl" Library="not mapped"/>
+  <Mappings Location="src/cvs_trace" Library="not mapped"/>
+  <Mappings Location="src/io/ddrio/ddrio_in_altera.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/ddrio/ddrio_inout_altera.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/ddrio/ddrio_out_altera.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/device" Library="not mapped"/>
+  <Mappings Location="src/io/iic/iic_Controller_SFF8431.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/jtag" Library="not mapped"/>
+  <Mappings Location="src/io/lcd/BCDDigit.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/lcd/lcd_LCDBusController.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/lcd/lcd_LCDController_KS0066U.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/mdio" Library="not mapped"/>
+  <Mappings Location="src/io/ow" Library="not mapped"/>
+  <Mappings Location="src/io/uart/old_uart_fifo_wb.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/uart/old_uart_sfc.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/uart/old_uart_sfc_wb.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/vga/cvs_vga_ch7301c_init.vhdl" Library="not mapped"/>
+  <Mappings Location="src/io/vga/cvs_vga_sil1172_ctrl.vhdl" Library="not mapped"/>
+  <Mappings Location="src/mem/is61lv/Altera/cvs_is61lv_ctrl_altera.vhdl" Library="not mapped"/>
+  <Mappings Location="src/mem/sdram/sdram_ctrl_de0.vhdl" Library="not mapped"/>
+  <Mappings Location="src/mem/sdram/sdram_ctrl_phy_de0.vhdl" Library="not mapped"/>
+  <Mappings Location="src/misc/cvs_bresen.vhdl" Library="not mapped"/>
+  <Mappings Location="src/net" Library="not mapped"/>
+  <Mappings Location="src/sata/altera" Library="not mapped"/>
+  <Mappings Location="src/sata/sata_StreamingStack.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sata/sata_Transceiver_DeviceDetector.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sata/xilinx/sata_Transceiver_Virtex5.pkg.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sata/xilinx/sata_Transceiver_Virtex5_ClockNetwork.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sata/xilinx/sata_Transceiver_Virtex5_GTP.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sata/xilinx/sata_Transceiver_Virtex5_GTP_Configurator.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sata/xilinx/sata_Transceiver_Virtex6.pkg.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sata/xilinx/sata_Transceiver_Virtex6_ClockNetwork.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sata/xilinx/sata_Transceiver_Virtex6_GTXE1.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sata/xilinx/sata_Transceiver_Virtex6_MMCM_Configurator.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sim/sim_global.v93.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sim/sim_random.v93.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sim/sim_simulation.v93.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sim/sim_unprotected.v93.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sort/sort_InsertSort.vhdl" Library="not mapped"/>
+  <Mappings Location="src/sort/sort_LeastFrequentlyUsed.vhdl" Library="not mapped"/>
+  <Mappings Location="src/xil/xil_ChipScopeICON.vhdl" Library="not mapped"/>
+  <Mappings Location="src/xil/xil_SystemMonitor.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/arith/arith_addw_tb.iSim.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/arith/arith_addw_xil_tb.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/arith/arith_bcdcollect_tb.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/arith/arith_prefix_and_tb.iSim.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/arith/arith_prng_tb.iSim.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/comm/remote" Library="not mapped"/>
+  <Mappings Location="tb/common/cvs_sim_vcd_example_tb.vhd" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_AC701.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_Atlys.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_DE0.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_DE4.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_DE5.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_ECP5Versa.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_GENERIC.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_ML505.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_ML506.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_ML605.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_S2GXAV.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_S3SK1000.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_VC707.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_VC709.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_XUPV5.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_ZC706.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/my_config_ZedBoard.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/common/physical_tb.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/io/io_7SegmentMux_tb.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/mem/sdram/cvs_sdram_ctrl_fsm_tb.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/sort/sort_ExpireList_tb.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/sort/sort_InsertSort_tb.vhdl" Library="not mapped"/>
+  <Mappings Location="tb/sort/sort_LeastFrequentlyUsed_tb.vhdl" Library="not mapped"/>
+  <Mappings Location="tcl" Library="not mapped"/>
+  <Mappings Location="temp" Library="not mapped"/>
+  <Mappings Location="tools" Library="not mapped"/>
+  <Mappings Location="ucf" Library="not mapped"/>
+  <Mappings Location="xcf" Library="not mapped"/>
+  <Mappings Location="xst" Library="not mapped"/>
+  <Mappings Location="lib/osvvm" Library="osvvm"/>
+  <Mappings Location="src" Library="poc"/>
+  <Mappings Location="src/misc/sync/sync_Reset_Altera.vhdl" Library="poc"/>
+  <Mappings Location="tb/common/my_config_KC705.vhdl" Library="poc"/>
+  <Mappings Location="tb/common/my_project.vhdl" Library="poc"/>
+  <Mappings Location="Common Libraries/STD" Library="std"/>
+  <Mappings Location="tb" Library="test"/>
+  <Mappings Location="Common Libraries/unisim" Library="unisim"/>
+  <Mappings Location="" Library="work"/>
+</com.sigasi.hdt.shared.librarymapping.model:LibraryMappings>
