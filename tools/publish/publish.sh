@@ -102,6 +102,7 @@ rsyncOptions=( \
     '--filter=P .git' \
     '--filter=P .gitmodules' \
     '--filter=P lib/*' \
+    '--filter=P docs/_themes/*' \
     --delete --delete-excluded --prune-empty-dirs \
     --stats)
 

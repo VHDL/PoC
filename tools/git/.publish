@@ -7,3 +7,7 @@ README.md
 # scripts to customize git
 git-alias.setup.sh
 git-alias.setup.ps1
+git-hooks.setup.py
+
+# subdirectories
+hooks/
