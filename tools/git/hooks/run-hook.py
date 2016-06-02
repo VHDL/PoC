@@ -30,10 +30,11 @@ from subprocess import call
 def runAll(dir):
 	for root, dirs, files in os.walk(dir):
 		for file in files:
-			print("Executing '" + file + "'")
-			ret = call(['python', os.path.join(root, file)])
-			if ret != 0:
-				return  ret
+			if not file.startswith('.'):
+				print("Executing '" + file + "'")
+				ret = call(['python', os.path.join(root, file)])
+				if ret != 0:
+					return  ret
 	return  0
 
 hook = os.path.basename(__file__)
