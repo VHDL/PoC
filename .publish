@@ -1,4 +1,5 @@
 # git files
+.gitattributes
 .gitignore
 .gitempty
 #.gitmodules
@@ -15,6 +16,7 @@ requirements.txt
 docs/
 AUTHORS.md
 LICENSE.md
+README.tpl
 README.md
 CHANGES.md
 
