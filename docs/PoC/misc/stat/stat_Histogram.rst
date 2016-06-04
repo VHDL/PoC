@@ -2,7 +2,7 @@
 stat_Histogram
 ##############
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

@@ -2,7 +2,7 @@
 arith_convert_bin2bcd
 #####################
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

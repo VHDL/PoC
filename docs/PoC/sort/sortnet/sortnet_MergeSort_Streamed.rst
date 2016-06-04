@@ -2,7 +2,7 @@
 sortnet_MergeSort_Streamed
 ##########################
 
-TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

@@ -9,7 +9,7 @@
 --
 -- Description:
 -- ------------------------------------
---	TODO
+-- .. TODO:: No documentation available.
 --
 --	old comments:
 --		UART BAUD rate generator

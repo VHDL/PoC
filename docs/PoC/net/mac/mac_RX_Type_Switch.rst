@@ -2,7 +2,7 @@
 mac_RX_Type_Switch
 ##################
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

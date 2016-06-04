@@ -2,7 +2,7 @@
 sortnet_OddEvenSort
 ###################
 
-TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

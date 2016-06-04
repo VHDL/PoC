@@ -2,7 +2,7 @@
 ndp_FSMQuery
 ############
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

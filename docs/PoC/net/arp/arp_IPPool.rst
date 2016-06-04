@@ -2,7 +2,7 @@
 arp_IPPool
 ##########
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

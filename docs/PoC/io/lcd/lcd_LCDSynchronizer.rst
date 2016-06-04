@@ -2,7 +2,7 @@
 lcd_LCDSynchronizer
 ###################
 
-TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

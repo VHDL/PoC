@@ -2,7 +2,7 @@
 list_expire
 ###########
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

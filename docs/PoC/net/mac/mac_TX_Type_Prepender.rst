@@ -2,7 +2,7 @@
 mac_TX_Type_Prepender
 #####################
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

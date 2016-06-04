@@ -2,7 +2,7 @@
 sort_LeastFrequentlyUsed
 ########################
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

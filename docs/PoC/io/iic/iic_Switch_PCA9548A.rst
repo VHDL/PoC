@@ -2,7 +2,7 @@
 iic_Switch_PCA9548A
 ###################
 
-	TODO TODO
+.. TODO:: No documentation available. TODO
 
 
 .. rubric:: Entity Declaration:

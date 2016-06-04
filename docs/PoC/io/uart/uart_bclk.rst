@@ -2,7 +2,7 @@
 uart_bclk
 #########
 
-TODO
+.. TODO:: No documentation available.
 old comments:
 	UART BAUD rate generator
 	bclk_r    = bit clock is rising

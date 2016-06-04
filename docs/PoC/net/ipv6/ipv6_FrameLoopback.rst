@@ -2,7 +2,7 @@
 ipv6_FrameLoopback
 ##################
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

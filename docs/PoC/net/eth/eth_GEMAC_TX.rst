@@ -2,7 +2,7 @@
 Eth_GEMAC_TX
 ############
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

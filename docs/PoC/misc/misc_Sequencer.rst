@@ -2,7 +2,7 @@
 misc_Sequencer
 ##############
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

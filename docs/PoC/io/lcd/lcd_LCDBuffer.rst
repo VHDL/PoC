@@ -2,7 +2,7 @@
 lcd_LCDBuffer
 #############
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

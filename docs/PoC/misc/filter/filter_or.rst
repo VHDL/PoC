@@ -2,7 +2,7 @@
 filter_or
 #########
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

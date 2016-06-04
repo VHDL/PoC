@@ -2,7 +2,7 @@
 misc_Delay
 ##########
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

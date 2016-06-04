@@ -2,7 +2,7 @@
 sortnet_Stream_Adapter2
 #######################
 
-TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

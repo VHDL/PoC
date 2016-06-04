@@ -2,7 +2,7 @@
 lcd_LCDBusController
 ####################
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

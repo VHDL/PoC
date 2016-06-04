@@ -2,7 +2,7 @@
 lcd_LCDController_KS0066U
 #########################
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

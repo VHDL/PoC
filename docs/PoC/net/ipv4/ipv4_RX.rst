@@ -2,7 +2,7 @@
 ipv4_RX
 #######
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:
