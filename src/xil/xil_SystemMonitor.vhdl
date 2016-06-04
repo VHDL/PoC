@@ -8,28 +8,29 @@
 --
 -- Description:
 -- ------------------------------------
---		This module generates a PWM signal for a 3-pin (transistor controlled) or
---		4-pin fan header. The FPGAs temperature is read from device specific system
---		monitors (normal, user temperature, over temperature).
+-- This module generates a PWM signal for a 3-pin (transistor controlled) or
+-- 4-pin fan header. The FPGAs temperature is read from device specific system
+-- monitors (normal, user temperature, over temperature).
+-- 
+-- For example the Xilinx System Monitors are configured as follows:
 --
---		For example the Xilinx System Monitors are configured as follows:
---
---										|											 /-----\
---		Temp_ov	 on=80	|	-	-	-	-	-	-	/-------/				\
---										|						 /				|				 \
---		Temp_ov	off=60	|	-	-	-	-	-	/	-	-	-	-	|	-	-	-	-	\----\
---										|					 /					|								\
---										|					/						|							 | \
---		Temp_us	 on=35	|	-	 /---/						|							 |	\
---		Temp_us	off=30	|	-	/	-	-|-	-	-	-	-	-	|	-	-	-	-	-	-	-|-  \------\
---										|  /		 |						|							 |					 \
---		----------------|--------|------------|--------------|----------|---------
---		pwm =						|		min	 |	medium		|		max				 |	medium	|	min
---
+-- .. code-block:: None
+--    
+--    								|											 /-----\
+--    Temp_ov	 on=80	|	-	-	-	-	-	-	/-------/				\
+--    								|						 /				|				 \
+--    Temp_ov	off=60	|	-	-	-	-	-	/	-	-	-	-	|	-	-	-	-	\----\
+--    								|					 /					|								\
+--    								|					/						|							 | \
+--    Temp_us	 on=35	|	-	 /---/						|							 |	\
+--    Temp_us	off=30	|	-	/	-	-|-	-	-	-	-	-	|	-	-	-	-	-	-	-|-  \------\
+--    								|  /		 |						|							 |					 \
+--    ----------------|--------|------------|--------------|----------|---------
+--    pwm =						|		min	 |	medium		|		max				 |	medium	|	min
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");

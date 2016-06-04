@@ -8,24 +8,24 @@
 --
 -- Description:
 -- ------------------------------------
---		This module wraps a Series-7 XADC to report if preconfigured temperature values
---		are overrun. The XADC was formerly known as "System Monitor".
+-- This module wraps a Series-7 XADC to report if preconfigured temperature values
+-- are overrun. The XADC was formerly known as "System Monitor".
 --
---		Temperature curve:
---		------------------
---
---										|											 /-----\
---		Temp_ov	 on=80	|	-	-	-	-	-	-	/-------/				\
---										|						 /				|				 \
---		Temp_ov	off=60	|	-	-	-	-	-	/	-	-	-	-	|	-	-	-	-	\----\
---										|					 /					|								\
---										|					/						|							 | \
---		Temp_us	 on=35	|	-	 /---/						|							 |	\
---		Temp_us	off=30	|	-	/	-	-|-	-	-	-	-	-	|	-	-	-	-	-	-	-|-  \------\
---										|  /		 |						|							 |					 \
---		----------------|--------|------------|--------------|----------|---------
---		pwm =						|		min	 |	medium		|		max				 |	medium	|	min
---
+-- .. rubric:: Temperature Curve
+-- 
+-- .. code-block:: None
+--    
+--    								|											 /-----\
+--    Temp_ov	 on=80	|	-	-	-	-	-	-	/-------/				\
+--    								|						 /				|				 \
+--    Temp_ov	off=60	|	-	-	-	-	-	/	-	-	-	-	|	-	-	-	-	\----\
+--    								|					 /					|								\
+--    								|					/						|							 | \
+--    Temp_us	 on=35	|	-	 /---/						|							 |	\
+--    Temp_us	off=30	|	-	/	-	-|-	-	-	-	-	-	|	-	-	-	-	-	-	-|-  \------\
+--    								|  /		 |						|							 |					 \
+--    ----------------|--------|------------|--------------|----------|---------
+--    pwm =						|		min	 |	medium		|		max				 |	medium	|	min
 --
 -- License:
 -- ============================================================================

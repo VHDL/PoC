@@ -8,18 +8,19 @@
 --
 -- Description:
 -- ------------------------------------
---		Many complex primitives in a Xilinx device offer a Dynamic Reconfiguration
---		Port (DRP) to reconfigure the primitive at runtime without reconfiguring then
---		whole FPGA.
---		This module is a DRP master that can be preconfigured  at compile time with
---		different configuration sets. The configuration sets are mapped into a ROM.
---		The user can select a stored configuration with 'ConfigSelect' and sending a
---		strobe to 'Reconfig'. The Operation completes with an other strobe on
---		'ReconfigDone'.
+-- Many complex primitives in a Xilinx device offer a Dynamic Reconfiguration
+-- Port (DRP) to reconfigure a primitive at runtime without reconfiguring the
+-- whole FPGA.
+-- 
+-- This module is a DRP master that can be pre-configured at compile time with
+-- different configuration sets. The configuration sets are mapped into a ROM.
+-- The user can select a stored configuration with ``ConfigSelect``. Sending a
+-- strobe to ``Reconfig`` will start the reconfiguration process. The operation
+-- completes with another strobe on ``ReconfigDone``.
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -121,11 +122,9 @@ begin
 	begin
 		if rising_edge(Clock) then
 			if ((Reset or ConfigIndex_rst) = '1') then
-				ConfigIndex_us			<= (others => '0');
-			else
-				if (ConfigIndex_en = '1') then
-					ConfigIndex_us		<= ConfigIndex_us + 1;
-				end if;
+				ConfigIndex_us		<= (others => '0');
+			elsif (ConfigIndex_en = '1') then
+				ConfigIndex_us		<= ConfigIndex_us + 1;
 			end if;
 		end if;
 	end process;
@@ -135,12 +134,10 @@ begin
 	begin
 		if rising_edge(Clock) then
 			if (Reset = '1') then
-				DataBuffer_d		<= (others => '0');
-			else
-				if (DataBuffer_en = '1') then
-					DataBuffer_d	<= ((DRP_DataIn			and not ROM_Entry.Mask) or
-														(ROM_Entry.Data	and			ROM_Entry.Mask));
-				end if;
+				DataBuffer_d	<= (others => '0');
+			elsif (DataBuffer_en = '1') then
+				DataBuffer_d	<= ((DRP_DataIn			and not ROM_Entry.Mask) or
+													(ROM_Entry.Data	and			ROM_Entry.Mask));
 			end if;
 		end if;
 	end process;
@@ -179,44 +176,40 @@ begin
 		case State is
 			when ST_IDLE =>
 				if (Reconfig = '1') then
-					ConfigIndex_rst				<= '1';
-
-					NextState							<= ST_READ_BEGIN;
+					ConfigIndex_rst		<= '1';
+					NextState					<= ST_READ_BEGIN;
 				end if;
 
 			when ST_READ_BEGIN =>
-				DRP_en										<= '1';
-				DRP_we										<= '0';
-
-				NextState									<= ST_READ_WAIT;
+				DRP_en							<= '1';
+				DRP_we							<= '0';
+				NextState						<= ST_READ_WAIT;
 
 			when ST_READ_WAIT =>
 				if (DRP_Ack = '1') then
-					DataBuffer_en						<= '1';
-
-					NextState								<= ST_WRITE_BEGIN;
+					DataBuffer_en			<= '1';
+					NextState					<= ST_WRITE_BEGIN;
 				end if;
 
 			when ST_WRITE_BEGIN =>
-				DRP_en										<= '1';
-				DRP_we										<= '1';
-
-				NextState									<= ST_WRITE_WAIT;
+				DRP_en							<= '1';
+				DRP_we							<= '1';
+				NextState						<= ST_WRITE_WAIT;
 
 			when ST_WRITE_WAIT =>
 				if (DRP_Ack = '1') then
 					if (ROM_LastConfigWord = '1') then
-						NextState							<= ST_DONE;
-					ELSE
-						ConfigIndex_en				<= '1';
-						NextState							<= ST_READ_BEGIN;
+						NextState				<= ST_DONE;
+					else
+						ConfigIndex_en	<= '1';
+						NextState				<= ST_READ_BEGIN;
 					end if;
 				end if;
 
 			when ST_DONE =>
-				ReconfigDone							<= '1';
-				NextState									<= ST_IDLE;
+				ReconfigDone				<= '1';
+				NextState						<= ST_IDLE;
 
 		end case;
 	end process;
-end;
+end architecture;

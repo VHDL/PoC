@@ -2,7 +2,7 @@
 xil_DRP_BusSync
 ###############
 
-	TODO
+.. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:

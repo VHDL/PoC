@@ -8,16 +8,16 @@
 --
 -- Description:
 -- ------------------------------------
---		This module wraps Xilinx "Boundary Scan" (JTAG) primitives in a generic module.
---		Supported devices:
---			- Spartan-3, Spartan-6
---			- Virtex-5, Virtex-6
---			- Series-7
---
+-- This module wraps Xilinx "Boundary Scan" (JTAG) primitives in a generic
+-- module. Supported devices are:
+-- 
+-- * Spartan-3, Spartan-6
+-- * Virtex-5, Virtex-6
+-- * Series-7 (Artix-7, Kintex-7, Virtex-7, Zynq-7000)
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -175,4 +175,4 @@ begin
 				TDO				=> Test_DataOut
 			);
 	end generate;
-  end;
+end architecture;
