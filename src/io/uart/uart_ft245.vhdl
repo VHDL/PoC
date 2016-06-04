@@ -2,12 +2,15 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- ===========================================================================
---
 -- Authors:     Peter Reichel
 --              Jan Schirok
 --              Steffen Koehler
 --
--- Module:      UART controller for FTDI FT245M UART-over-USB converter.
+-- Entity:      UART controller for FTDI FT245M UART-over-USB converter.
+--
+-- Description:
+-- ------------
+-- TODO
 --
 -- License:
 -- ===========================================================================

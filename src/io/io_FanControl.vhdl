@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	Generic Fan Controller
+-- Entity:				 	Generic Fan Controller
 --
 -- Description:
 -- ------------------------------------
@@ -77,7 +76,7 @@ entity io_FanControl is
     Fan_Tacho      : in  std_logic := 'X';
     TachoFrequency : out std_logic_vector(15 downto 0)
   );
-end;
+end entity;
 
 
 architecture rtl of io_FanControl is

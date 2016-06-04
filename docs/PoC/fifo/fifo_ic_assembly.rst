@@ -22,7 +22,7 @@ the transmission of data blocks. This applies to many DMA implementations.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 46-79
+   :lines: 45-78
 
 
 	 

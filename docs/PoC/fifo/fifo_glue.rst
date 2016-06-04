@@ -13,7 +13,7 @@ the ``ful``  and the ``vld`` indicators to be driven by registers.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 37-56
+   :lines: 36-55
 
 
 	 

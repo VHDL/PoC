@@ -1,12 +1,11 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Module:					OOB Sequencer for SATA Physical Layer - Device Side
+-- Entity:					OOB Sequencer for SATA Physical Layer - Device Side
 --
 -- Description:
 -- ------------------------------------
@@ -76,7 +75,7 @@ ENTITY sata_Physical_OOBControl_Device IS
 		RX_Primitive							: IN	T_SATA_PRIMITIVE;
 		RX_Valid									: IN	STD_LOGIC
 	);
-END;
+end entity;
 
 
 ARCHITECTURE rtl OF sata_Physical_OOBControl_Device IS

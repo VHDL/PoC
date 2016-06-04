@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Entity:				 	TODO
 --
 -- Description:
 -- ------------------------------------
@@ -99,7 +98,7 @@ ENTITY eth_GEMAC_GMII IS
 		-- Management Data Input/Output
 --		MDIO											: INOUT T_ETHERNET_PHY_INTERFACE_MDIO
 	);
-END;
+end entity;
 
 
 ARCHITECTURE rtl OF eth_GEMAC_GMII IS

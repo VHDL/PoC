@@ -18,7 +18,7 @@ The specified depth (``MIN_DEPTH``) is rounded up to the next suitable value.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 45-65
+   :lines: 44-64
 
 
 	 

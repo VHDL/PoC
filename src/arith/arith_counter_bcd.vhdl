@@ -1,26 +1,25 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:				 	Martin Zabel
 --									Thomas B. Preusser
 --
--- Module:				 	BCD counter.
+-- Entity:				 	BCD counter.
 --
 -- Description:
 -- ------------------------------------
---	Counter with output in binary coded decimal (BCD).
---	The number of BCD digits is configurable.
---
---	All control signals (reset 'rst', increment 'inc') are high-active and
---	synchronous to clock 'clk'.
---	The output 'val' is the current counter state. Groups of 4 bit represent one
---	BCD digit. The lowest significant digit is specified by val(3 downto 0).
---
+-- Counter with output in binary coded decimal (BCD).
+-- The number of BCD digits is configurable.
+-- 
+-- All control signals (reset 'rst', increment 'inc') are high-active and
+-- synchronous to clock 'clk'.
+-- The output 'val' is the current counter state. Groups of 4 bit represent one
+-- BCD digit. The lowest significant digit is specified by val(3 downto 0).
+-- 
 -- TODO:
---	- implement a 'dec' input for decrementing
---	- implement a 'load' input to load a value
+-- * implement a 'dec' input for decrementing
+-- * implement a 'load' input to load a value
 --
 -- License:
 -- ============================================================================

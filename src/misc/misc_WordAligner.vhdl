@@ -22,7 +22,7 @@ ENTITY WordAligner IS
 		O							: OUT STD_LOGIC_VECTOR(INPUT_BITS - 1 DOWNTO 0);								-- output word
 		Valid					: OUT	STD_LOGIC
 	);
-END;
+end entity;
 
 ARCHITECTURE rtl OF WordAligner IS
 	CONSTANT SEGMENT_COUNT	: POSITIVE																	:= INPUT_BITS / WORD_BITS;

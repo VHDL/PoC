@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Entity:				 	TODO
 --
 -- Description:
 -- ------------------------------------
@@ -66,7 +65,7 @@ ENTITY Eth_PHYController IS
 		PHY_Interrupt							: IN		STD_LOGIC;															--
 		PHY_MDIO									: INOUT T_NET_ETH_PHY_INTERFACE_MDIO						-- Management Data Input/Output
 	);
-END;
+end entity;
 
 
 ARCHITECTURE rtl OF Eth_PHYController IS

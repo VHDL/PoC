@@ -1,7 +1,6 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
@@ -56,7 +55,7 @@ entity arith_convert_bin2bcd is
 		BCDDigits			: out	T_BCD_VECTOR(DIGITS - 1 downto 0);
 		Sign					: out STD_LOGIC
 	);
-end;
+end entity;
 
 
 architecture rtl of arith_convert_bin2bcd is

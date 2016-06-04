@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					Data (Un-)Scrambler for SATA Link Layer
+-- Entity:					Data (Un-)Scrambler for SATA Link Layer
 --
 -- Description:
 -- ------------------------------------
@@ -47,7 +46,7 @@ ENTITY sata_Scrambler IS
 		DataIn			: IN	STD_LOGIC_VECTOR(WIDTH - 1 DOWNTO 0);
 		DataOut			: OUT	STD_LOGIC_VECTOR(WIDTH - 1 DOWNTO 0)
 	);
-END;
+end entity;
 
 
 ARCHITECTURE rtl OF sata_Scrambler IS

@@ -1,13 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
--- Module:				 	Gray-Code counter.
---
 -- Authors:				 	Thomas B. Preusser
 --									Martin Zabel
 --									Steffen Koehler
+--
+-- Entity:				 	Gray-Code counter.
 --
 -- Description:
 -- ------------------------------------

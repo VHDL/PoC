@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Entity:				 	TODO
 --
 -- Description:
 -- ------------------------------------
@@ -29,34 +28,35 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
 
-LIBRARY	PoC;
-USE			PoC.utils.ALL;
-USE			PoC.strings.ALL;
+library	PoC;
+use			PoC.utils.all;
+use			PoC.strings.all;
 use			PoC.physical.all;
-USE			PoC.io.ALL;
-USE			PoC.lcd.ALL;
+use			PoC.io.all;
+use			PoC.lcd.all;
 
 
-ENTITY lcd_LCDBuffer IS
-	GENERIC (
+entity lcd_LCDBuffer is
+	generic (
 		CLOCK_FREQ						: FREQ				:= 100 MHz;
 		MIN_REFRESH_PERIOD		: TIME				:= 100 ms
 	);
-	PORT (
-		Clock				: IN	STD_LOGIC;
-		Reset				: IN	STD_LOGIC;
+	port (
+		Clock				: in	STD_LOGIC;
+		Reset				: in	STD_LOGIC;
 
-		Load				: IN	STD_LOGIC;
-		LCDBuffer		:	IN	T_LCD;
+		Load				: in	STD_LOGIC;
+		LCDBuffer		:	in	T_LCD;
 
-		CharColumn	:	IN	T_LCD_COLUMN_INDEX;
-		CharRow			: IN	T_LCD_ROW_INDEX;
-		Char				: OUT	T_LCD_CHAR
+		CharColumn	:	in	T_LCD_COLUMN_INDEX;
+		CharRow			: in	T_LCD_ROW_INDEX;
+		Char				: out	T_LCD_CHAR
 	);
-END;
+end entity;
+
 
 ARCHITECTURE rtl OF lcd_LCDBuffer IS
 	SIGNAL LCDBuffer_Load		: STD_LOGIC;

@@ -42,7 +42,7 @@ ENTITY misc_BitwidthConverter IS
 		I										: IN	STD_LOGIC_VECTOR(BITS1 - 1 DOWNTO 0);			-- input word
 		O										: OUT STD_LOGIC_VECTOR(BITS2 - 1 DOWNTO 0)			-- output word
 	);
-END;
+end entity;
 
 ARCHITECTURE rtl OF misc_BitwidthConverter IS
 	CONSTANT BITS_1				: POSITIVE	:= BITS1;

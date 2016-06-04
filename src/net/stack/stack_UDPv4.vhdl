@@ -1,9 +1,8 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
--- Module:				 	TODO
+-- Entity:				 	TODO
 --
 -- Authors:				 	Patrick Lehmann
 --
@@ -109,7 +108,7 @@ ENTITY stack_UDPv4 IS
 		RX_Meta_SrcPort										: OUT	T_SLVV_16(UDP_PORTS'length - 1 DOWNTO 0);
 		RX_Meta_DestPort									: OUT	T_SLVV_16(UDP_PORTS'length - 1 DOWNTO 0)
 	);
-END;
+end entity;
 
 
 ARCHITECTURE rtl OF stack_UDPv4 IS

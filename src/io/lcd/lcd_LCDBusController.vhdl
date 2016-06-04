@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Entity:				 	TODO
 --
 -- Description:
 -- ------------------------------------
@@ -29,43 +28,44 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
 
-LIBRARY	PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
+library	PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
 use			PoC.physical.all;
-USE			PoC.io.ALL;
-USE			PoC.lcd.ALL;
+use			PoC.io.all;
+use			PoC.lcd.all;
 
 
-ENTITY lcd_LCDBusController IS
-	GENERIC (
+entity lcd_LCDBusController is
+	generic (
 		SPEEDUP_SIMULATION				: BOOLEAN												:= TRUE;
 		CLOCK_FREQ								: FREQ													:= 100 MHz;
 		LCD_BUS_BITS							: POSITIVE											:= 4
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock											: in	STD_LOGIC;
+		Reset											: in	STD_LOGIC;
 
-		Command										: IN	T_IO_LCDBUS_COMMAND;
-		Status										: OUT	T_IO_LCDBUS_STATUS;
-		RegisterAddress						: IN	STD_LOGIC;
+		Command										: in	T_IO_LCDBUS_COMMAND;
+		Status										: out	T_IO_LCDBUS_STATUS;
+		RegisterAddress						: in	STD_LOGIC;
 
-		DataIn										: IN	T_SLV_8;
-		DataOut										: OUT	T_SLV_8;
+		DataIn										: in	T_SLV_8;
+		DataOut										: out	T_SLV_8;
 
-		LCD_BusEnable							: OUT	STD_LOGIC;
-		LCD_ReadWrite							: OUT	STD_LOGIC;
-		LCD_RegisterSelect				: OUT	STD_LOGIC;
-		LCD_Data_i								: IN	STD_LOGIC_VECTOR(7 DOWNTO (8 - LCD_BUS_BITS));
-		LCD_Data_o								: OUT	STD_LOGIC_VECTOR(7 DOWNTO (8 - LCD_BUS_BITS));
-		LCD_Data_t								: OUT	STD_LOGIC_VECTOR(7 DOWNTO (8 - LCD_BUS_BITS))
+		LCD_BusEnable							: out	STD_LOGIC;
+		LCD_ReadWrite							: out	STD_LOGIC;
+		LCD_RegisterSelect				: out	STD_LOGIC;
+		LCD_Data_i								: in	STD_LOGIC_VECTOR(7 downto (8 - LCD_BUS_BITS));
+		LCD_Data_o								: out	STD_LOGIC_VECTOR(7 downto (8 - LCD_BUS_BITS));
+		LCD_Data_t								: out	STD_LOGIC_VECTOR(7 downto (8 - LCD_BUS_BITS))
 	);
-END;
+end entity;
+
 
 ARCHITECTURE rtl OF lcd_LCDBusController IS
 	ATTRIBUTE KEEP														: BOOLEAN;

@@ -1,12 +1,11 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Module:					FIS Encoder for SATA Transport Layer
+-- Entity:					FIS Encoder for SATA Transport Layer
 --
 -- Description:
 -- ------------------------------------
@@ -93,7 +92,8 @@ entity sata_FISEncoder IS
 		Link_TX_FS_SyncEsc					: in	STD_LOGIC;
 		Link_TX_FS_Valid						: in	STD_LOGIC
 	);
-end;
+end entity;
+
 
 ARCHITECTURE rtl OF sata_FISEncoder IS
 	ATTRIBUTE KEEP									: BOOLEAN;

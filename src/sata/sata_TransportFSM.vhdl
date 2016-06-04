@@ -1,12 +1,11 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					FSM for SATA Transport Layer
+-- Entity:					FSM for SATA Transport Layer
 --
 -- Description:
 -- ------------------------------------
@@ -100,7 +99,7 @@ ENTITY sata_TransportFSM IS
 		FISE_FISType											: OUT	T_SATA_FISTYPE;
 		FISE_Status												: IN	T_SATA_FISENCODER_STATUS
 	);
-END;
+end entity;
 
 
 ARCHITECTURE rtl OF sata_TransportFSM IS

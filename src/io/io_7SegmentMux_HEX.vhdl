@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	time multiplexed 7 Segment Display Controller for HEX chars
+-- Entity:				 	time multiplexed 7 Segment Display Controller for HEX chars
 --
 -- Description:
 -- ------------------------------------
@@ -58,7 +57,7 @@ entity io_7SegmentMux_HEX is
 		SegmentControl	: out	STD_LOGIC_VECTOR(7 downto 0);
 		DigitControl		: out	STD_LOGIC_VECTOR(DIGITS - 1 downto 0)
 	);
-end;
+end entity;
 
 
 architecture rtl of io_7SegmentMux_HEX is

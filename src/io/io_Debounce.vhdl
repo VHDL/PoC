@@ -1,12 +1,11 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --									Thomas B. Preusser
 --
--- Module:				 	Debounce module for BITS many bouncing input pins.
+-- Entity:				 	Debounce module for BITS many bouncing input pins.
 --
 -- Description:
 -- ------------------------------------
@@ -65,7 +64,7 @@ entity io_Debounce is
     Input		: in	std_logic_vector(BITS-1 downto 0);
     Output	: out	std_logic_vector(BITS-1 downto 0) := resize(descend(INIT), BITS)
   );
-end;
+end entity;
 
 
 architecture rtl of io_Debounce is

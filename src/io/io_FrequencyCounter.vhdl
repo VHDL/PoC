@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	TODO
+-- Entity:				 	TODO
 --
 -- Description:
 -- ------------------------------------
@@ -50,7 +49,7 @@ entity io_FrequencyCounter is
     FreqIn			: in	STD_LOGIC;
 		FreqOut			: out	STD_LOGIC_VECTOR(RESOLUTION - 1 downto 0)
 	);
-end;
+end entity;
 
 
 architecture rtl of io_FrequencyCounter is

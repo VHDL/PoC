@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ===================================================================================
 -- Authors:					Martin Zabel
 --									Patrick Lehmann
 --
--- Module:					Pseudo-Random Number Generator (PRNG).
+-- Entity:					Pseudo-Random Number Generator (PRNG).
 --
 -- Description:
 -- ------------------------------------
---		The number sequence includes the value all-zeros, but not all-ones.
---		Synchronized Reset is used.
---
+-- The number sequence includes the value all-zeros, but not all-ones.
+-- Synchronized Reset is used.
+-- 
 -- License:
 -- ===================================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany

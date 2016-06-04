@@ -1,22 +1,21 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ===========================================================================
--- Module:				 	Poc.arith_counter_free
---
 -- Authors:				 	Thomas B. Preusser
+--
+-- Entity:				 	Poc.arith_counter_free
 --
 -- Description:
 -- ------------
---		Implements a free-running counter that generates a strobe signal
---    every DIVIDER-th cycle the increment input was asserted.
---    There is deliberately no output or specification of the counter
---    value so as to allow an implementation to optimize as much as
---    possible.
---    The implementation guarantees a strobe output directly from a
---    register. It is asserted exactly for one clock after DIVIDER cycles
---    of an asserted increment input have been observed.
+-- Implements a free-running counter that generates a strobe signal every
+-- DIVIDER-th cycle the increment input was asserted. There is deliberately no
+-- output or specification of the counter value so as to allow an implementation
+-- to optimize as much as possible.
+-- 
+-- The implementation guarantees a strobe output directly from a register. It is
+-- asserted exactly for one clock after DIVIDER cycles of an asserted increment
+-- input have been observed.
 --
 -- License:
 -- ===========================================================================

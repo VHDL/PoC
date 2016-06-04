@@ -57,7 +57,7 @@ comparator (subtractor) in their path.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 99-125
+   :lines: 98-124
 
 .. seealso::
    

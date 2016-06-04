@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Entity:				 	TODO
 --
 -- Description:
 -- ------------------------------------
@@ -60,7 +59,7 @@ ENTITY Eth_GEMAC_RX IS
 		RS_RX_Data								: IN	T_SLV_8;
 		RS_RX_Error								: IN	STD_LOGIC
 	);
-END;
+end entity;
 
 ARCHITECTURE rtl OF Eth_GEMAC_RX IS
 	ATTRIBUTE KEEP										: BOOLEAN;

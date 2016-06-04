@@ -1,13 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Steffen Koehler
 --									Martin Zabel
 --
--- Module:					SATA Controller (Physical, Link and Transport Layer)
+-- Entity:					SATA Controller (Physical, Link and Transport Layer)
 --
 -- Description:
 -- ------------------------------------
@@ -154,7 +153,8 @@ ENTITY sata_SATAController IS
 		VSS_Private_In							: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 downto 0);
 		VSS_Private_Out							: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 	);
-END;
+end entity;
+
 
 ARCHITECTURE rtl OF sata_SATAController IS
 	ATTRIBUTE KEEP													: BOOLEAN;

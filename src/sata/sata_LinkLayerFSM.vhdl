@@ -1,12 +1,11 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					FSM for SATA Link Layer
+-- Entity:					FSM for SATA Link Layer
 --
 -- Description:
 -- ------------------------------------
@@ -136,7 +135,8 @@ entity sata_LinkLayerFSM is
 		CRCMux_ctrl							: out	STD_LOGIC--;
 --		ScramblerMux_ctrl				: out	STD_LOGIC
 	);
-end;
+end entity;
+
 
 architecture rtl of sata_LinkLayerFSM is
 	attribute KEEP									: BOOLEAN;

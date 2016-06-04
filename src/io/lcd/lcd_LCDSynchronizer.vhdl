@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
--- Module:				 	TODO
---
 -- Authors:				 	Patrick Lehmann
+--
+-- Entity:				 	TODO
 --
 -- Description:
 -- ------------------------------------
---		TODO
+-- TODO
 --
 -- License:
 -- ============================================================================
@@ -29,44 +28,41 @@
 -- limitations under the License.
 -- ============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
-
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.lcd.ALL;
-
-
-ENTITY lcd_LCDSynchronizer IS
-	GENERIC (
-		CLOCK_FREQ					: FREQ		:= 100 MHz
-	);
-	PORT (
-		Clock								: IN	STD_LOGIC;
-		Reset								: IN	STD_LOGIC;
-
-		Synchronize					: IN	STD_LOGIC;
-		Synchronized				: OUT	STD_LOGIC;
-
-		Column							: OUT	T_LCD_COLUMN_INDEX;
-		Row									:	OUT	T_LCD_ROW_INDEX;
-		Char								: IN	T_LCD_CHAR;
-
-		-- LCD interface
-		LCD_en							:	OUT	STD_LOGIC;
-		LCD_rw							: OUT	STD_LOGIC;
-		LCD_rs							: OUT	STD_LOGIC;								-- LCD Register Select
-		LCD_Data_o					: OUT	T_SLV_4;
-    LCD_Data_i    			: IN  T_SLV_4
-	);
-END;
-
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
 library PoC;
-use PoC.lcd.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
+use			PoC.lcd.all;
+
+
+entity lcd_LCDSynchronizer is
+	generic (
+		CLOCK_FREQ					: FREQ		:= 100 MHz
+	);
+	port (
+		Clock								: in	STD_LOGIC;
+		Reset								: in	STD_LOGIC;
+
+		Synchronize					: in	STD_LOGIC;
+		Synchronized				: out	STD_LOGIC;
+
+		Column							: out	T_LCD_COLUMN_INDEX;
+		Row									:	out	T_LCD_ROW_INDEX;
+		Char								: in	T_LCD_CHAR;
+
+		-- LCD interface
+		LCD_en							:	out	STD_LOGIC;
+		LCD_rw							: out	STD_LOGIC;
+		LCD_rs							: out	STD_LOGIC;								-- LCD Register Select
+		LCD_Data_o					: out	T_SLV_4;
+    LCD_Data_i    			: in  T_SLV_4
+	);
+end entity;
+
 
 ARCHITECTURE rtl OF lcd_LCDSynchronizer IS
 	ATTRIBUTE KEEP		: STRING;

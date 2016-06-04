@@ -1,12 +1,11 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Steffen Koehler
 --
--- Module:					Synchronizes a strobe signal across clock-domain boundaries
+-- Entity:					Synchronizes a strobe signal across clock-domain boundaries
 --
 -- Description:
 -- ------------------------------------
@@ -62,7 +61,7 @@ entity sync_Strobe IS
 		Output							: out STD_LOGIC_VECTOR(BITS - 1 downto 0);		-- @Clock2:	output bits
 		Busy								: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)			-- @Clock1:	busy bits
 	);
-end;
+end entity;
 
 
 architecture rtl of sync_Strobe is

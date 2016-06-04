@@ -1,38 +1,69 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- ============================================================================
+-- Authors:				 	Patrick Lehmann
+--
+-- Entity:				 	TODO
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--		http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
+
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 use			PoC.cache.all;
-USE			PoC.net.ALL;
+use			PoC.net.all;
 
 
-ENTITY ndp_DestinationCache IS
-	GENERIC (
+entity ndp_DestinationCache is
+	generic (
 		CLOCK_FREQ_MHZ						: REAL																	:= 125.0;					-- 125 MHz
 		REPLACEMENT_POLICY				: STRING																:= "LRU";
 		TAG_BYTE_ORDER						: T_BYTE_ORDER													:= BIG_ENDIAN;
 		DATA_BYTE_ORDER						: T_BYTE_ORDER													:= BIG_ENDIAN;
 		INITIAL_CACHE_CONTENT			: T_NET_NDP_DESTINATIONCACHE_VECTOR
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;																	--
-		Reset											: IN	STD_LOGIC;																	--
+	port (
+		Clock											: in	STD_LOGIC;																	--
+		Reset											: in	STD_LOGIC;																	--
 
-		Lookup										: IN	STD_LOGIC;
-		IPv6Address_rst						: OUT	STD_LOGIC;
-		IPv6Address_nxt						: OUT	STD_LOGIC;
-		IPv6Address_Data					: IN	T_SLV_8;
+		Lookup										: in	STD_LOGIC;
+		IPv6Address_rst						: out	STD_LOGIC;
+		IPv6Address_nxt						: out	STD_LOGIC;
+		IPv6Address_Data					: in	T_SLV_8;
 
-		CacheResult								: OUT	T_CACHE_RESULT;
-		NextHopIPv6Address_rst		: IN	STD_LOGIC;
-		NextHopIPv6Address_nxt		: IN	STD_LOGIC;
-		NextHopIPv6Address_Data		: OUT	T_SLV_8;
-		PathMTU										: OUT T_SLV_16
+		CacheResult								: out	T_CACHE_RESULT;
+		NextHopIPv6Address_rst		: in	STD_LOGIC;
+		NextHopIPv6Address_nxt		: in	STD_LOGIC;
+		NextHopIPv6Address_Data		: out	T_SLV_8;
+		PathMTU										: out T_SLV_16
 	);
-END;
+end entity;
+
 
 ARCHITECTURE rtl OF ndp_DestinationCache IS
 	ATTRIBUTE KEEP										: BOOLEAN;

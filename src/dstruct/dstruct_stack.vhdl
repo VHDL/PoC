@@ -4,11 +4,11 @@
 -- ============================================================================
 -- Authors:     Jens Voss
 --
--- Entity:      dstruct_stack
+-- Entity:      Stack (LIFO)
 --
 -- Description:
--- ------------
---   Implements a stack, i.e. a LIFO storage abstraction.
+-- -------------------------------------
+-- Implements a stack, a LIFO storage abstraction.
 --
 -- License:
 -- ============================================================================
@@ -29,7 +29,8 @@
 -- ============================================================================
 
 library IEEE;
-use IEEE.std_logic_1164.all;
+use			IEEE.std_logic_1164.all;
+
 
 entity dstruct_stack is
   generic (
@@ -50,7 +51,7 @@ entity dstruct_stack is
     dout  : out std_logic_vector(D_BITS-1 downto 0);
     valid : out std_logic
   );
-end dstruct_stack;
+end entity dstruct_stack;
 
 
 library IEEE;

@@ -1,9 +1,19 @@
 
 arith_prng
-^^^^^^^^^^
+##########
 
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
-At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor
-sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et
-accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet
+The number sequence includes the value all-zeros, but not all-ones.
+Synchronized Reset is used.
 
+
+
+.. rubric:: Entity Declaration:
+
+.. literalinclude:: ../../../src/arith/arith_prng.vhdl
+   :language: vhdl
+   :tab-width: 2
+   :linenos:
+   :lines: 41-52
+
+
+	 

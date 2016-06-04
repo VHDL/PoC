@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	Reconfiguration engine for DRP enabled Xilinx primtives
+-- Entity:				 	Reconfiguration engine for DRP enabled Xilinx primtives
 --
 -- Description:
 -- ------------------------------------
@@ -69,7 +68,7 @@ entity xil_Reconfigurator is
 		DRP_DataOut			: out	T_XIL_DRP_DATA;																												--
 		DRP_Ack					: in	STD_LOGIC																															--
 	);
-end;
+end entity;
 
 
 architecture rtl of xil_Reconfigurator is

@@ -9,7 +9,7 @@
 --           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
 --                                                             |___/
 -- =============================================================================
--- Module:					sata_Transceiver_ClockStable
+-- Entity:					sata_Transceiver_ClockStable
 --
 -- Authors:					Martin Zabel
 --

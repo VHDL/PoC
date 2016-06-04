@@ -1,12 +1,11 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					SATA Streaming Layer
+-- Entity:					SATA Streaming Layer
 --
 -- Description:
 -- ------------------------------------
@@ -129,7 +128,7 @@ entity sata_StreamingLayer is
 		Trans_RX_EOT									: in	STD_LOGIC;
 		Trans_RX_Ack									: out	STD_LOGIC
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_StreamingLayer is

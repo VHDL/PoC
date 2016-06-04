@@ -1,12 +1,11 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Module: 					SATA Transport Layer
+-- Entity: 					SATA Transport Layer
 --
 -- Description:
 -- ------------------------------------
@@ -158,7 +157,8 @@ entity sata_TransportLayer is
 		Link_RX_FS_SyncEsc						: IN	STD_LOGIC;
 		Link_RX_FS_Valid							: IN	STD_LOGIC
 	);
-end;
+end entity;
+
 
 ARCHITECTURE rtl OF sata_TransportLayer IS
 	ATTRIBUTE KEEP											: BOOLEAN;

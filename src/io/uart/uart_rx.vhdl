@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ===========================================================================
 -- Authors:        Thomas B. Preusser
 --
--- Module:				 uart_rx
+-- Entity:				 uart_rx
 --
 -- Description:
 -- ------------
---		UART (RS232) Receiver: 1 Start + 8 Data + 1 Stop
+-- UART (RS232) Receiver: 1 Start + 8 Data + 1 Stop
 --
 -- License:
 -- ===========================================================================

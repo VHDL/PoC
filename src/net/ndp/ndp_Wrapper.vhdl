@@ -1,38 +1,68 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- ============================================================================
+-- Authors:				 	Patrick Lehmann
+--
+-- Entity:				 	TODO
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--		http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
+
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 use			PoC.cache.all;
-USE			PoC.net.ALL;
+use			PoC.net.all;
 
 
-ENTITY NDP_Wrapper IS
-	GENERIC (
+entity NDP_Wrapper is
+	generic (
 		CLOCK_FREQ_MHZ											: REAL																	:= 125.0;
 		INTERFACE_MACADDRESS								: T_NET_MAC_ADDRESS											:= C_NET_MAC_ADDRESS_EMPTY;
-		INITIAL_IPV6ADDRESSES								: T_NET_IPV6_ADDRESS_VECTOR							:= (OTHERS => C_NET_IPV6_ADDRESS_EMPTY);
+		INITIAL_IPV6ADDRESSES								: T_NET_IPV6_ADDRESS_VECTOR							:= (others => C_NET_IPV6_ADDRESS_EMPTY);
 		INITIAL_DESTINATIONCACHE_CONTENT		: T_NET_NDP_DESTINATIONCACHE_VECTOR;
 		INITIAL_NEIGHBORCACHE_CONTENT				: T_NET_NDP_NEIGHBORCACHE_VECTOR
 	);
-	PORT (
-		Clock																: IN	STD_LOGIC;
-		Reset																: IN	STD_LOGIC;
+	port (
+		Clock																: in	STD_LOGIC;
+		Reset																: in	STD_LOGIC;
 
-		NextHop_Query												: IN	STD_LOGIC;
-		NextHop_IPv6Address_rst							: OUT	STD_LOGIC;
-		NextHop_IPv6Address_nxt							: OUT	STD_LOGIC;
-		NextHop_IPv6Address_Data						: IN	T_SLV_8;
+		NextHop_Query												: in	STD_LOGIC;
+		NextHop_IPv6Address_rst							: out	STD_LOGIC;
+		NextHop_IPv6Address_nxt							: out	STD_LOGIC;
+		NextHop_IPv6Address_Data						: in	T_SLV_8;
 
-		NextHop_Valid												: OUT	STD_LOGIC;
-		NextHop_MACAddress_rst							: IN	STD_LOGIC;
-		NextHop_MACAddress_nxt							: IN	STD_LOGIC;
-		NextHop_MACAddress_Data							: OUT	T_SLV_8
+		NextHop_Valid												: out	STD_LOGIC;
+		NextHop_MACAddress_rst							: in	STD_LOGIC;
+		NextHop_MACAddress_nxt							: in	STD_LOGIC;
+		NextHop_MACAddress_Data							: out	T_SLV_8
 	);
-END;
+end entity;
 
 -- translations
 -- ------------------------------------

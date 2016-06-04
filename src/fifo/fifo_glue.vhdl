@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Thomas B. Preusser
 --
--- Module:					Minimal FIFO, common clock (cc), pipelined interface, first-word-fall-through mode
+-- Entity:					Minimal FIFO, common clock (cc), pipelined interface, first-word-fall-through mode
 --
 -- Description:
 -- -------------------------------------

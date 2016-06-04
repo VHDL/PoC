@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:					Martin Zabel
 --
--- Module:					Generic controller for SDRAM memory.
+-- Entity:					Generic controller for SDRAM memory.
 --
 -- Description:
 -- ------------------------------------

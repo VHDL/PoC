@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	optimized down-counter to control timings for low speed signals
+-- Entity:				 	optimized down-counter to control timings for low speed signals
 --
 -- Description:
 -- ------------------------------------
@@ -52,7 +51,7 @@ entity io_TimingCounter is
 		Slot					: in	NATURAL range 0 to (TIMING_TABLE'length - 1);	--
 		Timeout				: out STD_LOGIC																			-- timing reached
 	);
-end;
+end entity;
 
 
 architecture rtl of io_TimingCounter is

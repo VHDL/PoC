@@ -25,8 +25,8 @@ class SourceFile:
 
 
 def main():
-	sourceDirectory = Path("../src/fifo")
-	outputDirectory = Path("PoC/fifo")
+	sourceDirectory = Path("../src")
+	outputDirectory = Path("PoC")
 
 	templateFile =  Path("Entity.template.rst")
 
@@ -54,9 +54,9 @@ def writeReST(sourceDirectory, outputDirectory, sourceFile, templateContent):
 
 	print("Writing reST file '{0!s}'.".format(outputFile))
 
-	print("  Authors: {0}".format(", ".join(sourceFile.Authors)))
-	print("  Summary: {0}".format(sourceFile.Summary))
-	print("  Entity '{0}' at {1}..{2}.".format(sourceFile.EntityName, sourceFile.EntitySourceCodeRange.StartRow, sourceFile.EntitySourceCodeRange.EndRow))
+	# print("  Authors: {0}".format(", ".join(sourceFile.Authors)))
+	# print("  Summary: {0}".format(sourceFile.Summary))
+	# print("  Entity '{0}' at {1}..{2}.".format(sourceFile.EntityName, sourceFile.EntitySourceCodeRange.StartRow, sourceFile.EntitySourceCodeRange.EndRow))
 
 	if (sourceFile.SeeAlso != ""):
 		seeAlsoBox = ".. seealso::\n   \n"
@@ -83,14 +83,17 @@ def recursion(sourceDirectory):
 
 	for item in sourceDirectory.iterdir():
 		if item.is_dir():
-			print("cd {0!s}".format(item))
-			result[item.stem] = recursion(item)
+			stem = item.stem
+			if (stem not in ["Altera", "altera", "Lattice", "lattice", "Xilinx", "xilinx"]):
+				print("cd {0}".format(stem))
+				result[stem] = recursion(item)
 		elif item.is_file():
 			if (item.suffix == ".vhdl"):
-				try:
-					result[item.stem] = Extract(item)
-				except Exception as ex:
-					print("    " + str(ex))
+				if (not item.stem.endswith(("Altera", "altera", "Lattice", "lattice", "Xilinx", "xilinx"))):
+					try:
+						result[item.stem] = Extract(item)
+					except Exception as ex:
+						print("    " + str(ex))
 
 	return result
 
@@ -136,7 +139,7 @@ def Extract(sourceFile):
 			lineNumber += 1
 
 			if (state is State.StartOfDocument):
-				if line.startswith("-- ============================================================================="):
+				if line.startswith("-- ============================================================================"):
 					state =           State.StartOfComments
 
 			elif (state is State.StartOfComments):
@@ -145,7 +148,7 @@ def Extract(sourceFile):
 					authorsContent =  line[11:].lstrip()
 
 			elif (state is State.Authors):
-				if line.startswith("-- Module:"):
+				if line.startswith("-- Entity:"):
 					state =           State.Summary
 					summary =         line[10:-1].lstrip()
 				else:
@@ -156,7 +159,7 @@ def Extract(sourceFile):
 					state = State.DescriptionLine
 
 			elif (state is State.DescriptionLine):
-				if line.startswith("-- -------------------------------------"):
+				if line.startswith("-- ------------------------------------"):
 					state = State.Description
 
 			elif (state is State.Description):

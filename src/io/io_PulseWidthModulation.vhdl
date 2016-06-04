@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	Pulse Width Modulated (PWM) signal generator
+-- Entity:				 	Pulse Width Modulated (PWM) signal generator
 --
 -- Description:
 -- ------------------------------------
@@ -51,7 +50,7 @@ entity io_PulseWidthModulation is
     PWMIn				: in	STD_LOGIC_VECTOR(PWM_RESOLUTION - 1 downto 0);
 		PWMOut			: out	STD_LOGIC
 	);
-end;
+end entity;
 
 
 architecture rtl of io_PulseWidthModulation is

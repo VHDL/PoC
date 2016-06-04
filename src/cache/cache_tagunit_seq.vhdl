@@ -1,14 +1,13 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					Tag-unit with sequential compare of tag.
+-- Entity:					Tag-unit with sequential compare of tag.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		TODO
 --
 -- License:
@@ -30,12 +29,12 @@
 -- ============================================================================
 
 library IEEE;
-use IEEE.STD_LOGIC_1164.all;
-use IEEE.NUMERIC_STD.all;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
 library PoC;
-use PoC.utils.all;
-use PoC.vectors.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 
 entity cache_tagunit_seq is
 	generic (
@@ -71,7 +70,7 @@ entity cache_tagunit_seq is
 		Request_TagHit		 : out std_logic;
 		Request_TagMiss		 : out std_logic
 	);
-end;
+end entity;
 
 
 architecture rtl of cache_tagunit_seq is

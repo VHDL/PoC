@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	System Monitor wrapper for temperature supervision applications
+-- Entity:				 	System Monitor wrapper for temperature supervision applications
 --
 -- Description:
 -- ------------------------------------
@@ -64,7 +63,7 @@ entity xil_SystemMonitor_Virtex6 is
 		VP									: in	STD_LOGIC;				-- Dedicated Analog Input Pair
 		VN									: in	STD_LOGIC
 	);
-end;
+end entity;
 
 
 architecture xilinx of xil_SystemMonitor_Virtex6 is

@@ -11,7 +11,7 @@ implementation is choosen.
 .. ATTENTION::
    Use this synchronizer only for long time stable signals (flags).
 
-CONSTRAINTS:
+Constraints:
 	General:
 		Please add constraints for meta stability to all '_meta' signals and
 		timing ignore constraints to all '_async' signals.
@@ -23,55 +23,15 @@ CONSTRAINTS:
 	Altera sdc file:
 		TODO
 
-Entity Declaration:
-~~~~~~~~~~~~~~~~~~~
+
+
+.. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../../src/misc/sync/sync_Bits.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 68-79
-
-
-Timing Constraints:
-~~~~~~~~~~~~~~~~~~~
-
-Altera SDC file:
-................
-  
-  In case of a Altera device, this module will instantiate an optimized module.
-  Please attend to the notes of ``sync_Bits_Altera.vhdl``.
-
-Lattice LDC file:
-.................
-  
-  .. TODO::
-     No documentation available.
-	
-Xilinx UCF / XDC files:
-.......................
-  
-  In case of a Xilinx device, this module will instantiate an optimized module.
-  Please attend to the notes of ``sync_Bits_Xilinx.vhdl``. Please add constraints
-  for meta stability to all ``_meta`` signals and timing ignore constraints to all
-  ``_async`` signals.
-
-
-File List:
-~~~~~~~~~~
-
-+--------------+------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-|              | master (stable)                                                                                            | release (testing)                                                                                           |
-+==============+============================================================================================================+=============================================================================================================+
-| Source files | `sync_Bits.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/sync/sync_Bits.vhdl>`_               | `sync_Bits.vhdl <https://github.com/VLSI-EDA/PoC/blob/release/src/misc/sync/sync_Bits.vhdl>`_               |
-+--------------+------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| Altera files | `sync_Bits_Altera.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/sync/sync_Bits_Altera.vhdl>`_ | `sync_Bits_Altera.vhdl <https://github.com/VLSI-EDA/PoC/blob/release/src/misc/sync/sync_Bits_Altera.vhdl>`_ |
-+--------------+------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-| Xilinx files | `sync_Bits_Xilinx.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/sync/sync_Bits_Xilinx.vhdl>`_ | `sync_Bits_Xilinx.vhdl <https://github.com/VLSI-EDA/PoC/blob/release/src/misc/sync/sync_Bits_Xilinx.vhdl>`_ |
-+--------------+------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------+
-
-
-
+   :lines: 67-78
 
 .. seealso::
    

@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
--- Module:				 	Wishbone Slave wrapper for ocram RAM modules.
---
 -- Authors:				 	Martin Zabel
+--
+-- Entity:				 	Wishbone Slave wrapper for ocram RAM modules.
 --
 -- Description:
 -- ------------------------------------
@@ -75,7 +74,8 @@ entity ocram_wb is
     ram_d    : out std_logic_vector(D_BITS-1 downto 0);
     ram_q    : in  std_logic_vector(D_BITS-1 downto 0));
 
-end ocram_wb;
+end entity ocram_wb;
+
 
 architecture rtl of ocram_wb is
 

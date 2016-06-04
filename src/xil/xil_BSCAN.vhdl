@@ -1,11 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					JTAG / Boundary Scan wrapper
+-- Entity:					JTAG / Boundary Scan wrapper
 --
 -- Description:
 -- ------------------------------------
@@ -63,7 +62,7 @@ entity xil_BSCAN is
 		Test_ModeSelect			: out	STD_LOGIC;
 		Update							: out	STD_LOGIC
 	);
-end;
+end entity;
 
 
 architecture rtl of xil_BSCAN is

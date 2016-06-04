@@ -1,14 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- =============================================================================
+-- Authors:					Thomas B. Preusser
 --
--- ===========================================================================
--- Module:
+-- Entity:					TODO
 --
--- Authors:        Thomas B. Preusser
---
--- Description:    UART (RS232) Transmitter: 1 Start + 8 Data + 1 Stop
--- ------------
+-- Description:
+-- -------------------------------------
+-- UART (RS232) Transmitter: 1 Start + 8 Data + 1 Stop
 --
 -- License:
 -- ===========================================================================

@@ -1,52 +1,82 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- ============================================================================
+-- Authors:				 	Patrick Lehmann
+--
+-- Entity:				 	TODO
+--
+-- Description:
+-- ------------------------------------
+--		TODO
+--
+-- License:
+-- ============================================================================
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--		http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- ============================================================================
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.cache.ALL;
-USE			PoC.net.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
+
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.cache.all;
+use			PoC.net.all;
 
 
-ENTITY ndp_FSMQuery IS
-	PORT (
-		Clock														: IN	STD_LOGIC;
-		Reset														: IN	STD_LOGIC;
+entity ndp_FSMQuery is
+	port (
+		Clock														: in	STD_LOGIC;
+		Reset														: in	STD_LOGIC;
 
-		NextHop_Query										: IN	STD_LOGIC;
-		NextHop_IPv6Address_rst					: OUT	STD_LOGIC;
-		NextHop_IPv6Address_nxt					: OUT	STD_LOGIC;
-		NextHop_IPv6Address_Data				: IN	T_SLV_8;
+		NextHop_Query										: in	STD_LOGIC;
+		NextHop_IPv6Address_rst					: out	STD_LOGIC;
+		NextHop_IPv6Address_nxt					: out	STD_LOGIC;
+		NextHop_IPv6Address_Data				: in	T_SLV_8;
 
-		NextHop_Valid										: OUT	STD_LOGIC;
-		NextHop_MACAddress_rst					: IN	STD_LOGIC;
-		NextHop_MACAddress_nxt					: IN	STD_LOGIC;
-		NextHop_MACAddress_Data					: OUT	T_SLV_8;
+		NextHop_Valid										: out	STD_LOGIC;
+		NextHop_MACAddress_rst					: in	STD_LOGIC;
+		NextHop_MACAddress_nxt					: in	STD_LOGIC;
+		NextHop_MACAddress_Data					: out	T_SLV_8;
 
-		DCache_Lookup										: OUT STD_LOGIC;
-		DCache_IPv6Address_rst					: IN STD_LOGIC;
-		DCache_IPv6Address_nxt					: IN STD_LOGIC;
-		DCache_IPv6Address_Data					: OUT T_SLV_8;
+		DCache_Lookup										: out STD_LOGIC;
+		DCache_IPv6Address_rst					: in sTD_LOGIC;
+		DCache_IPv6Address_nxt					: in sTD_LOGIC;
+		DCache_IPv6Address_Data					: out T_SLV_8;
 
-		DCache_CacheResult							: IN	T_CACHE_RESULT;
-		DCache_NextHopIPv6Address_rst		: OUT	STD_LOGIC;
-		DCache_NextHopIPv6Address_nxt		: OUT	STD_LOGIC;
-		DCache_NextHopIPv6Address_Data	: IN	T_SLV_8;
-		DCache_PathMUT									: IN	T_SLV_16;
+		DCache_CacheResult							: in	T_CACHE_RESULT;
+		DCache_NextHopIPv6Address_rst		: out	STD_LOGIC;
+		DCache_NextHopIPv6Address_nxt		: out	STD_LOGIC;
+		DCache_NextHopIPv6Address_Data	: in	T_SLV_8;
+		DCache_PathMUT									: in	T_SLV_16;
 
-		NCache_Lookup										: OUT STD_LOGIC;
-		NCache_IPv6Address_rst					: IN STD_LOGIC;
-		NCache_IPv6Address_nxt					: IN STD_LOGIC;
-		NCache_IPv6Address_Data					: OUT T_SLV_8;
+		NCache_Lookup										: out STD_LOGIC;
+		NCache_IPv6Address_rst					: in sTD_LOGIC;
+		NCache_IPv6Address_nxt					: in sTD_LOGIC;
+		NCache_IPv6Address_Data					: out T_SLV_8;
 
-		NCache_CacheResult							: IN	T_CACHE_RESULT;
-		NCache_MACAddress_rst						: OUT	STD_LOGIC;
-		NCache_MACAddress_nxt						: OUT	STD_LOGIC;
-		NCache_MACAddress_Data					: IN	T_SLV_8;
-		NCache_Reachability							: IN	T_NET_NDP_REACHABILITY_STATE
+		NCache_CacheResult							: in	T_CACHE_RESULT;
+		NCache_MACAddress_rst						: out	STD_LOGIC;
+		NCache_MACAddress_nxt						: out	STD_LOGIC;
+		NCache_MACAddress_Data					: in	T_SLV_8;
+		NCache_Reachability							: in	T_NET_NDP_REACHABILITY_STATE
 	);
-END;
+end entity;
 
 
 ARCHITECTURE rtl OF ndp_FSMQuery IS
