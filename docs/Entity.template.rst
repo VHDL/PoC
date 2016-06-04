@@ -4,8 +4,7 @@
 
 {EntityDescription}
 
-Entity Declaration:
-~~~~~~~~~~~~~~~~~~~
+.. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../{EntityFilePath}
    :language: vhdl
@@ -13,5 +12,5 @@ Entity Declaration:
    :linenos:
    :lines: {EntityDeclarationFromTo}
 
-	 
+{SeeAlsoBox}
 	 

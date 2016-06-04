@@ -8,7 +8,7 @@
 -- Module:					Synchronizes a flag signal across clock-domain boundaries
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- This module synchronizes multiple flag bits from clock-domain ``Clock1`` to
 -- clock-domain ``Clock``. The clock-domain boundary crossing is done by two
 -- synchronizer D-FFs. All bits are independent from each other. If a known
@@ -18,7 +18,7 @@
 -- .. ATTENTION::
 --    Use this synchronizer only for long time stable signals (flags).
 -- 
--- CONSTRAINTS:
+-- Constraints:
 -- 	General:
 -- 		Please add constraints for meta stability to all '_meta' signals and
 -- 		timing ignore constraints to all '_async' signals.
@@ -29,6 +29,14 @@
 -- 
 -- 	Altera sdc file:
 -- 		TODO
+-- 
+-- SeeAlso:
+-- :doc:`PoC.misc.sync.Reset </PoC/misc/sync/sync_Reset>`
+--   For a special 2 D-FF synchronizer for *reset*-signals.
+-- :doc:`PoC.misc.sync.Strobe </PoC/misc/sync/sync_Strobe>`
+--   For a synchronizer for *strobe*-signals.
+-- :doc:`PoC.misc.sync.Vector </PoC/misc/sync/sync_Vector>`
+--   For a multiple bits capable synchronizer.
 --
 -- License:
 -- =============================================================================
