@@ -22,7 +22,7 @@ USE			L_SATAController.SATATypes.ALL;
 
 --	used configuration words
 --	address		bits		|	MMCM generic name						GEN_1			GEN_2		Note
--- ============================================================================
+-- =============================================================================
 --	0x05			[4..3]	|	PLL_TXDIVSEL_OUT_1 [0:1]			10				00		divide by 2			divide by 1
 --	0x09			[15]		|	PLL_RXDIVSEL_OUT_1 [1]				 0				 0		divide by 2			divide by 1
 --	0x0A			[0]			|	PLL_RXDIVSEL_OUT_1 [0]				 1				 0		divide by 2			divide by 1

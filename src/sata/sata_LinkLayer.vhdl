@@ -8,7 +8,7 @@
 -- Entity:					SATA Link Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Represents the Link Layer of the SATA stack and provides a logical link for
 -- transmitting frames. The frames are transmitted across the physical link
 -- provided by the Physical Layer (sata_PhysicalLayer).

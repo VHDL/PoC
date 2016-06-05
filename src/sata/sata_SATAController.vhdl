@@ -9,7 +9,7 @@
 -- Entity:					SATA Controller (Physical, Link and Transport Layer)
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Provides the SATA Transport Layer to transfer ATA commands and data from host to
 -- device and vice versa.
 --

@@ -8,7 +8,7 @@
 -- Package:					SATA components
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- For end users:
 -- Provides component declarations of the main components
 -- "sata_StreamingLayer" and "sata_SATAController".

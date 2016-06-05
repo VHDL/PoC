@@ -8,7 +8,7 @@
 -- Package:					Simulation constants, functions and utilities.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

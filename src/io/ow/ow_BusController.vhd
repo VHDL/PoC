@@ -58,6 +58,7 @@ entity ow_BusController is
 	);
 end entity;
 
+
 architecture rtl of ow_BusController is
 	constant COUNTER_BW				: POSITIVE := 15;
 	
@@ -175,12 +176,10 @@ begin
 					
 						if OWWrite = '0' then		-- Lesen
 							NextState <= ST_READ_START;
-						else										-- Schreiben
-							if OWData_In = '0' then
-								NextState <= ST_Write_0_START;
-							else
-								NextState <= ST_Write_1_START;
-							end if;
+						elsif OWData_In = '0' then
+							NextState <= ST_Write_0_START;
+						else
+							NextState <= ST_Write_1_START;
 						end if;
 					end if;
 				end if;
@@ -199,7 +198,6 @@ begin
 				
 				if TimingCounter_Ctrl = '1' then
 					NextState <= ST_RESET_DETECT_HIGH;
-					
 					NextSlotCounter_Maximum <= to_unsigned(OW_T_RSTH * TIME_FACTOR - 1, SlotCounter_Maximum'length);														-- 480 µs auf "0"
 				end if;
 			
@@ -208,12 +206,9 @@ begin
 			
 				if OW_Data_r = '1' then
 					NextState <= ST_RESET_DETECT_HIGH_MIN;
-					
 					NextTimingCounter_Maximum <= to_unsigned(OW_T_PDHIGH_MIN * TIME_FACTOR - 1, NextTimingCounter_Maximum'length);
-				else
-					if SlotCounter_Ctrl = '1' then		-- SlotCounter abgelaufen
-						NextState <= ST_ERROR;
-					end if;
+				elsif SlotCounter_Ctrl = '1' then		-- SlotCounter abgelaufen
+					NextState <= ST_ERROR;
 				end if;
 				
 			when ST_RESET_DETECT_HIGH_MIN =>
@@ -223,18 +218,12 @@ begin
 				
 				if OW_Data_r = '0' then
 					NextState <= ST_ERROR;
-					
 					TimingCounter_Reset <= '1';
-				else
-					if TimingCounter_Ctrl = '1' then		-- TimingCounter abgelaufen
-						NextState <= ST_RESET_DETECT_HIGH_MAX;
-						
-						NextTimingCounter_Maximum <= to_unsigned((OW_T_PDHIGH_MAX - OW_T_PDHIGH_MIN) * TIME_FACTOR - 1, NextTimingCounter_Maximum'length);	-- 45µs maximal auf "0" warten
-					else
-						if SlotCounter_Ctrl = '1' then		-- SlotCounter abgelaufen
-							NextState <= ST_ERROR;
-						end if;
-					end if;
+				elsif TimingCounter_Ctrl = '1' then		-- TimingCounter abgelaufen
+					NextState <= ST_RESET_DETECT_HIGH_MAX;
+					NextTimingCounter_Maximum <= to_unsigned((OW_T_PDHIGH_MAX - OW_T_PDHIGH_MIN) * TIME_FACTOR - 1, NextTimingCounter_Maximum'length);	-- 45µs maximal auf "0" warten
+				elsif SlotCounter_Ctrl = '1' then		-- SlotCounter abgelaufen
+					NextState <= ST_ERROR;
 				end if;
 			
 			when ST_RESET_DETECT_HIGH_MAX =>
@@ -244,13 +233,10 @@ begin
 				
 				if OW_Data_r = '0' then
 					NextState <= ST_RESET_DETECT_LOW_MIN;
-					
 					TimingCounter_Reset <= '1';
 					NextTimingCounter_Maximum <= to_unsigned(OW_T_PDLOW_MIN * TIME_FACTOR - 1, NextTimingCounter_Maximum'length);		-- 60µs muss "0" anliegen
-				else
-					if TimingCounter_Ctrl = '1' OR SlotCounter_Ctrl = '1' then		-- TimingCounter oder SlotCounter abgelaufen
-						NextState <= ST_ERROR;
-					end if;
+				elsif TimingCounter_Ctrl = '1' OR SlotCounter_Ctrl = '1' then		-- TimingCounter oder SlotCounter abgelaufen
+					NextState <= ST_ERROR;
 				end if;
 			
 			when ST_RESET_DETECT_LOW_MIN =>
@@ -260,18 +246,12 @@ begin
 				
 				if OW_Data_r = '1' then
 					NextState <= ST_ERROR;
-					
 					TimingCounter_Reset <= '1';
-				else
-					if TimingCounter_Ctrl = '1' then		-- TimingCounter abgelaufen
-						NextState <= ST_RESET_DETECT_LOW_MAX;
-						
-						NextTimingCounter_Maximum <= to_unsigned((OW_T_PDLOW_MAX - OW_T_PDLOW_MIN) * TIME_FACTOR - 1, NextTimingCounter_Maximum'length);		-- 180µs maximal auf "1" warten
-					else
-						if SlotCounter_Ctrl = '1' then		-- SlotCounter abgelaufen
-							NextState <= ST_ERROR;
-						end if;
-					end if;
+				elsif TimingCounter_Ctrl = '1' then		-- TimingCounter abgelaufen
+					NextState <= ST_RESET_DETECT_LOW_MAX;
+					NextTimingCounter_Maximum <= to_unsigned((OW_T_PDLOW_MAX - OW_T_PDLOW_MIN) * TIME_FACTOR - 1, NextTimingCounter_Maximum'length);		-- 180µs maximal auf "1" warten
+				elsif SlotCounter_Ctrl = '1' then		-- SlotCounter abgelaufen
+					NextState <= ST_ERROR;
 				end if;
 			
 			when ST_RESET_DETECT_LOW_MAX =>
@@ -281,12 +261,9 @@ begin
 				
 				if OW_Data_r = '1' then
 					NextState <= ST_SLOT_TIMEOUT;
-					
 					TimingCounter_Reset <= '1';
-				else
-					if TimingCounter_Ctrl = '1' OR SlotCounter_Ctrl = '1' then		-- TimingCounter oder SlotCounter abgelaufen
-						NextState <= ST_ERROR;
-					end if;
+				elsif TimingCounter_Ctrl = '1' OR SlotCounter_Ctrl = '1' then		-- TimingCounter oder SlotCounter abgelaufen
+					NextState <= ST_ERROR;
 				end if;
 			
 			-- Recovery
@@ -316,7 +293,6 @@ begin
 								
 				if SlotCounter_Ctrl = '1' then
 					NextState <= ST_READY;
-					
 					OWReady <= '1';
 				end if;
 			
@@ -328,41 +304,30 @@ begin
 				
 			when ST_READ_LOW =>
 				TriStateControl <= '0';
-			
 				SlotCounter_Enable <= '1';
-			
 				TimingCounter_Enable <= '1';
 				
 				if TimingCounter_Ctrl = '1' then
 					NextState <= ST_READ_SAMPLE;
-					
 					NextTimingCounter_Maximum <= to_unsigned(OW_T_RDV * TIME_FACTOR - 1, NextTimingCounter_Maximum'length);		-- 15µs
 				end if;
 			
 			when sT_READ_SAMPLE =>
 				SlotCounter_Enable <= '1';
-			
 				TimingCounter_Enable <= '1';
 				
 				if TimingCounter_Ctrl = '1' then
 					-- Daten verarbeiten
-					if OW_Data_r = '0' then
-						OWData_Out_nxt <= '0';
-					else
-						OWData_Out_nxt <= '1';
-					end if;
+					OWData_Out_nxt <= OW_Data_r;
 				
 					if SlotCounter_Ctrl = '1' then
 						NextState <= ST_READY;
-						
 						OWReady <= '1';
 					else
 						NextState <= ST_SLOT_TIMEOUT;
 					end if;
-				else
-					if SlotCounter_Ctrl = '1' then
-						NextState <= ST_ERROR;
-					end if;
+				elsif SlotCounter_Ctrl = '1' then
+					NextState <= ST_ERROR;
 				end if;
 			
 			-- "0" schreiben
@@ -375,21 +340,17 @@ begin
 				TriStateControl <= '0';
 			
 				SlotCounter_Enable <= '1';
-			
 				TimingCounter_Enable <= '1';
 				
 				if TimingCounter_Ctrl = '1' then
 					if SlotCounter_Ctrl = '1' then
 						NextState <= ST_READY;
-						
 						OWReady <= '1';
 					else
 						NextState <= ST_SLOT_TIMEOUT;
 					end if;
-				else
-					if SlotCounter_Ctrl = '1' then
-						NextState <= ST_ERROR;
-					end if;
+				elsif SlotCounter_Ctrl = '1' then
+					NextState <= ST_ERROR;
 				end if;
 			
 			-- "1" schreiben
@@ -402,7 +363,6 @@ begin
 				TriStateControl <= '0';
 			
 				SlotCounter_Enable <= '1';
-			
 				TimingCounter_Enable <= '1';
 				
 				if TimingCounter_Ctrl = '1' then
@@ -413,10 +373,8 @@ begin
 					else
 						NextState <= ST_SLOT_TIMEOUT;
 					end if;
-				else
-					if SlotCounter_Ctrl = '1' then
-						NextState <= ST_ERROR;
-					end if;
+				elsif SlotCounter_Ctrl = '1' then
+					NextState <= ST_ERROR;
 				end if;
 			
 			-- """"""""""""""""""""""""""""""""
@@ -457,13 +415,11 @@ begin
     if rising_edge(Clock) then
 			if Reset = '1'  then
 				SlotCounter <= (others => '0');
-			else
-			  if SlotCounter_Enable = '1' then
-					if SlotCounter_Ctrl = '1' then
-						SlotCounter <= (others => '0');
-					else  
-						SlotCounter <= SlotCounter + 1;
-					end if;
+			elsif SlotCounter_Enable = '1' then
+				if SlotCounter_Ctrl = '1' then
+					SlotCounter <= (others => '0');
+				else  
+					SlotCounter <= SlotCounter + 1;
 				end if;
 			end if;
     end if;
@@ -478,13 +434,11 @@ begin
     if rising_edge(Clock) then
 			if Reset = '1'  then
 				TimingCounter <= (others => '0');
-			else
-			  if TimingCounter_Enable = '1' then
-					if TimingCounter_Ctrl = '1' then
-						TimingCounter <= (others => '0');
-					else  
-						TimingCounter <= TimingCounter + 1;
-					end if;
+			elsif TimingCounter_Enable = '1' then
+				if TimingCounter_Ctrl = '1' then
+					TimingCounter <= (others => '0');
+				else  
+					TimingCounter <= TimingCounter + 1;
 				end if;
 			end if;
     end if;

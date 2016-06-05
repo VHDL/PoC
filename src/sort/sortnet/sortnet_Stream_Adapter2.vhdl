@@ -7,7 +7,7 @@
 -- Entity:					Sorting Network: Stream to sortnet adapter
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

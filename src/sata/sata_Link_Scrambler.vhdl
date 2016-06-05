@@ -7,7 +7,7 @@
 -- Entity:					Data (Un-)Scrambler for SATA Link Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Scrambles or unscrambles transmitted data over the physical link.
 --
 -- License:

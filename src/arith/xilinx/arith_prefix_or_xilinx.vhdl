@@ -8,7 +8,7 @@
 -- Entity:					Prefix OR computation
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --	Prefix OR computation:
 --		y(i) <= '0' when x(i downto 0) = (i downto 0 => '0') else '1';
 --	This implementation uses carry chains for wider implementations.

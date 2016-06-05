@@ -16,7 +16,7 @@
 -- Package:					PoC.sata
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Generic reset handling for Xilinx FPGAs to be embedded into the SATA
 -- transceiver layer.
 --

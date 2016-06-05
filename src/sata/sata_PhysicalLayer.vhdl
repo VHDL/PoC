@@ -8,7 +8,7 @@
 -- Entity:					SATA Physical Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Represents the PhysicalLayer of the SATA stack. Detects if a device is
 -- present and establishes a communication, both using OOB.
 --

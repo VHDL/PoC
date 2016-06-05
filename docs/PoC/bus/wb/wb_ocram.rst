@@ -24,7 +24,7 @@ PIPE_STAGES = 2: The RAM output is registered again. Thus, the read access
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 52-77
+   :lines: 52-78
 
 
 	 

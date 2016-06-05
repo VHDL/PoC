@@ -7,7 +7,7 @@
 -- Entity:					TODO
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

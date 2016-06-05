@@ -8,7 +8,7 @@
 -- Entity: 					Old Device Detector for Transceivers
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- TO BE REMOVED.
 --
 -- License:

@@ -8,7 +8,7 @@
 -- Entity:					FIS Encoder for SATA Transport Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- See notes on module 'sata_TransportLayer'.
 --
 -- Status:

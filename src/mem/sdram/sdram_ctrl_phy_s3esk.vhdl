@@ -1,13 +1,13 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- ============================================================================
+-- =============================================================================
 -- Authors:					Martin Zabel
 --
 -- Entity:					Physical layer of SDRAM-Controller for Spartan-3E Starter Kit
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Physical layer used by module 'sdram_ctrl_s3esk'
 --
 -- Instantiates input and output buffer components and adjusts timing for
@@ -58,7 +58,7 @@
 -- Synchronous resets are used. Reset must be hold for at least two cycles.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -73,7 +73,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 -------------------------------------------------------------------------------
 -- Naming Conventions:

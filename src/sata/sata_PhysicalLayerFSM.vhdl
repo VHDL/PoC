@@ -8,7 +8,7 @@
 -- Entity:					PhysicalLayer FSM for SATA
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- FSM for module "sata_PhysicalLayer".
 -- Commmand-Status-Error interface is described in that module.
 --

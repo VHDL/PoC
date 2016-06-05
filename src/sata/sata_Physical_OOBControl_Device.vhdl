@@ -8,7 +8,7 @@
 -- Entity:					OOB Sequencer for SATA Physical Layer - Device Side
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Executes the COMRESET / COMINIT procedure.
 --
 -- If the clock is unstable, than Reset must be asserted.

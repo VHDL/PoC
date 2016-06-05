@@ -8,7 +8,7 @@
 -- Entity:					FSM for SATA Streaming Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- See notes on module 'sata_StreamingLayer'.
 --
 -- License:

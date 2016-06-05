@@ -8,7 +8,7 @@
 -- Entity:					SATA Streaming Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Executes ATA commands.
 --
 -- Automatically issues an "identify device" when the SATA Controller is

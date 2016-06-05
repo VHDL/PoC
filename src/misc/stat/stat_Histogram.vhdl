@@ -7,7 +7,7 @@
 -- Entity:					Creates a histogram of all input data
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

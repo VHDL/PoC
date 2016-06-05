@@ -1,17 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- ============================================================================
+-- =============================================================================
 -- Package:					TODO
 --
 -- Authors:					Patrick Lehmann
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		For detailed documentation see below.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -26,7 +26,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
@@ -49,7 +49,7 @@ USE			PoC.xil.ALL;
 
 --	used configuration words
 --	address		bits		|	GTX_DUAL generic name				GEN_1			GEN_2		Note GEN_1			Note GEN_2
--- ============================================================================================================================================================
+-- =============================================================================
 --	0x05			[3]			|	PLL_TXDIVSEL_OUT_1 [1]				 0				 0		divide by 2			divide by 1
 --	0x05			[4]			|	PLL_TXDIVSEL_OUT_1 [0]				 1				 0		divide by 2			divide by 1
 --	0x09			[15]		|	PLL_RXDIVSEL_OUT_1 [1]				 0				 0		divide by 2			divide by 1

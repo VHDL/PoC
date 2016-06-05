@@ -1,17 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- ============================================================================
--- Entity:				 	TODO
---
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
+-- Entity:				 	TODO
+--
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -26,58 +26,58 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
---USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.io.ALL;				-- TODO: move MDIO types to a MDIO package
-USE			PoC.iic.ALL;
-USE			PoC.net.ALL;
+library PoC;
+--use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.io.all;				-- TODO: move MDIO types to a MDIO package
+use			PoC.iic.all;
+use			PoC.net.all;
 
 
-ENTITY mdio_IIC_Adapter IS
-	GENERIC (
+entity mdio_IIC_Adapter is
+	generic (
 		DEBUG													: BOOLEAN												:= TRUE
 	);
-	PORT (
-		Clock													: IN	STD_LOGIC;
-		Reset													: IN	STD_LOGIC;
+	port (
+		Clock													: in	STD_LOGIC;
+		Reset													: in	STD_LOGIC;
 
 		-- MDIO interface
-		Command												: IN	T_IO_MDIO_MDIOCONTROLLER_COMMAND;
-		Status												: OUT	T_IO_MDIO_MDIOCONTROLLER_STATUS;
-		Error													: OUT	T_IO_MDIO_MDIOCONTROLLER_ERROR;
+		Command												: in	T_IO_MDIO_MDIOCONTROLLER_COMMAND;
+		Status												: out	T_IO_MDIO_MDIOCONTROLLER_STATUS;
+		Error													: out	T_IO_MDIO_MDIOCONTROLLER_ERROR;
 
-		DeviceAddress									: IN	STD_LOGIC_VECTOR(6 DOWNTO 0);
-		RegisterAddress								: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
-		DataIn												: IN	T_SLV_16;
-		DataOut												: OUT	T_SLV_16;
+		DeviceAddress									: in	STD_LOGIC_VECTOR(6 downto 0);
+		RegisterAddress								: in	STD_LOGIC_VECTOR(4 downto 0);
+		DataIn												: in	T_SLV_16;
+		DataOut												: out	T_SLV_16;
 
 		-- IICController master interface
-		IICC_Request									: OUT	STD_LOGIC;
-		IICC_Grant										: IN	STD_LOGIC;
-		IICC_Command									: OUT	T_IO_IIC_COMMAND;
-		IICC_Status										: IN	T_IO_IIC_STATUS;
-		IICC_Error										: IN	T_IO_IIC_ERROR;
+		IICC_Request									: out	STD_LOGIC;
+		IICC_Grant										: in	STD_LOGIC;
+		IICC_Command									: out	T_IO_IIC_COMMAND;
+		IICC_Status										: in	T_IO_IIC_STATUS;
+		IICC_Error										: in	T_IO_IIC_ERROR;
 
-		IICC_Address									: OUT	T_SLV_8;
+		IICC_Address									: out	T_SLV_8;
 
-		IICC_WP_Valid									: OUT	STD_LOGIC;
-		IICC_WP_Data									: OUT	T_SLV_8;
-		IICC_WP_Last									: OUT	STD_LOGIC;
-		IICC_WP_Ack										: IN	STD_LOGIC;
-		IICC_RP_Valid									: IN	STD_LOGIC;
-		IICC_RP_Data									: IN	T_SLV_8;
-		IICC_RP_Last									: IN	STD_LOGIC;
-		IICC_RP_Ack										: OUT	STD_LOGIC
+		IICC_WP_Valid									: out	STD_LOGIC;
+		IICC_WP_Data									: out	T_SLV_8;
+		IICC_WP_Last									: out	STD_LOGIC;
+		IICC_WP_Ack										: in	STD_LOGIC;
+		IICC_RP_Valid									: in	STD_LOGIC;
+		IICC_RP_Data									: in	T_SLV_8;
+		IICC_RP_Last									: in	STD_LOGIC;
+		IICC_RP_Ack										: out	STD_LOGIC
 	);
-END ENTITY;
+end entity;
 
 -- TODOs
 --	add Status := IO_MDIO_MDIOC_STATUS_ADDRESS_ERROR if IICC.Status = ACK_ERROR

@@ -7,7 +7,7 @@
 -- Entity:					measures a input frequency relativ to a reference frequency
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- This module counts 1 second in a reference timer at reference clock. This
 -- reference time is used to start and stop a timer at input clock. The counter
 -- value is the measured frequency in Hz.

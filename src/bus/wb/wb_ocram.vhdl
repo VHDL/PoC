@@ -1,13 +1,13 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Martin Zabel
 --
 -- Entity:				 	Wishbone Slave wrapper for ocram RAM modules.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- This slave supports Wishbone Registered Feedback bus cycles (aka. burst
 -- transfers / advanced synchronous cycle termination). The mode "Incrementing
 -- burst cycle" (CTI = 010) with "Linear burst" (BTE = 00) is supported.
@@ -28,7 +28,7 @@
 --   latency is two cycles.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -43,37 +43,38 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity ocram_wb is
-
-  generic (
-    A_BITS      : positive;-- := 10;
-    D_BITS      : positive;-- := 32;
-    PIPE_STAGES : integer range 1 to 2);-- := 1);
-
-  port (
-    clk      : in  std_logic;
-    rst      : in  std_logic;
-    wb_cyc_i : in  std_logic;
-    wb_stb_i : in  std_logic;
-    wb_cti_i : in  std_logic_vector(2 downto 0);
-    wb_bte_i : in  std_logic_vector(1 downto 0);
-    wb_we_i  : in  std_logic;
-    wb_adr_i : in  std_logic_vector(A_BITS-1 downto 0);
-    wb_dat_i : in  std_logic_vector(D_BITS-1 downto 0);
-    wb_ack_o : out std_logic;
-    wb_dat_o : out std_logic_vector(D_BITS-1 downto 0);
-    ram_ce   : out std_logic;
-    ram_we   : out std_logic;
-    ram_a    : out unsigned(A_BITS-1 downto 0);
-    ram_d    : out std_logic_vector(D_BITS-1 downto 0);
-    ram_q    : in  std_logic_vector(D_BITS-1 downto 0));
-
+	generic (
+		A_BITS      : positive;
+		D_BITS      : positive;
+		PIPE_STAGES : integer range 1 to 2
+	);
+	port (
+		clk      : in  std_logic;
+		rst      : in  std_logic;
+		-- WishBone interface
+		wb_cyc_i : in  std_logic;
+		wb_stb_i : in  std_logic;
+		wb_cti_i : in  std_logic_vector(2 downto 0);
+		wb_bte_i : in  std_logic_vector(1 downto 0);
+		wb_we_i  : in  std_logic;
+		wb_adr_i : in  std_logic_vector(A_BITS-1 downto 0);
+		wb_dat_i : in  std_logic_vector(D_BITS-1 downto 0);
+		wb_ack_o : out std_logic;
+		wb_dat_o : out std_logic_vector(D_BITS-1 downto 0);
+		-- RAM interface
+		ram_ce   : out std_logic;
+		ram_we   : out std_logic;
+		ram_a    : out unsigned(A_BITS-1 downto 0);
+		ram_d    : out std_logic_vector(D_BITS-1 downto 0);
+		ram_q    : in  std_logic_vector(D_BITS-1 downto 0)
+	);
 end entity ocram_wb;
 
 

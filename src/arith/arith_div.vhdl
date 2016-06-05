@@ -7,7 +7,7 @@
 -- Entity:					Multi-cycle Non-Performing Restoring Divider
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Implementation of a Non-Performing restoring divider with a configurable radix.
 -- The multi-cycle division is controlled by 'start' / 'rdy'. A new division is
 -- started by asserting 'start'. The result Q = A/D is available when 'rdy'

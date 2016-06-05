@@ -7,7 +7,7 @@
 -- Entity:					Sorting Network: Odd-Even-Merge-Sort
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

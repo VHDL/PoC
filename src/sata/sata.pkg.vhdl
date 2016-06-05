@@ -8,7 +8,7 @@
 -- Package:					SATA Types, Constants and Functions
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Declares types and functions required for the whole SATA stack.
 --
 -- License:

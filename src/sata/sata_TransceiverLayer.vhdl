@@ -10,7 +10,7 @@
 -- Entity: 					Wrapper for Device-Specific Transceivers
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Asynchronous signals: PowerDown, ClockNetwork_Reset, ClockNetwork_ResetDone
 -- Transceiver In/Outputs: VSS_*
 --

@@ -8,7 +8,7 @@
 -- Entity:					FSM for SATA Link Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- See notes on module 'sata_LinkLayer'.
 --
 -- For input 'MyReset' see assignment in module 'sata_LinkLayer'.

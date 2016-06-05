@@ -7,7 +7,7 @@
 -- Entity:					arith_addw
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --	Implements wide addition providing several options all based
 --	on an adaptation of a carry-select approach.
 --

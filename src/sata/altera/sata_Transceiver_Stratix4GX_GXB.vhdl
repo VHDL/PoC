@@ -7,7 +7,7 @@
 -- Authors:					Steffen Koehler
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

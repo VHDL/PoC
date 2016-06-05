@@ -1,17 +1,17 @@
 
-arith_counter_gray
-##################
+mdio_IIC_Adapter
+################
 
 .. TODO:: No documentation available.
 
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_counter_gray.vhdl
+.. literalinclude:: ../../../../src/io/mdio/mdio_IIC_Adapter.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 38-51
+   :lines: 44-80
 
 
 	 

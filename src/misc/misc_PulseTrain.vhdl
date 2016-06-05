@@ -7,7 +7,7 @@
 -- Entity:					TODO
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		This module generates pulse trains. This module was written as a answer for
 --		a StackOverflow question: http://stackoverflow.com/questions/25783320
 --

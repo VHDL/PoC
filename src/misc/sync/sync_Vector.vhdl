@@ -8,7 +8,7 @@
 -- Entity:					Synchronizes a signal vector across clock-domain boundaries
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		This module synchronizes a vector of bits from clock-domain 'Clock1' to
 --		clock-domain 'Clock2'. The clock-domain boundary crossing is done by a
 --		change comparator, a T-FF, two synchronizer D-FFs and a reconstructive

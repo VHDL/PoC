@@ -1,17 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- ============================================================================
+-- =============================================================================
 -- Entity:				 	TODO
 --
 -- Authors:				 	Patrick Lehmann
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -26,7 +26,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 LIBRARY IEEE;
 USE			IEEE.STD_LOGIC_1164.ALL;
@@ -66,7 +66,7 @@ ENTITY Eth_RSLayer_TRANS_GMII_Virtex5 IS
 END;
 
 -- Note:
--- ============================================================================================================================================================
+-- =============================================================================
 -- use IDELAY instances on GMII_RX_Clock to move the clock into alignment with the data (GMII_RX_Data[7:0])
 
 ARCHITECTURE rtl OF Eth_RSLayer_TRANS_GMII_Virtex5 IS

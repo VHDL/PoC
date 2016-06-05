@@ -7,7 +7,7 @@
 -- Entity:					Computes the overall average value of all data words
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

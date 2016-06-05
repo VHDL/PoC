@@ -8,7 +8,7 @@
 -- Entity:					FIS Decoder for SATA Transport Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- See notes on module 'sata_TransportLayer'.
 --
 -- License:

@@ -7,7 +7,7 @@
 -- Entity:					Counts the least significant data words
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

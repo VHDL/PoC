@@ -6,7 +6,7 @@
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../{EntityFilePath}
+.. literalinclude:: {EntityFilePath}
    :language: vhdl
    :tab-width: 2
    :linenos:

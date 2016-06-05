@@ -8,7 +8,7 @@
 -- Entity:					Synchronizes a strobe signal across clock-domain boundaries
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		This module synchronizes multiple high-active bits from clock-domain
 --		'Clock1' to clock-domain 'Clock2'. The clock-domain boundary crossing is
 --		done by a T-FF, two synchronizer D-FFs and a reconstructive XOR. A busy

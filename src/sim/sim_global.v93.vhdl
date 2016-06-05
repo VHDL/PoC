@@ -7,7 +7,7 @@
 -- Package:					Global simulation constants and shared varibales.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

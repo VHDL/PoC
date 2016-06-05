@@ -7,7 +7,7 @@
 -- Entity:					This module detects whether all bit positions of a std_logic_vector have the same value.
 -- 
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- This circuit may, for instance, be used to detect the first sign change
 -- and, thus, the range of a two's complement number.
 -- 

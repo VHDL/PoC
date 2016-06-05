@@ -10,7 +10,7 @@
 --									associated to the PoC.arith namespace
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		For detailed documentation see below.
 --
 -- License:

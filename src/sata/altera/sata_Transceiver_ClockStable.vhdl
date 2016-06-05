@@ -16,7 +16,7 @@
 -- Package:					PoC.sata
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Generic reset handling for Altera FPGAs to be embedded into the SATA
 -- transceiver layer. In contrast to the Xilinx version, Async_Reset is not
 -- supported.

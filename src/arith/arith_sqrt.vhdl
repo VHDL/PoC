@@ -12,6 +12,7 @@
 -- 
 -- Its computation requires (N+1)/2 steps for an argument bit width of N.
 --
+-- License:
 -- =============================================================================
 -- Copyright 2007-2014 Technische Universität Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture

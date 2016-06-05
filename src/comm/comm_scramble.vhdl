@@ -7,10 +7,10 @@
 -- Entity:					Computes XOR masks for stream scrambling from an LFSR generator.
 --
 -- Description:
--- ------------------------------------
---		The LFSR computation is unrolled to generate an arbitrary number of mask
---		bits in parallel. The mask are output in little endian. The generated bit
---		sequence is independent from the chosen output width.
+-- -------------------------------------
+-- The LFSR computation is unrolled to generate an arbitrary number of mask
+-- bits in parallel. The mask are output in little endian. The generated bit
+-- sequence is independent from the chosen output width.
 --
 -- License:
 -- =============================================================================
@@ -48,7 +48,7 @@ entity comm_scramble is
     step : in  std_logic;    -- Compute a Mask Output
     mask : out std_logic_vector(BITS-1 downto 0) := (others => '0')
   );
-end comm_scramble;
+end entity comm_scramble;
 
 
 architecture rtl of comm_scramble is
@@ -96,4 +96,4 @@ begin
     end if;
   end process;
 
-end rtl;
+end architecture;

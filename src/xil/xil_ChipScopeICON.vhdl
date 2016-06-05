@@ -1,13 +1,13 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
 -- Entity:				 	Generic Xilinx ChipScope ICON wrapper
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- This module wraps 15 ChipScope ICON IP core netlists generated from ChipScope
 -- ICON xco files. The generic parameter ``PORTS`` selects the apropriate ICON
 -- instance with 1 to 15 ICON ``ControlBus`` ports. Each ``ControlBus`` port is
@@ -30,7 +30,7 @@
 --   For how to run synthesis with PoC and CoreGenerator.
 -- 
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -45,7 +45,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 
 library	IEEE;

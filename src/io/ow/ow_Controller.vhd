@@ -37,7 +37,7 @@ library PoC;
 use			PoC.physical.all;
 
 
-entity owController is
+entity ow_Controller is
   port (
 		Clock					: in STD_LOGIC;
 		Reset					: in STD_LOGIC;
@@ -60,7 +60,7 @@ end entity;
 
 -- TODO: check design for parasitary mode support
 
-architecture rtl of OneWireController is
+architecture rtl of ow_Controller is
 
 	type T_STATE is (
 		ST_READY, ST_ERROR, ST_FINISHED,

@@ -7,7 +7,7 @@
 -- Entity:					Converter binary numbers to BCD encoded numbers.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

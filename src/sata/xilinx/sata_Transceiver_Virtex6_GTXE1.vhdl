@@ -108,9 +108,9 @@ BEGIN
 		ASSERT 	IsSupportedGeneration(SATA_Generation(I))	REPORT "unsupported SATA generation" SEVERITY FAILURE;
 	END GENERATE;
 
--- ============================================================================
+-- =============================================================================
 -- mapping of vendor specific ports
--- ============================================================================
+-- =============================================================================
 	ClockIn_150MHz					<= VSS_Common.RefClockIn_150_MHz;
 	ClockIn_75MHz						<= VSS_Common.RefClockIn_75_MHz;
 

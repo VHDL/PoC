@@ -8,7 +8,7 @@
 -- Entity: 					SATA Transport Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Provides transport of frames via SATA links for the Host endpoint.
 --
 -- Automatically awaits a Register Frame after the link has been established.
@@ -235,7 +235,7 @@ begin
 	-- ================================================================
 	-- TransportLayer FSM
 	-- ================================================================
-	TFSM : ENTITY PoC.sata_TransportFSM
+	TFSM : ENTITY PoC.sata_TransportLayerFSM
     GENERIC MAP (
 			DATA_READ_TIMEOUT 								=> DATA_READ_TIMEOUT,
 			DATA_WRITE_TIMEOUT 								=> DATA_WRITE_TIMEOUT,

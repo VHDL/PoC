@@ -1,17 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- ============================================================================
--- Entity:				 	TODO
---
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
+-- Entity:				 	TODO
+--
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -26,55 +26,55 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.io.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
+use			PoC.io.all;
+use			PoC.net.all;
 
 
-ENTITY mdio_MDIOController IS
-	GENERIC (
+entity mdio_Controller is
+	generic (
 		DEBUG											: BOOLEAN							:= TRUE;
 		CLOCK_FREQ								: FREQ								:= 125 MHz;				-- 125 MHz
 --		PREAMBLE_SUPRESSION				: BOOLEAN							:= FALSE;					-- TODO: supported by Marvel 88E1111's, minimum preamble length = 1 bit
 		BAUDRATE									: BAUD								:= 1 MBd					-- 1.0 MBaud
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock											: in	STD_LOGIC;
+		Reset											: in	STD_LOGIC;
 
 		-- MDIOController interface
-		Command										: IN	T_IO_MDIO_MDIOCONTROLLER_COMMAND;
-		Status										: OUT	T_IO_MDIO_MDIOCONTROLLER_STATUS;
-		Error											: OUT	T_IO_MDIO_MDIOCONTROLLER_ERROR;
+		Command										: in	T_IO_MDIO_MDIOCONTROLLER_COMMAND;
+		Status										: out	T_IO_MDIO_MDIOCONTROLLER_STATUS;
+		Error											: out	T_IO_MDIO_MDIOCONTROLLER_ERROR;
 
-		DeviceAddress							: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
-		RegisterAddress						: IN	STD_LOGIC_VECTOR(4 DOWNTO 0);
-		DataIn										: IN	T_SLV_16;
-		DataOut										: OUT	T_SLV_16;
+		DeviceAddress							: in	STD_LOGIC_VECTOR(4 downto 0);
+		RegisterAddress						: in	STD_LOGIC_VECTOR(4 downto 0);
+		DataIn										: in	T_SLV_16;
+		DataOut										: out	T_SLV_16;
 
 		-- tri-state interface
-		MD_Clock_i								: IN	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock I
-		MD_Clock_o								: OUT	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock O
-		MD_Clock_t								: OUT	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock tri-state
-		MD_Data_i									: IN	STD_LOGIC;			-- IEEE 802.3: MDIO		-> Managament Data I
-		MD_Data_o									: OUT	STD_LOGIC;			-- IEEE 802.3: MDIO		-> Managament Data O
-		MD_Data_t									: OUT	STD_LOGIC				-- IEEE 802.3: MDIO		-> Managament Data tri-state
+		MD_Clock_i								: in	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock I
+		MD_Clock_o								: out	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock O
+		MD_Clock_t								: out	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock tri-state
+		MD_Data_i									: in	STD_LOGIC;			-- IEEE 802.3: MDIO		-> Managament Data I
+		MD_Data_o									: out	STD_LOGIC;			-- IEEE 802.3: MDIO		-> Managament Data O
+		MD_Data_t									: out	STD_LOGIC				-- IEEE 802.3: MDIO		-> Managament Data tri-state
 	);
-END;
+end entity;
 
 -- TODO: preamble suppression, e.g. Marvel E1111 requires only 1 idle-bit between operations
 
-ARCHITECTURE rtl OF mdio_MDIOController IS
+ARCHITECTURE rtl OF mdio_Controller IS
 	ATTRIBUTE KEEP											: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING							: STRING;
 

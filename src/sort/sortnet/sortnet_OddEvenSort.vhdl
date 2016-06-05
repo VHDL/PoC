@@ -7,7 +7,7 @@
 -- Entity:					Sorting Network: Odd-Even-Sort (Transposition)
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

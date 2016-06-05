@@ -8,7 +8,7 @@
 -- Entity:					FSM for SATA Transport Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- See notes on module 'sata_TransportLayer'.
 --
 -- The Clock might be only unstable in the FSM state ST_RESET.
@@ -49,7 +49,7 @@ USE			PoC.sata.ALL;
 use			PoC.satadbg.all;
 
 
-ENTITY sata_TransportFSM IS
+ENTITY sata_TransportLayerFSM IS
   GENERIC (
 		DEV_INIT_TIMEOUT 									: TIME 												:= 500 ms;
 		NODATA_RETRY_TIMEOUT 							: TIME 												:=   1 ms;
@@ -102,7 +102,7 @@ ENTITY sata_TransportFSM IS
 end entity;
 
 
-ARCHITECTURE rtl OF sata_TransportFSM IS
+ARCHITECTURE rtl OF sata_TransportLayerFSM IS
 	ATTRIBUTE KEEP									: BOOLEAN;
 	ATTRIBUTE FSM_ENCODING					: STRING;
 

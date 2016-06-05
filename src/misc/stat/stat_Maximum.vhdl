@@ -7,7 +7,7 @@
 -- Entity:					Counts the most significant data words
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

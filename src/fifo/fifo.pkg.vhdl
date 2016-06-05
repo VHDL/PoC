@@ -11,7 +11,7 @@
 --									associated to the PoC.fifo namespace
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		For detailed documentation see below.
 --
 -- License:

@@ -1,17 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- ============================================================================
--- Entity:				 	TODO
---
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
+-- Entity:				 	TODO
+--
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -26,23 +26,23 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.physical.all;
+use			PoC.net.all;
 
 
-ENTITY stack_UDPv4 IS
-	GENERIC (
+entity stack_UDPv4 is
+	generic (
 		DEBUG															: BOOLEAN															:= FALSE;																																									--
 		CLOCK_FREQ												: FREQ																:= 125 MHz;																																								--
 		ETHERNET_IPSTYLE									: T_IPSTYLE														:= to_IPStyle(												MY_BOARD_STRUCT.Ethernet.IPStyle);									--
@@ -62,56 +62,56 @@ ENTITY stack_UDPv4 IS
 		ICMP_ENABLE_ECHO									: BOOLEAN															:= FALSE;
 		PING															: BOOLEAN															:= FALSE
 	);
-	PORT (
-		Ethernet_Clock										: IN		STD_LOGIC;
-		Ethernet_Reset										: IN		STD_LOGIC;
+	port (
+		Ethernet_Clock										: in		STD_LOGIC;
+		Ethernet_Reset										: in		STD_LOGIC;
 
-		Ethernet_Command									: IN		T_NET_ETH_COMMAND;
-		Ethernet_Status										: OUT		T_NET_ETH_STATUS;
+		Ethernet_Command									: in		T_NET_ETH_COMMAND;
+		Ethernet_Status										: out		T_NET_ETH_STATUS;
 
-		PHY_Interface											:	INOUT	T_NET_ETH_PHY_INTERFACES;
+		PHY_Interface											:	inoUT	T_NET_ETH_PHY_INTERFACES;
 
 		-- UDP ports
-		TX_Valid													: IN	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_Data														: IN	T_SLVV_8(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_SOF														: IN	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_EOF														: IN	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_Ack														: OUT	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_Meta_rst												: OUT	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_Meta_SrcIPv4Address_nxt				: OUT	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_Meta_SrcIPv4Address_Data				: IN	T_SLVV_8(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_Meta_DestIPv4Address_nxt				: OUT	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_Meta_DestIPv4Address_Data			: IN	T_SLVV_8(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_Meta_SrcPort										: IN	T_SLVV_16(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_Meta_DestPort									: IN	T_SLVV_16(UDP_PORTS'length - 1 DOWNTO 0);
-		TX_Meta_Length										: IN	T_SLVV_16(UDP_PORTS'length - 1 DOWNTO 0);
+		TX_Valid													: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		TX_Data														: in	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
+		TX_SOF														: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		TX_EOF														: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		TX_Ack														: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_rst												: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_SrcIPv4Address_nxt				: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_SrcIPv4Address_Data				: in	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_DestIPv4Address_nxt				: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_DestIPv4Address_Data			: in	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_SrcPort										: in	T_SLVV_16(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_DestPort									: in	T_SLVV_16(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_Length										: in	T_SLVV_16(UDP_PORTS'length - 1 downto 0);
 
-		RX_Valid													: OUT	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Data														: OUT	T_SLVV_8(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_SOF														: OUT	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_EOF														: OUT	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Ack														: IN	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_rst												: IN	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_SrcMACAddress_nxt					: IN	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_SrcMACAddress_Data				: OUT	T_SLVV_8(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_DestMACAddress_nxt				: IN	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_DestMACAddress_Data				: OUT	T_SLVV_8(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_EthType										: OUT	T_SLVV_16(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_SrcIPv4Address_nxt				: IN	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_SrcIPv4Address_Data				: OUT	T_SLVV_8(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_DestIPv4Address_nxt				: IN	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_DestIPv4Address_Data			: OUT	T_SLVV_8(UDP_PORTS'length - 1 DOWNTO 0);
---		RX_Meta_TrafficClass							: OUT	T_SLVV_8(UDP_PORTS'length - 1 DOWNTO 0);
---		RX_Meta_FlowLabel									: OUT	T_SLVV_24(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_Length										: OUT	T_SLVV_16(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_Protocol									: OUT	T_SLVV_8(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_SrcPort										: OUT	T_SLVV_16(UDP_PORTS'length - 1 DOWNTO 0);
-		RX_Meta_DestPort									: OUT	T_SLVV_16(UDP_PORTS'length - 1 DOWNTO 0)
+		RX_Valid													: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Data														: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
+		RX_SOF														: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_EOF														: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Ack														: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_rst												: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_SrcMACAddress_nxt					: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_SrcMACAddress_Data				: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_DestMACAddress_nxt				: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_DestMACAddress_Data				: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_EthType										: out	T_SLVV_16(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_SrcIPv4Address_nxt				: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_SrcIPv4Address_Data				: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_DestIPv4Address_nxt				: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_DestIPv4Address_Data			: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
+--		RX_Meta_TrafficClass							: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
+--		RX_Meta_FlowLabel									: out	T_SLVV_24(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_Length										: out	T_SLVV_16(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_Protocol									: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_SrcPort										: out	T_SLVV_16(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_DestPort									: out	T_SLVV_16(UDP_PORTS'length - 1 downto 0)
 	);
 end entity;
 
 
-ARCHITECTURE rtl OF stack_UDPv4 IS
+architecture rtl of stack_UDPv4 is
 	ATTRIBUTE KEEP											: BOOLEAN;
 	ATTRIBUTE KEEP_HIERARCHY						: STRING;
 

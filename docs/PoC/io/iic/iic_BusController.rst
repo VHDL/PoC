@@ -2,10 +2,10 @@
 iic_BusController
 #################
 
-	The I2C BusController transmitts bits over the I2C bus (SerialClock - SCL,
-	SerialData - SDA) and also receives them.	To send/receive words over the
-	I2C bus, use the I2C Controller, which utilizes this controller. This
-	controller is compatible to the System Management Bus (SMBus).
+The I2C BusController transmitts bits over the I2C bus (SerialClock - SCL,
+SerialData - SDA) and also receives them.	To send/receive words over the
+I2C bus, use the I2C Controller, which utilizes this controller. This
+controller is compatible to the System Management Bus (SMBus).
 
 
 .. rubric:: Entity Declaration:

@@ -7,7 +7,7 @@
 -- Entity:					Synchronizes a reset signal across clock-domain boundaries
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --    This module synchronizes an asynchronous reset signal to the clock
 --    'Clock'. The 'Input' can be asserted and de-asserted at any time.
 --    The 'Output' is asserted asynchronously and de-asserted synchronously

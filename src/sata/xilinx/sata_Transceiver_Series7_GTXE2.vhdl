@@ -15,7 +15,7 @@
 -- Package:					TODO
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		This is a vendor, device and protocol specific instanziation of a 7-Series
 --		GTXE2 transceiver. This GTX is configured for Serial-ATA from Gen1 to Gen3
 --		with linerates from 1.5 GHz to 6.0 GHz. It has a 'RP_SATAGeneration' dependant

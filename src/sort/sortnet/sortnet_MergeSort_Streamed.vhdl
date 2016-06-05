@@ -7,7 +7,7 @@
 -- Entity:					Sorting Network: Streaming MergeSort
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:

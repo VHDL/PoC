@@ -8,7 +8,7 @@
 -- Package:					SATA Debug Types and Functions
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Declares types and function for debugging purpose.
 --
 -- License:

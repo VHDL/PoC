@@ -7,7 +7,7 @@
 -- Entity:					Sorting Network: Data structure transformation
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- .. TODO:: No documentation available.
 --
 -- License:
