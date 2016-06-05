@@ -113,7 +113,7 @@ begin
 			constant tag_line : std_logic_vector(slm'high(2) downto slm'low(2)) := get_row(slm, row);
 			variable result		: T_TAG_LINE(FA_CHUNKS - 1 downto 0);
 		begin
---			REPORT "tagline @row " & INTEGER'image(row) & " = " & to_string(tag_line, 'h') SEVERITY NOTE;
+--			report "tagline @row " & INTEGER'image(row) & " = " & to_string(tag_line, 'h') severity NOTE;
 			for I in result'range loop
 				result(I) := tag_line((I * CHUNK_BITS) + CHUNK_BITS - 1 downto (I * CHUNK_BITS));
 			end loop;
@@ -128,10 +128,10 @@ begin
 		signal RequestComplete : std_logic;
 
 		signal NewTagSeqCounter_rst : std_logic;
---		SIGNAL NewTagSeqCounter_en			: STD_LOGIC;
+--		signal NewTagSeqCounter_en			: STD_LOGIC;
 		signal NewTagSeqCounter_us	: unsigned(FA_CHUNK_INDEX_BITS - 1 downto 0) := (others => '0');
 		signal TagSeqCounter_rst		: std_logic;
---		SIGNAL TagSeqCounter_en					: STD_LOGIC;
+--		signal TagSeqCounter_en					: STD_LOGIC;
 		signal TagSeqCounter_us			: unsigned(FA_CHUNK_INDEX_BITS - 1 downto 0) := (others => '0');
 
 		signal TagMemory_we : std_logic;
@@ -331,9 +331,9 @@ begin
 			constant C_TAGMEMORY : T_TAG_LINE(FA_CHUNKS - 1 downto 0) := to_tagmemory(FA_INITIAL_TAGS_RESIZED, I);
 			signal TagMemory		 : T_TAG_LINE(FA_CHUNKS - 1 downto 0) := C_TAGMEMORY;
 		begin
---			genASS : FOR J IN 0 TO FA_CHUNKS - 1 GENERATE
---				ASSERT FALSE REPORT "line=" & INTEGER'image(I) & "	chunk=" & INTEGER'image(J) & "	tag=" & to_string(C_TAGMEMORY(J), 'h') SEVERITY NOTE;
---			END GENERATE;
+--			genASS : for j in 0 to FA_CHUNKS - 1 generate
+--				assert FALSE report "line=" & INTEGER'image(I) & "	chunk=" & INTEGER'image(J) & "	tag=" & to_string(C_TAGMEMORY(J), 'h') severity NOTE;
+--			end generate;
 
 			process(Clock)
 			begin
@@ -405,7 +405,6 @@ begin
 		TagIndex	<= MemoryIndex_i when rising_edge(Clock);
 
 		-- replacement policy
---		Policy : ENTITY L_Global.cache_replacement_policy
 		Policy : entity PoC.cache_replacement_policy
 			generic map (
 				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
@@ -444,9 +443,9 @@ begin
 		signal TagMiss_i : std_logic;
 	begin
 --		-- generate comparators
---		genVectors : FOR I IN 0 TO FA_CACHE_LINES - 1 GENERATE
+--		genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
 --			TagHits(I)			<= to_sl(TagMemory(I) = FA_Tag);
---		END GENERATE;
+--		end generate;
 --
 --		-- convert hit-vector to binary index (cache line address)
 --		FA_MemoryIndex_us		<= onehot2bin(TagHits);
@@ -455,15 +454,15 @@ begin
 --		-- Memories
 --		FA_ReplaceIndex_us	<= FA_MemoryIndex_us;
 --
---		PROCESS(Clock)
---		BEGIN
---			IF rising_edge(Clock) THEN
---				IF (Replace = '1') THEN
+--		process(Clock)
+--		begin
+--			if rising_edge(Clock) then
+--				if (Replace = '1') then
 --					TagMemory(to_integer(FA_ReplaceIndex_us))		<= NewTag;
 --					ValidMemory(to_integer(FA_ReplaceIndex_us)) <= '1';
---				END IF;
---			END IF;
---		END PROCESS;
+--				end if;
+--			end if;
+--		end process;
 --
 --		-- access valid-vector
 --		ValidHit					<= ValidMemory(to_integer(FA_MemoryIndex_us));
@@ -477,14 +476,14 @@ begin
 --		TagHit				<= TagHit_i;
 --		TagMiss				<= TagMiss_i;
 --
---		genPolicy : FOR I IN 0 TO SETS - 1 GENERATE
---			policy : ENTITY PoC.cache_replacement_policy
---				GENERIC MAP (
+--		genPolicy : for i in 0 to SETS - 1 generate
+--			policy : entity PoC.cache_replacement_policy
+--				generic map (
 --					REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
 --					CACHE_LINES								=> ASSOCIATIVITY,
---					INITIAL_VALIDS						=> INITIAL_VALIDS(I * ASSOCIATIVITY + ASSOCIATIVITY - 1 DOWNTO I * ASSOCIATIVITY)
+--					INITIAL_VALIDS						=> INITIAL_VALIDS(I * ASSOCIATIVITY + ASSOCIATIVITY - 1 downto I * ASSOCIATIVITY)
 --				)
---				PORT MAP (
+--				port map (
 --					Clock											=> Clock,
 --					Reset											=> Reset,
 --
@@ -496,7 +495,7 @@ begin
 --					Invalidate								=> Invalidate(I),
 --					Index											=> Policy_Index(I)
 --				);
---		END GENERATE;
+--		end generate;
 	end generate;
 	-- ==========================================================================================================================================================
 	-- Set-Assoziative Cache
@@ -519,9 +518,9 @@ begin
 		signal TagMiss_i : std_logic;
 	begin
 --		-- generate comparators
---		genVectors : FOR I IN 0 TO FA_CACHE_LINES - 1 GENERATE
+--		genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
 --			TagHits(I)			<= to_sl(TagMemory(I) = FA_Tag);
---		END GENERATE;
+--		end generate;
 --
 --		-- convert hit-vector to binary index (cache line address)
 --		FA_MemoryIndex_us		<= onehot2bin(TagHits);
@@ -530,15 +529,15 @@ begin
 --		-- Memories
 --		FA_ReplaceIndex_us	<= FA_MemoryIndex_us;
 --
---		PROCESS(Clock)
---		BEGIN
---			IF rising_edge(Clock) THEN
---				IF (Replace = '1') THEN
+--		process(Clock)
+--		begin
+--			if rising_edge(Clock) then
+--				if (Replace = '1') then
 --					TagMemory(to_integer(FA_ReplaceIndex_us))		<= NewTag;
 --					ValidMemory(to_integer(FA_ReplaceIndex_us)) <= '1';
---				END IF;
---			END IF;
---		END PROCESS;
+--				end if;
+--			end if;
+--		end process;
 --
 --		-- access valid-vector
 --		ValidHit					<= ValidMemory(to_integer(FA_MemoryIndex_us));
@@ -552,14 +551,14 @@ begin
 --		TagHit				<= TagHit_i;
 --		TagMiss				<= TagMiss_i;
 --
---		genPolicy : FOR I IN 0 TO SETS - 1 GENERATE
---			policy : ENTITY PoC.cache_replacement_policy
---				GENERIC MAP (
+--		genPolicy : for i in 0 to SETS - 1 generate
+--			policy : entity PoC.cache_replacement_policy
+--				generic map (
 --					REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
 --					CACHE_LINES								=> ASSOCIATIVITY,
---					INITIAL_VALIDS						=> INITIAL_VALIDS(I * ASSOCIATIVITY + ASSOCIATIVITY - 1 DOWNTO I * ASSOCIATIVITY)
+--					INITIAL_VALIDS						=> INITIAL_VALIDS(I * ASSOCIATIVITY + ASSOCIATIVITY - 1 downto I * ASSOCIATIVITY)
 --				)
---				PORT MAP (
+--				port map (
 --					Clock											=> Clock,
 --					Reset											=> Reset,
 --
@@ -571,6 +570,6 @@ begin
 --					Invalidate								=> Invalidate(I),
 --					Index											=> Policy_Index(I)
 --				);
---		END GENERATE;
+--		end generate;
 	end generate;
 end architecture;

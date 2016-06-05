@@ -66,14 +66,14 @@ entity xil_SystemMonitor_Series7 is
 end entity;
 
 
-architecture xilinx of xil_SystemMonitor_Series7 IS
-	SIGNAL FLOAT_VCCAUX_ALARM		: STD_LOGIC;
-	SIGNAL FLOAT_VCCINT_ALARM		: STD_LOGIC;
-	SIGNAL FLOAT_VBRAM_ALARM		: STD_LOGIC;
-	SIGNAL FLOAT_MUXADDR				: STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL aux_channel_p				: STD_LOGIC_VECTOR(15 DOWNTO 0);
-	SIGNAL aux_channel_n				: STD_LOGIC_VECTOR(15 DOWNTO 0);
-	SIGNAL XADC_Alarm						: STD_LOGIC_VECTOR(7 DOWNTO 0);
+architecture xilinx of xil_SystemMonitor_Series7 is
+	signal FLOAT_VCCAUX_ALARM		: STD_LOGIC;
+	signal FLOAT_VCCINT_ALARM		: STD_LOGIC;
+	signal FLOAT_VBRAM_ALARM		: STD_LOGIC;
+	signal FLOAT_MUXADDR				: STD_LOGIC_VECTOR(4 downto 0);
+	signal aux_channel_p				: STD_LOGIC_VECTOR(15 downto 0);
+	signal aux_channel_n				: STD_LOGIC_VECTOR(15 downto 0);
+	signal XADC_Alarm						: STD_LOGIC_VECTOR(7 downto 0);
 
 	begin
 

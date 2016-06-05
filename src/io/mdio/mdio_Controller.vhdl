@@ -74,11 +74,11 @@ end entity;
 
 -- TODO: preamble suppression, e.g. Marvel E1111 requires only 1 idle-bit between operations
 
-ARCHITECTURE rtl OF mdio_Controller IS
-	ATTRIBUTE KEEP											: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING							: STRING;
+architecture rtl of mdio_Controller is
+	attribute KEEP											: BOOLEAN;
+	attribute FSM_ENCODING							: STRING;
 
-	TYPE T_STATE IS (
+	type T_STATE is (
 		ST_IDLE,
 		ST_CHECK_ADR_WAIT_FOR_CLOCK,				ST_READ_WAIT_FOR_CLOCK, 				ST_WRITE_WAIT_FOR_CLOCK,
 		ST_CHECK_ADR_SEND_PREAMBLE,					ST_READ_SEND_PREAMBLE,					ST_WRITE_SEND_PREAMBLE,
@@ -98,58 +98,58 @@ ARCHITECTURE rtl OF mdio_Controller IS
 			ST_ADDRESS_ERROR
 	);
 
-	SIGNAL State												: T_STATE																:= ST_IDLE;
-	SIGNAL NextState										: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal State												: T_STATE																:= ST_IDLE;
+	signal NextState										: T_STATE;
+	attribute FSM_ENCODING OF State			: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL RegPhysicalAddress_en				: STD_LOGIC;
-	SIGNAL RegPhysicalAddress_sh				: STD_LOGIC;
-	SIGNAL RegPhysicalAddress_d					: STD_LOGIC_VECTOR(4 DOWNTO 0)					:= (OTHERS => '0');
+	signal RegPhysicalAddress_en				: STD_LOGIC;
+	signal RegPhysicalAddress_sh				: STD_LOGIC;
+	signal RegPhysicalAddress_d					: STD_LOGIC_VECTOR(4 downto 0)					:= (others => '0');
 
-	SIGNAL RegRegisterAddress_en				: STD_LOGIC;
-	SIGNAL RegRegisterAddress_sh				: STD_LOGIC;
-	SIGNAL RegRegisterAddress_d					: STD_LOGIC_VECTOR(4 DOWNTO 0)					:= (OTHERS => '0');
+	signal RegRegisterAddress_en				: STD_LOGIC;
+	signal RegRegisterAddress_sh				: STD_LOGIC;
+	signal RegRegisterAddress_d					: STD_LOGIC_VECTOR(4 downto 0)					:= (others => '0');
 
-	SIGNAL RegRegisterData_en						: STD_LOGIC;
-	SIGNAL RegRegisterData_shi					: STD_LOGIC;
-	SIGNAL RegRegisterData_sho					: STD_LOGIC;
-	SIGNAL RegRegisterData_d						: T_SLV_16															:= (OTHERS => '0');
+	signal RegRegisterData_en						: STD_LOGIC;
+	signal RegRegisterData_shi					: STD_LOGIC;
+	signal RegRegisterData_sho					: STD_LOGIC;
+	signal RegRegisterData_d						: T_SLV_16															:= (others => '0');
 
-	SIGNAL RegRegisterData_Valid_set		: STD_LOGIC;
-	SIGNAL RegRegisterData_Valid_r			: STD_LOGIC															:= '0';
+	signal RegRegisterData_Valid_set		: STD_LOGIC;
+	signal RegRegisterData_Valid_r			: STD_LOGIC															:= '0';
 
-	SIGNAL BitCounter_rst								: STD_LOGIC;
-	SIGNAL BitCounter_en								: STD_LOGIC;
-	SIGNAL BitCounter_us								: UNSIGNED(4 DOWNTO 0)									:= (OTHERS => '0');
+	signal BitCounter_rst								: STD_LOGIC;
+	signal BitCounter_en								: STD_LOGIC;
+	signal BitCounter_us								: UNSIGNED(4 downto 0)									:= (others => '0');
 
-	SIGNAL MD_DataIn										: STD_LOGIC;
-	SIGNAL MD_Data_en										: STD_LOGIC;
-	SIGNAL MD_Data_o_nxt								: STD_LOGIC;
-	SIGNAL MD_Data_t_nxt								: STD_LOGIC;
+	signal MD_DataIn										: STD_LOGIC;
+	signal MD_Data_en										: STD_LOGIC;
+	signal MD_Data_o_nxt								: STD_LOGIC;
+	signal MD_Data_t_nxt								: STD_LOGIC;
 
-	SIGNAL MD_Clock_re									: STD_LOGIC;
-	SIGNAL MD_Clock_fe									: STD_LOGIC;
+	signal MD_Clock_re									: STD_LOGIC;
+	signal MD_Clock_fe									: STD_LOGIC;
 
-	ATTRIBUTE KEEP OF MD_DataIn					: SIGNAL IS DEBUG;
+	attribute KEEP OF MD_DataIn					: signal IS DEBUG;
 
-BEGIN
+begin
 
---	ASSERT FALSE REPORT "BAUDRATE: " & to_string(BAUDRATE) SEVERITY NOTE;
+--	assert FALSE report "BAUDRATE: " & to_string(BAUDRATE) severity NOTE;
 
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State				<= ST_IDLE;
-			ELSE
+			else
 				State				<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, Command, MD_Clock_re, MD_Clock_fe, MD_DataIn, BitCounter_us, RegPhysicalAddress_d, RegRegisterAddress_d, RegRegisterData_d)
-	BEGIN
+	process(State, Command, MD_Clock_re, MD_Clock_fe, MD_DataIn, BitCounter_us, RegPhysicalAddress_d, RegRegisterAddress_d, RegRegisterData_d)
+	begin
 		NextState								<= State;
 
 		Status									<= IO_MDIO_MDIOC_STATUS_IDLE;
@@ -171,178 +171,178 @@ BEGIN
 		MD_Data_o_nxt						<= '0';
 		MD_Data_t_nxt						<= '0';
 
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				BitCounter_rst							<= '1';
 
-				CASE Command IS
-					WHEN IO_MDIO_MDIOC_CMD_NONE =>
+				case Command is
+					when IO_MDIO_MDIOC_CMD_NONE =>
 						NULL;
 
-					WHEN IO_MDIO_MDIOC_CMD_CHECK_ADDRESS =>
+					when IO_MDIO_MDIOC_CMD_CHECK_ADDRESS =>
 						RegPhysicalAddress_en		<= '1';
 						RegRegisterAddress_en		<= '1';
 
 						NextState								<= ST_CHECK_ADR_WAIT_FOR_CLOCK;
 
-					WHEN IO_MDIO_MDIOC_CMD_READ =>
+					when IO_MDIO_MDIOC_CMD_READ =>
 						RegPhysicalAddress_en		<= '1';
 						RegRegisterAddress_en		<= '1';
 
 						NextState								<= ST_READ_WAIT_FOR_CLOCK;
 
-					WHEN IO_MDIO_MDIOC_CMD_WRITE =>
+					when IO_MDIO_MDIOC_CMD_WRITE =>
 						RegPhysicalAddress_en		<= '1';
 						RegRegisterAddress_en		<= '1';
 						RegRegisterData_en			<= '1';
 
 						NextState								<= ST_WRITE_WAIT_FOR_CLOCK;
 
-					WHEN OTHERS =>
+					when others =>
 						NextState								<= ST_ERROR;
 
-				END CASE;
+				end case;
 
 			-- Command_ CHECK_ADDRESS
 			-- ======================================================================================================================================================
-			WHEN ST_CHECK_ADR_WAIT_FOR_CLOCK =>
+			when ST_CHECK_ADR_WAIT_FOR_CLOCK =>
 				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_CHECK_ADR_SEND_PREAMBLE;
-				END IF;
+				end if;
 
-			WHEN ST_CHECK_ADR_SEND_PREAMBLE =>
+			when ST_CHECK_ADR_SEND_PREAMBLE =>
 				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 31) THEN
+					if (BitCounter_us = 31) then
 						NextState								<= ST_CHECK_ADR_SEND_START_0;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_CHECK_ADR_SEND_START_0 =>
+			when ST_CHECK_ADR_SEND_START_0 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_CHECK_ADR_SEND_START_1;
-				END IF;
+				end if;
 
-			WHEN ST_CHECK_ADR_SEND_START_1 =>
+			when ST_CHECK_ADR_SEND_START_1 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_CHECK_ADR_SEND_OPERATION_0;
-				END IF;
+				end if;
 
-			WHEN ST_CHECK_ADR_SEND_OPERATION_0 =>
+			when ST_CHECK_ADR_SEND_OPERATION_0 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '1';				-- OpCode Bit 1 = 1 (read)
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_CHECK_ADR_SEND_OPERATION_1;
-				END IF;
+				end if;
 
-			WHEN ST_CHECK_ADR_SEND_OPERATION_1 =>
+			when ST_CHECK_ADR_SEND_OPERATION_1 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';				-- OpCode Bit 0 = 0 (read)
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_CHECK_ADR_SEND_DeviceAddress;
-				END IF;
+				end if;
 
-			WHEN ST_CHECK_ADR_SEND_DeviceAddress =>
+			when ST_CHECK_ADR_SEND_DeviceAddress =>
 				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= RegPhysicalAddress_d(RegPhysicalAddress_d'high);
 					RegPhysicalAddress_sh			<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 4) THEN
+					if (BitCounter_us = 4) then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_CHECK_ADR_SEND_RegisterAddress;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_CHECK_ADR_SEND_RegisterAddress =>
+			when ST_CHECK_ADR_SEND_RegisterAddress =>
 				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= RegRegisterAddress_d(RegRegisterAddress_d'high);
 					RegRegisterAddress_sh			<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 4) THEN
+					if (BitCounter_us = 4) then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_CHECK_ADR_TURNAROUND_CYCLE_0;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_CHECK_ADR_TURNAROUND_CYCLE_0 =>
+			when ST_CHECK_ADR_TURNAROUND_CYCLE_0 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';						-- Operation = read -> bus turnaround
 					MD_Data_t_nxt							<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_CHECK_ADR_TURNAROUND_CYCLE_1;
-				END IF;
+				end if;
 
-			WHEN ST_CHECK_ADR_TURNAROUND_CYCLE_1 =>
+			when ST_CHECK_ADR_TURNAROUND_CYCLE_1 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_CHECKING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';						-- Operation = read -> bus turnaround
 					MD_Data_t_nxt							<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
-					IF (MD_DataIn = '0') THEN
+				if (MD_Clock_re = '1') then
+					if (MD_DataIn = '0') then
 						NextState							<= ST_CHECK_OK;
-					ELSE
+					else
 						NextState							<= ST_CHECK_FAILED;	-- MD_DataIn = 1 (pullup is active; no response from device -> unknown physical address)
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_CHECK_OK =>
+			when ST_CHECK_OK =>
 				Status										<= IO_MDIO_MDIOC_STATUS_CHECK_OK;
 
 				MD_Data_en								<= '1';
@@ -351,7 +351,7 @@ BEGIN
 
 				NextState									<= ST_IDLE;
 
-			WHEN ST_CHECK_FAILED =>
+			when ST_CHECK_FAILED =>
 				Status										<= IO_MDIO_MDIOC_STATUS_CHECK_FAILED;
 
 				MD_Data_en								<= '1';
@@ -362,157 +362,157 @@ BEGIN
 
 			-- Command: READ
 			-- ======================================================================================================================================================
-			WHEN ST_READ_WAIT_FOR_CLOCK =>
+			when ST_READ_WAIT_FOR_CLOCK =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_READ_SEND_PREAMBLE;
-				END IF;
+				end if;
 
-			WHEN ST_READ_SEND_PREAMBLE =>
+			when ST_READ_SEND_PREAMBLE =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 31) THEN
+					if (BitCounter_us = 31) then
 						NextState								<= ST_READ_SEND_START_0;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_READ_SEND_START_0 =>
+			when ST_READ_SEND_START_0 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_READ_SEND_START_1;
-				END IF;
+				end if;
 
-			WHEN ST_READ_SEND_START_1 =>
+			when ST_READ_SEND_START_1 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_READ_SEND_OPERATION_0;
-				END IF;
+				end if;
 
-			WHEN ST_READ_SEND_OPERATION_0 =>
+			when ST_READ_SEND_OPERATION_0 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '1';				-- OpCode Bit 1 = 1 (read)
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_READ_SEND_OPERATION_1;
-				END IF;
+				end if;
 
-			WHEN ST_READ_SEND_OPERATION_1 =>
+			when ST_READ_SEND_OPERATION_1 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';				-- OpCode Bit 0 = 0 (read)
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_READ_SEND_DeviceAddress;
-				END IF;
+				end if;
 
-			WHEN ST_READ_SEND_DeviceAddress =>
+			when ST_READ_SEND_DeviceAddress =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= RegPhysicalAddress_d(RegPhysicalAddress_d'high);
 					RegPhysicalAddress_sh			<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 4) THEN
+					if (BitCounter_us = 4) then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_READ_SEND_RegisterAddress;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_READ_SEND_RegisterAddress =>
+			when ST_READ_SEND_RegisterAddress =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= RegRegisterAddress_d(RegRegisterAddress_d'high);
 					RegRegisterAddress_sh			<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 4) THEN
+					if (BitCounter_us = 4) then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_READ_TURNAROUND_CYCLE_0;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_READ_TURNAROUND_CYCLE_0 =>
+			when ST_READ_TURNAROUND_CYCLE_0 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';						-- Operation = read -> bus turnaround
 					MD_Data_t_nxt							<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_READ_TURNAROUND_CYCLE_1;
-				END IF;
+				end if;
 
-			WHEN ST_READ_TURNAROUND_CYCLE_1 =>
+			when ST_READ_TURNAROUND_CYCLE_1 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';						-- Operation = read -> bus turnaround
 					MD_Data_t_nxt							<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
-					IF (MD_DataIn = '0') THEN
+				if (MD_Clock_re = '1') then
+					if (MD_DataIn = '0') then
 						NextState								<= ST_READ_RECEIVE_REGISTER_DATA;
-					ELSE
+					else
 						NextState								<= ST_ADDRESS_ERROR;						-- MD_DataIn = 1 (pullup is active; no response from device -> unknown physical address)
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_READ_RECEIVE_REGISTER_DATA =>
+			when ST_READ_RECEIVE_REGISTER_DATA =>
 				Status											<= IO_MDIO_MDIOC_STATUS_READING;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					RegRegisterData_shi				<= '1';
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 15) THEN
+					if (BitCounter_us = 15) then
 						RegRegisterData_Valid_set		<= '1';
 						NextState										<= ST_READ_COMPLETE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_READ_COMPLETE =>
+			when ST_READ_COMPLETE =>
 				Status										<= IO_MDIO_MDIOC_STATUS_READ_COMPLETE;
 
 				MD_Data_en								<= '1';
@@ -524,158 +524,158 @@ BEGIN
 
 			-- Command: WRITE
 			-- ======================================================================================================================================================
-			WHEN ST_WRITE_WAIT_FOR_CLOCK =>
+			when ST_WRITE_WAIT_FOR_CLOCK =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_WRITE_SEND_PREAMBLE;
-				END IF;
+				end if;
 
-			WHEN ST_WRITE_SEND_PREAMBLE =>
+			when ST_WRITE_SEND_PREAMBLE =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 31) THEN
+					if (BitCounter_us = 31) then
 						NextState								<= ST_WRITE_SEND_START_0;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_WRITE_SEND_START_0 =>
+			when ST_WRITE_SEND_START_0 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_WRITE_SEND_START_1;
-				END IF;
+				end if;
 
-			WHEN ST_WRITE_SEND_START_1 =>
+			when ST_WRITE_SEND_START_1 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_WRITE_SEND_OPERATION_0;
-				END IF;
+				end if;
 
-			WHEN ST_WRITE_SEND_OPERATION_0 =>
+			when ST_WRITE_SEND_OPERATION_0 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';				-- OpCode Bit 1 = 0 (write)
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_WRITE_SEND_OPERATION_1;
-				END IF;
+				end if;
 
-			WHEN ST_WRITE_SEND_OPERATION_1 =>
+			when ST_WRITE_SEND_OPERATION_1 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '1';				-- OpCode Bit 0 = 1 (write)
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_WRITE_SEND_DeviceAddress;
-				END IF;
+				end if;
 
-			WHEN ST_WRITE_SEND_DeviceAddress =>
+			when ST_WRITE_SEND_DeviceAddress =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= RegPhysicalAddress_d(RegPhysicalAddress_d'high);
 					RegPhysicalAddress_sh			<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 4) THEN
+					if (BitCounter_us = 4) then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_WRITE_SEND_RegisterAddress;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_WRITE_SEND_RegisterAddress =>
+			when ST_WRITE_SEND_RegisterAddress =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= RegRegisterAddress_d(RegRegisterAddress_d'high);
 					RegRegisterAddress_sh			<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 4) THEN
+					if (BitCounter_us = 4) then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_WRITE_TURNAROUND_CYCLE_0;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_WRITE_TURNAROUND_CYCLE_0 =>
+			when ST_WRITE_TURNAROUND_CYCLE_0 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '1';						-- Operation = write -> send "10"
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_WRITE_TURNAROUND_CYCLE_1;
-				END IF;
+				end if;
 
-			WHEN ST_WRITE_TURNAROUND_CYCLE_1 =>
+			when ST_WRITE_TURNAROUND_CYCLE_1 =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';						-- Operation = write -> send "10"
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					NextState									<= ST_WRITE_SEND_REGISTER_DATA;
-				END IF;
+				end if;
 
-			WHEN ST_WRITE_SEND_REGISTER_DATA =>
+			when ST_WRITE_SEND_REGISTER_DATA =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITING;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= RegRegisterData_d(RegRegisterData_d'high);
 					RegRegisterData_sho				<= '1';
-				END IF;
+				end if;
 
-				IF (MD_Clock_re = '1') THEN
+				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					IF (BitCounter_us = 15) THEN
+					if (BitCounter_us = 15) then
 						NextState								<= ST_WRITE_COMPLETE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_WRITE_COMPLETE =>
+			when ST_WRITE_COMPLETE =>
 				Status											<= IO_MDIO_MDIOC_STATUS_WRITE_COMPLETE;
 
-				IF (MD_Clock_fe = '1') THEN
+				if (MD_Clock_fe = '1') then
 					MD_Data_en								<= '1';
 					MD_Data_o_nxt							<= '0';
 					MD_Data_t_nxt							<= '1';
@@ -683,9 +683,9 @@ BEGIN
 					RegRegisterData_Valid_set	<= '1';
 
 					NextState									<= ST_IDLE;
-				END IF;
+				end if;
 
-			WHEN ST_ADDRESS_ERROR =>
+			when ST_ADDRESS_ERROR =>
 				Status										<= IO_MDIO_MDIOC_STATUS_ERROR;
 				Error											<= IO_MDIO_MDIOC_ERROR_ADDRESS_NOT_FOUND;
 
@@ -695,7 +695,7 @@ BEGIN
 
 				NextState									<= ST_IDLE;
 
-			WHEN ST_ERROR =>
+			when ST_ERROR =>
 				Status										<= IO_MDIO_MDIOC_STATUS_ERROR;
 				Error											<= IO_MDIO_MDIOC_ERROR_FSM;
 
@@ -705,148 +705,148 @@ BEGIN
 
 				NextState									<= ST_IDLE;
 
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR BitCounter_rst) = '1') THEN
-				BitCounter_us						<= (OTHERS => '0');
-			ELSE
-				IF (BitCounter_en	= '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR BitCounter_rst) = '1') then
+				BitCounter_us						<= (others => '0');
+			else
+				if (BitCounter_en	= '1') then
 					BitCounter_us					<= BitCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
-				RegPhysicalAddress_d		<= (OTHERS => '0');
-				RegRegisterAddress_d		<= (OTHERS => '0');
-				RegRegisterData_d				<= (OTHERS => '0');
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
+				RegPhysicalAddress_d		<= (others => '0');
+				RegRegisterAddress_d		<= (others => '0');
+				RegRegisterData_d				<= (others => '0');
 				RegRegisterData_Valid_r	<= '0';
-			ELSE
-				IF (RegPhysicalAddress_en	= '1') THEN
+			else
+				if (RegPhysicalAddress_en	= '1') then
 					RegPhysicalAddress_d	<= DeviceAddress;
-				ELSIF (RegPhysicalAddress_sh = '1') THEN
-					RegPhysicalAddress_d	<= RegPhysicalAddress_d(RegPhysicalAddress_d'high - 1 DOWNTO 0) & RegPhysicalAddress_d(RegPhysicalAddress_d'high);
-				END IF;
+				ELSif (RegPhysicalAddress_sh = '1') then
+					RegPhysicalAddress_d	<= RegPhysicalAddress_d(RegPhysicalAddress_d'high - 1 downto 0) & RegPhysicalAddress_d(RegPhysicalAddress_d'high);
+				end if;
 
-				IF (RegRegisterAddress_en	= '1') THEN
+				if (RegRegisterAddress_en	= '1') then
 					RegRegisterAddress_d	<= RegisterAddress;
-				ELSIF (RegRegisterAddress_sh = '1') THEN
-					RegRegisterAddress_d	<= RegRegisterAddress_d(RegRegisterAddress_d'high - 1 DOWNTO 0) & RegRegisterAddress_d(RegRegisterAddress_d'high);
-				END IF;
+				ELSif (RegRegisterAddress_sh = '1') then
+					RegRegisterAddress_d	<= RegRegisterAddress_d(RegRegisterAddress_d'high - 1 downto 0) & RegRegisterAddress_d(RegRegisterAddress_d'high);
+				end if;
 
-				IF (RegRegisterData_en	= '1') THEN
+				if (RegRegisterData_en	= '1') then
 					RegRegisterData_d			<= DataIn;
-				ELSIF (RegRegisterData_sho = '1') THEN
-					RegRegisterData_d			<= RegRegisterData_d(RegRegisterData_d'high - 1 DOWNTO 0) & RegRegisterData_d(RegRegisterData_d'high);
-				ELSIF (RegRegisterData_shi = '1') THEN
-					RegRegisterData_d			<= RegRegisterData_d(RegRegisterData_d'high - 1 DOWNTO 0) & MD_DataIn;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				ELSif (RegRegisterData_sho = '1') then
+					RegRegisterData_d			<= RegRegisterData_d(RegRegisterData_d'high - 1 downto 0) & RegRegisterData_d(RegRegisterData_d'high);
+				ELSif (RegRegisterData_shi = '1') then
+					RegRegisterData_d			<= RegRegisterData_d(RegRegisterData_d'high - 1 downto 0) & MD_DataIn;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	DataOut	<= RegRegisterData_d;
 
 	-- ==========================================================================================================================================================
 	-- Management Data Clock
 	-- ==========================================================================================================================================================
-	blkMDClock : BLOCK
-		CONSTANT CLOCKCOUNTER_MAX_FALLING_EDGE	: NATURAL		:= TimingToCycles(to_time(to_freq(BAUDRATE) / 2.0), CLOCK_FREQ);
-		CONSTANT CLOCKCOUNTER_MAX_RISING_EDGE		: NATURAL		:= TimingToCycles(to_time(to_freq(BAUDRATE) / 2.0), CLOCK_FREQ);
-		CONSTANT CLOCKCOUNTER_BITS							: POSITIVE	:= log2ceilnz(CLOCKCOUNTER_MAX_RISING_EDGE + CLOCKCOUNTER_MAX_FALLING_EDGE);
+	blkMDClock : block
+		constant CLOCKCOUNTER_MAX_FALLING_EDGE	: NATURAL		:= TimingToCycles(to_time(to_freq(BAUDRATE) / 2.0), CLOCK_FREQ);
+		constant CLOCKCOUNTER_MAX_RISING_EDGE		: NATURAL		:= TimingToCycles(to_time(to_freq(BAUDRATE) / 2.0), CLOCK_FREQ);
+		constant CLOCKCOUNTER_BITS							: POSITIVE	:= log2ceilnz(CLOCKCOUNTER_MAX_RISING_EDGE + CLOCKCOUNTER_MAX_FALLING_EDGE);
 
-		SIGNAL ClockCounter_rst			: STD_LOGIC;
-		SIGNAL ClockCounter_us			: UNSIGNED(CLOCKCOUNTER_BITS - 1 DOWNTO 0)	:= (OTHERS => '0');
+		signal ClockCounter_rst			: STD_LOGIC;
+		signal ClockCounter_us			: UNSIGNED(CLOCKCOUNTER_BITS - 1 downto 0)	:= (others => '0');
 
-		SIGNAL MD_Clock_i						: STD_LOGIC																	:= '0';
-		SIGNAL MD_Clock_r						: STD_LOGIC																	:= '0';
-		SIGNAL MD_Clock_d1					: STD_LOGIC																	:= '0';
-		SIGNAL MD_Clock_d2					: STD_LOGIC																	:= '0';
-	BEGIN
-		ASSERT FALSE REPORT "CLOCKCOUNTER_MAX_FALLING_EDGE: "	& INTEGER'image(CLOCKCOUNTER_MAX_FALLING_EDGE)	SEVERITY NOTE;
-		ASSERT FALSE REPORT "CLOCKCOUNTER_MAX_RISING_EDGE: "	& INTEGER'image(CLOCKCOUNTER_MAX_RISING_EDGE)		SEVERITY NOTE;
-		ASSERT FALSE REPORT "CLOCKCOUNTER_BITS: "							& INTEGER'image(CLOCKCOUNTER_BITS)							SEVERITY NOTE;
+		signal MD_Clock_i						: STD_LOGIC																	:= '0';
+		signal MD_Clock_r						: STD_LOGIC																	:= '0';
+		signal MD_Clock_d1					: STD_LOGIC																	:= '0';
+		signal MD_Clock_d2					: STD_LOGIC																	:= '0';
+	begin
+		assert FALSE report "CLOCKCOUNTER_MAX_FALLING_EDGE: "	& INTEGER'image(CLOCKCOUNTER_MAX_FALLING_EDGE)	severity NOTE;
+		assert FALSE report "CLOCKCOUNTER_MAX_RISING_EDGE: "	& INTEGER'image(CLOCKCOUNTER_MAX_RISING_EDGE)		severity NOTE;
+		assert FALSE report "CLOCKCOUNTER_BITS: "							& INTEGER'image(CLOCKCOUNTER_BITS)							severity NOTE;
 
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF ((Reset OR ClockCounter_rst) = '1') THEN
-					ClockCounter_us				<= (OTHERS => '0');
-				ELSE
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if ((Reset OR ClockCounter_rst) = '1') then
+					ClockCounter_us				<= (others => '0');
+				else
 					ClockCounter_us				<= ClockCounter_us + 1;
-				END IF;
-			END IF;
-		END PROCESS;
+				end if;
+			end if;
+		end process;
 
 		MD_Clock_fe				<= to_sl(ClockCounter_us = CLOCKCOUNTER_MAX_FALLING_EDGE - 1);
 		MD_Clock_i				<= to_sl(ClockCounter_us = (CLOCKCOUNTER_MAX_FALLING_EDGE + CLOCKCOUNTER_MAX_RISING_EDGE - 2));
-		MD_Clock_re				<= MD_Clock_i WHEN rising_edge(Clock);
+		MD_Clock_re				<= MD_Clock_i when rising_edge(Clock);
 		ClockCounter_rst	<= MD_Clock_re;
 
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF ((Reset OR MD_Clock_fe) = '1') THEN
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if ((Reset OR MD_Clock_fe) = '1') then
 					MD_Clock_r						<= '0';
-				ELSIF (MD_Clock_re = '1') THEN
+				ELSif (MD_Clock_re = '1') then
 					MD_Clock_r						<= '1';
-				END IF;
-			END IF;
-		END PROCESS;
+				end if;
+			end if;
+		end process;
 
 		MD_Clock_o		<= MD_Clock_r;
 		MD_Clock_t		<= '0';
 
-		genCSP : IF (DEBUG = TRUE) GENERATE
-			CONSTANT OFFSET											: POSITIVE						:= 1;
-			SIGNAL CSP_RisingEdge								: STD_LOGIC;
-			SIGNAL CSP_FallingEdge							: STD_LOGIC;
-			ATTRIBUTE KEEP OF CSP_RisingEdge		: SIGNAL IS TRUE;
-			ATTRIBUTE KEEP OF CSP_FallingEdge		: SIGNAL IS TRUE;
-		BEGIN
+		genCSP : if (DEBUG = TRUE) generate
+			constant OFFSET											: POSITIVE						:= 1;
+			signal CSP_RisingEdge								: STD_LOGIC;
+			signal CSP_FallingEdge							: STD_LOGIC;
+			attribute KEEP OF CSP_RisingEdge		: signal IS TRUE;
+			attribute KEEP OF CSP_FallingEdge		: signal IS TRUE;
+		begin
 			CSP_RisingEdge		<= to_sl(((CLOCKCOUNTER_MAX_RISING_EDGE + CLOCKCOUNTER_MAX_FALLING_EDGE - OFFSET - 1) <= ClockCounter_us) OR (ClockCounter_us <= OFFSET + 1));
 			CSP_FallingEdge		<= to_sl(((CLOCKCOUNTER_MAX_RISING_EDGE - OFFSET + 2) <= ClockCounter_us) AND (ClockCounter_us < (CLOCKCOUNTER_MAX_RISING_EDGE + OFFSET + 2)));
-		END GENERATE;
-	END BLOCK;
+		end generate;
+	end block;
 
 	-- ==========================================================================================================================================================
 	-- Management Data Input/Output
 	-- ==========================================================================================================================================================
-	blkMDData : BLOCK
-		SIGNAL MD_Data_i_d1			: STD_LOGIC				:= '0';
-		SIGNAL MD_Data_i_d2			: STD_LOGIC				:= '0';
-		SIGNAL MD_Data_o_d			: STD_LOGIC				:= '0';
-		SIGNAL MD_Data_t_d			: STD_LOGIC				:= '1';
+	blkMDData : block
+		signal MD_Data_i_d1			: STD_LOGIC				:= '0';
+		signal MD_Data_i_d2			: STD_LOGIC				:= '0';
+		signal MD_Data_o_d			: STD_LOGIC				:= '0';
+		signal MD_Data_t_d			: STD_LOGIC				:= '1';
 
-	BEGIN
-		MD_Data_i_d1		<= MD_Data_i		WHEN rising_edge(Clock);
-		MD_Data_i_d2		<= MD_Data_i_d1 WHEN rising_edge(Clock);
+	begin
+		MD_Data_i_d1		<= MD_Data_i		when rising_edge(Clock);
+		MD_Data_i_d2		<= MD_Data_i_d1 when rising_edge(Clock);
 		MD_DataIn				<= MD_Data_i_d2;
 
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (Reset = '1') THEN
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (Reset = '1') then
 					MD_Data_o_d							<= '0';
 					MD_Data_t_d							<= '1';
-				ELSE
-					IF (MD_Data_en	= '1') THEN
+				else
+					if (MD_Data_en	= '1') then
 						MD_Data_o_d						<= MD_Data_o_nxt;
 						MD_Data_t_d						<= MD_Data_t_nxt;
-					END IF;
-				END IF;
-			END IF;
-		END PROCESS;
+					end if;
+				end if;
+			end if;
+		end process;
 
 		MD_Data_o		<= MD_Data_o_d;
 		MD_Data_t		<= MD_Data_t_d;
-	END BLOCK;
-END;
+	end block;
+end;

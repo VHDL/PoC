@@ -49,7 +49,7 @@ use			IEEE.NUMERIC_STD.all;
 library PoC;
 
 
-entity sync_Strobe IS
+entity sync_Strobe is
   generic (
 	  BITS								: POSITIVE		:= 1;														-- number of bit to be synchronized
 		GATED_INPUT_BY_BUSY	: BOOLEAN			:= TRUE													-- use gated input (by busy signal)
@@ -72,7 +72,7 @@ architecture rtl of sync_Strobe is
 	signal syncClk2_In		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
 	signal syncClk2_Out		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
 
-BEGIN
+begin
 
 	gen : for i in 0 to BITS - 1 generate
 		signal D0							: STD_LOGIC			:= '0';

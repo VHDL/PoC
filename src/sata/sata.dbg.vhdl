@@ -67,7 +67,7 @@ package satadbg is
 		GTX_TX_ResetDone					: STD_LOGIC;
 		GTX_RX_ResetDone					: STD_LOGIC;
 
-		FSM												: STD_LOGIC_VECTOR(3 DOWNTO 0);
+		FSM												: STD_LOGIC_VECTOR(3 downto 0);
 
 		OOB_Clock									: STD_LOGIC;
 		RP_SATAGeneration					: T_SATA_GENERATION;

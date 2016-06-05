@@ -28,19 +28,19 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.net.ALL;
-USE			PoC.net_comp.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
+use			PoC.net.all;
+use			PoC.net_comp.all;
 
-LIBRARY work;
+library work;
 
 -- configuration possibilities
 -- +----------------+-----------+---------------+---------------+---------------------------------------+
@@ -65,8 +65,8 @@ LIBRARY work;
 -- | Stratix 2 GX		|	SoftIP		|								|								|			not supported, yet								|
 -- +----------------+-----------+---------------+---------------+---------------------------------------+
 
-ENTITY Eth_Wrapper IS
-	GENERIC (
+entity Eth_Wrapper is
+	generic (
 		DEBUG											: BOOLEAN															:= FALSE;
 		CLOCKIN_FREQ							: FREQ																:= 125 MHz;																	-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE														:= IPSTYLE_SOFT;														--
@@ -76,72 +76,72 @@ ENTITY Eth_Wrapper IS
 		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE				:= NET_ETH_PHY_DATA_INTERFACE_GMII;					--
 		PHY_MANAGEMENT_INTERFACE	: T_NET_ETH_PHY_MANAGEMENT_INTERFACE	:= NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO		--
 	);
-	PORT (
-		Ethernet_Reset						: IN	STD_LOGIC;				-- TODO: replace this signal by 6 aligned reset for each clock-domain
+	port (
+		Ethernet_Reset						: in	STD_LOGIC;				-- TODO: replace this signal by 6 aligned reset for each clock-domain
 
-		RS_TX_Clock								: IN	STD_LOGIC;
-		RS_RX_Clock								: IN	STD_LOGIC;
-		Eth_TX_Clock							: IN	STD_LOGIC;
-		Eth_RX_Clock							: IN	STD_LOGIC;
-		TX_Clock									: IN	STD_LOGIC;
-		RX_Clock									: IN	STD_LOGIC;
+		RS_TX_Clock								: in	STD_LOGIC;
+		RS_RX_Clock								: in	STD_LOGIC;
+		Eth_TX_Clock							: in	STD_LOGIC;
+		Eth_RX_Clock							: in	STD_LOGIC;
+		TX_Clock									: in	STD_LOGIC;
+		RX_Clock									: in	STD_LOGIC;
 
-		Command										: IN	T_NET_ETH_COMMAND;
-		Status										: OUT	T_NET_ETH_STATUS;
-		Error											: OUT	T_NET_ETH_ERROR;
+		Command										: in	T_NET_ETH_COMMAND;
+		Status										: out	T_NET_ETH_STATUS;
+		Error											: out	T_NET_ETH_ERROR;
 
 		-- LocalLink interface
-		TX_Valid									: IN	STD_LOGIC;
-		TX_Data										: IN	T_SLV_8;
-		TX_SOF										: IN	STD_LOGIC;
-		TX_EOF										: IN	STD_LOGIC;
-		TX_Ack										: OUT	STD_LOGIC;
+		TX_Valid									: in	STD_LOGIC;
+		TX_Data										: in	T_SLV_8;
+		TX_SOF										: in	STD_LOGIC;
+		TX_EOF										: in	STD_LOGIC;
+		TX_Ack										: out	STD_LOGIC;
 
-		RX_Valid									: OUT	STD_LOGIC;
-		RX_Data										: OUT	T_SLV_8;
-		RX_SOF										: OUT	STD_LOGIC;
-		RX_EOF										: OUT	STD_LOGIC;
-		RX_Ack										: IN	STD_LOGIC;
+		RX_Valid									: out	STD_LOGIC;
+		RX_Data										: out	T_SLV_8;
+		RX_SOF										: out	STD_LOGIC;
+		RX_EOF										: out	STD_LOGIC;
+		RX_Ack										: in	STD_LOGIC;
 
 		-- GMII PHY interface
--- TODO:		GMII_Reset								: OUT	STD_LOGIC;				-- 						 RST		-> PHY Reset
--- TODO:		GMII_Interrupt						: IN	STD_LOGIC;				--						 INT		-> Interrupt
+-- TODO:		GMII_Reset								: out	STD_LOGIC;				-- 						 RST		-> PHY Reset
+-- TODO:		GMII_Interrupt						: in	STD_LOGIC;				--						 INT		-> Interrupt
 
 		PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
 	);
 end entity;
 
 
-ARCHITECTURE rtl OF Eth_Wrapper IS
+architecture rtl of Eth_Wrapper is
 
 	-- Bus interface
-	SIGNAL Strobe											: STD_LOGIC;
-	SIGNAL PHY_Address								: STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL Register_we								: STD_LOGIC;
-	SIGNAL Register_Address						: STD_LOGIC_VECTOR(4 DOWNTO 0);
-	SIGNAL Register_DataIn						: T_SLV_16;
-	SIGNAL Register_DataOut						: T_SLV_16;
-	SIGNAL Register_Valid							: STD_LOGIC;
+	signal Strobe											: STD_LOGIC;
+	signal PHY_Address								: STD_LOGIC_VECTOR(4 downto 0);
+	signal Register_we								: STD_LOGIC;
+	signal Register_Address						: STD_LOGIC_VECTOR(4 downto 0);
+	signal Register_DataIn						: T_SLV_16;
+	signal Register_DataOut						: T_SLV_16;
+	signal Register_Valid							: STD_LOGIC;
 
-	SIGNAL ManagementData_Clock				: STD_LOGIC;
-	SIGNAL ManagementData_Data_i			: STD_LOGIC;
-	SIGNAL ManagementData_Data_o			: STD_LOGIC;
-	SIGNAL ManagementData_Data_t			: STD_LOGIC;
+	signal ManagementData_Clock				: STD_LOGIC;
+	signal ManagementData_Data_i			: STD_LOGIC;
+	signal ManagementData_Data_o			: STD_LOGIC;
+	signal ManagementData_Data_t			: STD_LOGIC;
 
-BEGIN
+begin
 
-	genVirtex5 : IF (DEVICE = DEVICE_VIRTEX5) GENERATE
+	genVirtex5 : if (DEVICE = DEVICE_VIRTEX5) generate
 
-	BEGIN
+	begin
 		Eth : eth_Wrapper_Virtex5
-			GENERIC MAP (
+			generic map (
 				DEBUG											=> DEBUG,
 				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
 			)
-			PORT MAP (
+			port map (
 				-- clock interface
 				RS_TX_Clock								=> RS_TX_Clock,
 				RS_RX_Clock								=> RS_RX_Clock,
@@ -170,19 +170,19 @@ BEGIN
 				PHY_Interface							=> PHY_Interface
 			);
 
-	END GENERATE;
-	genVirtex6 : IF (DEVICE = DEVICE_VIRTEX6) GENERATE
+	end generate;
+	genVirtex6 : if (DEVICE = DEVICE_VIRTEX6) generate
 
-	BEGIN
+	begin
 		Eth : eth_Wrapper_Virtex6
-			GENERIC MAP (
+			generic map (
 				DEBUG											=> DEBUG,
 				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
 			)
-			PORT MAP (
+			port map (
 				-- clock interface
 				RS_TX_Clock								=> RS_TX_Clock,
 				RS_RX_Clock								=> RS_RX_Clock,
@@ -212,19 +212,19 @@ BEGIN
 				PHY_Interface							=> PHY_Interface
 			);
 
-	END GENERATE;
-	genSeries7 : IF (DEVICE = DEVICE_VIRTEX7) GENERATE
+	end generate;
+	genSeries7 : if (DEVICE = DEVICE_VIRTEX7) generate
 
-	BEGIN
+	begin
 		Eth : eth_Wrapper_Series7
-			GENERIC MAP (
+			generic map (
 				DEBUG											=> DEBUG,
 				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
 				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
 			)
-			PORT MAP (
+			port map (
 				-- clock interface
 				RS_TX_Clock								=> RS_TX_Clock,
 				RS_RX_Clock								=> RS_RX_Clock,
@@ -254,50 +254,50 @@ BEGIN
 				PHY_Interface							=> PHY_Interface
 			);
 
-	END GENERATE;
+	end generate;
 
-	blkPHYC : BLOCK
-		SIGNAL PHYC_Command			: T_NET_ETH_PHYCONTROLLER_COMMAND;
-		SIGNAL PHYC_Status			: T_NET_ETH_PHYCONTROLLER_STATUS;
-		SIGNAL PHYC_Error				: T_NET_ETH_PHYCONTROLLER_ERROR;
+	blkPHYC : block
+		signal PHYC_Command			: T_NET_ETH_PHYCONTROLLER_COMMAND;
+		signal PHYC_Status			: T_NET_ETH_PHYCONTROLLER_STATUS;
+		signal PHYC_Error				: T_NET_ETH_PHYCONTROLLER_ERROR;
 
-	BEGIN
-		PROCESS(Command)
-		BEGIN
-			CASE Command IS
-				WHEN NET_ETH_CMD_NONE =>					PHYC_Command		<= NET_ETH_PHYC_CMD_NONE;
-				WHEN NET_ETH_CMD_HARD_RESET =>		PHYC_Command		<= NET_ETH_PHYC_CMD_HARD_RESET;
-				WHEN NET_ETH_CMD_SOFT_RESET =>		PHYC_Command		<= NET_ETH_PHYC_CMD_SOFT_RESET;
-				WHEN OTHERS =>										PHYC_Command		<= NET_ETH_PHYC_CMD_NONE;
-			END CASE;
-		END PROCESS;
+	begin
+		process(Command)
+		begin
+			case Command is
+				when NET_ETH_CMD_NONE =>					PHYC_Command		<= NET_ETH_PHYC_CMD_NONE;
+				when NET_ETH_CMD_HARD_RESET =>		PHYC_Command		<= NET_ETH_PHYC_CMD_HARD_RESET;
+				when NET_ETH_CMD_SOFT_RESET =>		PHYC_Command		<= NET_ETH_PHYC_CMD_SOFT_RESET;
+				when others =>										PHYC_Command		<= NET_ETH_PHYC_CMD_NONE;
+			end case;
+		end process;
 
-		PROCESS(PHYC_Status, PHYC_Error)
-		BEGIN
-			CASE PHYC_Status IS
-				WHEN NET_ETH_PHYC_STATUS_POWER_DOWN =>			Status	<= NET_ETH_STATUS_POWER_DOWN;
-				WHEN NET_ETH_PHYC_STATUS_RESETING =>				Status	<= NET_ETH_STATUS_RESETING;
-				WHEN NET_ETH_PHYC_STATUS_CONNECTING =>			Status	<= NET_ETH_STATUS_CONNECTING;
-				WHEN NET_ETH_PHYC_STATUS_CONNECTED =>				Status	<= NET_ETH_STATUS_CONNECTED;
-				WHEN NET_ETH_PHYC_STATUS_DISCONNECTING =>		Status	<= NET_ETH_STATUS_DISCONNECTING;
-				WHEN NET_ETH_PHYC_STATUS_DISCONNECTED =>		Status	<= NET_ETH_STATUS_DISCONNECTED;
-				WHEN NET_ETH_PHYC_STATUS_ERROR =>						Status	<= NET_ETH_STATUS_ERROR;
+		process(PHYC_Status, PHYC_Error)
+		begin
+			case PHYC_Status is
+				when NET_ETH_PHYC_STATUS_POWER_DOWN =>			Status	<= NET_ETH_STATUS_POWER_DOWN;
+				when NET_ETH_PHYC_STATUS_RESETING =>				Status	<= NET_ETH_STATUS_RESETING;
+				when NET_ETH_PHYC_STATUS_CONNECTING =>			Status	<= NET_ETH_STATUS_CONNECTING;
+				when NET_ETH_PHYC_STATUS_CONNECTED =>				Status	<= NET_ETH_STATUS_CONNECTED;
+				when NET_ETH_PHYC_STATUS_DISCONNECTING =>		Status	<= NET_ETH_STATUS_DISCONNECTING;
+				when NET_ETH_PHYC_STATUS_DISCONNECTED =>		Status	<= NET_ETH_STATUS_DISCONNECTED;
+				when NET_ETH_PHYC_STATUS_ERROR =>						Status	<= NET_ETH_STATUS_ERROR;
 
-			END CASE;
+			end case;
 
-			CASE PHYC_Error IS
-				WHEN NET_ETH_PHYC_ERROR_NONE =>							Error		<= NET_ETH_ERROR_NONE;
-				WHEN OTHERS =>															Error		<= NET_ETH_ERROR_NONE;
-			END CASE;
+			case PHYC_Error is
+				when NET_ETH_PHYC_ERROR_NONE =>							Error		<= NET_ETH_ERROR_NONE;
+				when others =>															Error		<= NET_ETH_ERROR_NONE;
+			end case;
 
 	--		MAC_ERROR_MAC_ERROR,
 	--		MAC_ERROR_PHY_ERROR,
 	--		MAC_ERROR_PCS_ERROR,
 	--		MAC_ERROR_NO_CABLE
-		END PROCESS;
+		end process;
 
-		PHYC : ENTITY PoC.Eth_PHYController
-			GENERIC MAP (
+		PHYC : entity PoC.Eth_PHYController
+			generic map (
 				DEBUG														=> DEBUG,
 				CLOCK_FREQ											=> CLOCKIN_FREQ,
 				PHY_DEVICE											=> PHY_DEVICE,
@@ -305,7 +305,7 @@ BEGIN
 				PHY_MANAGEMENT_INTERFACE				=> PHY_MANAGEMENT_INTERFACE,																--			MDIO = 1 MBaud	IIC = 100 kBaud
 				BAUDRATE												=> ite((PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO), 1 MBd, 100 kBd)
 			)
-			PORT MAP (
+			port map (
 				Clock														=> TX_Clock,
 				Reset														=> Ethernet_Reset,
 
@@ -318,5 +318,5 @@ BEGIN
 				PHY_Interrupt										=> PHY_Interface.Common.Interrupt,		--
 				PHY_MDIO												=> PHY_Interface.MDIO									-- Management Data Input/Output
 			);
-	END BLOCK;
-END ARCHITECTURE;
+	end block;
+end architecture;

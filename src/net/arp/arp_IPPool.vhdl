@@ -109,7 +109,7 @@ begin
 --	begin
 --		Insert		<= '0';
 --
---		case Command IS
+--		case Command is
 --			when NET_NDP_NeighborCache_CMD_NONE =>		null;
 --			when NET_NDP_NeighborCache_CMD_ADD =>		Insert <= '1';
 --
@@ -129,7 +129,7 @@ begin
 	PoolResult					<= to_Cache_Result(CacheHit, CacheMiss);
 
 	-- Cache TagUnit
---	TU : entity L_Global.Cache_TagUnit_seq
+--	TU : entity PoC.Cache_TagUnit_seq
 	TU : entity PoC.cache_TagUnit_seq
 		generic map (
 			REPLACEMENT_POLICY				=> "LRU",

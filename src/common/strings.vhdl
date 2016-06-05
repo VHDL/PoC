@@ -184,7 +184,7 @@ package body strings is
 	-- ===========================================================================
 	function to_char(Value : STD_LOGIC) return CHARACTER is
 	begin
-		case Value IS
+		case Value is
 			when 'U' =>			return 'U';
 			when 'X' =>			return 'X';
 			when '0' =>			return '0';
@@ -414,7 +414,7 @@ package body strings is
 		constant absValue		: NATURAL								:= abs(Value);
 		constant len		 		: POSITIVE							:= log10ceilnz(absValue);
 		variable power			: POSITIVE;
-		variable Result			: STRING(1 TO len);
+		variable Result			: STRING(1 to len);
 	begin
 		power		:= 1;
 

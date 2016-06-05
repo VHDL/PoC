@@ -451,7 +451,7 @@ function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_8) return NATURAL is
 			if (words(i).Valid = '1') then
 				Word	:= to_01(unsigned(words(i).Data));
 
---					ASSERT (J > 9) report str_merge("  Word: 0x", hstr(Word), "    CRC16_Value: 0x", hstr(CRC16_Value)) severity NOTE;
+--					assert (J > 9) report str_merge("  Word: 0x", hstr(Word), "    CRC16_Value: 0x", hstr(CRC16_Value)) severity NOTE;
 
 				for j in Word'range loop
 						CRC8_Value := (CRC8_Value(CRC8_Value'high - 1 downto 0) & '0') xor (CRC8_POLYNOMIAL and (CRC8_POLYNOMIAL'range => (Word(j) xor CRC8_Value(CRC8_Value'high))));
@@ -482,15 +482,15 @@ function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_8) return NATURAL is
 --
 ----			report Frames(i).Name severity NOTE;
 --
---			FOR J IN 1 to Frames(i).Count - 1 loop
+--			for j in 1 to Frames(i).Count - 1 loop
 --				Pattern		:= Frames(i).DataFifOPatterns(J);
 --
 --				if (Pattern.Valid = '1') then
 --					Word	:= to_01(Pattern.Data);
 --
-----					ASSERT (J > 9) report str_merge("  Word: 0x", hstr(Word), "    CRC16_Value: 0x", hstr(CRC16_Value)) severity NOTE;
+----					assert (J > 9) report str_merge("  Word: 0x", hstr(Word), "    CRC16_Value: 0x", hstr(CRC16_Value)) severity NOTE;
 --
---					FOR K IN Word'range loop
+--					for k in Word'range loop
 --						CRC16_Value := (CRC16_Value(CRC16_Value'high - 1 downto 0) & '0') XOR (CRC16_POLYNOMIAL AND (CRC16_POLYNOMIAL'range => (Word(K) XOR CRC16_Value(CRC16_Value'high))));
 --					end loop;
 --				end if;

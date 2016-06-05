@@ -39,7 +39,7 @@ use			PoC.vectors.all;
 use			PoC.net.all;
 
 
-entity udp_TX IS
+entity udp_TX is
 	generic (
 		DEBUG												: BOOLEAN						:= FALSE;
 		IP_VERSION									: POSITIVE					:= 6

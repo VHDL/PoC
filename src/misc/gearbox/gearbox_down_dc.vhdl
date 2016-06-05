@@ -68,7 +68,7 @@ architecture rtl OF gearbox_down_dc is
 	constant BIT_RATIO		: REAL			:= real(INPUT_BITS) / real(OUTPUT_BITS);
 	constant COUNTER_BITS : POSITIVE	:= log2ceil(integer(BIT_RATIO));
 
-	TYPE T_MUX_INPUT IS ARRAY (NATURAL RANGE <>) OF STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
+	type T_MUX_INPUT IS array (NATURAL range <>) OF STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
 
 	signal WordBoundary			: STD_LOGIC		:= '0';
 	signal WordBoundary_d		: STD_LOGIC		:= '0';

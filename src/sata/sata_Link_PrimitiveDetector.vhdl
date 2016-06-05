@@ -30,25 +30,25 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.components.ALL;
-USE			PoC.sata.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.components.all;
+use			PoC.sata.all;
 
 
-ENTITY sata_PrimitiveDetector IS
-	PORT (
-		Clock									: IN	STD_LOGIC;
+entity sata_PrimitiveDetector is
+	port (
+		Clock									: in	STD_LOGIC;
 
-		RX_DataIn							: IN	T_SLV_32;
-		RX_CharIsK						: IN	T_SLV_4;
+		RX_DataIn							: in	T_SLV_32;
+		RX_CharIsK						: in	T_SLV_4;
 
-		Primitive							: OUT	T_SATA_PRIMITIVE
+		Primitive							: out	T_SATA_PRIMITIVE
 	);
 end entity;
 
@@ -62,16 +62,16 @@ end entity;
 -- PrimitiveReg_d						<  ????  >< TX_RDY >< TX_RDY >< TX_RDY >< TX_RDY >< RX_RDY >< RX_RDY >< RX_RDY >
 -- Primitive								< TX_RDY >< TX_RDY >< TX_RDY >< TX_RDY >< RX_RDY >< RX_RDY >< RX_RDY >< RX_RDY >
 
-ARCHITECTURE rtl OF sata_PrimitiveDetector IS
-	SIGNAL Primitive_i							: T_SATA_PRIMITIVE;
+architecture rtl of sata_PrimitiveDetector is
+	signal Primitive_i							: T_SATA_PRIMITIVE;
 
-	SIGNAL PrimitiveReg_ctrl_rst		: STD_LOGIC;
-	SIGNAL PrimitiveReg_ctrl_set		: STD_LOGIC;
-	SIGNAL PrimitiveReg_ctrl				: STD_LOGIC						:= '1';
-	SIGNAL PrimitiveReg_en					: STD_LOGIC;
-	SIGNAL PrimitiveReg_d						: T_SATA_PRIMITIVE		:= SATA_PRIMITIVE_NONE;
+	signal PrimitiveReg_ctrl_rst		: STD_LOGIC;
+	signal PrimitiveReg_ctrl_set		: STD_LOGIC;
+	signal PrimitiveReg_ctrl				: STD_LOGIC						:= '1';
+	signal PrimitiveReg_en					: STD_LOGIC;
+	signal PrimitiveReg_d						: T_SATA_PRIMITIVE		:= SATA_PRIMITIVE_NONE;
 
-BEGIN
+begin
 	Primitive_i		<= to_sata_primitive(RX_DataIn, RX_CharIsK);
 
 	-- ===========================================================================
@@ -84,18 +84,18 @@ BEGIN
 																			 (Primitive_i = SATA_PRIMITIVE_NONE) OR
 																			 (Primitive_i = SATA_PRIMITIVE_ILLEGAL));
 
-	PrimitiveReg_ctrl	<= ffsr(q => PrimitiveReg_ctrl, rst => PrimitiveReg_ctrl_rst, set => PrimitiveReg_ctrl_set) WHEN rising_edge(Clock);
+	PrimitiveReg_ctrl	<= ffsr(q => PrimitiveReg_ctrl, rst => PrimitiveReg_ctrl_rst, set => PrimitiveReg_ctrl_set) when rising_edge(Clock);
 	PrimitiveReg_en		<= (PrimitiveReg_ctrl OR PrimitiveReg_ctrl_set) AND NOT PrimitiveReg_ctrl_rst;
 
 	-- PrimitiveReg - save last received primitive
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (PrimitiveReg_en = '1') AND NOT (Primitive_i = SATA_PRIMITIVE_ALIGN) THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (PrimitiveReg_en = '1') AND NOT (Primitive_i = SATA_PRIMITIVE_ALIGN) then
 				PrimitiveReg_d	<= Primitive_i;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	Primitive	<= Primitive_i WHEN (PrimitiveReg_en = '1') ELSE PrimitiveReg_d;
-END;
+	Primitive	<= Primitive_i when (PrimitiveReg_en = '1') else PrimitiveReg_d;
+end architecture;

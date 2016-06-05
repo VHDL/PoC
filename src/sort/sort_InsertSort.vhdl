@@ -33,7 +33,7 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 -- library UNISIM;
--- use			UNISIM.VCOMPONENTS.all;
+-- use			UNISIM.VcomponentS.all;
 
 library PoC;
 use			PoC.config.all;
@@ -105,7 +105,7 @@ begin
 		-- local movements
 		Unequal				<= to_sl(Key_d /= NewKeysUp(I));
 
-		genXilinx : IF (VENDOR = VENDOR_XILINX) GENERATE
+		genXilinx : if (VENDOR = VENDOR_XILINX) generate
 			component MUXCY
 				port (
 					O			: out	STD_ULOGIC;

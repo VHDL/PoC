@@ -114,7 +114,7 @@ package sata is
 	-- ===========================================================================
 	-- SATA Physical Layer Types
 	-- ===========================================================================
-	subtype T_SATA_GENERATION				is INTEGER range 0 TO 5;
+	subtype T_SATA_GENERATION				is INTEGER range 0 to 5;
 
 	constant SATA_GENERATION_1			: T_SATA_GENERATION		:= 0;
 	constant SATA_GENERATION_2			: T_SATA_GENERATION		:= 1;
@@ -516,9 +516,9 @@ package sata is
 	end record;
 
 	type T_SATA_DRIVE_INFORMATION is record
-		DriveSize_LB							: UNSIGNED(63 DOWNTO 0); -- unit is Drive Logical Blocks (DevLB)
-		PhysicalBlockSize_ldB			: UNSIGNED(7 DOWNTO 0);  -- log_2(size_in_bytes)
-		LogicalBlockSize_ldB			: UNSIGNED(7 DOWNTO 0);  -- log_2(DevLB_size_in_bytes)
+		DriveSize_LB							: UNSIGNED(63 downto 0); -- unit is Drive Logical Blocks (DevLB)
+		PhysicalBlockSize_ldB			: UNSIGNED(7 downto 0);  -- log_2(size_in_bytes)
+		LogicalBlockSize_ldB			: UNSIGNED(7 downto 0);  -- log_2(DevLB_size_in_bytes)
 		ATACapabilityFlags				: T_SATA_ATA_CAPABILITY;
 		SATACapabilityFlags				: T_SATA_SATA_CAPABILITY;
 

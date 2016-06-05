@@ -248,7 +248,7 @@ begin
 
 		DataFIFO_got										<= '0';
 
-		case Reader_State IS
+		case Reader_State is
 			when ST_IDLE =>
 				Out_SOF											<= '1';
 

@@ -76,7 +76,7 @@ library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
 library UNISIM;
-use			UNISIM.VCOMPONENTS.all;
+use			UNISIM.VcomponentS.all;
 
 library PoC;
 

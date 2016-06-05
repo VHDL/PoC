@@ -82,11 +82,11 @@ begin
 
 
 --	ICMPv6_loop : entity PoC.FrameLoopback
---		generic MAP (
+--		generic map (
 --			DATA_BW										=> 8,
 --			META_BW										=> 0
 --		)
---		PORT MAP (
+--		port map (
 --			Clock									=> Clock,
 --			Reset									=> Reset,
 --
@@ -99,7 +99,7 @@ begin
 --
 --			Out_Valid							=> IP_TX_Valid,
 --			Out_Data							=> IP_TX_Data,
---			Out_Meta							=> OPEN,
+--			Out_Meta							=> open,
 --			Out_SOF								=> IP_TX_SOF,
 --			Out_EOF								=> IP_TX_EOF,
 --			Out_Ack								=> IP_TX_Ack
@@ -109,7 +109,7 @@ begin
 -- RX Path
 -- =============================================================================
 --	RX : entity PoC.icmpv6_RX
---		PORT MAP (
+--		port map (
 --			Clock										=> Clock,
 --			Reset										=> Reset,
 --
@@ -126,7 +126,7 @@ begin
 -- TX Path
 -- =============================================================================
 --	TX : entity PoC.icmpv6_TX
---		PORT MAP (
+--		port map (
 --			Clock										=> Clock,
 --			Reset										=> Reset,
 --

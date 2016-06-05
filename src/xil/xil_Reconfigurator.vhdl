@@ -79,8 +79,8 @@ architecture rtl of xil_Reconfigurator is
 
 	type T_STATE is (
 		ST_IDLE,
-		ST_READ_BEGIN,	ST_READ_WAIT,
-		ST_WRITE_BEGIN,	ST_WRITE_WAIT,
+		ST_READ_begin,	ST_READ_WAIT,
+		ST_WRITE_begin,	ST_WRITE_WAIT,
 		ST_DONE
 	);
 
@@ -105,7 +105,7 @@ architecture rtl of xil_Reconfigurator is
 begin
 	-- configuration ROM
 	blkCONFIG_ROM : block
-		signal SetIndex 						: inTEGER range 0 to CONFIG_ROM'high;
+		signal SetIndex 						: INTEGER range 0 to CONFIG_ROM'high;
 		signal RowIndex 						: T_XIL_DRP_CONFIG_INDEX;
 
 		attribute KEEP OF SetIndex	: signal IS DEBUG;
@@ -177,10 +177,10 @@ begin
 			when ST_IDLE =>
 				if (Reconfig = '1') then
 					ConfigIndex_rst		<= '1';
-					NextState					<= ST_READ_BEGIN;
+					NextState					<= ST_READ_begin;
 				end if;
 
-			when ST_READ_BEGIN =>
+			when ST_READ_begin =>
 				DRP_en							<= '1';
 				DRP_we							<= '0';
 				NextState						<= ST_READ_WAIT;
@@ -188,10 +188,10 @@ begin
 			when ST_READ_WAIT =>
 				if (DRP_Ack = '1') then
 					DataBuffer_en			<= '1';
-					NextState					<= ST_WRITE_BEGIN;
+					NextState					<= ST_WRITE_begin;
 				end if;
 
-			when ST_WRITE_BEGIN =>
+			when ST_WRITE_begin =>
 				DRP_en							<= '1';
 				DRP_we							<= '1';
 				NextState						<= ST_WRITE_WAIT;
@@ -202,7 +202,7 @@ begin
 						NextState				<= ST_DONE;
 					else
 						ConfigIndex_en	<= '1';
-						NextState				<= ST_READ_BEGIN;
+						NextState				<= ST_READ_begin;
 					end if;
 				end if;
 

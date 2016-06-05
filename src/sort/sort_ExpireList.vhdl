@@ -64,7 +64,7 @@ end entity;
 architecture rtl of list_expire is
 	constant CLOCK_BITS								: POSITIVE																								:= log2ceilnz(CLOCK_CYCLE_TICKS);
 
-	signal CurrentTime_us							: UNSIGNED(CLOCK_BITS - 1 downto 0)												:= (OTHERS => '0');
+	signal CurrentTime_us							: UNSIGNED(CLOCK_BITS - 1 downto 0)												:= (others => '0');
 	signal KeyTime_us									: UNSIGNED(CLOCK_BITS + KEY_BITS - 1 downto KEY_BITS);
 
 	signal FIFO_put										: STD_LOGIC;

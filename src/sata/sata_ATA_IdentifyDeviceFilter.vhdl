@@ -120,7 +120,7 @@ architecture rtl of sata_ATA_IdentifyDeviceFilter is
 	signal SATAGenerationMin													: T_SATA_GENERATION				:= SATA_GENERATION_1;
 	signal SATAGenerationMax													: T_SATA_GENERATION				:= SATA_GENERATION_1;
 
-	signal DriveName																	: T_RAWSTRING(0 TO 39)		:= (others => x"00");
+	signal DriveName																	: T_RAWSTRING(0 to 39)		:= (others => x"00");
 	signal DriveSize_LB																: UNSIGNED(63 downto 0)		:= (others => '0');
 	signal PhysicalBlockSize_ldB											: UNSIGNED(7 downto 0)		:= (others => '0');
 	signal LogicalBlockSize_ldB												: UNSIGNED(7 downto 0)		:= (others => '0');
@@ -145,7 +145,7 @@ architecture rtl of sata_ATA_IdentifyDeviceFilter is
 begin
 	process(Clock)
 	begin
-		IF rising_edge(Clock) then
+		if rising_edge(Clock) then
 			if (Reset = '1') then
 				State			<= ST_IDLE;
 			else
@@ -247,7 +247,7 @@ begin
 
 		process(Clock)
 		begin
-			IF rising_edge(Clock) then
+			if rising_edge(Clock) then
 				if (SOT = '1') then
 					Checksum_us		<= Checksum_nx1;
 				elsif (Valid = '1') then
@@ -265,7 +265,7 @@ begin
 	-- one ATA word has 16 Bits
 	process(Clock)
 	begin
-		IF rising_edge(Clock) then
+		if rising_edge(Clock) then
 			if (Reset = '1') then
 				ATAWord_117_IsValid_r							<= '0';
 			elsif (Valid = '1') then

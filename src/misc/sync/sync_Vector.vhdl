@@ -47,7 +47,7 @@ library PoC;
 use			PoC.utils.all;
 
 
-entity sync_Vector IS
+entity sync_Vector is
   generic (
 	  MASTER_BITS					: POSITIVE					:= 8;											-- number of bit to be synchronized
 		SLAVE_BITS					: NATURAL						:= 0;

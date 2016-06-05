@@ -52,7 +52,7 @@ use			PoC.sata.all;
 use			PoC.satadbg.all;
 
 
-entity sata_FISEncoder IS
+entity sata_FISEncoder is
 	generic (
 		DEBUG												: BOOLEAN						:= FALSE;
 		ENABLE_DEBUGPORT						: BOOLEAN						:= FALSE
@@ -77,7 +77,7 @@ entity sata_FISEncoder IS
 		TX_InsertEOP								: out	STD_LOGIC;
 
 		-- LinkLayer CSE
-		Link_Status									: IN	T_SATA_LINK_STATUS;
+		Link_Status									: in	T_SATA_LINK_STATUS;
 
 		-- LinkLayer FIFO interface
 		Link_TX_Ack									: in	STD_LOGIC;
@@ -95,11 +95,11 @@ entity sata_FISEncoder IS
 end entity;
 
 
-ARCHITECTURE rtl OF sata_FISEncoder IS
-	ATTRIBUTE KEEP									: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING					: STRING;
+architecture rtl of sata_FISEncoder is
+	attribute KEEP									: BOOLEAN;
+	attribute FSM_ENCODING					: STRING;
 
-	TYPE T_STATE IS (
+	type T_STATE is (
 		ST_RESET, ST_IDLE,
 		ST_FIS_REG_HOST_DEV_WORD_0, ST_FIS_REG_HOST_DEV_WORD_1,	ST_FIS_REG_HOST_DEV_WORD_2,	ST_FIS_REG_HOST_DEV_WORD_3,	ST_FIS_REG_HOST_DEV_WORD_4,
 		ST_DATA_0, ST_DATA_N, ST_ABORT_FRAME,
@@ -110,51 +110,51 @@ ARCHITECTURE rtl OF sata_FISEncoder IS
 	-- Alias-Definitions for FISType Register Transfer Host => Device (27h)
 	-- ====================================================================================
 	-- Word 0
-	ALIAS Alias_FISType										: T_SLV_8													IS Link_TX_Data(7 DOWNTO 0);
+	ALIAS Alias_FISType										: T_SLV_8													IS Link_TX_Data(7 downto 0);
 	ALIAS Alias_FlagC											: STD_LOGIC												IS Link_TX_Data(15);
-	ALIAS Alias_CommandReg								: T_SLV_8													IS Link_TX_Data(23 DOWNTO 16);			-- Command register
-	ALIAS Alias_FeatureReg								: T_SLV_8													IS Link_TX_Data(31 DOWNTO 24);			-- Feature register
+	ALIAS Alias_CommandReg								: T_SLV_8													IS Link_TX_Data(23 downto 16);			-- Command register
+	ALIAS Alias_FeatureReg								: T_SLV_8													IS Link_TX_Data(31 downto 24);			-- Feature register
 
 	-- Word 1
-	ALIAS Alias_LBA0											: T_SLV_8													IS Link_TX_Data(7 DOWNTO 0);				-- Sector Number
-	ALIAS Alias_LBA8											: T_SLV_8													IS Link_TX_Data(15 DOWNTO 8);				-- Sector Number expanded
-	ALIAS Alias_LBA16											: T_SLV_8													IS Link_TX_Data(23 DOWNTO 16);			-- Cylinder Low
-	ALIAS Alias_Head											: T_SLV_4													IS Link_TX_Data(27 DOWNTO 24);			-- Head number
-	ALIAS Alias_Device										: STD_LOGIC_VECTOR(0 DOWNTO 0)		IS Link_TX_Data(28 DOWNTO 28);			-- Device number
+	ALIAS Alias_LBA0											: T_SLV_8													IS Link_TX_Data(7 downto 0);				-- Sector Number
+	ALIAS Alias_LBA8											: T_SLV_8													IS Link_TX_Data(15 downto 8);				-- Sector Number expanded
+	ALIAS Alias_LBA16											: T_SLV_8													IS Link_TX_Data(23 downto 16);			-- Cylinder Low
+	ALIAS Alias_Head											: T_SLV_4													IS Link_TX_Data(27 downto 24);			-- Head number
+	ALIAS Alias_Device										: STD_LOGIC_VECTOR(0 downto 0)		IS Link_TX_Data(28 downto 28);			-- Device number
 	ALIAS Alias_FlagLBA48									: STD_LOGIC												IS Link_TX_Data(30);								-- is LBA-48 address
 
 	-- Word 2
-	ALIAS Alias_LBA24											: T_SLV_8													IS Link_TX_Data(7 DOWNTO 0);				-- Cylinder Low expanded
-	ALIAS Alias_LBA32											: T_SLV_8													IS Link_TX_Data(15 DOWNTO 8);				-- Cylinder High
-	ALIAS Alias_LBA40											: T_SLV_8													IS Link_TX_Data(23 DOWNTO 16);			-- Cylinder High expanded
+	ALIAS Alias_LBA24											: T_SLV_8													IS Link_TX_Data(7 downto 0);				-- Cylinder Low expanded
+	ALIAS Alias_LBA32											: T_SLV_8													IS Link_TX_Data(15 downto 8);				-- Cylinder High
+	ALIAS Alias_LBA40											: T_SLV_8													IS Link_TX_Data(23 downto 16);			-- Cylinder High expanded
 
 	-- Word 3
-	ALIAS Alias_SecCount0									: T_SLV_8													IS Link_TX_Data(7 DOWNTO 0);				-- Sector Count
-	ALIAS Alias_SecCount8									: T_SLV_8													IS Link_TX_Data(15 DOWNTO 8);				-- Sector Count expanded
-	ALIAS Alias_ControlReg								: T_SLV_8													IS Link_TX_Data(31 DOWNTO 24);			-- Control register
+	ALIAS Alias_SecCount0									: T_SLV_8													IS Link_TX_Data(7 downto 0);				-- Sector Count
+	ALIAS Alias_SecCount8									: T_SLV_8													IS Link_TX_Data(15 downto 8);				-- Sector Count expanded
+	ALIAS Alias_ControlReg								: T_SLV_8													IS Link_TX_Data(31 downto 24);			-- Control register
 
 	-- Word 4
---	ALIAS Alias_TransferCount							: T_SLV_16												IS Link_TX_Data(15 DOWNTO 0);				-- Transfer Count
+--	ALIAS Alias_TransferCount							: T_SLV_16												IS Link_TX_Data(15 downto 0);				-- Transfer Count
 
-	SIGNAL State													: T_STATE													:= ST_RESET;
-	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
+	signal State													: T_STATE													:= ST_RESET;
+	signal NextState											: T_STATE;
+	attribute FSM_ENCODING	OF State			: signal IS getFSMEncoding_gray(DEBUG);
 
-BEGIN
+begin
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) then
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
 			if (Reset = '1') then
 				State			<= ST_RESET;
 			else
 				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, Link_Status, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_SyncEsc, Link_TX_InsertEOF)
-	BEGIN
+	process(State, Link_Status, FISType, ATARegisters, TX_Valid, TX_Data, TX_SOP, TX_EOP, Link_TX_Ack, Link_TX_FS_Valid, Link_TX_FS_SendOK, Link_TX_FS_SyncEsc, Link_TX_InsertEOF)
+	begin
 		NextState										<= State;
 
 		Status											<= SATA_FISE_STATUS_SENDING;
@@ -165,7 +165,7 @@ BEGIN
 		Link_TX_Valid								<= '0';
 		Link_TX_EOF									<= '0';
 		Link_TX_SOF									<= '0';
-		Link_TX_Data								<= (OTHERS => '0');
+		Link_TX_Data								<= (others => '0');
 
 		Link_TX_FS_Ack							<= '0';
 
@@ -193,7 +193,7 @@ BEGIN
 		Alias_SecCount8							<= x"00";													-- Sector Count expanded
 		Alias_ControlReg						<= x"00";													-- Control register
 
-		CASE State IS
+		case State is
 			when ST_RESET =>
 				-- Clock might be unstable is this state. In this case either
 				-- a) Reset is asserted because inital reset of the SATAController is
@@ -206,11 +206,11 @@ BEGIN
 					NextState <= ST_IDLE;
         end if;
 
-			WHEN ST_IDLE =>
+			when ST_IDLE =>
 				Status										<= SATA_FISE_STATUS_IDLE;
 
-				CASE FISType IS
-					WHEN SATA_FISTYPE_REG_HOST_DEV =>
+				case FISType is
+					when SATA_FISTYPE_REG_HOST_DEV =>
 						-- send "Register-FIS - Host to Device"
 						Link_TX_Valid					<= '1';
 						Link_TX_SOF						<= '1';
@@ -224,9 +224,9 @@ BEGIN
 							NextState						<= ST_FIS_REG_HOST_DEV_WORD_1;
 						else
 							NextState						<= ST_FIS_REG_HOST_DEV_WORD_0;
-						END IF;
+						end if;
 
-					WHEN SATA_FISTYPE_DATA =>
+					when SATA_FISTYPE_DATA =>
 						-- send "Data-FIS - Host to Device"
 						Link_TX_Valid					<= '1';
 						Link_TX_SOF						<= '1';
@@ -239,12 +239,12 @@ BEGIN
 							NextState						<= ST_DATA_0;
 						end if;
 
-					WHEN OTHERS =>
+					when others =>
 						NULL;
 
-				END CASE;
+				end case;
 
-			WHEN ST_FIS_REG_HOST_DEV_WORD_0 =>
+			when ST_FIS_REG_HOST_DEV_WORD_0 =>
 				-- send "Register-FIS - Host to Device"
 				Link_TX_Valid							<= '1';
 				Link_TX_SOF								<= '1';
@@ -256,53 +256,53 @@ BEGIN
 
 				if (Link_TX_Ack = '1') then
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_1;
-				END IF;
+				end if;
 
-			WHEN ST_FIS_REG_HOST_DEV_WORD_1 =>
+			when ST_FIS_REG_HOST_DEV_WORD_1 =>
 				Link_TX_Valid							<= '1';
 
-				Alias_LBA0								<= ATARegisters.LBlockAddress(7 DOWNTO 0);
-				Alias_LBA8								<= ATARegisters.LBlockAddress(15 DOWNTO 8);
-				Alias_LBA16								<= ATARegisters.LBlockAddress(23 DOWNTO 16);
+				Alias_LBA0								<= ATARegisters.LBlockAddress(7 downto 0);
+				Alias_LBA8								<= ATARegisters.LBlockAddress(15 downto 8);
+				Alias_LBA16								<= ATARegisters.LBlockAddress(23 downto 16);
 				Alias_Head								<= x"0";																								-- Head number
 				Alias_Device							<=  "0";																								-- Device number
 				Alias_FlagLBA48						<= is_LBA48_Command(to_sata_ata_command(ATARegisters.Command));	-- LBA-48 adressing mode
 
 				if (Link_TX_Ack = '1') then
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_2;
-				END IF;
+				end if;
 
-			WHEN ST_FIS_REG_HOST_DEV_WORD_2 =>
+			when ST_FIS_REG_HOST_DEV_WORD_2 =>
 				Link_TX_Valid							<= '1';
 
-				Alias_LBA24								<= ATARegisters.LBlockAddress(31 DOWNTO 24);
-				Alias_LBA32								<= ATARegisters.LBlockAddress(39 DOWNTO 32);
-				Alias_LBA40								<= ATARegisters.LBlockAddress(47 DOWNTO 40);
+				Alias_LBA24								<= ATARegisters.LBlockAddress(31 downto 24);
+				Alias_LBA32								<= ATARegisters.LBlockAddress(39 downto 32);
+				Alias_LBA40								<= ATARegisters.LBlockAddress(47 downto 40);
 
 				if (Link_TX_Ack = '1') then
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_3;
-				END IF;
+				end if;
 
-			WHEN ST_FIS_REG_HOST_DEV_WORD_3 =>
+			when ST_FIS_REG_HOST_DEV_WORD_3 =>
 				Link_TX_Valid							<= '1';
 
-				Alias_SecCount0						<= ATARegisters.SectorCount(7 DOWNTO 0);					-- Sector Count
-				Alias_SecCount8						<= ATARegisters.SectorCount(15 DOWNTO 8);					-- Sector Count expanded
+				Alias_SecCount0						<= ATARegisters.SectorCount(7 downto 0);					-- Sector Count
+				Alias_SecCount8						<= ATARegisters.SectorCount(15 downto 8);					-- Sector Count expanded
 				Alias_ControlReg					<= ATARegisters.Control;													-- Control register
 
 				if (Link_TX_Ack = '1') then
 					NextState								<= ST_FIS_REG_HOST_DEV_WORD_4;
-				END IF;
+				end if;
 
-			WHEN ST_FIS_REG_HOST_DEV_WORD_4 =>
+			when ST_FIS_REG_HOST_DEV_WORD_4 =>
 				Link_TX_Valid							<= '1';
 				Link_TX_EOF								<= '1';
 
 				if (Link_TX_Ack = '1') then
 					NextState								<= ST_EVALUATE_FRAMESTATE;
-				END IF;
+				end if;
 
-			WHEN ST_DATA_0 =>
+			when ST_DATA_0 =>
 				-- Send Data FIS Header until Link_TX_Ack.
 				Link_TX_Valid					<= '1';
 				Link_TX_SOF						<= '1';
@@ -313,7 +313,7 @@ BEGIN
 					NextState 					<= ST_DATA_N;
 				end if;
 
-			WHEN ST_DATA_N =>
+			when ST_DATA_N =>
 				Link_TX_Data							<= TX_Data;
 
 				TX_Ack										<= Link_TX_Ack;

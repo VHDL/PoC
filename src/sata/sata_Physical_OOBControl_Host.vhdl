@@ -458,7 +458,7 @@ begin
 
 	-- debug port
 	-- ===========================================================================
-	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) generate
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));

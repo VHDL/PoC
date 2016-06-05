@@ -98,18 +98,18 @@ architecture rtl of ocram_tdp_altera is
 			wrcontrol_aclr_b					: STRING;
 			wrcontrol_wraddress_reg_b : STRING);
 		port (
-			clocken0	: IN	STD_LOGIC;
-			clocken1	: IN	STD_LOGIC;
-			wren_a		: IN	STD_LOGIC;
-			clock0		: IN	STD_LOGIC;
-			wren_b		: IN	STD_LOGIC;
-			clock1		: IN	STD_LOGIC;
-			address_a : IN	STD_LOGIC_VECTOR (widthad_a-1 DOWNTO 0);
-			address_b : IN	STD_LOGIC_VECTOR (widthad_b-1 DOWNTO 0);
-			q_a			 : OUT STD_LOGIC_VECTOR (width_a-1 DOWNTO 0);
-			q_b			 : OUT STD_LOGIC_VECTOR (width_b-1 DOWNTO 0);
-			data_a		: IN	STD_LOGIC_VECTOR (width_a-1 DOWNTO 0);
-			data_b		: IN	STD_LOGIC_VECTOR (width_b-1 DOWNTO 0)
+			clocken0	: in	STD_LOGIC;
+			clocken1	: in	STD_LOGIC;
+			wren_a		: in	STD_LOGIC;
+			clock0		: in	STD_LOGIC;
+			wren_b		: in	STD_LOGIC;
+			clock1		: in	STD_LOGIC;
+			address_a : in	STD_LOGIC_VECTOR (widthad_a-1 downto 0);
+			address_b : in	STD_LOGIC_VECTOR (widthad_b-1 downto 0);
+			q_a			 : out STD_LOGIC_VECTOR (width_a-1 downto 0);
+			q_b			 : out STD_LOGIC_VECTOR (width_b-1 downto 0);
+			data_a		: in	STD_LOGIC_VECTOR (width_a-1 downto 0);
+			data_b		: in	STD_LOGIC_VECTOR (width_b-1 downto 0)
 		);
 	end component;
 

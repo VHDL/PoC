@@ -49,7 +49,7 @@ end entity;
 
 
 architecture rtl of sync_Reset_Altera is
-	attribute altera_attribute	: STRING;
+	attribute ALTERA_ATTRIBUTE	: STRING;
 	attribute preserve					: BOOLEAN;
 
 	signal Data_async				: STD_LOGIC;
@@ -57,9 +57,9 @@ architecture rtl of sync_Reset_Altera is
 	signal Data_sync				: STD_LOGIC_VECTOR(SYNC_DEPTH - 1 downto 0)	:= (others => '1');
 
 	-- Apply a SDC constraint to meta stable flip flop
-	--attribute altera_attribute of rtl					: architecture is "-name SDC_STATEMENT ""set_false_path -to *|sync_Reset_Altera:*|Data_meta """;
+	--attribute ALTERA_ATTRIBUTE of rtl					: architecture is "-name SDC_STATEMENT ""set_false_path -to *|sync_Reset_Altera:*|Data_meta """;
 	-- Notity the synthesizer / timing analysator to identity a synchronizer circuit
-	attribute altera_attribute of Data_meta		: signal is "-name SYNCHRONIZER_IDENTIFICATION ""FORCED IF ASYNCHRONOUS""";
+	attribute ALTERA_ATTRIBUTE of Data_meta		: signal is "-name SYNCHRONIZER_IDENTIFICATION ""FORCED IF ASYNCHRONOUS""";
 	-- preserve both registers (no optimization, shift register extraction, ...)
 	attribute preserve of Data_meta						: signal is TRUE;
 	attribute preserve of Data_sync						: signal is TRUE;

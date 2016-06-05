@@ -107,12 +107,12 @@ architecture rtl of iic_Switch_PCA9548A is
 
 	signal State												: T_STATE						:= ST_IDLE;
 	signal NextState										: T_STATE;
-	ATTRIBUTE FSM_ENCODING of State			: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	attribute FSM_ENCODING of State			: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	signal Request_or							: STD_LOGIC;
 	signal FSM_Arbitrate					: STD_LOGIC;
 
---	SIGNAL Arb_Arbitrated					: STD_LOGIC;
+--	signal Arb_Arbitrated					: STD_LOGIC;
 	signal Arb_Grant							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 	signal Arb_Grant_bin					: STD_LOGIC_VECTOR(log2ceilnz(PORTS) - 1 downto 0);
 

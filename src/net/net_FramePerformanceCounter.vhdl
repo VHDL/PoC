@@ -1,64 +1,64 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.physical.all;
 
-ENTITY LocalLink_PerformanceCounter IS
-	GENERIC (
+entity LocalLink_PerformanceCounter is
+	generic (
 		CLOCK_IN_FREQ							: FREQ									:= 100 MHz;
 		AGGREGATION_INTERVAL			: TIME									:= 500 ms
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock											: in	STD_LOGIC;
+		Reset											: in	STD_LOGIC;
 
-		In_Valid									: IN	STD_LOGIC;
-		In_Data										: IN	T_SLV_8;
-		In_SOF										: IN	STD_LOGIC;
-		In_EOF										: IN	STD_LOGIC;
-		In_Ack										: OUT	STD_LOGIC;
+		In_Valid									: in	STD_LOGIC;
+		In_Data										: in	T_SLV_8;
+		In_SOF										: in	STD_LOGIC;
+		In_EOF										: in	STD_LOGIC;
+		In_Ack										: out	STD_LOGIC;
 
-		Out_Valid									: OUT	STD_LOGIC;
-		Out_Data									: OUT	T_SLV_8;
-		Out_SOF										: OUT	STD_LOGIC;
-		Out_EOF										: OUT	STD_LOGIC;
-		Out_Ack										: IN	STD_LOGIC;
+		Out_Valid									: out	STD_LOGIC;
+		Out_Data									: out	T_SLV_8;
+		Out_SOF										: out	STD_LOGIC;
+		Out_EOF										: out	STD_LOGIC;
+		Out_Ack										: in	STD_LOGIC;
 
-		PacketsPerSecond					: OUT	T_SLV_32;
-		BytesPerSecond						: OUT	T_SLV_32
+		PacketsPerSecond					: out	T_SLV_32;
+		BytesPerSecond						: out	T_SLV_32
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF LocalLink_PerformanceCounter IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+architecture rtl of LocalLink_PerformanceCounter is
+	attribute KEEP										: BOOLEAN;
+	attribute FSM_ENCODING						: STRING;
 
-	SIGNAL In_Ack_i									: STD_LOGIC;
+	signal In_Ack_i									: STD_LOGIC;
 
-	SIGNAL Is_NewPacket								: STD_LOGIC;
-	SIGNAL Is_DataFlow								: STD_LOGIC;
+	signal Is_NewPacket								: STD_LOGIC;
+	signal Is_DataFlow								: STD_LOGIC;
 
-	SIGNAL PacketCounter_rst					: STD_LOGIC;
-	SIGNAL PacketCounter_en						: STD_LOGIC;
-	SIGNAL PacketCounter_us						: UNSIGNED(31 DOWNTO 0)			:= (OTHERS => '0');
+	signal PacketCounter_rst					: STD_LOGIC;
+	signal PacketCounter_en						: STD_LOGIC;
+	signal PacketCounter_us						: UNSIGNED(31 downto 0)			:= (others => '0');
 
-	SIGNAL ByteCounter_rst						: STD_LOGIC;
-	SIGNAL ByteCounter_en							: STD_LOGIC;
-	SIGNAL ByteCounter_us							: UNSIGNED(31 DOWNTO 0)			:= (OTHERS => '0');
+	signal ByteCounter_rst						: STD_LOGIC;
+	signal ByteCounter_en							: STD_LOGIC;
+	signal ByteCounter_us							: UNSIGNED(31 downto 0)			:= (others => '0');
 
-	SIGNAL TimeBaseCounter_rst				: STD_LOGIC;
-	SIGNAL TimeBaseCounter_en					: STD_LOGIC;
-	SIGNAL TimeBaseCounter_us					: UNSIGNED(31 DOWNTO 0)			:= (OTHERS => '0');
-	SIGNAL TimeBaseCounter_ov					: STD_LOGIC;
+	signal TimeBaseCounter_rst				: STD_LOGIC;
+	signal TimeBaseCounter_en					: STD_LOGIC;
+	signal TimeBaseCounter_us					: UNSIGNED(31 downto 0)			:= (others => '0');
+	signal TimeBaseCounter_ov					: STD_LOGIC;
 
-	SIGNAL PacketsPerSecond_d					: T_SLV_32									:= (OTHERS => '0');
-	SIGNAL BytesPerSecond_d						: T_SLV_32									:= (OTHERS => '0');
-BEGIN
+	signal PacketsPerSecond_d					: T_SLV_32									:= (others => '0');
+	signal BytesPerSecond_d						: T_SLV_32									:= (others => '0');
+begin
 	-- data path
 	Out_Valid		<= In_Valid;
 	Out_Data		<= In_Data;
@@ -80,58 +80,58 @@ BEGIN
 	ByteCounter_en		<= Is_DataFlow;
 
 	-- packet and byte counters
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR PacketCounter_rst) = '1') THEN
-				PacketCounter_us				<= (OTHERS => '0');
-			ELSE
-				IF (PacketCounter_en = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR PacketCounter_rst) = '1') then
+				PacketCounter_us				<= (others => '0');
+			else
+				if (PacketCounter_en = '1') then
 					PacketCounter_us			<= PacketCounter_us + 1;
-				END IF;
-			END IF;
+				end if;
+			end if;
 
-			IF ((Reset OR ByteCounter_rst)= '1') THEN
-				ByteCounter_us					<= (OTHERS => '0');
-			ELSE
-				IF (ByteCounter_en = '1') THEN
+			if ((Reset OR ByteCounter_rst)= '1') then
+				ByteCounter_us					<= (others => '0');
+			else
+				if (ByteCounter_en = '1') then
 					ByteCounter_us				<= ByteCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- timebase
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR TimeBaseCounter_rst) = '1') THEN
-				TimeBaseCounter_us				<= (OTHERS => '0');
-			ELSE
-				IF (TimeBaseCounter_en = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR TimeBaseCounter_rst) = '1') then
+				TimeBaseCounter_us				<= (others => '0');
+			else
+				if (TimeBaseCounter_en = '1') then
 					TimeBaseCounter_us			<= TimeBaseCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	TimeBaseCounter_ov		<= to_sl(TimeBaseCounter_us = TimingToCycles(AGGREGATION_INTERVAL, CLOCK_IN_FREQ));
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
-				PacketsPerSecond_d		<= (OTHERS => '0');
-				BytesPerSecond_d			<= (OTHERS => '0');
-			ELSE
-				IF (TimeBaseCounter_ov = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
+				PacketsPerSecond_d		<= (others => '0');
+				BytesPerSecond_d			<= (others => '0');
+			else
+				if (TimeBaseCounter_ov = '1') then
 					PacketsPerSecond_d	<= std_logic_vector(PacketCounter_us);
 					BytesPerSecond_d		<= std_logic_vector(ByteCounter_us);
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
-	PacketsPerSecond		<= std_logic_vector(PacketsPerSecond_d(29 DOWNTO 0))	& "00";
-	BytesPerSecond			<= std_logic_vector(BytesPerSecond_d(29 DOWNTO 0))		& "00";
-END ARCHITECTURE;
+	PacketsPerSecond		<= std_logic_vector(PacketsPerSecond_d(29 downto 0))	& "00";
+	BytesPerSecond			<= std_logic_vector(BytesPerSecond_d(29 downto 0))		& "00";
+end architecture;

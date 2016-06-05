@@ -108,7 +108,7 @@ begin
 			-- PrePause
 			for i in 1 to CurFG.PrePause loop
 				wait until rising_edge(Clock);
-			end LOOP;
+			end loop;
 
 			WordIndex							:= 0;
 
@@ -116,7 +116,7 @@ begin
 			loop
 				-- check for to many simulation cycles
 				assert (Cycles < MAX_CYCLES) report "MAX_CYCLES reached:  framegroup=" & INTEGER'image(to_integer(FrameGroupNumber_us)) severity FAILURE;
---				ASSERT (Errors < MAX_ERRORS) report "MAX_ERRORS reached" severity FAILURE;
+--				assert (Errors < MAX_ERRORS) report "MAX_ERRORS reached" severity FAILURE;
 				Cycles := Cycles + 1;
 
 				wait until rising_edge(Clock);
@@ -132,7 +132,7 @@ begin
 					WordIndex := WordIndex + 1;
 				end if;
 
-				-- check if framegroup end is reached => exit LOOP
+				-- check if framegroup end is reached => exit loop
 				assert FALSE report "WordIndex=" & INTEGER'image(WordIndex) severity WARNING;
 				exit when ((WordIndex /= 0) AND (CurFG.Data(WordIndex - 1).EOFG = TRUE));
 			end loop;

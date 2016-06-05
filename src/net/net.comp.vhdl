@@ -61,7 +61,7 @@ package net_comp is
 			RS_RX_Error								: out	STD_LOGIC;
 
 			-- PHY-GMII interface
-			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_GMII
+			PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
 		);
 	end component;
 
@@ -85,7 +85,7 @@ package net_comp is
 			RS_RX_Error								: out	STD_LOGIC;
 
 			-- PHY-SGMII interface
-			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
+			PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_SGMII
 		);
 	end component;
 
@@ -109,7 +109,7 @@ package net_comp is
 			RS_RX_Error								: out	STD_LOGIC;
 
 			-- PHY-SGMII interface
-			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
+			PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_SGMII
 		);
 	end component;
 
@@ -133,7 +133,7 @@ package net_comp is
 			RS_RX_Error								: out	STD_LOGIC;
 
 			-- PHY-SGMII interface
-			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
+			PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_SGMII
 		);
 	end component;
 

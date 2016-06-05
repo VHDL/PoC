@@ -58,7 +58,7 @@ end entity;
 
 
 architecture rtl of arith_prng is
-	subtype T_TAPPOSITION				is T_NATVEC(0 TO 4);
+	subtype T_TAPPOSITION				is T_NATVEC(0 to 4);
 	type T_TAPPOSITION_VECTOR		is array (natural range <>) of T_TAPPOSITION;
 
 	-- Tap positions are taken from Xilinx Application Note 052 (XAPP052)

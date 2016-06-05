@@ -97,34 +97,34 @@ entity sata_TransportLayer is
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN						:= TRUE						-- required by ATA/SATA standard
   );
 	port (
-		Clock														: IN	STD_LOGIC;
+		Clock														: in	STD_LOGIC;
 		ClockEnable											: in	STD_LOGIC;
-		Reset														: IN	STD_LOGIC;
+		Reset														: in	STD_LOGIC;
 
 		-- TransportLayer interface
-		Command													: IN	T_SATA_TRANS_COMMAND;
-		Status													: OUT	T_SATA_TRANS_STATUS;
-		Error														: OUT	T_SATA_TRANS_ERROR;
+		Command													: in	T_SATA_TRANS_COMMAND;
+		Status													: out	T_SATA_TRANS_STATUS;
+		Error														: out	T_SATA_TRANS_ERROR;
 
-		DebugPortOut										: OUT T_SATADBG_TRANS_OUT;
+		DebugPortOut										: out T_SATADBG_TRANS_OUT;
 
 		-- ATA registers
-		ATAHostRegisters								: IN	T_SATA_ATA_HOST_REGISTERS;
-		ATADeviceRegisters							: OUT	T_SATA_ATA_DEVICE_REGISTERS;
+		ATAHostRegisters								: in	T_SATA_ATA_HOST_REGISTERS;
+		ATADeviceRegisters							: out	T_SATA_ATA_DEVICE_REGISTERS;
 
 		-- TX path
-		TX_Ack												: OUT	STD_LOGIC;
-		TX_SOT												: IN	STD_LOGIC;
-		TX_EOT												: IN	STD_LOGIC;
-		TX_Data												: IN	T_SLV_32;
-		TX_Valid											: IN	STD_LOGIC;
+		TX_Ack												: out	STD_LOGIC;
+		TX_SOT												: in	STD_LOGIC;
+		TX_EOT												: in	STD_LOGIC;
+		TX_Data												: in	T_SLV_32;
+		TX_Valid											: in	STD_LOGIC;
 
 		-- RX path
-		RX_Ack												: IN	STD_LOGIC;
-		RX_SOT												: OUT STD_LOGIC;
-		RX_EOT												: OUT STD_LOGIC;
-		RX_Data												: OUT	T_SLV_32;
-		RX_Valid											: OUT	STD_LOGIC;
+		RX_Ack												: in	STD_LOGIC;
+		RX_SOT												: out STD_LOGIC;
+		RX_EOT												: out STD_LOGIC;
+		RX_Data												: out	T_SLV_32;
+		RX_Valid											: out	STD_LOGIC;
 
 		-- SATAController Status
 		Link_ResetDone 								: in  STD_LOGIC;
@@ -133,35 +133,35 @@ entity sata_TransportLayer is
 		SATAGeneration 								: in 	T_SATA_GENERATION;
 
 		-- TX path
-		Link_TX_Ack										: IN	STD_LOGIC;
-		Link_TX_Data									: OUT	T_SLV_32;
-		Link_TX_SOF										: OUT	STD_LOGIC;
-		Link_TX_EOF										: OUT	STD_LOGIC;
-		Link_TX_Valid									: OUT	STD_LOGIC;
-		Link_TX_InsertEOF							: IN	STD_LOGIC;															-- helper signal: insert EOF - max frame size reached
+		Link_TX_Ack										: in	STD_LOGIC;
+		Link_TX_Data									: out	T_SLV_32;
+		Link_TX_SOF										: out	STD_LOGIC;
+		Link_TX_EOF										: out	STD_LOGIC;
+		Link_TX_Valid									: out	STD_LOGIC;
+		Link_TX_InsertEOF							: in	STD_LOGIC;															-- helper signal: insert EOF - max frame size reached
 
-		Link_TX_FS_Ack								: OUT	STD_LOGIC;
-		Link_TX_FS_SendOK							: IN	STD_LOGIC;
-		Link_TX_FS_SyncEsc 						: IN	STD_LOGIC;
-		Link_TX_FS_Valid							: IN	STD_LOGIC;
+		Link_TX_FS_Ack								: out	STD_LOGIC;
+		Link_TX_FS_SendOK							: in	STD_LOGIC;
+		Link_TX_FS_SyncEsc 						: in	STD_LOGIC;
+		Link_TX_FS_Valid							: in	STD_LOGIC;
 
 		-- RX path
-		Link_RX_Ack										: OUT	STD_LOGIC;
-		Link_RX_Data									: IN	T_SLV_32;
-		Link_RX_SOF										: IN	STD_LOGIC;
-		Link_RX_EOF										: IN	STD_LOGIC;
-		Link_RX_Valid									: IN	STD_LOGIC;
+		Link_RX_Ack										: out	STD_LOGIC;
+		Link_RX_Data									: in	T_SLV_32;
+		Link_RX_SOF										: in	STD_LOGIC;
+		Link_RX_EOF										: in	STD_LOGIC;
+		Link_RX_Valid									: in	STD_LOGIC;
 
-		Link_RX_FS_Ack								: OUT	STD_LOGIC;
-		Link_RX_FS_CRCOK							: IN	STD_LOGIC;
-		Link_RX_FS_SyncEsc						: IN	STD_LOGIC;
-		Link_RX_FS_Valid							: IN	STD_LOGIC
+		Link_RX_FS_Ack								: out	STD_LOGIC;
+		Link_RX_FS_CRCOK							: in	STD_LOGIC;
+		Link_RX_FS_SyncEsc						: in	STD_LOGIC;
+		Link_RX_FS_Valid							: in	STD_LOGIC
 	);
 end entity;
 
 
-ARCHITECTURE rtl OF sata_TransportLayer IS
-	ATTRIBUTE KEEP											: BOOLEAN;
+architecture rtl of sata_TransportLayer is
+	attribute KEEP											: BOOLEAN;
 
 	-- my reset
 	signal MyReset 											: STD_LOGIC;
@@ -235,15 +235,15 @@ begin
 	-- ================================================================
 	-- TransportLayer FSM
 	-- ================================================================
-	TFSM : ENTITY PoC.sata_TransportLayerFSM
-    GENERIC MAP (
+	TFSM : entity PoC.sata_TransportLayerFSM
+    generic map (
 			DATA_READ_TIMEOUT 								=> DATA_READ_TIMEOUT,
 			DATA_WRITE_TIMEOUT 								=> DATA_WRITE_TIMEOUT,
 			DEBUG															=> DEBUG,
 			ENABLE_DEBUGPORT									=> ENABLE_DEBUGPORT,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS    => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
-		PORT MAP (
+		port map (
 			Clock															=> Clock,
 			MyReset														=> MyReset,
 
@@ -296,41 +296,41 @@ begin
 	-- ===========================================================================
 	-- ATA registers
 	-- ===========================================================================
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (MyReset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (MyReset = '1') then
 				ATAHostRegisters_r.Flag_C								<= '0';												-- set C flag => access Command register on device
-				ATAHostRegisters_r.Command							<= (OTHERS => '0');						-- Command register
-				ATAHostRegisters_r.Control							<= (OTHERS => '0');						-- Control register
-				ATAHostRegisters_r.Feature							<= (OTHERS => '0');						-- Feature register
-				ATAHostRegisters_r.LBlockAddress				<= (OTHERS => '0');						-- logical block address (LBA)
-				ATAHostRegisters_r.SectorCount					<= (OTHERS => '0');						--
+				ATAHostRegisters_r.Command							<= (others => '0');						-- Command register
+				ATAHostRegisters_r.Control							<= (others => '0');						-- Control register
+				ATAHostRegisters_r.Feature							<= (others => '0');						-- Feature register
+				ATAHostRegisters_r.LBlockAddress				<= (others => '0');						-- logical block address (LBA)
+				ATAHostRegisters_r.SectorCount					<= (others => '0');						--
 
---				ATAHostRegisters_r											<= (Flag_C => '0', OTHERS => (OTHERS => '0'));
+--				ATAHostRegisters_r											<= (Flag_C => '0', others => (others => '0'));
 
-				ATADeviceRegisters_r.Flags							<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.Status							<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.EndStatus					<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.Error							<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.LBlockAddress			<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.SectorCount				<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.TransferCount			<= (OTHERS => '0');						--
-			ELSE
-				IF (UpdateATAHostRegisters = '1') THEN
+				ATADeviceRegisters_r.Flags							<= (others => '0');						--
+				ATADeviceRegisters_r.Status							<= (others => '0');						--
+				ATADeviceRegisters_r.EndStatus					<= (others => '0');						--
+				ATADeviceRegisters_r.Error							<= (others => '0');						--
+				ATADeviceRegisters_r.LBlockAddress			<= (others => '0');						--
+				ATADeviceRegisters_r.SectorCount				<= (others => '0');						--
+				ATADeviceRegisters_r.TransferCount			<= (others => '0');						--
+			else
+				if (UpdateATAHostRegisters = '1') then
 					ATAHostRegisters_r										<= ATAHostRegisters;
-				END IF;
+				end if;
 
-				IF (UpdateATADeviceRegisters = '1') THEN
+				if (UpdateATADeviceRegisters = '1') then
 					ATADeviceRegisters_r									<= FISD_ATADeviceRegisters;
-				END IF;
+				end if;
 
-				IF (CopyATADeviceRegisterStatus = '1') THEN
+				if (CopyATADeviceRegisterStatus = '1') then
 					ATADeviceRegisters_r.Status						<= ATADeviceRegisters_r.EndStatus;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- assign internal signals
 	ATADeviceRegisters_i	<= ATADeviceRegisters_r;
@@ -341,7 +341,7 @@ begin
 
 	-- TX FrameCutter logic
 	-- ==========================================================================================================================================================
-	FrameCutter : BLOCK
+	FrameCutter : block
 		signal TC_TX_DataFlow								: STD_LOGIC;
 
 		signal InsertEOP_d									: STD_LOGIC						:= '0';
@@ -349,7 +349,7 @@ begin
 		signal InsertEOP_re_d								: STD_LOGIC						:= '0';
 		signal InsertEOP_re_d2							: STD_LOGIC						:= '0';
 
-	BEGIN
+	begin
 		-- enable TX data path
 		TC_TX_Valid					<= TX_Valid				AND TFSM_TX_en;
 		TC_TX_Ack						<= FISE_TX_Ack		AND TFSM_TX_en;
@@ -364,17 +364,17 @@ begin
 		TC_TX_SOP						<= TX_SOT OR InsertEOP_re_d2;
 		TC_TX_EOP						<= TX_EOT	OR InsertEOP_re_d;
 		TC_TX_Data					<= TX_Data;
-	END BLOCK;	-- TransferCutter
+	end block;	-- TransferCutter
 
 	-- RX registers
 	-- ==========================================================================================================================================================
-	RXReg : BLOCK
+	RXReg : block
 		signal RXReg_mux_set										: STD_LOGIC;
 		signal RXReg_mux_rst										: STD_LOGIC;
 		signal RXReg_mux_r											: STD_LOGIC												:= '0';
 		signal RXReg_mux												: STD_LOGIC;
 		signal RXReg_Data_en										: STD_LOGIC;
-		signal RXReg_Data_d											: T_SLV_32												:= (OTHERS => '0');
+		signal RXReg_Data_d											: T_SLV_32												:= (others => '0');
 		signal RXReg_EOT_r											: STD_LOGIC												:= '0';
 
 		signal RXReg_LastWord										: STD_LOGIC;
@@ -383,13 +383,13 @@ begin
 
 		signal RXReg_SOT												: STD_LOGIC;
 		signal RXReg_EOT												: STD_LOGIC;
-	BEGIN
+	begin
 
 		RXReg_Data_en					<= FISD_RX_Valid AND FISD_RX_EOP;
 		RXReg_mux_set					<= FISD_RX_Valid AND FISD_RX_EOP;
 		RXReg_mux_rst					<= RXReg_LastWordAck;
 
-		RXReg_RX_Data					<= FISD_RX_Data WHEN (RXReg_mux = '0') ELSE RXReg_Data_d;
+		RXReg_RX_Data					<= FISD_RX_Data when (RXReg_mux = '0') else RXReg_Data_d;
 		RXReg_RX_Valid				<= (FISD_RX_Valid AND NOT RXReg_Data_en) OR RXReg_LastWord;
 
 		RXReg_Ack							<= (RX_Ack	 OR RXReg_Data_en) AND NOT RXReg_mux;
@@ -400,42 +400,42 @@ begin
 		RXReg_LastWord				<= RXReg_LastWord_r 	OR TFSM_RX_LastWord;
 		RXReg_mux							<= RXReg_mux_r;
 
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (MyReset = '1') THEN
-					RXReg_Data_d				<= (OTHERS => '0');
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (MyReset = '1') then
+					RXReg_Data_d				<= (others => '0');
 					RXReg_mux_r					<= '0';
 					RXReg_EOT_r					<= '0';
-				ELSE
-					IF (RXReg_Data_en = '1') THEN
+				else
+					if (RXReg_Data_en = '1') then
 						RXReg_Data_d			<= FISD_RX_Data;
-					END IF;
+					end if;
 
-					IF (RXReg_mux_rst = '1') THEN
+					if (RXReg_mux_rst = '1') then
 						RXReg_mux_r				<= '0';
-					ELSIF (RXReg_mux_set = '1') THEN
+					ELSif (RXReg_mux_set = '1') then
 						RXReg_mux_r				<= '1';
-					END IF;
+					end if;
 
-					IF (RXReg_mux_rst = '1') THEN
+					if (RXReg_mux_rst = '1') then
 						RXReg_LastWord_r	<= '0';
-					ELSIF (TFSM_RX_LastWord = '1') THEN
+					ELSif (TFSM_RX_LastWord = '1') then
 						RXReg_LastWord_r	<= '1';
-					END IF;
+					end if;
 
-					IF (RXReg_mux_rst = '1') THEN
+					if (RXReg_mux_rst = '1') then
 						RXReg_EOT_r		<= '0';
-					ELSIF (TFSM_RX_EOT = '1') THEN
+					ELSif (TFSM_RX_EOT = '1') then
 						RXReg_EOT_r		<= '1';
-					END IF;
-				END IF;
-			END IF;
-		END PROCESS;
+					end if;
+				end if;
+			end if;
+		end process;
 
 		RXReg_RX_SOT				<= RXReg_SOT;
 		RXReg_RX_EOT				<= RXReg_EOT;
-	END BLOCK;
+	end block;
 
 	RX_Valid			<= RXReg_RX_Valid;
 	RX_Data				<= RXReg_RX_Data;
@@ -443,12 +443,12 @@ begin
 	RX_EOT				<= RXReg_RX_EOT;
 
 
-	FISE : ENTITY PoC.sata_FISEncoder
-		GENERIC MAP (
+	FISE : entity PoC.sata_FISEncoder
+		generic map (
 			DEBUG												=> DEBUG		,
 			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT
 		)
-		PORT MAP (
+		port map (
 			Clock												=> Clock,
 			Reset												=> MyReset,
 
@@ -490,12 +490,12 @@ begin
 	-- ================================================================
 	-- RX path
 	-- ================================================================
-	FISD : ENTITY PoC.sata_FISDecoder
-		GENERIC MAP (
+	FISD : entity PoC.sata_FISDecoder
+		generic map (
 			DEBUG												=> DEBUG,
 			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT
 		)
-		PORT MAP (
+		port map (
 			Clock												=> Clock,
 			Reset												=> MyReset,
 

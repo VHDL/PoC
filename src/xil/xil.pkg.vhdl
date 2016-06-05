@@ -86,7 +86,7 @@ package xil is
 	-- define array indices
 	constant C_XIL_DRP_MAX_CONFIG_COUNT	: POSITIVE	:= 8;
 
-	SUBtype T_XIL_DRP_CONFIG_INDEX			IS INTEGER range 0 TO C_XIL_DRP_MAX_CONFIG_COUNT - 1;
+	subtype T_XIL_DRP_CONFIG_INDEX			IS INTEGER range 0 to C_XIL_DRP_MAX_CONFIG_COUNT - 1;
 	type		T_XIL_DRP_CONFIG_VECTOR			is array (NATURAL range <>) of T_XIL_DRP_CONFIG;
 
 	type T_XIL_DRP_CONFIG_SET is record

@@ -89,8 +89,8 @@ architecture rtl of xil_DRP_BusMux is
 	signal LockCounter_us			: UNSIGNED(log2ceilnz(LOCKCOUNTER_MAX + 1) - 1 downto 0)		:= (others => '0');
 
 	signal Request_or					: STD_LOGIC;
-	signal Arb_Grant					: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	signal Arb_Grant_bin			: STD_LOGIC_VECTOR(log2ceilnz(PORTS) - 1 DOWNTO 0);
+	signal Arb_Grant					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal Arb_Grant_bin			: STD_LOGIC_VECTOR(log2ceilnz(PORTS) - 1 downto 0);
 
 begin
 	-- capture new bus transactions on every port

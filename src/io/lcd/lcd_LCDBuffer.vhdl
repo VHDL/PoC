@@ -58,35 +58,35 @@ entity lcd_LCDBuffer is
 end entity;
 
 
-ARCHITECTURE rtl OF lcd_LCDBuffer IS
-	SIGNAL LCDBuffer_Load		: STD_LOGIC;
-	SIGNAL LCDBuffer_d			: T_LCD			:= (OTHERS => (OTHERS => to_RawChar(' ')));
+architecture rtl of lcd_LCDBuffer is
+	signal LCDBuffer_Load		: STD_LOGIC;
+	signal LCDBuffer_d			: T_LCD			:= (others => (others => to_RawChar(' ')));
 
-BEGIN
-	SL : ENTITY PoC.misc_StrobeLimiter
-		GENERIC MAP (
+begin
+	SL : entity PoC.misc_StrobeLimiter
+		generic map (
 			MIN_STROBE_PERIOD_CYCLES	=> TimingToCycles(MIN_REFRESH_PERIOD,	CLOCK_FREQ),
 			INITIAL_LOCKED						=> FALSE,
 			INITIAL_STROBE						=> TRUE
 		)
-		PORT MAP (
+		port map (
 			Clock											=> Clock,
 			I													=> Load,
 			O													=> LCDBuffer_Load
 		);
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
-				LCDBuffer_d			<= (OTHERS => (OTHERS => to_RawChar(' ')));
-			ELSE
-				IF (LCDBuffer_Load = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
+				LCDBuffer_d			<= (others => (others => to_RawChar(' ')));
+			else
+				if (LCDBuffer_Load = '1') then
 					LCDBuffer_d		<= LCDBuffer;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	Char <= to_LCD_CHAR2(LCDBuffer_d(CharRow)(CharColumn));
-END;
+end;

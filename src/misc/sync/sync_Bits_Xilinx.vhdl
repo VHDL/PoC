@@ -51,7 +51,7 @@ library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
 library PoC;
-use			PoC.utils.ALL;
+use			PoC.utils.all;
 use			PoC.sync.all;
 
 

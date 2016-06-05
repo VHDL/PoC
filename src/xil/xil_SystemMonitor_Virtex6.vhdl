@@ -45,12 +45,12 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.all;
-USE			IEEE.NUMERIC_STD.all;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY	UniSim;
-USE			UniSim.vComponents.ALL;
+library	UniSim;
+use			UniSim.vComponents.all;
 
 
 entity xil_SystemMonitor_Virtex6 is

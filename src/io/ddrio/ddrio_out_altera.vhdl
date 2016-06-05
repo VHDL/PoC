@@ -30,7 +30,7 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.ALL;
+use			IEEE.std_logic_1164.all;
 
 library	Altera_mf;
 use			Altera_mf.Altera_MF_Components.all;

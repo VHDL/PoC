@@ -41,19 +41,19 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
-USE			PoC.debug.ALL;
-USE			PoC.components.ALL;
-USE			PoC.sata.ALL;
-USE			PoC.satadbg.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.debug.all;
+use			PoC.components.all;
+use			PoC.sata.all;
+use			PoC.satadbg.all;
 
 
 entity sata_PhysicalLayerFSM is
@@ -65,7 +65,7 @@ entity sata_PhysicalLayerFSM is
 		GENERATION_CHANGE_COUNT		: INTEGER							:= 32;
 		ATTEMPTS_PER_GENERATION		: INTEGER							:= 8
 	);
-	PORT (
+	port (
 		Clock											: in	STD_LOGIC;
 		ClockEnable 							: in  STD_LOGIC;
 		Reset											: in	STD_LOGIC;
@@ -95,17 +95,17 @@ entity sata_PhysicalLayerFSM is
 end entity;
 
 
-ARCHITECTURE rtl OF sata_PhysicalLayerFSM is
-	ATTRIBUTE FSM_ENCODING	: STRING;
+architecture rtl of sata_PhysicalLayerFSM is
+	attribute FSM_ENCODING	: STRING;
 
-	TYPE T_SGEN_SGEN	IS ARRAY (T_SATA_GENERATION) OF T_SATA_GENERATION;
-	TYPE T_SGEN2_SGEN	IS ARRAY (T_SATA_GENERATION) OF T_SGEN_SGEN;
-	TYPE T_SGEN3_SGEN	IS ARRAY (T_SATA_GENERATION) OF T_SGEN2_SGEN;
+	type T_SGEN_SGEN	IS array (T_SATA_GENERATION) OF T_SATA_GENERATION;
+	type T_SGEN2_SGEN	IS array (T_SATA_GENERATION) OF T_SGEN_SGEN;
+	type T_SGEN3_SGEN	IS array (T_SATA_GENERATION) OF T_SGEN2_SGEN;
 
-	FUNCTION StartGen RETURN T_SGEN2_SGEN IS
-		CONSTANT ERROR_VALUE	: T_SATA_GENERATION	:= ite(SIMULATION, SATA_GENERATION_ERROR, SATA_GENERATION_1);
-		VARIABLE SG						: T_SGEN2_SGEN			:= (OTHERS => (OTHERS => ERROR_VALUE));
-	BEGIN
+	function StartGen return T_SGEN2_SGEN is
+		constant ERROR_VALUE	: T_SATA_GENERATION	:= ite(SIMULATION, SATA_GENERATION_ERROR, SATA_GENERATION_1);
+		variable SG						: T_SGEN2_SGEN			:= (others => (others => ERROR_VALUE));
+	begin
 		-- minimal			/	maximal gen.		==>	cmp value
 		-- ========================================================================
 		SG(SATA_GENERATION_AUTO)(SATA_GENERATION_AUTO)		:= SATA_GENERATION_3;
@@ -128,13 +128,13 @@ ARCHITECTURE rtl OF sata_PhysicalLayerFSM is
 		SG(SATA_GENERATION_3)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		SG(SATA_GENERATION_3)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
 
-		RETURN SG;
-	END;
+		return SG;
+	end;
 
-	FUNCTION NextGen RETURN T_SGEN3_SGEN IS
-		CONSTANT ERROR_VALUE	: T_SATA_GENERATION	:= ite(SIMULATION, SATA_GENERATION_ERROR, SATA_GENERATION_1);
-		VARIABLE NG						: T_SGEN3_SGEN			:= (OTHERS => (OTHERS => (OTHERS => ERROR_VALUE)));
-	BEGIN
+	function NextGen return T_SGEN3_SGEN is
+		constant ERROR_VALUE	: T_SATA_GENERATION	:= ite(SIMULATION, SATA_GENERATION_ERROR, SATA_GENERATION_1);
+		variable NG						: T_SGEN3_SGEN			:= (others => (others => (others => ERROR_VALUE)));
+	begin
 		-- current 		/ minimal			/	maximal gen.		==>	next gen.
 		-- ========================================================================
 		-- current generation is SATA_GENERATION_1
@@ -200,16 +200,16 @@ ARCHITECTURE rtl OF sata_PhysicalLayerFSM is
 		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_2)					:= SATA_GENERATION_2;
 		NG(SATA_GENERATION_3)(SATA_GENERATION_3)(SATA_GENERATION_3)					:= SATA_GENERATION_3;
 
-		RETURN NG;
-	END;
+		return NG;
+	end;
 
-	CONSTANT ROM_StartGeneration							: T_SGEN2_SGEN	:= StartGen;
-	CONSTANT ROM_NextGeneration 							: T_SGEN3_SGEN	:= NextGen;
+	constant ROM_StartGeneration							: T_SGEN2_SGEN	:= StartGen;
+	constant ROM_NextGeneration 							: T_SGEN3_SGEN	:= NextGen;
 
-	CONSTANT GENERATION_CHANGE_COUNTER_BITS		: POSITIVE			:= log2ceilnz(GENERATION_CHANGE_COUNT + 1);
-	CONSTANT TRY_PER_GENERATION_COUNTER_BITS	: POSITIVE			:= log2ceilnz(ATTEMPTS_PER_GENERATION);
+	constant GENERATION_CHANGE_COUNTER_BITS		: POSITIVE			:= log2ceilnz(GENERATION_CHANGE_COUNT + 1);
+	constant TRY_PER_GENERATION_COUNTER_BITS	: POSITIVE			:= log2ceilnz(ATTEMPTS_PER_GENERATION);
 
-	TYPE T_STATE IS (
+	type T_STATE is (
 		ST_RESET,
 		ST_INIT_CONNECTION,
 		ST_NODEV_RECONFIG, ST_NODEV_RECONFIG_WAIT, ST_NODEVICE,
@@ -220,45 +220,45 @@ ARCHITECTURE rtl OF sata_PhysicalLayerFSM is
 	);
 
 	-- Statemachine
-	SIGNAL State												: T_STATE												:= ST_RESET;
-	SIGNAL NextState										: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State		: SIGNAL IS getFSMEncoding_gray(DEBUG);
+	signal State												: T_STATE												:= ST_RESET;
+	signal NextState										: T_STATE;
+	attribute FSM_ENCODING	OF State		: signal IS getFSMEncoding_gray(DEBUG);
 
-	SIGNAL Status_i											: T_SATA_PHY_STATUS;
-	SIGNAL Error_r											: T_SATA_PHY_ERROR;
-	SIGNAL Error_nxt										: T_SATA_PHY_ERROR;
-	SIGNAL Error_en											: STD_LOGIC;
+	signal Status_i											: T_SATA_PHY_STATUS;
+	signal Error_r											: T_SATA_PHY_ERROR;
+	signal Error_nxt										: T_SATA_PHY_ERROR;
+	signal Error_en											: STD_LOGIC;
 
 	signal OOBC_Reset_i 								: STD_LOGIC;
 	signal Trans_RP_Reconfig_i					: STD_LOGIC;
 
 	-- Speed Negotiation specific
-	SIGNAL SATAGeneration_rst						: STD_LOGIC;
-	SIGNAL SATAGeneration_Change				: STD_LOGIC;
-	SIGNAL SATAGeneration_Changed				: STD_LOGIC;
-	SIGNAL SATAGeneration_cur						: T_SATA_GENERATION							:= INITIAL_SATA_GENERATION;
-	SIGNAL SATAGeneration_nxt						: T_SATA_GENERATION;
+	signal SATAGeneration_rst						: STD_LOGIC;
+	signal SATAGeneration_Change				: STD_LOGIC;
+	signal SATAGeneration_Changed				: STD_LOGIC;
+	signal SATAGeneration_cur						: T_SATA_GENERATION							:= INITIAL_SATA_GENERATION;
+	signal SATAGeneration_nxt						: T_SATA_GENERATION;
 
 	-- Rec
 
-	SIGNAL GenerationChange_Counter_rst	: STD_LOGIC;
-	SIGNAL GenerationChange_Counter_en	: STD_LOGIC;
-	SIGNAL GenerationChange_Counter_us	: UNSIGNED(GENERATION_CHANGE_COUNTER_BITS DOWNTO 0) := (OTHERS => '0');
-	SIGNAL GenerationChange_Counter_ov	: STD_LOGIC;
+	signal GenerationChange_Counter_rst	: STD_LOGIC;
+	signal GenerationChange_Counter_en	: STD_LOGIC;
+	signal GenerationChange_Counter_us	: UNSIGNED(GENERATION_CHANGE_COUNTER_BITS downto 0) := (others => '0');
+	signal GenerationChange_Counter_ov	: STD_LOGIC;
 
-	SIGNAL TryPerGeneration_Counter_rst	: STD_LOGIC;
-	SIGNAL TryPerGeneration_Counter_en	: STD_LOGIC;
-	SIGNAL TryPerGeneration_Counter_us	: UNSIGNED(TRY_PER_GENERATION_COUNTER_BITS DOWNTO 0) := (OTHERS => '0');
-	SIGNAL TryPerGeneration_Counter_ov	: STD_LOGIC;
+	signal TryPerGeneration_Counter_rst	: STD_LOGIC;
+	signal TryPerGeneration_Counter_en	: STD_LOGIC;
+	signal TryPerGeneration_Counter_us	: UNSIGNED(TRY_PER_GENERATION_COUNTER_BITS downto 0) := (others => '0');
+	signal TryPerGeneration_Counter_ov	: STD_LOGIC;
 
-BEGIN
+begin
 
 	-- ===========================================================================
 	-- Calculation of SATA generation.
 	-- ===========================================================================
-	PROCESS(SATAGeneration_rst, SATAGeneration_cur, SATAGeneration_Change, SATAGenerationMin, SATAGenerationMax)
-		VARIABLE SATAGeneration_nxt_v : T_SATA_GENERATION;
-	BEGIN
+	process(SATAGeneration_rst, SATAGeneration_cur, SATAGeneration_Change, SATAGenerationMin, SATAGenerationMax)
+		variable SATAGeneration_nxt_v : T_SATA_GENERATION;
+	begin
 		if (SATAGeneration_rst = '1') then
 			SATAGeneration_nxt_v	:= ROM_StartGeneration(SATAGenerationMin)(SATAGenerationMax);
 		elsif (SATAGeneration_Change = '1') then
@@ -272,7 +272,7 @@ BEGIN
 
 		-- assign new generation to *_nxt signal
 		SATAGeneration_nxt			<= SATAGeneration_nxt_v;
-	END PROCESS;
+	end process;
 
 	-- export current SATA generation to other layers
 	Trans_RP_SATAGeneration <= SATAGeneration_cur;
@@ -388,7 +388,7 @@ BEGIN
 				NextState								<= ST_NODEV_RECONFIG_WAIT;
 
 
-			WHEN ST_NODEV_RECONFIG_WAIT =>
+			when ST_NODEV_RECONFIG_WAIT =>
 				-- Reconfiguration during NODEVICE condition. Clock might be unstable
 				-- when FSM is in this state. See description in header.
 				Status_i								<= SATA_PHY_STATUS_NODEVICE;
@@ -441,17 +441,17 @@ BEGIN
 				-- Timeout during establishing a communication.
 				Status_i												<= SATA_PHY_STATUS_NOCOMMUNICATION;
 
-				IF (TryPerGeneration_Counter_ov = '1') THEN
-					IF (GenerationChange_Counter_ov = '1') THEN
+				if (TryPerGeneration_Counter_ov = '1') then
+					if (GenerationChange_Counter_ov = '1') then
 						NextState										<= ST_ERROR;
 						Error_en 										<= '1';
 						Error_nxt 									<= SATA_PHY_ERROR_NEGOTIATION;
-					ELSE																					-- generation change counter allows => generation change
+					else																					-- generation change counter allows => generation change
 						SATAGeneration_Change				<= '1';
 						TryPerGeneration_Counter_rst	<= '1';
 						GenerationChange_Counter_en	<= '1';
 
-						IF (SATAGeneration_Changed = '1') THEN
+						if (SATAGeneration_Changed = '1') then
 							if ALLOW_SPEED_NEGOTIATION then
 								NextState								<= ST_NOCOM_RECONFIG;
 							else
@@ -459,16 +459,16 @@ BEGIN
 								Error_en 								<= '1';
 								Error_nxt 							<= SATA_PHY_ERROR_NEGOTIATION;
 							end if;
-						ELSE
+						else
 							NextState									<= ST_NOCOMMUNICATION;
 							OOBC_Reset_i 							<= '1';
-						END IF;
-					END IF;
-				ELSE																						-- tries per generation counter allows an other try at current generation
+						end if;
+					end if;
+				else																						-- tries per generation counter allows an other try at current generation
 					TryPerGeneration_Counter_en		<= '1';
 					NextState											<= ST_NOCOMMUNICATION;
 					OOBC_Reset_i 									<= '1';
-				END IF;
+				end if;
 
 
 			when ST_NOCOM_RECONFIG =>
@@ -485,9 +485,9 @@ BEGIN
 				Status_i								<= SATA_PHY_STATUS_NOCOMMUNICATION;
 				OOBC_Reset_i 						<= '1';
 
-				IF (Trans_RP_ConfigReloaded = '1') THEN
+				if (Trans_RP_ConfigReloaded = '1') then
 					NextState							<= ST_NOCOMMUNICATION;
-				END IF;
+				end if;
 
 
 			when ST_COMMUNICATING =>
@@ -539,8 +539,8 @@ BEGIN
 	-- ================================================================
 	-- try counters
 	-- ================================================================
-	TryPerGeneration_Counter_us	<= upcounter_next(cnt => TryPerGeneration_Counter_us, rst => TryPerGeneration_Counter_rst, en => TryPerGeneration_Counter_en) WHEN rising_edge(Clock);		-- count attempts per generation
-	GenerationChange_Counter_us	<= upcounter_next(cnt => GenerationChange_Counter_us, rst => GenerationChange_Counter_rst, en => GenerationChange_Counter_en) WHEN rising_edge(Clock);		-- count generation changes
+	TryPerGeneration_Counter_us	<= upcounter_next(cnt => TryPerGeneration_Counter_us, rst => TryPerGeneration_Counter_rst, en => TryPerGeneration_Counter_en) when rising_edge(Clock);		-- count attempts per generation
+	GenerationChange_Counter_us	<= upcounter_next(cnt => GenerationChange_Counter_us, rst => GenerationChange_Counter_rst, en => GenerationChange_Counter_en) when rising_edge(Clock);		-- count generation changes
 
 	TryPerGeneration_Counter_ov	<= upcounter_equal(TryPerGeneration_Counter_us, ATTEMPTS_PER_GENERATION - 1);
 	GenerationChange_Counter_ov	<= upcounter_equal(GenerationChange_Counter_us, GENERATION_CHANGE_COUNT);
@@ -554,7 +554,7 @@ BEGIN
 		sim_SATAGeneration	<= to_unsigned(SATAGeneration_cur, 3) + 1;
 	end generate;
 
-	genDebug : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
@@ -623,5 +623,5 @@ BEGIN
 		DebugPortOut.Trans_ConfigReloaded		<= Trans_RP_ConfigReloaded;
 		DebugPortOut.GenerationChanges			<= resize(std_logic_vector(GenerationChange_Counter_us), DebugPortOut.GenerationChanges'length);
 		DebugPortOut.TrysPerGeneration			<= resize(std_logic_vector(TryPerGeneration_Counter_us), DebugPortOut.TrysPerGeneration'length);
-	END GENERATE;
-END;
+	end generate;
+end;

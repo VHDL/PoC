@@ -51,7 +51,7 @@ entity icmpv6_TX is
 		TX_Ack										: in	STD_LOGIC;
 
 		Send_EchoResponse					: in	STD_LOGIC;
-		Send_Complete							: OUT STD_LOGIC
+		Send_Complete							: out STD_LOGIC
 	);
 end entity;
 

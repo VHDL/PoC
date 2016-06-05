@@ -42,7 +42,7 @@ use			PoC.vectors.all;
 
 entity stream_Mirror is
 	generic (
-		portS							: POSITIVE									:= 2;
+		PORTS							: POSITIVE									:= 2;
 		DATA_BITS					: POSITIVE									:= 8;
 		META_BITS					: T_POSVEC									:= (0 => 8);
 		META_LENGTH				: T_POSVEC									:= (0 => 16)
@@ -60,14 +60,14 @@ entity stream_Mirror is
 		In_Meta_nxt				: out	STD_LOGIC_VECTOR(META_BITS'length - 1 downto 0);
 		In_Meta_Data			: in	STD_LOGIC_VECTOR(isum(META_BITS) - 1 downto 0);
 		-- OUT Port
-		Out_Valid					: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		Out_Data					: out	T_SLM(portS - 1 downto 0, DATA_BITS - 1 downto 0);
-		Out_SOF						: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		Out_EOF						: out	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		Out_Ack						: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		Out_Meta_rst			: in	STD_LOGIC_VECTOR(portS - 1 downto 0);
-		Out_Meta_nxt			: in	T_SLM(portS - 1 downto 0, META_BITS'length - 1 downto 0);
-		Out_Meta_Data			: out	T_SLM(portS - 1 downto 0, isum(META_BITS) - 1 downto 0)
+		Out_Valid					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Out_Data					: out	T_SLM(PORTS - 1 downto 0, DATA_BITS - 1 downto 0);
+		Out_SOF						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Out_EOF						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Out_Ack						: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Out_Meta_rst			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Out_Meta_nxt			: in	T_SLM(PORTS - 1 downto 0, META_BITS'length - 1 downto 0);
+		Out_Meta_Data			: out	T_SLM(PORTS - 1 downto 0, isum(META_BITS) - 1 downto 0)
 	);
 end entity;
 
@@ -84,12 +84,12 @@ architecture rtl of stream_Mirror is
 	signal FIFOGlue_got					: STD_LOGIC;
 
 	signal Ack_i								: STD_LOGIC;
-	signal Mask_r								: STD_LOGIC_VECTOR(portS - 1 downto 0)												:= (others => '1');
+	signal Mask_r								: STD_LOGIC_VECTOR(PORTS - 1 downto 0)												:= (others => '1');
 
-	signal MetaOut_rst					: STD_LOGIC_VECTOR(portS - 1 downto 0);
+	signal MetaOut_rst					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-	signal Out_Data_i						: T_SLM(portS - 1 downto 0, DATA_BITS - 1 downto 0)						:= (others => (others => 'Z'));
-	signal Out_Meta_Data_i			: T_SLM(portS - 1 downto 0, isum(META_BITS) - 1 downto 0)			:= (others => (others => 'Z'));
+	signal Out_Data_i						: T_SLM(PORTS - 1 downto 0, DATA_BITS - 1 downto 0)						:= (others => (others => 'Z'));
+	signal Out_Meta_Data_i			: T_SLM(PORTS - 1 downto 0, isum(META_BITS) - 1 downto 0)			:= (others => (others => 'Z'));
 begin
 
 	-- Data path
@@ -121,17 +121,17 @@ begin
 			got				=> FIFOGlue_got						-- Data Consumed
   );
 
-	genPorts : for i in 0 to portS - 1 generate
+	genPorts : for i in 0 to PORTS - 1 generate
 		assign_row(Out_Data_i, FIFOGlue_DataOut(DATA_BITS - 1 downto 0), i);
 	end generate;
 
 	Ack_i					<= slv_and(Out_Ack) or slv_and(not Mask_r or Out_Ack);
 	FIFOGlue_got	<= Ack_i	;
 
-	Out_Valid			<= (portS - 1 downto 0 => FIFOGlue_Valid) and Mask_r;
+	Out_Valid			<= (PORTS - 1 downto 0 => FIFOGlue_Valid) and Mask_r;
 	Out_Data			<= Out_Data_i;
-	Out_SOF				<= (portS - 1 downto 0 => FIFOGlue_DataOut(DATA_BITS + 0));
-	Out_EOF				<= (portS - 1 downto 0 => FIFOGlue_DataOut(DATA_BITS + 1));
+	Out_SOF				<= (PORTS - 1 downto 0 => FIFOGlue_DataOut(DATA_BITS + 0));
+	Out_EOF				<= (PORTS - 1 downto 0 => FIFOGlue_DataOut(DATA_BITS + 1));
 
 	process(Clock)
 	begin
@@ -168,7 +168,7 @@ begin
 				end if;
 			end process;
 
-			genReader : FOR J IN 0 to portS - 1 generate
+			genReader : for j in 0 to PORTS - 1 generate
 				assign_row(Out_Meta_Data_i, MetaMemory, J, high(META_BITS, i), low(META_BITS, i));
 			end generate;
 		end generate;
@@ -226,7 +226,7 @@ begin
 				end if;
 			end process;
 
-			genReader : for j in 0 to portS - 1 generate
+			genReader : for j in 0 to PORTS - 1 generate
 				signal Row							: T_METAMEMORY;
 
 				signal Reader_en				: STD_LOGIC;

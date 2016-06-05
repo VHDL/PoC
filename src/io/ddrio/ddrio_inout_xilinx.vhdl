@@ -31,7 +31,7 @@
 
 
 library IEEE;
-use			IEEE.std_logic_1164.ALL;
+use			IEEE.std_logic_1164.all;
 
 library	UniSim;
 use			UniSim.vComponents.all;

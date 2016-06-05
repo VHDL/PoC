@@ -150,8 +150,8 @@ architecture rtl of sata_StreamingLayer is
 	signal Error_i													: T_SATA_STREAMING_ERROR;
 
 	signal SFSM_TX_en												: STD_LOGIC;
-	SIGNAL SFSM_TX_ForceEOT									: STD_LOGIC;
-	SIGNAL SFSM_TX_FIFO_ForceGot						: STD_LOGIC;
+	signal SFSM_TX_ForceEOT									: STD_LOGIC;
+	signal SFSM_TX_FIFO_ForceGot						: STD_LOGIC;
 
 	signal SFSM_RX_SOR											: STD_LOGIC;
 	signal SFSM_RX_EOR											: STD_LOGIC;
@@ -380,7 +380,7 @@ begin
 		begin
 			process(Clock)
 			begin
-				IF rising_edge(Clock) then
+				if rising_edge(Clock) then
 					if ((MyReset = '1') or (IEOTC_Load = '1')) then
 						Counter_s				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);		-- FIXME: replace with dynamic calculation
 					else
@@ -486,7 +486,7 @@ begin
 
   -- debug ports
   -- ===========================================================================
-  genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) generate
+  genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
   begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
 			function dbg_generateCommandEncodings return string is

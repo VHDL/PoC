@@ -200,11 +200,11 @@ begin
 
 		Insert														<= '0';
 
-		case FSMReplace_State IS
+		case FSMReplace_State is
 			when ST_IDLE =>
 				NewMACAddress_rst							<= '1';
 
-				case Command IS
+				case Command is
 					when NET_ARP_ARPCACHE_CMD_NONE =>
 						null;
 
@@ -249,7 +249,7 @@ begin
 	CacheResult					<= to_Cache_Result(CacheHit, CacheMiss);
 
 	-- Cache TagUnit
---	TU : entity L_Global.Cache_TagUnit_seq
+--	TU : entity PoC.Cache_TagUnit_seq
 	TU : entity PoC.cache_TagUnit_seq
 		generic map (
 			REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
@@ -299,7 +299,7 @@ begin
 
 	Tick			<= TickCounter_s(TickCounter_s'high);
 
---	Exp : entity L_Global.list_expire
+--	Exp : entity PoC.list_expire
 	Exp : entity PoC.list_expire
 		generic map (
 			CLOCK_CYCLE_TICKS				=> 65536,

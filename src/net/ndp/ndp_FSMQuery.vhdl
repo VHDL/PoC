@@ -79,9 +79,9 @@ entity ndp_FSMQuery is
 end entity;
 
 
-ARCHITECTURE rtl OF ndp_FSMQuery IS
+architecture rtl of ndp_FSMQuery is
 
-	TYPE T_STATE IS (
+	type T_STATE is (
 		ST_IDLE,
 		ST_DESTCACHE_WAIT,
 		ST_NEIGHBORCACHE_LOOKUP,	ST_NEIGHBORCACHE_WAIT,
@@ -89,34 +89,34 @@ ARCHITECTURE rtl OF ndp_FSMQuery IS
 		ST_VALID
 	);
 
-	SIGNAL State								: T_STATE								:= ST_IDLE;
-	SIGNAL NextState						: T_STATE;
+	signal State								: T_STATE								:= ST_IDLE;
+	signal NextState						: T_STATE;
 
---	SIGNAL NextHop_en						: STD_LOGIC;
-	SIGNAL IPv6Address_d				: T_NET_IPV6_ADDRESS		:= C_NET_IPV6_ADDRESS_EMPTY;
+--	signal NextHop_en						: STD_LOGIC;
+	signal IPv6Address_d				: T_NET_IPV6_ADDRESS		:= C_NET_IPV6_ADDRESS_EMPTY;
 
-	SIGNAL MAC_en								: STD_LOGIC;
-	SIGNAL MACAddress_d					: T_NET_MAC_ADDRESS			:= C_NET_MAC_ADDRESS_EMPTY;
+	signal MAC_en								: STD_LOGIC;
+	signal MACAddress_d					: T_NET_MAC_ADDRESS			:= C_NET_MAC_ADDRESS_EMPTY;
 
-BEGIN
+begin
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State				<= ST_IDLE;
-			ELSE
+			else
 				State				<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State,
+	process(State,
 					NextHop_Query,
 					NextHop_MACAddress_rst, NextHop_MACAddress_nxt, NextHop_IPv6Address_Data,--NextHop_MACAddress_rev,
 					DCache_CacheResult, DCache_IPv6Address_rst, DCache_IPv6Address_nxt, DCache_NextHopIPv6Address_Data,--DCache_IPv6Address_rev,
 					NCache_CacheResult, NCache_IPv6Address_rst, NCache_IPv6Address_nxt, NCache_MACAddress_Data)--NCache_IPv6Address_rev,
-	BEGIN
+	begin
 		NextState												<= State;
 
 		NextHop_IPv6Address_rst					<= DCache_IPv6Address_rst;
@@ -138,80 +138,80 @@ BEGIN
 --		NextHop_en								<= '0';
 		MAC_en										<= '0';
 
-		CASE State IS
-			WHEN ST_IDLE =>
-				IF (NextHop_Query = '1') THEN
+		case State is
+			when ST_IDLE =>
+				if (NextHop_Query = '1') then
 					DCache_Lookup		<= '1';
 
-					IF (DCache_CacheResult = CACHE_RESULT_NONE) THEN
+					if (DCache_CacheResult = CACHE_RESULT_NONE) then
 						NextState				<= ST_DESTCACHE_WAIT;
-					ELSIF (DCache_CacheResult = CACHE_RESULT_HIT) THEN
+					ELSif (DCache_CacheResult = CACHE_RESULT_HIT) then
 --						NextHop_en			<= '1';
 						NextState				<= ST_NEIGHBORCACHE_LOOKUP;
-					ELSE
+					else
 						-- TODO: cachemiss
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_DESTCACHE_WAIT =>
-				IF (DCache_CacheResult = CACHE_RESULT_HIT) THEN
+			when ST_DESTCACHE_WAIT =>
+				if (DCache_CacheResult = CACHE_RESULT_HIT) then
 --					NextHop_en			<= '1';
 					NextState				<= ST_NEIGHBORCACHE_LOOKUP;
-				ELSIF (DCache_CacheResult = CACHE_RESULT_MISS) THEN
+				ELSif (DCache_CacheResult = CACHE_RESULT_MISS) then
 					-- TODO: cachemiss
-				END IF;
+				end if;
 
-			WHEN ST_NEIGHBORCACHE_LOOKUP =>
+			when ST_NEIGHBORCACHE_LOOKUP =>
 				NCache_Lookup				<= '1';
 
-				IF (NCache_CacheResult = CACHE_RESULT_NONE) THEN
+				if (NCache_CacheResult = CACHE_RESULT_NONE) then
 					NextState				<= ST_NEIGHBORCACHE_WAIT;
-				ELSIF (NCache_CacheResult = CACHE_RESULT_HIT) THEN
+				ELSif (NCache_CacheResult = CACHE_RESULT_HIT) then
 					MAC_en					<= '1';
 					NextState				<= ST_VALID;
-				ELSE
+				else
 					-- TODO: cachemiss
-				END IF;
+				end if;
 
-			WHEN ST_NEIGHBORCACHE_WAIT =>
-				IF (NCache_CacheResult = CACHE_RESULT_HIT) THEN
+			when ST_NEIGHBORCACHE_WAIT =>
+				if (NCache_CacheResult = CACHE_RESULT_HIT) then
 					MAC_en					<= '1';
 					NextState				<= ST_VALID;
-				ELSIF (NCache_CacheResult = CACHE_RESULT_MISS) THEN
+				ELSif (NCache_CacheResult = CACHE_RESULT_MISS) then
 					-- TODO: cachemiss
-				END IF;
+				end if;
 
-			WHEN ST_VALID =>
+			when ST_VALID =>
 				NextHop_Valid			<= '1';
 				NextState					<= ST_IDLE;
 
-			WHEN ST_PREFIXLIST_LOOKUP =>
+			when ST_PREFIXLIST_LOOKUP =>
 				NULL;
 
-			WHEN ST_PREFIXLIST_WAIT =>
+			when ST_PREFIXLIST_WAIT =>
 				NULL;
 
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
 
---	PROCESS(Clock)
---	BEGIN
---		IF rising_edge(Clock) THEN
---			IF (Reset = '1') THEN
+--	process(Clock)
+--	begin
+--		if rising_edge(Clock) then
+--			if (Reset = '1') then
 --				IPv6Address_d		<= C_NET_IPV6_ADDRESS_EMPTY;
 --				MACAddress_d		<= C_ETH_MAC_ADDRESS_EMPTY;
---			ELSE
---				IF (NextHop_en = '1') THEN
+--			else
+--				if (NextHop_en = '1') then
 --					IPv6Address_d		<= DCache_NextHopIPv6Address;
---				END IF;
+--				end if;
 --
---				IF (MAC_en = '1') THEN
+--				if (MAC_en = '1') then
 --					MACAddress_d		<= NCache_MACAddress;
---				END IF;
---			END IF;
---		END IF;
---	END PROCESS;
+--				end if;
+--			end if;
+--		end if;
+--	end process;
 
 	NextHop_MACAddress_Data		<= NCache_MACAddress_Data;
-END ARCHITECTURE;
+end architecture;

@@ -1066,7 +1066,7 @@ package body net is
 		for i in str'reverse_range loop
 			if (str(i) = '/') then
 				Pos := i;
-				EXIT;
+				exit;
 			end if;
 		end loop;
 

@@ -53,8 +53,8 @@ entity mac_TX_SrcMAC_Prepender is
 		In_SOF												: in	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
 		In_EOF												: in	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
 		In_Ack												: out	STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
-		In_Meta_rst										: OUT STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
-		In_Meta_DestMACAddress_nxt		: OUT STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
+		In_Meta_rst										: out STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
+		In_Meta_DestMACAddress_nxt		: out STD_LOGIC_VECTOR(MAC_ADDRESSES'length - 1 downto 0);
 		In_Meta_DestMACAddress_Data		: in	T_SLVV_8(MAC_ADDRESSES'length - 1 downto 0);
 		-- OUT Port
 		Out_Valid											: out	STD_LOGIC;

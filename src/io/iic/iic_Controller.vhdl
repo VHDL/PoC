@@ -1046,7 +1046,7 @@ begin
 				end if;
 			end if;
 		end if;
-	end PROCESS;
+	end process;
 
 	Master_Status		<= Status_i;
 	Master_Error		<= Error_i;

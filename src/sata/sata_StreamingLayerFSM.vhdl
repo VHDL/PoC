@@ -29,81 +29,81 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
 use			PoC.debug.all;
-USE			PoC.sata.ALL;
+use			PoC.sata.all;
 use			PoC.satadbg.all;
 
 
-ENTITY sata_StreamingLayerFSM IS
-	GENERIC (
+entity sata_StreamingLayerFSM is
+	generic (
 		DEBUG															: BOOLEAN								:= FALSE;
 		ENABLE_DEBUGPORT									: BOOLEAN								:= FALSE;			-- export internal signals to upper layers for debug purposes
 		SIM_EXECUTE_IDENTIFY_DEVICE				: BOOLEAN								:= TRUE				-- required by CommandLayer: load device parameters
 	);
-	PORT (
-		Clock															: IN	STD_LOGIC;
-		MyReset														: IN	STD_LOGIC;
+	port (
+		Clock															: in	STD_LOGIC;
+		MyReset														: in	STD_LOGIC;
 
 		-- for measurement purposes only
-		Config_BurstSize									: IN	T_SLV_16;
+		Config_BurstSize									: in	T_SLV_16;
 
 		-- StreamingLayer interface
-		Command														: IN	T_SATA_STREAMING_COMMAND;
-		Status														: OUT	T_SATA_STREAMING_STATUS;
-		Error															: OUT	T_SATA_STREAMING_ERROR;
+		Command														: in	T_SATA_STREAMING_COMMAND;
+		Status														: out	T_SATA_STREAMING_STATUS;
+		Error															: out	T_SATA_STREAMING_ERROR;
 
 		DebugPortOut 											: out T_SATADBG_STREAMING_SFSM_OUT;
 
-		Address_LB												: IN	T_SLV_48;
-		BlockCount_LB											: IN	T_SLV_48;
+		Address_LB												: in	T_SLV_48;
+		BlockCount_LB											: in	T_SLV_48;
 
-		TX_FIFO_Valid											: IN	STD_LOGIC;
-		TX_FIFO_EOR												: IN	STD_LOGIC;
-		TX_FIFO_ForceGot									: OUT	STD_LOGIC;
+		TX_FIFO_Valid											: in	STD_LOGIC;
+		TX_FIFO_EOR												: in	STD_LOGIC;
+		TX_FIFO_ForceGot									: out	STD_LOGIC;
 
-		Trans_TX_Ack											: IN	STD_LOGIC;
-		TX_en															: OUT	STD_LOGIC;
-		TX_ForceEOT												: OUT	STD_LOGIC;
+		Trans_TX_Ack											: in	STD_LOGIC;
+		TX_en															: out	STD_LOGIC;
+		TX_ForceEOT												: out	STD_LOGIC;
 
-		RX_SOR														: OUT	STD_LOGIC;
-		RX_EOR														: OUT	STD_LOGIC;
-		RX_ForcePut												: OUT	STD_LOGIC;
+		RX_SOR														: out	STD_LOGIC;
+		RX_EOR														: out	STD_LOGIC;
+		RX_ForcePut												: out	STD_LOGIC;
 
 		-- SATA Controller interface
-		Trans_Command											: OUT	T_SATA_TRANS_COMMAND;
-		Trans_Status											: IN	T_SATA_TRANS_STATUS;
+		Trans_Command											: out	T_SATA_TRANS_COMMAND;
+		Trans_Status											: in	T_SATA_TRANS_STATUS;
 
-		Trans_ATAHostRegisters						: OUT T_SATA_ATA_HOST_REGISTERS;
+		Trans_ATAHostRegisters						: out T_SATA_ATA_HOST_REGISTERS;
 
-		Trans_RX_SOT											: IN	STD_LOGIC;
-		Trans_RX_EOT											: IN	STD_LOGIC;
+		Trans_RX_SOT											: in	STD_LOGIC;
+		Trans_RX_EOT											: in	STD_LOGIC;
 
 		-- IdentifyDeviceFilter interface
-		IDF_Enable												: OUT	STD_LOGIC;
-		IDF_DriveInformation							: IN	T_SATA_DRIVE_INFORMATION;
-		IDF_Error													: IN	STD_LOGIC
+		IDF_Enable												: out	STD_LOGIC;
+		IDF_DriveInformation							: in	T_SATA_DRIVE_INFORMATION;
+		IDF_Error													: in	STD_LOGIC
 	);
 end entity;
 
 
-ARCHITECTURE rtl OF sata_StreamingLayerFSM IS
-	ATTRIBUTE KEEP												: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING								: STRING;
+architecture rtl of sata_StreamingLayerFSM is
+	attribute KEEP												: BOOLEAN;
+	attribute FSM_ENCODING								: STRING;
 
 	-- 1 => single transfer
 	-- F => first transfer
 	-- N => next transfer
 	-- L => last transfer
-	TYPE T_STATE IS (
+	type T_STATE is (
 		ST_RESET,
 		ST_INIT,
 		ST_IDLE,
@@ -116,46 +116,46 @@ ARCHITECTURE rtl OF sata_StreamingLayerFSM IS
 		ST_ERROR
 	);
 
-	SIGNAL State													: T_STATE													:= ST_RESET;
-	SIGNAL NextState											: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State			: SIGNAL IS getFSMEncoding_gray(DEBUG);
+	signal State													: T_STATE													:= ST_RESET;
+	signal NextState											: T_STATE;
+	attribute FSM_ENCODING	OF State			: signal IS getFSMEncoding_gray(DEBUG);
 
 	signal Error_nxt 											: T_SATA_STREAMING_ERROR;
 
-	SIGNAL Trans_Command_i								: T_SATA_TRANS_COMMAND;
+	signal Trans_Command_i								: T_SATA_TRANS_COMMAND;
 
-	SIGNAL Load														: STD_LOGIC;
-	SIGNAL NextTransfer										: STD_LOGIC;
-	SIGNAL LastTransfer										: STD_LOGIC;
-	SIGNAL BurstCount_us									: UNSIGNED(16 DOWNTO 0);
-	SIGNAL Address_LB_us									: UNSIGNED(47 DOWNTO 0);
-	SIGNAL Address_LB_us_d								: UNSIGNED(47 DOWNTO 0)						:= (OTHERS => '0');
-	SIGNAL Address_LB_us_d_nx							: UNSIGNED(47 DOWNTO 0);
-	SIGNAL BlockCount_LB_us								: UNSIGNED(47 DOWNTO 0);
-	SIGNAL BlockCount_LB_us_d							: UNSIGNED(47 DOWNTO 0)						:= (OTHERS => '0');
-	SIGNAL BlockCount_LB_us_d_nx					: UNSIGNED(47 DOWNTO 0);
+	signal Load														: STD_LOGIC;
+	signal NextTransfer										: STD_LOGIC;
+	signal LastTransfer										: STD_LOGIC;
+	signal BurstCount_us									: UNSIGNED(16 downto 0);
+	signal Address_LB_us									: UNSIGNED(47 downto 0);
+	signal Address_LB_us_d								: UNSIGNED(47 downto 0)						:= (others => '0');
+	signal Address_LB_us_d_nx							: UNSIGNED(47 downto 0);
+	signal BlockCount_LB_us								: UNSIGNED(47 downto 0);
+	signal BlockCount_LB_us_d							: UNSIGNED(47 downto 0)						:= (others => '0');
+	signal BlockCount_LB_us_d_nx					: UNSIGNED(47 downto 0);
 
-	SIGNAL ATA_Address_LB_us							: UNSIGNED(47 DOWNTO 0);
-	SIGNAL ATA_BlockCount_LB_us						: UNSIGNED(15 DOWNTO 0);
+	signal ATA_Address_LB_us							: UNSIGNED(47 downto 0);
+	signal ATA_BlockCount_LB_us						: UNSIGNED(15 downto 0);
 
-	SIGNAL ATA_Address_LB									: T_SLV_48;
-	SIGNAL ATA_BlockCount_LB							: T_SLV_16;
+	signal ATA_Address_LB									: T_SLV_48;
+	signal ATA_BlockCount_LB							: T_SLV_16;
 
-	ATTRIBUTE KEEP OF Load								: SIGNAL IS DEBUG					;
-	ATTRIBUTE KEEP OF NextTransfer				: SIGNAL IS DEBUG					;
-	ATTRIBUTE KEEP OF LastTransfer				: SIGNAL IS DEBUG					;
+	attribute KEEP OF Load								: signal IS DEBUG					;
+	attribute KEEP OF NextTransfer				: signal IS DEBUG					;
+	attribute KEEP OF LastTransfer				: signal IS DEBUG					;
 
-BEGIN
+begin
 -- ATA_Device_register => TD=0 -> 40   / TD=1 -> 50
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (MyReset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (MyReset = '1') then
 				State						<= ST_RESET;
 				Error 					<= SATA_STREAM_ERROR_NONE;
 
-			ELSE
+			else
 				State						<= NextState;
 
 				if (State /= ST_ERROR) and (NextState = ST_ERROR) then
@@ -163,13 +163,13 @@ BEGIN
 				elsif (Command /= SATA_STREAM_CMD_NONE) then
 					Error 				<= SATA_STREAM_ERROR_NONE; -- clear when issuing new command
 				end if;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, Command, Trans_Status, IDF_Error, IDF_DriveInformation, ATA_Address_LB, ATA_BlockCount_LB,
+	process(State, Command, Trans_Status, IDF_Error, IDF_DriveInformation, ATA_Address_LB, ATA_BlockCount_LB,
 					LastTransfer, Trans_RX_SOT, Trans_RX_EOT, TX_FIFO_Valid, TX_FIFO_EOR, Trans_TX_Ack)
-	BEGIN
+	begin
 		NextState																		<= State;
 
 		Status																			<= SATA_STREAM_STATUS_RESET; -- just in case
@@ -189,15 +189,15 @@ BEGIN
 		Trans_Command_i															<= SATA_TRANS_CMD_NONE;
 		Trans_ATAHostRegisters.Flag_C								<= '0';
 		Trans_ATAHostRegisters.Command							<= to_slv(SATA_ATA_CMD_NONE);	-- Command register
-		Trans_ATAHostRegisters.Control							<= (OTHERS => '0');						-- Control register
-		Trans_ATAHostRegisters.Feature							<= (OTHERS => '0');						-- Feature register
-		Trans_ATAHostRegisters.LBlockAddress				<= (OTHERS => '0');						-- logical block address (LBA)
-		Trans_ATAHostRegisters.SectorCount					<= (OTHERS => '0');						--
+		Trans_ATAHostRegisters.Control							<= (others => '0');						-- Control register
+		Trans_ATAHostRegisters.Feature							<= (others => '0');						-- Feature register
+		Trans_ATAHostRegisters.LBlockAddress				<= (others => '0');						-- logical block address (LBA)
+		Trans_ATAHostRegisters.SectorCount					<= (others => '0');						--
 
 		IDF_Enable																	<= '0';
 
-		CASE State IS
-			WHEN ST_RESET =>
+		case State is
+			when ST_RESET =>
 				-- Clock might be unstable is this state. In this case either
 				-- a) MyReset is asserted because inital reset of the SATAController is
 				--    not finished yet.
@@ -205,18 +205,18 @@ BEGIN
 				--    This may happen during reconfiguration due to speed negotiation.
 				Status																			<= SATA_STREAM_STATUS_RESET;
 
-        IF (Trans_Status = SATA_TRANS_STATUS_IDLE) THEN
-					IF (SIM_EXECUTE_IDENTIFY_DEVICE = TRUE) THEN
+        if (Trans_Status = SATA_TRANS_STATUS_IDLE) then
+					if (SIM_EXECUTE_IDENTIFY_DEVICE = TRUE) then
 						NextState																<= ST_INIT;
-					ELSE
+					else
 						NextState																<= ST_IDLE;
-					END IF;
-        elsif (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+					end if;
+        elsif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					Error_nxt																	<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState																	<= ST_ERROR;
-        END IF;
+        end if;
 
-			WHEN ST_INIT =>
+			when ST_INIT =>
         -- assert Trans_Status = SATA_TRANS_STATUS_IDLE
 				Status																			<= SATA_STREAM_STATUS_INITIALIZING;
 
@@ -224,40 +224,40 @@ BEGIN
 				Trans_Command_i															<= SATA_TRANS_CMD_TRANSFER;
 				Trans_ATAHostRegisters.Flag_C								<= '1';
 				Trans_ATAHostRegisters.Command							<= to_slv(SATA_ATA_CMD_IDENTIFY_DEVICE);	-- Command register
-				Trans_ATAHostRegisters.Control							<= (OTHERS => '0');												-- Control register
-				Trans_ATAHostRegisters.Feature							<= (OTHERS => '0');												-- Feature register
-				Trans_ATAHostRegisters.LBlockAddress				<= (OTHERS => '0');												-- logical block address (LBA)
-				Trans_ATAHostRegisters.SectorCount					<= (OTHERS => '0');												--
+				Trans_ATAHostRegisters.Control							<= (others => '0');												-- Control register
+				Trans_ATAHostRegisters.Feature							<= (others => '0');												-- Feature register
+				Trans_ATAHostRegisters.LBlockAddress				<= (others => '0');												-- logical block address (LBA)
+				Trans_ATAHostRegisters.SectorCount					<= (others => '0');												--
 
 				-- IdentifyDeviceFilter
 				IDF_Enable																	<= '1';
 
 				NextState																		<= ST_IDENTIFY_DEVICE_WAIT;
 
-			WHEN ST_IDLE =>
+			when ST_IDLE =>
         -- assert Trans_Status = SATA_TRANS_STATUS_IDLE
 				Status																			<= SATA_STREAM_STATUS_IDLE;
 
-				CASE Command IS
-					WHEN SATA_STREAM_CMD_NONE =>
+				case Command is
+					when SATA_STREAM_CMD_NONE =>
 						NULL;
 
-					WHEN SATA_STREAM_CMD_IDENTIFY_DEVICE =>
+					when SATA_STREAM_CMD_IDENTIFY_DEVICE =>
 						-- TransportLayer
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
 						Trans_ATAHostRegisters.Flag_C						<= '1';
 						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_IDENTIFY_DEVICE);	-- Command register
-						Trans_ATAHostRegisters.Control					<= (OTHERS => '0');												-- Control register
-						Trans_ATAHostRegisters.Feature					<= (OTHERS => '0');												-- Feature register
-						Trans_ATAHostRegisters.LBlockAddress		<= (OTHERS => '0');												-- logical block address (LBA)
-						Trans_ATAHostRegisters.SectorCount			<= (OTHERS => '0');												--
+						Trans_ATAHostRegisters.Control					<= (others => '0');												-- Control register
+						Trans_ATAHostRegisters.Feature					<= (others => '0');												-- Feature register
+						Trans_ATAHostRegisters.LBlockAddress		<= (others => '0');												-- logical block address (LBA)
+						Trans_ATAHostRegisters.SectorCount			<= (others => '0');												--
 
 						-- IdentifyDeviceFilter
 						IDF_Enable															<= '1';
 
 						NextState																<= ST_IDENTIFY_DEVICE_WAIT;
 
-					WHEN SATA_STREAM_CMD_READ =>
+					when SATA_STREAM_CMD_READ =>
 						-- TransferGenerator
 						Load																		<= '1';
 
@@ -265,18 +265,18 @@ BEGIN
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
 						Trans_ATAHostRegisters.Flag_C						<= '1';
 						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_DMA_READ_EXT);		-- Command register
-						Trans_ATAHostRegisters.Control					<= (OTHERS => '0');											-- Control register
-						Trans_ATAHostRegisters.Feature					<= (OTHERS => '0');											-- Feature register
+						Trans_ATAHostRegisters.Control					<= (others => '0');											-- Control register
+						Trans_ATAHostRegisters.Feature					<= (others => '0');											-- Feature register
 						Trans_ATAHostRegisters.LBlockAddress		<= ATA_Address_LB;											-- logical block address (LBA)
 						Trans_ATAHostRegisters.SectorCount			<= ATA_BlockCount_LB;										--
 
-						IF (LastTransfer = '0') THEN
+						if (LastTransfer = '0') then
 							NextState															<= ST_READ_F_WAIT;
-						ELSE
+						else
 							NextState															<= ST_READ_1_WAIT;
-						END IF;
+						end if;
 
-					WHEN SATA_STREAM_CMD_WRITE =>
+					when SATA_STREAM_CMD_WRITE =>
 						-- TransferGenerator
 						Load																		<= '1';
 
@@ -284,16 +284,16 @@ BEGIN
 						Trans_Command_i													<= SATA_TRANS_CMD_TRANSFER;
 						Trans_ATAHostRegisters.Flag_C						<= '1';
 						Trans_ATAHostRegisters.Command					<= to_slv(SATA_ATA_CMD_DMA_WRITE_EXT);	-- Command register
-						Trans_ATAHostRegisters.Control					<= (OTHERS => '0');											-- Control register
-						Trans_ATAHostRegisters.Feature					<= (OTHERS => '0');											-- Feature register
+						Trans_ATAHostRegisters.Control					<= (others => '0');											-- Control register
+						Trans_ATAHostRegisters.Feature					<= (others => '0');											-- Feature register
 						Trans_ATAHostRegisters.LBlockAddress		<= ATA_Address_LB;											-- logical block address (LBA)
 						Trans_ATAHostRegisters.SectorCount			<= ATA_BlockCount_LB;										--
 
-						IF (LastTransfer = '0') THEN
+						if (LastTransfer = '0') then
 							NextState															<= ST_WRITE_F_WAIT;
-						ELSE
+						else
 							NextState															<= ST_WRITE_1_WAIT;
-						END IF;
+						end if;
 
 					when SATA_STREAM_CMD_FLUSH_CACHE =>
 						-- TransportLayer
@@ -335,88 +335,88 @@ BEGIN
 					NextState 																<= ST_ERROR;
 				end if;
 
-			WHEN ST_IDENTIFY_DEVICE_WAIT =>
-				IF (IDF_DriveInformation.Valid = '0') THEN
+			when ST_IDENTIFY_DEVICE_WAIT =>
+				if (IDF_DriveInformation.Valid = '0') then
 					Status																		<= SATA_STREAM_STATUS_INITIALIZING;
-				ELSE
+				else
 					Status																		<= SATA_STREAM_STATUS_EXECUTING;
-				END IF;
+				end if;
 
 				IDF_Enable																	<= '1';
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
-					IF (IDF_Error = '1') THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
+					if (IDF_Error = '1') then
 						Error_nxt																<= SATA_STREAM_ERROR_IDENTIFY_DEVICE_ERROR;
 						NextState																<= ST_ERROR;
-					END IF;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
-					IF (IDF_Error = '0') THEN
+					end if;
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
+					if (IDF_Error = '0') then
 						NextState																<= ST_IDENTIFY_DEVICE_CHECK;
-					ELSE
+					else
 						Error_nxt																<= SATA_STREAM_ERROR_IDENTIFY_DEVICE_ERROR;
 						NextState																<= ST_ERROR;
-					END IF;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+					end if;
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) then
 					Error_nxt																	<= SATA_STREAM_ERROR_ATA_ERROR;
 					NextState																	<= ST_ERROR;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					Error_nxt																	<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState																	<= ST_ERROR;
-				END IF;
+				end if;
 
-			WHEN ST_IDENTIFY_DEVICE_CHECK =>
+			when ST_IDENTIFY_DEVICE_CHECK =>
 				Status																			<= SATA_STREAM_STATUS_INITIALIZING;
 
-				IF (IDF_DriveInformation.Valid = '1') THEN
-					IF ((IDF_DriveInformation.ATACapabilityFlags.SupportsDMA = '1') AND
+				if (IDF_DriveInformation.Valid = '1') then
+					if ((IDF_DriveInformation.ATACapabilityFlags.SupportsDMA = '1') AND
 							(IDF_DriveInformation.ATACapabilityFlags.SupportsLBA = '1') AND
 							(IDF_DriveInformation.ATACapabilityFlags.Supports48BitLBA = '1') AND
 							(IDF_DriveInformation.ATACapabilityFlags.SupportsFLUSH_CACHE = '1') AND
-							(IDF_DriveInformation.ATACapabilityFlags.SupportsFLUSH_CACHE_EXT = '1')) THEN
+							(IDF_DriveInformation.ATACapabilityFlags.SupportsFLUSH_CACHE_EXT = '1')) then
 						NextState																<= ST_IDLE;
-					ELSE	-- device not supported
+					else	-- device not supported
 						Error_nxt																<= SATA_STREAM_ERROR_DEVICE_NOT_SUPPORTED;
 						NextState																<= ST_ERROR;
-					END IF;
-				ELSE
+					end if;
+				else
 					-- information are not valid
 					Error_nxt																	<= SATA_STREAM_ERROR_IDENTIFY_DEVICE_ERROR;
 					NextState																	<= ST_ERROR;
-				END IF;
+				end if;
 
 			-- ============================================================
 			-- ATA command: ATA_CMD_CMD_READ
 			-- ============================================================
-			WHEN ST_READ_1_WAIT =>
+			when ST_READ_1_WAIT =>
 				Status																	<= SATA_STREAM_STATUS_RECEIVING;
 
 				RX_SOR																	<= Trans_RX_SOT;
 				RX_EOR																	<= Trans_RX_EOT;
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
 					NULL;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
 					NextState															<= ST_IDLE;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) then
 					RX_EOR 																<= '1';
 					RX_ForcePut 													<= '1';
 					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
 					NextState															<= ST_ERROR;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					RX_EOR 																<= '1';
 					RX_ForcePut 													<= '1';
 					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
-				END IF;
+				end if;
 
-			WHEN ST_READ_F_WAIT =>
+			when ST_READ_F_WAIT =>
 				Status																	<= SATA_STREAM_STATUS_RECEIVING;
 
 				RX_SOR																	<= Trans_RX_SOT;
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
 					NULL;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
 					-- TransferGenerator
 					NextTransfer													<= '1';
 
@@ -424,34 +424,34 @@ BEGIN
 					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
 					Trans_ATAHostRegisters.Flag_C					<= '1';
 					Trans_ATAHostRegisters.Command				<= to_slv(SATA_ATA_CMD_DMA_READ_EXT);				-- Command register
-					Trans_ATAHostRegisters.Control				<= (OTHERS => '0');											-- Control register
-					Trans_ATAHostRegisters.Feature				<= (OTHERS => '0');											-- Feature register
+					Trans_ATAHostRegisters.Control				<= (others => '0');											-- Control register
+					Trans_ATAHostRegisters.Feature				<= (others => '0');											-- Feature register
 					Trans_ATAHostRegisters.LBlockAddress	<= ATA_Address_LB;											-- logical block address (LBA)
 					Trans_ATAHostRegisters.SectorCount		<= ATA_BlockCount_LB;										--
 
-					IF (LastTransfer = '0') THEN
+					if (LastTransfer = '0') then
 						NextState														<= ST_READ_N_WAIT;
-					ELSE
+					else
 						NextState														<= ST_READ_L_WAIT;
-					END IF;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+					end if;
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) then
 					RX_EOR 																<= '1';
 					RX_ForcePut 													<= '1';
 					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
 					NextState															<= ST_ERROR;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					RX_EOR 																<= '1';
 					RX_ForcePut 													<= '1';
 					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
-				END IF;
+				end if;
 
-			WHEN ST_READ_N_WAIT =>
+			when ST_READ_N_WAIT =>
 				Status																	<= SATA_STREAM_STATUS_RECEIVING;
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
 					NULL;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
 					-- TransferGenerator
 					NextTransfer													<= '1';
 
@@ -459,74 +459,74 @@ BEGIN
 					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
 					Trans_ATAHostRegisters.Flag_C					<= '1';
 					Trans_ATAHostRegisters.Command				<= to_slv(SATA_ATA_CMD_DMA_READ_EXT);				-- Command register
-					Trans_ATAHostRegisters.Control				<= (OTHERS => '0');											-- Control register
-					Trans_ATAHostRegisters.Feature				<= (OTHERS => '0');											-- Feature register
+					Trans_ATAHostRegisters.Control				<= (others => '0');											-- Control register
+					Trans_ATAHostRegisters.Feature				<= (others => '0');											-- Feature register
 					Trans_ATAHostRegisters.LBlockAddress	<= ATA_Address_LB;											-- logical block address (LBA)
 					Trans_ATAHostRegisters.SectorCount		<= ATA_BlockCount_LB;										--
 
-					IF (LastTransfer = '0') THEN
+					if (LastTransfer = '0') then
 						NextState														<= ST_READ_N_WAIT;
-					ELSE
+					else
 						NextState														<= ST_READ_L_WAIT;
-					END IF;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+					end if;
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) then
 					RX_EOR 																<= '1';
 					RX_ForcePut 													<= '1';
 					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
 					NextState															<= ST_ERROR;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					RX_EOR 																<= '1';
 					RX_ForcePut 													<= '1';
 					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
-				END IF;
+				end if;
 
-			WHEN ST_READ_L_WAIT =>
+			when ST_READ_L_WAIT =>
 				Status																	<= SATA_STREAM_STATUS_RECEIVING;
 
 				RX_EOR																	<= Trans_RX_EOT;
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
 					NULL;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
 					NextState															<= ST_IDLE;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) then
 					RX_EOR 																<= '1';
 					RX_ForcePut 													<= '1';
 					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
 					NextState															<= ST_ERROR;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					RX_EOR 																<= '1';
 					RX_ForcePut 													<= '1';
 					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
-				END IF;
+				end if;
 
 			-- ============================================================
 			-- ATA command: ATA_CMD_CMD_WRITE
 			-- ============================================================
-			WHEN ST_WRITE_1_WAIT =>
+			when ST_WRITE_1_WAIT =>
 				Status																	<= SATA_STREAM_STATUS_SENDING;
 				TX_en																		<= '1';
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
 					NULL;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
 					NextState															<= ST_IDLE;
 				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
 					NextState 														<= ST_WRITE_ABORT_TRANSFER;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
-				END IF;
+				end if;
 
-			WHEN ST_WRITE_F_WAIT =>
+			when ST_WRITE_F_WAIT =>
 				Status																	<= SATA_STREAM_STATUS_SENDING;
 				TX_en																		<= '1';
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
 					NULL;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
 					-- TransferGenerator
 					NextTransfer													<= '1';
 
@@ -534,30 +534,30 @@ BEGIN
 					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
 					Trans_ATAHostRegisters.Flag_C					<= '1';
 					Trans_ATAHostRegisters.Command				<= to_slv(SATA_ATA_CMD_DMA_WRITE_EXT);				-- Command register
-					Trans_ATAHostRegisters.Control				<= (OTHERS => '0');											-- Control register
-					Trans_ATAHostRegisters.Feature				<= (OTHERS => '0');											-- Feature register
+					Trans_ATAHostRegisters.Control				<= (others => '0');											-- Control register
+					Trans_ATAHostRegisters.Feature				<= (others => '0');											-- Feature register
 					Trans_ATAHostRegisters.LBlockAddress	<= ATA_Address_LB;											-- logical block address (LBA)
 					Trans_ATAHostRegisters.SectorCount		<= ATA_BlockCount_LB;										--
 
-					IF (LastTransfer = '0') THEN
+					if (LastTransfer = '0') then
 						NextState														<= ST_WRITE_N_WAIT;
-					ELSE
+					else
 						NextState														<= ST_WRITE_L_WAIT;
-					END IF;
+					end if;
 				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
 					NextState 														<= ST_WRITE_ABORT_TRANSFER;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
-				END IF;
+				end if;
 
-			WHEN ST_WRITE_N_WAIT =>
+			when ST_WRITE_N_WAIT =>
 				Status																	<= SATA_STREAM_STATUS_SENDING;
 				TX_en																		<= '1';
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
 					NULL;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
 					-- TransferGenerator
 					NextTransfer													<= '1';
 
@@ -565,37 +565,37 @@ BEGIN
 					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
 					Trans_ATAHostRegisters.Flag_C					<= '1';
 					Trans_ATAHostRegisters.Command				<= to_slv(SATA_ATA_CMD_DMA_WRITE_EXT);				-- Command register
-					Trans_ATAHostRegisters.Control				<= (OTHERS => '0');											-- Control register
-					Trans_ATAHostRegisters.Feature				<= (OTHERS => '0');											-- Feature register
+					Trans_ATAHostRegisters.Control				<= (others => '0');											-- Control register
+					Trans_ATAHostRegisters.Feature				<= (others => '0');											-- Feature register
 					Trans_ATAHostRegisters.LBlockAddress	<= ATA_Address_LB;											-- logical block address (LBA)
 					Trans_ATAHostRegisters.SectorCount		<= ATA_BlockCount_LB;										--
 
-					IF (LastTransfer = '0') THEN
+					if (LastTransfer = '0') then
 						NextState														<= ST_WRITE_N_WAIT;
-					ELSE
+					else
 						NextState														<= ST_WRITE_L_WAIT;
-					END IF;
+					end if;
 				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
 					NextState 														<= ST_WRITE_ABORT_TRANSFER;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
-				END IF;
+				end if;
 
-			WHEN ST_WRITE_L_WAIT =>
+			when ST_WRITE_L_WAIT =>
 				Status																	<= SATA_STREAM_STATUS_SENDING;
 				TX_en																		<= '1';
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
 					NULL;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
 					NextState															<= ST_IDLE;
 				elsif (Trans_Status = SATA_TRANS_STATUS_DISCARD_TXDATA) then
 					NextState 														<= ST_WRITE_ABORT_TRANSFER;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
-				END IF;
+				end if;
 
 			when ST_WRITE_ABORT_TRANSFER =>
 					-- Close transfer for Transport Layer
@@ -636,44 +636,44 @@ BEGIN
 			-- ============================================================
 			-- ATA command: ATA_CMD_CMD_FLUSH_CACHE
 			-- ============================================================
-			WHEN ST_FLUSH_CACHE_WAIT =>
+			when ST_FLUSH_CACHE_WAIT =>
 				Status																	<= SATA_STREAM_STATUS_EXECUTING;
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
 					NULL;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
 					NextState															<= ST_IDLE;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) then
 					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
 					NextState															<= ST_ERROR;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
-				END IF;
+				end if;
 
 			-- ============================================================
 			-- ATA command: ATA_CMD_CMD_DEVICE_RESET
 			-- ============================================================
-			WHEN ST_DEVICE_RESET_WAIT =>
+			when ST_DEVICE_RESET_WAIT =>
 				Status																	<= SATA_STREAM_STATUS_EXECUTING;
 
-				IF (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) THEN
+				if (Trans_Status = SATA_TRANS_STATUS_TRANSFERING) then
 					NULL;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_OK) then
 					NextState															<= ST_IDLE;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_TRANSFER_ERROR) then
 					Error_nxt															<= SATA_STREAM_ERROR_ATA_ERROR;
 					NextState															<= ST_ERROR;
-				ELSIF (Trans_Status = SATA_TRANS_STATUS_ERROR) THEN
+				ELSif (Trans_Status = SATA_TRANS_STATUS_ERROR) then
 					Error_nxt															<= SATA_STREAM_ERROR_TRANSPORT_ERROR;
 					NextState															<= ST_ERROR;
-				END IF;
+				end if;
 
 			-- ============================================================
 			-- Error
 			-- stay here if IDENTIFY DEVICE failed, previous error is hold
 			-- ============================================================
-			WHEN ST_ERROR =>
+			when ST_ERROR =>
 				Status																	<= SATA_STREAM_STATUS_ERROR;
 
 				if (Trans_Status = SATA_TRANS_STATUS_ERROR) then
@@ -689,10 +689,10 @@ BEGIN
 					Trans_Command_i												<= SATA_TRANS_CMD_TRANSFER;
 					Trans_ATAHostRegisters.Flag_C					<= '1';
 					Trans_ATAHostRegisters.Command				<= to_slv(SATA_ATA_CMD_IDENTIFY_DEVICE);	-- Command register
-					Trans_ATAHostRegisters.Control				<= (OTHERS => '0');												-- Control register
-					Trans_ATAHostRegisters.Feature				<= (OTHERS => '0');												-- Feature register
-					Trans_ATAHostRegisters.LBlockAddress	<= (OTHERS => '0');												-- logical block address (LBA)
-					Trans_ATAHostRegisters.SectorCount		<= (OTHERS => '0');												--
+					Trans_ATAHostRegisters.Control				<= (others => '0');												-- Control register
+					Trans_ATAHostRegisters.Feature				<= (others => '0');												-- Feature register
+					Trans_ATAHostRegisters.LBlockAddress	<= (others => '0');												-- logical block address (LBA)
+					Trans_ATAHostRegisters.SectorCount		<= (others => '0');												--
 
 					-- IdentifyDeviceFilter
 					IDF_Enable														<= '1';
@@ -700,8 +700,8 @@ BEGIN
 					NextState															<= ST_IDENTIFY_DEVICE_WAIT;
 				end if;
 
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
 	Trans_Command <= Trans_Command_i;
 
@@ -711,53 +711,53 @@ BEGIN
 
 	LastTransfer				<= to_sl(ite((Load = '1'), BlockCount_LB_us, BlockCount_LB_us_d) <= BurstCount_us);
 
-	PROCESS(Load, LastTransfer, Address_LB_us, BlockCount_LB_us, Address_LB_us_d, BlockCount_LB_us_d, Address_LB_us_d_nx, BlockCount_LB_us_d_nx, Config_BurstSize)
-	BEGIN
-		IF (Load = '1') THEN
+	process(Load, LastTransfer, Address_LB_us, BlockCount_LB_us, Address_LB_us_d, BlockCount_LB_us_d, Address_LB_us_d_nx, BlockCount_LB_us_d_nx, Config_BurstSize)
+	begin
+		if (Load = '1') then
 			Address_LB_us_d_nx														<= Address_LB_us;
 			BlockCount_LB_us_d_nx													<= BlockCount_LB_us;
-		ELSE
+		else
 			Address_LB_us_d_nx														<= Address_LB_us_d;
 			BlockCount_LB_us_d_nx													<= BlockCount_LB_us_d;
-		END IF;
+		end if;
 
 		ATA_Address_LB_us			<= Address_LB_us_d_nx;
 
-		IF (LastTransfer = '0') THEN
-			IF (C_SATA_ATA_MAX_BLOCKCOUNT = unsigned(Config_BurstSize)) THEN
-				ATA_BlockCount_LB_us												<= (OTHERS => '0');	-- => ATA_MAX_BLOCKCOUNT is encoded as 0x0000000000
-			ELSE
+		if (LastTransfer = '0') then
+			if (C_SATA_ATA_MAX_BLOCKCOUNT = unsigned(Config_BurstSize)) then
+				ATA_BlockCount_LB_us												<= (others => '0');	-- => ATA_MAX_BLOCKCOUNT is encoded as 0x0000000000
+			else
 				ATA_BlockCount_LB_us												<= unsigned(Config_BurstSize);
-			END IF;
-		ELSE
+			end if;
+		else
 			ATA_BlockCount_LB_us													<= BlockCount_LB_us_d_nx(ATA_BlockCount_LB_us'range);		--
-		END IF;
-	END PROCESS;
+		end if;
+	end process;
 
 	ATA_Address_LB				<= std_logic_vector(ATA_Address_LB_us);
 	ATA_BlockCount_LB			<= std_logic_vector(ATA_BlockCount_LB_us);
 
 	BurstCount_us					<= ite((Config_BurstSize = (Config_BurstSize'range => '0')), to_unsigned(C_SATA_ATA_MAX_BLOCKCOUNT, BurstCount_us'length), unsigned('0' & Config_BurstSize));
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (MyReset = '1') THEN
-				Address_LB_us_d						<= (OTHERS => '0');
-				BlockCount_LB_us_d				<= (OTHERS => '0');
-			ELSE
-				IF ((Load = '1') OR (NextTransfer = '1')) THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (MyReset = '1') then
+				Address_LB_us_d						<= (others => '0');
+				BlockCount_LB_us_d				<= (others => '0');
+			else
+				if ((Load = '1') OR (NextTransfer = '1')) then
 					Address_LB_us_d					<= Address_LB_us_d_nx			+ BurstCount_us;
 					BlockCount_LB_us_d			<= BlockCount_LB_us_d_nx	- BurstCount_us;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 
 	-- debug port
 	-- ===========================================================================
-	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) GENERATE
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));

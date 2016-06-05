@@ -56,7 +56,7 @@ use			ieee.std_logic_1164.all;
 use			ieee.numeric_std.all;
 
 library	poc;
-USE			PoC.utils.ALL;
+use			PoC.utils.all;
 
 
 entity fifo_dc_got_sm is

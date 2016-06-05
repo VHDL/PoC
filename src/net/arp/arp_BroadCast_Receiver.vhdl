@@ -60,7 +60,7 @@ entity arp_BroadCast_Receiver is
 		RX_Meta_DestMACAddress_Data	: in	T_SLV_8;
 
 		Clear												: in	STD_LOGIC;
-		Error												: OUT STD_LOGIC;
+		Error												: out STD_LOGIC;
 
 		RequestReceived							: out	STD_LOGIC;
 		Address_rst									: in	STD_LOGIC;

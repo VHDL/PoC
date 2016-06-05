@@ -28,125 +28,125 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.utils.all;
 
 
-ENTITY misc_StrobeLimiter IS
-	GENERIC (
+entity misc_StrobeLimiter is
+	generic (
 		MIN_STROBE_PERIOD_CYCLES		: POSITIVE		:= 16;
 		INITIAL_LOCKED							: BOOLEAN			:= FALSE;
 		INITIAL_STROBE							: BOOLEAN			:= TRUE--;
 --		REGISTERED_OUTPUT						: BOOLEAN			:= FALSE			-- TODO:
 	);
-	PORT (
-		Clock				: IN	STD_LOGIC;
+	port (
+		Clock				: in	STD_LOGIC;
 		I						:	IN	STD_LOGIC;
-		O						: OUT	STD_LOGIC
+		O						: out	STD_LOGIC
 	);
 end entity;
 
 
-ARCHITECTURE rtl OF misc_StrobeLimiter IS
-	CONSTANT COUNTER_INIT_VALUE		: POSITIVE		:= MIN_STROBE_PERIOD_CYCLES - 2;
-	CONSTANT COUNTER_BITS					: NATURAL			:= log2ceilnz(COUNTER_INIT_VALUE);
+architecture rtl of misc_StrobeLimiter is
+	constant COUNTER_INIT_VALUE		: POSITIVE		:= MIN_STROBE_PERIOD_CYCLES - 2;
+	constant COUNTER_BITS					: NATURAL			:= log2ceilnz(COUNTER_INIT_VALUE);
 
-	TYPE T_STATE IS (ST_IDLE, ST_LOCKED, ST_LOCKED2);
+	type T_STATE is (ST_IDLE, ST_LOCKED, ST_LOCKED2);
 
-	FUNCTION InitialState(InitialLocked : BOOLEAN; InitialStrobe : BOOLEAN) RETURN T_STATE IS
-	BEGIN
-		IF (InitialLocked = TRUE) THEN
-			IF (InitialStrobe = TRUE) THEN
-				RETURN ST_LOCKED2;
-			ELSE
-				RETURN ST_LOCKED;
-			END IF;
-		ELSE
-			RETURN ST_IDLE;
-		END IF;
-	END;
+	function InitialState(InitialLocked : BOOLEAN; InitialStrobe : BOOLEAN) return T_STATE is
+	begin
+		if (InitialLocked = TRUE) then
+			if (InitialStrobe = TRUE) then
+				return ST_LOCKED2;
+			else
+				return ST_LOCKED;
+			end if;
+		else
+			return ST_IDLE;
+		end if;
+	end;
 
-	SIGNAL State						: T_STATE					:= InitialState(INITIAL_LOCKED, INITIAL_STROBE);
-	SIGNAL NextState				: T_STATE;
+	signal State						: T_STATE					:= InitialState(INITIAL_LOCKED, INITIAL_STROBE);
+	signal NextState				: T_STATE;
 
-	SIGNAL Counter_en				: STD_LOGIC;
-	SIGNAL Counter_s				: SIGNED(COUNTER_BITS DOWNTO 0)		:= to_signed(COUNTER_INIT_VALUE, COUNTER_BITS + 1);
-	SIGNAL Counter_ov				: STD_LOGIC;
+	signal Counter_en				: STD_LOGIC;
+	signal Counter_s				: SIGNED(COUNTER_BITS downto 0)		:= to_signed(COUNTER_INIT_VALUE, COUNTER_BITS + 1);
+	signal Counter_ov				: STD_LOGIC;
 
-BEGIN
+begin
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
 			State <= NextState;
-		END IF;
-	END PROCESS;
+		end if;
+	end process;
 
-	PROCESS(State, I, Counter_ov)
-	BEGIN
+	process(State, I, Counter_ov)
+	begin
 		NextState							<= State;
 
 		Counter_en						<= '0';
 		O											<= '0';
 
-		CASE State IS
-			WHEN ST_IDLE =>
-				IF (I = '1') THEN
+		case State is
+			when ST_IDLE =>
+				if (I = '1') then
 					O								<= '1';
 
 					NextState				<= ST_LOCKED;
-				END IF;
+				end if;
 
-			WHEN ST_LOCKED =>
+			when ST_LOCKED =>
 				Counter_en				<= '1';
 
-				IF (I = '1') THEN
-					IF (Counter_ov = '1') THEN
+				if (I = '1') then
+					if (Counter_ov = '1') then
 						Counter_en		<= '0';
 						O							<= '1';
-					ELSE
+					else
 						NextState			<= ST_LOCKED2;
-					END IF;
-				ELSE
-					IF (Counter_ov = '1') THEN
+					end if;
+				else
+					if (Counter_ov = '1') then
 						NextState			<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_LOCKED2 =>
+			when ST_LOCKED2 =>
 				Counter_en				<= '1';
 
-				IF (I = '1') THEN
-					IF (Counter_ov = '1') THEN
+				if (I = '1') then
+					if (Counter_ov = '1') then
 						Counter_en		<= '0';
 						O							<= '1';
-					END IF;
-				ELSE
-					IF (Counter_ov = '1') THEN
+					end if;
+				else
+					if (Counter_ov = '1') then
 						O							<= '1';
 						NextState			<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
 	-- counter
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Counter_en = '0') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Counter_en = '0') then
 				Counter_s		<= to_signed(COUNTER_INIT_VALUE, Counter_s'length);
-			ELSE
+			else
 				Counter_s	<= Counter_s - 1;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
 	Counter_ov <= Counter_s(Counter_s'high);
 
-END;
+end;

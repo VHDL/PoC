@@ -140,7 +140,7 @@ begin
 
 		case State is
 			when ST_IDLE =>
-				case Command IS
+				case Command is
 					when NET_ICMPV4_TX_CMD_NONE =>
 						null;
 

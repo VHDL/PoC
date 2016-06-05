@@ -48,7 +48,7 @@ library PoC;
 use			PoC.utils.all;
 
 
-entity sync_Command IS
+entity sync_Command is
   generic (
 	  BITS								: POSITIVE					:= 8;											-- number of bit to be synchronized
 		INIT								: STD_LOGIC_VECTOR	:= x"00000000"						--

@@ -33,7 +33,7 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library UNISIM;
-use			UNISIM.VCOMPONENTS.all;
+use			UNISIM.VcomponentS.all;
 
 library PoC;
 use			PoC.config.all;
@@ -125,7 +125,7 @@ begin
 	-- ==========================================================================================================================================================
 	process(RS_TX_Clock, Reset_async)
   begin
-		if (Reset_async = '1') THEN
+		if (Reset_async = '1') then
 			PHY_Interface.TX_Data				<= (others => '0');
 			PHY_Interface.TX_Valid			<= '0';
 			PHY_Interface.TX_Error			<= '0';

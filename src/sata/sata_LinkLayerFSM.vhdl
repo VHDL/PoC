@@ -1039,7 +1039,7 @@ begin
 	-- reset when back in IDLE to allow error processing
 	process(Clock)
 	begin
-		IF rising_edge(Clock) then
+		if rising_edge(Clock) then
 			if (State = ST_IDLE) then
 				RX_SOF_r <= '0';
 			elsif (RX_IsSOF = '1') then

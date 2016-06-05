@@ -92,7 +92,7 @@ architecture rtl of arp_Tester is
 
 	subtype T_BYTE_INDEX										 is NATURAL range 0 to 3;
 
-	type T_STATE IS (
+	type T_STATE is (
 		ST_IDLE,
 		ST_IPCACHE_LOOKUP_WAIT,
 		ST_IPCACHE_READ

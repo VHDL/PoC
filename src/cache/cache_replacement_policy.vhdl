@@ -124,40 +124,40 @@ begin
 --		ValidHit		<= OptionMemory(to_integer(unsigned(HitWay)))(VALID_BIT);
 --		IsValid			<= ValidHit;
 --
---		PROCESS(Clock)
---		BEGIN
---			IF rising_edge(Clock) THEN
---				IF (Reset = '1') THEN
---					FOR I IN 0 TO CACHE_WAYS - 1 LOOP
+--		process(Clock)
+--		begin
+--			if rising_edge(Clock) then
+--				if (Reset = '1') then
+--					for i in 0 to CACHE_WAYS - 1 loop
 --						OptionMemory(I)(VALID_BIT)	<= '0';
---					END LOOP;
---				ELSE
---					IF (Insert = '1') THEN
+--					end loop;
+--				else
+--					if (Insert = '1') then
 --						OptionMemory(to_integer(Pointer_us))(VALID_BIT) <= '1';
---					END IF;
+--					end if;
 --
---					IF (Invalidate = '1') THEN
+--					if (Invalidate = '1') then
 --						OptionMemory(to_integer(unsigned(HitWay)))(VALID_BIT)			<= '0';
---					END IF;
---				END IF;
---			END IF;
---		END PROCESS;
+--					end if;
+--				end if;
+--			end if;
+--		end process;
 --
 --		Replace				<= Insert;
 --		ReplaceWay		<= std_logic_vector(Pointer_us);
 --
---		PROCESS(Clock)
---		BEGIN
---			IF rising_edge(Clock) THEN
---				IF (Reset = '1') THEN
---					Pointer_us		<= (OTHERS => '0');
---				ELSE
---					IF (Insert = '1') THEN
+--		process(Clock)
+--		begin
+--			if rising_edge(Clock) then
+--				if (Reset = '1') then
+--					Pointer_us		<= (others => '0');
+--				else
+--					if (Insert = '1') then
 --						Pointer_us	<= Pointer_us + 1;
---					END IF;
---				END IF;
---			END IF;
---		END PROCESS;
+--					end if;
+--				end if;
+--			end if;
+--		end process;
 	end generate;
 
 	-- ===========================================================================
