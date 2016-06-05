@@ -2,11 +2,11 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Package:        UART (RS232) Components for PoC.io.uart
---
 -- Authors:        Martin Zabel
 --                 Thomas B. Preusser
 --		   					 Patrick Lehmann
+--
+-- Package:        UART (RS232) Components for PoC.io.uart
 --
 -- License:
 -- =============================================================================

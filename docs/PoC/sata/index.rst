@@ -40,6 +40,5 @@ sata
       sata_Physical_OOBControl_Device
       sata_Physical_OOBControl_Host
       sata_TransceiverLayer
-      sata_TransceiverLayerFSM
       sata_Transceiver_DeviceDetector
    

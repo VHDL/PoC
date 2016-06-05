@@ -2,11 +2,11 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Package:					Common functions and types
---
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
 --									Patrick Lehmann
+--
+-- Package:					Common functions and types
 --
 -- Description:
 -- -------------------------------------

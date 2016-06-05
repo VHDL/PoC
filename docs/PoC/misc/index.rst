@@ -41,3 +41,5 @@ The package [`misc`][misc.pkg] holds all component declarations for this namespa
    misc_PulseTrain
    misc_Sequencer
    misc_StrobeGenerator
+   misc_StrobeLimiter
+   misc_WordAligner
