@@ -51,7 +51,8 @@ COLORED_FAILED="$RED[FAILED]$NOCOLOR"
 COLORED_DONE="$GREEN[DONE]$NOCOLOR"
 COLORED_SUCCESSFUL="$GREEN[SUCCESSFUL]$NOCOLOR"
 
-# Get script directory
+# Save working directory
+WorkingDir=$(pwd)
 ScriptDir="$(dirname $0)"
 ScriptDir="$(realpath $ScriptDir)"
 
@@ -220,6 +221,8 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	else
 		echo -e $COLORED_SUCCESSFUL
 	fi
+	
+	cd $WorkingDir
 fi
 
 # QuestaSim/ModelSim
@@ -271,4 +274,6 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	else
 		echo -e $COLORED_SUCCESSFUL
 	fi
+	
+	cd $WorkingDir
 fi
