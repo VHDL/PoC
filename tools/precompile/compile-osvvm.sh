@@ -108,18 +108,18 @@ fi
 
 # Files
 Files=(
-	$SourceDir/NamePkg.vhd
-	$SourceDir/OsvvmGlobalPkg.vhd
-	$SourceDir/TextUtilPkg.vhd
-	$SourceDir/TranscriptPkg.vhd
-	$SourceDir/AlertLogPkg.vhd
-	$SourceDir/MemoryPkg.vhd
-	$SourceDir/MessagePkg.vhd
-	$SourceDir/SortListPkg_int.vhd
-	$SourceDir/RandomBasePkg.vhd
-	$SourceDir/RandomPkg.vhd
-	$SourceDir/CoveragePkg.vhd
-	$SourceDir/OsvvmContext.vhd
+	NamePkg.vhd
+	OsvvmGlobalPkg.vhd
+	TextUtilPkg.vhd
+	TranscriptPkg.vhd
+	AlertLogPkg.vhd
+	MemoryPkg.vhd
+	MessagePkg.vhd
+	SortListPkg_int.vhd
+	RandomBasePkg.vhd
+	RandomPkg.vhd
+	CoveragePkg.vhd
+	OsvvmContext.vhd
 )
 
 PoCRootDir=$($poc_sh query INSTALL.PoC:InstallationDirectory 2>/dev/null)
@@ -179,7 +179,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	# Analyze each VHDL source file.
 	for file in ${Files[@]}; do
 		echo "Compiling $file..."
-		$BinDir/ghdl -a -fexplicit -frelaxed-rules --no-vital-checks --warn-binding --mb-comments --std=08 --work=osvvm $file
+		$BinDir/ghdl -a -fexplicit -frelaxed-rules --no-vital-checks --warn-binding --mb-comments --std=08 --work=osvvm $SourceDir/$file
 	done
 fi
 
@@ -215,6 +215,6 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	vmap osvvm $DestDir/osvvm
 	for file in ${Files[@]}; do
 		echo "Compiling $file..."
-		$BinDir/vcom -2008 -work osvvm $file
+		$BinDir/vcom -2008 -work osvvm $SourceDir/$file
 	done
 fi
