@@ -42,6 +42,21 @@ RED='\e[0;31m'			# Red
 YELLOW='\e[1;33m'		# Yellow
 NOCOLOR='\e[0m'			# No Color
 
+# red texts
+COLORED_ERROR="$ANSI_RED[ERROR]$ANSI_RESET"
+COLORED_FAILED="$ANSI_RED[FAILED]$ANSI_RESET"
+
+# green texts
+COLORED_DONE="$ANSI_GREEN[DONE]$ANSI_RESET"
+COLORED_SUCCESSFUL="$ANSI_GREEN[SUCCESSFUL]$ANSI_RESET"
+
+
+ScriptDir="$(dirname $0)"
+ScriptDir="$(realpath $ScriptDir)"
+
+# set bash options
+set -o pipefail
+
 # command line argument processing
 NO_COMMAND=TRUE
 while [[ $# > 0 ]]; do
@@ -121,6 +136,7 @@ Files=(
 	CoveragePkg.vhd
 	OsvvmContext.vhd
 )
+ERRORCOUNT=0
 
 PoCRootDir=$($poc_sh query INSTALL.PoC:InstallationDirectory 2>/dev/null)
 if [ $? -ne 0 ]; then
@@ -176,10 +192,24 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 		exit -1;
 	fi
 	
+	if [ -z "$(which grcat)" ]; then
+		# if grcat (generic colourizer) is not installed, use a dummy pipe command like 'cat'
+		GRC_COMMAND="cat"
+	else
+		if [ "$SUPPRESS_WARNINGS" == "TRUE" ]; then
+			GRC_COMMAND="grcat $ScriptDir/ghdl.skipwarning.grcrules"
+		else
+			GRC_COMMAND="grcat $ScriptDir/ghdl.grcrules"
+		fi
+	fi
+	
 	# Analyze each VHDL source file.
 	for file in ${Files[@]}; do
 		echo "Compiling $file..."
-		$BinDir/ghdl -a -fexplicit -frelaxed-rules --no-vital-checks --warn-binding --mb-comments --std=08 --work=osvvm $SourceDir/$file
+		$BinDir/ghdl -a -fexplicit -frelaxed-rules --no-vital-checks --warn-binding --mb-comments --std=08 --work=osvvm $SourceDir/$file 2>&1 | $GRC_COMMAND
+		if [ $? -ne 0 ]; then
+			let ERRORCOUNT++
+		fi
 	done
 fi
 
@@ -216,5 +246,16 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	for file in ${Files[@]}; do
 		echo "Compiling $file..."
 		$BinDir/vcom -2008 -work osvvm $SourceDir/$file
+		if [ $? -ne 0 ]; then
+			let ERRORCOUNT++
+		fi
 	done
+fi
+
+# print overall result
+echo -n "Compiling OSVVM library "
+if [ $ERRORCOUNT -gt 0 ]; then
+	echo -e $COLORED_FAILED
+else
+	echo -e $COLORED_SUCCESSFUL
 fi
