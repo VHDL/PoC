@@ -128,7 +128,7 @@ begin
 
 	begin
 		-- ==========================================================================================================================================================
-		-- ASSERT statements
+		-- assert statements
 		-- ==========================================================================================================================================================
 		assert ((TX_FIFO_DEPTHS(i) * 1 B) >= ite(TX_ENABLE_UNDERRUN_PROTECTION(i),	ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 Byte), 0 Byte))	report "TX-FIFO is to small" severity ERROR;
 		assert ((RX_FIFO_DEPTHS(i) * 1 B) >=																				ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 Byte))					report "RX-FIFO is to small" severity ERROR;
@@ -315,8 +315,8 @@ begin
 		RX_FIFO_DataIn(EOF_BIT)						<= RX_FSM_EOF;
 		RX_FIFO_Ack												<= not RX_FIFO_Full;
 
-		RX_FIFO : ENTITY PoC.fifo_cc_got_tempput
-			GENERIC MAP (
+		RX_FIFO : entity PoC.fifo_cc_got_tempput
+			generic map (
 				D_BITS							=> RX_FIFO_DataIn'length,
 				MIN_DEPTH						=> RX_FIFO_DEPTHS(i),
 				ESTATE_WR_BITS			=> 0,
@@ -325,7 +325,7 @@ begin
 				STATE_REG						=> TRUE,
 				OUTPUT_REG					=> FALSE
 			)
-			PORT MAP (
+			port map (
 				clk									=> RS_RX_Clock(i),
 				rst									=> RS_RX_Reset(i),
 
@@ -333,7 +333,7 @@ begin
 				put									=> RX_FIFO_put,
 				din									=> RX_FIFO_DataIn,
 				full								=> RX_FIFO_Full,
-				estate_wr						=> OPEN,
+				estate_wr						=> open,
 
 				-- Temporary put control
 				commit							=> RX_FSM_Commit,
@@ -343,7 +343,7 @@ begin
 				got									=> RX_FIFO_got,
 				valid								=> RX_FIFO_Valid,
 				dout								=> RX_FIFO_DataOut,
-				fstate_rd						=> OPEN
+				fstate_rd						=> open
 			);
 
 		RX_FIFO_got			<= not XClk_RX_FIFO_Full;
@@ -358,8 +358,8 @@ begin
 		genRX_XClk1 : if (RX_INSERT_CROSSCLOCK_FIFO(i) = TRUE) generate
 			signal XClk_RX_FIFO_DataOut		: STD_LOGIC_VECTOR(9 downto 0);
 		begin
-			XClk_RX_FIFO : ENTITY PoC.fifo_ic_got
-				GENERIC MAP (
+			XClk_RX_FIFO : entity PoC.fifo_ic_got
+				generic map (
 					D_BITS							=> RX_FIFO_DataOut'length,
 					MIN_DEPTH						=> 16,
 					DATA_REG						=> TRUE,
@@ -367,14 +367,14 @@ begin
 					ESTATE_WR_BITS			=> 0,
 					FSTATE_RD_BITS			=> 0
 				)
-				PORT MAP (
+				port map (
 					-- Write Interface
 					clk_wr							=> RS_RX_Clock(i),
 					rst_wr							=> RS_RX_Reset(i),
 					put									=> RX_FIFO_Valid,
 					din									=> RX_FIFO_DataOut,
 					full								=> XClk_RX_FIFO_Full,
-					estate_wr						=> OPEN,
+					estate_wr						=> open,
 
 					-- Read Interface
 					clk_rd							=> RX_Clock(i),
@@ -382,7 +382,7 @@ begin
 					got									=> RX_Ack(i),
 					valid								=> RX_Valid(i),
 					dout								=> XClk_RX_FIFO_DataOut,
-					fstate_rd						=> OPEN
+					fstate_rd						=> open
 				);
 
 			RX_Data(i)	<= XClk_RX_FIFO_DataOut(RX_Data(i)'range);

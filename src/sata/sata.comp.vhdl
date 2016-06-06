@@ -1,7 +1,6 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
@@ -9,7 +8,7 @@
 -- Package:					SATA components
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- For end users:
 -- Provides component declarations of the main components
 -- "sata_StreamingLayer" and "sata_SATAController".
@@ -54,7 +53,7 @@ package satacomp is
 	-- ===========================================================================
 	-- component Declarations
 	-- ===========================================================================
-	component sata_StreamingLayer IS
+	component sata_StreamingLayer is
 		generic (
 			ENABLE_DEBUGport							: BOOLEAN									:= FALSE;			-- export internal signals to upper layers for debug purposes
 			DEBUG													: BOOLEAN									:= FALSE;
@@ -125,7 +124,7 @@ package satacomp is
 		);
 	end component;
 
-	component sata_SATAController IS
+	component sata_SATAController is
 		generic (
 			DEBUG														: BOOLEAN											:= FALSE;
 			ENABLE_DEBUGport								: BOOLEAN											:= FALSE;
@@ -192,7 +191,7 @@ package satacomp is
 		);
 	end component;
 
-	component sata_Transceiver_Virtex5_GTP IS
+	component sata_Transceiver_Virtex5_GTP is
 		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 			ENABLE_DEBUGport					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
@@ -243,7 +242,7 @@ package satacomp is
 		);
 	end component;
 
-	component sata_Transceiver_Virtex6_GTXE1 IS
+	component sata_Transceiver_Virtex6_GTXE1 is
 		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 			ENABLE_DEBUGport					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
@@ -294,7 +293,7 @@ package satacomp is
 		);
 	end component;
 
-	component sata_Transceiver_Series7_GTXE2 IS
+	component sata_Transceiver_Series7_GTXE2 is
 		generic (
 			DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 			ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- enables the assignment of signals to the debugport
@@ -347,7 +346,7 @@ package satacomp is
 		);
 	end component;
 
-	component sata_Transceiver_Stratix2GX_GXB IS
+	component sata_Transceiver_Stratix2GX_GXB is
 		generic (
 			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																																		-- Number of PORTS per Transceiver
@@ -396,7 +395,7 @@ package satacomp is
 		);
 	end component;
 
-	component sata_Transceiver_Stratix4GX_GXB IS
+	component sata_Transceiver_Stratix4GX_GXB is
 		generic (
 			CLOCK_IN_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
 			PORTS											: POSITIVE										:= 2;																																		-- Number of PORTS per Transceiver

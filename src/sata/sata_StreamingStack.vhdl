@@ -1,16 +1,15 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Package:					TODO
+-- Entity:					TODO
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
 -- =============================================================================
@@ -963,15 +962,15 @@ begin
 		Stream_Trigger6_d		<= Stream_Trigger6	when rising_edge(SATAC_Clock);
 
 
-		TransceiverILA : ENTITY PoC.sata_TransceiverLayer_ILA
-			PORT MAP (
+		TransceiverILA : entity PoC.sata_TransceiverLayer_ILA
+			port map (
 				CONTROL		=> TransceiverLayer_ILA_ControlBus,
 				CLK				=> DebugClock,
 				TRIG0			=> TransceiverILA_Trigger0,
 				TRIG_OUT	=> TransceiverILA_TriggerEvent
 			);
 
-		PhyILA : ENTITY PoC.sata_PhysicalLayer_ILA
+		PhyILA : entity PoC.sata_PhysicalLayer_ILA
 			port map (
 				CONTROL		=> PhyLayer_ILA_ControlBus,
 				CLK				=> SATAC_Clock,

@@ -1,0 +1,16 @@
+
+{EntityName}
+{EntityNameUnderline}
+
+{EntityDescription}
+
+.. rubric:: Entity Declaration:
+
+.. literalinclude:: {EntityFilePath}
+   :language: vhdl
+   :tab-width: 2
+   :linenos:
+   :lines: {EntityDeclarationFromTo}
+
+{SeeAlsoBox}
+	 

@@ -1,7 +1,7 @@
 This library is published and maintained by **Chair for VLSI Design, Diagnostics
 and Architecture** - Faculty of Computer Science, Technische Universität Dresden,
 Germany |br|
-`http://vlsi-eda.inf.tu-dresden.de <http://vlsi-eda.inf.tu-dresden.de>`_
+`http://tu-dresden.de/inf/vlsi-eda <http://tu-dresden.de/inf/vlsi-eda>`_
 
 .. image:: _static/images/logo_tud.jpg
    :scale: 10
@@ -9,8 +9,8 @@ Germany |br|
 
 --------------------------------------------------------------------------------
 
-The PoC-Library's Documentation
-###############################
+The PoC-Library Documentation
+#############################
 
 PoC - "Pile of Cores" provides implementations for often required hardware
 functions such as Arithmetic Units, Caches, Clock-Domain-Crossing Circuits,

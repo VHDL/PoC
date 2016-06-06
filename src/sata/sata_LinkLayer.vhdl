@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					SATA Link Layer
+-- Entity:					SATA Link Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Represents the Link Layer of the SATA stack and provides a logical link for
 -- transmitting frames. The frames are transmitted across the physical link
 -- provided by the Physical Layer (sata_PhysicalLayer).
@@ -92,7 +91,7 @@ entity sata_LinkLayer is
 		TX_FS_Ack								: in	STD_LOGIC;
 		TX_FS_Valid							:	OUT	STD_LOGIC;
 		TX_FS_SendOK						: out	STD_LOGIC;
-		TX_FS_SyncEsc						: OUT	STD_LOGIC;
+		TX_FS_SyncEsc						: out	STD_LOGIC;
 
 		-- RX port
 		RX_SOF									: out	STD_LOGIC;
@@ -117,7 +116,7 @@ entity sata_LinkLayer is
 		Phy_TX_CharIsK					: out	T_SLV_4
 
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_LinkLayer is
@@ -227,8 +226,8 @@ architecture rtl of sata_LinkLayer is
 	-- RX FIFO input/hold registers
 	signal RX_DataReg_shift						: STD_LOGIC;
 	signal RX_DataReg_DataIn					: T_SLV_32;
-	signal RX_DataReg_d								: T_SLV_32													:= (OTHERS => '0');
-	signal RX_DataReg_d2							: T_SLV_32													:= (OTHERS => '0');
+	signal RX_DataReg_d								: T_SLV_32													:= (others => '0');
+	signal RX_DataReg_d2							: T_SLV_32													:= (others => '0');
 	signal RX_DataReg_DataOut					: T_SLV_32;
 
 	-- CRC section
@@ -272,7 +271,7 @@ architecture rtl of sata_LinkLayer is
 	signal RX_Primitive								: T_SATA_PRIMITIVE;
 	signal RX_Primitive_d							: T_SATA_PRIMITIVE		:= SATA_PRIMITIVE_NONE;
 
-	-- signal hold_counter : UNSIGNED(31 downto 0) := (OTHERS => '0') ;
+	-- signal hold_counter : UNSIGNED(31 downto 0) := (others => '0') ;
 	signal RX_Hold : STD_LOGIC;
 
 	-- DebugPort
@@ -431,7 +430,7 @@ begin
 		IEOFC_Load					<= TX_SOF;
 		IEOFC_inc						<= FC_TX_DataFlow and not IEOFC_uf;
 
-		IEOFC : BLOCK	-- InsertEOFCounter
+		IEOFC : block	-- InsertEOFCounter
 			constant IEOF_COUNTER_START				: POSITIVE															:= (to_int(MAX_FRAME_SIZE, 1 Byte) / 4) - AHEAD_CYCLES_FOR_INSERT_EOF - 3;
 			constant IEOF_COUNTER_BITS				: POSITIVE															:= log2ceilnz(IEOF_COUNTER_START);
 
@@ -664,14 +663,14 @@ begin
 	genBitError : if (ENABLE_DEBUGPORT = TRUE) generate
 		signal data : STD_LOGIC_VECTOR(31 downto 0);
 	begin
-		data <= DataScrambler_DataOut;-- WHEN (ScramblerMux_ctrl = '0') ELSE DummyScrambler_DataOut;
+		data <= DataScrambler_DataOut;-- when (ScramblerMux_ctrl = '0') else DummyScrambler_DataOut;
 		PM_DataIn(31 downto 1) 	<= data(31 downto 1);
 		PM_DataIn(0) 						<= mux(DebugPortIn.InsertBitErrorHeaderTX and Trans_TX_SOF, -- only for FIS Header
 																	 data(0), not data(0));
 	end generate;
 
 	genNoBitError : if not(ENABLE_DEBUGPORT = TRUE) generate
-		PM_DataIn <= DataScrambler_DataOut;-- WHEN (ScramblerMux_ctrl = '0') ELSE DummyScrambler_DataOut;
+		PM_DataIn <= DataScrambler_DataOut;-- when (ScramblerMux_ctrl = '0') else DummyScrambler_DataOut;
 	end generate;
 
 	-- RX path

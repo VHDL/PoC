@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					FIS Decoder for SATA Transport Layer
+-- Entity:					FIS Decoder for SATA Transport Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- See notes on module 'sata_TransportLayer'.
 --
 -- License:
@@ -493,9 +492,9 @@ begin
 	-- ================================================================
 	-- ATA registers - temporary saved
 	-- ================================================================
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) then
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
 			if (FISTypeRegister_rst = '1') then
 				FISTypeRegister	<= SATA_FISTYPE_UNKNOWN;
 			elsif (FISTypeRegister_en = '1') then
@@ -571,7 +570,7 @@ begin
 	ATADeviceRegisters.Error						<= to_sata_ata_device_register_error(ErrorRegister);
 	ATADeviceRegisters.LBlockAddress		<= AddressRegister;
 	ATADeviceRegisters.SectorCount			<= SectorCountRegister;
-	ATADeviceRegisters.TransferCount		<= TransferCountRegister WHEN (TransferCountRegister_en = '0') else Alias_TransferCount;
+	ATADeviceRegisters.TransferCount		<= TransferCountRegister when (TransferCountRegister_en = '0') else Alias_TransferCount;
 
 	-- debug ports
 	-- ==========================================================================================================================================================

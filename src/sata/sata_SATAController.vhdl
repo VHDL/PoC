@@ -1,16 +1,15 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Steffen Koehler
 --									Martin Zabel
 --
--- Module:					SATA Controller (Physical, Link and Transport Layer)
+-- Entity:					SATA Controller (Physical, Link and Transport Layer)
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Provides the SATA Transport Layer to transfer ATA commands and data from host to
 -- device and vice versa.
 --
@@ -75,22 +74,22 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.strings.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.sata.ALL;
-USE			PoC.satadbg.ALL;
-USE			PoC.sata_TransceiverTypes.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.strings.all;
+use			PoC.physical.all;
+use			PoC.sata.all;
+use			PoC.satadbg.all;
+use			PoC.sata_TransceiverTypes.all;
 
 
-ENTITY sata_SATAController IS
-	GENERIC (
+entity sata_SATAController is
+	generic (
 		DEBUG														: BOOLEAN											:= FALSE;
 		ENABLE_DEBUGPORT								: BOOLEAN											:= FALSE;
 		-- transceiver settings
@@ -111,63 +110,64 @@ ENTITY sata_SATAController IS
 		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: T_BOOLVEC										:= (0 => TRUE,									1 => TRUE);       -- required by ATA/SATA standard
 		ENABLE_GLUE_FIFOS								: T_BOOLVEC										:= (0 => FALSE,									1 => FALSE)
 	);
-	PORT (
-		ClockNetwork_Reset					: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			asynchronous reset
-		ClockNetwork_ResetDone			: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			all clocks are stable
-		PowerDown										: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:
-		Reset												: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock:	synchronous reset, done in next cycle
-		ResetDone										: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock: layers have been resetted after powerup / hard reset
+	port (
+		ClockNetwork_Reset					: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			asynchronous reset
+		ClockNetwork_ResetDone			: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:			all clocks are stable
+		PowerDown										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @async:
+		Reset												: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock:	synchronous reset, done in next cycle
+		ResetDone										: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- @SATA_Clock: layers have been resetted after powerup / hard reset
 
-		SATAGenerationMin						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		--
-		SATAGenerationMax						: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		--
-		SATAGeneration          	  : OUT T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+		SATAGenerationMin						: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		--
+		SATAGenerationMax						: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);		--
+		SATAGeneration          	  : out T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
 
-		SATA_Clock									: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		SATA_Clock_Stable						: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		SATA_Clock									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		SATA_Clock_Stable						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-		Command											: IN	T_SATA_TRANS_COMMAND_VECTOR(PORTS - 1 downto 0);
-		Status											: OUT T_SATA_SATACONTROLLER_STATUS_VECTOR(PORTS - 1 downto 0);
-		Error												: OUT	T_SATA_SATACONTROLLER_ERROR_VECTOR(PORTS - 1 downto 0);
+		Command											: in	T_SATA_TRANS_COMMAND_VECTOR(PORTS - 1 downto 0);
+		Status											: out T_SATA_SATACONTROLLER_STATUS_VECTOR(PORTS - 1 downto 0);
+		Error												: out	T_SATA_SATACONTROLLER_ERROR_VECTOR(PORTS - 1 downto 0);
 		ATAHostRegisters						: in	T_SATA_ATA_HOST_REGISTERS_VECTOR(PORTS - 1 downto 0);
 		ATADeviceRegisters					: out	T_SATA_ATA_DEVICE_REGISTERS_VECTOR(PORTS - 1 downto 0);
 
 		-- Debug ports
-		DebugPortIn									: IN	T_SATADBG_SATACONTROLLER_IN_VECTOR(PORTS - 1 downto 0);
-		DebugPortOut								: OUT	T_SATADBG_SATACONTROLLER_OUT_VECTOR(PORTS - 1 downto 0);
+		DebugPortIn									: in	T_SATADBG_SATACONTROLLER_IN_VECTOR(PORTS - 1 downto 0);
+		DebugPortOut								: out	T_SATADBG_SATACONTROLLER_OUT_VECTOR(PORTS - 1 downto 0);
 
 		-- TX port
-		TX_SOT											: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		TX_EOT											: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		TX_Valid										: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		TX_Data											: IN	T_SLVV_32(PORTS - 1 downto 0);
-		TX_Ack											: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_SOT											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_EOT											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Valid										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Data											: in	T_SLVV_32(PORTS - 1 downto 0);
+		TX_Ack											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
 		-- RX port
-		RX_SOT											: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_EOT											: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_Valid										: OUT	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_Data											: OUT	T_SLVV_32(PORTS - 1 downto 0);
-		RX_Ack											: IN	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_SOT											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_EOT											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Valid										: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Data											: out	T_SLVV_32(PORTS - 1 downto 0);
+		RX_Ack											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
 		-- vendor specific signals
-		VSS_Common_In								: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-		VSS_Private_In							: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 downto 0);
-		VSS_Private_Out							: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
+		VSS_Common_In								: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+		VSS_Private_In							: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 downto 0);
+		VSS_Private_Out							: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 	);
-END;
+end entity;
 
-ARCHITECTURE rtl OF sata_SATAController IS
-	ATTRIBUTE KEEP													: BOOLEAN;
 
-	CONSTANT CONTROLLER_TYPES_I							: T_SATA_DEVICE_TYPE_VECTOR(0 TO PORTS - 1)	:= CONTROLLER_TYPES(0 TO PORTS - 1);
-	CONSTANT INITIAL_SATA_GENERATIONS_I			: T_SATA_GENERATION_VECTOR(0 TO PORTS - 1)	:= INITIAL_SATA_GENERATIONS(0 TO PORTS - 1);
-	CONSTANT ALLOW_SPEED_NEGOTIATION_I			: T_BOOLVEC(0 TO PORTS - 1)									:= ALLOW_SPEED_NEGOTIATION(0 TO PORTS - 1);
-	CONSTANT ALLOW_STANDARD_VIOLATION_I			: T_BOOLVEC(0 TO PORTS - 1)									:= ALLOW_STANDARD_VIOLATION(0 TO PORTS - 1);
-	CONSTANT OOB_TIMEOUT_I									: T_TIMEVEC(0 TO PORTS - 1)									:= OOB_TIMEOUT(0 TO PORTS - 1);
-	CONSTANT GENERATION_CHANGE_COUNT_I			: T_INTVEC(0 TO PORTS - 1)									:= GENERATION_CHANGE_COUNT(0 TO PORTS - 1);
-	CONSTANT ATTEMPTS_PER_GENERATION_I			: T_INTVEC(0 TO PORTS - 1)									:= ATTEMPTS_PER_GENERATION(0 TO PORTS - 1);
-	CONSTANT AHEAD_CYCLES_FOR_INSERT_EOF_I	: T_INTVEC(0 TO PORTS - 1)									:= AHEAD_CYCLES_FOR_INSERT_EOF(0 TO PORTS - 1);
-	CONSTANT MAX_FRAME_SIZE_I								: T_MEMVEC(0 TO PORTS - 1)									:= MAX_FRAME_SIZE(0 TO PORTS - 1);
+architecture rtl of sata_SATAController is
+	attribute KEEP													: BOOLEAN;
+
+	constant CONTROLLER_TYPES_I							: T_SATA_DEVICE_TYPE_VECTOR(0 to PORTS - 1)	:= CONTROLLER_TYPES(0 to PORTS - 1);
+	constant INITIAL_SATA_GENERATIONS_I			: T_SATA_GENERATION_VECTOR(0 to PORTS - 1)	:= INITIAL_SATA_GENERATIONS(0 to PORTS - 1);
+	constant ALLOW_SPEED_NEGOTIATION_I			: T_BOOLVEC(0 to PORTS - 1)									:= ALLOW_SPEED_NEGOTIATION(0 to PORTS - 1);
+	constant ALLOW_STANDARD_VIOLATION_I			: T_BOOLVEC(0 to PORTS - 1)									:= ALLOW_STANDARD_VIOLATION(0 to PORTS - 1);
+	constant OOB_TIMEOUT_I									: T_TIMEVEC(0 to PORTS - 1)									:= OOB_TIMEOUT(0 to PORTS - 1);
+	constant GENERATION_CHANGE_COUNT_I			: T_INTVEC(0 to PORTS - 1)									:= GENERATION_CHANGE_COUNT(0 to PORTS - 1);
+	constant ATTEMPTS_PER_GENERATION_I			: T_INTVEC(0 to PORTS - 1)									:= ATTEMPTS_PER_GENERATION(0 to PORTS - 1);
+	constant AHEAD_CYCLES_FOR_INSERT_EOF_I	: T_INTVEC(0 to PORTS - 1)									:= AHEAD_CYCLES_FOR_INSERT_EOF(0 to PORTS - 1);
+	constant MAX_FRAME_SIZE_I								: T_MEMVEC(0 to PORTS - 1)									:= MAX_FRAME_SIZE(0 to PORTS - 1);
 
 	-- Clocking & ResetDone, provided by transceiver layer
 	signal SATA_Clock_i									: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
@@ -467,15 +467,15 @@ begin
 		-- =========================================================================
 		-- link layer
 		-- =========================================================================
-		Link : ENTITY PoC.sata_LinkLayer
-			GENERIC MAP (
+		Link : entity PoC.sata_LinkLayer
+			generic map (
 				DEBUG												=> DEBUG,
 				ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT,
 				CONTROLLER_TYPE							=> CONTROLLER_TYPES_I(i),
 				AHEAD_CYCLES_FOR_INSERT_EOF	=> AHEAD_CYCLES_FOR_INSERT_EOF_I(i),
 				MAX_FRAME_SIZE							=> MAX_FRAME_SIZE_I(i)
 			)
-			PORT MAP (
+			port map (
 				Clock										=> SATA_Clock_i(i),
 				ClockEnable							=> SATA_Clock_Stable_i(i),
 				Reset										=> Reset(i),
@@ -532,8 +532,8 @@ begin
 		-- =========================================================================
 		-- physical layer
 		-- =========================================================================
-		Phy : ENTITY PoC.sata_PhysicalLayer
-			GENERIC MAP (
+		Phy : entity PoC.sata_PhysicalLayer
+			generic map (
 				DEBUG													=> DEBUG,
 				ENABLE_DEBUGPORT							=> ENABLE_DEBUGPORT,
 				CONTROLLER_TYPE								=> CONTROLLER_TYPES_I(i),
@@ -544,7 +544,7 @@ begin
 				GENERATION_CHANGE_COUNT				=> GENERATION_CHANGE_COUNT_I(i),
 				ATTEMPTS_PER_GENERATION				=> ATTEMPTS_PER_GENERATION_I(i)
 			)
-			PORT MAP (
+			port map (
 				Clock													=> SATA_Clock_i(i),
 				ClockEnable										=> SATA_Clock_Stable_i(i),
 				Reset													=> Reset(i),
@@ -635,15 +635,15 @@ begin
 	-- ===========================================================================
 	-- transceiver layer
 	-- ===========================================================================
-	Trans : ENTITY PoC.sata_TransceiverLayer
-		GENERIC MAP (
+	Trans : entity PoC.sata_TransceiverLayer
+		generic map (
 			DEBUG											=> DEBUG,
 			ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 			REFCLOCK_FREQ							=> REFCLOCK_FREQ,
 			PORTS											=> PORTS,
 			INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS_I
 		)
-		PORT MAP (
+		port map (
 			ClockNetwork_Reset				=> ClockNetwork_Reset,
 			ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
 

@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					FSM for SATA Link Layer
+-- Entity:					FSM for SATA Link Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- See notes on module 'sata_LinkLayer'.
 --
 -- For input 'MyReset' see assignment in module 'sata_LinkLayer'.
@@ -136,7 +135,8 @@ entity sata_LinkLayerFSM is
 		CRCMux_ctrl							: out	STD_LOGIC--;
 --		ScramblerMux_ctrl				: out	STD_LOGIC
 	);
-end;
+end entity;
+
 
 architecture rtl of sata_LinkLayerFSM is
 	attribute KEEP									: BOOLEAN;
@@ -1039,7 +1039,7 @@ begin
 	-- reset when back in IDLE to allow error processing
 	process(Clock)
 	begin
-		IF rising_edge(Clock) then
+		if rising_edge(Clock) then
 			if (State = ST_IDLE) then
 				RX_SOF_r <= '0';
 			elsif (RX_IsSOF = '1') then

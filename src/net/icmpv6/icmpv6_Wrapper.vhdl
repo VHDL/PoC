@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	TODO
+-- Entity:				 	TODO
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,7 +26,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -83,11 +82,11 @@ begin
 
 
 --	ICMPv6_loop : entity PoC.FrameLoopback
---		generic MAP (
+--		generic map (
 --			DATA_BW										=> 8,
 --			META_BW										=> 0
 --		)
---		PORT MAP (
+--		port map (
 --			Clock									=> Clock,
 --			Reset									=> Reset,
 --
@@ -100,17 +99,17 @@ begin
 --
 --			Out_Valid							=> IP_TX_Valid,
 --			Out_Data							=> IP_TX_Data,
---			Out_Meta							=> OPEN,
+--			Out_Meta							=> open,
 --			Out_SOF								=> IP_TX_SOF,
 --			Out_EOF								=> IP_TX_EOF,
 --			Out_Ack								=> IP_TX_Ack
 --		);
 
--- ============================================================================================================================================================
+-- =============================================================================
 -- RX Path
--- ============================================================================================================================================================
+-- =============================================================================
 --	RX : entity PoC.icmpv6_RX
---		PORT MAP (
+--		port map (
 --			Clock										=> Clock,
 --			Reset										=> Reset,
 --
@@ -123,11 +122,11 @@ begin
 --			Received_EchoRequest		=> RX_Received_EchoRequest
 --		);
 
--- ============================================================================================================================================================
+-- =============================================================================
 -- TX Path
--- ============================================================================================================================================================
+-- =============================================================================
 --	TX : entity PoC.icmpv6_TX
---		PORT MAP (
+--		port map (
 --			Clock										=> Clock,
 --			Reset										=> Reset,
 --

@@ -24,7 +24,7 @@
             <Keywords name="Folders in comment, open"></Keywords>
             <Keywords name="Folders in comment, middle"></Keywords>
             <Keywords name="Folders in comment, close"></Keywords>
-            <Keywords name="Keywords1">End PreProcessRules PostProcessRules Copy To File Replace With Options Multiline DotAll Delete CaseInsensitive</Keywords>
+            <Keywords name="Keywords1">End PreProcessRules PostProcessRules Copy To File Replace With Options Multiline DotAll Delete CaseInsensitive AppendLine</Keywords>
             <Keywords name="Keywords2"></Keywords>
             <Keywords name="Keywords3"></Keywords>
             <Keywords name="Keywords4"></Keywords>

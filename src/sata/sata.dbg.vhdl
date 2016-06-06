@@ -1,7 +1,6 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
@@ -9,7 +8,7 @@
 -- Package:					SATA Debug Types and Functions
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Declares types and function for debugging purpose.
 --
 -- License:
@@ -68,7 +67,7 @@ package satadbg is
 		GTX_TX_ResetDone					: STD_LOGIC;
 		GTX_RX_ResetDone					: STD_LOGIC;
 
-		FSM												: STD_LOGIC_VECTOR(3 DOWNTO 0);
+		FSM												: STD_LOGIC_VECTOR(3 downto 0);
 
 		OOB_Clock									: STD_LOGIC;
 		RP_SATAGeneration					: T_SATA_GENERATION;

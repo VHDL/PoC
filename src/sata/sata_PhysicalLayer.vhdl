@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					SATA Physical Layer
+-- Entity:					SATA Physical Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Represents the PhysicalLayer of the SATA stack. Detects if a device is
 -- present and establishes a communication, both using OOB.
 --
@@ -136,7 +135,7 @@ entity sata_PhysicalLayer is
 		Trans_RX_CharIsK								: in	T_SLV_4;
 		Trans_RX_Valid									: in	STD_LOGIC
 	);
-END;
+end entity;
 
 
 architecture rtl of sata_PhysicalLayer is

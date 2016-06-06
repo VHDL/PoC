@@ -2,20 +2,13 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
---            ____        ____    _     _ _
---           |  _ \ ___  / ___|  | |   (_) |__  _ __ __ _ _ __ _   _
---           | |_) / _ \| |      | |   | | '_ \| '__/ _` | '__| | | |
---           |  __/ (_) | |___   | |___| | |_) | | | (_| | |  | |_| |
---           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
---                                                             |___/
--- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Package:					TODO
+-- Entity:					TODO
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		This is a vendor, device and protocol specific instanziation of a 7-Series
 --		GTXE2 transceiver. This GTX is configured for Serial-ATA from Gen1 to Gen3
 --		with linerates from 1.5 GHz to 6.0 GHz. It has a 'RP_SATAGeneration' dependant
@@ -45,7 +38,7 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library UNISIM;
-use			UNISIM.VCOMPONENTS.all;
+use			UNISIM.VcomponentS.all;
 
 library PoC;
 use			PoC.config.all;
@@ -649,13 +642,13 @@ begin
 		-- ==================================================================
 		-- DRP - dynamic reconfiguration port
 		-- ==================================================================
---		GTXConfig : ENTITY PoC.sata_Transceiver_Series7_GTXE2_Configurator
---			GENERIC MAP (
+--		GTXConfig : entity PoC.sata_Transceiver_Series7_GTXE2_Configurator
+--			generic map (
 --				DEBUG											=> DEBUG,
 --				DRPCLOCK_FREQ							=> REFCLOCK_FREQ,
 --				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(i)
 --			)
---			PORT MAP (
+--			port map (
 --				DRP_Clock									=> GTX_DRP_Clock,
 --				DRP_Reset									=> '0',														-- @DRP_Clock
 --				SATA_Clock								=> SATA_Clock_i,
@@ -862,7 +855,7 @@ begin
 				OOB_RX_Received_i			<= SATA_OOB_COMSAS;
 			elsif (RX_ElectricalIDLE	= '1') then
 				OOB_RX_Received_i			<= SATA_OOB_READY;
-			ELSE
+			else
 				OOB_RX_Received_i		 	<= SATA_OOB_NONE;
 			end if;
 		end process;

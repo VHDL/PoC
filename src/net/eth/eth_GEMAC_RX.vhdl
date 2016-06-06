@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
--- Module:				 	TODO
---
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
+-- Entity:				 	TODO
+--
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,46 +26,46 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY Eth_GEMAC_RX IS
-	GENERIC (
+entity Eth_GEMAC_RX is
+	generic (
 		DEBUG						: BOOLEAN						:= FALSE
 	);
-	PORT (
-		RS_RX_Clock								: IN	STD_LOGIC;
-		RS_RX_Reset								: IN	STD_LOGIC;
+	port (
+		RS_RX_Clock								: in	STD_LOGIC;
+		RS_RX_Reset								: in	STD_LOGIC;
 
 		-- MAC interface
-		RX_Valid									: OUT	STD_LOGIC;
-		RX_Data										: OUT	T_SLV_8;
-		RX_SOF										: OUT	STD_LOGIC;
-		RX_EOF										: OUT	STD_LOGIC;
-		RX_GoodFrame							: OUT	STD_LOGIC;
+		RX_Valid									: out	STD_LOGIC;
+		RX_Data										: out	T_SLV_8;
+		RX_SOF										: out	STD_LOGIC;
+		RX_EOF										: out	STD_LOGIC;
+		RX_GoodFrame							: out	STD_LOGIC;
 
 		-- Reconcilation Sublayer interface
-		RS_RX_Valid								: IN	STD_LOGIC;
-		RS_RX_Data								: IN	T_SLV_8;
-		RS_RX_Error								: IN	STD_LOGIC
+		RS_RX_Valid								: in	STD_LOGIC;
+		RS_RX_Data								: in	T_SLV_8;
+		RS_RX_Error								: in	STD_LOGIC
 	);
-END;
+end entity;
 
-ARCHITECTURE rtl OF Eth_GEMAC_RX IS
-	ATTRIBUTE KEEP										: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING						: STRING;
+architecture rtl of Eth_GEMAC_RX is
+	attribute KEEP										: BOOLEAN;
+	attribute FSM_ENCODING						: STRING;
 
-	TYPE T_STATE IS (
+	type T_STATE is (
 		ST_IDLE,
 		ST_RECEIVE_PREAMBLE,
 		ST_RECEIVED_START_OF_FRAME_DELIMITER,
@@ -74,45 +73,45 @@ ARCHITECTURE rtl OF Eth_GEMAC_RX IS
 		ST_DISCARD_FRAME
 	);
 
-	SIGNAL State											: T_STATE									:= ST_IDLE;
-	SIGNAL NextState									: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State		: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal State											: T_STATE									:= ST_IDLE;
+	signal NextState									: T_STATE;
+	attribute FSM_ENCODING OF State		: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	CONSTANT PREAMBLE_COUNTER_BW			: POSITIVE																			:= log2ceilnz(C_NET_ETH_PREMABLE_LENGTH);
-	SIGNAL PreambleCounter_rst				: STD_LOGIC;
-	SIGNAL PreambleCounter_en					: STD_LOGIC;
-	SIGNAL PreambleCounter_eq					: STD_LOGIC;
-	SIGNAL PreambleCounter_us					: UNSIGNED(PREAMBLE_COUNTER_BW - 1 DOWNTO 0)		:= (OTHERS => '0');
+	constant PREAMBLE_COUNTER_BW			: POSITIVE																			:= log2ceilnz(C_NET_ETH_PREMABLE_LENGTH);
+	signal PreambleCounter_rst				: STD_LOGIC;
+	signal PreambleCounter_en					: STD_LOGIC;
+	signal PreambleCounter_eq					: STD_LOGIC;
+	signal PreambleCounter_us					: UNSIGNED(PREAMBLE_COUNTER_BW - 1 downto 0)		:= (others => '0');
 
-	SIGNAL Register_en								: STD_LOGIC;
-	SIGNAL DataRegister_d							: T_SLVV_8(4 DOWNTO 0)													:= (OTHERS => (OTHERS => '0'));
-	SIGNAL SOFRegister_en							: STD_LOGIC;
-	SIGNAL SOFRegister_d							: STD_LOGIC_VECTOR(4 DOWNTO 0)									:= (OTHERS => '0');
-	SIGNAL Valid_rst									: STD_LOGIC;
-	SIGNAL Valid_set									: STD_LOGIC;
-	SIGNAL Valid_r										: STD_LOGIC;
+	signal Register_en								: STD_LOGIC;
+	signal DataRegister_d							: T_SLVV_8(4 downto 0)													:= (others => (others => '0'));
+	signal SOFRegister_en							: STD_LOGIC;
+	signal SOFRegister_d							: STD_LOGIC_VECTOR(4 downto 0)									:= (others => '0');
+	signal Valid_rst									: STD_LOGIC;
+	signal Valid_set									: STD_LOGIC;
+	signal Valid_r										: STD_LOGIC;
 
-	SIGNAL CRC_rst										: STD_LOGIC;
-	SIGNAL CRC_en											: STD_LOGIC;
-	SIGNAL CRC_OK											: STD_LOGIC;
+	signal CRC_rst										: STD_LOGIC;
+	signal CRC_en											: STD_LOGIC;
+	signal CRC_OK											: STD_LOGIC;
 
-	SIGNAL FSM_SOF										: STD_LOGIC;
-	SIGNAL FSM_EOF										: STD_LOGIC;
+	signal FSM_SOF										: STD_LOGIC;
+	signal FSM_EOF										: STD_LOGIC;
 
-BEGIN
-	PROCESS(RS_RX_Clock)
-	BEGIN
-		IF rising_edge(RS_RX_Clock) THEN
-			IF (RS_RX_Reset = '1') THEN
+begin
+	process(RS_RX_Clock)
+	begin
+		if rising_edge(RS_RX_Clock) then
+			if (RS_RX_Reset = '1') then
 				State			<= ST_IDLE;
-			ELSE
+			else
 				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, RS_RX_Data, RS_RX_Valid, RS_RX_Error, PreambleCounter_eq)
-	BEGIN
+	process(State, RS_RX_Data, RS_RX_Valid, RS_RX_Error, PreambleCounter_eq)
+	begin
 		NextState										<= State;
 
 		FSM_SOF											<= '0';
@@ -126,147 +125,147 @@ BEGIN
 		CRC_rst											<= '0';
 		CRC_en											<= '0';
 
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				PreambleCounter_rst			<= '1';
 				CRC_rst									<= '1';
 
-				IF (RS_RX_Valid = '1') THEN
-					IF (RS_RX_Data = x"55") THEN
+				if (RS_RX_Valid = '1') then
+					if (RS_RX_Data = x"55") then
 						NextState						<= ST_RECEIVE_PREAMBLE;
-					ELSE
+					else
 						NextState						<= ST_DISCARD_FRAME;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_RECEIVE_PREAMBLE =>
-				IF (RS_RX_Valid = '1') THEN
-					IF (RS_RX_Data = x"55") THEN
+			when ST_RECEIVE_PREAMBLE =>
+				if (RS_RX_Valid = '1') then
+					if (RS_RX_Data = x"55") then
 						PreambleCounter_en	<= '1';
-					ELSIF (RS_RX_Data = x"D5") THEN
+					ELSif (RS_RX_Data = x"D5") then
 						NextState						<= ST_RECEIVED_START_OF_FRAME_DELIMITER;
-					ELSE
+					else
 						NextState						<= ST_DISCARD_FRAME;
-					END IF;
-				ELSE
+					end if;
+				else
 					NextState							<= ST_IDLE;
-				END IF;
+				end if;
 
-				IF (PreambleCounter_eq = '1') THEN
-					IF (RS_RX_Valid = '1') THEN
+				if (PreambleCounter_eq = '1') then
+					if (RS_RX_Valid = '1') then
 						NextState							<= ST_DISCARD_FRAME;
-					ELSE
+					else
 						NextState							<= ST_IDLE;
-					END IF;
-				END IF;
+					end if;
+				end if;
 
-			WHEN ST_RECEIVED_START_OF_FRAME_DELIMITER =>
+			when ST_RECEIVED_START_OF_FRAME_DELIMITER =>
 				Register_en								<= '1';
 				CRC_en										<= '1';
 
 				FSM_SOF										<= '1';
 
-				IF (RS_RX_Valid = '1') THEN
+				if (RS_RX_Valid = '1') then
 					NextState								<= ST_RECEIVE_DATA;
-				ELSE
+				else
 					NextState								<= ST_IDLE;
-				END IF;
+				end if;
 
-			WHEN ST_RECEIVE_DATA =>
+			when ST_RECEIVE_DATA =>
 				Register_en								<= '1';
 				CRC_en										<= '1';
 
-				IF (RS_RX_Valid = '0') THEN
+				if (RS_RX_Valid = '0') then
 					Register_en							<= '0';
 					CRC_en									<= '0';
 
 					FSM_EOF									<= '1';
 
 					NextState								<= ST_IDLE;
-				END IF;
+				end if;
 
-			WHEN ST_DISCARD_FRAME =>
-				IF (RS_RX_Valid = '0') THEN
+			when ST_DISCARD_FRAME =>
+				if (RS_RX_Valid = '0') then
 					NextState								<= ST_IDLE;
-				END IF;
+				end if;
 
-		END CASE;
-	END PROCESS;
+		end case;
+	end process;
 
-	PROCESS(RS_RX_Clock)
-	BEGIN
-		IF rising_edge(RS_RX_Clock) THEN
-			IF (PreambleCounter_rst = '1') THEN
-				PreambleCounter_us			<= (OTHERS => '0');
-			ELSE
-				IF (PreambleCounter_en = '1') THEN
+	process(RS_RX_Clock)
+	begin
+		if rising_edge(RS_RX_Clock) then
+			if (PreambleCounter_rst = '1') then
+				PreambleCounter_us			<= (others => '0');
+			else
+				if (PreambleCounter_en = '1') then
 					PreambleCounter_us		<= PreambleCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	PreambleCounter_eq		<= to_sl(PreambleCounter_us = C_NET_ETH_PREMABLE_LENGTH);
 
-	PROCESS(RS_RX_Clock)
-	BEGIN
-		IF rising_edge(RS_RX_Clock) THEN
-			IF (Register_en = '1') THEN
-				SOFRegister_d				<= SOFRegister_d(SOFRegister_d'high - 1 DOWNTO 0)		& FSM_SOF;
-				DataRegister_d			<= DataRegister_d(DataRegister_d'high - 1 DOWNTO 0) & RS_RX_Data;
-			END IF;
-		END IF;
-	END PROCESS;
+	process(RS_RX_Clock)
+	begin
+		if rising_edge(RS_RX_Clock) then
+			if (Register_en = '1') then
+				SOFRegister_d				<= SOFRegister_d(SOFRegister_d'high - 1 downto 0)		& FSM_SOF;
+				DataRegister_d			<= DataRegister_d(DataRegister_d'high - 1 downto 0) & RS_RX_Data;
+			end if;
+		end if;
+	end process;
 
 	Valid_rst				<= FSM_EOF;
 	Valid_set				<= SOFRegister_d(SOFRegister_d'high - 1);
 
-	PROCESS(RS_RX_Clock)
-	BEGIN
-		IF rising_edge(RS_RX_Clock) THEN
-			IF ((RS_RX_Reset OR Valid_rst) = '1') THEN
+	process(RS_RX_Clock)
+	begin
+		if rising_edge(RS_RX_Clock) then
+			if ((RS_RX_Reset OR Valid_rst) = '1') then
 				Valid_r				<= '0';
-			ELSIF (Valid_set = '1') THEN
+			ELSif (Valid_set = '1') then
 				Valid_r				<= '1';
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	blkCRC : BLOCK
-		CONSTANT CRC32_POLYNOMIAL					: BIT_VECTOR(35 DOWNTO 0) := x"104C11DB7";
-		CONSTANT CRC32_INIT								: T_SLV_32								:=  x"FFFFFFFF";
+	blkCRC : block
+		constant CRC32_POLYNOMIAL					: BIT_VECTOR(35 downto 0) := x"104C11DB7";
+		constant CRC32_INIT								: T_SLV_32								:=  x"FFFFFFFF";
 
-		SIGNAL CRC_DataIn									: T_SLV_8;
-		SIGNAL CRC_DataOut								: T_SLV_32;
-		SIGNAL CRC_Value									: T_SLV_32;
+		signal CRC_DataIn									: T_SLV_8;
+		signal CRC_DataOut								: T_SLV_32;
+		signal CRC_Value									: T_SLV_32;
 
-		SIGNAL CRC_Byte0_d								: T_SLVV_8(0 DOWNTO 0);
-		SIGNAL CRC_Byte1_d								: T_SLVV_8(1 DOWNTO 0);
-		SIGNAL CRC_Byte2_d								: T_SLVV_8(2 DOWNTO 0);
-		SIGNAL CRC_Byte3_d								: T_SLVV_8(3 DOWNTO 0);
+		signal CRC_Byte0_d								: T_SLVV_8(0 downto 0);
+		signal CRC_Byte1_d								: T_SLVV_8(1 downto 0);
+		signal CRC_Byte2_d								: T_SLVV_8(2 downto 0);
+		signal CRC_Byte3_d								: T_SLVV_8(3 downto 0);
 
-		SIGNAL CRC_ByteMatched_d					: STD_LOGIC_VECTOR(3 DOWNTO 0);
+		signal CRC_ByteMatched_d					: STD_LOGIC_VECTOR(3 downto 0);
 
-		ATTRIBUTE KEEP OF CRC_Value						: SIGNAL IS TRUE;
+		attribute KEEP OF CRC_Value						: signal IS TRUE;
 
 -- for debugging
---		ATTRIBUTE KEEP OF CRC_Byte0_d					: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF CRC_Byte1_d					: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF CRC_Byte2_d					: SIGNAL IS TRUE;
---		ATTRIBUTE KEEP OF CRC_Byte3_d					: SIGNAL IS TRUE;
+--		attribute KEEP OF CRC_Byte0_d					: signal IS TRUE;
+--		attribute KEEP OF CRC_Byte1_d					: signal IS TRUE;
+--		attribute KEEP OF CRC_Byte2_d					: signal IS TRUE;
+--		attribute KEEP OF CRC_Byte3_d					: signal IS TRUE;
 
---		ATTRIBUTE KEEP OF CRC_ByteMatched_d		: SIGNAL IS TRUE;
+--		attribute KEEP OF CRC_ByteMatched_d		: signal IS TRUE;
 
-	BEGIN
+	begin
 
 		CRC_DataIn		<= reverse(RS_RX_Data);
 
-		CRC : ENTITY PoC.comm_crc
-			GENERIC MAP (
-				GEN							=> CRC32_POLYNOMIAL(32 DOWNTO 0),		-- Generator Polynom
+		CRC : entity PoC.comm_crc
+			generic map (
+				GEN							=> CRC32_POLYNOMIAL(32 downto 0),		-- Generator Polynom
 				BITS						=> CRC_DataIn'length								-- Number of Bits to be processed in parallel
 			)
-			PORT MAP (
+			port map (
 				clk							=> RS_RX_Clock,											-- Clock
 
 				set							=> CRC_rst,													-- Parallel Preload of Remainder
@@ -275,7 +274,7 @@ BEGIN
 				din							=> CRC_DataIn,
 
 				rmd							=> CRC_DataOut,											-- Remainder
-				zero						=> OPEN															-- Remainder is Zero
+				zero						=> open															-- Remainder is Zero
 			);
 
 		-- manipulate CRC value
@@ -283,32 +282,32 @@ BEGIN
 
 		CRC_Byte0_d(0)	<= CRC_Value(7	DOWNTO	0);
 		CRC_Byte1_d(0)	<= CRC_Value(15 DOWNTO	8);
-		CRC_Byte2_d(0)	<= CRC_Value(23 DOWNTO 16);
-		CRC_Byte3_d(0)	<= CRC_Value(31 DOWNTO 24);
+		CRC_Byte2_d(0)	<= CRC_Value(23 downto 16);
+		CRC_Byte3_d(0)	<= CRC_Value(31 downto 24);
 
 		-- delay some CRC bytes
-		PROCESS(RS_RX_Clock)
-		BEGIN
-			IF rising_edge(RS_RX_Clock) THEN
-				CRC_Byte1_d(CRC_Byte1_d'high DOWNTO 1)	<= CRC_Byte1_d(CRC_Byte1_d'high - 1 DOWNTO 0);
-				CRC_Byte2_d(CRC_Byte2_d'high DOWNTO 1)	<= CRC_Byte2_d(CRC_Byte2_d'high - 1 DOWNTO 0);
-				CRC_Byte3_d(CRC_Byte3_d'high DOWNTO 1)	<= CRC_Byte3_d(CRC_Byte3_d'high - 1 DOWNTO 0);
-			END IF;
-		END PROCESS;
+		process(RS_RX_Clock)
+		begin
+			if rising_edge(RS_RX_Clock) then
+				CRC_Byte1_d(CRC_Byte1_d'high downto 1)	<= CRC_Byte1_d(CRC_Byte1_d'high - 1 downto 0);
+				CRC_Byte2_d(CRC_Byte2_d'high downto 1)	<= CRC_Byte2_d(CRC_Byte2_d'high - 1 downto 0);
+				CRC_Byte3_d(CRC_Byte3_d'high downto 1)	<= CRC_Byte3_d(CRC_Byte3_d'high - 1 downto 0);
+			end if;
+		end process;
 
 		-- calculate byte matches and delay it
-		CRC_ByteMatched_d(0)		<=  to_sl(CRC_Byte0_d(CRC_Byte0_d'high) = RS_RX_Data)															WHEN rising_edge(RS_RX_Clock);
-		CRC_ByteMatched_d(1)		<= (to_sl(CRC_Byte1_d(CRC_Byte1_d'high) = RS_RX_Data) AND CRC_ByteMatched_d(0))		WHEN rising_edge(RS_RX_Clock);
-		CRC_ByteMatched_d(2)		<= (to_sl(CRC_Byte2_d(CRC_Byte2_d'high) = RS_RX_Data) AND CRC_ByteMatched_d(1))		WHEN rising_edge(RS_RX_Clock);
-		CRC_ByteMatched_d(3)		<= (to_sl(CRC_Byte3_d(CRC_Byte3_d'high) = RS_RX_Data) AND CRC_ByteMatched_d(2))		WHEN rising_edge(RS_RX_Clock);
+		CRC_ByteMatched_d(0)		<=  to_sl(CRC_Byte0_d(CRC_Byte0_d'high) = RS_RX_Data)															when rising_edge(RS_RX_Clock);
+		CRC_ByteMatched_d(1)		<= (to_sl(CRC_Byte1_d(CRC_Byte1_d'high) = RS_RX_Data) AND CRC_ByteMatched_d(0))		when rising_edge(RS_RX_Clock);
+		CRC_ByteMatched_d(2)		<= (to_sl(CRC_Byte2_d(CRC_Byte2_d'high) = RS_RX_Data) AND CRC_ByteMatched_d(1))		when rising_edge(RS_RX_Clock);
+		CRC_ByteMatched_d(3)		<= (to_sl(CRC_Byte3_d(CRC_Byte3_d'high) = RS_RX_Data) AND CRC_ByteMatched_d(2))		when rising_edge(RS_RX_Clock);
 
 		-- now a possible CRC_OK was delayed 4 times, so it should occur along with EOF
 		CRC_OK <= CRC_ByteMatched_d(3);
-	END BLOCK;
+	end block;
 
 	RX_Valid			<= Valid_r;
 	RX_Data				<= DataRegister_d(DataRegister_d'high);
 	RX_SOF				<= SOFRegister_d(SOFRegister_d'high);
 	RX_EOF				<= FSM_EOF;
 	RX_GoodFrame	<= FSM_EOF AND CRC_OK;
-END;
+end;

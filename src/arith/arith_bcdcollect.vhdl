@@ -1,17 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- =============================================================================
+-- Authors:					Thomas B. Preusser
 --
--- ===========================================================================
--- Module:      Serial-binary to parallel BCD-output converter.
---
--- Authors:	Thomas B. Preusser
+-- Entity:					Serial-binary to parallel BCD-output converter.
 --
 -- Description:
--- ------------
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ===========================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --

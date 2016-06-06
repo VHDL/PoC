@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Module:					OOB Sequencer for SATA Physical Layer - Host Side
+-- Entity:					OOB Sequencer for SATA Physical Layer - Host Side
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Executes the COMRESET / COMINIT procedure.
 --
 -- If the clock is unstable, than Reset must be asserted.
@@ -80,7 +79,7 @@ entity sata_Physical_OOBControl_Host is
 		RX_Primitive							: in	T_SATA_PRIMITIVE;
 		RX_Valid									: in	STD_LOGIC
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_Physical_OOBControl_Host is
@@ -459,7 +458,7 @@ begin
 
 	-- debug port
 	-- ===========================================================================
-	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) generate
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
