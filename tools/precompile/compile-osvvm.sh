@@ -49,7 +49,6 @@ while [[ $# > 0 ]]; do
 	case $key in
 		-c|--clean)
 		CLEAN=TRUE
-		NO_COMMAND=FALSE
 		;;
 		-a|--all)
 		COMPILE_ALL=TRUE
@@ -57,9 +56,11 @@ while [[ $# > 0 ]]; do
 		;;
 		--ghdl)
 		COMPILE_FOR_GHDL=TRUE
+		NO_COMMAND=FALSE
 		;;
 		--questa)
 		COMPILE_FOR_VSIM=TRUE
+		NO_COMMAND=FALSE
 		;;
 		-h|--help)
 		HELP=TRUE
@@ -91,7 +92,7 @@ elif [ "$HELP" == "TRUE" ]; then
 	echo "  on Linux."
 	echo ""
 	echo "Usage:"
-	echo "  compile-osvvm.sh [-c|--clean] [-h|--all|--ghdl|--vsim]"
+	echo "  compile-osvvm.sh [-c] [--help|--all|--ghdl|--vsim]"
 	echo ""
 	echo "Common commands:"
 	echo "  -h --help             Print this help page"
