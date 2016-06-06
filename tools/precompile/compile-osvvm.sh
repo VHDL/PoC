@@ -38,19 +38,20 @@ poc_sh=../../poc.sh
 OSVVMLibDir=lib/osvvm
 
 # define color escape codes
-RED='\e[0;31m'			# Red
-YELLOW='\e[1;33m'		# Yellow
-NOCOLOR='\e[0m'			# No Color
+RED="\e[0;31m"			# Red
+GREEN="\e[32m"			# Green
+YELLOW="\e[1;33m"		# Yellow
+NOCOLOR="\e[0m"			# No Color
 
 # red texts
-COLORED_ERROR="$ANSI_RED[ERROR]$ANSI_RESET"
-COLORED_FAILED="$ANSI_RED[FAILED]$ANSI_RESET"
+COLORED_ERROR="$RED[ERROR]$NOCOLOR"
+COLORED_FAILED="$RED[FAILED]$NOCOLOR"
 
 # green texts
-COLORED_DONE="$ANSI_GREEN[DONE]$ANSI_RESET"
-COLORED_SUCCESSFUL="$ANSI_GREEN[SUCCESSFUL]$ANSI_RESET"
+COLORED_DONE="$GREEN[DONE]$NOCOLOR"
+COLORED_SUCCESSFUL="$GREEN[SUCCESSFUL]$NOCOLOR"
 
-
+# Get script directory
 ScriptDir="$(dirname $0)"
 ScriptDir="$(realpath $ScriptDir)"
 
@@ -93,7 +94,7 @@ if [ "$NO_COMMAND" == "TRUE" ]; then
 fi
 
 if [ "$UNKNOWN_OPTION" == "TRUE" ]; then
-	echo -e $COLORED_ERROR "Unknown command line option.${ANSI_RESET}"
+	echo -e $COLORED_ERROR "Unknown command line option.${NOCOLOR}"
 	exit -1
 elif [ "$HELP" == "TRUE" ]; then
 	if [ "$NO_COMMAND" == "TRUE" ]; then
@@ -154,7 +155,6 @@ fi
 
 # Setup destination directory
 SourceDir=$PoCRootDir/$OSVVMLibDir
-DestDir=$PoCRootDir/$PrecompiledDir
 
 if [ "$COMPILE_ALL" == "TRUE" ]; then
 	COMPILE_FOR_GHDL=TRUE
@@ -164,7 +164,7 @@ fi
 # GHDL
 # ==============================================================================
 if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
-	DestDir=$DestDir/ghdl/osvvm/v08
+	DestDir=$PoCRootDir/$PrecompiledDir/ghdl/osvvm/v08
 	
 	# Get GHDL binary
 	BinDir=$($poc_sh query INSTALL.GHDL:BinaryDirectory 2>/dev/null)	# Path to the simulators bin directory
@@ -176,7 +176,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	
 	# Cleanup
 	if [ "$CLEAN" == "TRUE" ]; then
-		echo -e "${ANSI_YELLOW}Cleaning library 'osvvm' ...${ANSI_RESET}"
+		echo -e "${YELLOW}Cleaning library 'osvvm' ...${NOCOLOR}"
 		rm -Rf $DestDir 2> /dev/null
 	fi
 	
@@ -216,7 +216,7 @@ fi
 # QuestaSim/ModelSim
 # ==============================================================================
 if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
-	DestDir=$DestDir/vsim
+	DestDir=$PoCRootDir/$PrecompiledDir/vsim
 	
 	# Get QuestaSim/ModelSim binary
 	BinDir=$($poc_sh query ModelSim:BinaryDirectory 2>/dev/null)	# Path to the simulators bin directory
