@@ -196,11 +196,11 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 		# if grcat (generic colourizer) is not installed, use a dummy pipe command like 'cat'
 		GRC_COMMAND="cat"
 	else
-		if [ "$SUPPRESS_WARNINGS" == "TRUE" ]; then
+		# if [ "$SUPPRESS_WARNINGS" == "TRUE" ]; then
 			GRC_COMMAND="grcat $ScriptDir/ghdl.skipwarning.grcrules"
-		else
-			GRC_COMMAND="grcat $ScriptDir/ghdl.grcrules"
-		fi
+		# else
+			# GRC_COMMAND="grcat $ScriptDir/ghdl.grcrules"
+		# fi
 	fi
 	
 	# Analyze each VHDL source file.
