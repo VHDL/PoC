@@ -210,9 +210,9 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	
 	# Compile libraries with vcom, executed in destination directory
 	rm -rf osvvm
-	vlib osvvm
-	vmap -del osvvm
-	vmap osvvm $DestDir/osvvm
+	$BinDir/vlib osvvm
+	$BinDir/vmap -del osvvm
+	$BinDir/vmap osvvm $DestDir/osvvm
 	for file in ${Files[@]}; do
 		echo "Compiling $file..."
 		$BinDir/vcom -2008 -work osvvm $SourceDir/$file
