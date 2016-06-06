@@ -137,7 +137,6 @@ Files=(
 	CoveragePkg.vhd
 	OsvvmContext.vhd
 )
-ERRORCOUNT=0
 
 PoCRootDir=$($poc_sh query INSTALL.PoC:InstallationDirectory 2>/dev/null)
 if [ $? -ne 0 ]; then
@@ -163,6 +162,7 @@ fi
 
 # GHDL
 # ==============================================================================
+ERRORCOUNT=0
 if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	DestDir=$PoCRootDir/$PrecompiledDir/ghdl/osvvm/v08
 	
@@ -204,17 +204,27 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	fi
 	
 	# Analyze each VHDL source file.
+	echo -e "${YELLOW}Compiling library 'osvvm' with GHDL ...${NOCOLOR}"
 	for file in ${Files[@]}; do
-		echo "Compiling $file..."
+		echo "  Compiling $file..."
 		$BinDir/ghdl -a -fexplicit -frelaxed-rules --no-vital-checks --warn-binding --mb-comments --std=08 --work=osvvm $SourceDir/$file 2>&1 | $GRC_COMMAND
 		if [ $? -ne 0 ]; then
 			let ERRORCOUNT++
 		fi
 	done
+	
+	# print overall result
+	echo -n "Compiling library 'osvvm' with GHDL "
+	if [ $ERRORCOUNT -gt 0 ]; then
+		echo -e $COLORED_FAILED
+	else
+		echo -e $COLORED_SUCCESSFUL
+	fi
 fi
 
 # QuestaSim/ModelSim
 # ==============================================================================
+ERRORCOUNT=0
 if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	DestDir=$PoCRootDir/$PrecompiledDir/vsim
 	
@@ -239,23 +249,26 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	fi
 	
 	# Compile libraries with vcom, executed in destination directory
+	echo -e "${YELLOW}Cleaning library 'osvvm' ...${NOCOLOR}"
 	rm -rf osvvm
+	echo -e "${YELLOW}Creating library 'osvvm' with vlib/vmap ...${NOCOLOR}"
 	$BinDir/vlib osvvm
 	$BinDir/vmap -del osvvm
 	$BinDir/vmap osvvm $DestDir/osvvm
+	echo -e "${YELLOW}Compiling library 'osvvm' with vcom ...${NOCOLOR}"
 	for file in ${Files[@]}; do
-		echo "Compiling $file..."
+		echo "  Compiling $file..."
 		$BinDir/vcom -2008 -work osvvm $SourceDir/$file
 		if [ $? -ne 0 ]; then
 			let ERRORCOUNT++
 		fi
 	done
-fi
-
-# print overall result
-echo -n "Compiling OSVVM library "
-if [ $ERRORCOUNT -gt 0 ]; then
-	echo -e $COLORED_FAILED
-else
-	echo -e $COLORED_SUCCESSFUL
+	
+	# print overall result
+	echo -n "Compiling library 'osvvm' with vcom "
+	if [ $ERRORCOUNT -gt 0 ]; then
+		echo -e $COLORED_FAILED
+	else
+		echo -e $COLORED_SUCCESSFUL
+	fi
 fi
