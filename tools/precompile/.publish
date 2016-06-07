@@ -1,9 +1,15 @@
 # git files
 .gitempty
 
+# Compile Scripts
+compile-altera.ps1
 compile-altera.sh
-
+compile-osvvm.ps1
 compile-osvvm.sh
-
 compile-xilinx-ise.ps1
 compile-xilinx-ise.sh
+
+# Generic Colourizer rules
+ghdl.grcrules
+ghdl.skipwarning.grcrules
+
