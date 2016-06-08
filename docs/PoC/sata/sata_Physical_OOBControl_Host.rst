@@ -15,5 +15,7 @@ Automatically tries to establish a communication when Reset is deasserted.
    :linenos:
    :lines: 53-82
 
+Source file: `sata/sata_Physical_OOBControl_Host.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sata/sata_Physical_OOBControl_Host.vhdl>`_
+
 
 	 

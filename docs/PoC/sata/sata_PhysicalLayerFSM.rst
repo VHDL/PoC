@@ -22,5 +22,7 @@ b) During reconfiguration, this FSM waits in one of the ST_*_RECONFIG_WAIT
    :linenos:
    :lines: 59-95
 
+Source file: `sata/sata_PhysicalLayerFSM.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sata/sata_PhysicalLayerFSM.vhdl>`_
+
 
 	 

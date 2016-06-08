@@ -59,6 +59,8 @@ comparator (subtractor) in their path.
    :linenos:
    :lines: 98-124
 
+Source file: `fifo/fifo_cc_got.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/fifo/fifo_cc_got.vhdl>`_
+
 .. seealso::
    
    :doc:`PoC.fifo.dc_got </PoC/fifo/fifo_dc_got>`
