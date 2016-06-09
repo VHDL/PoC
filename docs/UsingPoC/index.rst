@@ -61,7 +61,7 @@ PoC can be used in several ways:
 .. toctree::
    :hidden:
    
-   Structure
+   AddingIPCores
    Simulation
    Synthesis
    ProjectManagement
