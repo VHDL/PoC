@@ -15,5 +15,7 @@ still being able to unqueue untaken ones in LIFO fashion.
    :linenos:
    :lines: 37-62
 
+Source file: `dstruct/dstruct_deque.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/dstruct/dstruct_deque.vhdl>`_
+
 
 	 

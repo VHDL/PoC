@@ -13,5 +13,7 @@ Scrambles or unscrambles transmitted data over the physical link.
    :linenos:
    :lines: 35-49
 
+Source file: `sata/sata_Link_Scrambler.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sata/sata_Link_Scrambler.vhdl>`_
+
 
 	 

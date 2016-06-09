@@ -23,5 +23,7 @@ synchronous reset for whole SATA stack.
    :linenos:
    :lines: 61-131
 
+Source file: `sata/sata_StreamingLayer.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sata/sata_StreamingLayer.vhdl>`_
+
 
 	 

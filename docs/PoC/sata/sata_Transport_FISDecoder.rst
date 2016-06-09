@@ -13,5 +13,7 @@ See notes on module 'sata_TransportLayer'.
    :linenos:
    :lines: 46-86
 
+Source file: `sata/sata_Transport_FISDecoder.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sata/sata_Transport_FISDecoder.vhdl>`_
+
 
 	 

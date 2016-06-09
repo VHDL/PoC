@@ -23,5 +23,7 @@ Does not support dummy scrambling of TX primitives.
    :linenos:
    :lines: 61-119
 
+Source file: `sata/sata_LinkLayer.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sata/sata_LinkLayer.vhdl>`_
+
 
 	 

@@ -13,5 +13,7 @@ Implements a stack, a LIFO storage abstraction.
    :linenos:
    :lines: 35-54
 
+Source file: `dstruct/dstruct_stack.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/dstruct/dstruct_stack.vhdl>`_
+
 
 	 

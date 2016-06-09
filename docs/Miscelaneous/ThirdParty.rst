@@ -5,30 +5,9 @@ The PoC-Library is shiped with different third party libraries, which are
 located in the ``<PoCRoot>/lib/`` folder. This document lists all these
 libraries, their websites and licenses.
 
-Updating Git Submodules
-***********************
-
-The third party libraries are embedded as git submodules. So if the
-PoC-Library was not cloned with option ``--recursive`` it's required to run the
-sub-module initialization manually:
-
-.. code-block:: PowerShell
-   
-   cd <PoCRoot>\lib\
-   git submodule init
-   git submodule update
-   foreach($dir in (dir -Directory)) {
-     cd $dir
-     git remote rename origin github
-     cd ..
-   }
-
-
-Embedded Third-Party Libraries
-******************************
 
 OSVVM
-=====
+*****
 
 **Open Source VHDL Verification Methodology (OS-VVM)** is an intelligent
 testbench methodology that allows mixing of “Intelligent Coverage” (coverage
@@ -52,7 +31,7 @@ existing testbench or testbench models.
 
 
 VUnit
-=====
+*****
 
 `VUnit <https://vunit.github.io/>`_ is an open source unit testing framework for
 VHDL released under the terms of :doc:`Mozilla Public License, v. 2.0 </References/Licenses/MozillaPublicLicense2.0>`.
@@ -75,7 +54,7 @@ automation.
 
 
 Cocotb
-======
+******
 
 `Cocotb <http://cocotb.readthedocs.org/>`_ is a coroutine based cosimulation
 library for writing VHDL and Verilog testbenches in Python.
@@ -91,3 +70,57 @@ library for writing VHDL and Verilog testbenches in Python.
 +--------------------+-----------------------------------------------------------------------------------------------------------+
 | **Source:**        | `https://github.com/potentialventures/cocotb <https://github.com/potentialventures/cocotb>`_              |
 +--------------------+-----------------------------------------------------------------------------------------------------------+
+
+
+Updating Linked Git Submodules
+******************************
+
+The third party libraries are embedded as Git submodules. So if the PoC-Library
+was not cloned with option ``--recursive`` it's required to run the sub-module
+initialization manually:
+
+On Linux
+========
+
+.. code-block:: Bash
+   
+   cd PoCRoot
+   git submodule init
+   git submodule update
+
+We recommend to rename the default remote repository name from 'origin' to
+'github'.
+
+.. code-block:: Bash
+   
+   cd PoCRoot\lib\
+
+.. todo:: write Bash code for Linux
+
+On OS X
+=======
+
+Please see the Linux instructions.
+
+On Windows
+==========
+
+
+.. code-block:: PowerShell
+   
+   cd PoCRoot
+   git submodule init
+   git submodule update
+
+We recommend to rename the default remote repository name from 'origin' to
+'github'.
+
+.. code-block:: PowerShell
+   
+   cd PoCRoot\lib\
+   foreach($dir in (dir -Directory)) {
+     cd $dir
+     git remote rename origin github
+     cd ..
+   }
+
