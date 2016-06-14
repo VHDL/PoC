@@ -40,14 +40,14 @@ OpenEnvironment() {
 	if [ -z "$LSC_DIAMOND" ]; then
 		Query="INSTALL.Lattice.Diamond:BinaryDirectory"
 		PoC_Command="$Py_Interpreter $PoC_Query query $Query"
-		if [ $Debug -eq 1 ]; then echo -e "${YELLOW}Inquire Lattice Diamond binary directory: command='$PoC_Command'${NOCOLOR}"; fi
+		test $Debug -eq 1 && echo -e "${YELLOW}Inquire Lattice Diamond binary directory: command='$PoC_Command'${NOCOLOR}"
 		Diamond_BinDir=$($PoC_Command)
 		if [ $? -ne 0 ]; then
 			echo 1>&2 -e "${RED}ERROR: ExitCode for '$PoC_Command' was not zero. Aborting script execution.${NOCOLOR}"
 			echo 1>&2 -e "${RED}$Diamond_BinDir${NOCOLOR}"
 			return 1
 		fi
-		if [ $Debug -eq 1 ]; then echo 1>&2 -e "${YELLOW}ILattice Diamond binary directory: '$Diamond_BinDir'${NOCOLOR}"; fi
+		test $Debug -eq 1 && echo 1>&2 -e "${YELLOW}Lattice Diamond binary directory: '$Diamond_BinDir'${NOCOLOR}"
 		if [ -z "$Diamond_BinDir" ]; then
 			echo 1>&2 -e "${RED}No Lattice Diamond installation found.${NOCOLOR}"
 			echo 1>&2 -e "${RED}Run 'PoC.py configure' to configure your Lattice Diamond installation.${NOCOLOR}"
@@ -61,7 +61,7 @@ OpenEnvironment() {
 			return 1
 		fi
 		
-		echo -e "${YELLOW}Loading Lattice Diamond environment '$Diamond_SettingsFile'${NOCOLOR}"
+		echo -e "${YELLOW}Loading Lattice Diamond environment '$Diamond_SettingsFile'...${NOCOLOR}"
 		PyWrapper_RescueArgs=$@
 		set --
 		bindir=$Diamond_BinDir #variable required by diamond_env
@@ -74,7 +74,7 @@ OpenEnvironment() {
 }
 
 CloseEnvironment() {
-	echo 1>&2 -e "${YELLOW}Unloading Lattice Diamond environment...${NOCOLOR}"
+	# echo 1>&2 -e "${YELLOW}Unloading Lattice Diamond environment...${NOCOLOR}"
 	return 0
 }
 

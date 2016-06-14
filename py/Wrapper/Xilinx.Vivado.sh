@@ -40,14 +40,14 @@ OpenEnvironment() {
 	if [ -z "$XILINX_VIVADO" ]; then
 		Query="Xilinx.Vivado:SettingsFile"
 		PoC_Command="$Py_Interpreter $PoC_Query query $Query"
-		if [ $Debug -eq 1 ]; then echo 1>&2 -e "${YELLOW}Inquire Vivado settings file: command='$PoC_Command'${NOCOLOR}"; fi
+		test $Debug -eq 1 && echo 1>&2 -e "${YELLOW}Inquire Vivado settings file: command='$PoC_Command'${NOCOLOR}"
 		Vivado_SettingsFile=$($PoC_Command)
 		if [ $? -ne 0 ]; then
 			echo 1>&2 -e "${RED}ERROR: ExitCode for '$PoC_Command' was not zero. Aborting script execution.${NOCOLOR}"
 			echo 1>&2 -e "${RED}$Vivado_SettingsFile${NOCOLOR}"
 			return 1
 		fi
-		if [ $Debug -eq 1 ]; then echo 1>&2 -e "${YELLOW}Vivado settings file: '$Vivado_SettingsFile'${NOCOLOR}"; fi
+		 $Debug -eq 1 && echo 1>&2 -e "${YELLOW}Vivado settings file: '$Vivado_SettingsFile'${NOCOLOR}"
 		if [ -z "$Vivado_SettingsFile" ]; then
 			echo 1>&2 -e "${RED}No Xilinx Vivado installation found.${NOCOLOR}"
 			echo 1>&2 -e "${RED}Run 'PoC.py configure' to configure your Xilinx Vivado installation.${NOCOLOR}"
@@ -59,7 +59,7 @@ OpenEnvironment() {
 			return 1
 		fi
 		
-		echo 1>&2 -e "${YELLOW}Loading Xilinx Vivado environment '$Vivado_SettingsFile'${NOCOLOR}"
+		echo 1>&2 -e "${YELLOW}Loading Xilinx Vivado environment '$Vivado_SettingsFile'...${NOCOLOR}"
 		PyWrapper_RescueArgs=$@
 		set --
 		source "$Vivado_SettingsFile"
@@ -70,7 +70,7 @@ OpenEnvironment() {
 }
 
 CloseEnvironment() {
-	echo 1>&2 -e "${YELLOW}Unloading Xilinx Vivado environment...${NOCOLOR}"
+	# echo 1>&2 -e "${YELLOW}Unloading Xilinx Vivado environment...${NOCOLOR}"
 	return 0
 }
 

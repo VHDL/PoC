@@ -232,7 +232,7 @@ Python_VersionTest='import sys; sys.exit(not (0x03050000 < sys.hexversion < 0x04
 python -c "$Python_VersionTest" 2>/dev/null
 if [ $? -eq 0 ]; then
 	Python_Interpreter=$(which python 2>/dev/null)
-	if [ $PyWrapper_Debug -eq 1 ]; then echo -e "${YELLOW}PythonInterpreter: use standard interpreter: '$Python_Interpreter'${NOCOLOR}"; fi
+	test $PyWrapper_Debug -eq 1 && echo -e "${YELLOW}PythonInterpreter: use standard interpreter: '$Python_Interpreter'${NOCOLOR}"
 else
 	# standard python interpreter is not suitable, try to find a suitable version manually
 	for pyVersion in 3.9 3.8 3.7 3.6 3.5; do
@@ -244,7 +244,7 @@ else
 			if [ $? -eq 0 ]; then break; fi
 		fi
 	done
-	if [ $PyWrapper_Debug -eq 1 ]; then echo -e "${YELLOW}PythonInterpreter: use this interpreter: '$Python_Interpreter'${NOCOLOR}"; fi
+	test $PyWrapper_Debug -eq 1 && echo -e "${YELLOW}PythonInterpreter: use this interpreter: '$Python_Interpreter'${NOCOLOR}"
 fi
 # if no interpreter was found => exit
 if [ -z "$Python_Interpreter" ]; then
@@ -262,14 +262,12 @@ for VendorName in $Env_Vendors; do
 		if [ ${ToolIndex["Load"]} -eq 1 ]; then
 			# if exists, source the vendor pre-hook file
 			VendorPreHookFile=$PoC_RootDir/$PoC_HookDirectory/${VendorIndex["PreHookFile"]}
-			if [ -f $VendorPreHookFile ]; then
-				source $VendorPreHookFile
-			fi
+			test -f $VendorPreHookFile && source $VendorPreHookFile
+			
 			# if exists, source the tool pre-hook file
 			ToolPreHookFile=$PoC_RootDir/$PoC_HookDirectory/${ToolIndex["PreHookFile"]}
-			if [ -f $ToolPreHookFile ]; then
-				source $ToolPreHookFile
-			fi
+			test -f $ToolPreHookFile && source $ToolPreHookFile
+			
 			# if exists, source the BashModule file
 			ModuleFile=$PoC_RootDir/$PoC_WrapperDirectory/${ToolIndex["BashModule"]}
 			if [ -f $ModuleFile ]; then
@@ -305,27 +303,26 @@ if [ $PoC_ExitCode -eq 0 ]; then
 	PoC_ExitCode=$?
 fi
 
-# execute vendor and tool pre-hook files if present
+# execute vendor and tool post-hook files if present
 for VendorName in $Env_Vendors; do
 	declare -n VendorIndex="Env_$VendorName"
 	for ToolName in ${VendorIndex["Tools"]}; do
 		declare -n ToolIndex="Env_${VendorName}_${ToolName}"
 		if [ ${ToolIndex["Load"]} -eq 1 ]; then
-			# if exists, source the vendor pre-hook file
-			VendorPreHookFile=$PoC_RootDir/$PoC_HookDirectory/${VendorIndex["PostHookFile"]}
-			if [ -f $VendorPreHookFile ]; then
-				source $VendorPreHookFile
-			fi
-			# if exists, source the tool pre-hook file
-			ToolPreHookFile=$PoC_RootDir/$PoC_HookDirectory/${ToolIndex["PostHookFile"]}
-			if [ -f $ToolPreHookFile ]; then
-				source $ToolPreHookFile
-			fi
+			# if exists, source the vendor post-hook file
+			VendorPostHookFile=$PoC_RootDir/$PoC_HookDirectory/${VendorIndex["PostHookFile"]}
+			test -f $VendorPostHookFile && source $VendorPostHookFile
+			
+			# if exists, source the tool Post-hook file
+			ToolPostHookFile=$PoC_RootDir/$PoC_HookDirectory/${ToolIndex["PostHookFile"]}
+			test -f $ToolPostHookFile && source $ToolPostHookFile
+			
 			# if exists, source the BashModule file
 			ModuleFile=$PoC_RootDir/$PoC_WrapperDirectory/${ToolIndex["BashModule"]}
 			if [ -f $ModuleFile ]; then
 				# source $ModuleFile
-				PoC_ExitCode=$( CloseEnvironment $Python_Interpreter $PoC_FrontEnd )
+				CloseEnvironment $Python_Interpreter $PoC_FrontEnd
+				PoC_ExitCode=$?
 			fi
 			break 2
 		fi

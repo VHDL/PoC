@@ -40,14 +40,14 @@ OpenEnvironment() {
 	if [ -z "$XILINX" ]; then
 		Query="Xilinx.ISE:SettingsFile"
 		PoC_Command="$Py_Interpreter $PoC_Query query $Query"
-		if [ $Debug -eq 1 ]; then echo 1>&2 -e "${YELLOW}Inquire ISE settings file: command='$PoC_Command'${NOCOLOR}"; fi
+		test $Debug -eq 1 && echo 1>&2 -e "${YELLOW}Inquire ISE settings file: command='$PoC_Command'${NOCOLOR}"
 		ISE_SettingsFile=$($PoC_Command)
 		if [ $? -ne 0 ]; then
 			echo 1>&2 -e "${RED}ERROR: ExitCode for '$PoC_Command' was not zero. Aborting script execution.${NOCOLOR}"
 			echo 1>&2 -e "${RED}$ISE_SettingsFile${NOCOLOR}"
 			return 1
 		fi
-		if [ $Debug -eq 1 ]; then echo 1>&2 -e "${YELLOW}ISE settings file: '$ISE_SettingsFile'${NOCOLOR}"; fi
+		test $Debug -eq 1 && echo 1>&2 -e "${YELLOW}ISE settings file: '$ISE_SettingsFile'${NOCOLOR}"
 		if [ -z "$ISE_SettingsFile" ]; then
 			echo 1>&2 -e "${RED}No Xilinx ISE installation found.${NOCOLOR}"
 			echo 1>&2 -e "${RED}Run 'PoC.py configure' to configure your Xilinx ISE installation.${NOCOLOR}"
@@ -59,7 +59,7 @@ OpenEnvironment() {
 			return 1
 		fi
 		
-		echo 1>&2 -e "${YELLOW}Loading Xilinx ISE environment '$ISE_SettingsFile'${NOCOLOR}"
+		echo 1>&2 -e "${YELLOW}Loading Xilinx ISE environment '$ISE_SettingsFile'...${NOCOLOR}"
 		PyWrapper_RescueArgs=$@
 		set --
 		source "$ISE_SettingsFile"
@@ -70,7 +70,7 @@ OpenEnvironment() {
 }
 
 CloseEnvironment() {
-	echo 1>&2 -e "${YELLOW}Unloading Xilinx ISE environment...${NOCOLOR}"
+	# echo 1>&2 -e "${YELLOW}Unloading Xilinx ISE environment...${NOCOLOR}"
 	return 0
 }
 
