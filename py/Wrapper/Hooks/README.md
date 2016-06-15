@@ -26,11 +26,11 @@ The PoC Infrastructure is called with this command line:
 
 The `vsim` command is recognized and the following events are scheduled:
 
-  - .\Mentor.pre.sh
-  - .\Mentor.QuestaSim.pre.sh
-  - running `./py/PoC.py -v vsim PoC.arith.prng`
-  - .\Mentor.QuestaSim.post.sh
-  - .\Mentor.post.sh
+  1. ./Mentor.pre.sh
+  2. ./Mentor.QuestaSim.pre.sh
+  3. running `./py/PoC.py -v vsim PoC.arith.prng`
+  4. ./Mentor.QuestaSim.post.sh
+  5. ./Mentor.post.sh
 
 If a hook files doesn't exist, its skipped.
 
@@ -45,10 +45,10 @@ The PoC Infrastructure is called with this command line:
 
 The `vsim` command is recognized and the following events are scheduled:
 
-  - .\Mentor.pre.ps1
-  - .\Mentor.QuestaSim.pre.ps1
-  - running `.\py\PoC.py -v vsim PoC.arith.prng`
-  - .\Mentor.QuestaSim.post.ps1
-  - .\Mentor.post.ps1
+  1. .\Mentor.pre.ps1
+  2. .\Mentor.QuestaSim.pre.ps1
+  3. running `.\py\PoC.py -v vsim PoC.arith.prng`
+  4. .\Mentor.QuestaSim.post.ps1
+  5. .\Mentor.post.ps1
 
 If a hook files doesn't exist, its skipped.
