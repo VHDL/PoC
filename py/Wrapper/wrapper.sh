@@ -309,13 +309,13 @@ for VendorName in $Env_Vendors; do
 	for ToolName in ${VendorIndex["Tools"]}; do
 		declare -n ToolIndex="Env_${VendorName}_${ToolName}"
 		if [ ${ToolIndex["Load"]} -eq 1 ]; then
-			# if exists, source the vendor post-hook file
-			VendorPostHookFile=$PoC_RootDir/$PoC_HookDirectory/${VendorIndex["PostHookFile"]}
-			test -f $VendorPostHookFile && source $VendorPostHookFile
-			
 			# if exists, source the tool Post-hook file
 			ToolPostHookFile=$PoC_RootDir/$PoC_HookDirectory/${ToolIndex["PostHookFile"]}
 			test -f $ToolPostHookFile && source $ToolPostHookFile
+			
+			# if exists, source the vendor post-hook file
+			VendorPostHookFile=$PoC_RootDir/$PoC_HookDirectory/${VendorIndex["PostHookFile"]}
+			test -f $VendorPostHookFile && source $VendorPostHookFile
 			
 			# if exists, source the BashModule file
 			ModuleFile=$PoC_RootDir/$PoC_WrapperDirectory/${ToolIndex["BashModule"]}
