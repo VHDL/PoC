@@ -274,7 +274,7 @@ begin
         Status														<= SATA_TRANS_STATUS_INITIALIZING;
 				TC_DevResponse_Enable 						<= '1';
 
- 				if (FISD_Status = SATA_FISD_STATUS_RECEIVING) then
+				if (FISD_Status = SATA_FISD_STATUS_RECEIVING) then
 					if (FISD_FISType = SATA_FISTYPE_REG_DEV_HOST) then
 						NextState											<= ST_INIT_RECEIVE_FIS;
 					else

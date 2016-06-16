@@ -2,31 +2,31 @@
 # EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 #	Authors:						Patrick Lehmann
 #                     Martin Zabel
-# 
+#
 #	Bash Script:				Script to compile the OSVVM library for Questa / ModelSim
 #                     on Linux
-# 
+#
 # Description:
 # ------------------------------------
 #	This is a Bash script (executable) which:
 #		- creates a subdirectory in the current working directory
-#		- compiles all OSVVM packages 
+#		- compiles all OSVVM packages
 #
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #		http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -166,7 +166,7 @@ fi
 ERRORCOUNT=0
 if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	DestDir=$PoCRootDir/$PrecompiledDir/ghdl/osvvm/v08
-	
+
 	# Get GHDL binary
 	BinDir=$($poc_sh query INSTALL.GHDL:BinaryDirectory 2>/dev/null)	# Path to the simulators bin directory
 	if [ $? -ne 0 ]; then
@@ -174,13 +174,13 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 		echo 1>&2 -e "${RED}$BinDir${NOCOLOR}"
 		exit -1;
 	fi
-	
+
 	# Cleanup
 	if [ "$CLEAN" == "TRUE" ]; then
 		echo -e "${YELLOW}Cleaning library 'osvvm' ...${NOCOLOR}"
 		rm -Rf $DestDir 2> /dev/null
 	fi
-	
+
 	# Create and change to destination directory
 	mkdir -p $DestDir
 	if [ $? -ne 0 ]; then
@@ -192,7 +192,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 		echo 1>&2 -e "${RED}ERROR: Cannot change to output directory.${NOCOLOR}"
 		exit -1;
 	fi
-	
+
 	if [ -z "$(which grcat)" ]; then
 		# if grcat (generic colourizer) is not installed, use a dummy pipe command like 'cat'
 		GRC_COMMAND="cat"
@@ -203,7 +203,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 			# GRC_COMMAND="grcat $ScriptDir/ghdl.grcrules"
 		# fi
 	fi
-	
+
 	# Analyze each VHDL source file.
 	echo -e "${YELLOW}Compiling library 'osvvm' with GHDL ...${NOCOLOR}"
 	for file in ${Files[@]}; do
@@ -213,7 +213,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 			let ERRORCOUNT++
 		fi
 	done
-	
+
 	# print overall result
 	echo -n "Compiling library 'osvvm' with GHDL "
 	if [ $ERRORCOUNT -gt 0 ]; then
@@ -221,7 +221,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	else
 		echo -e $COLORED_SUCCESSFUL
 	fi
-	
+
 	cd $WorkingDir
 fi
 
@@ -230,7 +230,7 @@ fi
 ERRORCOUNT=0
 if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	DestDir=$PoCRootDir/$PrecompiledDir/vsim
-	
+
 	# Get QuestaSim/ModelSim binary
 	BinDir=$($poc_sh query ModelSim:BinaryDirectory 2>/dev/null)	# Path to the simulators bin directory
 	if [ $? -ne 0 ]; then
@@ -238,7 +238,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 		echo 1>&2 -e "${RED}$BinDir${NOCOLOR}"
 		exit -1;
 	fi
-	
+
 	# Create and change to destination directory
 	mkdir -p $DestDir
 	if [ $? -ne 0 ]; then
@@ -250,7 +250,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 		echo 1>&2 -e "${RED}ERROR: Cannot change to output directory.${NOCOLOR}"
 		exit -1;
 	fi
-	
+
 	# Compile libraries with vcom, executed in destination directory
 	echo -e "${YELLOW}Cleaning library 'osvvm' ...${NOCOLOR}"
 	rm -rf osvvm
@@ -266,7 +266,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 			let ERRORCOUNT++
 		fi
 	done
-	
+
 	# print overall result
 	echo -n "Compiling library 'osvvm' with vcom "
 	if [ $ERRORCOUNT -gt 0 ]; then
@@ -274,6 +274,6 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	else
 		echo -e $COLORED_SUCCESSFUL
 	fi
-	
+
 	cd $WorkingDir
 fi

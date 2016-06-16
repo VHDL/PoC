@@ -12,4 +12,3 @@ compile-xilinx-ise.sh
 # Generic Colourizer rules
 ghdl.grcrules
 ghdl.skipwarning.grcrules
-
