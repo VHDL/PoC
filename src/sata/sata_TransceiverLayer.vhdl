@@ -1,17 +1,16 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Thomas Frank
 --									Steffen Koehler
 --									Martin Zabel
 --
--- Module: 					Wrapper for Device-Specific Transceivers
+-- Entity: 					Wrapper for Device-Specific Transceivers
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Asynchronous signals: PowerDown, ClockNetwork_Reset, ClockNetwork_ResetDone
 -- Transceiver In/Outputs: VSS_*
 --
@@ -121,7 +120,7 @@ entity sata_TransceiverLayer is
 		VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
 		VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_TransceiverLayer is

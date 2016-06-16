@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
--- Module:				 	TODO
---
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
+-- Entity:				 	TODO
+--
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,92 +26,92 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
---USE			PoC.vectors.ALL;
+library PoC;
+use			PoC.utils.all;
+--use			PoC.vectors.all;
 
 
-ENTITY misc_Sequencer IS
-  GENERIC (
+entity misc_Sequencer is
+  generic (
 	  INPUT_BITS					: POSITIVE					:= 32;
 		OUTPUT_BITS					: POSITIVE					:= 8;
 		REGISTERED					: BOOLEAN						:= FALSE
 	);
-  PORT (
-	  Clock								: IN	STD_LOGIC;
-		Reset								: IN	STD_LOGIC;
+  port (
+	  Clock								: in	STD_LOGIC;
+		Reset								: in	STD_LOGIC;
 
-		Input								: IN	STD_LOGIC_VECTOR(INPUT_BITS - 1 DOWNTO 0);
+		Input								: in	STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0);
 		rst									:	IN	STD_LOGIC;
 		rev									:	IN	STD_LOGIC;
 		nxt									:	IN	STD_LOGIC;
-		Output							: OUT STD_LOGIC_VECTOR(OUTPUT_BITS - 1 DOWNTO 0)
+		Output							: out STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0)
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF misc_Sequencer IS
-	CONSTANT CHUNKS				: POSITIVE := div_ceil(INPUT_BITS, OUTPUT_BITS);
-	CONSTANT COUNTER_BITS	: POSITIVE := log2ceilnz(CHUNKS);
+architecture rtl of misc_Sequencer is
+	constant CHUNKS				: POSITIVE := div_ceil(INPUT_BITS, OUTPUT_BITS);
+	constant COUNTER_BITS	: POSITIVE := log2ceilnz(CHUNKS);
 
-	SUBTYPE T_CHUNK				IS STD_LOGIC_VECTOR(OUTPUT_BITS - 1 DOWNTO 0);
-	TYPE		T_MUX					IS ARRAY (NATURAL RANGE <>) OF T_CHUNK;
+	subtype T_CHUNK				IS STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
+	TYPE		T_MUX					IS array (NATURAL range <>) OF T_CHUNK;
 
-	SIGNAL Mux_Data				: T_MUX(CHUNKS - 1 DOWNTO 0);
-	SIGNAL Mux_Data_d			: T_MUX(CHUNKS - 1 DOWNTO 0);
-	SIGNAL Mux_sel_us			: UNSIGNED(COUNTER_BITS - 1 DOWNTO 0)		:= (OTHERS => '0');
+	signal Mux_Data				: T_MUX(CHUNKS - 1 downto 0);
+	signal Mux_Data_d			: T_MUX(CHUNKS - 1 downto 0);
+	signal Mux_sel_us			: UNSIGNED(COUNTER_BITS - 1 downto 0)		:= (others => '0');
 
-	SIGNAL rev_l					: STD_LOGIC															:= '0';
+	signal rev_l					: STD_LOGIC															:= '0';
 
-BEGIN
-	genMuxData : FOR I IN 0 TO CHUNKS - 1 GENERATE
-		Mux_Data(I)		<= Input(((I + 1) * OUTPUT_BITS) - 1 DOWNTO I * OUTPUT_BITS);
-	END GENERATE;
+begin
+	genMuxData : for i in 0 to CHUNKS - 1 generate
+		Mux_Data(I)		<= Input(((I + 1) * OUTPUT_BITS) - 1 downto I * OUTPUT_BITS);
+	end generate;
 
-	genRegistered0 : IF (REGISTERED = TRUE) GENERATE
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (Reset = '1') THEN
-					Mux_Data_d		<= (OTHERS => (OTHERS => '0'));
-				ELSE
+	genRegistered0 : if (REGISTERED = TRUE) generate
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (Reset = '1') then
+					Mux_Data_d		<= (others => (others => '0'));
+				else
 					Mux_Data_d		<= Mux_Data;
-				END IF;
-			END IF;
-		END PROCESS;
-	END GENERATE;
-	genRegistered1 : IF (REGISTERED = FALSE) GENERATE
+				end if;
+			end if;
+		end process;
+	end generate;
+	genRegistered1 : if (REGISTERED = FALSE) generate
 		Mux_Data_d		<= Mux_Data;
-	END GENERATE;
+	end generate;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR rst) = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset OR rst) = '1') then
 				rev_l							<= rev;
 
-				IF (rev = '0') THEN
+				if (rev = '0') then
 					Mux_sel_us			<= to_unsigned(0,							Mux_sel_us'length);
-				ELSE
+				else
 					Mux_sel_us			<= to_unsigned((CHUNKS - 1),	Mux_sel_us'length);
-				END IF;
-			ELSE
-				IF (nxt = '1') THEN
-					IF (rev_l = '0') THEN
+				end if;
+			else
+				if (nxt = '1') then
+					if (rev_l = '0') then
 						Mux_sel_us		<= Mux_sel_us + 1;
-					ELSE
+					else
 						Mux_sel_us		<= Mux_sel_us - 1;
-					END IF;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+					end if;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	Output		<= Mux_Data_d(ite((SIMULATION = TRUE), imin(to_integer(Mux_sel_us), CHUNKS - 1), to_integer(Mux_sel_us)));
-END;
+end;

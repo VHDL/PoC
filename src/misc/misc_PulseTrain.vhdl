@@ -1,14 +1,13 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
 -- Entity:					TODO
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		This module generates pulse trains. This module was written as a answer for
 --		a StackOverflow question: http://stackoverflow.com/questions/25783320
 --
@@ -30,13 +29,13 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.components.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.components.all;
 
 
 entity misc_PulseTrain is

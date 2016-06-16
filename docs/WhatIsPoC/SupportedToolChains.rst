@@ -1,8 +1,10 @@
 
-Which Tool Chains are supported?
-********************************
+.. include:: <mmlalias.txt>
 
-The PoC-Library and its Python Infrastructure currently supports the following free and commercial vendor tool chains:
+Which Tool Chains are supported?
+################################
+
+The PoC-Library and its Python-based infrastructure currently supports the following free and commercial vendor tool chains:
 
 * Synthesis Tool Chains:
 
@@ -18,7 +20,7 @@ The PoC-Library and its Python Infrastructure currently supports the following f
     
   * **Xilinx PlanAhead** |br|
     Only PlanAhead 14.7 is supported.
-    
+  
   * **Xilinx Vivado** |br|
     Tested with Vivado |geq| 2015.4. |br|
     Due to a limited VHDL language support compared to ISE 14.7, some PoC IP cores need special work arounds. See the synthesis documention section for Vivado for more details.

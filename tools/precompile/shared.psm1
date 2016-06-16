@@ -1,13 +1,13 @@
 # EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 #	PowerShell Module:	The module provides common CmdLets for the library
 #											pre-compilation process.
-# 
+#
 #	Authors:						Patrick Lehmann
-# 
+#
 # Description:
 # ------------------------------------
 #	This PowerShell module provides CommandLets (CmdLets) to handle the GHDL.exe
@@ -15,17 +15,17 @@
 #
 # ==============================================================================
 #	Copyright (C) 2015 Patrick Lehmann
-#	
+#
 #	GHDL is free software; you can redistribute it and/or modify it under
 #	the terms of the GNU General Public License as published by the Free
 #	Software Foundation; either version 2, or (at your option) any later
 #	version.
-#	
+#
 #	GHDL is distributed in the hope that it will be useful, but WITHOUT ANY
 #	WARRANTY; without even the implied warranty of MERCHANTABILITY or
 #	FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 #	for more details.
-#	
+#
 #	You should have received a copy of the GNU General Public License
 #	along with GHDL; see the file COPYING.  If not, write to the Free
 #	Software Foundation, 59 Temple Place - Suite 330, Boston, MA
@@ -36,11 +36,11 @@ function Restore-NativeCommandStream
 		.SYNOPSIS
 		This CmdLet gathers multiple ErrorRecord objects and reconstructs outputs
 		as a single line.
-		
+
 		.DESCRIPTION
 		This CmdLet collects multiple ErrorRecord objects and emits one String
 		object per line.
-		
+
 		.PARAMETER InputObject
 		A object stream is required as an input.
 	#>
@@ -84,14 +84,14 @@ function Write-ColoredGHDLLine
 {	<#
 		.SYNOPSIS
 		This CmdLet colors GHDL output lines.
-		
+
 		.DESCRIPTION
 		This CmdLet colors GHDL output lines. Warnings are prefixed with 'WARNING: '
 		in yellow and errors are prefixed with 'ERROR: ' in red.
-		
+
 		.PARAMETER InputObject
 		A object stream is required as an input.
-		
+
 		.PARAMETER SuppressWarnings
 		Skip warning messages. (Show errors only.)
 	#>
@@ -99,14 +99,14 @@ function Write-ColoredGHDLLine
 	param(
 		[Parameter(ValueFromPipeline=$true)]
 		$InputObject,
-		
+
 		[Parameter(Position=1)]
 		[switch]$SuppressWarnings = $false
 	)
 
 	begin
 	{	$ErrorRecordFound = $false	}
-	
+
 	process
 	{	if (-not $InputObject)
 		{	Write-Host "Empty pipeline!"	}
@@ -135,14 +135,14 @@ function Write-ColoredActiveHDLLine
 {	<#
 		.SYNOPSIS
 		This CmdLet colors GHDL output lines.
-		
+
 		.DESCRIPTION
 		This CmdLet colors GHDL output lines. Warnings are prefixed with 'WARNING: '
 		in yellow and errors are prefixed with 'ERROR: ' in red.
-		
+
 		.PARAMETER InputObject
 		A object stream is required as an input.
-		
+
 		.PARAMETER SuppressWarnings
 		Skip warning messages. (Show errors only.)
 	#>
@@ -150,14 +150,14 @@ function Write-ColoredActiveHDLLine
 	param(
 		[Parameter(ValueFromPipeline=$true)]
 		$InputObject,
-		
+
 		[Parameter(Position=1)]
 		[switch]$SuppressWarnings = $false
 	)
 
 	begin
 	{	$ErrorRecordFound = $false	}
-	
+
 	process
 	{	if (-not $InputObject)
 		{	Write-Host "Empty pipeline!"	}

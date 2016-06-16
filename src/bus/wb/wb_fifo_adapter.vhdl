@@ -1,27 +1,25 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Martin Zabel
 --									Patrick Lehmann
 --
--- Module:				 	WishBone Adapter to FIFO interface
+-- Entity:				 	WishBone Adapter to FIFO interface
 --
 -- Description:
--- ------------------------------------
---	Small FIFOs are included in this module, if larger or asynchronous
---	transmit / receive FIFOs are required, then they must be connected
---	externally.
+-- -------------------------------------
+-- Small FIFOs are included in this module, if larger or asynchronous
+-- transmit / receive FIFOs are required, then they must be connected
+-- externally.
 --
---	old comments:
---		UART BAUD rate generator
---		bclk_r    = bit clock is rising
---		bclk_x8_r = bit clock times 8 is rising
---
+-- old comments:
+-- 	 UART BAUD rate generator
+-- 	 bclk_r    = bit clock is rising
+-- 	 bclk_x8_r = bit clock times 8 is rising
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -36,7 +34,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
@@ -84,7 +82,6 @@ entity wb_fifo_adapter is
 		-- Global Reset / Clock
 		clk				: in std_logic;
 		rst				: in std_logic;
-
 		-- Wishbone interface
 		wb_adr_i	: in	std_logic_vector(1 downto 0);
 		wb_cyc_i	: in	std_logic;
@@ -95,12 +92,10 @@ entity wb_fifo_adapter is
 		wb_dat_o	: out	std_logic_vector(31 downto 0);
 		wb_err_o	: out	std_logic;
 		wb_rty_o	: out	std_logic;
-
 		-- RX FIFO interface
 		RX_put		: in	std_logic;
 		RX_din		: in	std_logic_vector(7 downto 0);
 		RX_full		: out	std_logic;
-
 		-- TX FIFO interface
 		TX_got		: in	std_logic;
 		TX_valid	: out	std_logic;

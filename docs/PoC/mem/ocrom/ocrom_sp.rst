@@ -1,9 +1,21 @@
 
 ocrom_sp
-^^^^^^^^
+########
 
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
-At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor
-sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et
-accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet
+Inferring / instantiating single-port read-only memory
+- single clock, clock enable
+- 1 read port
 
+
+.. rubric:: Entity Declaration:
+
+.. literalinclude:: ../../../../src/mem/ocrom/ocrom_sp.vhdl
+   :language: vhdl
+   :tab-width: 2
+   :linenos:
+   :lines: 53-65
+
+Source file: `mem/ocrom/ocrom_sp.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ocrom/ocrom_sp.vhdl>`_
+
+
+	 

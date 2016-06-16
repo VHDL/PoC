@@ -2,21 +2,14 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
---            ____        ____    _     _ _
---           |  _ \ ___  / ___|  | |   (_) |__  _ __ __ _ _ __ _   _
---           | |_) / _ \| |      | |   | | '_ \| '__/ _` | '__| | | |
---           |  __/ (_) | |___   | |___| | |_) | | | (_| | |  | |_| |
---           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
---                                                             |___/
--- =============================================================================
--- Module:					sata_Transceiver_ClockStable
---
 -- Authors:					Martin Zabel
+--
+-- Entity:					sata_Transceiver_ClockStable
 --
 -- Package:					PoC.sata
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Generic reset handling for Xilinx FPGAs to be embedded into the SATA
 -- transceiver layer.
 --
@@ -76,7 +69,7 @@ library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
 library UNISIM;
-use			UNISIM.VCOMPONENTS.all;
+use			UNISIM.VcomponentS.all;
 
 library PoC;
 

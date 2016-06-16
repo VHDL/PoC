@@ -1,68 +1,68 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VcomponentS.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
-USE			PoC.net_comp.all;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
+use			PoC.net_comp.all;
 
-ENTITY eth_RSLayer_GMII_SGMII_Series7 IS
-	GENERIC (
+entity eth_RSLayer_GMII_SGMII_Series7 is
+	generic (
 		CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
 	);
-	PORT (
-		Clock											: IN		STD_LOGIC;
-		Reset											: IN		STD_LOGIC;
+	port (
+		Clock											: in		STD_LOGIC;
+		Reset											: in		STD_LOGIC;
 
 		-- GEMAC-GMII interface
-		RS_TX_Clock								: IN		STD_LOGIC;
-		RS_TX_Valid								: IN		STD_LOGIC;
-		RS_TX_Data								: IN		T_SLV_8;
-		RS_TX_Error								: IN		STD_LOGIC;
+		RS_TX_Clock								: in		STD_LOGIC;
+		RS_TX_Valid								: in		STD_LOGIC;
+		RS_TX_Data								: in		T_SLV_8;
+		RS_TX_Error								: in		STD_LOGIC;
 
-		RS_RX_Clock								: IN		STD_LOGIC;
-		RS_RX_Valid								: OUT		STD_LOGIC;
-		RS_RX_Data								: OUT		T_SLV_8;
-		RS_RX_Error								: OUT		STD_LOGIC;
+		RS_RX_Clock								: in		STD_LOGIC;
+		RS_RX_Valid								: out		STD_LOGIC;
+		RS_RX_Data								: out		T_SLV_8;
+		RS_RX_Error								: out		STD_LOGIC;
 
 		-- PHY-SGMII interface
-		PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII;
-		PHY_Management						: INOUT	T_NET_ETH_PHY_INTERFACE_MDIO
+		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_SGMII;
+		PHY_Management						: inout	T_NET_ETH_PHY_INTERFACE_MDIO
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF eth_RSLayer_GMII_SGMII_Series7 IS
-	ATTRIBUTE KEEP							: BOOLEAN;
+architecture rtl of eth_RSLayer_GMII_SGMII_Series7 is
+	attribute KEEP							: BOOLEAN;
 
-	SIGNAL MMCM_Reset						: STD_LOGIC;
-	SIGNAL MMCM_Locked					: STD_LOGIC;
+	signal MMCM_Reset						: STD_LOGIC;
+	signal MMCM_Locked					: STD_LOGIC;
 
-	SIGNAL MMCM_RefClock_In			: STD_LOGIC;
-	SIGNAL MMCM_Clock_FB				: STD_LOGIC;
+	signal MMCM_RefClock_In			: STD_LOGIC;
+	signal MMCM_Clock_FB				: STD_LOGIC;
 
-	SIGNAL MMCM_Clock_62_5_MHz	: STD_LOGIC;
-	SIGNAL MMCM_Clock_125_MHz		: STD_LOGIC;
+	signal MMCM_Clock_62_5_MHz	: STD_LOGIC;
+	signal MMCM_Clock_125_MHz		: STD_LOGIC;
 
-	SIGNAL Clock_62_5_MHz				: STD_LOGIC;
-	SIGNAL Clock_125_MHz				: STD_LOGIC;
+	signal Clock_62_5_MHz				: STD_LOGIC;
+	signal Clock_125_MHz				: STD_LOGIC;
 
-	SIGNAL SGMII_RefClock_Out		: STD_LOGIC;
-	SIGNAL SGMII_ResetDone			: STD_LOGIC;
+	signal SGMII_RefClock_Out		: STD_LOGIC;
+	signal SGMII_ResetDone			: STD_LOGIC;
 
-	SIGNAL SGMII_Status					: T_SLV_16;
-	ATTRIBUTE KEEP OF SGMII_Status		: SIGNAL IS TRUE;
+	signal SGMII_Status					: T_SLV_16;
+	attribute KEEP OF SGMII_Status		: signal IS TRUE;
 
-BEGIN
+begin
 	MMCM_RefClock_In		<= SGMII_RefClock_Out;
 
 	MMCM : MMCME2_ADV
-		GENERIC MAP (
+		generic map (
 			BANDWIDTH            => "OPTIMIZED",
 			CLKOUT4_CASCADE      => FALSE,
 			COMPENSATION         => "ZHOLD",
@@ -82,7 +82,7 @@ BEGIN
 			CLKIN1_PERIOD        => 16.0,						-- 62.5 MHz; transceiver DDR-sampling -> half GbE byte-clock ?
 			REF_JITTER1          => 0.010
 		)
-		PORT MAP (
+		port map (
 			CLKFBOUT             => MMCM_Clock_FB,
 			CLKFBOUTB            => open,
 			CLKOUT0              => MMCM_Clock_125_MHz,
@@ -129,7 +129,7 @@ BEGIN
 	-- This 62.5MHz clock is placed onto global clock routing and is then used
 	-- for tranceiver TXUSRCLK/RXUSRCLK.
 	BUFG_Clock_62_5_MHz : BUFG
-		PORT MAP (
+		port map (
 			I			=> MMCM_Clock_62_5_MHz,
 			O			=> Clock_62_5_MHz					-- userclock
 		);
@@ -138,7 +138,7 @@ BEGIN
 	-- This 125MHz clock is placed onto global clock routing and is then used
 	-- to clock all Ethernet core logic.
 	BUFG_Clock_125_MHz : BUFG
-		PORT MAP (
+		port map (
 			I			=> MMCM_Clock_125_MHz,
 			O			=> Clock_125_MHz					-- userclock2
 		);
@@ -149,48 +149,48 @@ BEGIN
 	PHY_Management.Clock_ts.t		<= '0';
 
 
-	genPCSIPCore : IF (TRUE) GENERATE
-		CONSTANT PCSCORE_MDIO_ADDRESS						: STD_LOGIC_VECTOR(4 DOWNTO 0)		:= "00101";
-		CONSTANT PCSCORE_CONFIGURATION					: BOOLEAN													:= TRUE;
-		CONSTANT PCSCORE_CONFIGURATION_VECTOR		: STD_LOGIC_VECTOR(4 DOWNTO 0)		:= "10000";
+	genPCSIPCore : if (TRUE) generate
+		constant PCSCORE_MDIO_ADDRESS						: STD_LOGIC_VECTOR(4 downto 0)		:= "00101";
+		constant PCSCORE_CONFIGURATION					: BOOLEAN													:= TRUE;
+		constant PCSCORE_CONFIGURATION_VECTOR		: STD_LOGIC_VECTOR(4 downto 0)		:= "10000";
 
 		-- Core <=> Transceiver interconnect
-		SIGNAL plllock           : STD_LOGIC;                        -- The PLL Locked status of the Transceiver
-		SIGNAL mgt_rx_reset      : STD_LOGIC;                        -- Reset for the receiver half of the Transceiver
-		SIGNAL mgt_tx_reset      : STD_LOGIC;                        -- Reset for the transmitter half of the Transceiver
-		SIGNAL rxbufstatus       : STD_LOGIC_VECTOR (1 DOWNTO 0);    -- Elastic Buffer Status (bit 1 asserted indicates overflow or underflow).
-		SIGNAL rxchariscomma     : STD_LOGIC;                        -- Comma detected in RXDATA.
-		SIGNAL rxcharisk         : STD_LOGIC;                        -- K character received (or extra data bit) in RXDATA.
-		SIGNAL rxclkcorcnt       : STD_LOGIC_VECTOR(2 DOWNTO 0);     -- Indicates clock correction.
-		SIGNAL rxdata            : T_SLV_8;														-- Data after 8B/10B decoding.
-		SIGNAL rxdisperr         : STD_LOGIC;                        -- Disparity-error in RXDATA.
-		SIGNAL rxnotintable      : STD_LOGIC;                        -- Non-existent 8B/10 code indicated.
-		SIGNAL rxrundisp         : STD_LOGIC;                        -- Running Disparity after current byte, becomes 9th data bit when RXNOTINTABLE='1'.
-		SIGNAL txbuferr          : STD_LOGIC;                        -- TX Buffer error (overflow or underflow).
-		SIGNAL powerdown         : STD_LOGIC;                        -- Powerdown the Transceiver
-		SIGNAL txchardispmode    : STD_LOGIC;                        -- Set running disparity for current byte.
-		SIGNAL txchardispval     : STD_LOGIC;                        -- Set running disparity value.
-		SIGNAL txcharisk         : STD_LOGIC;                        -- K character transmitted in TXDATA.
-		SIGNAL txdata            : T_SLV_8;														-- Data for 8B/10B encoding.
-		SIGNAL enablealign       : STD_LOGIC;                        -- Allow the transceivers to serially realign to a comma character.
+		signal plllock           : STD_LOGIC;                        -- The PLL Locked status of the Transceiver
+		signal mgt_rx_reset      : STD_LOGIC;                        -- Reset for the receiver half of the Transceiver
+		signal mgt_tx_reset      : STD_LOGIC;                        -- Reset for the transmitter half of the Transceiver
+		signal rxbufstatus       : STD_LOGIC_VECTOR (1 downto 0);    -- Elastic Buffer Status (bit 1 asserted indicates overflow or underflow).
+		signal rxchariscomma     : STD_LOGIC;                        -- Comma detected in RXDATA.
+		signal rxcharisk         : STD_LOGIC;                        -- K character received (or extra data bit) in RXDATA.
+		signal rxclkcorcnt       : STD_LOGIC_VECTOR(2 downto 0);     -- Indicates clock correction.
+		signal rxdata            : T_SLV_8;														-- Data after 8B/10B decoding.
+		signal rxdisperr         : STD_LOGIC;                        -- Disparity-error in RXDATA.
+		signal rxnotintable      : STD_LOGIC;                        -- Non-existent 8B/10 code indicated.
+		signal rxrundisp         : STD_LOGIC;                        -- Running Disparity after current byte, becomes 9th data bit when RXNOTINTABLE='1'.
+		signal txbuferr          : STD_LOGIC;                        -- TX Buffer error (overflow or underflow).
+		signal powerdown         : STD_LOGIC;                        -- Powerdown the Transceiver
+		signal txchardispmode    : STD_LOGIC;                        -- Set running disparity for current byte.
+		signal txchardispval     : STD_LOGIC;                        -- Set running disparity value.
+		signal txcharisk         : STD_LOGIC;                        -- K character transmitted in TXDATA.
+		signal txdata            : T_SLV_8;														-- Data for 8B/10B encoding.
+		signal enablealign       : STD_LOGIC;                        -- Allow the transceivers to serially realign to a comma character.
 
-		-- GMII SIGNALs routed between core and SGMII Adaptation Module
-		SIGNAL Adapter_TX_Data				: T_SLV_8;											-- Internal gmii_txd SIGNAL (between core and SGMII adaptation module).
-		SIGNAL Adapter_TX_Valid				: STD_LOGIC;										-- Internal gmii_tx_en SIGNAL (between core and SGMII adaptation module).
-		SIGNAL Adapter_TX_Error				: STD_LOGIC;										-- Internal gmii_tx_er SIGNAL (between core and SGMII adaptation module).
-		SIGNAL PCSCore_RX_Data				: T_SLV_8;											-- Internal gmii_rxd SIGNAL (between core and SGMII adaptation module).
-		SIGNAL PCSCore_RX_Valid				: STD_LOGIC;										-- Internal gmii_rx_dv SIGNAL (between core and SGMII adaptation module).
-		SIGNAL PCSCore_RX_Error				: STD_LOGIC;										-- Internal gmii_rx_er SIGNAL (between core and SGMII adaptation module).
+		-- GMII signals routed between core and SGMII Adaptation Module
+		signal Adapter_TX_Data				: T_SLV_8;											-- Internal gmii_txd signal (between core and SGMII adaptation module).
+		signal Adapter_TX_Valid				: STD_LOGIC;										-- Internal gmii_tx_en signal (between core and SGMII adaptation module).
+		signal Adapter_TX_Error				: STD_LOGIC;										-- Internal gmii_tx_er signal (between core and SGMII adaptation module).
+		signal PCSCore_RX_Data				: T_SLV_8;											-- Internal gmii_rxd signal (between core and SGMII adaptation module).
+		signal PCSCore_RX_Valid				: STD_LOGIC;										-- Internal gmii_rx_dv signal (between core and SGMII adaptation module).
+		signal PCSCore_RX_Error				: STD_LOGIC;										-- Internal gmii_rx_er signal (between core and SGMII adaptation module).
 
-		SIGNAL SGMII_Status_i					: T_SLV_16;
-	BEGIN
---		Adapter : ENTITY L_Ethernet.GMII_SGMII_sgmii_adapt
---			PORT MAP (
+		signal SGMII_Status_i					: T_SLV_16;
+	begin
+--		Adapter : entity L_Ethernet.GMII_SGMII_sgmii_adapt
+--			port map (
 --				reset                => Reset,
 --				clk125m              => Clock_125_MHz,
---				sgmii_clk_r          => OPEN,
---				sgmii_clk_f          => OPEN,
---				sgmii_clk_en         => OPEN,
+--				sgmii_clk_r          => open,
+--				sgmii_clk_f          => open,
+--				sgmii_clk_en         => open,
 --				gmii_txd_in          => RS_TX_Data,
 --				gmii_tx_en_in        => RS_TX_Valid,
 --				gmii_tx_er_in        => RS_TX_Error,
@@ -214,8 +214,8 @@ BEGIN
 		RS_RX_Valid      			 <= PCSCore_RX_Valid;
 		RS_RX_Error      			 <= PCSCore_RX_Error;
 
-		PCSCore : ENTITY PoC.eth_GMII_SGMII_PCS_Series7
-			PORT MAP (
+		PCSCore : entity PoC.eth_GMII_SGMII_PCS_Series7
+			port map (
 				userclk              => Clock_125_MHz,
 				userclk2             => Clock_125_MHz,
 				dcm_locked           => MMCM_Locked,
@@ -262,18 +262,18 @@ BEGIN
 				configuration_valid  => to_sl(PCSCORE_CONFIGURATION),
 
 				an_restart_config    => '0',
-				an_adv_config_vector => (OTHERS => '0'),
+				an_adv_config_vector => (others => '0'),
 				an_adv_config_val    => '0',
-				an_interrupt         => OPEN,														-- TODO: 										-- Interrupt to processor to SIGNAL that Auto-Negotiation has completed,
+				an_interrupt         => open,														-- TODO: 										-- Interrupt to processor to signal that Auto-Negotiation has completed,
 
-				link_timer_value     => (OTHERS => '1'),
+				link_timer_value     => (others => '1'),
 				status_vector        => SGMII_Status_i
 			);
 
 		SGMII_Status <= SGMII_Status_i;
 
-		Trans : ENTITY PoC.eth_SGMII_Transceiver_GTXE2
-			PORT MAP (
+		Trans : entity PoC.eth_SGMII_Transceiver_GTXE2
+			port map (
 				independent_clock    => PHY_Interface.DGB_SystemClock_In,
 				gtrefclk             => PHY_Interface.SGMII_RefClock_In,
 
@@ -302,7 +302,7 @@ BEGIN
 				txchardispmode       => txchardispmode,
 				txchardispval        => txchardispval,
 
-				rxelecidle           => OPEN,
+				rxelecidle           => open,
 				rxdata               => rxdata,
 				rxchariscomma        => rxchariscomma,
 				rxcharisk            => rxcharisk,
@@ -320,13 +320,13 @@ BEGIN
 
 		 -- Unused
 		 rxbufstatus(0) <= '0';
-	END GENERATE;
+	end generate;
 
---	genPCS : IF (FALSE) GENERATE
+--	genPCS : if (FALSE) generate
 --
---	BEGIN
---		PCS : ENTITY L_Ethernet.Ethernet_PCS_GMII_TRANS_1000Base_X
---			PORT MAP (
+--	begin
+--		PCS : entity L_Ethernet.Ethernet_PCS_GMII_TRANS_1000Base_X
+--			port map (
 --				TX_Clock											=> TX_Clock,
 --				RX_Clock											=> RX_Clock,
 --
@@ -352,11 +352,11 @@ BEGIN
 --				Trans_RX_RunningDisparity	=> Trans_RX_RunningDisparity
 --			);
 --
---		Trans : ENTITY L_Ethernet.Ethernet_SGMIITransceiver_Virtex7
---			GENERIC MAP (
+--		Trans : entity L_Ethernet.Ethernet_SGMIITransceiver_Virtex7
+--			generic map (
 --				PORTS											=> 1
 --			)
---			PORT MAP (
+--			port map (
 --				TX_RefClock_In						=> PHY_Interface.SGMII_RefClock_In,
 --				RX_RefClock_In						=> PHY_Interface.SGMII_RefClock_In,
 --				TX_RefClock_Out						=> PHY_Interface.SGMII_TXRefClock_Out,
@@ -383,5 +383,5 @@ BEGIN
 --				RX_n											=> PHY_Interface.RX_n,
 --				RX_p											=> PHY_Interface.RX_p
 --			);
---	END GENERATE;
-END;
+--	end generate;
+end;

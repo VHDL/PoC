@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: sim_value_change_dump
 -- Author(s): Patrick Lehmann
--- 
+--
 -- Summary:
 -- ============
 --  This function package parses *.VCD files and drives simulation stimulies.
@@ -24,7 +24,7 @@
 --	"VCD_ReadLine" reads a line from *.vcd file.
 --	"VCD_Read_StdLogic" parses a vcd one bit value to std_logic.
 --	"VCD_Read_StdLogicVector" parses a vcd N bit value to std_logic_vector with N bits.
---	
+--
 --	See ../tb/Test_vcd_example_tb.vhd for example code.
 --
 -- Dependancies:
@@ -57,7 +57,7 @@ ENTITY Test_vcd_example_tb IS
 END;
 
 
-ARCHITECTURE test OF Test_vcd_example_tb IS 
+ARCHITECTURE test OF Test_vcd_example_tb IS
 	CONSTANT CLOCK_50MHZ_PERIOD							: TIME								:= 20.0 ns;
 
 	SIGNAL Clock														: STD_LOGIC						:= '1';
@@ -75,28 +75,28 @@ BEGIN
   BEGIN
 		Clock <= NOT Clock AFTER CLOCK_50MHZ_PERIOD / 2;
   END PROCESS;
-	
+
 	VCDProcess: PROCESS
 		FILE			VCDFile				: TEXT;
 		VARIABLE	VCDLine				: T_VCDLINE;
-		
+
 		VARIABLE	VCDTime				: INTEGER;
 		VARIABLE	VCDTime_nx		: INTEGER;
 
 	BEGIN
 		Reset								<= '0';
 		WAIT FOR 2	* CLOCK_50MHZ_PERIOD;
-		
+
 		Reset								<= '1';
 		WAIT FOR 1	* CLOCK_50MHZ_PERIOD;
-	
+
 		Reset								<= '0';
 		WAIT FOR 4	* CLOCK_50MHZ_PERIOD;
 
 		-- open *.vcd file and read header
 		file_open(VCDFile, "D:\VHDL\SATAController\lib\PoC\functions\tb\sim_vcd_example_tb.vcd", READ_MODE);
 		VCD_ReadHeader(VCDFile, VCDLine);
-	
+
 		-- read initial stimuli values
 		-- ==============================================================
 		VCDTime		:= to_nat(VCDLine(2 TO VCDLine'high));
@@ -105,17 +105,17 @@ BEGIN
 		ELSIF (VCDTime /= 0) THEN
 			ASSERT (FALSE) REPORT  "no initial stimuli" SEVERITY FAILURE;
 		END IF;
-		
+
 		-- read waveform stimuli
 		-- ==============================================================
 		loop0 : WHILE (NOT endfile(VCDFile)) LOOP
 			loop1 : WHILE (NOT endfile(VCDFile)) LOOP
 				VCD_ReadLine(VCDFile, VCDLine);
-				
+
 				IF (endfile(VCDFile)) THEN
 					EXIT loop0;
 				END IF;
-				
+
 				IF (VCDLine(1) = '#') THEN
 					EXIT loop1;
 				ELSIF (VCDLine(1) = 'b') THEN
@@ -129,18 +129,18 @@ BEGIN
 					VCD_Read_StdLogic(VCDLine, valid,		resize("n4", 4));
 				END IF;
 			END LOOP;
-			
+
 			VCDTime_nx	:= to_nat(VCDLine(2 TO VCDLine'high));
 			WAIT FOR (VCDTime_nx - VCDTime) * CLOCK_50MHZ_PERIOD;
 			VCDTime			:= VCDTime_nx;
 		END LOOP;	-- WHILE TRUE
-	
+
 		-- ==============================================================
 		-- close *.vcd-file
 		file_close(VCDFile);
 
 		ASSERT (FALSE) REPORT "end of VCD file" SEVERITY WARNING;
-		
+
 		WAIT;
 	END PROCESS;
 

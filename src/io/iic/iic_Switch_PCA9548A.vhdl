@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================================================================================================
+-- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					I2C Switch Controller for a TI PCA9548A
+-- Entity:					I2C Switch Controller for a TI PCA9548A
 --
 -- Description:
--- ------------------------------------
---		TODO TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available. TODO
 --
 -- License:
--- ============================================================================================================================================================
+-- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,7 +26,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -108,12 +107,12 @@ architecture rtl of iic_Switch_PCA9548A is
 
 	signal State												: T_STATE						:= ST_IDLE;
 	signal NextState										: T_STATE;
-	ATTRIBUTE FSM_ENCODING of State			: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	attribute FSM_ENCODING of State			: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
 	signal Request_or							: STD_LOGIC;
 	signal FSM_Arbitrate					: STD_LOGIC;
 
---	SIGNAL Arb_Arbitrated					: STD_LOGIC;
+--	signal Arb_Arbitrated					: STD_LOGIC;
 	signal Arb_Grant							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 	signal Arb_Grant_bin					: STD_LOGIC_VECTOR(log2ceilnz(PORTS) - 1 downto 0);
 

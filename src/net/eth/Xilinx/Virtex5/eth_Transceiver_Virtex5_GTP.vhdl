@@ -1,26 +1,26 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VcomponentS.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.io.ALL;
-USE			PoC.xil.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
+use			PoC.io.all;
+use			PoC.xil.all;
 
 
-ENTITY eth_Transceiver_Virtex5_GTP IS
-	GENERIC (
+entity eth_Transceiver_Virtex5_GTP is
+	generic (
 		DEBUG											: BOOLEAN											:= FALSE;																	-- generate ChipScope debugging "pins"
 		CLOCK_IN_FREQ							: FREQ												:= 125 MHz;																-- 150 MHz
 		PORTS											: POSITIVE										:= 2																			-- Number of Ports per Transceiver
 	);
-	PORT (
+	port (
 		PowerDown								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 		RefClockIn_125_MHz			: in	STD_LOGIC;
 		ClockNetwork_Reset			: in	STD_LOGIC;
@@ -55,123 +55,123 @@ ENTITY eth_Transceiver_Virtex5_GTP IS
 		TX_ds										: out	T_IO_LVDS_VECTOR(PORTS - 1 downto 0);
 		RX_ds										: in	T_IO_LVDS_VECTOR(PORTS - 1 downto 0)
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF eth_Transceiver_Virtex5_GTP IS
-	ATTRIBUTE KEEP 														: BOOLEAN;
-	ATTRIBUTE TNM 														: STRING;
+architecture rtl of eth_Transceiver_Virtex5_GTP is
+	attribute KEEP 														: BOOLEAN;
+	attribute TNM 														: STRING;
 
 	-- ===========================================================================
 	-- Ethernet SGMII configuration
 	-- ===========================================================================
-	CONSTANT C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
+	constant C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
 
-	SIGNAL ClockIn_125MHz											: STD_LOGIC;
-	SIGNAL ResetDone_i												: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal ClockIn_125MHz											: STD_LOGIC;
+	signal ResetDone_i												: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-	SIGNAL GTP_Reset													: STD_LOGIC;
-	SIGNAL GTP_ResetDone											: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_ResetDone_i										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_PLL_Reset											: STD_LOGIC;
-	SIGNAL GTP_PLL_ResetDone									:	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_PLL_ResetDone_i								:	STD_LOGIC;
+	signal GTP_Reset													: STD_LOGIC;
+	signal GTP_ResetDone											: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal GTP_ResetDone_i										: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal GTP_PLL_Reset											: STD_LOGIC;
+	signal GTP_PLL_ResetDone									:	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal GTP_PLL_ResetDone_i								:	STD_LOGIC;
 
-	SIGNAL GTP_RefClockIn											: STD_LOGIC;
-	SIGNAL GTP_RefClockOut										: STD_LOGIC;
-	SIGNAL GTP_RefClockOut_i									: STD_LOGIC;
-	SIGNAL GTP_TX_RefClockOut									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL GTP_RX_RefClockOut									: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL Control_Clock											: STD_LOGIC;
+	signal GTP_RefClockIn											: STD_LOGIC;
+	signal GTP_RefClockOut										: STD_LOGIC;
+	signal GTP_RefClockOut_i									: STD_LOGIC;
+	signal GTP_TX_RefClockOut									: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal GTP_RX_RefClockOut									: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal Control_Clock											: STD_LOGIC;
 
-	SIGNAL ClkNet_Reset												: STD_LOGIC;
-	SIGNAL ClkNet_Reset_i											: STD_LOGIC;
-	SIGNAL ClkNet_Reset_x											: STD_LOGIC;
-	SIGNAL ClkNet_ResetDone										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	SIGNAL ClkNet_ResetDone_i									: STD_LOGIC;
-	SIGNAL ClockNetwork_ResetDone_i						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal ClkNet_Reset												: STD_LOGIC;
+	signal ClkNet_Reset_i											: STD_LOGIC;
+	signal ClkNet_Reset_x											: STD_LOGIC;
+	signal ClkNet_ResetDone										: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal ClkNet_ResetDone_i									: STD_LOGIC;
+	signal ClockNetwork_ResetDone_i						: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
-	SIGNAL GTP_PortReset											: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+	signal GTP_PortReset											: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
 
 	-- keep internal clock nets, so timing constrains from UCF can find them
-	ATTRIBUTE KEEP OF GTP_TX_RefClockOut			: SIGNAL IS DEBUG;
-	ATTRIBUTE KEEP OF GTP_RX_RefClockOut			: SIGNAL IS DEBUG;
-	ATTRIBUTE KEEP OF GTP_RefClockOut 				: SIGNAL IS DEBUG;
+	attribute KEEP OF GTP_TX_RefClockOut			: signal IS DEBUG;
+	attribute KEEP OF GTP_RX_RefClockOut			: signal IS DEBUG;
+	attribute KEEP OF GTP_RefClockOut 				: signal IS DEBUG;
 
---	ATTRIBUTE KEEP OF SATA_Clock_i										: SIGNAL IS TRUE;
---	ATTRIBUTE TNM OF SATA_Clock_i											: SIGNAL IS "TGRP_SATA_Clock0";
+--	attribute KEEP OF SATA_Clock_i										: signal IS TRUE;
+--	attribute TNM OF SATA_Clock_i											: signal IS "TGRP_SATA_Clock0";
 
-	signal RX_CharIsComma_float								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	signal RX_CharIsK_float										: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	signal RX_DisparityError_float						: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	signal RX_Data_float											: T_SLVV_8(PORTS - 1 DOWNTO 0);
-	signal RX_NotInTable_float								: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	signal RX_RunningDisparity_float					: STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-	signal GTP_RX_BufferStatus_float					: T_SLVV_2(PORTS - 1 DOWNTO 0);
-	signal GTP_TX_BufferStatus_float					: T_SLVV_2(PORTS - 1 DOWNTO 0);
+	signal RX_CharIsComma_float								: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal RX_CharIsK_float										: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal RX_DisparityError_float						: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal RX_Data_float											: T_SLVV_8(PORTS - 1 downto 0);
+	signal RX_NotInTable_float								: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal RX_RunningDisparity_float					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal GTP_RX_BufferStatus_float					: T_SLVV_2(PORTS - 1 downto 0);
+	signal GTP_TX_BufferStatus_float					: T_SLVV_2(PORTS - 1 downto 0);
 
-BEGIN
+begin
 	-- ===========================================================================
 	-- Assert statements
 	-- ===========================================================================
-	ASSERT (C_DEVICE_INFO.VENDOR = VENDOR_XILINX)						REPORT "Vendor not yet supported."				SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX)	REPORT "Device family not yet supported."	SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5)					REPORT "Device not yet supported."				SEVERITY FAILURE;
-	ASSERT (PORTS <= 2)																			REPORT "To many ports per transceiver."		SEVERITY FAILURE;
+	assert (C_DEVICE_INFO.VENDOR = VENDOR_XILINX)						report "Vendor not yet supported."				severity FAILURE;
+	assert (C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_VIRTEX)	report "Device family not yet supported."	severity FAILURE;
+	assert (C_DEVICE_INFO.DEVICE = DEVICE_VIRTEX5)					report "Device not yet supported."				severity FAILURE;
+	assert (PORTS <= 2)																			report "To many ports per transceiver."		severity FAILURE;
 
 	-- ===========================================================================
 	-- ResetControl
 	-- ===========================================================================
 	ClkNet_Reset_i										<= ClockNetwork_Reset;
 
-	blkSync1 : BLOCK
-		SIGNAL ClkNet_Reset_shift				: STD_LOGIC_VECTOR(15 DOWNTO 0)				:= (OTHERS => '0');
-	BEGIN
-		PROCESS(Control_Clock)
-		BEGIN
-			IF rising_edge(Control_Clock) THEN
-				ClkNet_Reset_shift		<= ClkNet_Reset_shift(ClkNet_Reset_shift'high - 1 DOWNTO 0) & ClkNet_Reset_i;
-			END IF;
-		END PROCESS;
+	blkSync1 : block
+		signal ClkNet_Reset_shift				: STD_LOGIC_VECTOR(15 downto 0)				:= (others => '0');
+	begin
+		process(Control_Clock)
+		begin
+			if rising_edge(Control_Clock) then
+				ClkNet_Reset_shift		<= ClkNet_Reset_shift(ClkNet_Reset_shift'high - 1 downto 0) & ClkNet_Reset_i;
+			end if;
+		end process;
 
 		ClkNet_Reset		<= ClkNet_Reset_shift(2);
 		ClkNet_Reset_x	<= ClkNet_Reset_shift(ClkNet_Reset_shift'high);
-	END BLOCK;
+	end block;
 
 	GTP_PLL_Reset											<= ClkNet_Reset;
 	GTP_Reset													<= GTP_PLL_Reset;					-- PLL reset must be mapped to global GTP reset
 
-	genSync0 : FOR I IN 0 TO PORTS - 1 GENERATE
-		SIGNAL GTP_Reset_meta						: STD_LOGIC				:= '0';
-		SIGNAL GTP_Reset_d							: STD_LOGIC				:= '0';
+	genSync0 : for i in 0 to PORTS - 1 generate
+		signal GTP_Reset_meta						: STD_LOGIC				:= '0';
+		signal GTP_Reset_d							: STD_LOGIC				:= '0';
 
 		-- ------------------------------------------
-		SIGNAL ClkNet_ResetDone_meta		: STD_LOGIC				:= '0';
-		SIGNAL ClkNet_ResetDone_d				: STD_LOGIC				:= '0';
+		signal ClkNet_ResetDone_meta		: STD_LOGIC				:= '0';
+		signal ClkNet_ResetDone_d				: STD_LOGIC				:= '0';
 
-		SIGNAL GTP_PLL_ResetDone_meta		: STD_LOGIC				:= '0';
-		SIGNAL GTP_PLL_ResetDone_d			: STD_LOGIC				:= '0';
+		signal GTP_PLL_ResetDone_meta		: STD_LOGIC				:= '0';
+		signal GTP_PLL_ResetDone_d			: STD_LOGIC				:= '0';
 
-		SIGNAL GTP_ResetDone_meta				: STD_LOGIC				:= '0';
-		SIGNAL GTP_ResetDone_d					: STD_LOGIC				:= '0';
+		signal GTP_ResetDone_meta				: STD_LOGIC				:= '0';
+		signal GTP_ResetDone_d					: STD_LOGIC				:= '0';
 
-	BEGIN
-		GTP_Reset_meta									<= GTP_Reset				WHEN rising_edge(Control_Clock);
-		GTP_Reset_d											<= GTP_Reset_meta		WHEN rising_edge(Control_Clock);
+	begin
+		GTP_Reset_meta									<= GTP_Reset				when rising_edge(Control_Clock);
+		GTP_Reset_d											<= GTP_Reset_meta		when rising_edge(Control_Clock);
 
 		-- ------------------------------------------
---		ClkNet_ResetDone_meta						<= ClkNet_ResetDone_i			WHEN rising_edge(Control_Clock);
---		ClkNet_ResetDone_d							<= ClkNet_ResetDone_meta	WHEN rising_edge(Control_Clock);
+--		ClkNet_ResetDone_meta						<= ClkNet_ResetDone_i			when rising_edge(Control_Clock);
+--		ClkNet_ResetDone_d							<= ClkNet_ResetDone_meta	when rising_edge(Control_Clock);
 		ClkNet_ResetDone(I)							<= ClkNet_ResetDone_i;
 
-		GTP_PLL_ResetDone_meta					<= GTP_PLL_ResetDone_i		WHEN rising_edge(Control_Clock);
-		GTP_PLL_ResetDone_d							<= GTP_PLL_ResetDone_meta	WHEN rising_edge(Control_Clock);
+		GTP_PLL_ResetDone_meta					<= GTP_PLL_ResetDone_i		when rising_edge(Control_Clock);
+		GTP_PLL_ResetDone_d							<= GTP_PLL_ResetDone_meta	when rising_edge(Control_Clock);
 		GTP_PLL_ResetDone(I)						<= GTP_PLL_ResetDone_d;
 
-		GTP_ResetDone_meta							<= GTP_ResetDone_i(I)			WHEN rising_edge(Control_Clock);
-		GTP_ResetDone_d									<= GTP_ResetDone_meta			WHEN rising_edge(Control_Clock);
+		GTP_ResetDone_meta							<= GTP_ResetDone_i(I)			when rising_edge(Control_Clock);
+		GTP_ResetDone_d									<= GTP_ResetDone_meta			when rising_edge(Control_Clock);
 		GTP_ResetDone(I)								<= GTP_ResetDone_d;
-	END GENERATE;
+	end generate;
 
 	ClockNetwork_ResetDone						<= ClkNet_ResetDone;
 
@@ -184,7 +184,7 @@ BEGIN
 	GTP_RefClockIn		<= RefClockIn_125_MHz;
 
 	BUFG_GTP_RefClockOut : BUFG
-		PORT MAP (
+		port map (
 			I		=> GTP_RefClockOut_i,
 			O		=> GTP_RefClockOut
 		);
@@ -195,11 +195,11 @@ BEGIN
 	-- ===========================================================================
 	-- GTP_DUAL - 1 used port
 	-- ===========================================================================
-	SinglePort : IF (PORTS = 1) GENERATE
+	SinglePort : if (PORTS = 1) generate
 
-	BEGIN
+	begin
 		GTP : GTP_DUAL
-			GENERIC MAP (
+			generic map (
 				-- ===================== Simulation-Only Attributes ====================
 				SIM_RECEIVER_DETECT_PASS0	 		=>			 TRUE,
 				SIM_RECEIVER_DETECT_PASS1	 		=>			 TRUE,
@@ -232,7 +232,7 @@ BEGIN
 				PLL_TXDIVSEL_OUT_0						=>			 2,												--
 				PLL_TXDIVSEL_OUT_1						=>			 2,												--
 
-				--------------------- TX Driver and OOB SIGNALling --------------------
+				--------------------- TX Driver and OOB signalling --------------------
 				TX_DIFF_BOOST_0								=>			 TRUE,
 				TX_DIFF_BOOST_1								=>			 TRUE,
 
@@ -241,7 +241,7 @@ BEGIN
 				COM_BURST_VAL_1								=>			 "1111",																	-- TX OOB burst counter
 
 				-- =================== Receive Interface Attributes ===================
-				------------ RX Driver,OOB SIGNALling,Coupling and Eq,CDR -------------
+				------------ RX Driver,OOB signalling,Coupling and Eq,CDR -------------
 				AC_CAP_DIS_0									=>			 FALSE,
 				OOBDETECT_THRESHOLD_0					=>			 "001",																		-- Threshold between RXN and RXP is 105 mV
 				PMA_CDR_SCAN_0								=>			 x"6c07640",
@@ -399,10 +399,10 @@ BEGIN
 				PCI_EXPRESS_MODE_1						=>			 FALSE,
 
 				------------------ RX Attributes for PCI Express/SATA ---------------
-				-- OOB COM*** SIGNAL detector @ 25 MHz with DDR (20 ns)
+				-- OOB COM*** signal detector @ 25 MHz with DDR (20 ns)
 				RX_STATUS_FMT_0								=>			 "PCIE",
-				SATA_BURST_VAL_0							=>			 "100",							-- Burst count to detect OOB COM*** SIGNALs
-				SATA_IDLE_VAL_0								=>			 "100",							-- IDLE count between bursts in OOB COM*** SIGNALs
+				SATA_BURST_VAL_0							=>			 "100",							-- Burst count to detect OOB COM*** signals
+				SATA_IDLE_VAL_0								=>			 "100",							-- IDLE count between bursts in OOB COM*** signals
 				SATA_MIN_BURST_0							=>			 5,									--
 				SATA_MAX_BURST_0							=>			 9,									--
 				SATA_MIN_INIT_0								=>			 15,								--
@@ -414,8 +414,8 @@ BEGIN
 				TRANS_TIME_TO_P2_0						=>			 x"0100",
 
 				RX_STATUS_FMT_1								=>			"PCIE",
-				SATA_BURST_VAL_1							=>			"100",							-- Burst count to detect OOB COM*** SIGNALs
-				SATA_IDLE_VAL_1								=>			"100",							-- IDLE count between bursts in OOB COM*** SIGNALs
+				SATA_BURST_VAL_1							=>			"100",							-- Burst count to detect OOB COM*** signals
+				SATA_IDLE_VAL_1								=>			"100",							-- IDLE count between bursts in OOB COM*** signals
 				SATA_MIN_BURST_1							=>			 5,									--
 				SATA_MAX_BURST_1							=>			 9,									--
 				SATA_MIN_INIT_1								=>			 15,								--
@@ -426,7 +426,7 @@ BEGIN
 				TRANS_TIME_NON_P2_1						=>			x"0025",
 				TRANS_TIME_TO_P2_1						=>			x"0100"
 			)
-			PORT MAP (
+			port map (
 				------------------------ Loopback and Powerdown Ports ----------------------
 				LOOPBACK0(0)									=>			Loopback(0),
 				LOOPBACK0(2 downto 1)					=>			"00",
@@ -454,19 +454,19 @@ BEGIN
 				RXRUNDISP0(1)									=>			RX_RunningDisparity_float(0),
 				RXRUNDISP1										=>			open,
 				------------------- Receive Ports - Channel Bonding Ports ------------------
-				RXCHANBONDSEQ0								=>			OPEN,
-				RXCHANBONDSEQ1								=>			OPEN,
+				RXCHANBONDSEQ0								=>			open,
+				RXCHANBONDSEQ1								=>			open,
 				RXCHBONDI0										=>			"000",
 				RXCHBONDI1										=>			"000",
-				RXCHBONDO0										=>			OPEN,
-				RXCHBONDO1										=>			OPEN,
+				RXCHBONDO0										=>			open,
+				RXCHBONDO1										=>			open,
 				RXENCHANSYNC0									=>			'0',
 				RXENCHANSYNC1									=>			'0',
 				------------------- Receive Ports - Clock Correction Ports -----------------
 				RXCLKCORCNT0									=>			RX_ClockCorrectionCount(0),
 				RXCLKCORCNT1									=>			open,
 				--------------- Receive Ports - Comma Detection and Alignment --------------
-				RXBYTEISALIGNED0							=>			open,	--RX_ByteIsAligned(0),									-- @ GTP_ClockRX_2X,	high-active, long SIGNAL			bytes are aligned
+				RXBYTEISALIGNED0							=>			open,	--RX_ByteIsAligned(0),									-- @ GTP_ClockRX_2X,	high-active, long signal			bytes are aligned
 				RXBYTEISALIGNED1							=>			open,	--RX_ByteIsAligned(1),
 				RXBYTEREALIGN0								=>			open,	--RX_ByteRealign(0),										-- @ GTP_ClockRX_2X,	hight-active, short pulse			alignment has changed
 				RXBYTEREALIGN1								=>			open,	--RX_ByteRealign(1),
@@ -485,8 +485,8 @@ BEGIN
 				PRBSCNTRESET1									=>			'0',
 				RXENPRBSTST0									=>			"00",
 				RXENPRBSTST1									=>			"00",
-				RXPRBSERR0										=>			OPEN,
-				RXPRBSERR1										=>			OPEN,
+				RXPRBSERR0										=>			open,
+				RXPRBSERR1										=>			open,
 				------------------- Receive Ports - RX Data Path interface -----------------
 				RXDATA0(7 downto 0)						=>			RX_Data(0),
 				RXDATA0(15 downto 8)					=>			RX_Data_float(0),
@@ -501,7 +501,7 @@ BEGIN
 				RXUSRCLK1											=>			'0',
 				RXUSRCLK20										=>			RX_Clock(0),
 				RXUSRCLK21										=>			'0',
-				------- Receive Ports - RX Driver,OOB SIGNALing,Coupling and Eq.,CDR ------
+				------- Receive Ports - RX Driver,OOB signaling,Coupling and Eq.,CDR ------
 				RXCDRRESET0										=>			'0',											-- CDR => Clock Data Recovery
 				RXCDRRESET1										=>			'0',
 				RXELECIDLE0										=>			open,
@@ -533,7 +533,7 @@ BEGIN
 				RXSTATUS0											=>			open,
 				RXSTATUS1											=>			open,
 				--------------- Receive Ports - RX Loss-of-sync State Machine --------------
-				RXLOSSOFSYNC0									=>			open,											-- Xilinx example has connected SIGNAL
+				RXLOSSOFSYNC0									=>			open,											-- Xilinx example has connected signal
 				RXLOSSOFSYNC1									=>			open,
 				---------------------- Receive Ports - RX Oversampling ---------------------
 				RXENSAMPLEALIGN0							=>			'0',
@@ -607,7 +607,7 @@ BEGIN
 				TXUSRCLK1											=>			'0',												--
 				TXUSRCLK20										=>			TX_Clock(0),								--
 				TXUSRCLK21										=>			'0',												--
-				--------------- Transmit Ports - TX Driver and OOB SIGNALing --------------
+				--------------- Transmit Ports - TX Driver and OOB signaling --------------
 				TXBUFDIFFCTRL0								=>			"000",
 				TXBUFDIFFCTRL1								=>			"000",
 				TXDIFFCTRL0										=>			"000",
@@ -637,18 +637,18 @@ BEGIN
 				TXCOMTYPE0										=>			'0',
 				TXCOMTYPE1										=>			'0'
 			);
-	END GENERATE;
+	end generate;
 
 
 	-- ===========================================================================
 	-- GTP_DUAL - 2 used ports
 	-- ===========================================================================
-	DualPort : IF (PORTS = 2) GENERATE
+	DualPort : if (PORTS = 2) generate
 
-	BEGIN
+	begin
 
 		GTP : GTP_DUAL
-			GENERIC MAP (
+			generic map (
 				-- ===================== Simulation-Only Attributes ====================
 				SIM_RECEIVER_DETECT_PASS0	 		=>			 TRUE,
 				SIM_RECEIVER_DETECT_PASS1	 		=>			 TRUE,
@@ -681,7 +681,7 @@ BEGIN
 				PLL_TXDIVSEL_OUT_0						=>			 2,												--
 				PLL_TXDIVSEL_OUT_1						=>			 2,												--
 
-				--------------------- TX Driver and OOB SIGNALling --------------------
+				--------------------- TX Driver and OOB signalling --------------------
 				TX_DIFF_BOOST_0								=>			 TRUE,
 				TX_DIFF_BOOST_1								=>			 TRUE,
 
@@ -690,7 +690,7 @@ BEGIN
 				COM_BURST_VAL_1								=>			 "1111",																	-- TX OOB burst counter
 
 				-- =================== Receive Interface Attributes ===================
-				------------ RX Driver,OOB SIGNALling,Coupling and Eq,CDR -------------
+				------------ RX Driver,OOB signalling,Coupling and Eq,CDR -------------
 				AC_CAP_DIS_0									=>			 FALSE,
 				OOBDETECT_THRESHOLD_0					=>			 "001",																		-- Threshold between RXN and RXP is 105 mV
 				PMA_CDR_SCAN_0								=>			 x"6c07640",
@@ -848,10 +848,10 @@ BEGIN
 				PCI_EXPRESS_MODE_1						=>			 FALSE,
 
 				------------------ RX Attributes for PCI Express/SATA ---------------
-				-- OOB COM*** SIGNAL detector @ 25 MHz with DDR (20 ns)
+				-- OOB COM*** signal detector @ 25 MHz with DDR (20 ns)
 				RX_STATUS_FMT_0								=>			 "PCIE",
-				SATA_BURST_VAL_0							=>			 "100",							-- Burst count to detect OOB COM*** SIGNALs
-				SATA_IDLE_VAL_0								=>			 "100",							-- IDLE count between bursts in OOB COM*** SIGNALs
+				SATA_BURST_VAL_0							=>			 "100",							-- Burst count to detect OOB COM*** signals
+				SATA_IDLE_VAL_0								=>			 "100",							-- IDLE count between bursts in OOB COM*** signals
 				SATA_MIN_BURST_0							=>			 5,									--
 				SATA_MAX_BURST_0							=>			 9,									--
 				SATA_MIN_INIT_0								=>			 15,								--
@@ -863,8 +863,8 @@ BEGIN
 				TRANS_TIME_TO_P2_0						=>			 x"0100",
 
 				RX_STATUS_FMT_1								=>			"PCIE",
-				SATA_BURST_VAL_1							=>			"100",							-- Burst count to detect OOB COM*** SIGNALs
-				SATA_IDLE_VAL_1								=>			"100",							-- IDLE count between bursts in OOB COM*** SIGNALs
+				SATA_BURST_VAL_1							=>			"100",							-- Burst count to detect OOB COM*** signals
+				SATA_IDLE_VAL_1								=>			"100",							-- IDLE count between bursts in OOB COM*** signals
 				SATA_MIN_BURST_1							=>			 5,									--
 				SATA_MAX_BURST_1							=>			 9,									--
 				SATA_MIN_INIT_1								=>			 15,								--
@@ -875,7 +875,7 @@ BEGIN
 				TRANS_TIME_NON_P2_1						=>			x"0025",
 				TRANS_TIME_TO_P2_1						=>			x"0100"
 			)
-			PORT MAP (
+			port map (
 				------------------------ Loopback and Powerdown Ports ----------------------
 				LOOPBACK0(0)									=>			Loopback(0),
 				LOOPBACK0(2 downto 1)					=>			"00",
@@ -909,19 +909,19 @@ BEGIN
 				RXRUNDISP1(0)									=>			RX_RunningDisparity(1),
 				RXRUNDISP1(1)									=>			RX_RunningDisparity_float(1),
 				------------------- Receive Ports - Channel Bonding Ports ------------------
-				RXCHANBONDSEQ0								=>			OPEN,
-				RXCHANBONDSEQ1								=>			OPEN,
+				RXCHANBONDSEQ0								=>			open,
+				RXCHANBONDSEQ1								=>			open,
 				RXCHBONDI0										=>			"000",
 				RXCHBONDI1										=>			"000",
-				RXCHBONDO0										=>			OPEN,
-				RXCHBONDO1										=>			OPEN,
+				RXCHBONDO0										=>			open,
+				RXCHBONDO1										=>			open,
 				RXENCHANSYNC0									=>			'0',
 				RXENCHANSYNC1									=>			'0',
 				------------------- Receive Ports - Clock Correction Ports -----------------
 				RXCLKCORCNT0									=>			RX_ClockCorrectionCount(0),
 				RXCLKCORCNT1									=>			RX_ClockCorrectionCount(1),
 				--------------- Receive Ports - Comma Detection and Alignment --------------
-				RXBYTEISALIGNED0							=>			open,	--RX_ByteIsAligned(0),									-- @ GTP_ClockRX_2X,	high-active, long SIGNAL			bytes are aligned
+				RXBYTEISALIGNED0							=>			open,	--RX_ByteIsAligned(0),									-- @ GTP_ClockRX_2X,	high-active, long signal			bytes are aligned
 				RXBYTEISALIGNED1							=>			open,	--RX_ByteIsAligned(1),
 				RXBYTEREALIGN0								=>			open,	--RX_ByteRealign(0),										-- @ GTP_ClockRX_2X,	hight-active, short pulse			alignment has changed
 				RXBYTEREALIGN1								=>			open,	--RX_ByteRealign(1),
@@ -940,8 +940,8 @@ BEGIN
 				PRBSCNTRESET1									=>			'0',
 				RXENPRBSTST0									=>			"00",
 				RXENPRBSTST1									=>			"00",
-				RXPRBSERR0										=>			OPEN,
-				RXPRBSERR1										=>			OPEN,
+				RXPRBSERR0										=>			open,
+				RXPRBSERR1										=>			open,
 				------------------- Receive Ports - RX Data Path interface -----------------
 				RXDATA0(7 downto 0)						=>			RX_Data(0),
 				RXDATA0(15 downto 8)					=>			RX_Data_float(0),
@@ -957,7 +957,7 @@ BEGIN
 				RXUSRCLK1											=>			RX_Clock(1),
 				RXUSRCLK20										=>			RX_Clock(0),
 				RXUSRCLK21										=>			RX_Clock(1),
-				------- Receive Ports - RX Driver,OOB SIGNALing,Coupling and Eq.,CDR ------
+				------- Receive Ports - RX Driver,OOB signaling,Coupling and Eq.,CDR ------
 				RXCDRRESET0										=>			'0',											-- CDR => Clock Data Recovery
 				RXCDRRESET1										=>			'0',
 				RXELECIDLE0										=>			open,
@@ -990,7 +990,7 @@ BEGIN
 				RXSTATUS0											=>			open,
 				RXSTATUS1											=>			open,
 				--------------- Receive Ports - RX Loss-of-sync State Machine --------------
-				RXLOSSOFSYNC0									=>			open,											-- Xilinx example has connected SIGNAL
+				RXLOSSOFSYNC0									=>			open,											-- Xilinx example has connected signal
 				RXLOSSOFSYNC1									=>			open,
 				---------------------- Receive Ports - RX Oversampling ---------------------
 				RXENSAMPLEALIGN0							=>			'0',
@@ -1065,7 +1065,7 @@ BEGIN
 				TXUSRCLK1											=>			TX_Clock(1),								--
 				TXUSRCLK20										=>			TX_Clock(0),								--
 				TXUSRCLK21										=>			TX_Clock(1),								--
-				--------------- Transmit Ports - TX Driver and OOB SIGNALing --------------
+				--------------- Transmit Ports - TX Driver and OOB signaling --------------
 				TXBUFDIFFCTRL0								=>			"000",
 				TXBUFDIFFCTRL1								=>			"000",
 				TXDIFFCTRL0										=>			"000",
@@ -1095,5 +1095,5 @@ BEGIN
 				TXCOMTYPE0										=>			'0',
 				TXCOMTYPE1										=>			'0'
 			);
-	END GENERATE;
-END;
+	end generate;
+end;

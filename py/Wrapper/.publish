@@ -13,5 +13,10 @@ wrapper.sh
 
 # Configuration files
 Lattice.Diamond.psm1
+Lattice.Diamond.sh
+Sphinx.psm1
+Sphinx.sh
 Xilinx.ISE.psm1
+Xilinx.ISE.sh
 Xilinx.Vivado.psm1
+Xilinx.Vivado.sh

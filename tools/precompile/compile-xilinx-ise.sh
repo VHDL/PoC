@@ -2,12 +2,12 @@
 # EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 #	Authors:				 	Martin Zabel
-# 
+#
 #	Bash Script:			Compile Xilinx's simulation libraries
-# 
+#
 # Description:
 # ------------------------------------
 #	This is a bash script compiles Xilinx's simulation libraries into a local
@@ -17,13 +17,13 @@
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #		http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,7 +63,7 @@ DestDir=$($poc_sh query INSTALL.PoC:InstallationDirectory 2>/dev/null)/temp/prec
 if [ $? -ne 0 ]; then
 	echo 1>&2 -e "${RED}ERROR: Cannot get PoC installation dir.${NOCOLOR}"
 	exit;
-fi 
+fi
 
 case "$Simulator" in
 	ghdl)
@@ -85,7 +85,7 @@ case "$Simulator" in
 		if [ $? -ne 0 ]; then
 			echo 1>&2 -e "${RED}ERROR: Cannot get ModelSim installation dir.${NOCOLOR}"
 			exit;
-		fi 
+		fi
 		;;
 esac
 
@@ -94,7 +94,7 @@ mkdir -p $DestDir
 if [ $? -ne 0 ]; then
 	echo 1>&2 -e "${RED}ERROR: Cannot create output directory.${NOCOLOR}"
 	exit;
-fi 
+fi
 
 cd $DestDir
 if [ $? -ne 0 ]; then

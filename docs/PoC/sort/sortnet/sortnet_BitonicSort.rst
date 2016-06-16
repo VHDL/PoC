@@ -1,9 +1,19 @@
 
 sortnet_BitonicSort
-^^^^^^^^^^^^^^^^^^^
+###################
 
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
-At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor
-sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et
-accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet
+This sorting network uses the *bitonic sort* algorithm.
 
+
+.. rubric:: Entity Declaration:
+
+.. literalinclude:: ../../../../src/sort/sortnet/sortnet_BitonicSort.vhdl
+   :language: vhdl
+   :tab-width: 2
+   :linenos:
+   :lines: 42-68
+
+Source file: `sort/sortnet/sortnet_BitonicSort.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sort/sortnet/sortnet_BitonicSort.vhdl>`_
+
+
+	 

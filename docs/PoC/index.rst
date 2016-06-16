@@ -1,6 +1,6 @@
 
-IP Cores
-########
+IP Core Documentations
+######################
 
 Namespace for Packages:
 
@@ -18,6 +18,7 @@ Namespaces for Entities:
    bus/index
    cache/index
    comm/index
+   dstruct/index
    fifo/index
    io/index
    mem/index

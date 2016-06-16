@@ -1,7 +1,6 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Thomas B. Preusser
@@ -9,8 +8,8 @@
 -- Package:					Simulation constants, functions and utilities.
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
 -- =============================================================================
@@ -392,12 +391,12 @@ package body sim_protected is
 			-- add process to list
 			Processes(Proc.ID)										:= Proc;
 			ProcessCount													:= ProcessCount + 1;
-			ActiveProcessCount										:= inc(not IsLowPriority, ActiveProcessCount);
+			ActiveProcessCount										:= inc_if(not IsLowPriority, ActiveProcessCount);
 			-- add process to test
 			TestProcID														:= Tests(TestID).ProcessCount;
 			Tests(TestID).ProcessIDs(TestProcID)	:= Proc.ID;
 			Tests(TestID).ProcessCount						:= TestProcID + 1;
-			Tests(TestID).ActiveProcessCount			:= inc(not IsLowPriority, Tests(TestID).ActiveProcessCount);
+			Tests(TestID).ActiveProcessCount			:= inc_if(not IsLowPriority, Tests(TestID).ActiveProcessCount);
 			-- return the process ID
 			return Proc.ID;
 		end function;
@@ -417,8 +416,8 @@ package body sim_protected is
 			if (Processes(ProcID).Status = SIM_PROCESS_STATUS_ACTIVE) then
 				if C_SIM_VERBOSE then		report "deactivateProcess(ProcID=" & T_SIM_PROCESS_ID'image(ProcID) & "): TestID=" & T_SIM_TEST_ID'image(TestID) & "  Name=" & str_trim(Processes(ProcID).Name) severity NOTE;		end if;
 				Processes(ProcID).Status					:= SIM_PROCESS_STATUS_ENDED;
-				ActiveProcessCount								:= dec(not Processes(ProcID).IsLowPriority, ActiveProcessCount);
-				Tests(TestID).ActiveProcessCount	:= dec(not Processes(ProcID).IsLowPriority, Tests(TestID).ActiveProcessCount);
+				ActiveProcessCount								:= dec_if(not Processes(ProcID).IsLowPriority, ActiveProcessCount);
+				Tests(TestID).ActiveProcessCount	:= dec_if(not Processes(ProcID).IsLowPriority, Tests(TestID).ActiveProcessCount);
 				if (Tests(TestID).ActiveProcessCount = 0) then
 					finalizeTest(TestID);
 				end if;

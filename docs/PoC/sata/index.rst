@@ -22,21 +22,23 @@ sata
 
    .. toctree::
       
-      StreamingLayer
-      StreamingLayer_FSM
-      TransportLayer
-      TransportLayer_FSM
-      LinkLayer
-      LinkLayer_FSM
-      PhysicalLayer
-      PhysicalLayer_FSM
-      TransceiverLayer
-      TransceiverLayer_FSM
-   
-   .. 
-      include:: <s5defs.txt>
-   
-   .. role:: cyan
-   
-   :cyan:`test2`
+      sata_StreamingStack
+      sata_SATAController
+      sata_StreamingLayer
+      sata_StreamingLayerFSM
+      sata_ATA_IdentifyDeviceFilter
+      sata_TransportLayer
+      sata_TransportLayerFSM
+      sata_Transport_FISDecoder
+      sata_Transport_FISEncoder
+      sata_LinkLayer
+      sata_LinkLayerFSM
+      sata_Link_PrimitiveDetector
+      sata_Link_Scrambler
+      sata_PhysicalLayer
+      sata_PhysicalLayerFSM
+      sata_Physical_OOBControl_Device
+      sata_Physical_OOBControl_Host
+      sata_TransceiverLayer
+      sata_Transceiver_DeviceDetector
    

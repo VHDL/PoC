@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					SATA Streaming Layer
+-- Entity:					SATA Streaming Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Executes ATA commands.
 --
 -- Automatically issues an "identify device" when the SATA Controller is
@@ -129,7 +128,7 @@ entity sata_StreamingLayer is
 		Trans_RX_EOT									: in	STD_LOGIC;
 		Trans_RX_Ack									: out	STD_LOGIC
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_StreamingLayer is
@@ -151,8 +150,8 @@ architecture rtl of sata_StreamingLayer is
 	signal Error_i													: T_SATA_STREAMING_ERROR;
 
 	signal SFSM_TX_en												: STD_LOGIC;
-	SIGNAL SFSM_TX_ForceEOT									: STD_LOGIC;
-	SIGNAL SFSM_TX_FIFO_ForceGot						: STD_LOGIC;
+	signal SFSM_TX_ForceEOT									: STD_LOGIC;
+	signal SFSM_TX_FIFO_ForceGot						: STD_LOGIC;
 
 	signal SFSM_RX_SOR											: STD_LOGIC;
 	signal SFSM_RX_EOR											: STD_LOGIC;
@@ -381,7 +380,7 @@ begin
 		begin
 			process(Clock)
 			begin
-				IF rising_edge(Clock) then
+				if rising_edge(Clock) then
 					if ((MyReset = '1') or (IEOTC_Load = '1')) then
 						Counter_s				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);		-- FIXME: replace with dynamic calculation
 					else
@@ -487,7 +486,7 @@ begin
 
   -- debug ports
   -- ===========================================================================
-  genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) generate
+  genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
   begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
 			function dbg_generateCommandEncodings return string is

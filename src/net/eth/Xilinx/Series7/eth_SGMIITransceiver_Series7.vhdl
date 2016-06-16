@@ -1,69 +1,69 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VcomponentS.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.net.all;
 
 
-ENTITY Ethernet_SGMIITransceiver_Virtex7 IS
-	GENERIC (
+entity Ethernet_SGMIITransceiver_Virtex7 is
+	generic (
 		SIM_SPEEDUP								: BOOLEAN				:= TRUE;
 		CLOCK_IN_FREQ_MHZ					: REAL					:= 125.0
 	);
-	PORT (
-		TX_RefClock_In						: IN		STD_LOGIC;
-		RX_RefClock_In						: IN		STD_LOGIC;
-		TX_RefClock_Out						: OUT		STD_LOGIC;
-		RX_RefClock_Out						: OUT		STD_LOGIC;
+	port (
+		TX_RefClock_In						: in		STD_LOGIC;
+		RX_RefClock_In						: in		STD_LOGIC;
+		TX_RefClock_Out						: out		STD_LOGIC;
+		RX_RefClock_Out						: out		STD_LOGIC;
 
-		ClockNetwork_Reset				: IN		STD_LOGIC;
-		ClockNetwork_ResetDone		: OUT		STD_LOGIC;
+		ClockNetwork_Reset				: in		STD_LOGIC;
+		ClockNetwork_ResetDone		: out		STD_LOGIC;
 
---		Command										: IN		T_ETHERNET_SGMIITRANSCEIVER_COMMAND;
---		Status										: OUT		T_ETHERNET_SGMIITRANSCEIVER_STATUS;
---		Error											: OUT		T_ETHERNET_SGMIITRANSCEIVER_ERROR;
+--		Command										: in		T_ETHERNET_SGMIITRANSCEIVER_COMMAND;
+--		Status										: out		T_ETHERNET_SGMIITRANSCEIVER_STATUS;
+--		Error											: out		T_ETHERNET_SGMIITRANSCEIVER_ERROR;
 
-		TX_Data										: IN		T_SLV_16;
-		TX_CharIsK								: IN		T_SLV_2;
-		TX_RunningDisparity				: OUT		STD_LOGIC;
+		TX_Data										: in		T_SLV_16;
+		TX_CharIsK								: in		T_SLV_2;
+		TX_RunningDisparity				: out		STD_LOGIC;
 
-		RX_Data										: OUT		T_SLV_16;
-		RX_CharIsK								: OUT		T_SLV_2;
-		RX_CharIsComma						: OUT		T_SLV_2;
-		RX_CharIsNotInTable				: OUT		T_SLV_2;
-		RX_RunningDisparity				: OUT		STD_LOGIC;
+		RX_Data										: out		T_SLV_16;
+		RX_CharIsK								: out		T_SLV_2;
+		RX_CharIsComma						: out		T_SLV_2;
+		RX_CharIsNotInTable				: out		T_SLV_2;
+		RX_RunningDisparity				: out		STD_LOGIC;
 
-		TX_n											: OUT		STD_LOGIC;
-		TX_p											: OUT		STD_LOGIC;
-		RX_n											: IN		STD_LOGIC;
-		RX_p											: IN		STD_LOGIC
+		TX_n											: out		STD_LOGIC;
+		TX_p											: out		STD_LOGIC;
+		RX_n											: in		STD_LOGIC;
+		RX_p											: in		STD_LOGIC
 	);
-END;
+end;
 
 -- TODO descipbe marks:
 --				ATTENTION
 
-ARCHITECTURE rtl OF Ethernet_SGMIITransceiver_Virtex7 IS
+architecture rtl of Ethernet_SGMIITransceiver_Virtex7 is
 
-	CONSTANT GT_SIM_GTRESET_SPEEDUP					: STRING			:= ite(SIM_SPEEDUP, "true", "false");
+	constant GT_SIM_GTRESET_SPEEDUP					: STRING			:= ite(SIM_SPEEDUP, "true", "false");
 
-	SIGNAL TX_Data_i												: T_SLV_64;
-	SIGNAL RX_Data_i												: T_SLV_64;
+	signal TX_Data_i												: T_SLV_64;
+	signal RX_Data_i												: T_SLV_64;
 
-BEGIN
+begin
 
 	TX_Data_i			<= resize(TX_Data, TX_Data_i'length);
 	RX_Data				<= resize(RX_Data_i, RX_Data'length);
 
 
 	GTX_Channel	: GTXE2_Channel
-		GENERIC MAP (
+		generic map (
 		--_______________________ Simulation-Only Attributes ___________________
 			SIM_RECEIVER_DETECT_PASS								=> "TRUE",
 			SIM_RESET_SPEEDUP												=> GT_SIM_GTRESET_SPEEDUP,
@@ -331,23 +331,23 @@ BEGIN
 		 -------------------------TX Configurable Driver Attributes--------------------------
 			TX_PREDRIVER_MODE												=> '0'
 		)
-		PORT MAP (
+		port map (
 			---------------------------------- Channel ---------------------------------
 			CFGRESET												=> '0',
 			CLKRSVD												=> "0000",
-			DMONITOROUT										=> OPEN,
+			DMONITOROUT										=> open,
 			GTRESETSEL											=> '0',
 			GTRSVD													=> "0000000000000000",
 			QPLLCLK												=> '0',
 			QPLLREFCLK											=> '0',
 			RESETOVRD											=> '0',
 			---------------- Channel - Dynamic Reconfiguration Port (DRP) --------------
-			DRPADDR												=> (OTHERS => '0'),
+			DRPADDR												=> (others => '0'),
 			DRPCLK													=> '0',
-			DRPDI													=> (OTHERS => '0'),
-			DRPDO													=> OPEN,
+			DRPDI													=> (others => '0'),
+			DRPDO													=> open,
 			DRPEN													=> '0',
-			DRPRDY													=> OPEN,
+			DRPRDY													=> open,
 			DRPWE													=> '0',
 			------------------------- Channel - Ref Clock Ports ------------------------
 			GTGREFCLK											=> '0',
@@ -355,7 +355,7 @@ BEGIN
 			GTNORTHREFCLK1									=> '0',
 			GTREFCLK0											=> GTREFCLK0_IN,
 			GTREFCLK1											=> '0',
-			GTREFCLKMONITOR								=> OPEN,
+			GTREFCLKMONITOR								=> open,
 			GTSOUTHREFCLK0									=> '0',
 			GTSOUTHREFCLK1									=> '0',
 			-------------------------------- Channel PLL -------------------------------
@@ -379,63 +379,63 @@ BEGIN
 			----------------------------- PCS Reserved Ports ---------------------------
 			PCSRSVDIN											=> "0000000000000000",
 			PCSRSVDIN2											=> "00000",
-			PCSRSVDOUT											=> OPEN,
+			PCSRSVDOUT											=> open,
 			----------------------------- PMA Reserved Ports ---------------------------
 			PMARSVDIN											=> "00000",
 			PMARSVDIN2											=> "00000",
 			------------------------------- Receive Ports ------------------------------
 			RXQPIEN												=> '0',
-			RXQPISENN											=> OPEN,
-			RXQPISENP											=> OPEN,
+			RXQPISENN											=> open,
+			RXQPISENP											=> open,
 			RXSYSCLKSEL										=> "00",
 			RXUSERRDY											=> RXUSERRDY_IN,
 			-------------- Receive Ports - 64b66b and 64b67b Gearbox Ports -------------
-			RXDATAVALID										=> OPEN,
+			RXDATAVALID										=> open,
 			RXGEARBOXSLIP									=> '0',
-			RXHEADER												=> OPEN,
-			RXHEADERVALID									=> OPEN,
-			RXSTARTOFSEQ										=> OPEN,
+			RXHEADER												=> open,
+			RXHEADERVALID									=> open,
+			RXSTARTOFSEQ										=> open,
 			----------------------- Receive Ports - 8b10b Decoder ----------------------
 			RX8B10BEN											=> '1',
-			RXCHARISCOMMA(7 DOWNTO 2)			=> rxchariscomma_float_i,
-			RXCHARISCOMMA(1 DOWNTO 0)			=> RXCHARISCOMMA_OUT,
-			RXCHARISK(7 DOWNTO 2)					=> rxcharisk_float_i,
-			RXCHARISK(1 DOWNTO 0)					=> RXCHARISK_OUT,
-			RXDISPERR(7 DOWNTO 2)					=> rxdisperr_float_i,
-			RXDISPERR(1 DOWNTO 0)					=> RXDISPERR_OUT,
-			RXNOTINTABLE(7 DOWNTO 2)				=> rxnotintable_float_i,
-			RXNOTINTABLE(1 DOWNTO 0)				=> RXNOTINTABLE_OUT,
+			RXCHARISCOMMA(7 downto 2)			=> rxchariscomma_float_i,
+			RXCHARISCOMMA(1 downto 0)			=> RXCHARISCOMMA_OUT,
+			RXCHARISK(7 downto 2)					=> rxcharisk_float_i,
+			RXCHARISK(1 downto 0)					=> RXCHARISK_OUT,
+			RXDISPERR(7 downto 2)					=> rxdisperr_float_i,
+			RXDISPERR(1 downto 0)					=> RXDISPERR_OUT,
+			RXNOTINTABLE(7 downto 2)				=> rxnotintable_float_i,
+			RXNOTINTABLE(1 downto 0)				=> RXNOTINTABLE_OUT,
 			------------------- Receive Ports - Channel Bonding Ports ------------------
-			RXCHANBONDSEQ									=> OPEN,
+			RXCHANBONDSEQ									=> open,
 			RXCHBONDEN											=> '0',
 			RXCHBONDI											=> "00000",
-			RXCHBONDLEVEL									=> (OTHERS => '0'),
+			RXCHBONDLEVEL									=> (others => '0'),
 			RXCHBONDMASTER									=> '0',
-			RXCHBONDO											=> OPEN,
+			RXCHBONDO											=> open,
 			RXCHBONDSLAVE									=> '0',
 			------------------- Receive Ports - Channel Bonding Ports	-----------------
-			RXCHANISALIGNED								=> OPEN,
-			RXCHANREALIGN									=> OPEN,
+			RXCHANISALIGNED								=> open,
+			RXCHANREALIGN									=> open,
 			------------------- Receive Ports - Clock Correction Ports -----------------
 			RXCLKCORCNT										=> RXCLKCORCNT_OUT,
 			--------------- Receive Ports - Comma Detection and Alignment --------------
-			RXBYTEISALIGNED								=> OPEN,
-			RXBYTEREALIGN									=> OPEN,
-			RXCOMMADET											=> OPEN,
+			RXBYTEISALIGNED								=> open,
+			RXBYTEREALIGN									=> open,
+			RXCOMMADET											=> open,
 			RXCOMMADETEN										=> '1',
 			RXMCOMMAALIGNEN								=> RXMCOMMAALIGNEN_IN,
 			RXPCOMMAALIGNEN								=> RXPCOMMAALIGNEN_IN,
 			RXSLIDE												=> '0',
 			----------------------- Receive Ports - PRBS Detection ---------------------
 			RXPRBSCNTRESET									=> '0',
-			RXPRBSERR											=> OPEN,
-			RXPRBSSEL											=> (OTHERS => '0'),
+			RXPRBSERR											=> open,
+			RXPRBSSEL											=> (others => '0'),
 			------------------- Receive Ports - RX Data Path interface -----------------
 			GTRXRESET											=> GTRXRESET_IN,
 			RXDATA													=> rxdata_i,
 			RXOUTCLK												=> RXOUTCLK_OUT,
-			RXOUTCLKFABRIC									=> OPEN,
-			RXOUTCLKPCS										=> OPEN,
+			RXOUTCLKFABRIC									=> open,
+			RXOUTCLKPCS										=> open,
 			RXOUTCLKSEL										=> "010",
 			RXPCSRESET											=> RXPCSRESET_IN,
 			RXPMARESET											=> '0',
@@ -464,7 +464,7 @@ BEGIN
 			RXDFEXYDEN											=> '0',
 			RXDFEXYDHOLD										=> '0',
 			RXDFEXYDOVRDEN									=> '0',
-			RXMONITOROUT										=> OPEN,
+			RXMONITOROUT										=> open,
 			RXMONITORSEL										=> "00",
 			RXOSHOLD												=> '0',
 			RXOSOVRDEN											=> '0',
@@ -493,59 +493,59 @@ BEGIN
 			RXDLYEN												=> '0',
 			RXDLYOVRDEN										=> '0',
 			RXDLYSRESET										=> '0',
-			RXDLYSRESETDONE								=> OPEN,
+			RXDLYSRESETDONE								=> open,
 			RXPHALIGN											=> '0',
-			RXPHALIGNDONE									=> OPEN,
+			RXPHALIGNDONE									=> open,
 			RXPHALIGNEN										=> '0',
 			RXPHDLYPD											=> '0',
 			RXPHDLYRESET										=> '0',
-			RXPHMONITOR										=> OPEN,
+			RXPHMONITOR										=> open,
 			RXPHOVRDEN											=> '0',
-			RXPHSLIPMONITOR								=> OPEN,
-			RXSTATUS												=> OPEN,
+			RXPHSLIPMONITOR								=> open,
+			RXSTATUS												=> open,
 			------------------------ Receive Ports - RX PLL Ports ----------------------
-			RXRATE													=> (OTHERS => '0'),
-			RXRATEDONE											=> OPEN,
+			RXRATE													=> (others => '0'),
+			RXRATEDONE											=> open,
 			RXRESETDONE										=> RXRESETDONE_OUT,
 			-------------- Receive Ports - RX Pipe Control for PCI Express -------------
-			PHYSTATUS											=> OPEN,
-			RXVALID												=> OPEN,
+			PHYSTATUS											=> open,
+			RXVALID												=> open,
 			----------------- Receive Ports - RX Polarity Control Ports ----------------
 			RXPOLARITY											=> '0',
 			--------------------- Receive Ports - RX Ports for SATA --------------------
-			RXCOMINITDET										=> OPEN,
-			RXCOMSASDET										=> OPEN,
-			RXCOMWAKEDET										=> OPEN,
+			RXCOMINITDET										=> open,
+			RXCOMSASDET										=> open,
+			RXCOMWAKEDET										=> open,
 			------------------------------- Transmit Ports -----------------------------
 			SETERRSTATUS										=> '0',
 			TSTIN													=> "11111111111111111111",
-			TSTOUT													=> OPEN,
+			TSTOUT													=> open,
 			TXPHDLYTSTCLK									=> '0',
 			TXPOSTCURSOR										=> "00000",
 			TXPOSTCURSORINV								=> '0',
-			TXPRECURSOR										=> (OTHERS => '0'),
+			TXPRECURSOR										=> (others => '0'),
 			TXPRECURSORINV									=> '0',
 			TXQPIBIASEN										=> '0',
-			TXQPISENN											=> OPEN,
-			TXQPISENP											=> OPEN,
+			TXQPISENN											=> open,
+			TXQPISENP											=> open,
 			TXQPISTRONGPDOWN								=> '0',
 			TXQPIWEAKPUP										=> '0',
 			TXSYSCLKSEL										=> "00",
 			TXUSERRDY											=> TXUSERRDY_IN,
 			-------------- Transmit Ports - 64b66b and 64b67b Gearbox Ports ------------
-			TXGEARBOXREADY									=> OPEN,
-			TXHEADER												=> (OTHERS => '0'),
-			TXSEQUENCE											=> (OTHERS => '0'),
+			TXGEARBOXREADY									=> open,
+			TXHEADER												=> (others => '0'),
+			TXSEQUENCE											=> (others => '0'),
 			TXSTARTSEQ											=> '0',
 			---------------- Transmit Ports - 8b10b Encoder Control Ports --------------
-			TX8B10BBYPASS									=> (OTHERS => '0'),
+			TX8B10BBYPASS									=> (others => '0'),
 			TX8B10BEN											=> '1',
-			TXCHARDISPMODE(7 DOWNTO 2)			=> (OTHERS => '0'),
-			TXCHARDISPMODE(1 DOWNTO 0)			=> TXCHARDISPMODE_IN,
-			TXCHARDISPVAL(7 DOWNTO 2)			=> (OTHERS => '0'),
-			TXCHARDISPVAL(1 DOWNTO 0)			=> TXCHARDISPVAL_IN,
-			TXCHARISK(7 DOWNTO 2)					=> (OTHERS => '0'),
-			TXCHARISK(1 DOWNTO 0)					=> TXCHARISK_IN,
+			TXCHARDISPMODE(7 downto 2)			=> (others => '0'),
+			TXCHARDISPMODE(1 downto 0)			=> TXCHARDISPMODE_IN,
+			TXCHARDISPVAL(7 downto 2)			=> (others => '0'),
+			TXCHARDISPVAL(1 downto 0)			=> TXCHARDISPVAL_IN,
+			TXCHARISK(7 downto 2)					=> (others => '0'),
+			TXCHARISK(1 downto 0)					=> TXCHARISK_IN,
 			------------ Transmit Ports - TX Buffer and Phase Alignment Ports ----------
 			TXBUFSTATUS										=> TXBUFSTATUS_OUT,
 			TXDLYBYPASS										=> '1',
@@ -553,15 +553,15 @@ BEGIN
 			TXDLYHOLD											=> '0',
 			TXDLYOVRDEN										=> '0',
 			TXDLYSRESET										=> '0',
-			TXDLYSRESETDONE								=> OPEN,
+			TXDLYSRESETDONE								=> open,
 			TXDLYUPDOWN										=> '0',
 			TXPHALIGN											=> '0',
-			TXPHALIGNDONE									=> OPEN,
+			TXPHALIGNDONE									=> open,
 			TXPHALIGNEN										=> '0',
 			TXPHDLYPD											=> '0',
 			TXPHDLYRESET										=> '0',
 			TXPHINIT												=> '0',
-			TXPHINITDONE										=> OPEN,
+			TXPHINITDONE										=> open,
 			TXPHOVRDEN											=> '0',
 			------------------ Transmit Ports - TX Data Path interface -----------------
 			GTTXRESET											=> GTTXRESET_IN,
@@ -585,24 +585,24 @@ BEGIN
 			TXPDELECIDLEMODE								=> '0',
 			TXPISOPD												=> '0',
 			----------------------- Transmit Ports - TX PLL Ports ----------------------
-			TXRATE													=> (OTHERS => '0'),
-			TXRATEDONE											=> OPEN,
+			TXRATE													=> (others => '0'),
+			TXRATEDONE											=> open,
 			TXRESETDONE										=> TXRESETDONE_OUT,
 			--------------------- Transmit Ports - TX PRBS Generator -------------------
 			TXPRBSFORCEERR									=> '0',
-			TXPRBSSEL											=> (OTHERS => '0'),
+			TXPRBSSEL											=> (others => '0'),
 			-------------------- Transmit Ports - TX Polarity Control ------------------
 			TXPOLARITY											=> '0',
 			----------------- Transmit Ports - TX Ports for PCI Express ----------------
 			TXDEEMPH												=> '0',
 			TXDETECTRX											=> '0',
 			TXELECIDLE											=> TXPD_IN(0),
-			TXMARGIN												=> (OTHERS => '0'),
+			TXMARGIN												=> (others => '0'),
 			TXSWING												=> '0',
 			--------------------- Transmit Ports - TX Ports for SATA -------------------
-			TXCOMFINISH										=> OPEN,
+			TXCOMFINISH										=> open,
 			TXCOMINIT											=> '0',
 			TXCOMSAS												=> '0',
 			TXCOMWAKE											=> '0'
 		);
-END;
+end;
