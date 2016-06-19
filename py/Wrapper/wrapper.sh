@@ -176,8 +176,24 @@ declare -A Env_Xilinx_Vivado=(
 	["PostHookFile"]="Xilinx.Vivado.post.sh"
 )
 
+
+# Cocotb
+declare -A Env_Cocotb=(
+	["PreHookFile"]="Cocotb.pre.sh"
+	["PostHookFile"]="Cocotb.post.sh"
+	["Tools"]="QuestaSim"
+)
+declare -A Env_Cocotb_QuestaSim=(
+	["Load"]=0
+	["Commands"]="cocotb"
+	["BashModule"]="Cocotb.QuestaSim.sh"
+	["PreHookFile"]="Cocotb.QuestaSim.pre.sh"
+	["PostHookFile"]="Cocotb.QuestaSim.post.sh"
+)
+
+
 # List all vendors
-Env_Vendors="Aldec Altera GHDL Lattice Mentor Sphinx Xilinx"
+Env_Vendors="Aldec Altera GHDL Lattice Mentor Sphinx Xilinx Cocotb"
 
 # search script parameters for known commands
 BreakIt=0
