@@ -4,14 +4,14 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-#	Authors:          Martin Zabel
+#	Authors:         	Martin Zabel
 #                   Patrick Lehmann
 # 
-#	Bash Script:			Compile Altera's simulation libraries
+#	Bash Script:			Compile Lattice's simulation libraries
 # 
 # Description:
 # ------------------------------------
-#	This is a bash script compiles Altera's simulation libraries into a local
+#	This is a bash script compiles Lattice's simulation libraries into a local
 #	directory.
 #
 # License:
@@ -62,10 +62,10 @@ while [[ $# > 0 ]]; do
 		COMPILE_FOR_GHDL=TRUE
 		NO_COMMAND=0
 		;;
-		--questa)
-		COMPILE_FOR_VSIM=TRUE
-		NO_COMMAND=0
-		;;
+		# --questa)
+		# COMPILE_FOR_VSIM=TRUE
+		# NO_COMMAND=0
+		# ;;
 		-h|--help)
 		HELP=TRUE
 		NO_COMMAND=0
@@ -86,13 +86,13 @@ if [ "$HELP" == "TRUE" ]; then
 	test $NO_COMMAND -eq 1 && echo 1>&2 -e "\n${COLORED_ERROR} No command selected."
 	echo ""
 	echo "Synopsis:"
-	echo "  Script to compile the Altera Quartus simulation libraries for"
+	echo "  Script to compile the Lattice Diamond simulation libraries for"
 	echo "  - GHDL"
-	echo "  - QuestaSim/ModelSim"
+	# echo "  - QuestaSim/ModelSim"
 	echo "  on Linux."
 	echo ""
 	echo "Usage:"
-	echo "  compile-altera.sh [-c] [--help|--all|--ghdl|--vsim]"
+	echo "  compile-lattice.sh [-c] [--help|--all|--ghdl|--vsim]"
 	echo ""
 	echo "Common commands:"
 	echo "  -h --help             Print this help page"
@@ -101,7 +101,7 @@ if [ "$HELP" == "TRUE" ]; then
 	echo "Tool chain:"
 	echo "  -a --all              Compile for all tool chains."
 	echo "  -g --ghdl             Compile for GHDL."
-	echo "  -v --vsim             Compile for QuestaSim/ModelSim."
+	# echo "  -v --vsim             Compile for QuestaSim/ModelSim."
 	echo ""
 	exit 0
 fi
@@ -109,7 +109,7 @@ fi
 
 if [ "$COMPILE_ALL" == "TRUE" ]; then
 	COMPILE_FOR_GHDL=TRUE
-	COMPILE_FOR_VSIM=TRUE
+	# COMPILE_FOR_VSIM=TRUE
 fi
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
@@ -119,10 +119,10 @@ if [ $? -ne 0 ]; then
 	exit -1;
 fi
 
-AlteraDirName=$($PoC_sh query CONFIG.DirectoryNames:AlteraSpecificFiles 2>/dev/null)
+LatticeDirName=$($PoC_sh query CONFIG.DirectoryNames:LatticeSpecificFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${RED}ERROR: Cannot get Altera directory.${NOCOLOR}"
-	echo 1>&2 -e "${RED}$AlteraDirName${NOCOLOR}"
+	echo 1>&2 -e "${RED}ERROR: Cannot get Lattice directory.${NOCOLOR}"
+	echo 1>&2 -e "${RED}$LatticeDirName${NOCOLOR}"
 	exit -1;
 fi
 
@@ -142,21 +142,22 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	# -> $DestinationDirectory
 	CreateDestinationDirectory $DestDir
 	
-	# Assemble Altera compile script path
-	GHDLAlteraScript="$(readlink -f $GHDLScriptDir/vendor/compile-altera.sh)"
-	if [ ! -x $GHDLAlteraScript ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Altera compile script from GHDL is not executable.${NOCOLOR}"
+	# Assemble Lattice compile script path
+	GHDLLatticeScript="$(readlink -f $GHDLScriptDir/vendor/compile-lattice.sh)"
+	if [ ! -x $GHDLLatticeScript ]; then
+		echo 1>&2 -e "${COLORED_ERROR} Lattice compile script from GHDL is not executable.${NOCOLOR}"
 		exit -1;
 	fi
 	
-	# Get Altera installation directory
-	QuartusInstallDir=$($PoC_sh query INSTALL.Altera.Quartus:InstallationDirectory 2>/dev/null)
+	# Get Lattice installation directory
+	DiamondInstallDir=$($PoC_sh query INSTALL.Lattice.Diamond:InstallationDirectory 2>/dev/null)
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}ERROR: Cannot get Altera Quartus installation directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}$QuartusInstallDir${NOCOLOR}"
+		echo 1>&2 -e "${RED}ERROR: Cannot get Lattice Diamond installation directory.${NOCOLOR}"
+		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Lattice Diamond installation.${NOCOLOR}"
+		echo 1>&2 -e "${RED}$DiamondInstallDir${NOCOLOR}"
 		exit -1;
 	fi
-	SourceDir=$QuartusInstallDir/eda/sim_lib
+	SourceDir=$DiamondInstallDir/cae_library/simulation/vhdl
 
 	# export GHDL binary dir if not allready set
 	if [ -z $GHDL1 ]; then
@@ -164,7 +165,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	fi
 	
 	# compile all architectures, skip existing and large files, no wanrings
-	$GHDLAlteraScript --all -s -S -n --src $SourceDir --out $AlteraDirName
+	$GHDLLatticeScript --all -s -S -n --src $SourceDir --out $LatticeDirName
 fi
 
 # QuestaSim/ModelSim
@@ -177,40 +178,49 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	GetVSimDirectories $PoC_sh
 
 	# Assemble output directory
-	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName/$AlteraDirName
+	LatticeDirName2=$LatticeDirName-diamond
+	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName/$LatticeDirName2
+	
 	# Create and change to destination directory
 	# -> $DestinationDirectory
 	CreateDestinationDirectory $DestDir
 
-	QuartusBinDir=$($PoC_sh query INSTALL.Altera.Quartus:BinaryDirectory 2>/dev/null)
+	# if XILINX_VIVADO environment variable is not set, load Diamond environment
+	if [ -z "$XILINX_VIVADO" ]; then
+		Diamond_SettingsFile=$($PoC_sh query Lattice.Diamond:SettingsFile)
+		if [ $? -ne 0 ]; then
+			echo 1>&2 -e "${COLORED_ERROR} No Lattice Diamond installation found.${NOCOLOR}"
+			echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Lattice Diamond installation.${NOCOLOR}"
+			echo 1>&2 -e "${RED}$Diamond_SettingsFile${NOCOLOR}"
+			exit -1
+		fi
+		echo -e "${YELLOW}Loading Lattice Diamond environment '$Diamond_SettingsFile'${NOCOLOR}"
+		RescueArgs=$@
+		set --
+		source "$Diamond_SettingsFile"
+		set -- $RescueArgs
+	fi
+	
+	DiamondBinDir=$($PoC_sh query INSTALL.Lattice.Diamond:BinaryDirectory 2>/dev/null)
   if [ $? -ne 0 ]; then
-	  echo 1>&2 -e "${COLORED_ERROR} Cannot get Altera Quartus binary directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Altera Quartus installation.${NOCOLOR}"
-	  echo 1>&2 -e "${RED}$QuartusBinDir${NOCOLOR}"
+	  echo 1>&2 -e "${COLORED_ERROR} Cannot get Lattice Diamond binary directory.${NOCOLOR}"
+		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Lattice Diamond installation.${NOCOLOR}"
+	  echo 1>&2 -e "${RED}$DiamondBinDir${NOCOLOR}"
 		exit -1;
   fi
-	Quartus_sh=$QuartusBinDir/quartus_sh
+	Diamond_tcl=$DiamondBinDir/diamond
 	
 	# create an empty modelsim.ini in the altera directory and add reference to parent modelsim.ini
 	CreateLocalModelsim_ini
 
-	
 	Simulator=questa
 	Language=vhdl
-	TargetArchitecture="cycloneiii	stratixiv"		# space separated device list
+	TargetArchitecture=all			# all, virtex5, virtex6, virtex7, ...
 	
 	# compile common libraries
-	$Quartus_sh --simlib_comp -tool $Simulator -language $Language -tool_path $VSimBinDir -directory $DestDir -rtl_only
+	compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $QuestaBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib latticecorelib -intstyle diamond
 	if [ $? -ne 0 ]; then
 		echo 1>&2 -e "${COLORED_ERROR} Error while compiling common libraries.${NOCOLOR}"
 		exit -1;
 	fi
-
-	for Family in $TargetArchitecture; do
-		$QuartusSH --simlib_comp -tool $Simulator -language $Language -family $Family -tool_path $VSimBinDir -directory $DestDir -no_rtl
-		if [ $? -ne 0 ]; then
-			echo 1>&2 -e "${COLORED_ERROR} Error while compiling family '$Family' libraries.${NOCOLOR}"
-			exit -1;
-		fi
-	done
 fi
