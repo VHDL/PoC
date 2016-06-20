@@ -65,10 +65,10 @@ while [[ $# > 0 ]]; do
 		COMPILE_FOR_GHDL=TRUE
 		NO_COMMAND=0
 		;;
-		# --questa)
-		# COMPILE_FOR_VSIM=TRUE
-		# NO_COMMAND=0
-		# ;;
+		--questa)
+		COMPILE_FOR_VSIM=TRUE
+		NO_COMMAND=0
+		;;
 		-h|--help)
 		HELP=TRUE
 		NO_COMMAND=0
@@ -91,7 +91,7 @@ if [ "$HELP" == "TRUE" ]; then
 	echo "Synopsis:"
 	echo "  Script to compile the Lattice Diamond simulation libraries for"
 	echo "  - GHDL"
-	# echo "  - QuestaSim/ModelSim"
+	echo "  - QuestaSim/ModelSim"
 	echo "  on Linux."
 	echo ""
 	echo "Usage:"
@@ -104,7 +104,7 @@ if [ "$HELP" == "TRUE" ]; then
 	echo "Tool chain:"
 	echo "  -a --all              Compile for all tool chains."
 	echo "     --ghdl             Compile for GHDL."
-	# echo "     --questa           Compile for QuestaSim/ModelSim."
+	echo "     --questa           Compile for QuestaSim/ModelSim."
 	echo ""
 	exit 0
 fi
@@ -200,6 +200,25 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
   fi
 	Diamond_tcl=$DiamondBinDir/pnmainc
 	
+	# if LSC_DIAMOND environment variable is not set, load Diamond environment
+	if [ -z "$LSC_DIAMOND" ]; then
+		Diamond_SettingsFile=$DiamondBinDir/diamond_env
+		# Diamond_SettingsFile=$($PoC_sh query Lattice.Diamond:SettingsFile)
+		# if [ $? -ne 0 ]; then
+		# 	echo 1>&2 -e "${COLORED_ERROR} No Lattice Diamond installation found.${ANSI_NOCOLOR}"
+		# 	echo 1>&2 -e "${COLORED_MESSAGE} $Diamond_SettingsFile${ANSI_NOCOLOR}"
+		# 	echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Lattice Diamond installation.${ANSI_NOCOLOR}"
+		# 	exit -1
+		# fi
+		echo -e "${ANSI_YELLOW}Loading Lattice Diamond environment '$Diamond_SettingsFile'...${ANSI_NOCOLOR}"
+		RescueArgs=$@
+		set --
+		bindir=$DiamondBinDir #variable required by diamond_env
+		source $Diamond_SettingsFile
+		unset bindir
+		set -- $RescueArgs
+	fi
+
 	# create an empty modelsim.ini in the altera directory and add reference to parent modelsim.ini
 	CreateLocalModelsim_ini
 
@@ -208,7 +227,8 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	Device=all			# all, machxo, ecp, ...
 	
 	# compile common libraries
-	$Diamond_tcl < "cmpl_libs -lang $Language -sim_vendor $Simulator -sim_path $VSimBinDir -device $Device -target_path $LatticeDirName; exit"
+	# -target_path $LatticeDirName
+	echo -e "cmpl_libs -lang $Language -sim_vendor $Simulator -sim_path $VSimBinDir -device $Device\nexit" | $Diamond_tcl
 	if [ $? -ne 0 ]; then
 		echo 1>&2 -e "${COLORED_ERROR} Error while compiling Lattice libraries.${ANSI_NOCOLOR}"
 		exit -1;
