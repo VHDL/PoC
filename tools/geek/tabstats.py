@@ -56,7 +56,7 @@ def process(file):
 				if c == ' ':
 				  indent = indent + 1
 				elif c == "\t":
-				  indent = indent + TABWIDTH
+				  indent = TABWIDTH*(indent/TABWIDTH + 1)
 				else:
 					hist[indent] = hist.get(indent, 0) + 1
 					break
