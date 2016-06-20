@@ -154,7 +154,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 
 	# export GHDL binary dir if not allready set
 	if [ -z $GHDL ]; then
-		export GHDL=$GHDLBinDir
+		export GHDL=$GHDLBinDir/ghdl
 	fi
 	
 	# compile all architectures, skip existing and large files, no wanrings

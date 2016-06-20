@@ -162,7 +162,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 
 	# export GHDL binary dir if not allready set
 	if [ -z $GHDL ]; then
-		export GHDL=$GHDLBinDir
+		export GHDL=$GHDLBinDir/ghdl
 	fi
 	
 	# compile all architectures, skip existing and large files, no wanrings
@@ -187,7 +187,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	GetVSimDirectories $PoC_sh
 
 	# Assemble output directory
-	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName
+	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName/$XilinxDirName2
 	
 	# Create and change to destination directory
 	# -> $DestinationDirectory
@@ -218,7 +218,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
   fi
 	Vivado_tcl=$VivadoBinDir/vivado
 	
-	# create an empty modelsim.ini in the altera directory and add reference to parent modelsim.ini
+	# create an empty modelsim.ini in the 'xilinx-vivado' directory and add reference to parent modelsim.ini
 	CreateLocalModelsim_ini
 
 	Simulator=questa
@@ -228,7 +228,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	
 	CommandFile=vivado.tcl
 	
-	echo "compile_simlib -force -library $Library -family $Family -language $Language -simulator $Simulator -simulator_exec_path $VSimBinDir -directory $DestDir/$XilinxDirName2" > $CommandFile
+	echo "compile_simlib -force -library $Library -family $Family -language $Language -simulator $Simulator -simulator_exec_path $VSimBinDir -directory $DestDir" > $CommandFile
 	if [ $? -ne 0 ]; then
 		echo 1>&2 -e "${COLORED_ERROR} Cannot create temporary tcl script.${ANSI_NOCOLOR}"
 		exit -1;
@@ -243,6 +243,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	fi
 	
 	# create "xilinx" symlink
+	cd ..
 	rm -f $XilinxDirName
 	ln -s $XilinxDirName2 $XilinxDirName
 fi

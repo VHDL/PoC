@@ -162,7 +162,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 
 	# export GHDL binary dir if not allready set
 	if [ -z $GHDL ]; then
-		export GHDL=$GHDLBinDir
+		export GHDL=$GHDLBinDir/ghdl
 	fi
 	
 	# compile all architectures, skip existing and large files, no wanrings
@@ -217,7 +217,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
   fi
 	ISE_compxlib=$ISEBinDir/compxlib
 	
-	# create an empty modelsim.ini in the altera directory and add reference to parent modelsim.ini
+	# create an empty modelsim.ini in the 'xilinx-ise' directory and add reference to parent modelsim.ini
 	CreateLocalModelsim_ini
 
 	Simulator=questa
@@ -232,6 +232,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	fi
 	
 	# create "xilinx" symlink
+	cd ..
 	rm -f $XilinxDirName
 	ln -s $XilinxDirName2 $XilinxDirName
 fi
