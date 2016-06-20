@@ -71,7 +71,7 @@ while [[ $# > 0 ]]; do
 		NO_COMMAND=0
 		;;
 		*)		# unknown option
-		echo 1>&2 -e "${COLORED_ERROR} Unknown command line option.${ANSI_RESET}"
+		echo 1>&2 -e "${COLORED_ERROR} Unknown command line option '$key'.${ANSI_NOCOLOR}"
 		exit -1
 		;;
 	esac
@@ -83,7 +83,7 @@ if [ $NO_COMMAND -eq 1 ]; then
 fi
 
 if [ "$HELP" == "TRUE" ]; then
-	test $NO_COMMAND -eq 1 && echo 1>&2 -e "\n${COLORED_ERROR} No command selected."
+	test $NO_COMMAND -eq 1 && echo 1>&2 -e "\n${COLORED_ERROR} No command selected.${ANSI_NOCOLOR}"
 	echo ""
 	echo "Synopsis:"
 	echo "  Script to compile the Altera Quartus simulation libraries for"
@@ -100,8 +100,8 @@ if [ "$HELP" == "TRUE" ]; then
 	echo ""
 	echo "Tool chain:"
 	echo "  -a --all              Compile for all tool chains."
-	echo "  -g --ghdl             Compile for GHDL."
-	echo "  -v --vsim             Compile for QuestaSim/ModelSim."
+	echo "     --ghdl             Compile for GHDL."
+	echo "     --questa           Compile for QuestaSim/ModelSim."
 	echo ""
 	exit 0
 fi
@@ -114,15 +114,15 @@ fi
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled directory.${NOCOLOR}"
-	echo 1>&2 -e "${ANSI_RED}$PrecompiledDir${NOCOLOR}"
+	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled directory.${ANSI_NOCOLOR}"
+	echo 1>&2 -e "${ANSI_RED}$PrecompiledDir${ANSI_NOCOLOR}"
 	exit -1;
 fi
 
 AlteraDirName=$($PoC_sh query CONFIG.DirectoryNames:AlteraSpecificFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${RED}ERROR: Cannot get Altera directory.${NOCOLOR}"
-	echo 1>&2 -e "${RED}$AlteraDirName${NOCOLOR}"
+	echo 1>&2 -e "${COLORED_ERROR} Cannot get Altera directory.${ANSI_NOCOLOR}"
+	echo 1>&2 -e "${ANSI_RED}$AlteraDirName${ANSI_NOCOLOR}"
 	exit -1;
 fi
 
@@ -143,28 +143,34 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	CreateDestinationDirectory $DestDir
 	
 	# Assemble Altera compile script path
-	GHDLAlteraScript="$(readlink -f $GHDLScriptDir/vendor/compile-altera.sh)"
+	GHDLAlteraScript="$(readlink -f $GHDLScriptDir/compile-altera.sh)"
 	if [ ! -x $GHDLAlteraScript ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Altera compile script from GHDL is not executable.${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Altera compile script from GHDL is not executable.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	
+	echo "=> $GHDLAlteraScript"
+
 	# Get Altera installation directory
 	QuartusInstallDir=$($PoC_sh query INSTALL.Altera.Quartus:InstallationDirectory 2>/dev/null)
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}ERROR: Cannot get Altera Quartus installation directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}$QuartusInstallDir${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot get Altera Quartus installation directory.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${ANSI_RED}$QuartusInstallDir${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	SourceDir=$QuartusInstallDir/eda/sim_lib
 
 	# export GHDL binary dir if not allready set
-	if [ -z $GHDL1 ]; then
-		export GHDL1=$GHDLBinDir
+	if [ -z $GHDL ]; then
+		export GHDL=$GHDLBinDir
 	fi
 	
 	# compile all architectures, skip existing and large files, no wanrings
 	$GHDLAlteraScript --all -s -S -n --src $SourceDir --out $AlteraDirName
+	if [ $? -ne 0 ]; then
+		echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
+		exit -1;
+	fi
 fi
 
 # QuestaSim/ModelSim
@@ -184,9 +190,9 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 
 	QuartusBinDir=$($PoC_sh query INSTALL.Altera.Quartus:BinaryDirectory 2>/dev/null)
   if [ $? -ne 0 ]; then
-	  echo 1>&2 -e "${COLORED_ERROR} Cannot get Altera Quartus binary directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Altera Quartus installation.${NOCOLOR}"
-	  echo 1>&2 -e "${RED}$QuartusBinDir${NOCOLOR}"
+	  echo 1>&2 -e "${COLORED_ERROR} Cannot get Altera Quartus binary directory.${ANSI_NOCOLOR}"
+	  echo 1>&2 -e "${COLORED_MESSAGE} $QuartusBinDir${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Altera Quartus installation.${ANSI_NOCOLOR}"
 		exit -1;
   fi
 	Quartus_sh=$QuartusBinDir/quartus_sh
@@ -195,22 +201,23 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	CreateLocalModelsim_ini
 
 	
-	Simulator=questa
+	Simulator=questasim
 	Language=vhdl
-	TargetArchitecture="cycloneiii	stratixiv"		# space separated device list
+	TargetArchitecture=("all")		# "cycloneiii" "stratixiv")
 	
 	# compile common libraries
 	$Quartus_sh --simlib_comp -tool $Simulator -language $Language -tool_path $VSimBinDir -directory $DestDir -rtl_only
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Error while compiling common libraries.${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Error while compiling common libraries.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 
-	for Family in $TargetArchitecture; do
-		$QuartusSH --simlib_comp -tool $Simulator -language $Language -family $Family -tool_path $VSimBinDir -directory $DestDir -no_rtl
+	for Family in ${TargetArchitecture[@]}; do
+		$Quartus_sh --simlib_comp -tool $Simulator -language $Language -family $Family -tool_path $VSimBinDir -directory $DestDir -no_rtl
 		if [ $? -ne 0 ]; then
-			echo 1>&2 -e "${COLORED_ERROR} Error while compiling family '$Family' libraries.${NOCOLOR}"
+			echo 1>&2 -e "${COLORED_ERROR} Error while compiling family '$Family' libraries.${ANSI_NOCOLOR}"
 			exit -1;
 		fi
 	done
 fi
+

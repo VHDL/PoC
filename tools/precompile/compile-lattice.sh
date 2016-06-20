@@ -71,7 +71,7 @@ while [[ $# > 0 ]]; do
 		NO_COMMAND=0
 		;;
 		*)		# unknown option
-		echo 1>&2 -e "${COLORED_ERROR} Unknown command line option.${ANSI_RESET}"
+		echo 1>&2 -e "${COLORED_ERROR} Unknown command line option '$key'.${ANSI_NOCOLOR}"
 		exit -1
 		;;
 	esac
@@ -83,7 +83,7 @@ if [ $NO_COMMAND -eq 1 ]; then
 fi
 
 if [ "$HELP" == "TRUE" ]; then
-	test $NO_COMMAND -eq 1 && echo 1>&2 -e "\n${COLORED_ERROR} No command selected."
+	test $NO_COMMAND -eq 1 && echo 1>&2 -e "\n${COLORED_ERROR} No command selected.${ANSI_NOCOLOR}"
 	echo ""
 	echo "Synopsis:"
 	echo "  Script to compile the Lattice Diamond simulation libraries for"
@@ -100,8 +100,8 @@ if [ "$HELP" == "TRUE" ]; then
 	echo ""
 	echo "Tool chain:"
 	echo "  -a --all              Compile for all tool chains."
-	echo "  -g --ghdl             Compile for GHDL."
-	# echo "  -v --vsim             Compile for QuestaSim/ModelSim."
+	echo "     --ghdl             Compile for GHDL."
+	# echo "     --questa           Compile for QuestaSim/ModelSim."
 	echo ""
 	exit 0
 fi
@@ -114,15 +114,15 @@ fi
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled directory.${NOCOLOR}"
-	echo 1>&2 -e "${ANSI_RED}$PrecompiledDir${NOCOLOR}"
+	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled directory.${ANSI_NOCOLOR}"
+	echo 1>&2 -e "${ANSI_RED}$PrecompiledDir${ANSI_NOCOLOR}"
 	exit -1;
 fi
 
 LatticeDirName=$($PoC_sh query CONFIG.DirectoryNames:LatticeSpecificFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${RED}ERROR: Cannot get Lattice directory.${NOCOLOR}"
-	echo 1>&2 -e "${RED}$LatticeDirName${NOCOLOR}"
+	echo 1>&2 -e "${COLORED_ERROR} Cannot get Lattice directory.${ANSI_NOCOLOR}"
+	echo 1>&2 -e "${ANSI_RED}$LatticeDirName${ANSI_NOCOLOR}"
 	exit -1;
 fi
 
@@ -143,29 +143,33 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	CreateDestinationDirectory $DestDir
 	
 	# Assemble Lattice compile script path
-	GHDLLatticeScript="$(readlink -f $GHDLScriptDir/vendor/compile-lattice.sh)"
+	GHDLLatticeScript="$(readlink -f $GHDLScriptDir/compile-lattice.sh)"
 	if [ ! -x $GHDLLatticeScript ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Lattice compile script from GHDL is not executable.${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Lattice compile script from GHDL is not executable.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	
 	# Get Lattice installation directory
 	DiamondInstallDir=$($PoC_sh query INSTALL.Lattice.Diamond:InstallationDirectory 2>/dev/null)
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}ERROR: Cannot get Lattice Diamond installation directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Lattice Diamond installation.${NOCOLOR}"
-		echo 1>&2 -e "${RED}$DiamondInstallDir${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot get Lattice Diamond installation directory.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_MESSAGE} $DiamondInstallDir${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Lattice Diamond installation.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	SourceDir=$DiamondInstallDir/cae_library/simulation/vhdl
 
 	# export GHDL binary dir if not allready set
-	if [ -z $GHDL1 ]; then
-		export GHDL1=$GHDLBinDir
+	if [ -z $GHDL ]; then
+		export GHDL=$GHDLBinDir
 	fi
 	
 	# compile all architectures, skip existing and large files, no wanrings
-	$GHDLLatticeScript --all -s -S -n --src $SourceDir --out $LatticeDirName
+	$GHDLLatticeScript --all -s -n --src $SourceDir --out $LatticeDirName
+	if [ $? -ne 0 ]; then
+		echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
+		exit -1;
+	fi
 fi
 
 # QuestaSim/ModelSim
@@ -189,12 +193,12 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	if [ -z "$XILINX_VIVADO" ]; then
 		Diamond_SettingsFile=$($PoC_sh query Lattice.Diamond:SettingsFile)
 		if [ $? -ne 0 ]; then
-			echo 1>&2 -e "${COLORED_ERROR} No Lattice Diamond installation found.${NOCOLOR}"
-			echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Lattice Diamond installation.${NOCOLOR}"
-			echo 1>&2 -e "${RED}$Diamond_SettingsFile${NOCOLOR}"
+			echo 1>&2 -e "${COLORED_ERROR} No Lattice Diamond installation found.${ANSI_NOCOLOR}"
+			echo 1>&2 -e "${COLORED_MESSAGE} $Diamond_SettingsFile${ANSI_NOCOLOR}"
+			echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Lattice Diamond installation.${ANSI_NOCOLOR}"
 			exit -1
 		fi
-		echo -e "${YELLOW}Loading Lattice Diamond environment '$Diamond_SettingsFile'${NOCOLOR}"
+		echo -e "${YELLOW}Loading Lattice Diamond environment '$Diamond_SettingsFile'${ANSI_NOCOLOR}"
 		RescueArgs=$@
 		set --
 		source "$Diamond_SettingsFile"
@@ -203,9 +207,9 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	
 	DiamondBinDir=$($PoC_sh query INSTALL.Lattice.Diamond:BinaryDirectory 2>/dev/null)
   if [ $? -ne 0 ]; then
-	  echo 1>&2 -e "${COLORED_ERROR} Cannot get Lattice Diamond binary directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Lattice Diamond installation.${NOCOLOR}"
-	  echo 1>&2 -e "${RED}$DiamondBinDir${NOCOLOR}"
+	  echo 1>&2 -e "${COLORED_ERROR} Cannot get Lattice Diamond binary directory.${ANSI_NOCOLOR}"
+	  echo 1>&2 -e "${COLORED_MESSAGE} $DiamondBinDir${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Lattice Diamond installation.${ANSI_NOCOLOR}"
 		exit -1;
   fi
 	Diamond_tcl=$DiamondBinDir/diamond
@@ -220,7 +224,8 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	# compile common libraries
 	compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $QuestaBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib latticecorelib -intstyle diamond
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Error while compiling common libraries.${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Error while compiling common libraries.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 fi
+

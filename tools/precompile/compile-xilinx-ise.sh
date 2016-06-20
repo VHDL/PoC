@@ -71,7 +71,7 @@ while [[ $# > 0 ]]; do
 		NO_COMMAND=0
 		;;
 		*)		# unknown option
-		echo 1>&2 -e "${COLORED_ERROR} Unknown command line option.${ANSI_RESET}"
+		echo 1>&2 -e "${COLORED_ERROR} Unknown command line option '$key'.${ANSI_NOCOLOR}"
 		exit -1
 		;;
 	esac
@@ -83,7 +83,7 @@ if [ $NO_COMMAND -eq 1 ]; then
 fi
 
 if [ "$HELP" == "TRUE" ]; then
-	test $NO_COMMAND -eq 1 && echo 1>&2 -e "\n${COLORED_ERROR} No command selected."
+	test $NO_COMMAND -eq 1 && echo 1>&2 -e "\n${COLORED_ERROR} No command selected.${ANSI_NOCOLOR}"
 	echo ""
 	echo "Synopsis:"
 	echo "  Script to compile the Xilinx ISE simulation libraries for"
@@ -100,8 +100,8 @@ if [ "$HELP" == "TRUE" ]; then
 	echo ""
 	echo "Tool chain:"
 	echo "  -a --all              Compile for all tool chains."
-	echo "  -g --ghdl             Compile for GHDL."
-	echo "  -v --vsim             Compile for QuestaSim/ModelSim."
+	echo "     --ghdl             Compile for GHDL."
+	echo "     --questa           Compile for QuestaSim/ModelSim."
 	echo ""
 	exit 0
 fi
@@ -114,17 +114,18 @@ fi
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled directory.${NOCOLOR}"
-	echo 1>&2 -e "${ANSI_RED}$PrecompiledDir${NOCOLOR}"
+	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled directory.${ANSI_NOCOLOR}"
+	echo 1>&2 -e "${ANSI_RED}$PrecompiledDir${ANSI_NOCOLOR}"
 	exit -1;
 fi
 
 XilinxDirName=$($PoC_sh query CONFIG.DirectoryNames:XilinxSpecificFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${RED}ERROR: Cannot get Xilinx directory.${NOCOLOR}"
-	echo 1>&2 -e "${RED}$XilinxDirName${NOCOLOR}"
+	echo 1>&2 -e "${COLORED_ERROR} Cannot get Xilinx directory.${ANSI_NOCOLOR}"
+	echo 1>&2 -e "${ANSI_RED}$XilinxDirName${ANSI_NOCOLOR}"
 	exit -1;
 fi
+XilinxDirName2=$XilinxDirName-ise
 
 # GHDL
 # ==============================================================================
@@ -143,29 +144,33 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	CreateDestinationDirectory $DestDir
 	
 	# Assemble Xilinx compile script path
-	GHDLXilinxScript="$(readlink -f $GHDLScriptDir/vendor/compile-xilinx-ise.sh)"
+	GHDLXilinxScript="$(readlink -f $GHDLScriptDir/compile-xilinx-ise.sh)"
 	if [ ! -x $GHDLXilinxScript ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Xilinx compile script from GHDL is not executable.${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Xilinx compile script from GHDL is not executable.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	
 	# Get Xilinx installation directory
 	ISEInstallDir=$($PoC_sh query INSTALL.Xilinx.ISE:InstallationDirectory 2>/dev/null)
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}ERROR: Cannot get Xilinx ISE installation directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Xilinx ISE installation.${NOCOLOR}"
-		echo 1>&2 -e "${RED}$ISEInstallDir${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot get Xilinx ISE installation directory.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_MESSAGE} $ISEInstallDir${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Xilinx ISE installation.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
-	SourceDir=$ISEInstallDir/vhdl/src
+	SourceDir=$ISEInstallDir/ISE/vhdl/src
 
 	# export GHDL binary dir if not allready set
-	if [ -z $GHDL1 ]; then
-		export GHDL1=$GHDLBinDir
+	if [ -z $GHDL ]; then
+		export GHDL=$GHDLBinDir
 	fi
 	
 	# compile all architectures, skip existing and large files, no wanrings
-	$GHDLXilinxScript --all -s -S -n --src $SourceDir --out $XilinxDirName
+	$GHDLXilinxScript --all -s -S -n --src $SourceDir --out $XilinxDirName2
+	if [ $? -ne 0 ]; then
+		echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
+		exit -1;
+	fi
 	
 	# create "xilinx" symlink
 	rm -f $XilinxDirName
@@ -182,7 +187,6 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	GetVSimDirectories $PoC_sh
 
 	# Assemble output directory
-	XilinxDirName2=$XilinxDirName-ise
 	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName/$XilinxDirName2
 	# Create and change to destination directory
 	# -> $DestinationDirectory
@@ -192,12 +196,12 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	if [ -z "$XILINX" ]; then
 		ISE_SettingsFile=$($PoC_sh query Xilinx.ISE:SettingsFile)
 		if [ $? -ne 0 ]; then
-			echo 1>&2 -e "${COLORED_ERROR} No Xilinx ISE installation found.${NOCOLOR}"
-			echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Xilinx ISE installation.${NOCOLOR}"
-			echo 1>&2 -e "${RED}$ISE_SettingsFile${NOCOLOR}"
+			echo 1>&2 -e "${COLORED_ERROR} No Xilinx ISE installation found.${ANSI_NOCOLOR}"
+			echo 1>&2 -e "${COLORED_MESSAGE} $ISE_SettingsFile${ANSI_NOCOLOR}"
+			echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Xilinx ISE installation.${ANSI_NOCOLOR}"
 			exit -1
 		fi
-		echo -e "${YELLOW}Loading Xilinx ISE environment '$ISE_SettingsFile'${NOCOLOR}"
+		echo -e "${YELLOW}Loading Xilinx ISE environment '$ISE_SettingsFile'${ANSI_NOCOLOR}"
 		RescueArgs=$@
 		set --
 		source "$ISE_SettingsFile"
@@ -206,9 +210,9 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	
 	ISEBinDir=$($PoC_sh query INSTALL.Xilinx.ISE:BinaryDirectory 2>/dev/null)
   if [ $? -ne 0 ]; then
-	  echo 1>&2 -e "${COLORED_ERROR} Cannot get Xilinx ISE binary directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Xilinx ISE installation.${NOCOLOR}"
-	  echo 1>&2 -e "${RED}$ISEBinDir${NOCOLOR}"
+	  echo 1>&2 -e "${COLORED_ERROR} Cannot get Xilinx ISE binary directory.${ANSI_NOCOLOR}"
+	  echo 1>&2 -e "${COLORED_MESSAGE} $ISEBinDir${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Xilinx ISE installation.${ANSI_NOCOLOR}"
 		exit -1;
   fi
 	ISE_compxlib=$ISEBinDir/compxlib
@@ -221,9 +225,9 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	TargetArchitecture=all			# all, virtex5, virtex6, virtex7, ...
 	
 	# compile common libraries
-	$ISE_compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $QuestaBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise
+	$ISE_compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $VSimBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Error while compiling common libraries.${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Error while compiling Xilinx ISE libraries.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	
@@ -231,3 +235,4 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	rm -f $XilinxDirName
 	ln -s $XilinxDirName2 $XilinxDirName
 fi
+

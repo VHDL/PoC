@@ -76,7 +76,7 @@ while [[ $# > 0 ]]; do
 		NO_COMMAND=0
 		;;
 		*)		# unknown option
-		echo 1>&2 -e "${COLORED_ERROR} Unknown command line option.${ANSI_RESET}"
+		echo 1>&2 -e "${COLORED_ERROR} Unknown command line option '$key'.${ANSI_NOCOLOR}"
 		exit -1
 		;;
 	esac
@@ -88,7 +88,7 @@ if [ $NO_COMMAND -eq 1 ]; then
 fi
 
 if [ "$HELP" == "TRUE" ]; then
-	test $NO_COMMAND -eq 1 && echo 1>&2 -e "\n${COLORED_ERROR} No command selected."
+	test $NO_COMMAND -eq 1 && echo 1>&2 -e "\n${COLORED_ERROR} No command selected.${ANSI_NOCOLOR}"
 	echo ""
 	echo "Synopsis:"
 	echo "  Script to compile the simulation library OSVVM for"
@@ -105,8 +105,8 @@ if [ "$HELP" == "TRUE" ]; then
 	echo ""
 	echo "Tool chain:"
 	echo "  -a --all              Compile for all tool chains."
-	echo "  -g --ghdl             Compile for GHDL."
-	echo "  -v --vsim             Compile for QuestaSim/ModelSim."
+	echo "     --ghdl             Compile for GHDL."
+	echo "     --questa           Compile for QuestaSim/ModelSim."
 	echo ""
 	exit 0
 fi
@@ -119,8 +119,8 @@ fi
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${RED}ERROR: Cannot get precompiled dir.${NOCOLOR}"
-	echo 1>&2 -e "${RED}$PrecompiledDir${NOCOLOR}"
+	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled dir.${ANSI_NOCOLOR}"
+	echo 1>&2 -e "${ANSI_RED}$PrecompiledDir${ANSI_NOCOLOR}"
 	exit -1;
 fi
 
@@ -142,9 +142,9 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	CreateDestinationDirectory $DestDir
 	
 	# Assemble Altera compile script path
-	GHDLOSVVMScript="$(readlink -f $GHDLScriptDir/vendor/compile-osvvm.sh)"
+	GHDLOSVVMScript="$(readlink -f $GHDLScriptDir/compile-osvvm.sh)"
 	if [ ! -x $GHDLAlteraScript ]; then
-		echo 1>&2 -e "${COLORED_ERROR} OSVVM compile script from GHDL is not executable.${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} OSVVM compile script from GHDL is not executable.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	
@@ -153,16 +153,20 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	SourceDir=$OSVVMInstallDir
 
 	# export GHDL binary dir if not allready set
-	if [ -z $GHDL1 ]; then
-		export GHDL1=$GHDLBinDir
+	if [ -z $GHDL ]; then
+		export GHDL=$GHDLBinDir
 	fi
 	
 	# compile all architectures, skip existing and large files, no wanrings
-	$GHDLAlteraScript --all -s -S -n --src $SourceDir --out $AlteraDirName
+	$GHDLOSVVMScript --all -n --src $SourceDir --out "."
+	if [ $? -ne 0 ]; then
+		echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
+		exit -1;
+	fi
 	
 	# # Cleanup
 	# if [ "$CLEAN" == "TRUE" ]; then
-		# echo -e "${YELLOW}Cleaning library 'osvvm' ...${NOCOLOR}"
+		# echo -e "${YELLOW}Cleaning library 'osvvm' ...${ANSI_NOCOLOR}"
 		# rm -Rf $DestDir 2> /dev/null
 	# fi
 	
@@ -187,7 +191,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 
 	# clean osvvm directory
 	if [ -d $DestDir/osvvm ]; then
-		echo -e "${YELLOW}Cleaning library 'osvvm' ...${NOCOLOR}"
+		echo -e "${YELLOW}Cleaning library 'osvvm' ...${ANSI_NOCOLOR}"
 		rm -rf osvvm
 	fi
 	
@@ -212,12 +216,12 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	)
 	
 	# Compile libraries with vcom, executed in destination directory
-	echo -e "${YELLOW}Creating library 'osvvm' with vlib/vmap ...${NOCOLOR}"
-	$BinDir/vlib osvvm
-	$BinDir/vmap -del osvvm
-	$BinDir/vmap osvvm $DestDir/osvvm
+	echo -e "${YELLOW}Creating library 'osvvm' with vlib/vmap ...${ANSI_NOCOLOR}"
+	$VSimBinDir/vlib osvvm
+	$VSimBinDir/vmap -del osvvm
+	$VSimBinDir/vmap osvvm $DestDir/osvvm
 	
-	echo -e "${YELLOW}Compiling library 'osvvm' with vcom ...${NOCOLOR}"
+	echo -e "${YELLOW}Compiling library 'osvvm' with vcom ...${ANSI_NOCOLOR}"
 	for File in ${Files[@]}; do
 		echo "  Compiling $file..."
 		$VSimBinDir/vcom -2008 -work osvvm $SourceDir/$File
@@ -236,3 +240,4 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	
 	cd $WorkingDir
 fi
+

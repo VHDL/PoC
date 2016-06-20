@@ -39,15 +39,16 @@ ANSI_YELLOW="\e[33m"
 ANSI_BLUE="\e[34m"
 ANSI_MAGENTA="\e[35m"
 ANSI_CYAN="\e[36;1m"
-ANSI_RESET="\e[0m"
+ANSI_NOCOLOR="\e[0m"
 
 # red texts
-COLORED_ERROR="$ANSI_RED[ERROR]$ANSI_RESET"
-COLORED_FAILED="$ANSI_RED[FAILED]$ANSI_RESET"
+COLORED_ERROR="${ANSI_RED}[ERROR]"
+COLORED_MESSAGE="${ANSI_YELLOW}       "
+COLORED_FAILED="${ANSI_RED}[FAILED]${ANSI_NOCOLOR}"
 
 # green texts
-COLORED_DONE="$ANSI_GREEN[DONE]$ANSI_RESET"
-COLORED_SUCCESSFUL="$ANSI_GREEN[SUCCESSFUL]$ANSI_RESET"
+COLORED_DONE="${ANSI_GREEN}[DONE]${ANSI_NOCOLOR}"
+COLORED_SUCCESSFUL="${ANSI_GREEN}[SUCCESSFUL]${ANSI_NOCOLOR}"
 
 
 # set bash options
@@ -72,12 +73,12 @@ CreateDestinationDirectory() {
 	
 	mkdir -p $DestinationDirectory
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}ERROR: Cannot create output directory.${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot create output directory.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	cd $DestinationDirectory
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}ERROR: Cannot change to output directory.${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot change to output directory.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 }
@@ -93,26 +94,26 @@ GetGHDLDirectories() {
 	# Get GHDL binary directory
 	GHDLBinDir=$($PoC_sh query INSTALL.GHDL:BinaryDirectory 2>/dev/null)	# Path to the simulators bin directory
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}ERROR: Cannot get GHDL binary directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your GHDL installation.${NOCOLOR}"
-		echo 1>&2 -e "${RED}$GHDLBinDir${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot get GHDL binary directory.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_MESSAGE} $GHDLBinDir${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your GHDL installation.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	
 	# Get GHDL script directory
 	GHDLScriptDir=$($PoC_sh query INSTALL.GHDL:ScriptDirectory 2>/dev/null)	# Path to the simulators bin directory
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Cannot get GHDL binary directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your GHDL installation.${NOCOLOR}"
-		echo 1>&2 -e "${ANSI_RED}$GHDLScriptDir${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot get GHDL vendor script directory.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_MESSAGE} $GHDLScriptDir${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your GHDL installation.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	
 	# 
 	GHDLDirName=$($PoC_sh query CONFIG.DirectoryNames:GHDLFiles 2>/dev/null)
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Cannot get GHDL dir.${NOCOLOR}"
-		echo 1>&2 -e "${ANSI_RED}$GHDLDirName${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot get GHDL dir.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_MESSAGE} $GHDLDirName${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 }
@@ -123,18 +124,18 @@ GetGHDLDirectories() {
 # <= $VSimDirName
 GetVSimDirectories() {
 	# Get QuestaSim/ModelSim binary
-	VSimBinDir=$($poc_sh query ModelSim:BinaryDirectory 2>/dev/null)	# Path to the simulators bin directory
+	VSimBinDir=$($PoC_sh query ModelSim:BinaryDirectory 2>/dev/null)	# Path to the simulators bin directory
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}ERROR: Cannot get QuestaSim/ModelSim binary directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}Run 'poc.sh configure' to configure your Mentor QuestaSim/ModelSim installation.${NOCOLOR}"
-		echo 1>&2 -e "${RED}$VSimBinDir${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot get QuestaSim/ModelSim binary directory.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_MESSAGE} $VSimBinDir${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Mentor QuestaSim/ModelSim installation.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	
 	VSimDirName=$($PoC_sh query CONFIG.DirectoryNames:QuestaSimFiles 2>/dev/null)
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${RED}ERROR: Cannot get QuestaSim directory.${NOCOLOR}"
-		echo 1>&2 -e "${RED}$VSimDirName${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot get QuestaSim directory.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_MESSAGE} $VSimDirName${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 }
@@ -143,7 +144,7 @@ CreateLocalModelsim_ini() {
 	# create an empty modelsim.ini in the altera directory
 	echo "[Library]" > modelsim.ini
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Cannot create initial modelsim.ini.${NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot create initial modelsim.ini.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	# add reference to parent modelsim.ini
