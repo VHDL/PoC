@@ -38,18 +38,17 @@ def clean(line):
 
 # Smudge Filter (stateful, i.e. storing the last indentation)
 def smudge(line, indent=['']):
-	if re.match('^\s*$', line):
-		return  indent[0]
-	indent[0] = re.match('^(\s*)\S', line).group(1)
-	return  line
+	m = re.match('^(\s*)\S', line)
+	if m:
+		indent[0] = m.group(1)
+		return  line
+	return  indent[0]
 
 # Choose the filter, default to passthrough when argument is not recognized
-if sys.argv[1] == 'clean':
-	filt = clean
-elif sys.argv[1] == 'smudge':
-	filt = smudge
-else:
-	filt = lambda x: x
+filt = {
+				'clean'  : clean,
+				'smudge' : smudge
+			 }.get(sys.argv[1] if len(sys.argv) > 1 else '', lambda x: x)
 
 # Apply filter from stdin to stdout
 for line in sys.stdin:
