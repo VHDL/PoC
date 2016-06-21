@@ -198,27 +198,8 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 		echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Lattice Diamond installation.${ANSI_NOCOLOR}"
 		exit -1;
   fi
-	Diamond_tcl=$DiamondBinDir/pnmainc
+	Diamond_tcl=$DiamondBinDir/diamondc
 	
-	# if LSC_DIAMOND environment variable is not set, load Diamond environment
-	if [ -z "$LSC_DIAMOND" ]; then
-		Diamond_SettingsFile=$DiamondBinDir/diamond_env
-		# Diamond_SettingsFile=$($PoC_sh query Lattice.Diamond:SettingsFile)
-		# if [ $? -ne 0 ]; then
-		# 	echo 1>&2 -e "${COLORED_ERROR} No Lattice Diamond installation found.${ANSI_NOCOLOR}"
-		# 	echo 1>&2 -e "${COLORED_MESSAGE} $Diamond_SettingsFile${ANSI_NOCOLOR}"
-		# 	echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Lattice Diamond installation.${ANSI_NOCOLOR}"
-		# 	exit -1
-		# fi
-		echo -e "${ANSI_YELLOW}Loading Lattice Diamond environment '$Diamond_SettingsFile'...${ANSI_NOCOLOR}"
-		RescueArgs=$@
-		set --
-		bindir=$DiamondBinDir #variable required by diamond_env
-		source $Diamond_SettingsFile
-		unset bindir
-		set -- $RescueArgs
-	fi
-
 	# create an empty modelsim.ini in the altera directory and add reference to parent modelsim.ini
 	CreateLocalModelsim_ini
 
