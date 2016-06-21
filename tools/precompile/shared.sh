@@ -73,12 +73,12 @@ CreateDestinationDirectory() {
 	
 	mkdir -p $DestinationDirectory
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Cannot create output directory.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot create output directory '$DestinationDirectory'.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 	cd $DestinationDirectory
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Cannot change to output directory.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot change to output directory '$DestinationDirectory'.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 }
@@ -112,7 +112,7 @@ GetGHDLDirectories() {
 	# 
 	GHDLDirName=$($PoC_sh query CONFIG.DirectoryNames:GHDLFiles 2>/dev/null)
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Cannot get GHDL dir.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot get GHDL directory name.${ANSI_NOCOLOR}"
 		echo 1>&2 -e "${COLORED_MESSAGE} $GHDLDirName${ANSI_NOCOLOR}"
 		exit -1;
 	fi
@@ -134,7 +134,7 @@ GetVSimDirectories() {
 	
 	VSimDirName=$($PoC_sh query CONFIG.DirectoryNames:QuestaSimFiles 2>/dev/null)
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Cannot get QuestaSim directory.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} Cannot get QuestaSim directory name.${ANSI_NOCOLOR}"
 		echo 1>&2 -e "${COLORED_MESSAGE} $VSimDirName${ANSI_NOCOLOR}"
 		exit -1;
 	fi

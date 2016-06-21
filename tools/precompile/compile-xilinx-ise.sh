@@ -117,14 +117,14 @@ fi
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled directory.${ANSI_NOCOLOR}"
+	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled directory name.${ANSI_NOCOLOR}"
 	echo 1>&2 -e "${ANSI_RED}$PrecompiledDir${ANSI_NOCOLOR}"
 	exit -1;
 fi
 
 XilinxDirName=$($PoC_sh query CONFIG.DirectoryNames:XilinxSpecificFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${COLORED_ERROR} Cannot get Xilinx directory.${ANSI_NOCOLOR}"
+	echo 1>&2 -e "${COLORED_ERROR} Cannot get Xilinx directory name.${ANSI_NOCOLOR}"
 	echo 1>&2 -e "${ANSI_RED}$XilinxDirName${ANSI_NOCOLOR}"
 	exit -1;
 fi
@@ -132,7 +132,6 @@ XilinxDirName2=$XilinxDirName-ise
 
 # GHDL
 # ==============================================================================
-ERRORCOUNT=0
 if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	# Get GHDL directories
 	# <= $GHDLBinDir
@@ -182,7 +181,6 @@ fi
 
 # QuestaSim/ModelSim
 # ==============================================================================
-ERRORCOUNT=0
 if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	# Get GHDL directories
 	# <= $VSimBinDir

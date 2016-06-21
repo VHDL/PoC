@@ -5,11 +5,11 @@
 # ==============================================================================
 #	Authors:            Patrick Lehmann
 # 
-#	PowerShell Script:  Compile Xilinx's simulation libraries
+#	PowerShell Script:  Compile Altera's simulation libraries
 # 
 # Description:
 # ------------------------------------
-#	This is a PowerShell script compiles Xilinx's simulation libraries into a local
+#	This is a PowerShell script compiles Altera's simulation libraries into a local
 #	directory.
 #
 # License:
@@ -31,34 +31,30 @@
 # ==============================================================================
 
 # .SYNOPSIS
-# This CmdLet pre-compiles the simulation libraries from Xilinx ISE.
+# This CmdLet pre-compiles the simulation libraries from Altera Quartus.
 # 
 # .DESCRIPTION
 # This CmdLet:
-#   (1) Creates a sub-directory 'xilinx-ise' in the current working directory
-#   (2) Compiles all Xilinx ISE simulation libraries and packages for
+#   (1) Creates a sub-directory 'altera' in the current working directory
+#   (2) Compiles all Altera Quartus simulation libraries and packages for
 #       o GHDL
 #       o QuestaSim
-#   (3) Creates a symlink 'xilinx' -> 'xilinx-ise'
 # 
 [CmdletBinding()]
 param(
 	# Pre-compile all libraries and packages for all simulators
 	[switch]$All =				$false,
 	
-	# Pre-compile the Xilinx ISE libraries for GHDL
+	# Pre-compile the Altera Quartus libraries for GHDL
 	[switch]$GHDL =				$false,
 	
-	# Pre-compile the Xilinx ISE libraries for QuestaSim
+	# Pre-compile the Altera Quartus libraries for QuestaSim
 	[switch]$Questa =			$false,
-	
-	# Change the 'xilinx' symlink to 'xilinx-ise'
-	[switch]$ReLink =			$false,
 	
 	# Set VHDL Standard to '93
 	[switch]$VHDL93 =			$false,
-	# Set VHDL Standard to '08
-	[switch]$VHDL2008 =		$false,
+	# # Set VHDL Standard to '08
+	# [switch]$VHDL2008 =		$false,
 	
 	# Clean up directory before analyzing.
 	[switch]$Clean =			$false,
@@ -89,13 +85,12 @@ if ($All)
 }
 
 $PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
-$XilinxDirName =	Get-XilinxDirectoryName $PoCPS1
-$XilinxDirName2 =	"$XilinxDirName-ise"
+$AlteraDirName =	Get-AlteraDirectoryName $PoCPS1
 
 # GHDL
 # ==============================================================================
 if ($GHDL)
-{	Write-Host "Pre-compiling Xilinx's simulation libraries for GHDL" -ForegroundColor Cyan
+{	Write-Host "Pre-compiling Altera's simulation libraries for GHDL" -ForegroundColor Cyan
 	Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Cyan
 
 	$GHDLBinDir =			Get-GHDLBinaryDirectory $PoCPS1
@@ -107,32 +102,24 @@ if ($GHDL)
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 	
-	$GHDLXilinxScript = "$GHDLScriptDir\compile-xilinx-ise.ps1"
-	if (-not (Test-Path $GHDLXilinxScript -PathType Leaf))
-	{ Write-Host "[ERROR]: Xilinx compile script from GHDL is not executable." -ForegroundColor Red
+	$GHDLAlteraScript = "$GHDLScriptDir\compile-altera.ps1"
+	if (-not (Test-Path $GHDLAlteraScript -PathType Leaf))
+	{ Write-Host "[ERROR]: Altera compile script from GHDL is not executable." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
-	$ISEInstallDir =	Get-ISEInstallationDirectory $PoCPS1
-	$SourceDir =			"$ISEInstallDir\ISE\vhdl\src"
+	$QuartusInstallDir =	Get-QuartusInstallationDirectory $PoCPS1
+	$SourceDir =					"$QuartusInstallDir\Quartus\vhdl\src"
 	
 	# export GHDL environment variable if not allready set
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
-	$Command = "$GHDLXilinxScript -All -Source $SourceDir -Output $XilinxDirName2"
+	$Command = "$GHDLAlteraScript -All -Source $SourceDir -Output $AlteraDirName"
 	Write-Host $Command
 	# Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: Error while compiling Xilinx ISE libraries." -ForegroundColor Red
-		Exit-PrecompileScript -1
-	}
-	
-	rm $XilinxDirName -ErrorAction SilentlyContinue
-	try
-	{	New-Symlink $XilinxDirName2 $XilinxDirName		}
-	catch
-	{	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
+	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
@@ -144,43 +131,44 @@ if ($GHDL)
 # QuestaSim/ModelSim
 # ==============================================================================
 if ($Questa)
-{	Write-Host "Pre-compiling Xilinx's simulation libraries for QuestaSim" -ForegroundColor Cyan
+{	Write-Host "Pre-compiling Altera's simulation libraries for QuestaSim" -ForegroundColor Cyan
 	Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Cyan
 
 	$VSimBinDir =			Get-ModelSimBinaryDirectory $PoCPS1
 	$VSimDirName =		Get-QuestaSimDirectoryName $PoCPS1
 
 	# Assemble output directory
-	$DestDir="$PoCRootDir\$PrecompiledDir\$VSimDirName\$XilinxDirName2"
+	$DestDir="$PoCRootDir\$PrecompiledDir\$VSimDirName\$AlteraDirName"
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 
-	$ISEBinDir = 		Get-ISEBinaryDirectory $PoCPS1
-	$ISE_compxlib =	"$ISEBinDir\compxlib.exe"
-	Open-ISEEnvironment $PoCPS1
+	$QuartusBinDir = 	Get-QuartusBinaryDirectory $PoCPS1
+	$Quartus_sh =			"$QuartusBinDir\quartus_sh.exe"
 	
 	New-ModelSim_ini
 	
-	$Simulator =					"questa"
-	$Language =						"vhdl"
-	$TargetArchitecture =	"all"
+	$Simulator =						"questasim"
+	$Language =							"vhdl"
+	$TargetArchitectures =	@(
+		"all"
+	)
 	
-	$Command = "$ISE_compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $VSimBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise"
-	Write-Host $Command
-	# Invoke-Expression $Command
+	# compile common libraries
+	$Command = "$Quartus_sh --simlib_comp -tool $Simulator -language $Language -tool_path $VSimBinDir -directory $DestDir -rtl_only"
+	Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
+	{	Write-Host "[ERROR]: While compiling common libraries." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
-	rm $XilinxDirName -ErrorAction SilentlyContinue
-	# New-Symlink $XilinxDirName2 $XilinxDirName -ErrorAction SilentlyContinue
-	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
-		Exit-PrecompileScript -1
+	foreach ($Family in $TargetArchitectures)
+	{	$Command = "$Quartus_sh --simlib_comp -tool $Simulator -language $Language -family $Family -tool_path $VSimBinDir -directory $DestDir -rtl_only"
+		Invoke-Expression $Command
+		if ($LastExitCode -ne 0)
+		{	Write-Host "[ERROR]: While compiling family '$Family' libraries." -ForegroundColor Red
+			Exit-PrecompileScript -1
+		}
 	}
-	
-	Close-ISEEnvironment
 	
 	# restore working directory
 	cd $WorkingDir

@@ -5,11 +5,11 @@
 # ==============================================================================
 #	Authors:            Patrick Lehmann
 # 
-#	PowerShell Script:  Compile Xilinx's simulation libraries
+#	PowerShell Script:  Compile OSVVM's simulation libraries
 # 
 # Description:
 # ------------------------------------
-#	This is a PowerShell script compiles Xilinx's simulation libraries into a local
+#	This is a PowerShell script compiles OSVVM's simulation libraries into a local
 #	directory.
 #
 # License:
@@ -31,32 +31,28 @@
 # ==============================================================================
 
 # .SYNOPSIS
-# This CmdLet pre-compiles the simulation libraries from Xilinx ISE.
+# This CmdLet pre-compiles the simulation libraries from OSVVM.
 # 
 # .DESCRIPTION
 # This CmdLet:
-#   (1) Creates a sub-directory 'xilinx-ise' in the current working directory
-#   (2) Compiles all Xilinx ISE simulation libraries and packages for
+#   (1) Creates a sub-directory 'osvvm' in the current working directory
+#   (2) Compiles all OSVVM simulation libraries and packages for
 #       o GHDL
 #       o QuestaSim
-#   (3) Creates a symlink 'xilinx' -> 'xilinx-ise'
 # 
 [CmdletBinding()]
 param(
 	# Pre-compile all libraries and packages for all simulators
 	[switch]$All =				$false,
 	
-	# Pre-compile the Xilinx ISE libraries for GHDL
+	# Pre-compile the OSVVM libraries for GHDL
 	[switch]$GHDL =				$false,
 	
-	# Pre-compile the Xilinx ISE libraries for QuestaSim
+	# Pre-compile the OSVVM libraries for QuestaSim
 	[switch]$Questa =			$false,
 	
-	# Change the 'xilinx' symlink to 'xilinx-ise'
-	[switch]$ReLink =			$false,
-	
-	# Set VHDL Standard to '93
-	[switch]$VHDL93 =			$false,
+	# # Set VHDL Standard to '93
+	# [switch]$VHDL93 =			$false,
 	# Set VHDL Standard to '08
 	[switch]$VHDL2008 =		$false,
 	
@@ -89,13 +85,12 @@ if ($All)
 }
 
 $PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
-$XilinxDirName =	Get-XilinxDirectoryName $PoCPS1
-$XilinxDirName2 =	"$XilinxDirName-ise"
+$OSVVMDirName =		Get-OSVVMDirectoryName $PoCPS1
 
 # GHDL
 # ==============================================================================
 if ($GHDL)
-{	Write-Host "Pre-compiling Xilinx's simulation libraries for GHDL" -ForegroundColor Cyan
+{	Write-Host "Pre-compiling OSVVM's simulation libraries for GHDL" -ForegroundColor Cyan
 	Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Cyan
 
 	$GHDLBinDir =			Get-GHDLBinaryDirectory $PoCPS1
@@ -107,9 +102,9 @@ if ($GHDL)
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 	
-	$GHDLXilinxScript = "$GHDLScriptDir\compile-xilinx-ise.ps1"
-	if (-not (Test-Path $GHDLXilinxScript -PathType Leaf))
-	{ Write-Host "[ERROR]: Xilinx compile script from GHDL is not executable." -ForegroundColor Red
+	$GHDLOSVVMScript = "$GHDLScriptDir\compile-osvvm.ps1"
+	if (-not (Test-Path $GHDLOSVVMScript -PathType Leaf))
+	{ Write-Host "[ERROR]: OSVVM compile script from GHDL is not executable." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
@@ -120,17 +115,17 @@ if ($GHDL)
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
-	$Command = "$GHDLXilinxScript -All -Source $SourceDir -Output $XilinxDirName2"
+	$Command = "$GHDLOSVVMScript -All -Source $SourceDir -Output $OSVVMDirName"
 	Write-Host $Command
 	# Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: Error while compiling Xilinx ISE libraries." -ForegroundColor Red
+	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
-	rm $XilinxDirName -ErrorAction SilentlyContinue
+	rm $OSVVMDirName -ErrorAction SilentlyContinue
 	try
-	{	New-Symlink $XilinxDirName2 $XilinxDirName		}
+	{	New-Symlink $OSVVMDirName $OSVVMDirName		}
 	catch
 	{	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
 		Exit-PrecompileScript -1
@@ -144,20 +139,19 @@ if ($GHDL)
 # QuestaSim/ModelSim
 # ==============================================================================
 if ($Questa)
-{	Write-Host "Pre-compiling Xilinx's simulation libraries for QuestaSim" -ForegroundColor Cyan
+{	Write-Host "Pre-compiling OSVVM's simulation libraries for QuestaSim" -ForegroundColor Cyan
 	Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Cyan
 
 	$VSimBinDir =			Get-ModelSimBinaryDirectory $PoCPS1
 	$VSimDirName =		Get-QuestaSimDirectoryName $PoCPS1
 
 	# Assemble output directory
-	$DestDir="$PoCRootDir\$PrecompiledDir\$VSimDirName\$XilinxDirName2"
+	$DestDir="$PoCRootDir\$PrecompiledDir\$VSimDirName\$OSVVMDirName"
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 
 	$ISEBinDir = 		Get-ISEBinaryDirectory $PoCPS1
 	$ISE_compxlib =	"$ISEBinDir\compxlib.exe"
-	Open-ISEEnvironment $PoCPS1
 	
 	New-ModelSim_ini
 	
@@ -165,22 +159,13 @@ if ($Questa)
 	$Language =						"vhdl"
 	$TargetArchitecture =	"all"
 	
-	$Command = "$ISE_compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $VSimBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise"
+	$Command = "$ISE_compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $VSimBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib osvvmcorelib -intstyle ise"
 	Write-Host $Command
 	# Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
 	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
-	
-	rm $XilinxDirName -ErrorAction SilentlyContinue
-	# New-Symlink $XilinxDirName2 $XilinxDirName -ErrorAction SilentlyContinue
-	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
-		Exit-PrecompileScript -1
-	}
-	
-	Close-ISEEnvironment
 	
 	# restore working directory
 	cd $WorkingDir

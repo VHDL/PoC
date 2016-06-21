@@ -131,7 +131,6 @@ fi
 
 # GHDL
 # ==============================================================================
-ERRORCOUNT=0
 if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	# Get GHDL directories
 	# <= $GHDLBinDir
@@ -177,7 +176,6 @@ fi
 
 # QuestaSim/ModelSim
 # ==============================================================================
-ERRORCOUNT=0
 if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	# Get GHDL directories
 	# <= $VSimBinDir

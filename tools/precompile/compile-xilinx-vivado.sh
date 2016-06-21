@@ -132,7 +132,6 @@ XilinxDirName2=$XilinxDirName-vivado
 
 # GHDL
 # ==============================================================================
-ERRORCOUNT=0
 if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	# Get GHDL directories
 	# <= $GHDLBinDir
@@ -182,7 +181,6 @@ fi
 
 # QuestaSim/ModelSim
 # ==============================================================================
-ERRORCOUNT=0
 if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	# Get GHDL directories
 	# <= $VSimBinDir
@@ -231,12 +229,11 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	
 	CommandFile=vivado.tcl
 	
-	echo "compile_simlib -force -library $Library -family $Family -language $Language -simulator $Simulator -simulator_exec_path $VSimBinDir -directory $DestDir" > $CommandFile
+	echo -e "compile_simlib -force -library $Library -family $Family -language $Language -simulator $Simulator -simulator_exec_path $VSimBinDir -directory $DestDir\nexit" > $CommandFile
 	if [ $? -ne 0 ]; then
 		echo 1>&2 -e "${COLORED_ERROR} Cannot create temporary tcl script.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
-	echo "exit" >> $CommandFile
 
 	# compile common libraries
 	$Vivado_tcl -mode tcl -source $CommandFile

@@ -5,11 +5,11 @@
 # ==============================================================================
 #	Authors:            Patrick Lehmann
 # 
-#	PowerShell Script:  Compile Xilinx's simulation libraries
+#	PowerShell Script:  Compile Lattice's simulation libraries
 # 
 # Description:
 # ------------------------------------
-#	This is a PowerShell script compiles Xilinx's simulation libraries into a local
+#	This is a PowerShell script compiles Lattice's simulation libraries into a local
 #	directory.
 #
 # License:
@@ -31,34 +31,30 @@
 # ==============================================================================
 
 # .SYNOPSIS
-# This CmdLet pre-compiles the simulation libraries from Xilinx ISE.
+# This CmdLet pre-compiles the simulation libraries from Lattice Diamond.
 # 
 # .DESCRIPTION
 # This CmdLet:
-#   (1) Creates a sub-directory 'xilinx-ise' in the current working directory
-#   (2) Compiles all Xilinx ISE simulation libraries and packages for
+#   (1) Creates a sub-directory 'lattice' in the current working directory
+#   (2) Compiles all Lattice Diamond simulation libraries and packages for
 #       o GHDL
 #       o QuestaSim
-#   (3) Creates a symlink 'xilinx' -> 'xilinx-ise'
 # 
 [CmdletBinding()]
 param(
 	# Pre-compile all libraries and packages for all simulators
 	[switch]$All =				$false,
 	
-	# Pre-compile the Xilinx ISE libraries for GHDL
+	# Pre-compile the Lattice Diamond libraries for GHDL
 	[switch]$GHDL =				$false,
 	
-	# Pre-compile the Xilinx ISE libraries for QuestaSim
+	# Pre-compile the Lattice Diamond libraries for QuestaSim
 	[switch]$Questa =			$false,
-	
-	# Change the 'xilinx' symlink to 'xilinx-ise'
-	[switch]$ReLink =			$false,
 	
 	# Set VHDL Standard to '93
 	[switch]$VHDL93 =			$false,
-	# Set VHDL Standard to '08
-	[switch]$VHDL2008 =		$false,
+	# # Set VHDL Standard to '08
+	# [switch]$VHDL2008 =		$false,
 	
 	# Clean up directory before analyzing.
 	[switch]$Clean =			$false,
@@ -89,13 +85,12 @@ if ($All)
 }
 
 $PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
-$XilinxDirName =	Get-XilinxDirectoryName $PoCPS1
-$XilinxDirName2 =	"$XilinxDirName-ise"
+$LatticeDirName =	Get-LatticeDirectoryName $PoCPS1
 
 # GHDL
 # ==============================================================================
 if ($GHDL)
-{	Write-Host "Pre-compiling Xilinx's simulation libraries for GHDL" -ForegroundColor Cyan
+{	Write-Host "Pre-compiling Lattice's simulation libraries for GHDL" -ForegroundColor Cyan
 	Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Cyan
 
 	$GHDLBinDir =			Get-GHDLBinaryDirectory $PoCPS1
@@ -107,32 +102,24 @@ if ($GHDL)
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 	
-	$GHDLXilinxScript = "$GHDLScriptDir\compile-xilinx-ise.ps1"
-	if (-not (Test-Path $GHDLXilinxScript -PathType Leaf))
-	{ Write-Host "[ERROR]: Xilinx compile script from GHDL is not executable." -ForegroundColor Red
+	$GHDLLatticeScript = "$GHDLScriptDir\compile-lattice.ps1"
+	if (-not (Test-Path $GHDLLatticeScript -PathType Leaf))
+	{ Write-Host "[ERROR]: Lattice compile script from GHDL is not executable." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
-	$ISEInstallDir =	Get-ISEInstallationDirectory $PoCPS1
-	$SourceDir =			"$ISEInstallDir\ISE\vhdl\src"
+	$DiamondInstallDir =	Get-DiamondInstallationDirectory $PoCPS1
+	$SourceDir =					"$DiamondInstallDir\Diamond\vhdl\src"
 	
 	# export GHDL environment variable if not allready set
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
-	$Command = "$GHDLXilinxScript -All -Source $SourceDir -Output $XilinxDirName2"
+	$Command = "$GHDLLatticeScript -All -Source $SourceDir -Output $LatticeDirName"
 	Write-Host $Command
 	# Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: Error while compiling Xilinx ISE libraries." -ForegroundColor Red
-		Exit-PrecompileScript -1
-	}
-	
-	rm $XilinxDirName -ErrorAction SilentlyContinue
-	try
-	{	New-Symlink $XilinxDirName2 $XilinxDirName		}
-	catch
-	{	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
+	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
@@ -144,43 +131,35 @@ if ($GHDL)
 # QuestaSim/ModelSim
 # ==============================================================================
 if ($Questa)
-{	Write-Host "Pre-compiling Xilinx's simulation libraries for QuestaSim" -ForegroundColor Cyan
+{	Write-Host "Pre-compiling Lattice's simulation libraries for QuestaSim" -ForegroundColor Cyan
 	Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Cyan
 
 	$VSimBinDir =			Get-ModelSimBinaryDirectory $PoCPS1
 	$VSimDirName =		Get-QuestaSimDirectoryName $PoCPS1
 
 	# Assemble output directory
-	$DestDir="$PoCRootDir\$PrecompiledDir\$VSimDirName\$XilinxDirName2"
+	$DestDir="$PoCRootDir\$PrecompiledDir\$VSimDirName\$LatticeDirName"
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 
-	$ISEBinDir = 		Get-ISEBinaryDirectory $PoCPS1
-	$ISE_compxlib =	"$ISEBinDir\compxlib.exe"
-	Open-ISEEnvironment $PoCPS1
+	$DiamondBinDir = 		Get-DiamondBinaryDirectory $PoCPS1
+	$Diamond_tcl =			"$DiamondBinDir\pnmainc.exe"
+	# Open-DiamondEnvironment $PoCPS1
 	
 	New-ModelSim_ini
 	
-	$Simulator =					"questa"
+	$Simulator =					"mentor"
 	$Language =						"vhdl"
-	$TargetArchitecture =	"all"
+	$Device =							"all"			# all, machxo, ecp, ...
 	
-	$Command = "$ISE_compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $VSimBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise"
-	Write-Host $Command
-	# Invoke-Expression $Command
+	$VSimBinDir_TclPath = $VSimBinDir.Replace("\", "/")
+	"cmpl_libs -lang $Language -sim_vendor $Simulator -sim_path $VSimBinDir_TclPath -device $Device`nexit" | & $Diamond_tcl
 	if ($LastExitCode -ne 0)
 	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
-	rm $XilinxDirName -ErrorAction SilentlyContinue
-	# New-Symlink $XilinxDirName2 $XilinxDirName -ErrorAction SilentlyContinue
-	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
-		Exit-PrecompileScript -1
-	}
-	
-	Close-ISEEnvironment
+	# Close-DiamondEnvironment
 	
 	# restore working directory
 	cd $WorkingDir

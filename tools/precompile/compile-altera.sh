@@ -131,7 +131,6 @@ fi
 
 # GHDL
 # ==============================================================================
-ERRORCOUNT=0
 if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	# Get GHDL directories
 	# <= $GHDLBinDir
@@ -178,7 +177,6 @@ fi
 
 # QuestaSim/ModelSim
 # ==============================================================================
-ERRORCOUNT=0
 if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	# Get GHDL directories
 	# <= $VSimBinDir
@@ -206,19 +204,19 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	
 	Simulator=questasim
 	Language=vhdl
-	TargetArchitecture=("all")		# "cycloneiii" "stratixiv")
+	TargetArchitectures=("all")		# "cycloneiii" "stratixiv")
 	
 	# compile common libraries
 	$Quartus_sh --simlib_comp -tool $Simulator -language $Language -tool_path $VSimBinDir -directory $DestDir -rtl_only
 	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Error while compiling common libraries.${ANSI_NOCOLOR}"
+		echo 1>&2 -e "${COLORED_ERROR} While compiling common libraries.${ANSI_NOCOLOR}"
 		exit -1;
 	fi
 
-	for Family in ${TargetArchitecture[@]}; do
+	for Family in ${TargetArchitectures[@]}; do
 		$Quartus_sh --simlib_comp -tool $Simulator -language $Language -family $Family -tool_path $VSimBinDir -directory $DestDir -no_rtl
 		if [ $? -ne 0 ]; then
-			echo 1>&2 -e "${COLORED_ERROR} Error while compiling family '$Family' libraries.${ANSI_NOCOLOR}"
+			echo 1>&2 -e "${COLORED_ERROR} While compiling family '$Family' libraries.${ANSI_NOCOLOR}"
 			exit -1;
 		fi
 	done

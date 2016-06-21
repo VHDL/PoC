@@ -31,28 +31,28 @@
 # ==============================================================================
 
 # .SYNOPSIS
-# This CmdLet pre-compiles the simulation libraries from Xilinx ISE.
+# This CmdLet pre-compiles the simulation libraries from Xilinx Vivado.
 # 
 # .DESCRIPTION
 # This CmdLet:
-#   (1) Creates a sub-directory 'xilinx-ise' in the current working directory
-#   (2) Compiles all Xilinx ISE simulation libraries and packages for
+#   (1) Creates a sub-directory 'xilinx-vivado' in the current working directory
+#   (2) Compiles all Xilinx Vivado simulation libraries and packages for
 #       o GHDL
 #       o QuestaSim
-#   (3) Creates a symlink 'xilinx' -> 'xilinx-ise'
+#   (3) Creates a symlink 'xilinx' -> 'xilinx-vivado'
 # 
 [CmdletBinding()]
 param(
 	# Pre-compile all libraries and packages for all simulators
 	[switch]$All =				$false,
 	
-	# Pre-compile the Xilinx ISE libraries for GHDL
+	# Pre-compile the Xilinx Vivado libraries for GHDL
 	[switch]$GHDL =				$false,
 	
-	# Pre-compile the Xilinx ISE libraries for QuestaSim
+	# Pre-compile the Xilinx Vivado libraries for QuestaSim
 	[switch]$Questa =			$false,
 	
-	# Change the 'xilinx' symlink to 'xilinx-ise'
+	# Change the 'xilinx' symlink to 'xilinx-vivado'
 	[switch]$ReLink =			$false,
 	
 	# Set VHDL Standard to '93
@@ -90,7 +90,7 @@ if ($All)
 
 $PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
 $XilinxDirName =	Get-XilinxDirectoryName $PoCPS1
-$XilinxDirName2 =	"$XilinxDirName-ise"
+$XilinxDirName2 =	"$XilinxDirName-vivado"
 
 # GHDL
 # ==============================================================================
@@ -107,14 +107,14 @@ if ($GHDL)
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 	
-	$GHDLXilinxScript = "$GHDLScriptDir\compile-xilinx-ise.ps1"
+	$GHDLXilinxScript = "$GHDLScriptDir\compile-xilinx-vivado.ps1"
 	if (-not (Test-Path $GHDLXilinxScript -PathType Leaf))
 	{ Write-Host "[ERROR]: Xilinx compile script from GHDL is not executable." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
-	$ISEInstallDir =	Get-ISEInstallationDirectory $PoCPS1
-	$SourceDir =			"$ISEInstallDir\ISE\vhdl\src"
+	$VivadoInstallDir =	Get-VivadoInstallationDirectory $PoCPS1
+	$SourceDir =				"$VivadoInstallDir\Vivado\vhdl\src"
 	
 	# export GHDL environment variable if not allready set
 	if (-not (Test-Path env:GHDL))
@@ -124,7 +124,7 @@ if ($GHDL)
 	Write-Host $Command
 	# Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: Error while compiling Xilinx ISE libraries." -ForegroundColor Red
+	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
@@ -155,21 +155,30 @@ if ($Questa)
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 
-	$ISEBinDir = 		Get-ISEBinaryDirectory $PoCPS1
-	$ISE_compxlib =	"$ISEBinDir\compxlib.exe"
-	Open-ISEEnvironment $PoCPS1
+	$VivadoBinDir = Get-VivadoBinaryDirectory $PoCPS1
+	$Vivado_tcl =		"$VivadoBinDir\vivado.bat"
+	Open-VivadoEnvironment $PoCPS1
 	
 	New-ModelSim_ini
 	
-	$Simulator =					"questa"
-	$Language =						"vhdl"
-	$TargetArchitecture =	"all"
+	$Simulator =	"questa"
+	$Language =		"vhdl"
+	$Library =		"all"
+	$Family =			"all"
 	
-	$Command = "$ISE_compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $VSimBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise"
-	Write-Host $Command
-	# Invoke-Expression $Command
+	$CommandFile = "vivado.tcl"
+	$VSimBinDir_TclPath =	$VSimBinDir.Replace("\", "/")
+	$DestDir_TclPath =		$DestDir.Replace("\", "/")
+	"compile_simlib -force -library $Library -family $Family -language $Language -simulator $Simulator -simulator_exec_path $VSimBinDir_TclPath -directory $DestDir_TclPath`nexit" | Out-File $CommandFile -Encoding ascii
 	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
+	{	Write-Host "[ERROR]: Cannot create temporary tcl script." -ForegroundColor Red
+		Exit-PrecompileScript -1
+	}
+	
+	$Command = "$Vivado_tcl -mode tcl -source $CommandFile"
+	Invoke-Expression $Command
+	if ($LastExitCode -ne 0)
+	{	Write-Host "[ERROR]: Error while compiling Xilinx Vivado libraries." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 	
@@ -180,7 +189,7 @@ if ($Questa)
 		Exit-PrecompileScript -1
 	}
 	
-	Close-ISEEnvironment
+	Close-VivadoEnvironment
 	
 	# restore working directory
 	cd $WorkingDir
