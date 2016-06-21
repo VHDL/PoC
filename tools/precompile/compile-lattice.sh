@@ -227,7 +227,6 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	Device=all			# all, machxo, ecp, ...
 	
 	# compile common libraries
-	# -target_path $LatticeDirName
 	echo -e "cmpl_libs -lang $Language -sim_vendor $Simulator -sim_path $VSimBinDir -device $Device\nexit" | $Diamond_tcl
 	if [ $? -ne 0 ]; then
 		echo 1>&2 -e "${COLORED_ERROR} Error while compiling Lattice libraries.${ANSI_NOCOLOR}"
