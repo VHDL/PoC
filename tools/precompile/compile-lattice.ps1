@@ -70,7 +70,7 @@ $WorkingDir =		Get-Location
 $PoCRootDir =		Convert-Path (Resolve-Path ($PSScriptRoot + $PoCRootDir))
 $PoCPS1 =				"$PoCRootDir\poc.ps1"
 
-Import-Module $PSScriptRoot\shared.psm1 -ArgumentList "$WorkingDir"
+Import-Module $PSScriptRoot\precompile.psm1 -ArgumentList "$WorkingDir"
 
 # Display help if no command was selected
 $Help = $Help -or (-not ($All -or $GHDL -or $Questa))
@@ -115,7 +115,7 @@ if ($GHDL)
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
-	$Command = "$GHDLLatticeScript -All -Source $SourceDir -Output $LatticeDirName"
+	$Command = "$GHDLLatticeScript -All -Source $SourceDir -Output $DestDir\$LatticeDirName"
 	Write-Host "compile-lattice.ps1 is not available in GHDL."
 	# Invoke-Expression $Command
 	if ($LastExitCode -ne 0)

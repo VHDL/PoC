@@ -14,7 +14,7 @@
 #	output streams (stdout and stderr).
 #
 # ==============================================================================
-#	Copyright (C) 2015 Patrick Lehmann
+#	Copyright (C) 2015-2016 Patrick Lehmann
 #	
 #	GHDL is free software; you can redistribute it and/or modify it under
 #	the terms of the GNU General Public License as published by the Free
@@ -61,7 +61,7 @@ function Exit-PrecompileScript
 	cd $Module_WorkingDir
 	
 	# unload modules
-	Remove-Module shared
+	Remove-Module precompile
 	
 	if ($ExitCode -eq 0)
 	{	exit 0	}
