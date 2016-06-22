@@ -567,7 +567,7 @@ function New-ModelSim_ini
 	"[Library]" | Out-File $ModelSim_ini -Encoding ascii
 	if ($LastExitCode -ne 0)
 	{	Write-Host "[ERROR]: Cannot create initial modelsim.ini." -ForegroundColor Red
-		Exit-PrecompileScript $WorkingDir -1
+		Exit-PrecompileScript -1
 	}
 	if (Test-Path "..\modelsim.ini")
 	{	"others = ../modelsim.ini" | Out-File $ModelSim_ini -Append -Encoding ascii		}

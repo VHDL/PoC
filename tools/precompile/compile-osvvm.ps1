@@ -77,11 +77,11 @@ $Help = $Help -or (-not ($All -or $GHDL -or $Questa))
 
 if ($Help)
 {	Get-Help $MYINVOCATION.InvocationName -Detailed
-	return
+	Exit-PrecompileScript
 }
 if ($All)
-{	$GHDL =				$true
-	$QuestaSim =	$true
+{	$GHDL =		$true
+	$Questa =	$true
 }
 
 $PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
@@ -116,8 +116,7 @@ if ($GHDL)
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
 	$Command = "$GHDLOSVVMScript -All -Source $SourceDir -Output $OSVVMDirName"
-	Write-Host $Command
-	# Invoke-Expression $Command
+	Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
 	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1

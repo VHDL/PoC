@@ -77,11 +77,11 @@ $Help = $Help -or (-not ($All -or $GHDL -or $Questa))
 
 if ($Help)
 {	Get-Help $MYINVOCATION.InvocationName -Detailed
-	return
+	Exit-PrecompileScript
 }
 if ($All)
-{	$GHDL =				$true
-	$QuestaSim =	$true
+{	$GHDL =		$true
+	$Questa =	$true
 }
 
 $PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
@@ -109,14 +109,14 @@ if ($GHDL)
 	}
 	
 	$DiamondInstallDir =	Get-DiamondInstallationDirectory $PoCPS1
-	$SourceDir =					"$DiamondInstallDir\Diamond\vhdl\src"
+	$SourceDir =					"$DiamondInstallDir\cae_library\simulation\vhdl"
 	
 	# export GHDL environment variable if not allready set
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
 	$Command = "$GHDLLatticeScript -All -Source $SourceDir -Output $LatticeDirName"
-	Write-Host $Command
+	Write-Host "compile-lattice.ps1 is not available in GHDL."
 	# Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
 	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red

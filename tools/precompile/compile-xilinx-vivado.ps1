@@ -81,11 +81,11 @@ $Help = $Help -or (-not ($All -or $GHDL -or $Questa))
 
 if ($Help)
 {	Get-Help $MYINVOCATION.InvocationName -Detailed
-	return
+	Exit-PrecompileScript
 }
 if ($All)
-{	$GHDL =				$true
-	$QuestaSim =	$true
+{	$GHDL =		$true
+	$Questa =	$true
 }
 
 $PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
@@ -114,15 +114,14 @@ if ($GHDL)
 	}
 	
 	$VivadoInstallDir =	Get-VivadoInstallationDirectory $PoCPS1
-	$SourceDir =				"$VivadoInstallDir\Vivado\vhdl\src"
+	$SourceDir =				"$VivadoInstallDir\data\vhdl\src"
 	
 	# export GHDL environment variable if not allready set
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
 	$Command = "$GHDLXilinxScript -All -Source $SourceDir -Output $XilinxDirName2"
-	Write-Host $Command
-	# Invoke-Expression $Command
+	Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
 	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1

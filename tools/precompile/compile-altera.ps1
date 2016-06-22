@@ -77,11 +77,11 @@ $Help = $Help -or (-not ($All -or $GHDL -or $Questa))
 
 if ($Help)
 {	Get-Help $MYINVOCATION.InvocationName -Detailed
-	return
+	Exit-PrecompileScript
 }
 if ($All)
-{	$GHDL =				$true
-	$QuestaSim =	$true
+{	$GHDL =		$true
+	$Questa =	$true
 }
 
 $PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
@@ -98,7 +98,7 @@ if ($GHDL)
 	$GHDLDirName =		Get-GHDLDirectoryName $PoCPS1
 
 	# Assemble output directory
-	$DestDir="$PoCRootDir\$PrecompiledDir\$GHDLDirName"
+	$DestDir = "$PoCRootDir\$PrecompiledDir\$GHDLDirName"
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 	
@@ -109,15 +109,14 @@ if ($GHDL)
 	}
 	
 	$QuartusInstallDir =	Get-QuartusInstallationDirectory $PoCPS1
-	$SourceDir =					"$QuartusInstallDir\Quartus\vhdl\src"
+	$SourceDir =					"$QuartusInstallDir\eda\sim_lib"
 	
 	# export GHDL environment variable if not allready set
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
-	$Command = "$GHDLAlteraScript -All -Source $SourceDir -Output $AlteraDirName"
-	Write-Host $Command
-	# Invoke-Expression $Command
+	$Command = "$GHDLAlteraScript -All -Source $SourceDir -Output $DestDir\$AlteraDirName"
+	Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
 	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1
