@@ -201,6 +201,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	SourceDir=$OSVVMInstallDir
 	
 	# Files
+	Library=osvvm
 	Files=(
 		NamePkg.vhd
 		OsvvmGlobalPkg.vhd
@@ -217,23 +218,23 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	)
 	
 	# Compile libraries with vcom, executed in destination directory
-	echo -e "${YELLOW}Creating library 'osvvm' with vlib/vmap ...${ANSI_NOCOLOR}"
-	$VSimBinDir/vlib osvvm
-	$VSimBinDir/vmap -del osvvm
-	$VSimBinDir/vmap osvvm $DestDir/osvvm
+	echo -e "${YELLOW}Creating library '$Library' with vlib/vmap...${ANSI_NOCOLOR}"
+	$VSimBinDir/vlib $Library
+	$VSimBinDir/vmap -del $Library
+	$VSimBinDir/vmap $Library $DestDir/$Library
 	
-	echo -e "${YELLOW}Compiling library 'osvvm' with vcom ...${ANSI_NOCOLOR}"
+	echo -e "${YELLOW}Compiling library '$Library' with vcom...${ANSI_NOCOLOR}"
 	ERRORCOUNT=0
 	for File in ${Files[@]}; do
-		echo "  Compiling $file..."
-		$VSimBinDir/vcom -2008 -work osvvm $SourceDir/$File
+		echo "  Compiling '$File'..."
+		$VSimBinDir/vcom -2008 -work $Library $SourceDir/$File
 		if [ $? -ne 0 ]; then
 			let ERRORCOUNT++
 		fi
 	done
 	
 	# print overall result
-	echo -n "Compiling library 'osvvm' with vcom "
+	echo -n "Compiling library '$Library' with vcom "
 	if [ $ERRORCOUNT -gt 0 ]; then
 		echo -e $COLORED_FAILED
 	else

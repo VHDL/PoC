@@ -85,7 +85,7 @@ if ($All)
 }
 
 $PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
-$OSVVMDirName =		Get-OSVVMDirectoryName $PoCPS1
+$OSVVMDirName =		"."
 
 # GHDL
 # ==============================================================================
@@ -122,14 +122,7 @@ if ($GHDL)
 		Exit-PrecompileScript -1
 	}
 	
-	rm $OSVVMDirName -ErrorAction SilentlyContinue
-	try
-	{	New-Symlink $OSVVMDirName $OSVVMDirName		}
-	catch
-	{	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
-		Exit-PrecompileScript -1
-	}
-	
+
 	# restore working directory
 	cd $WorkingDir
 	Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Cyan
@@ -149,22 +142,45 @@ if ($Questa)
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 
-	$ISEBinDir = 		Get-ISEBinaryDirectory $PoCPS1
-	$ISE_compxlib =	"$ISEBinDir\compxlib.exe"
-	
 	New-ModelSim_ini
 	
-	$Simulator =					"questa"
-	$Language =						"vhdl"
-	$TargetArchitecture =	"all"
+	$Library = "osvvm"
+	$Files = @(
+		"NamePkg.vhd",
+		"OsvvmGlobalPkg.vhd",
+		"TextUtilPkg.vhd",
+		"TranscriptPkg.vhd",
+		"AlertLogPkg.vhd",
+		"MemoryPkg.vhd",
+		"MessagePkg.vhd",
+		"SortListPkg_int.vhd",
+		"RandomBasePkg.vhd",
+		"RandomPkg.vhd",
+		"CoveragePkg.vhd",
+		"OsvvmContext.vhd"
+	)
+	$SourceFiles = $Files | % { "$SourceDirectory\$_" }
 	
-	$Command = "$ISE_compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $VSimBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib osvvmcorelib -intstyle ise"
-	Write-Host $Command
-	# Invoke-Expression $Command
-	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
-		Exit-PrecompileScript -1
+	# Compile libraries with vcom, executed in destination directory
+	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
+	& "$VSimBinDir\vlib.exe" $Library
+	& "$VSimBinDir\vmap.exe" -del $Library
+	& "$VSimBinDir\vmap.exe" $Library "$DestDir\$OSVVMDirName"
+	
+	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
+	$ErrorCount += 0
+	foreach ($File in $SourceFiles)
+	{	Write-Host "Compiling '$File'..." -ForegroundColor Cyan
+		$InvokeExpr = "$VSimBinDir\vcom.exe -2008 -work $Library " + $File + " 2>&1"
+		$ErrorRecordFound = Invoke-Expression $InvokeExpr
+		if ($LastExitCode -ne 0)
+		{	$ErrorCount += 1
+			if ($HaltOnError)
+			{	break		}
+		}
 	}
+
+	
 	
 	# restore working directory
 	cd $WorkingDir
