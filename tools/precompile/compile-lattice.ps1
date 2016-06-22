@@ -116,8 +116,7 @@ if ($GHDL)
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
 	$Command = "$GHDLLatticeScript -All -Source $SourceDir -Output $DestDir\$LatticeDirName"
-	Write-Host "compile-lattice.ps1 is not available in GHDL."
-	# Invoke-Expression $Command
+	Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
 	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1
