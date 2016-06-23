@@ -51,11 +51,6 @@ param(
 	# Pre-compile the OSVVM libraries for QuestaSim
 	[switch]$Questa =			$false,
 	
-	# # Set VHDL Standard to '93
-	# [switch]$VHDL93 =			$false,
-	# Set VHDL Standard to '08
-	[switch]$VHDL2008 =		$false,
-	
 	# Clean up directory before analyzing.
 	[switch]$Clean =			$false,
 	
@@ -79,13 +74,11 @@ if ($Help)
 {	Get-Help $MYINVOCATION.InvocationName -Detailed
 	Exit-PrecompileScript
 }
-if ($All)
-{	$GHDL =		$true
-	$Questa =	$true
-}
 
-$PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
-$OSVVMDirName =		"."
+$GHDL,$Questa =			Resolve-Simulator $All $GHDL $Questa
+
+$PreCompiledDir =		Get-PrecompiledDirectoryName $PoCPS1
+$OSVVMDirName =			"."
 
 # GHDL
 # ==============================================================================

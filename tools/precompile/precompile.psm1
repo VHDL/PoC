@@ -71,6 +71,59 @@ function Exit-PrecompileScript
 	}
 }
 
+function Resolve-Simulator
+{	<#
+		.SYNOPSIS
+		Undocumented
+		
+		.DESCRIPTION
+		Undocumented
+		
+		.PARAMETER All
+		Undocumented
+		.PARAMETER GHDL
+		Undocumented
+		.PARAMETER QuestaSim
+		Undocumented
+	#>
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory=$true)][bool]$All,
+		[Parameter(Mandatory=$true)][bool]$GHDL,
+		[Parameter(Mandatory=$true)][bool]$QuestaSim
+	)
+	if ($All)
+	{	return $true, $true				}
+	else
+	{	return $GHDL, $QuestaSim	}
+}
+
+function Resolve-VHDLVersion
+{	<#
+		.SYNOPSIS
+		Undocumented
+		
+		.DESCRIPTION
+		Undocumented
+		
+		.PARAMETER VHDL93
+		Undocumented
+		.PARAMETER VHDL2008
+		Undocumented
+	#>
+	[CmdletBinding()]
+	param(
+		[Parameter(Mandatory=$true)][bool]$VHDL93,
+		[Parameter(Mandatory=$true)][bool]$VHDL2008
+	)
+	if (-not ($VHDL93 -and $VHDL2008))
+	{	return $true, $true	}
+	elseif ($VHDL93 -and -not $VHDL2008)
+	{	return $true, $false	}
+	elseif (-not $VHDL93 -and $VHDL2008)
+	{	return $false, $true	}
+}
+
 function Get-PrecompiledDirectoryName
 {	<#
 		.SYNOPSIS
@@ -867,6 +920,9 @@ function Write-ColoredActiveHDLLine
 }
 
 Export-ModuleMember -Function 'Exit-PrecompileScript'
+
+Export-ModuleMember -Function 'Resolve-Simulator'
+Export-ModuleMember -Function 'Resolve-VHDLVersion'
 
 # Directory names
 Export-ModuleMember -Function 'Get-PrecompiledDirectoryName'

@@ -53,8 +53,8 @@ param(
 	
 	# Set VHDL Standard to '93
 	[switch]$VHDL93 =			$false,
-	# # Set VHDL Standard to '08
-	# [switch]$VHDL2008 =		$false,
+	# Set VHDL Standard to '08
+	[switch]$VHDL2008 =		$false,
 	
 	# Clean up directory before analyzing.
 	[switch]$Clean =			$false,
@@ -79,13 +79,12 @@ if ($Help)
 {	Get-Help $MYINVOCATION.InvocationName -Detailed
 	Exit-PrecompileScript
 }
-if ($All)
-{	$GHDL =		$true
-	$Questa =	$true
-}
 
-$PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
-$LatticeDirName =	Get-LatticeDirectoryName $PoCPS1
+$GHDL,$Questa =			Resolve-Simulator $All $GHDL $Questa
+$VHDL93,$VHDL2008 = Resolve-VHDLVersion $VHDL93 $VHDL2008
+
+$PreCompiledDir =		Get-PrecompiledDirectoryName $PoCPS1
+$LatticeDirName =		Get-LatticeDirectoryName $PoCPS1
 
 # GHDL
 # ==============================================================================
@@ -115,11 +114,21 @@ if ($GHDL)
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
-	$Command = "$GHDLLatticeScript -All -Source $SourceDir -Output $DestDir\$LatticeDirName"
-	Invoke-Expression $Command
-	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
-		Exit-PrecompileScript -1
+	if ($VHDL93)
+	{	$Command = "$GHDLLatticeScript -All -VHDL93 -Source $SourceDir -Output $DestDir\$LatticeDirName"
+		Invoke-Expression $Command
+		if ($LastExitCode -ne 0)
+		{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
+			Exit-PrecompileScript -1
+		}
+	}
+	if ($VHDL2008)
+	{	$Command = "$GHDLLatticeScript -All -VHDL2008 -Source $SourceDir -Output $DestDir\$LatticeDirName"
+		Invoke-Expression $Command
+		if ($LastExitCode -ne 0)
+		{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
+			Exit-PrecompileScript -1
+		}
 	}
 	
 	# restore working directory

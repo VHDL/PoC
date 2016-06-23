@@ -83,14 +83,13 @@ if ($Help)
 {	Get-Help $MYINVOCATION.InvocationName -Detailed
 	Exit-PrecompileScript
 }
-if ($All)
-{	$GHDL =		$true
-	$Questa =	$true
-}
 
-$PreCompiledDir =	Get-PrecompiledDirectoryName $PoCPS1
-$XilinxDirName =	Get-XilinxDirectoryName $PoCPS1
-$XilinxDirName2 =	"$XilinxDirName-vivado"
+$GHDL,$Questa =			Resolve-Simulator $All $GHDL $Questa
+$VHDL93,$VHDL2008 = Resolve-VHDLVersion $VHDL93 $VHDL2008
+
+$PreCompiledDir =		Get-PrecompiledDirectoryName $PoCPS1
+$XilinxDirName =		Get-XilinxDirectoryName $PoCPS1
+$XilinxDirName2 =		"$XilinxDirName-vivado"
 
 # GHDL
 # ==============================================================================
@@ -120,20 +119,29 @@ if ($GHDL)
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
-	$Command = "$GHDLXilinxScript -All -Source $SourceDir -Output $DestDir\$XilinxDirName2"
-	Invoke-Expression $Command
-	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
-		Exit-PrecompileScript -1
+	if ($VHDL93)
+	{	$Command = "$GHDLXilinxScript -All -VHDL93 -Source $SourceDir -Output $DestDir\$XilinxDirName2"
+		Invoke-Expression $Command
+		if ($LastExitCode -ne 0)
+		{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
+			Exit-PrecompileScript -1
+		}
+	}
+	if ($VHDL2008)
+	{	$Command = "$GHDLXilinxScript -All -VHDL2008 -Source $SourceDir -Output $DestDir\$XilinxDirName2"
+		Invoke-Expression $Command
+		if ($LastExitCode -ne 0)
+		{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
+			Exit-PrecompileScript -1
+		}
 	}
 	
 	rm $XilinxDirName -ErrorAction SilentlyContinue
-	try
-	{	New-Symlink $XilinxDirName2 $XilinxDirName		}
-	catch
-	{	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
-		Exit-PrecompileScript -1
-	}
+	# New-Symlink $XilinxDirName2 $XilinxDirName -ErrorAction SilentlyContinue
+	# if ($LastExitCode -ne 0)
+	# {	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
+		# Exit-PrecompileScript -1
+	# }
 	
 	# restore working directory
 	cd $WorkingDir
@@ -183,10 +191,10 @@ if ($Questa)
 	
 	rm $XilinxDirName -ErrorAction SilentlyContinue
 	# New-Symlink $XilinxDirName2 $XilinxDirName -ErrorAction SilentlyContinue
-	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
-		Exit-PrecompileScript -1
-	}
+	# if ($LastExitCode -ne 0)
+	# {	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
+		# Exit-PrecompileScript -1
+	# }
 	
 	Close-VivadoEnvironment
 	

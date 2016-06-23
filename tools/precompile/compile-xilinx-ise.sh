@@ -51,6 +51,8 @@ set -o pipefail
 
 # command line argument processing
 NO_COMMAND=1
+VHDL93=0
+VHDL2008=0
 while [[ $# > 0 ]]; do
 	key="$1"
 	case $key in
@@ -72,6 +74,12 @@ while [[ $# > 0 ]]; do
 		-h|--help)
 		HELP=TRUE
 		NO_COMMAND=0
+		;;
+		--vhdl93)
+		VHDL93=1
+		;;
+		--vhdl2008)
+		VHDL2008=1
 		;;
 		*)		# unknown option
 		echo 1>&2 -e "${COLORED_ERROR} Unknown command line option '$key'.${ANSI_NOCOLOR}"
@@ -113,6 +121,10 @@ fi
 if [ "$COMPILE_ALL" == "TRUE" ]; then
 	COMPILE_FOR_GHDL=TRUE
 	COMPILE_FOR_VSIM=TRUE
+fi
+if [ \( $VHDL93 -eq 0 \] -a \( $VHDL2008 -eq 0 \) ]; then
+	VHDL93=1
+	VHDL2008=1
 fi
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
@@ -168,10 +180,19 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	fi
 	
 	# compile all architectures, skip existing and large files, no wanrings
-	$GHDLXilinxScript --all -s -S -n --src $SourceDir --out $XilinxDirName2
-	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
-		exit -1;
+	if [ $VHDL93 -eq 1 ]; then
+		$GHDLXilinxScript --all --vhdl93 -s -S -n --src $SourceDir --out $XilinxDirName2
+		if [ $? -ne 0 ]; then
+			echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
+			exit -1;
+		fi
+	fi
+	if [ $VHDL2008 -eq 1 ]; then
+		$GHDLXilinxScript --all --vhdl2008 -s -S -n --src $SourceDir --out $XilinxDirName2
+		if [ $? -ne 0 ]; then
+			echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
+			exit -1;
+		fi
 	fi
 	
 	# create "xilinx" symlink
