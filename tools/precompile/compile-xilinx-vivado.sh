@@ -122,7 +122,7 @@ if [ "$COMPILE_ALL" == "TRUE" ]; then
 	COMPILE_FOR_GHDL=TRUE
 	COMPILE_FOR_VSIM=TRUE
 fi
-if [ \( $VHDL93 -eq 0 \] -a \( $VHDL2008 -eq 0 \) ]; then
+if [ \( $VHDL93 -eq 0 \) -a \( $VHDL2008 -eq 0 \) ]; then
 	VHDL93=1
 	VHDL2008=1
 fi
@@ -159,11 +159,8 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	
 	# Assemble Xilinx compile script path
 	GHDLXilinxScript="$($READLINK -f $GHDLScriptDir/compile-xilinx-vivado.sh)"
-	if [ ! -x $GHDLXilinxScript ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Xilinx compile script from GHDL is not executable.${ANSI_NOCOLOR}"
-		exit -1;
-	fi
 	
+
 	# Get Xilinx installation directory
 	VivadoInstallDir=$($PoC_sh query INSTALL.Xilinx.Vivado:InstallationDirectory 2>/dev/null)
 	if [ $? -ne 0 ]; then
@@ -179,16 +176,18 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 		export GHDL=$GHDLBinDir/ghdl
 	fi
 	
+	BASH=$(which bash)
+	
 	# compile all architectures, skip existing and large files, no wanrings
 	if [ $VHDL93 -eq 1 ]; then
-		$GHDLXilinxScript --all --vhdl93 -s -S -n --src $SourceDir --out $XilinxDirName2
+		$BASH $GHDLXilinxScript --all --vhdl93 -s -S -n --src $SourceDir --out $XilinxDirName2
 		if [ $? -ne 0 ]; then
 			echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
 			exit -1;
 		fi
 	fi
 	if [ $VHDL2008 -eq 1 ]; then
-		$GHDLXilinxScript --all --vhdl2008 -s -S -n --src $SourceDir --out $XilinxDirName2
+		$BASH $GHDLXilinxScript --all --vhdl2008 -s -S -n --src $SourceDir --out $XilinxDirName2
 		if [ $? -ne 0 ]; then
 			echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
 			exit -1;

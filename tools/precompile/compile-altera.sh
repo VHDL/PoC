@@ -122,7 +122,7 @@ if [ "$COMPILE_ALL" == "TRUE" ]; then
 	COMPILE_FOR_GHDL=TRUE
 	COMPILE_FOR_VSIM=TRUE
 fi
-if [ \( $VHDL93 -eq 0 \] -a \( $VHDL2008 -eq 0 \) ]; then
+if [ \( $VHDL93 -eq 0 \) -a \( $VHDL2008 -eq 0 \) ]; then
 	VHDL93=1
 	VHDL2008=1
 fi
@@ -158,10 +158,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	
 	# Assemble Altera compile script path
 	GHDLAlteraScript="$($READLINK -f $GHDLScriptDir/compile-altera.sh)"
-	if [ ! -x $GHDLAlteraScript ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Altera compile script from GHDL is not executable.${ANSI_NOCOLOR}"
-		exit -1;
-	fi
+
 	
 	echo "=> $GHDLAlteraScript"
 
@@ -179,16 +176,18 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 		export GHDL=$GHDLBinDir/ghdl
 	fi
 	
+	BASH=$(which bash)
+
 	# compile all architectures, skip existing and large files, no wanrings
 	if [ $VHDL93 -eq 1 ]; then
-		$GHDLAlteraScript --all --vhdl93 -s -S -n --src $SourceDir --out $AlteraDirName
+		$BASH $GHDLAlteraScript --all --vhdl93 -s -S -n --src $SourceDir --out $AlteraDirName
 		if [ $? -ne 0 ]; then
 			echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
 			exit -1;
 		fi
 	fi
 	if [ $VHDL2008 -eq 1 ]; then
-		$GHDLAlteraScript --all --vhdl2008 -s -S -n --src $SourceDir --out $AlteraDirName
+		$BASH $GHDLAlteraScript --all --vhdl2008 -s -S -n --src $SourceDir --out $AlteraDirName
 		if [ $? -ne 0 ]; then
 			echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
 			exit -1;

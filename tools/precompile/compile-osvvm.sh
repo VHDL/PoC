@@ -145,10 +145,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	
 	# Assemble Altera compile script path
 	GHDLOSVVMScript="$($READLINK -f $GHDLScriptDir/compile-osvvm.sh)"
-	if [ ! -x $GHDLAlteraScript ]; then
-		echo 1>&2 -e "${COLORED_ERROR} OSVVM compile script from GHDL is not executable.${ANSI_NOCOLOR}"
-		exit -1;
-	fi
+
 	
 	# Get OSVVM installation directory
 	OSVVMInstallDir=$PoCRootDir/$OSVVMLibDir
@@ -159,8 +156,10 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 		export GHDL=$GHDLBinDir/ghdl
 	fi
 	
+	BASH=$(which bash)
+	
 	# compile all architectures, skip existing and large files, no wanrings
-	$GHDLOSVVMScript --all -n --src $SourceDir --out "."
+	$BASH $GHDLOSVVMScript --all -n --src $SourceDir --out "."
 	if [ $? -ne 0 ]; then
 		echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
 		exit -1;
