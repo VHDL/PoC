@@ -257,7 +257,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	fi
 
 	# compile common libraries
-	$Vivado_tcl -mode tcl -source $CommandFile
+	$Vivado_tcl -mode batch -source $CommandFile
 	if [ $? -ne 0 ]; then
 		echo 1>&2 -e "${COLORED_ERROR} Error while compiling Xilinx Vivado libraries.${ANSI_NOCOLOR}"
 		exit -1;

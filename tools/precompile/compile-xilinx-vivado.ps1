@@ -182,7 +182,7 @@ if ($Questa)
 		Exit-PrecompileScript -1
 	}
 	
-	$Command = "$Vivado_tcl -mode tcl -source $CommandFile"
+	$Command = "$Vivado_tcl -mode batch -source $CommandFile"
 	Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
 	{	Write-Host "[ERROR]: Error while compiling Xilinx Vivado libraries." -ForegroundColor Red
