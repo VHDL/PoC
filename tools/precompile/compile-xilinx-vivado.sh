@@ -249,7 +249,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	
 	CommandFile=vivado.tcl
 	
-	echo -e "compile_simlib -force -library $Library -family $Family -language $Language -simulator $Simulator -simulator_exec_path $VSimBinDir -directory $DestDir\nexit" > $CommandFile
+	echo -e "compile_simlib -force -no_ip_compile -library $Library -family $Family -language $Language -simulator $Simulator -simulator_exec_path $VSimBinDir -directory $DestDir\nexit" > $CommandFile
 	if [ $? -ne 0 ]; then
 		echo 1>&2 -e "${COLORED_ERROR} Cannot create temporary tcl script.${ANSI_NOCOLOR}"
 		exit -1;
