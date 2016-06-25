@@ -882,7 +882,8 @@ class PoC(ILogable, ArgParseMixin):
 
 		# check if QuestaSim is configured
 		if (len(self.PoCConfig.options("INSTALL.Mentor.QuestaSim")) == 0):
-			raise NotConfiguredException("Mentor QuestaSim is not configured on this system.")
+			if (len(self.PoCConfig.options("INSTALL.Altera.ModelSim")) == 0):
+				raise NotConfiguredException("Neither Mentor QuestaSim nor Altera ModelSim is not configured on this system.")
 
 		fqnList =  self._ExtractFQNs(args.FQN)
 		board =    self._ExtractBoard(args.BoardName, args.DeviceName)
