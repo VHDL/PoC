@@ -362,10 +362,10 @@ class PoC(ILogable, ArgParseMixin):
 
 		self._LogVerbose("starting manual configuration...")
 		print("Explanation of abbreviations:")
-		print("  y - yes")
-		print("  n - no")
-		print("  p - pass (jump to next question)")
-		print("Upper case means default value")
+		print("  {YELLOW}Y{NOCOLOR} - yes      {YELLOW}P{NOCOLOR}        - pass (jump to next question)".format(**Init.Foreground))
+		print("  {YELLOW}N{NOCOLOR} - no       {YELLOW}Ctrl + C{NOCOLOR} - abort (nothing changes are saved)".format(**Init.Foreground))
+		print("Upper case or value in '[...]' means default value")
+		print("-"*80)
 		print()
 
 		# configure each vendor or tool of a tool chain
