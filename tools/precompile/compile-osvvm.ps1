@@ -165,7 +165,7 @@ if ($Questa)
 	foreach ($File in $SourceFiles)
 	{	Write-Host "Compiling '$File'..." -ForegroundColor Cyan
 		$InvokeExpr = "$VSimBinDir\vcom.exe -2008 -work $Library " + $File + " 2>&1"
-		$ErrorRecordFound = Invoke-Expression $InvokeExpr
+		Invoke-Expression $InvokeExpr
 		if ($LastExitCode -ne 0)
 		{	$ErrorCount += 1
 			if ($HaltOnError)

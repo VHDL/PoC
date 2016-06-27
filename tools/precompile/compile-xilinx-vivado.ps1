@@ -177,7 +177,7 @@ if ($Questa)
 	$VSimBinDir_TclPath =	$VSimBinDir.Replace("\", "/")
 	$DestDir_TclPath =		$DestDir.Replace("\", "/")
 	"compile_simlib -force -library $Library -family $Family -language $Language -simulator $Simulator -simulator_exec_path $VSimBinDir_TclPath -directory $DestDir_TclPath`nexit" | Out-File $CommandFile -Encoding ascii
-	if ($LastExitCode -ne 0)
+	if (-not $?)
 	{	Write-Host "[ERROR]: Cannot create temporary tcl script." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}

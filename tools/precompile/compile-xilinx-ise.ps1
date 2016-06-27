@@ -174,7 +174,7 @@ if ($Questa)
 	
 	$Command = "$ISE_compxlib -64bit -s $Simulator -l $Language -dir $DestDir -p $VSimBinDir -arch $TargetArchitecture -lib unisim -lib simprim -lib xilinxcorelib -intstyle ise"
 	Invoke-Expression $Command
-	if ($LastExitCode -ne 0)
+	if (-not $?)
 	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
