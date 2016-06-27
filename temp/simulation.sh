@@ -113,6 +113,10 @@ case "py$PYTHON_VERSION" in
 		;;
 esac
 
+# VHDL settings
+VHDL_Library="poc"
+# VHDL_TopLevel="sort_lru_list"
+VHDL_TopLevel="sort_lru_cache"
 
 SourceFiles=(
 	"/home/paebbels/git/PoC/tb/common/my_project.vhdl"
@@ -128,7 +132,7 @@ SourceFiles=(
 	"/home/paebbels/git/PoC/src/common/fileio.v08.vhdl"
 	"/home/paebbels/git/PoC/src/arith/arith.pkg.vhdl"
 	"/home/paebbels/git/PoC/src/arith/arith_prefix_and.vhdl"
-	"/home/paebbels/git/PoC/src/sort/sort_lru_list.vhdl"
+	"/home/paebbels/git/PoC/src/sort/$VHDL_TopLevel.vhdl"
 )
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
@@ -142,9 +146,6 @@ fi
 CocotbInstallDir=$PoCRootDir/$CocotbLibDir
 COCOTB_PythonDir=$CocotbInstallDir/cocotb
 
-# VHDL settings
-VHDL_Library="poc"
-VHDL_TopLevel="sort_lru_list"
 
 LD_LIBRARY_PATH=/usr/lib
 PYTHON_MODULE=${VHDL_TopLevel}_cocotb
@@ -168,6 +169,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	CreateDestinationDirectory $DestDir
 	
 	GHDL_OPTIONS=("-fexplicit" "--work=$VHDL_Library" "--std=08" "-P../precompiled/ghdl/xilinx/")
+	# GHDL_OPTIONS=("-fexplicit" "--work=$VHDL_Library" "--std=93c" "-P../precompiled/ghdl/xilinx/")
 	
 	echo -e "${YELLOW}Analyzing library '$VHDL_Library' with ghdl...${ANSI_NOCOLOR}"
 	ERRORCOUNT=0
@@ -237,6 +239,10 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 			let ERRORCOUNT++
 		fi
 	done
+
+	echo "  Copying Python modules..."
+	cp $PoCRootDir/tb/common/*.py .
+	cp $PoCRootDir/tb/sort/${VHDL_TopLevel}_cocotb.py .
 
 	echo "vsim -onfinish exit -foreign \"cocotb_init libfli.so\" $VHDL_Library.$VHDL_TopLevel" > $VHDL_TopLevel.do
 	echo "onbreak resume" >> $VHDL_TopLevel.do
