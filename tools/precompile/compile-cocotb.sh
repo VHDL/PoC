@@ -50,6 +50,7 @@ source $ScriptDir/shared.sh
 
 # command line argument processing
 NO_COMMAND=1
+PYTHON_VERSION="27"
 # VHDL93=0
 # VHDL2008=0
 while [[ $# > 0 ]]; do
@@ -73,6 +74,10 @@ while [[ $# > 0 ]]; do
 		-h|--help)
 		HELP=TRUE
 		NO_COMMAND=0
+		;;
+		--python)
+		PYTHON_VERSION="$2"
+		shift						# skip argument
 		;;
 		# --vhdl93)
 		# VHDL93=1
@@ -102,7 +107,7 @@ if [ "$HELP" == "TRUE" ]; then
 	echo "  on Linux."
 	echo ""
 	echo "Usage:"
-	echo "  compile-altera.sh [-c] [--help|--all|--ghdl|--vsim]"
+	echo "  compile-altera.sh [-c] [--help|--all|--ghdl|--vsim] [<Options>]"
 	echo ""
 	echo "Common commands:"
 	echo "  -h --help             Print this help page"
@@ -113,10 +118,9 @@ if [ "$HELP" == "TRUE" ]; then
 	echo "     --ghdl             Compile for GHDL."
 	echo "     --questa           Compile for QuestaSim/ModelSim."
 	echo ""
-	# echo "Options:"
-	# echo "     --vhdl93           Compile for VHDL-93."
-	# echo "     --vhdl2008         Compile for VHDL-2008."
-	# echo ""
+	echo "Options:"
+	echo "     --python <Version> Use Python 2.7 or 3.x."
+	echo ""
 	exit 0
 fi
 
@@ -125,10 +129,25 @@ if [ "$COMPILE_ALL" == "TRUE" ]; then
 	COMPILE_FOR_GHDL=TRUE
 	COMPILE_FOR_VSIM=TRUE
 fi
-# if [ \( $VHDL93 -eq 0 \) -a \( $VHDL2008 -eq 0 \) ]; then
-	# VHDL93=1
-	# VHDL2008=1
-# fi
+case "py$PYTHON_VERSION" in
+	py)		# default Python version
+		PY_VERSION="2.7"
+		;;
+	py27|py2.7)
+		PY_VERSION="2.7"
+		;;
+	py34|py3.4)
+		PY_VERSION="3.4m"
+		;;
+	py35|py3.5)
+		PY_VERSION="3.5m"
+		;;
+	*)		# unsupported Python version
+		echo 1>&2 -e "${COLORED_ERROR} Unsupported Python version '$PYTHON_VERSION'.${ANSI_NOCOLOR}"
+		exit -1
+		;;
+esac
+
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
@@ -146,7 +165,137 @@ COCOTB_SourceDir=$CocotbInstallDir/lib
 # GHDL
 # ==============================================================================
 if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
+	# Get GHDL directories
+	# <= $GHDLBinDir
+	# <= $GHDLScriptDir
+	# <= $GHDLDirName
+	GetGHDLDirectories $PoC_sh
 
+	# Assemble output directory
+	DestDir=$PoCRootDir/$PrecompiledDir/$GHDLDirName
+	# Create and change to destination directory
+	# -> $DestinationDirectory
+	CreateDestinationDirectory $DestDir
+	
+	# clean cocotb directory
+	if [ -d $DestDir/cocotb ]; then
+		echo -e "${ANSI_YELLOW}Cleaning library 'cocotb' ...${ANSI_NOCOLOR}"
+		rm -rf cocotb
+	fi
+	
+	# Cocotb paths and settings
+	COCOTB_BuildDir=$DestDir/cocotb
+	COCOTB_ObjDir=$COCOTB_BuildDir
+	COCOTB_SharedDir=$COCOTB_BuildDir
+	
+	mkdir -p $COCOTB_ObjDir
+	mkdir -p $COCOTB_SharedDir
+	
+	COCOTB_INCLUDE_SEARCH_DIR="-I$COCOTB_IncludeDir"
+	COCOTB_LIBRARY_SEARCH_DIR="-L$COCOTB_SharedDir"
+	
+	# System and Linux paths and settings
+	System_IncludeDir="/usr/include"
+	System_Executables="/usr/bin"
+	System_Libraries="/usr/lib"
+	Linux_IncludeDir="$System_IncludeDir/x86_64-linux-gnu"
+
+	LINUX_INCLUDE_SEARCH_DIR="-I$System_IncludeDir -I$Linux_IncludeDir"
+	LINUX_LIBRARY_SEARCH_DIR="-L$System_Libraries"
+	
+	# Python paths and settings
+	PY_LIBRARY="python$PY_VERSION"
+	PYTHON_DEFINES="-DPYTHON_SO_LIB=lib$PY_LIBRARY.so"
+	PYTHON_INCLUDE_SEARCH_DIR="-I$System_IncludeDir/$PY_LIBRARY"
+	PYTHON_LIBRARY_SEARCH_DIR=
+	PYTHON_LIBRARY="-l$PY_LIBRARY"
+
+	# Common CC and LD variables
+	CC_WARNINGS="-Werror -Wcast-qual -Wcast-align -Wwrite-strings -Wall -Wno-unused-parameter"
+	LD_WARNINGS="-Wstrict-prototypes -Waggregate-return"
+	CC_DEBUG="-g -DDEBUG"
+	CC_DEFINES="-DMODELSIM"
+	CC_FLAGS="-fno-common -fpic"
+
+	CXX_WARNINGS=$CC_WARNINGS
+	CXX_DEBUG=$CC_DEBUG
+	CXX_FLAGS=$CC_FLAGS
+
+	# Configure executables
+	CC="gcc"
+	CXX="g++"
+	LD="gcc"
+
+  echo -e "${ANSI_YELLOW}Compiling 'libcocotbutils.so'...${ANSI_NOCOLOR}"
+	CC_DEFINES=$CC_DEFINES
+	CC_WARNINGS=$CC_WARNINGS
+	CC_INCLUDE_SEARCH_DIR="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"
+	CC_LIBRARY_SEARCH_DIR=$LINUX_LIBRARY_SEARCH_DIR
+	CC_LIBRARIES=
+	$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDE_SEARCH_DIR   -o $COCOTB_ObjDir/cocotb_utils.o $COCOTB_SourceDir/utils/cocotb_utils.c
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libcocotbutils.so $COCOTB_ObjDir/cocotb_utils.o
+
+
+	echo -e "${ANSI_YELLOW}Compiling 'libcocotbutils.so'...${ANSI_NOCOLOR}"
+	CC_DEFINES="$CC_DEFINES -DFILTER"
+	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
+	CC_INCLUDE_SEARCH_DIR="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR $LINUX_INCLUDE_SEARCH_DIR"
+	CC_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
+	CC_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY"
+	$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDE_SEARCH_DIR   -o $COCOTB_ObjDir/gpi_logging.o $COCOTB_SourceDir/gpi_log/gpi_logging.c
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libgpilog.so $COCOTB_ObjDir/gpi_logging.o
+
+
+	echo -e "${ANSI_YELLOW}Compiling 'libcocotb.so'...${ANSI_NOCOLOR}"
+	CC_DEFINES="$CC_DEFINES $PYTHON_DEFINES"
+	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
+	CC_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR $LINUX_INCLUDE_SEARCH_DIR"
+	CC_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
+	CC_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY -lgpilog -lcocotbutils"
+	$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDES             -o $COCOTB_ObjDir/gpi_embed.o $COCOTB_SourceDir/embed/gpi_embed.c
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libcocotb.so $COCOTB_ObjDir/gpi_embed.o
+
+
+	echo -e "${ANSI_YELLOW}Compiling 'libgpi.so'...${ANSI_NOCOLOR}"
+	CXX_DEFINES="$CC_DEFINES -DVPI_CHECKING -DLIB_EXT=so -DSINGLETON_HANDLES"
+	CXX_WARNINGS="$CXX_WARNINGS"
+	CXX_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"
+	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
+	CC_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
+	CC_LIBRARIES="-lcocotbutils -lgpilog -lcocotb -lstdc++"
+	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/GpiCbHdl.o $COCOTB_SourceDir/gpi/GpiCbHdl.cpp
+	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/GpiCommon.o $COCOTB_SourceDir/gpi/GpiCommon.cpp
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CXX_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libgpi.so $COCOTB_ObjDir/GpiCbHdl.o $COCOTB_ObjDir/GpiCommon.o
+
+
+	echo -e "${ANSI_YELLOW}Compiling 'libsim.so'...${ANSI_NOCOLOR}"
+	CC_DEFINES="$CC_DEFINES $PYTHON_DEFINES"
+	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
+	CC_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR $LINUX_INCLUDE_SEARCH_DIR"
+	CC_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
+	CC_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY -lgpi -lgpilog"
+	$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDES             -o $COCOTB_ObjDir/simulatormodule.o $COCOTB_SourceDir/simulator/simulatormodule.c
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libsim.so $COCOTB_ObjDir/simulatormodule.o
+
+
+	echo -e "${ANSI_YELLOW}Creating symlink 'simulator.so'...${ANSI_NOCOLOR}"
+	ln -sf $COCOTB_SharedDir/libsim.so $COCOTB_SharedDir/simulator.so
+
+
+	echo -e "${ANSI_YELLOW}Compiling 'libvpi.so'...${ANSI_NOCOLOR}"
+	CXX_DEFINES="$CC_DEFINES -DVPI_CHECKING"
+	CXX_WARNINGS="$CXX_WARNINGS"
+	CXX_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"
+	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
+	CC_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
+	CC_LIBRARIES="-lgpi -lgpilog -lstdc++"
+	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/VpiImpl.o $COCOTB_SourceDir/vpi/VpiImpl.cpp
+	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/VpiCbHdl.o $COCOTB_SourceDir/vpi/VpiCbHdl.cpp
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CXX_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libvpi.so $COCOTB_ObjDir/VpiImpl.o $COCOTB_ObjDir/VpiCbHdl.o
+
+
+	echo -e "${ANSI_YELLOW}Removing object files...${ANSI_NOCOLOR}"
+	rm cocotb/*.o
 
 	cd $WorkingDir
 fi
@@ -160,21 +309,21 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	GetVSimDirectories $PoC_sh
 
 	# Assemble output directory
-	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName/cocotb
+	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName
 	# Create and change to destination directory
 	# -> $DestinationDirectory
 	CreateDestinationDirectory $DestDir
 	
-	# clean osvvm directory
-	if [ -d $DestDir/osvvm ]; then
+	# clean cocotb directory
+	if [ -d $DestDir/cocotb ]; then
 		echo -e "${YELLOW}Cleaning library 'osvvm' ...${ANSI_NOCOLOR}"
-		rm -rf osvvm
+		rm -rf cocotb
 	fi
 	
 	# Cocotb paths and settings
-	COCOTB_BuildDir=$DestDir/build
-	COCOTB_ObjDir=$COCOTB_BuildDir/obj
-	COCOTB_SharedDir=$COCOTB_BuildDir/libs
+	COCOTB_BuildDir=$DestDir/cocotb
+	COCOTB_ObjDir=$COCOTB_BuildDir
+	COCOTB_SharedDir=$COCOTB_BuildDir
 	
 	mkdir -p $COCOTB_ObjDir
 	mkdir -p $COCOTB_SharedDir
@@ -271,7 +420,10 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDES             -o $COCOTB_ObjDir/simulatormodule.o $COCOTB_SourceDir/simulator/simulatormodule.c
 	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libsim.so $COCOTB_ObjDir/simulatormodule.o
 
+
+	echo -e "${ANSI_YELLOW}Creating symlink 'simulator.so'...${ANSI_NOCOLOR}"
 	ln -sf $COCOTB_SharedDir/libsim.so $COCOTB_SharedDir/simulator.so
+
 
 	echo -e "${ANSI_YELLOW}Compiling 'libvpi.so'...${ANSI_NOCOLOR}"
 	CXX_DEFINES="$CC_DEFINES -DVPI_CHECKING"
@@ -297,6 +449,9 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/FliObjHdl.o $COCOTB_SourceDir/fli/FliObjHdl.cpp
 	$LD  -shared $CC_DEBUG $CC_WARNINGS $CXX_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libfli.so $COCOTB_ObjDir/FliImpl.o $COCOTB_ObjDir/FliCbHdl.o $COCOTB_ObjDir/FliObjHdl.o
 
+
+	echo -e "${ANSI_YELLOW}Removing object files...${ANSI_NOCOLOR}"
+	rm cocotb/*.o
 	
 	cd $WorkingDir
 fi
