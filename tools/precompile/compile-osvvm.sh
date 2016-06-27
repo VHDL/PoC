@@ -50,8 +50,6 @@ PoC_sh=$PoCRootDir/poc.sh
 # source shared file from precompile directory
 source $ScriptDir/shared.sh
 
-# set bash options
-set -o pipefail
 
 # command line argument processing
 NO_COMMAND=1

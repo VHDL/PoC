@@ -46,8 +46,6 @@ PoC_sh=$PoCRootDir/poc.sh
 # source shared file from precompile directory
 source $ScriptDir/shared.sh
 
-# set bash options
-set -o pipefail
 
 # command line argument processing
 NO_COMMAND=1
@@ -103,7 +101,7 @@ if [ "$HELP" == "TRUE" ]; then
 	echo "  on Linux."
 	echo ""
 	echo "Usage:"
-	echo "  compile-altera.sh [-c] [--help|--all|--ghdl|--vsim]"
+	echo "  compile-altera.sh [-c] [--help|--all|--ghdl|--vsim] [<Options>]"
 	echo ""
 	echo "Common commands:"
 	echo "  -h --help             Print this help page"
@@ -113,6 +111,10 @@ if [ "$HELP" == "TRUE" ]; then
 	echo "  -a --all              Compile for all tool chains."
 	echo "     --ghdl             Compile for GHDL."
 	echo "     --questa           Compile for QuestaSim/ModelSim."
+	echo ""
+	echo "Options:"
+	echo "     --vhdl93           Compile for VHDL-93."
+	echo "     --vhdl2008         Compile for VHDL-2008."
 	echo ""
 	exit 0
 fi
