@@ -11,8 +11,9 @@
 # 
 # Description:
 # ------------------------------------
-#	This is a bash script compiles Lattice's simulation libraries into a local
-#	directory.
+#	This is a Bash script (executable) which:
+#		- creates a subdirectory in the current working directory
+#		- compiles all Lattice libraries
 #
 # License:
 # ==============================================================================

@@ -6,14 +6,11 @@
 #	Authors:						Patrick Lehmann
 #                     Martin Zabel
 # 
-#	Bash Script:				Script to compile the OSVVM library for Questa / ModelSim
-#                     on Linux
+#	Bash include file:	Common constants and functions for all compile scripts.
 # 
 # Description:
 # ------------------------------------
-#	This is a Bash script (executable) which:
-#		- creates a subdirectory in the current working directory
-#		- compiles all OSVVM packages 
+#	
 #
 # License:
 # ==============================================================================

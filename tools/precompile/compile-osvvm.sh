@@ -4,17 +4,16 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 # 
 # ==============================================================================
-#	Authors:						Patrick Lehmann
-#                     Martin Zabel
+#	Authors:					Patrick Lehmann
+#                   Martin Zabel
 # 
-#	Bash Script:				Script to compile the OSVVM library for Questa / ModelSim
-#                     on Linux
+#	Bash Script:			Compile OSVVM simulation packages
 # 
 # Description:
 # ------------------------------------
 #	This is a Bash script (executable) which:
 #		- creates a subdirectory in the current working directory
-#		- compiles all OSVVM packages 
+#		- compiles all OSVVM packages
 #
 # License:
 # ==============================================================================

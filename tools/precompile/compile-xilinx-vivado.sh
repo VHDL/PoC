@@ -7,12 +7,13 @@
 #	Authors:         	Martin Zabel
 #                   Patrick Lehmann
 # 
-#	Bash Script:			Compile Xilinx's simulation libraries
+#	Bash Script:			Compile Xilinx's Vivado simulation libraries
 # 
 # Description:
 # ------------------------------------
-#	This is a bash script compiles Xilinx's simulation libraries into a local
-#	directory.
+#	This is a Bash script (executable) which:
+#		- creates a subdirectory in the current working directory
+#		- compiles all Xilinx Vivado libraries
 #
 # License:
 # ==============================================================================
