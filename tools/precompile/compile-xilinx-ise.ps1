@@ -9,7 +9,7 @@
 # 
 # Description:
 # ------------------------------------
-#	This is a PowerShell script compiles Xilinx's simulation libraries into a local
+#	This PowerShell script compiles Xilinx's ISE simulation libraries into a local
 #	directory.
 #
 # License:

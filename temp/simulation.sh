@@ -250,7 +250,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	echo "quit" >> $VHDL_TopLevel.do
 
 	echo "  Simulating '$VHDL_Library.$VHDL_TopLevel'..."
-	PYTHONPATH=$COCOTB_SharedDir:$CocotbInstallDir:$DestDir LD_LIBRARY_PATH=$COCOTB_SharedDir:$LD_LIBRARY_PATH MODULE=$PYTHON_MODULE TESTCASE= TOPLEVEL=$VHDL_TopLevel TOPLEVEL_LANG=vhdl $VSimBinDir/vsim -c -do $VHDL_TopLevel.do 2>&1
+	PYTHONPATH=$COCOTB_SharedDir:$CocotbInstallDir:$DestDir LD_LIBRARY_PATH=$COCOTB_SharedDir:$LD_LIBRARY_PATH MODULE=$PYTHON_MODULE TESTCASE= TOPLEVEL=$VHDL_TopLevel TOPLEVEL_LANG=vhdl $VSimBinDir/vsim -c -t 1fs -do $VHDL_TopLevel.do 2>&1
 	if [ $? -ne 0 ]; then
 		let ERRORCOUNT++
 	fi

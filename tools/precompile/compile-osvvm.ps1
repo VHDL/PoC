@@ -5,11 +5,11 @@
 # ==============================================================================
 #	Authors:            Patrick Lehmann
 # 
-#	PowerShell Script:  Compile OSVVM's simulation libraries
+#	PowerShell Script:  Compile OSVVM's simulation packages
 # 
 # Description:
 # ------------------------------------
-#	This is a PowerShell script compiles OSVVM's simulation libraries into a local
+#	This PowerShell script compiles OSVVM's simulation packages into a local
 #	directory.
 #
 # License:
