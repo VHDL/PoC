@@ -121,7 +121,7 @@ architecture rtl of sortnet_BitonicSort is
 
 begin
 	assert (not C_VERBOSE)
-		report "sortnet_BitonicSort:" & CR &
+		report "sortnet_BitonicSort:" & LF &
 					 "  DATA_BITS=" & INTEGER'image(DATA_BITS) &
 					 "  KEY_BITS=" & INTEGER'image(KEY_BITS) &
 					 "  META_BITS=" & INTEGER'image(META_BITS)

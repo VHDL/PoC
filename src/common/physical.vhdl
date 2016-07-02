@@ -847,20 +847,20 @@ package body physical is
 		res_dev		:= (div(res_time, Timing) - 1.0) * 100.0;
 
 		if (POC_VERBOSE = TRUE) then
-			report "TimingToCycles: " & 	CR &
-						 "  Timing: " &					to_string(Timing, 3) & CR &
-						 "  Clock_Period: " &		to_string(Clock_Period, 3) & CR &
-						 "  RoundingStyle: " &	str_substr(T_ROUNDING_STYLE'image(RoundingStyle), 7) & CR &
-						 "  res_real = " &			str_format(res_real, 3) & CR &
+			report "TimingToCycles: " & 	LF &
+						 "  Timing: " &					to_string(Timing, 3) & LF &
+						 "  Clock_Period: " &		to_string(Clock_Period, 3) & LF &
+						 "  RoundingStyle: " &	str_substr(T_ROUNDING_STYLE'image(RoundingStyle), 7) & LF &
+						 "  res_real = " &			str_format(res_real, 3) & LF &
 						 "  => " &							INTEGER'image(res_nat)
 			severity note;
 		end if;
 
 		if (C_PHYSICAL_REPORT_TIMING_DEVIATION = TRUE) then
-			report "TimingToCycles (timing deviation report): " & CR &
-						 "  timing to achieve: " & to_string(Timing, 3) & CR &
-						 "  calculated cycles: " & INTEGER'image(res_nat) & " cy" & CR &
-						 "  resulting timing:  " & to_string(res_time, 3) & CR &
+			report "TimingToCycles (timing deviation report): " & LF &
+						 "  timing to achieve: " & to_string(Timing, 3) & LF &
+						 "  calculated cycles: " & INTEGER'image(res_nat) & " cy" & LF &
+						 "  resulting timing:  " & to_string(res_time, 3) & LF &
 						 "  deviation:         " & to_string(res_time - Timing, 3) & " (" & str_format(res_dev, 2) & "%)"
 			severity note;
 		end if;

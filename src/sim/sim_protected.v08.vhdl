@@ -151,8 +151,8 @@ package body sim_protected is
 		  variable LineBuffer : LINE;
 		begin
 		  write(LineBuffer,		(			STRING'("========================================")));
-		  write(LineBuffer,		(CR & STRING'("POC TESTBENCH REPORT")));
-		  write(LineBuffer,		(CR & STRING'("========================================")));
+		  write(LineBuffer,		(LF & STRING'("POC TESTBENCH REPORT")));
+		  write(LineBuffer,		(LF & STRING'("========================================")));
 		  writeline(output, LineBuffer);
 		end procedure;
 
@@ -161,12 +161,12 @@ package body sim_protected is
 	  begin
 			if (Tests(C_SIM_DEFAULT_TEST_ID).Status /= SIM_TEST_STATUS_CREATED) then
 				write(LineBuffer,				 Prefix & "Tests          " & INTEGER'image(TestCount + 1));
-				write(LineBuffer,		CR & Prefix & " " & str_ralign("-1", log10ceilnz(TestCount + 1) + 1) & ": " & C_SIM_DEFAULT_TEST_NAME);
+				write(LineBuffer,		LF & Prefix & " " & str_ralign("-1", log10ceilnz(TestCount + 1) + 1) & ": " & C_SIM_DEFAULT_TEST_NAME);
 			else
 				write(LineBuffer,				 Prefix & "Tests          " & INTEGER'image(TestCount));
 			end if;
 			for i in 0 to TestCount - 1 loop
-				write(LineBuffer,		CR & Prefix & "  " & str_ralign(INTEGER'image(i), log10ceilnz(TestCount)) & ": " & str_trim(Tests(i).Name));
+				write(LineBuffer,		LF & Prefix & "  " & str_ralign(INTEGER'image(i), log10ceilnz(TestCount)) & ": " & str_trim(Tests(i).Name));
 			end loop;
 		  writeline(output, LineBuffer);
 		end procedure;
@@ -175,7 +175,7 @@ package body sim_protected is
 		  variable LineBuffer : LINE;
 	  begin
 			write(LineBuffer,					 Prefix & "Assertions   " & INTEGER'image(AssertCount));
-			write(LineBuffer,			CR & Prefix & "  failed     " & INTEGER'image(FailedAssertCount) & ite((FailedAssertCount >= Max_AssertFailures), " Too many failed asserts!", ""));
+			write(LineBuffer,			LF & Prefix & "  failed     " & INTEGER'image(FailedAssertCount) & ite((FailedAssertCount >= Max_AssertFailures), " Too many failed asserts!", ""));
 		  writeline(output, LineBuffer);
 		end procedure;
 
@@ -183,11 +183,11 @@ package body sim_protected is
 		  variable LineBuffer : LINE;
 	  begin
 			write(LineBuffer,					 Prefix & "Processes    " & INTEGER'image(ProcessCount));
-			write(LineBuffer,			CR & Prefix & "  active     " & INTEGER'image(ActiveProcessCount));
+			write(LineBuffer,			LF & Prefix & "  active     " & INTEGER'image(ActiveProcessCount));
 			-- report killed processes
 			for i in 0 to ProcessCount - 1 loop
 				if ((Processes(i).Status = SIM_PROCESS_STATUS_ACTIVE) and (Processes(i).IsLowPriority = FALSE)) then
-					write(LineBuffer,	CR & Prefix & "    " & str_ralign(INTEGER'image(i), log10ceilnz(ProcessCount)) & ": " & str_trim(Processes(i).Name));
+					write(LineBuffer,	LF & Prefix & "    " & str_ralign(INTEGER'image(i), log10ceilnz(ProcessCount)) & ": " & str_trim(Processes(i).Name));
 				end if;
 			end loop;
 		  writeline(output, LineBuffer);
@@ -204,11 +204,11 @@ package body sim_protected is
 		  variable LineBuffer : LINE;
 	  begin
 		  write(LineBuffer,																(			STRING'("========================================")));
-		  if		(Passed = FALSE) then		write(LineBuffer, (CR & STRING'("SIMULATION RESULT = FAILED")));
-			elsif (AssertCount = 0) then	write(LineBuffer, (CR & STRING'("SIMULATION RESULT = NO ASSERTS")));
-		  elsif (Passed = TRUE) then		write(LineBuffer, (CR & STRING'("SIMULATION RESULT = PASSED")));
+		  if		(Passed = FALSE) then		write(LineBuffer, (LF & STRING'("SIMULATION RESULT = FAILED")));
+			elsif (AssertCount = 0) then	write(LineBuffer, (LF & STRING'("SIMULATION RESULT = NO ASSERTS")));
+		  elsif (Passed = TRUE) then		write(LineBuffer, (LF & STRING'("SIMULATION RESULT = PASSED")));
 		  end if;
-		  write(LineBuffer,																(CR & STRING'("========================================")));
+		  write(LineBuffer,																(LF & STRING'("========================================")));
 		  writeline(output, LineBuffer);
 		end procedure;
 
@@ -217,7 +217,7 @@ package body sim_protected is
 	  begin
 			writeReport_Header;
 			writeReport_TestReport("");
-			write(LineBuffer, CR & "Overall");
+			write(LineBuffer, LF & "Overall");
 		  writeline(output, LineBuffer);
 			writeReport_AssertReport("  ");
 			writeReport_ProcessReport("  ");

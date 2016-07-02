@@ -184,7 +184,7 @@ architecture rtl of gearbox_down_cc is
 
 begin
 	assert (not C_VERBOSE)
-		report "gearbox_down_cc:" & CR &
+		report "gearbox_down_cc:" & LF &
 					 "  INPUT_BITS=" & INTEGER'image(INPUT_BITS) &
 					 "  OUTPUT_BITS=" & INTEGER'image(OUTPUT_BITS) &
 					 "  INPUT_CHUNKS=" & INTEGER'image(INPUT_CHUNKS) &

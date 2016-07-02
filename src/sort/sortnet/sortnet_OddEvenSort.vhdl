@@ -119,7 +119,7 @@ architecture rtl of sortnet_OddEvenSort is
 
 begin
 	assert (not C_VERBOSE)
-		report "sortnet_OddEvenSort:" & CR &
+		report "sortnet_OddEvenSort:" & LF &
 					 "  DATA_BITS=" & INTEGER'image(DATA_BITS) &
 					 "  KEY_BITS=" & INTEGER'image(KEY_BITS) &
 					 "  META_BITS=" & INTEGER'image(META_BITS)
