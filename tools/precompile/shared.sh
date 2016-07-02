@@ -36,6 +36,7 @@ ANSI_YELLOW="\e[33m"
 ANSI_BLUE="\e[34m"
 ANSI_MAGENTA="\e[35m"
 ANSI_CYAN="\e[36;1m"
+ANSI_DARKCYAN="\e[36m"
 ANSI_NOCOLOR="\e[0m"
 
 # red texts

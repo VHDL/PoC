@@ -58,7 +58,8 @@ param(
 	[switch]$Help =				$false
 )
 
-$PoCRootDir =		"\..\.."
+$PoCRootDir =						"\..\.."
+$OSVVMSourceDirectory =	"lib\osvvm"
 
 # resolve paths
 $WorkingDir =		Get-Location
@@ -78,7 +79,8 @@ if ($Help)
 $GHDL,$Questa =			Resolve-Simulator $All $GHDL $Questa
 
 $PreCompiledDir =		Get-PrecompiledDirectoryName $PoCPS1
-$OSVVMDirName =			"."
+$OSVVMDirName =			"osvvm"
+$SourceDirectory =	"$PoCRootDir\$OSVVMSourceDirectory"
 
 # GHDL
 # ==============================================================================
@@ -91,7 +93,7 @@ if ($GHDL)
 	$GHDLDirName =		Get-GHDLDirectoryName $PoCPS1
 
 	# Assemble output directory
-	$DestDir="$PoCRootDir\$PrecompiledDir\$GHDLDirName"
+	$DestDir = Convert-Path (Resolve-Path "$PoCRootDir\$PrecompiledDir\$GHDLDirName")
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 	
@@ -101,14 +103,11 @@ if ($GHDL)
 		Exit-PrecompileScript -1
 	}
 	
-	$ISEInstallDir =	Get-ISEInstallationDirectory $PoCPS1
-	$SourceDir =			"$ISEInstallDir\ISE\vhdl\src"
-	
 	# export GHDL environment variable if not allready set
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	
-	$Command = "$GHDLOSVVMScript -All -Source $SourceDir -Output $DestDir\$OSVVMDirName"
+	$Command = "$GHDLOSVVMScript -All -Source $SourceDirectory -Output $DestDir"
 	Invoke-Expression $Command
 	if ($LastExitCode -ne 0)
 	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
@@ -131,11 +130,10 @@ if ($Questa)
 	$VSimDirName =		Get-QuestaSimDirectoryName $PoCPS1
 
 	# Assemble output directory
-	$DestDir="$PoCRootDir\$PrecompiledDir\$VSimDirName\$OSVVMDirName"
+	$DestDir = Convert-Path (Resolve-Path "$PoCRootDir\$PrecompiledDir\$VSimDirName\$OSVVMDirName")
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
-
-	New-ModelSim_ini
+	cd ..
 	
 	$Library = "osvvm"
 	$Files = @(
@@ -158,7 +156,7 @@ if ($Questa)
 	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
 	& "$VSimBinDir\vlib.exe" $Library
 	& "$VSimBinDir\vmap.exe" -del $Library
-	& "$VSimBinDir\vmap.exe" $Library "$DestDir\$OSVVMDirName"
+	& "$VSimBinDir\vmap.exe" $Library "$DestDir"
 	
 	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
 	$ErrorCount += 0
