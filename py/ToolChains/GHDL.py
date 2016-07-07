@@ -125,7 +125,7 @@ class Configuration(BaseConfiguration):
 		"""Updates section with value from _template and returns directory as Path object."""
 		self._ConfigureScriptDirectory()
 		return super()._ConfigureBinaryDirectory()
-		
+
 	def _ConfigureScriptDirectory(self):
 		"""Updates section with value from _template and returns directory as Path object."""
 		unresolved = self._template[self._host.Platform][self._section]['ScriptDirectory']
