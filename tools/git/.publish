@@ -8,6 +8,8 @@ README.md
 git-alias.setup.sh
 git-alias.setup.ps1
 git-hooks.setup.py
+git-filters.setup.py
 
 # subdirectories
 hooks/
+filters/

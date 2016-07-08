@@ -7,7 +7,7 @@
 #                   Martin Zabel
 #                   Thomas B. Preusser
 #
-# Python Class:      GHDL specific classes
+# Python Class:     GHDL specific classes
 #
 # Description:
 # ------------------------------------
@@ -152,7 +152,7 @@ class Configuration(BaseConfiguration):
 		backend = None
 		versionRegExpStr = r"^GHDL (.+?) "
 		versionRegExp = RegExpCompile(versionRegExpStr)
-		backendRegExpStr = r" (\w+) code generator"
+		backendRegExpStr = r"(?i).*(mcode|gcc|llvm).* code generator"
 		backendRegExp = RegExpCompile(backendRegExpStr)
 		for line in output.split('\n'):
 			if version is None:
@@ -163,8 +163,11 @@ class Configuration(BaseConfiguration):
 			if backend is None:
 				match = backendRegExp.match(line)
 				if match is not None:
-					backend = match.group(1)
-
+					backend = match.group(1).lower()
+		
+		if ((version is None) or (backend is None)):
+			raise ConfigurationException("Version number or back-end name not found in '{0!s} -v' output.".format(ghdlPath))
+		
 		self._host.PoCConfig[self._section]['Version'] = version
 		self._host.PoCConfig[self._section]['Backend'] = backend
 

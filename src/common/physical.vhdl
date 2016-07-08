@@ -4,6 +4,7 @@
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
+--									Thomas B. Preusser
 --
 -- Package:					This VHDL package declares new physical types and their
 --									conversion functions.
@@ -99,6 +100,12 @@ package physical is
 	function to_freq(p : TIME)	return FREQ;
 	function to_freq(br : BAUD)	return FREQ;
 	function to_baud(str : STRING)	return BAUD;
+
+	-- inter-type arithmetic
+	function "/"(x : real; t : time) return FREQ;
+	function "/"(x : real; f : FREQ) return time;
+	function "*"(t : time; f : FREQ) return real;
+	function "*"(f : FREQ; t : time) return real;
 
 	-- if-then-else
 	function ite(cond : BOOLEAN; value1 : TIME;	value2 : TIME)			return TIME;
@@ -199,7 +206,21 @@ end package;
 
 package body physical is
 
-	-- iSim 14.7 does not support fs in simulation (fs values are converted to 0 ps)
+	-- WORKAROUND: for simulators with a "Minimal Time Resolution" > 1 fs
+	--	Version:	all
+	--	Vendors:	all
+	--	Issue:
+	--		Some simulators use a lower minimal time resolution (MTR) than the VHDL
+	--		standard (LRM) defines (1 fs). Usually, the MTR is set to 1 ps or 1 ns.
+	--		Most simulators allow the user to specify a higher MTR -> check the
+	--		simulator documentation.
+	--	Solution:
+	--		The currently set MTR can be calculated in VHDL. Using the correct MTR
+	--		can prevent cleared intermediate values and division by zero errors.
+	--	Examples:
+	--		Mentor Graphics QuestaSim/ModelSim (vSim): default MTR = ? ??
+	--		Xilinx ISE Simulator (iSim):               default MTR = 1 ps
+	--		Xilinx Vivado Simulator (xSim):            default MTR = 1 ps
 	function MinimalTimeResolutionInSimulation return TIME is
 	begin
 		if		(1 fs > 0 sec) then	return 1 fs;
@@ -218,7 +239,14 @@ package body physical is
 		variable a_real : real;
 		variable b_real : real;
 	begin
-		-- Quartus-II work-around
+		-- WORKAROUND: for Altera Quartus
+		--	Version:	all
+		--	Issue:
+		--		Results of TIME arithmetic must be in 32-bit integer range, because
+		--		the internally used 64-bit integer for type TIME can not be
+		--		represented in VHDL.
+		--	Solution:
+		--		Pre- and post-scale all values to stay in the integer range.
 	  if    a < 1 us  then
 			a_real  := real(a / MTRIS);
 		elsif a < 1 ms  then
@@ -351,6 +379,25 @@ package body physical is
 		else
 			report "to_baud: Unknown format" severity FAILURE;
 		end if;
+	end function;
+
+	-- inter-type arithmetic
+	-- ===========================================================================
+	function "/"(x : real; t : time) return FREQ is
+	begin
+		return  x*div(1 ms, t) * 1 kHz;
+	end function;
+	function "/"(x : real; f : FREQ) return time is
+	begin
+		return  x*div(1 kHz, f) * 1 ms;
+	end function;
+	function "*"(t : time; f : FREQ) return real is
+	begin
+		return  div(t, 1.0/f);
+	end function;
+	function "*"(f : FREQ; t : time) return real is
+	begin
+		return  div(f, 1.0/t);
 	end function;
 
 	-- if-then-else
