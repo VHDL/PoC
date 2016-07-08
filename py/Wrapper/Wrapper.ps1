@@ -127,6 +127,17 @@ $PyWrapper_LoadEnv =		@{
 				"PostHookFile" =	"Mentor.QuestaSim.post.ps1"
 			}
 		}};
+	"PowerShell" =				@{
+		"PreHookFile" =			"";
+		"PostHookFile" =		"";
+		"Tools" =						@{
+			"Sphinx" =				@{
+				"Load" =				$false;
+				"Commands" =		@("ps");
+				"PSModule" =			"PowerShell.psm1";
+				"PreHookFile" =		"PowerShell.pre.ps1";
+				"PostHookFile" =	"PowerShell.post.ps1"}
+		}};
 	"Sphinx" =						@{
 		"PreHookFile" =			"";
 		"PostHookFile" =		"";
