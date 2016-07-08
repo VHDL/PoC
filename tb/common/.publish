@@ -16,7 +16,7 @@ utils.py
 # --------------------------------------
 # package / function tests
 config_tb.*
-#physical_tb.*
+physical_tb.*
 strings_tb.*
 #utils_tb.*
 #vectors_tb.*
