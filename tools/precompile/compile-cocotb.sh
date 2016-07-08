@@ -42,6 +42,7 @@ ScriptDir="$(dirname $0)"
 ScriptDir="$($READLINK -f $ScriptDir)"
 
 PoCRootDir="$($READLINK -f $ScriptDir/../..)"
+PoCRootDir="/d/git/PoC"
 PoC_sh=$PoCRootDir/poc.sh
 
 # source shared file from precompile directory
@@ -223,6 +224,9 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	PYTHON_LIBRARY_SEARCH_DIR=
 	PYTHON_LIBRARY="-l$PY_LIBRARY"
 
+	GHDL_LIBRARY_SEARCH_DIR="-L/c/Tools/GHDL/0.34dev-mingw32-llvm/lib/ghdl"
+	GHDL_LIBRARY="-lgrt"
+	
 	# Common CC and LD variables
 	CC_WARNINGS="-Wcast-qual -Wcast-align -Wwrite-strings -Wall -Wno-unused-parameter"  # -Werror
 	LD_WARNINGS="-Wstrict-prototypes -Waggregate-return"
@@ -243,13 +247,13 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	CC_DEFINES=$CC_DEFINES
 	CC_WARNINGS=$CC_WARNINGS
 	CC_INCLUDE_SEARCH_DIR="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"
-	CC_LIBRARY_SEARCH_DIR=$LINUX_LIBRARY_SEARCH_DIR
-	CC_LIBRARIES=
+	LD_LIBRARY_SEARCH_DIR=$LINUX_LIBRARY_SEARCH_DIR
+	LD_LIBRARIES=
 	CMD="$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDE_SEARCH_DIR   -o $COCOTB_ObjDir/cocotb_utils.o $COCOTB_SourceDir/utils/cocotb_utils.c"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While compiling.${ANSI_NOCOLOR}";	exit -1;	fi
-	CMD="$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES -o $COCOTB_SharedDir/libcocotbutils$LIBEXT $COCOTB_ObjDir/cocotb_utils.o $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES"
+	CMD="$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES -o $COCOTB_SharedDir/libcocotbutils$LIBEXT $COCOTB_ObjDir/cocotb_utils.o $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While linking.${ANSI_NOCOLOR}";	exit -1;	fi
@@ -259,13 +263,13 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	CC_DEFINES="$CC_DEFINES -DFILTER"
 	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
 	CC_INCLUDE_SEARCH_DIR="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"	# $LINUX_INCLUDE_SEARCH_DIR"
-	CC_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
-	CC_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY"
+	LD_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
+	LD_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY"
 	CMD="$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDE_SEARCH_DIR   -o $COCOTB_ObjDir/gpi_logging.o $COCOTB_SourceDir/gpi_log/gpi_logging.c"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While compiling.${ANSI_NOCOLOR}";	exit -1;	fi
-	CMD="$LD -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES -o $COCOTB_SharedDir/libgpilog$LIBEXT $COCOTB_ObjDir/gpi_logging.o $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES"
+	CMD="$LD -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES -o $COCOTB_SharedDir/libgpilog$LIBEXT $COCOTB_ObjDir/gpi_logging.o $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While linking.${ANSI_NOCOLOR}";	exit -1;	fi
@@ -275,13 +279,13 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	CC_DEFINES="$CC_DEFINES $PYTHON_DEFINES"
 	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
 	CC_INCLUDE_SEARCH_DIR="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"	# $LINUX_INCLUDE_SEARCH_DIR"
-	CC_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
-	CC_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY -lgpilog -lcocotbutils"
+	LD_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
+	LD_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY -lgpilog -lcocotbutils"
 	CMD="$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDE_SEARCH_DIR             -o $COCOTB_ObjDir/gpi_embed.o $COCOTB_SourceDir/embed/gpi_embed.c"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While compiling.${ANSI_NOCOLOR}";	exit -1;	fi
-	CMD="$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES -o $COCOTB_SharedDir/libcocotb$LIBEXT $COCOTB_ObjDir/gpi_embed.o $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES"
+	CMD="$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES -o $COCOTB_SharedDir/libcocotb$LIBEXT $COCOTB_ObjDir/gpi_embed.o $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While linking.${ANSI_NOCOLOR}";	exit -1;	fi
@@ -292,36 +296,58 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	CXX_WARNINGS="$CXX_WARNINGS"
 	CXX_INCLUDE_SEARCH_DIR="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"
 	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
-	CC_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
-	CC_LIBRARIES="-lcocotbutils -lgpilog -lcocotb -lstdc++"
-	CMD="$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDE_SEARCH_DIR         -o $COCOTB_ObjDir/GpiCbHdl.o $COCOTB_SourceDir/gpi/GpiCbHdl.cpp"
+	LD_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
+	LD_LIBRARIES="-lcocotbutils -lgpilog -lcocotb -lstdc++"
+	CMD="$CXX -c $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDE_SEARCH_DIR -o $COCOTB_ObjDir/GpiCbHdl.o $COCOTB_SourceDir/gpi/GpiCbHdl.cpp"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While compiling.${ANSI_NOCOLOR}";	exit -1;	fi
-	CMD="$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDE_SEARCH_DIR         -o $COCOTB_ObjDir/GpiCommon.o $COCOTB_SourceDir/gpi/GpiCommon.cpp"
+	CMD="$CXX -c $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDE_SEARCH_DIR -o $COCOTB_ObjDir/GpiCommon.o $COCOTB_SourceDir/gpi/GpiCommon.cpp"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While compiling.${ANSI_NOCOLOR}";	exit -1;	fi
-	CMD="$LD  -shared $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES -o $COCOTB_SharedDir/libgpi$LIBEXT $COCOTB_ObjDir/GpiCbHdl.o $COCOTB_ObjDir/GpiCommon.o $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES"
+	CMD="$LD -shared $CC_DEBUG $LD_LINKER_ARGS $LD_WARNINGS                               -o $COCOTB_SharedDir/libgpi$LIBEXT $COCOTB_ObjDir/GpiCbHdl.o $COCOTB_ObjDir/GpiCommon.o $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While linking.${ANSI_NOCOLOR}";	exit -1;	fi
 
 
 	echo -e "${ANSI_YELLOW}Compiling 'libsim$LIBEXT'...${ANSI_NOCOLOR}"
-	CC_DEFINES="$CC_DEFINES $PYTHON_DEFINES"
-	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
-	CC_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"	# $LINUX_INCLUDE_SEARCH_DIR"
-	CC_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
-	CC_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY -lgpi -lgpilog"
-	CMD="$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDES             -o $COCOTB_ObjDir/simulatormodule.o $COCOTB_SourceDir/simulator/simulatormodule.c"
+	GCC_DEFINES="$CC_DEFINES $PYTHON_DEFINES"
+	GCC_WARNINGS="$CC_WARNINGS"
+	GCC_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"
+	LD_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
+	LD_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY -lgpi -lgpilog"
+	# ---- simulatormodule.o ----
+	CMD="$CC  -c $GCC_DEBUG $GCC_WARNINGS $GCC_FLAGS $GCC_DEFINES $GCC_INCLUDES           -o $COCOTB_ObjDir/simulatormodule.o $COCOTB_SourceDir/simulator/simulatormodule.c"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While compiling.${ANSI_NOCOLOR}";	exit -1;	fi
-	CMD="$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES -o $COCOTB_SharedDir/libsim$LIBEXT $COCOTB_ObjDir/simulatormodule.o $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES"
+	# ---- libsim.dll ----
+	CMD="$LD  -shared $CC_DEBUG $LD_LINKER_ARGS $LD_WARNINGS                              -o $COCOTB_SharedDir/libsim$LIBEXT $COCOTB_ObjDir/simulatormodule.o $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While linking.${ANSI_NOCOLOR}";	exit -1;	fi
+
+	echo -e "${ANSI_YELLOW}Copying 'libghdlvpi$LIBEXT'...${ANSI_NOCOLOR}"
+	cp $COCOTB_SharedDir/../libghdlvpi.dll $COCOTB_SharedDir
+	
+	# echo -e "${ANSI_YELLOW}Compiling 'libghdl$LIBEXT'...${ANSI_NOCOLOR}"
+	# GCC_DEFINES=
+	# GCC_WARNINGS=
+	# GCC_INCLUDES=
+	# LD_LIBRARY_SEARCH_DIR=
+	# LD_LIBRARIES=
+	# # ---- libghdl.o ----
+	# CMD="$CC  -c $GCC_DEBUG $GCC_WARNINGS $GCC_FLAGS $GCC_DEFINES $GCC_INCLUDES           -o $COCOTB_ObjDir/ghdl.o $COCOTB_SourceDir/ghdl/ghdl.c"
+	# echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
+	# $CMD
+	# if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While compiling.${ANSI_NOCOLOR}";	exit -1;	fi
+	# # ---- libsim.dll ----
+	# CMD="$LD  -shared $CC_DEBUG $LD_LINKER_ARGS $LD_WARNINGS                              -o $COCOTB_SharedDir/libghdl$LIBEXT $COCOTB_ObjDir/ghdl.o $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES"
+	# echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
+	# $CMD
+	# if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While linking.${ANSI_NOCOLOR}";	exit -1;	fi
 
 
 	echo -e "${ANSI_YELLOW}Creating symlink 'simulator$LIBEXT'...${ANSI_NOCOLOR}"
@@ -330,29 +356,44 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 
 	echo -e "${ANSI_YELLOW}Compiling 'libvpi$LIBEXT'...${ANSI_NOCOLOR}"
 	CXX_DEFINES="$CC_DEFINES -DVPI_CHECKING"
-	CXX_WARNINGS="$CXX_WARNINGS"
 	CXX_INCLUDE_SEARCH_DIR="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"
-	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
-	LINKER_ARGS="-Wl,-no-undefined -Wl,-enable-runtime-pseudo-reloc-v2 -Wl,--enable-auto-import"
-	CC_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR -L/c/Tools/GHDL/0.34dev-mingw32-llvm/lib/ghdl"
-	CC_LIBRARIES="-lgrt -lgpi -lgpilog -lstdc++"
-	CMD="$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDE_SEARCH_DIR         -o $COCOTB_ObjDir/VpiImpl.o $COCOTB_SourceDir/vpi/VpiImpl.cpp"
+	LD_LINKER_ARGS="-Wl,--no-undefined -Wl,--enable-auto-import -Wl,--enable-runtime-pseudo-reloc-v2"
+	LD_LIBRARY_SEARCH_DIR="$COCOTB_LIBRARY_SEARCH_DIR"	#$GHDL_LIBRARY_SEARCH_DIR"
+	LD_LIBRARIES="-lghdlvpi -lgpi -lstdc++ -lgpilog"	#$GHDL_LIBRARY"
+	# ---- VpiImpl.o ----
+	CMD="$CXX -c $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDE_SEARCH_DIR -o $COCOTB_ObjDir/VpiImpl.o $COCOTB_SourceDir/vpi/VpiImpl.cpp"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While compiling.${ANSI_NOCOLOR}";	exit -1;	fi
-	CMD="$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDE_SEARCH_DIR         -o $COCOTB_ObjDir/VpiCbHdl.o $COCOTB_SourceDir/vpi/VpiCbHdl.cpp"
+	# ---- VpiCbHdl.o ----
+	CMD="$CXX -c $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDE_SEARCH_DIR -o $COCOTB_ObjDir/VpiCbHdl.o $COCOTB_SourceDir/vpi/VpiCbHdl.cpp"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While compiling.${ANSI_NOCOLOR}";	exit -1;	fi
-	CMD="$LD -v -shared $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES -o $COCOTB_SharedDir/libvpi$LIBEXT $COCOTB_ObjDir/VpiImpl.o $COCOTB_ObjDir/VpiCbHdl.o $LINKER_ARGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES"
+	# ---- libvpi.dll ----
+	# CMD="$LD -r -nostdlib $CC_DEBUG $LD_LINKER_ARGS $LD_WARNINGS                                 -o $COCOTB_SharedDir/libvpi$LIBEXT $COCOTB_ObjDir/VpiImpl.o $COCOTB_ObjDir/VpiCbHdl.o $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES"
+	CMD="$LD -shared $CC_DEBUG $LD_LINKER_ARGS $LD_WARNINGS                                 -o $COCOTB_SharedDir/libvpi$LIBEXT $COCOTB_ObjDir/VpiImpl.o $COCOTB_ObjDir/VpiCbHdl.o $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES"
 	echo -e "${ANSI_DARKCYAN}$CMD${ANSI_NOCOLOR}"
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While linking.${ANSI_NOCOLOR}";	exit -1;	fi
 
 
+	cd $COCOTB_SharedDir
+	
 	echo -e "${ANSI_YELLOW}Removing object files...${ANSI_NOCOLOR}"
-	rm cocotb/*.o
-
+	rm *.o
+	
+	export PYTHONHOME=/c/Tools/Python2.7.12
+	export PYTHONPATH=$PYTHONHOME/lib:/d/git/PoC/lib/cocotb/cocotb:/d/git/PoC/temp/precompiled/ghdl/cocotb
+	
+	/c/Tools/GHDL/0.34dev-mingw32-mcode/bin/ghdl.exe -a ../test.vhdl
+	/c/Tools/GHDL/0.34dev-mingw32-mcode/bin/ghdl.exe -e test
+	/c/Tools/GHDL/0.34dev-mingw32-mcode/bin/ghdl.exe -r test --vpi=libvpi.dll
+	
+	export PYTHONHOME=
+	export PYTHONPATH=
+	
+	
 	cd $WorkingDir
 fi
 
@@ -429,30 +470,30 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	CC_DEFINES=$CC_DEFINES
 	CC_WARNINGS=$CC_WARNINGS
 	CC_INCLUDE_SEARCH_DIR="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"
-	CC_LIBRARY_SEARCH_DIR=$LINUX_LIBRARY_SEARCH_DIR
-	CC_LIBRARIES=
+	LD_LIBRARY_SEARCH_DIR=$LINUX_LIBRARY_SEARCH_DIR
+	LD_LIBRARIES=
 	$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDE_SEARCH_DIR   -o $COCOTB_ObjDir/cocotb_utils.o $COCOTB_SourceDir/utils/cocotb_utils.c
-	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libcocotbutils.so $COCOTB_ObjDir/cocotb_utils.o
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES -o $COCOTB_SharedDir/libcocotbutils.so $COCOTB_ObjDir/cocotb_utils.o
 
 
 	echo -e "${ANSI_YELLOW}Compiling 'libcocotbutils.so'...${ANSI_NOCOLOR}"
 	CC_DEFINES="$CC_DEFINES -DFILTER"
 	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
 	CC_INCLUDE_SEARCH_DIR="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR $LINUX_INCLUDE_SEARCH_DIR"
-	CC_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
-	CC_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY"
+	LD_LIBRARY_SEARCH_DIR="$LINUX_LIBRARY_SEARCH_DIR $COCOTB_LIBRARY_SEARCH_DIR"
+	LD_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY"
 	$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDE_SEARCH_DIR   -o $COCOTB_ObjDir/gpi_logging.o $COCOTB_SourceDir/gpi_log/gpi_logging.c
-	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libgpilog.so $COCOTB_ObjDir/gpi_logging.o
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES -o $COCOTB_SharedDir/libgpilog.so $COCOTB_ObjDir/gpi_logging.o
 
 
 	echo -e "${ANSI_YELLOW}Compiling 'libcocotb.so'...${ANSI_NOCOLOR}"
 	CC_DEFINES="$CC_DEFINES $PYTHON_DEFINES"
 	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
 	CC_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR $LINUX_INCLUDE_SEARCH_DIR"
-	CC_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
-	CC_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY -lgpilog -lcocotbutils"
+	LD_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
+	LD_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY -lgpilog -lcocotbutils"
 	$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDES             -o $COCOTB_ObjDir/gpi_embed.o $COCOTB_SourceDir/embed/gpi_embed.c
-	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libcocotb.so $COCOTB_ObjDir/gpi_embed.o
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES -o $COCOTB_SharedDir/libcocotb.so $COCOTB_ObjDir/gpi_embed.o
 
 
 	echo -e "${ANSI_YELLOW}Compiling 'libgpi.so'...${ANSI_NOCOLOR}"
@@ -460,21 +501,21 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	CXX_WARNINGS="$CXX_WARNINGS"
 	CXX_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"
 	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
-	CC_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
-	CC_LIBRARIES="-lcocotbutils -lgpilog -lcocotb -lstdc++"
+	LD_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
+	LD_LIBRARIES="-lcocotbutils -lgpilog -lcocotb -lstdc++"
 	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/GpiCbHdl.o $COCOTB_SourceDir/gpi/GpiCbHdl.cpp
 	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/GpiCommon.o $COCOTB_SourceDir/gpi/GpiCommon.cpp
-	$LD  -shared $CC_DEBUG $CC_WARNINGS $CXX_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libgpi.so $COCOTB_ObjDir/GpiCbHdl.o $COCOTB_ObjDir/GpiCommon.o
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CXX_FLAGS $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES -o $COCOTB_SharedDir/libgpi.so $COCOTB_ObjDir/GpiCbHdl.o $COCOTB_ObjDir/GpiCommon.o
 
 
 	echo -e "${ANSI_YELLOW}Compiling 'libsim.so'...${ANSI_NOCOLOR}"
 	CC_DEFINES="$CC_DEFINES $PYTHON_DEFINES"
 	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
 	CC_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR $LINUX_INCLUDE_SEARCH_DIR"
-	CC_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
-	CC_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY -lgpi -lgpilog"
+	LD_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
+	LD_LIBRARIES="-lpthread -ldl -lutil -lm $PYTHON_LIBRARY -lgpi -lgpilog"
 	$CC  -c      $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_DEFINES $CC_INCLUDES             -o $COCOTB_ObjDir/simulatormodule.o $COCOTB_SourceDir/simulator/simulatormodule.c
-	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libsim.so $COCOTB_ObjDir/simulatormodule.o
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES -o $COCOTB_SharedDir/libsim.so $COCOTB_ObjDir/simulatormodule.o
 
 
 	echo -e "${ANSI_YELLOW}Creating symlink 'simulator.so'...${ANSI_NOCOLOR}"
@@ -486,11 +527,11 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	CXX_WARNINGS="$CXX_WARNINGS"
 	CXX_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR"
 	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
-	CC_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
-	CC_LIBRARIES="-lgpi -lgpilog -lstdc++"
+	LD_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
+	LD_LIBRARIES="-lgpi -lgpilog -lstdc++"
 	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/VpiImpl.o $COCOTB_SourceDir/vpi/VpiImpl.cpp
 	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/VpiCbHdl.o $COCOTB_SourceDir/vpi/VpiCbHdl.cpp
-	$LD  -shared $CC_DEBUG $CC_WARNINGS $CXX_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libvpi.so $COCOTB_ObjDir/VpiImpl.o $COCOTB_ObjDir/VpiCbHdl.o
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CXX_FLAGS $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES -o $COCOTB_SharedDir/libvpi.so $COCOTB_ObjDir/VpiImpl.o $COCOTB_ObjDir/VpiCbHdl.o
 
 
 	echo -e "${ANSI_YELLOW}Compiling 'libfli.so'...${ANSI_NOCOLOR}"
@@ -498,12 +539,12 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	CXX_WARNINGS="$CXX_WARNINGS"
 	CXX_INCLUDES="$PYTHON_INCLUDE_SEARCH_DIR $COCOTB_INCLUDE_SEARCH_DIR $VSIM_INCLUDE_SEARCH_DIR"
 	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
-	CC_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
-	CC_LIBRARIES="-lgpi -lgpilog -lstdc++"
+	LD_LIBRARY_DIRS=$LINUX_LIBRARY_SEARCH_DIR
+	LD_LIBRARIES="-lgpi -lgpilog -lstdc++"
 	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/FliImpl.o $COCOTB_SourceDir/fli/FliImpl.cpp
 	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/FliCbHdl.o $COCOTB_SourceDir/fli/FliCbHdl.cpp
 	$CXX -c      $CXX_DEBUG $CXX_WARNINGS $CXX_FLAGS $CXX_DEFINES $CXX_INCLUDES         -o $COCOTB_ObjDir/FliObjHdl.o $COCOTB_SourceDir/fli/FliObjHdl.cpp
-	$LD  -shared $CC_DEBUG $CC_WARNINGS $CXX_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir/libfli.so $COCOTB_ObjDir/FliImpl.o $COCOTB_ObjDir/FliCbHdl.o $COCOTB_ObjDir/FliObjHdl.o
+	$LD  -shared $CC_DEBUG $CC_WARNINGS $CXX_FLAGS $LD_LIBRARY_SEARCH_DIR $LD_LIBRARIES -o $COCOTB_SharedDir/libfli.so $COCOTB_ObjDir/FliImpl.o $COCOTB_ObjDir/FliCbHdl.o $COCOTB_ObjDir/FliObjHdl.o
 
 
 	echo -e "${ANSI_YELLOW}Removing object files...${ANSI_NOCOLOR}"

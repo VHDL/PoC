@@ -119,20 +119,20 @@ VHDL_Library="poc"
 VHDL_TopLevel="sort_lru_cache"
 
 SourceFiles=(
-	"/home/paebbels/git/PoC/tb/common/my_project.vhdl"
-	"/home/paebbels/git/PoC/tb/common/my_config_GENERIC.vhdl"
-	"/home/paebbels/git/PoC/src/common/utils.vhdl"
-	"/home/paebbels/git/PoC/src/common/config.vhdl"
-	"/home/paebbels/git/PoC/src/common/math.vhdl"
-	"/home/paebbels/git/PoC/src/common/strings.vhdl"
-	"/home/paebbels/git/PoC/src/common/vectors.vhdl"
-	"/home/paebbels/git/PoC/src/common/physical.vhdl"
-	"/home/paebbels/git/PoC/src/common/components.vhdl"
-	"/home/paebbels/git/PoC/src/common/protected.v08.vhdl"
-	"/home/paebbels/git/PoC/src/common/fileio.v08.vhdl"
-	"/home/paebbels/git/PoC/src/arith/arith.pkg.vhdl"
-	"/home/paebbels/git/PoC/src/arith/arith_prefix_and.vhdl"
-	"/home/paebbels/git/PoC/src/sort/$VHDL_TopLevel.vhdl"
+	"/d/git/PoC/tb/common/my_project.vhdl"
+	"/d/git/PoC/tb/common/my_config_GENERIC.vhdl"
+	"/d/git/PoC/src/common/utils.vhdl"
+	"/d/git/PoC/src/common/config.vhdl"
+	"/d/git/PoC/src/common/math.vhdl"
+	"/d/git/PoC/src/common/strings.vhdl"
+	"/d/git/PoC/src/common/vectors.vhdl"
+	"/d/git/PoC/src/common/physical.vhdl"
+	"/d/git/PoC/src/common/components.vhdl"
+	"/d/git/PoC/src/common/protected.v08.vhdl"
+	"/d/git/PoC/src/common/fileio.v08.vhdl"
+	"/d/git/PoC/src/arith/arith.pkg.vhdl"
+	"/d/git/PoC/src/arith/arith_prefix_and.vhdl"
+	"/d/git/PoC/src/sort/$VHDL_TopLevel.vhdl"
 )
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
@@ -191,9 +191,19 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	cp $PoCRootDir/tb/common/*.py .
 	cp $PoCRootDir/tb/sort/${VHDL_TopLevel}_cocotb.py .
 
-	GHDL_OPTIONS=("--work=$VHDL_Library")
+	GHDL_OPTIONS=("--work=$VHDL_Library" "--std=08" "-P../precompiled/ghdl/xilinx/")
 	echo "  Simulating '$VHDL_Library.$VHDL_TopLevel'..."
-	PYTHONPATH=$COCOTB_SharedDir:$CocotbInstallDir:$DestDir LD_LIBRARY_PATH=$COCOTB_SharedDir:$LD_LIBRARY_PATH MODULE=$PYTHON_MODULE TESTCASE= TOPLEVEL=$VHDL_TopLevel TOPLEVEL_LANG=vhdl $GHDLBinDir/ghdl -r -v ${GHDL_OPTIONS[@]} $VHDL_TopLevel --vpi=$COCOTB_SharedDir/libvpi.so
+	export PYTHONPATH=$COCOTB_SharedDir:$CocotbInstallDir:$DestDir
+	export LD_LIBRARY_PATH=$COCOTB_SharedDir:$LD_LIBRARY_PATH
+	export MODULE=$PYTHON_MODULE
+	export TESTCASE=
+	export TOPLEVEL=$VHDL_TopLevel
+	export TOPLEVEL_LANG=vhdl
+	# CMD="$GHDLBinDir/ghdl -r ${GHDL_OPTIONS[@]} $VHDL_TopLevel --vpi=$COCOTB_SharedDir/libvpi.dll"
+	CMD="$GHDLBinDir/ghdl -r ${GHDL_OPTIONS[@]} $VHDL_TopLevel --vpi=libvpi.dll"
+	#CMD="./$VHDL_TopLevel.exe --vpi=$COCOTB_SharedDir/libvpi.dll"
+	echo $CMD
+	$CMD
 	if [ $? -ne 0 ]; then
 		let ERRORCOUNT++
 	fi
