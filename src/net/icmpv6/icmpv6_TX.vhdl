@@ -41,23 +41,23 @@ use			PoC.net.all;
 
 entity icmpv6_TX is
 	port (
-		Clock											: in	STD_LOGIC;																	--
-		Reset											: in	STD_LOGIC;																	--
+		Clock											: in	std_logic;																	--
+		Reset											: in	std_logic;																	--
 
-		TX_Valid									: out	STD_LOGIC;
+		TX_Valid									: out	std_logic;
 		TX_Data										: out	T_SLV_8;
-		TX_SOF										: out	STD_LOGIC;
-		TX_EOF										: out	STD_LOGIC;
-		TX_Ack										: in	STD_LOGIC;
+		TX_SOF										: out	std_logic;
+		TX_EOF										: out	std_logic;
+		TX_Ack										: in	std_logic;
 
-		Send_EchoResponse					: in	STD_LOGIC;
-		Send_Complete							: out STD_LOGIC
+		Send_EchoResponse					: in	std_logic;
+		Send_Complete							: out std_logic
 	);
 end entity;
 
 
 architecture rtl of icmpv6_TX is
-	attribute FSM_ENCODING						: STRING;
+	attribute FSM_ENCODING						: string;
 
 	type T_STATE		is (
 		ST_IDLE,

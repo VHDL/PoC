@@ -36,19 +36,19 @@ use			IEEE.NUMERIC_STD.all;
 
 package sata_TransceiverTypes is
 	type T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS is record
-		RefClockIn_150_MHz	: STD_LOGIC;
+		RefClockIn_150_MHz	: std_logic;
 	end record;
 
 	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS is record
-		RX	: STD_LOGIC;
+		RX	: std_logic;
 	end record;
 
 	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS is record
-		TX	: STD_LOGIC;
+		TX	: std_logic;
 	end record;
 
-	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
-	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS;
+	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR is array(natural range <>) of T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
+	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR is array(natural range <>) of T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS;
 
 	component sata_basic is port (
 		reset							: in std_logic;

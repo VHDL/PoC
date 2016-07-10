@@ -41,33 +41,33 @@ use			PoC.net.all;
 
 entity Eth_GEMAC_TX is
 	generic (
-		DEBUG						: BOOLEAN						:= FALSE
+		DEBUG						: boolean						:= FALSE
 	);
 	port (
-		RS_TX_Clock								: in	STD_LOGIC;
-		RS_TX_Reset								: in	STD_LOGIC;
+		RS_TX_Clock								: in	std_logic;
+		RS_TX_Reset								: in	std_logic;
 
 		-- status interface
-		BufferUnderrun						: out	STD_LOGIC;
+		BufferUnderrun						: out	std_logic;
 
 		-- LocalLink interface
-		TX_Valid									: in	STD_LOGIC;
+		TX_Valid									: in	std_logic;
 		TX_Data										: in	T_SLV_8;
-		TX_SOF										: in	STD_LOGIC;
-		TX_EOF										: in	STD_LOGIC;
-		TX_Ack										: out	STD_LOGIC;
+		TX_SOF										: in	std_logic;
+		TX_EOF										: in	std_logic;
+		TX_Ack										: out	std_logic;
 
 		-- Reconcilation Sublayer interface
-		RS_TX_Valid								: out	STD_LOGIC;
+		RS_TX_Valid								: out	std_logic;
 		RS_TX_Data								: out	T_SLV_8;
-		RS_TX_Error								: out	STD_LOGIC
+		RS_TX_Error								: out	std_logic
 	);
 end entity;
 
 
 architecture rtl of Eth_GEMAC_TX is
-	attribute KEEP										: BOOLEAN;
-	attribute FSM_ENCODING						: STRING;
+	attribute KEEP										: boolean;
+	attribute FSM_ENCODING						: string;
 
 	type T_STATE is (
 		ST_IDLE,
@@ -81,33 +81,33 @@ architecture rtl of Eth_GEMAC_TX is
 
 	signal State											: T_STATE																				:= ST_IDLE;
 	signal NextState									: T_STATE;
-	attribute FSM_ENCODING OF State		: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	attribute FSM_ENCODING of State		: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	signal Is_SOF											: STD_LOGIC;
-	signal Is_EOF											: STD_LOGIC;
+	signal Is_SOF											: std_logic;
+	signal Is_EOF											: std_logic;
 
-	constant BYTE_COUNTER_BW					: POSITIVE																			:= log2ceilnz(imax(C_NET_ETH_PREMABLE_LENGTH, C_NET_ETH_INTER_FRAME_GAP_LENGTH));
-	signal ByteCounter_rst						: STD_LOGIC;
-	signal ByteCounter_en							: STD_LOGIC;
-	signal ByteCounter_eq1						: STD_LOGIC;
-	signal ByteCounter_eq2						: STD_LOGIC;
-	signal ByteCounter_us							: UNSIGNED(BYTE_COUNTER_BW - 1 downto 0)				:= (others => '0');
+	constant BYTE_COUNTER_BW					: positive																			:= log2ceilnz(imax(C_NET_ETH_PREMABLE_LENGTH, C_NET_ETH_INTER_FRAME_GAP_LENGTH));
+	signal ByteCounter_rst						: std_logic;
+	signal ByteCounter_en							: std_logic;
+	signal ByteCounter_eq1						: std_logic;
+	signal ByteCounter_eq2						: std_logic;
+	signal ByteCounter_us							: unsigned(BYTE_COUNTER_BW - 1 downto 0)				:= (others => '0');
 
-	signal PaddingCounter_rst					: STD_LOGIC;
-	signal PaddingCounter_en					: STD_LOGIC;
-	signal PaddingCounter_eq					: STD_LOGIC;
-	signal PaddingCounter_us					: UNSIGNED(5 downto 0)													:= (others => '0');
+	signal PaddingCounter_rst					: std_logic;
+	signal PaddingCounter_en					: std_logic;
+	signal PaddingCounter_eq					: std_logic;
+	signal PaddingCounter_us					: unsigned(5 downto 0)													:= (others => '0');
 
-	signal CRC_rst										: STD_LOGIC;
-	signal CRC_en											: STD_LOGIC;
-	signal CRC_MaskInput							: STD_LOGIC;
+	signal CRC_rst										: std_logic;
+	signal CRC_en											: std_logic;
+	signal CRC_MaskInput							: std_logic;
 	signal CRC_Value									: T_SLV_32;
 
-	attribute KEEP OF CRC_Value				: signal IS DEBUG;
+	attribute KEEP of CRC_Value				: signal is DEBUG;
 
 begin
-	Is_SOF	<= TX_Valid AND TX_SOF;
-	Is_EOF	<= TX_Valid AND TX_EOF;
+	Is_SOF	<= TX_Valid and TX_SOF;
+	Is_EOF	<= TX_Valid and TX_EOF;
 
 	process(RS_TX_Clock)
 	begin
@@ -307,14 +307,14 @@ begin
 	PaddingCounter_eq		<= to_sl(PaddingCounter_us = 59);
 
 	blkCRC : block
-		constant CRC32_POLYNOMIAL					: BIT_VECTOR(35 downto 0) := x"104C11DB7";
+		constant CRC32_POLYNOMIAL					: bit_vector(35 downto 0) := x"104C11DB7";
 		constant CRC32_INIT								: T_SLV_32								:=  x"FFFFFFFF";
 
 		signal CRC_DataIn									: T_SLV_8;
 		signal CRC_DataOut								: T_SLV_32;
 
 	begin
-		CRC_DataIn		<= reverse(TX_Data) AND (TX_Data'range => NOT CRC_MaskInput);
+		CRC_DataIn		<= reverse(TX_Data) and (TX_Data'range => not CRC_MaskInput);
 
 		CRC : entity PoC.comm_crc
 			generic map (
@@ -334,6 +334,6 @@ begin
 			);
 
 		-- manipulate CRC value
-		CRC_Value			<= NOT reverse(CRC_DataOut);
+		CRC_Value			<= not reverse(CRC_DataOut);
 	end block;
 end;

@@ -43,40 +43,40 @@ use			PoC.net.all;
 
 entity mdio_Controller is
 	generic (
-		DEBUG											: BOOLEAN							:= TRUE;
+		DEBUG											: boolean							:= TRUE;
 		CLOCK_FREQ								: FREQ								:= 125 MHz;				-- 125 MHz
 --		PREAMBLE_SUPRESSION				: BOOLEAN							:= FALSE;					-- TODO: supported by Marvel 88E1111's, minimum preamble length = 1 bit
 		BAUDRATE									: BAUD								:= 1 MBd					-- 1.0 MBaud
 	);
 	port (
-		Clock											: in	STD_LOGIC;
-		Reset											: in	STD_LOGIC;
+		Clock											: in	std_logic;
+		Reset											: in	std_logic;
 
 		-- MDIOController interface
 		Command										: in	T_IO_MDIO_MDIOCONTROLLER_COMMAND;
 		Status										: out	T_IO_MDIO_MDIOCONTROLLER_STATUS;
 		Error											: out	T_IO_MDIO_MDIOCONTROLLER_ERROR;
 
-		DeviceAddress							: in	STD_LOGIC_VECTOR(4 downto 0);
-		RegisterAddress						: in	STD_LOGIC_VECTOR(4 downto 0);
+		DeviceAddress							: in	std_logic_vector(4 downto 0);
+		RegisterAddress						: in	std_logic_vector(4 downto 0);
 		DataIn										: in	T_SLV_16;
 		DataOut										: out	T_SLV_16;
 
 		-- tri-state interface
-		MD_Clock_i								: in	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock I
-		MD_Clock_o								: out	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock O
-		MD_Clock_t								: out	STD_LOGIC;			-- IEEE 802.3: MDC		-> Managament Data Clock tri-state
-		MD_Data_i									: in	STD_LOGIC;			-- IEEE 802.3: MDIO		-> Managament Data I
-		MD_Data_o									: out	STD_LOGIC;			-- IEEE 802.3: MDIO		-> Managament Data O
-		MD_Data_t									: out	STD_LOGIC				-- IEEE 802.3: MDIO		-> Managament Data tri-state
+		MD_Clock_i								: in	std_logic;			-- IEEE 802.3: MDC		-> Managament Data Clock I
+		MD_Clock_o								: out	std_logic;			-- IEEE 802.3: MDC		-> Managament Data Clock O
+		MD_Clock_t								: out	std_logic;			-- IEEE 802.3: MDC		-> Managament Data Clock tri-state
+		MD_Data_i									: in	std_logic;			-- IEEE 802.3: MDIO		-> Managament Data I
+		MD_Data_o									: out	std_logic;			-- IEEE 802.3: MDIO		-> Managament Data O
+		MD_Data_t									: out	std_logic				-- IEEE 802.3: MDIO		-> Managament Data tri-state
 	);
 end entity;
 
 -- TODO: preamble suppression, e.g. Marvel E1111 requires only 1 idle-bit between operations
 
 architecture rtl of mdio_Controller is
-	attribute KEEP											: BOOLEAN;
-	attribute FSM_ENCODING							: STRING;
+	attribute KEEP											: boolean;
+	attribute FSM_ENCODING							: string;
 
 	type T_STATE is (
 		ST_IDLE,
@@ -100,37 +100,37 @@ architecture rtl of mdio_Controller is
 
 	signal State												: T_STATE																:= ST_IDLE;
 	signal NextState										: T_STATE;
-	attribute FSM_ENCODING OF State			: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	attribute FSM_ENCODING of State			: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	signal RegPhysicalAddress_en				: STD_LOGIC;
-	signal RegPhysicalAddress_sh				: STD_LOGIC;
-	signal RegPhysicalAddress_d					: STD_LOGIC_VECTOR(4 downto 0)					:= (others => '0');
+	signal RegPhysicalAddress_en				: std_logic;
+	signal RegPhysicalAddress_sh				: std_logic;
+	signal RegPhysicalAddress_d					: std_logic_vector(4 downto 0)					:= (others => '0');
 
-	signal RegRegisterAddress_en				: STD_LOGIC;
-	signal RegRegisterAddress_sh				: STD_LOGIC;
-	signal RegRegisterAddress_d					: STD_LOGIC_VECTOR(4 downto 0)					:= (others => '0');
+	signal RegRegisterAddress_en				: std_logic;
+	signal RegRegisterAddress_sh				: std_logic;
+	signal RegRegisterAddress_d					: std_logic_vector(4 downto 0)					:= (others => '0');
 
-	signal RegRegisterData_en						: STD_LOGIC;
-	signal RegRegisterData_shi					: STD_LOGIC;
-	signal RegRegisterData_sho					: STD_LOGIC;
+	signal RegRegisterData_en						: std_logic;
+	signal RegRegisterData_shi					: std_logic;
+	signal RegRegisterData_sho					: std_logic;
 	signal RegRegisterData_d						: T_SLV_16															:= (others => '0');
 
-	signal RegRegisterData_Valid_set		: STD_LOGIC;
-	signal RegRegisterData_Valid_r			: STD_LOGIC															:= '0';
+	signal RegRegisterData_Valid_set		: std_logic;
+	signal RegRegisterData_Valid_r			: std_logic															:= '0';
 
-	signal BitCounter_rst								: STD_LOGIC;
-	signal BitCounter_en								: STD_LOGIC;
-	signal BitCounter_us								: UNSIGNED(4 downto 0)									:= (others => '0');
+	signal BitCounter_rst								: std_logic;
+	signal BitCounter_en								: std_logic;
+	signal BitCounter_us								: unsigned(4 downto 0)									:= (others => '0');
 
-	signal MD_DataIn										: STD_LOGIC;
-	signal MD_Data_en										: STD_LOGIC;
-	signal MD_Data_o_nxt								: STD_LOGIC;
-	signal MD_Data_t_nxt								: STD_LOGIC;
+	signal MD_DataIn										: std_logic;
+	signal MD_Data_en										: std_logic;
+	signal MD_Data_o_nxt								: std_logic;
+	signal MD_Data_t_nxt								: std_logic;
 
-	signal MD_Clock_re									: STD_LOGIC;
-	signal MD_Clock_fe									: STD_LOGIC;
+	signal MD_Clock_re									: std_logic;
+	signal MD_Clock_fe									: std_logic;
 
-	attribute KEEP OF MD_DataIn					: signal IS DEBUG;
+	attribute KEEP of MD_DataIn					: signal is DEBUG;
 
 begin
 
@@ -177,7 +177,7 @@ begin
 
 				case Command is
 					when IO_MDIO_MDIOC_CMD_NONE =>
-						NULL;
+						null;
 
 					when IO_MDIO_MDIOC_CMD_CHECK_ADDRESS =>
 						RegPhysicalAddress_en		<= '1';
@@ -711,7 +711,7 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR BitCounter_rst) = '1') then
+			if ((Reset or BitCounter_rst) = '1') then
 				BitCounter_us						<= (others => '0');
 			else
 				if (BitCounter_en	= '1') then
@@ -732,21 +732,21 @@ begin
 			else
 				if (RegPhysicalAddress_en	= '1') then
 					RegPhysicalAddress_d	<= DeviceAddress;
-				ELSif (RegPhysicalAddress_sh = '1') then
+				elsif (RegPhysicalAddress_sh = '1') then
 					RegPhysicalAddress_d	<= RegPhysicalAddress_d(RegPhysicalAddress_d'high - 1 downto 0) & RegPhysicalAddress_d(RegPhysicalAddress_d'high);
 				end if;
 
 				if (RegRegisterAddress_en	= '1') then
 					RegRegisterAddress_d	<= RegisterAddress;
-				ELSif (RegRegisterAddress_sh = '1') then
+				elsif (RegRegisterAddress_sh = '1') then
 					RegRegisterAddress_d	<= RegRegisterAddress_d(RegRegisterAddress_d'high - 1 downto 0) & RegRegisterAddress_d(RegRegisterAddress_d'high);
 				end if;
 
 				if (RegRegisterData_en	= '1') then
 					RegRegisterData_d			<= DataIn;
-				ELSif (RegRegisterData_sho = '1') then
+				elsif (RegRegisterData_sho = '1') then
 					RegRegisterData_d			<= RegRegisterData_d(RegRegisterData_d'high - 1 downto 0) & RegRegisterData_d(RegRegisterData_d'high);
-				ELSif (RegRegisterData_shi = '1') then
+				elsif (RegRegisterData_shi = '1') then
 					RegRegisterData_d			<= RegRegisterData_d(RegRegisterData_d'high - 1 downto 0) & MD_DataIn;
 				end if;
 			end if;
@@ -759,26 +759,26 @@ begin
 	-- Management Data Clock
 	-- ==========================================================================================================================================================
 	blkMDClock : block
-		constant CLOCKCOUNTER_MAX_FALLING_EDGE	: NATURAL		:= TimingToCycles(to_time(to_freq(BAUDRATE) / 2.0), CLOCK_FREQ);
-		constant CLOCKCOUNTER_MAX_RISING_EDGE		: NATURAL		:= TimingToCycles(to_time(to_freq(BAUDRATE) / 2.0), CLOCK_FREQ);
-		constant CLOCKCOUNTER_BITS							: POSITIVE	:= log2ceilnz(CLOCKCOUNTER_MAX_RISING_EDGE + CLOCKCOUNTER_MAX_FALLING_EDGE);
+		constant CLOCKCOUNTER_MAX_FALLING_EDGE	: natural		:= TimingToCycles(to_time(to_freq(BAUDRATE) / 2.0), CLOCK_FREQ);
+		constant CLOCKCOUNTER_MAX_RISING_EDGE		: natural		:= TimingToCycles(to_time(to_freq(BAUDRATE) / 2.0), CLOCK_FREQ);
+		constant CLOCKCOUNTER_BITS							: positive	:= log2ceilnz(CLOCKCOUNTER_MAX_RISING_EDGE + CLOCKCOUNTER_MAX_FALLING_EDGE);
 
-		signal ClockCounter_rst			: STD_LOGIC;
-		signal ClockCounter_us			: UNSIGNED(CLOCKCOUNTER_BITS - 1 downto 0)	:= (others => '0');
+		signal ClockCounter_rst			: std_logic;
+		signal ClockCounter_us			: unsigned(CLOCKCOUNTER_BITS - 1 downto 0)	:= (others => '0');
 
-		signal MD_Clock_i						: STD_LOGIC																	:= '0';
-		signal MD_Clock_r						: STD_LOGIC																	:= '0';
-		signal MD_Clock_d1					: STD_LOGIC																	:= '0';
-		signal MD_Clock_d2					: STD_LOGIC																	:= '0';
+		signal MD_Clock_i						: std_logic																	:= '0';
+		signal MD_Clock_r						: std_logic																	:= '0';
+		signal MD_Clock_d1					: std_logic																	:= '0';
+		signal MD_Clock_d2					: std_logic																	:= '0';
 	begin
-		assert FALSE report "CLOCKCOUNTER_MAX_FALLING_EDGE: "	& INTEGER'image(CLOCKCOUNTER_MAX_FALLING_EDGE)	severity NOTE;
-		assert FALSE report "CLOCKCOUNTER_MAX_RISING_EDGE: "	& INTEGER'image(CLOCKCOUNTER_MAX_RISING_EDGE)		severity NOTE;
-		assert FALSE report "CLOCKCOUNTER_BITS: "							& INTEGER'image(CLOCKCOUNTER_BITS)							severity NOTE;
+		assert FALSE report "CLOCKCOUNTER_MAX_FALLING_EDGE: "	& integer'image(CLOCKCOUNTER_MAX_FALLING_EDGE)	severity NOTE;
+		assert FALSE report "CLOCKCOUNTER_MAX_RISING_EDGE: "	& integer'image(CLOCKCOUNTER_MAX_RISING_EDGE)		severity NOTE;
+		assert FALSE report "CLOCKCOUNTER_BITS: "							& integer'image(CLOCKCOUNTER_BITS)							severity NOTE;
 
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
-				if ((Reset OR ClockCounter_rst) = '1') then
+				if ((Reset or ClockCounter_rst) = '1') then
 					ClockCounter_us				<= (others => '0');
 				else
 					ClockCounter_us				<= ClockCounter_us + 1;
@@ -794,9 +794,9 @@ begin
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
-				if ((Reset OR MD_Clock_fe) = '1') then
+				if ((Reset or MD_Clock_fe) = '1') then
 					MD_Clock_r						<= '0';
-				ELSif (MD_Clock_re = '1') then
+				elsif (MD_Clock_re = '1') then
 					MD_Clock_r						<= '1';
 				end if;
 			end if;
@@ -806,14 +806,14 @@ begin
 		MD_Clock_t		<= '0';
 
 		genCSP : if (DEBUG = TRUE) generate
-			constant OFFSET											: POSITIVE						:= 1;
-			signal CSP_RisingEdge								: STD_LOGIC;
-			signal CSP_FallingEdge							: STD_LOGIC;
-			attribute KEEP OF CSP_RisingEdge		: signal IS TRUE;
-			attribute KEEP OF CSP_FallingEdge		: signal IS TRUE;
+			constant OFFSET											: positive						:= 1;
+			signal CSP_RisingEdge								: std_logic;
+			signal CSP_FallingEdge							: std_logic;
+			attribute KEEP of CSP_RisingEdge		: signal is TRUE;
+			attribute KEEP of CSP_FallingEdge		: signal is TRUE;
 		begin
-			CSP_RisingEdge		<= to_sl(((CLOCKCOUNTER_MAX_RISING_EDGE + CLOCKCOUNTER_MAX_FALLING_EDGE - OFFSET - 1) <= ClockCounter_us) OR (ClockCounter_us <= OFFSET + 1));
-			CSP_FallingEdge		<= to_sl(((CLOCKCOUNTER_MAX_RISING_EDGE - OFFSET + 2) <= ClockCounter_us) AND (ClockCounter_us < (CLOCKCOUNTER_MAX_RISING_EDGE + OFFSET + 2)));
+			CSP_RisingEdge		<= to_sl(((CLOCKCOUNTER_MAX_RISING_EDGE + CLOCKCOUNTER_MAX_FALLING_EDGE - OFFSET - 1) <= ClockCounter_us) or (ClockCounter_us <= OFFSET + 1));
+			CSP_FallingEdge		<= to_sl(((CLOCKCOUNTER_MAX_RISING_EDGE - OFFSET + 2) <= ClockCounter_us) and (ClockCounter_us < (CLOCKCOUNTER_MAX_RISING_EDGE + OFFSET + 2)));
 		end generate;
 	end block;
 
@@ -821,10 +821,10 @@ begin
 	-- Management Data Input/Output
 	-- ==========================================================================================================================================================
 	blkMDData : block
-		signal MD_Data_i_d1			: STD_LOGIC				:= '0';
-		signal MD_Data_i_d2			: STD_LOGIC				:= '0';
-		signal MD_Data_o_d			: STD_LOGIC				:= '0';
-		signal MD_Data_t_d			: STD_LOGIC				:= '1';
+		signal MD_Data_i_d1			: std_logic				:= '0';
+		signal MD_Data_i_d2			: std_logic				:= '0';
+		signal MD_Data_o_d			: std_logic				:= '0';
+		signal MD_Data_t_d			: std_logic				:= '1';
 
 	begin
 		MD_Data_i_d1		<= MD_Data_i		when rising_edge(Clock);

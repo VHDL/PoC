@@ -48,14 +48,14 @@ use			PoC.satadbg.all;
 
 entity sata_LinkLayerFSM is
 	generic (
-		DEBUG										: BOOLEAN																:= FALSE;
-		ENABLE_DEBUGPORT				: BOOLEAN																:= FALSE;
+		DEBUG										: boolean																:= FALSE;
+		ENABLE_DEBUGPORT				: boolean																:= FALSE;
 		CONTROLLER_TYPE					: T_SATA_DEVICE_TYPE										:= SATA_DEVICE_TYPE_HOST;
-		INSERT_ALIGN_INTERVAL		: POSITIVE															:= 256
+		INSERT_ALIGN_INTERVAL		: positive															:= 256
 	);
 	port (
-		Clock										: in	STD_LOGIC;
-		MyReset									: in	STD_LOGIC;
+		Clock										: in	std_logic;
+		MyReset									: in	std_logic;
 
 		Status									: out	T_SATA_LINK_STATUS;
 		Error										: out	T_SATA_LINK_ERROR;
@@ -64,19 +64,19 @@ entity sata_LinkLayerFSM is
 		DebugPortOut						: out	T_SATADBG_LINK_LLFSM_OUT;
 
 		-- transport layer interface
-		Trans_TX_SOF						: in	STD_LOGIC;
-		Trans_TX_EOF						: in	STD_LOGIC;
+		Trans_TX_SOF						: in	std_logic;
+		Trans_TX_EOF						: in	std_logic;
 		--TODO Feature Request: Trans_TX_Abort					: in	STD_LOGIC; -- SyncEscape from Transport Layer
 
-		Trans_TXFS_SendOK				: out	STD_LOGIC;
-		Trans_TXFS_SyncEsc			: out	STD_LOGIC;
+		Trans_TXFS_SendOK				: out	std_logic;
+		Trans_TXFS_SyncEsc			: out	std_logic;
 
-		Trans_RX_SOF						: out	STD_LOGIC;
-		Trans_RX_EOF						: out	STD_LOGIC;
+		Trans_RX_SOF						: out	std_logic;
+		Trans_RX_EOF						: out	std_logic;
 		--TODO Feature Request: Trans_RX_Abort					: in	STD_LOGIC; -- SyncEscape from Transport Layer
 
-		Trans_RXFS_CRCOK				: out	STD_LOGIC;
-		Trans_RXFS_SyncEsc			: out	STD_LOGIC;
+		Trans_RXFS_CRCOK				: out	std_logic;
+		Trans_RXFS_SyncEsc			: out	std_logic;
 
 		-- physical layer interface
 		Phy_Status							: in	T_SATA_PHY_STATUS;
@@ -85,66 +85,66 @@ entity sata_LinkLayerFSM is
 		RX_Primitive						: in	T_SATA_PRIMITIVE;
 
 		-- TX FIFO interface
-		TX_FIFO_rst							: out	STD_LOGIC;
-		TX_FIFO_Valid						: in	STD_LOGIC;
-		TX_FIFO_got							: out	STD_LOGIC;
-		TX_FIFO_Commit					: out	STD_LOGIC;
-		TX_FIFO_Rollback				: out	STD_LOGIC;
+		TX_FIFO_rst							: out	std_logic;
+		TX_FIFO_Valid						: in	std_logic;
+		TX_FIFO_got							: out	std_logic;
+		TX_FIFO_Commit					: out	std_logic;
+		TX_FIFO_Rollback				: out	std_logic;
 
 		-- RX_FSFIFO interface
-		TX_FSFIFO_rst						: out	STD_LOGIC;
-		TX_FSFIFO_put						: out	STD_LOGIC;
-		TX_FSFIFO_Full					: in	STD_LOGIC;
+		TX_FSFIFO_rst						: out	std_logic;
+		TX_FSFIFO_put						: out	std_logic;
+		TX_FSFIFO_Full					: in	std_logic;
 
 		-- RX_FIFO interface
-		RX_FIFO_rst							: out	STD_LOGIC;
-		RX_FIFO_put							: out	STD_LOGIC;
-		RX_FIFO_commit					: out	STD_LOGIC;
-		RX_FIFO_rollback				: out	STD_LOGIC;
-		RX_FIFO_Full						: in	STD_LOGIC;
-		RX_FIFO_SpaceAvailable	: in	STD_LOGIC;
+		RX_FIFO_rst							: out	std_logic;
+		RX_FIFO_put							: out	std_logic;
+		RX_FIFO_commit					: out	std_logic;
+		RX_FIFO_rollback				: out	std_logic;
+		RX_FIFO_Full						: in	std_logic;
+		RX_FIFO_SpaceAvailable	: in	std_logic;
 
 		-- RX FIFO input/hold register interface
-		RX_DataReg_shift				: out	STD_LOGIC;
+		RX_DataReg_shift				: out	std_logic;
 
 		-- RX_FSFIFO interface
-		RX_FSFIFO_rst						: out	STD_LOGIC;
-		RX_FSFIFO_put						: out	STD_LOGIC;
-		RX_FSFIFO_Full					: in	STD_LOGIC;
+		RX_FSFIFO_rst						: out	std_logic;
+		RX_FSFIFO_put						: out	std_logic;
+		RX_FSFIFO_Full					: in	std_logic;
 
 		-- RX_CRC interface
-		RX_CRC_rst							: out	STD_LOGIC;
-		RX_CRC_Valid						: out	STD_LOGIC;
-		RX_CRC_OK								: in	STD_LOGIC;
+		RX_CRC_rst							: out	std_logic;
+		RX_CRC_Valid						: out	std_logic;
+		RX_CRC_OK								: in	std_logic;
 
 		-- TX_CRC interface
-		TX_CRC_rst							: out	STD_LOGIC;
-		TX_CRC_Valid						: out	STD_LOGIC;
+		TX_CRC_rst							: out	std_logic;
+		TX_CRC_Valid						: out	std_logic;
 
 		-- TX scrambler interface
-		DataScrambler_en				: out	STD_LOGIC;
-		DataScrambler_rst				: out	STD_LOGIC;
+		DataScrambler_en				: out	std_logic;
+		DataScrambler_rst				: out	std_logic;
 --		DummyScrambler_en				: out	STD_LOGIC;
 --		DummyScrambler_rst			: out	STD_LOGIC;
 
 		-- RX scrambler interface
-		DataUnscrambler_en			: out	STD_LOGIC;
-		DataUnscrambler_rst			: out	STD_LOGIC;
+		DataUnscrambler_en			: out	std_logic;
+		DataUnscrambler_rst			: out	std_logic;
 
 		-- TX MUX interface
-		CRCMux_ctrl							: out	STD_LOGIC--;
+		CRCMux_ctrl							: out	std_logic--;
 --		ScramblerMux_ctrl				: out	STD_LOGIC
 	);
 end entity;
 
 
 architecture rtl of sata_LinkLayerFSM is
-	attribute KEEP									: BOOLEAN;
-	attribute FSM_ENCODING					: STRING;
-	attribute SYN_ENCODING					: STRING;				-- Altera: FSM_ENCODING
+	attribute KEEP									: boolean;
+	attribute FSM_ENCODING					: string;
+	attribute SYN_ENCODING					: string;				-- Altera: FSM_ENCODING
 
-	constant LONG_FRAME_WORDS					: POSITIVE		:= 8;
-	constant SHORT_FRAME_RETRY_COUNT	: POSITIVE		:= 16;
+	constant LONG_FRAME_WORDS					: positive		:= 8;
+	constant SHORT_FRAME_RETRY_COUNT	: positive		:= 16;
 
 	type T_STATE is (
 		ST_RESET,
@@ -181,38 +181,38 @@ architecture rtl of sata_LinkLayerFSM is
 
 	attribute FSM_ENCODING	of State		: signal is getFSMEncoding_gray(DEBUG);
 
-	constant INSERT_ALIGN_COUNTER_BITS	: POSITIVE															:= log2ceilnz(INSERT_ALIGN_INTERVAL);
+	constant INSERT_ALIGN_COUNTER_BITS	: positive															:= log2ceilnz(INSERT_ALIGN_INTERVAL);
 
-	signal InsertAlign									: STD_LOGIC;
+	signal InsertAlign									: std_logic;
 
-	signal TX_WordCounter_rst						: STD_LOGIC;
-	signal TX_WordCounter_inc						: STD_LOGIC;
-	signal TX_IsLongFrame								: STD_LOGIC;
+	signal TX_WordCounter_rst						: std_logic;
+	signal TX_WordCounter_inc						: std_logic;
+	signal TX_IsLongFrame								: std_logic;
 
-	signal TX_RetryCounter_rst					: STD_LOGIC;
-	signal TX_RetryCounter_inc					: STD_LOGIC;
-	signal TX_RetryFailed								: STD_LOGIC;
+	signal TX_RetryCounter_rst					: std_logic;
+	signal TX_RetryCounter_inc					: std_logic;
+	signal TX_RetryFailed								: std_logic;
 
-	signal RX_IsSOF									: STD_LOGIC;
-	signal RX_IsEOF									: STD_LOGIC;
-	signal RX_IsData								: STD_LOGIC;
-	signal RX_IsData_d							: STD_LOGIC																	:= '0';
-	signal RX_IsData_re							: STD_LOGIC;
+	signal RX_IsSOF									: std_logic;
+	signal RX_IsEOF									: std_logic;
+	signal RX_IsData								: std_logic;
+	signal RX_IsData_d							: std_logic																	:= '0';
+	signal RX_IsData_re							: std_logic;
 
-	signal RX_SOF_r									: STD_LOGIC																	:= '0';
+	signal RX_SOF_r									: std_logic																	:= '0';
 
-	signal RX_DataReg_Valid1				: STD_LOGIC																	:= '0';
-	signal RX_DataReg_Valid2				: STD_LOGIC																	:= '0';
+	signal RX_DataReg_Valid1				: std_logic																	:= '0';
+	signal RX_DataReg_Valid2				: std_logic																	:= '0';
 
-	signal RX_FIFO_put_i 						: STD_LOGIC;
-	signal RX_FIFO_Overflow_r 			: STD_LOGIC 																:= '0';
+	signal RX_FIFO_put_i 						: std_logic;
+	signal RX_FIFO_Overflow_r 			: std_logic 																:= '0';
 
-	signal RX_SOFReg_d1							: STD_LOGIC																	:= '0';
-	signal RX_SOFReg_d2							: STD_LOGIC																	:= '0';
+	signal RX_SOFReg_d1							: std_logic																	:= '0';
+	signal RX_SOFReg_d2							: std_logic																	:= '0';
 
-	signal RX_CRC_OKReg_set					: STD_LOGIC;
-	signal RX_CRC_OKReg_rst					: STD_LOGIC;
-	signal RX_CRC_OKReg_r						: STD_LOGIC																	:= '0';
+	signal RX_CRC_OKReg_set					: std_logic;
+	signal RX_CRC_OKReg_rst					: std_logic;
+	signal RX_CRC_OKReg_r						: std_logic																	:= '0';
 
 begin
 
@@ -357,7 +357,7 @@ begin
 								NextState							<= ST_RX_WAIT_FIFO;
 							end if;
 						elsif (CONTROLLER_TYPE	= SATA_DEVICE_TYPE_DEVICE) then			--
-							if ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) then	-- start own transmission attempt?
+							if ((Trans_TX_SOF = '1') and (TX_FIFO_Valid = '1')) then	-- start own transmission attempt?
 								TX_Primitive					<= SATA_PRIMITIVE_TX_RDY;
 								NextState							<= ST_TX_SEND_TX_RDY;
 							else
@@ -371,7 +371,7 @@ begin
 							end if;
 						end if;
 					else
-						if ((Trans_TX_SOF = '1') AND (TX_FIFO_Valid = '1')) then
+						if ((Trans_TX_SOF = '1') and (TX_FIFO_Valid = '1')) then
 							TX_Primitive						<= SATA_PRIMITIVE_TX_RDY;
 							NextState								<= ST_TX_SEND_TX_RDY;
 						end if;
@@ -1069,14 +1069,14 @@ begin
 -- insert align counter
 -- ==================================================================
 	blkCounters : block
-		signal InsertAlign_rst					: STD_LOGIC;
-		signal InsertAlign_Counter_us		: UNSIGNED(INSERT_ALIGN_COUNTER_BITS - 1 downto 0)		:= (others => '0');
+		signal InsertAlign_rst					: std_logic;
+		signal InsertAlign_Counter_us		: unsigned(INSERT_ALIGN_COUNTER_BITS - 1 downto 0)		:= (others => '0');
 
-		signal WordCounter_inc					: STD_LOGIC;
-		signal WordCounter_us						: UNSIGNED(4 downto 0)																:= (others => '0');
+		signal WordCounter_inc					: std_logic;
+		signal WordCounter_us						: unsigned(4 downto 0)																:= (others => '0');
 
-		signal RetryCounter_inc					: STD_LOGIC;
-		signal RetryCounter_us					: UNSIGNED(4 downto 0)																:= (others => '0');
+		signal RetryCounter_inc					: std_logic;
+		signal RetryCounter_us					: unsigned(4 downto 0)																:= (others => '0');
 
 	begin
 		InsertAlign_rst							<= InsertAlign when rising_edge(Clock);		-- delay reload by one cycle -> asserts InsertAlign for 2 cycles.
@@ -1124,7 +1124,7 @@ begin
 	-- debug port
 	-- ===========================================================================
 	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
-		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		function dbg_EncodeState(st : T_STATE) return std_logic_vector is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;

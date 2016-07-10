@@ -40,31 +40,31 @@ use			PoC.ddrio.all;
 entity pio_in is
 	generic (
 		DATARATE		: T_IO_DATARATE	:= IO_DATARATE_SDR;
-		DATA_BITS		: NATURAL				:= 8;
-		REV_BITS		: NATURAL				:= 0
+		DATA_BITS		: natural				:= 8;
+		REV_BITS		: natural				:= 0
 	);
 	port (
-		Clock				: out	STD_LOGIC;
-		DataOut			: out	STD_LOGIC_VECTOR(ite((DATARATE = IO_DATARATE_DDR), 2*DATA_BITS, DATA_BITS) - 1 downto 0);
-		DataIn			: in	STD_LOGIC_VECTOR(ite((DATARATE = IO_DATARATE_DDR), 2*REV_BITS, REV_BITS) - 1 downto 0);
+		Clock				: out	std_logic;
+		DataOut			: out	std_logic_vector(ite((DATARATE = IO_DATARATE_DDR), 2*DATA_BITS, DATA_BITS) - 1 downto 0);
+		DataIn			: in	std_logic_vector(ite((DATARATE = IO_DATARATE_DDR), 2*REV_BITS, REV_BITS) - 1 downto 0);
 
-		Pad_Clock		: in	STD_LOGIC;
-		Pad_DataIn	: in	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
-		Pad_DataOut	: out	STD_LOGIC_VECTOR(REV_BITS - 1 downto 0)
+		Pad_Clock		: in	std_logic;
+		Pad_DataIn	: in	std_logic_vector(DATA_BITS - 1 downto 0);
+		Pad_DataOut	: out	std_logic_vector(REV_BITS - 1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of pio_in is
-	signal Clock_i		: STD_LOGIC;
+	signal Clock_i		: std_logic;
 begin
 	-- clock recovery
 	Clock_i		<= Pad_Clock;
 	Clock			<= Clock_i;
 
 	genSDR : if (DATARATE = IO_DATARATE_SDR) generate
-		signal DataIn_iob			: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0)		:= (others => '0');
-		signal DataOut_iob		: STD_LOGIC_VECTOR(REV_BITS - 1 downto 0)	:= (others => '0');
+		signal DataIn_iob			: std_logic_vector(DATA_BITS - 1 downto 0)		:= (others => '0');
+		signal DataOut_iob		: std_logic_vector(REV_BITS - 1 downto 0)	:= (others => '0');
 	begin
 
 		DataIn_iob		<= Pad_DataIn	when rising_edge(Clock_i);
@@ -73,7 +73,7 @@ begin
 		Pad_DataOut		<= DataOut_iob;
 	end generate;
 	genDDR : if (DATARATE = IO_DATARATE_DDR) generate
-		signal Clock_i		: STD_LOGIC;
+		signal Clock_i		: std_logic;
 	begin
 		DataInFF : entity PoC.ddrio_in
 			generic map (

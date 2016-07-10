@@ -14,50 +14,50 @@ use			L_IO.IOTypes.all;
 
 entity IICController_SFF8431 is
 	generic (
-		DEBUG													: BOOLEAN												:= TRUE;
+		DEBUG													: boolean												:= TRUE;
 		CLOCK_FREQ_MHZ								: REAL													:= 100.0;					-- 100 MHz
 		IIC_FREQ_KHZ									: REAL													:= 100.0
 	);
 	port (
-		Clock													: in	STD_LOGIC;
-		Reset													: in	STD_LOGIC;
+		Clock													: in	std_logic;
+		Reset													: in	std_logic;
 
 		-- IICController interface
 		Command												: in	T_IO_IIC_SFF8431_COMMAND;
 		Status												: out	T_IO_IIC_SFF8431_STATUS;
 		Error													: out	T_IO_IIC_SFF8431_ERROR;
 
-		PhysicalAddress								: in	STD_LOGIC_VECTOR(6 downto 0);
+		PhysicalAddress								: in	std_logic_vector(6 downto 0);
 		RegisterAddress								: in	T_SLV_8;
 
-		In_MoreBytes									: in	STD_LOGIC;
+		In_MoreBytes									: in	std_logic;
 		In_Data												: in	T_SLV_8;
-		In_NextByte										: out	STD_LOGIC;
+		In_NextByte										: out	std_logic;
 
-		Out_LastByte									: in	STD_LOGIC;
+		Out_LastByte									: in	std_logic;
 		Out_Data											: out	T_SLV_8;
-		Out_Valid											: out	STD_LOGIC;
+		Out_Valid											: out	std_logic;
 
 		-- tristate interface
-		SerialClock_i									: in	STD_LOGIC;
-		SerialClock_o									: out	STD_LOGIC;
-		SerialClock_t									: out	STD_LOGIC;
-		SerialData_i									: in	STD_LOGIC;
-		SerialData_o									: out	STD_LOGIC;
-		SerialData_t									: out	STD_LOGIC
+		SerialClock_i									: in	std_logic;
+		SerialClock_o									: out	std_logic;
+		SerialClock_t									: out	std_logic;
+		SerialData_i									: in	std_logic;
+		SerialData_o									: out	std_logic;
+		SerialData_t									: out	std_logic
 	);
-END entity;
+end entity;
 
 -- TODOs
 --
 
 architecture rtl of IICController_SFF8431 is
-	attribute KEEP										: BOOLEAN;
-	attribute FSM_ENCODING						: STRING;
-	attribute ENUM_ENCODING						: STRING;
+	attribute KEEP										: boolean;
+	attribute FSM_ENCODING						: string;
+	attribute ENUM_ENCODING						: string;
 
 	-- if-then-else (ite)
-	function ite(cond : BOOLEAN; value1 : T_IO_IIC_SFF8431_STATUS; value2 : T_IO_IIC_SFF8431_STATUS) return T_IO_IIC_SFF8431_STATUS is
+	function ite(cond : boolean; value1 : T_IO_IIC_SFF8431_STATUS; value2 : T_IO_IIC_SFF8431_STATUS) return T_IO_IIC_SFF8431_STATUS is
 	begin
 		if (cond = TRUE) then
 			return value1;
@@ -94,40 +94,40 @@ architecture rtl of IICController_SFF8431 is
 
 	signal State												: T_STATE													:= ST_IDLE;
 	signal NextState										: T_STATE;
-	attribute FSM_ENCODING OF State			: signal IS "gray";
+	attribute FSM_ENCODING of State			: signal is "gray";
 
 	signal Status_i											: T_IO_IIC_SFF8431_STATUS;
 	signal Error_i											: T_IO_IIC_SFF8431_ERROR;
 
-	signal Command_en										: STD_LOGIC;
+	signal Command_en										: std_logic;
 	signal Command_d										: T_IO_IIC_SFF8431_COMMAND				:= IO_IIC_SFF8431_CMD_NONE;
 
-	signal BusMaster										: STD_LOGIC;
-	signal BusMode											: STD_LOGIC;
+	signal BusMaster										: std_logic;
+	signal BusMode											: std_logic;
 	signal IICBC_Command								: T_IO_IICBUS_COMMAND;
 	signal IICBC_Status									: T_IO_IICBUS_STATUS;
 
-	signal BitCounter_rst								: STD_LOGIC;
-	signal BitCounter_en								: STD_LOGIC;
-	signal BitCounter_us								: UNSIGNED(3 downto 0)						:= (others => '0');
+	signal BitCounter_rst								: std_logic;
+	signal BitCounter_en								: std_logic;
+	signal BitCounter_us								: unsigned(3 downto 0)						:= (others => '0');
 
-	signal RegOperation_en							: STD_LOGIC;
-	signal RegOperation_d								: STD_LOGIC												:= '0';
+	signal RegOperation_en							: std_logic;
+	signal RegOperation_d								: std_logic												:= '0';
 
-	signal PhysicalAddress_en						: STD_LOGIC;
-	signal PhysicalAddress_sh						: STD_LOGIC;
-	signal PhysicalAddress_d						: STD_LOGIC_VECTOR(6 downto 0)		:= (others => '0');
+	signal PhysicalAddress_en						: std_logic;
+	signal PhysicalAddress_sh						: std_logic;
+	signal PhysicalAddress_d						: std_logic_vector(6 downto 0)		:= (others => '0');
 
-	signal RegisterAddress_en						: STD_LOGIC;
-	signal RegisterAddress_sh						: STD_LOGIC;
+	signal RegisterAddress_en						: std_logic;
+	signal RegisterAddress_sh						: std_logic;
 	signal RegisterAddress_d						: T_SLV_8													:= (others => '0');
 
-	signal DataRegister_en							: STD_LOGIC;
-	signal DataRegister_sh							: STD_LOGIC;
+	signal DataRegister_en							: std_logic;
+	signal DataRegister_sh							: std_logic;
 	signal DataRegister_d								: T_SLV_8													:= (others => '0');
 
-	signal SerialClock_t_i							: STD_LOGIC;
-	signal SerialData_t_i								: STD_LOGIC;
+	signal SerialClock_t_i							: std_logic;
+	signal SerialData_t_i								: std_logic;
 
 begin
 
@@ -187,7 +187,7 @@ begin
 			when ST_IDLE =>
 				case Command is
 					when IO_IIC_SFF8431_CMD_NONE =>
-						NULL;
+						null;
 
 --					when IO_IIC_SFF8431_CMD_ADDRESS_CHECK =>
 --						Command_en							<= '1';
@@ -238,7 +238,7 @@ begin
 
 			when ST_SEND_START =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
@@ -248,13 +248,13 @@ begin
 
 			when ST_SEND_START_WAIT =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
 
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_SENDING =>					NULL;
+					when IO_IICBUS_STATUS_SENDING =>					null;
 					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_PHYSICAL_ADDRESS0;
 					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
 					when others =>														NextState			<= ST_ERROR;
@@ -262,7 +262,7 @@ begin
 
 			when ST_SEND_PHYSICAL_ADDRESS0 =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
@@ -278,14 +278,14 @@ begin
 
 			when ST_SEND_PHYSICAL_ADDRESS0_WAIT =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
 
 				if (IICBC_Status = IO_IICBUS_STATUS_SENDING) then
-					NULL;
-				ELSif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
+					null;
+				elsif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
 					BitCounter_en							<= '1';
 
 					if (BitCounter_us = (PhysicalAddress_d'length - 1)) then
@@ -293,7 +293,7 @@ begin
 					else
 						NextState								<= ST_SEND_PHYSICAL_ADDRESS0;
 					end if;
-				ELSif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
+				elsif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
 					NextState									<= ST_BUS_ERROR;
 				else
 					NextState									<= ST_ERROR;
@@ -301,12 +301,12 @@ begin
 
 			when ST_SEND_READWRITE0 =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
 
-				case Command_d IS														-- write = 0; read = 1
+				case Command_d is														-- write = 0; read = 1
 --					when IO_IIC_SFF8431_CMD_ADDRESS_CHECK =>	IICBC_Command		<= IO_IICBUS_CMD_SEND_HIGH;
 					when IO_IIC_SFF8431_CMD_READ_CURRENT =>		IICBC_Command		<= IO_IICBUS_CMD_SEND_HIGH;
 					when IO_IIC_SFF8431_CMD_READ_BYTE =>			IICBC_Command		<= IO_IICBUS_CMD_SEND_LOW;
@@ -320,13 +320,13 @@ begin
 
 			when ST_SEND_READWRITE0_WAIT =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
 
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_SENDING =>					NULL;
+					when IO_IICBUS_STATUS_SENDING =>					null;
 					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_ACK0;
 					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
 					when others =>														NextState			<= ST_ERROR;
@@ -334,7 +334,7 @@ begin
 
 			when ST_RECEIVE_ACK0 =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BitCounter_rst							<= '1';
 				BusMaster										<= '1';
@@ -345,13 +345,13 @@ begin
 
 			when ST_RECEIVE_ACK0_WAIT =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '0';
 
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_RECEIVING =>									NULL;
+					when IO_IICBUS_STATUS_RECEIVING =>									null;
 					when IO_IICBUS_STATUS_RECEIVED_LOW =>
 						case Command_d is
 --							when IO_IIC_SFF8431_CMD_ADDRESS_CHECK =>				NextState			<= ST_SEND_STOP;
@@ -369,7 +369,7 @@ begin
 
 			when ST_SEND_REGISTER_ADDRESS =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
@@ -385,14 +385,14 @@ begin
 
 			when ST_SEND_REGISTER_ADDRESS_WAIT =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
 
 				if (IICBC_Status = IO_IICBUS_STATUS_SENDING) then
-					NULL;
-				ELSif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
+					null;
+				elsif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
 					BitCounter_en							<= '1';
 
 					if (BitCounter_us = (RegisterAddress_d'length - 1)) then
@@ -400,7 +400,7 @@ begin
 					else
 						NextState								<= ST_SEND_REGISTER_ADDRESS;
 					end if;
-				ELSif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
+				elsif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
 					NextState									<= ST_BUS_ERROR;
 				else
 					NextState									<= ST_ERROR;
@@ -408,7 +408,7 @@ begin
 
 			when ST_RECEIVE_ACK1 =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BitCounter_rst							<= '1';
 				BusMaster										<= '1';
@@ -419,13 +419,13 @@ begin
 
 			when ST_RECEIVE_ACK1_WAIT =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '0';
 
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_RECEIVING =>								NULL;
+					when IO_IICBUS_STATUS_RECEIVING =>								null;
 					when IO_IICBUS_STATUS_RECEIVED_LOW =>
 						case Command_d is
 							when IO_IIC_SFF8431_CMD_WRITE_BYTE =>			NextState			<= ST_SEND_DATA;
@@ -461,8 +461,8 @@ begin
 				BusMode											<= '1';
 
 				if (IICBC_Status = IO_IICBUS_STATUS_SENDING) then
-					NULL;
-				ELSif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
+					null;
+				elsif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
 					BitCounter_en							<= '1';
 
 					if (BitCounter_us = 7) then
@@ -470,7 +470,7 @@ begin
 					else
 						NextState								<= ST_SEND_DATA;
 					end if;
-				ELSif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
+				elsif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
 					NextState									<= ST_BUS_ERROR;
 				else
 					NextState									<= ST_ERROR;
@@ -491,7 +491,7 @@ begin
 				BusMode											<= '0';
 
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_RECEIVING =>						NULL;
+					when IO_IICBUS_STATUS_RECEIVING =>						null;
 					when IO_IICBUS_STATUS_RECEIVED_LOW =>
 						case Command_d is
 							when IO_IIC_SFF8431_CMD_WRITE_BYTE =>			NextState			<= ST_SEND_STOP;
@@ -531,7 +531,7 @@ begin
 				BusMode											<= '1';
 
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_SENDING =>					NULL;
+					when IO_IICBUS_STATUS_SENDING =>					null;
 					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_PHYSICAL_ADDRESS1;
 					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
 					when others =>														NextState			<= ST_ERROR;
@@ -557,8 +557,8 @@ begin
 				BusMode											<= '1';
 
 				if (IICBC_Status = IO_IICBUS_STATUS_SENDING) then
-					NULL;
-				ELSif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
+					null;
+				elsif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
 					BitCounter_en							<= '1';
 
 					if (BitCounter_us = (PhysicalAddress_d'length - 1)) then
@@ -566,7 +566,7 @@ begin
 					else
 						NextState								<= ST_SEND_PHYSICAL_ADDRESS1;
 					end if;
-				ELSif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
+				elsif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
 					NextState									<= ST_BUS_ERROR;
 				else
 					NextState									<= ST_ERROR;
@@ -577,7 +577,7 @@ begin
 				BusMaster										<= '1';
 				BusMode											<= '1';
 
-				case Command_d IS														-- write = 0; read = 1
+				case Command_d is														-- write = 0; read = 1
 					when IO_IIC_SFF8431_CMD_WRITE_BYTE =>			IICBC_Command		<= IO_IICBUS_CMD_NONE;
 					when IO_IIC_SFF8431_CMD_WRITE_BYTES =>		IICBC_Command		<= IO_IICBUS_CMD_NONE;
 					when IO_IIC_SFF8431_CMD_READ_CURRENT =>		IICBC_Command		<= IO_IICBUS_CMD_NONE;
@@ -594,7 +594,7 @@ begin
 				BusMode											<= '1';
 
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_SENDING =>					NULL;
+					when IO_IICBUS_STATUS_SENDING =>					null;
 					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_ACK3;
 					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
 					when others =>														NextState			<= ST_ERROR;
@@ -615,7 +615,7 @@ begin
 				BusMode											<= '0';
 
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_RECEIVING =>						NULL;
+					when IO_IICBUS_STATUS_RECEIVING =>						null;
 					when IO_IICBUS_STATUS_RECEIVED_LOW =>
 						case Command_d is
 							when IO_IIC_SFF8431_CMD_READ_BYTE =>			NextState			<= ST_RECEIVE_DATA;
@@ -641,13 +641,13 @@ begin
 				BusMode											<= '0';
 
 				if (IICBC_Status = IO_IICBUS_STATUS_RECEIVING) then
-					NULL;
-				ELSif ((IICBC_Status = IO_IICBUS_STATUS_RECEIVED_LOW) OR (IICBC_Status = IO_IICBUS_STATUS_RECEIVED_HIGH)) then
+					null;
+				elsif ((IICBC_Status = IO_IICBUS_STATUS_RECEIVED_LOW) or (IICBC_Status = IO_IICBUS_STATUS_RECEIVED_HIGH)) then
 					BitCounter_en							<= '1';
 					DataRegister_sh						<= '1';
 
 					if (BitCounter_us = 7) then
-						if ((Out_LastByte = '1') OR (Command_d = IO_IIC_SFF8431_CMD_READ_BYTE)) then
+						if ((Out_LastByte = '1') or (Command_d = IO_IIC_SFF8431_CMD_READ_BYTE)) then
 							NextState							<= ST_SEND_NACK;
 						else
 							NextState							<= ST_SEND_ACK;
@@ -655,7 +655,7 @@ begin
 					else
 						NextState								<= ST_RECEIVE_DATA;
 					end if;
-				ELSif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
+				elsif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
 					NextState									<= ST_BUS_ERROR;
 				else
 					NextState									<= ST_ERROR;
@@ -677,7 +677,7 @@ begin
 				BusMode											<= '1';
 
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_SENDING =>					NULL;
+					when IO_IICBUS_STATUS_SENDING =>					null;
 					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_DATA;
 					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
 					when others =>														NextState			<= ST_ERROR;
@@ -697,7 +697,7 @@ begin
 				BusMode											<= '1';
 
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_SENDING =>					NULL;
+					when IO_IICBUS_STATUS_SENDING =>					null;
 					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_STOP;
 					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
 					when others =>														NextState			<= ST_ERROR;
@@ -705,7 +705,7 @@ begin
 
 			when ST_SEND_STOP =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				BusMaster										<= '1';
 				BusMode											<= '1';
@@ -715,10 +715,10 @@ begin
 
 			when ST_SEND_STOP_WAIT =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READING,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITING));
 				case IICBC_Status is
-					when IO_IICBUS_STATUS_SENDING =>					NULL;
+					when IO_IICBUS_STATUS_SENDING =>					null;
 					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_COMPLETE;
 					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
 					when others =>														NextState			<= ST_ERROR;
@@ -726,7 +726,7 @@ begin
 
 			when ST_COMPLETE =>
 				Status_i										<= ite((CommandCategory = READ),										IO_IIC_SFF8431_STATUS_READ_COMPLETE,
-																			 ite(((CommandCategory /= WRITE) AND SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
+																			 ite(((CommandCategory /= WRITE) and SIMULATION),	IO_IIC_SFF8431_STATUS_ERROR,
 																																												IO_IIC_SFF8431_STATUS_WRITE_COMPLETE));
 				NextState										<= ST_IDLE;
 
@@ -757,7 +757,7 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR BitCounter_rst) = '1') then
+			if ((Reset or BitCounter_rst) = '1') then
 				BitCounter_us						<= (others => '0');
 			else
 				if (BitCounter_en	= '1') then
@@ -768,7 +768,7 @@ begin
 	end process;
 
 	process(Clock, IICBC_Status )
-		variable DataRegister_si		: STD_LOGIC;
+		variable DataRegister_si		: std_logic;
 	begin
 		case IICBC_Status is
 			when IO_IICBUS_STATUS_RECEIVED_LOW =>			DataRegister_si	:= '0';
@@ -789,19 +789,19 @@ begin
 
 				if (PhysicalAddress_en	= '1') then
 					PhysicalAddress_d	<= PhysicalAddress;
-				ELSif (PhysicalAddress_sh = '1') then
+				elsif (PhysicalAddress_sh = '1') then
 					PhysicalAddress_d	<= PhysicalAddress_d(PhysicalAddress_d'high - 1 downto 0) & PhysicalAddress_d(PhysicalAddress_d'high);
 				end if;
 
 				if (RegisterAddress_en	= '1') then
 					RegisterAddress_d	<= RegisterAddress;
-				ELSif (RegisterAddress_sh = '1') then
+				elsif (RegisterAddress_sh = '1') then
 					RegisterAddress_d	<= RegisterAddress_d(RegisterAddress_d'high - 1 downto 0) & ite(SIMULATION, 'U', '0');
 				end if;
 
 				if (DataRegister_en	= '1') then
 					DataRegister_d			<= In_Data;
-				ELSif (DataRegister_sh = '1') then
+				elsif (DataRegister_sh = '1') then
 					DataRegister_d			<= DataRegister_d(DataRegister_d'high - 1 downto 0) & DataRegister_si;
 				end if;
 			end if;
@@ -847,21 +847,21 @@ begin
 --		END function;
 
 		-- debugging signals
-		type T_DBG_CHIPSCOPE IS record
+		type T_DBG_CHIPSCOPE is record
 			Command						: T_IO_IIC_SFF8431_COMMAND;
 			Status						: T_IO_IIC_SFF8431_STATUS;
-			PhysicalAddress		: STD_LOGIC_VECTOR(6 downto 0);
+			PhysicalAddress		: std_logic_vector(6 downto 0);
 			RegisterAddress		: T_SLV_8;
 			DataIn						: T_SLV_8;
 			DataOut						: T_SLV_8;
 			State							: T_STATE;
 			IICBC_Command			: T_IO_IICBUS_COMMAND;
 			IICBC_Status			: T_IO_IICBUS_STATUS;
-			Clock_i						: STD_LOGIC;
-			Clock_t						: STD_LOGIC;
-			Data_i						: STD_LOGIC;
-			Data_t						: STD_LOGIC;
-		END record;
+			Clock_i						: std_logic;
+			Clock_t						: std_logic;
+			Data_i						: std_logic;
+			Data_t						: std_logic;
+		end record;
 
 		signal CSP_DebugVector_i		: T_DBG_CHIPSCOPE;
 		signal CSP_DebugVector_d1		: T_DBG_CHIPSCOPE;
@@ -872,49 +872,49 @@ begin
 
 		signal CSP_Command					: T_IO_IIC_SFF8431_COMMAND;
 		signal CSP_Status						: T_IO_IIC_SFF8431_STATUS;
-		signal CSP_PhysicalAddress	: STD_LOGIC_VECTOR(6 downto 0);
+		signal CSP_PhysicalAddress	: std_logic_vector(6 downto 0);
 		signal CSP_RegisterAddress	: T_SLV_8;
 		signal CSP_DataIn						: T_SLV_8;
 		signal CSP_DataOut					: T_SLV_8;
 		signal CSP_State						: T_STATE;
 		signal CSP_IICBC_Command		: T_IO_IICBUS_COMMAND;
 		signal CSP_IICBC_Status			: T_IO_IICBUS_STATUS;
-		signal CSP_Clock_i					: STD_LOGIC;
-		signal CSP_Clock_t					: STD_LOGIC;
-		signal CSP_Data_i						: STD_LOGIC;
-		signal CSP_Data_t						: STD_LOGIC;
+		signal CSP_Clock_i					: std_logic;
+		signal CSP_Clock_t					: std_logic;
+		signal CSP_Data_i						: std_logic;
+		signal CSP_Data_t						: std_logic;
 
-		signal SerialClock_t_d			: STD_LOGIC;
-		signal SerialData_t_d				: STD_LOGIC;
+		signal SerialClock_t_d			: std_logic;
+		signal SerialData_t_d				: std_logic;
 
-		signal Trigger_i						: STD_LOGIC;
-		signal Trigger_d1						: STD_LOGIC;
-		signal Trigger_d2						: STD_LOGIC;
-		signal Trigger_d3						: STD_LOGIC;
-		signal Trigger_d4						: STD_LOGIC;
-		signal Trigger_d5						: STD_LOGIC;
-		signal Trigger_d6						: STD_LOGIC;
-		signal Valid_r							: STD_LOGIC;
+		signal Trigger_i						: std_logic;
+		signal Trigger_d1						: std_logic;
+		signal Trigger_d2						: std_logic;
+		signal Trigger_d3						: std_logic;
+		signal Trigger_d4						: std_logic;
+		signal Trigger_d5						: std_logic;
+		signal Trigger_d6						: std_logic;
+		signal Valid_r							: std_logic;
 
-		signal CSP_Trigger					: STD_LOGIC;
-		signal CSP_Valid						: STD_LOGIC;
+		signal CSP_Trigger					: std_logic;
+		signal CSP_Valid						: std_logic;
 
-		attribute KEEP OF CSP_Command					: signal IS TRUE;
-		attribute KEEP OF CSP_Status					: signal IS TRUE;
-		attribute KEEP OF CSP_PhysicalAddress	: signal IS TRUE;
-		attribute KEEP OF CSP_RegisterAddress	: signal IS TRUE;
-		attribute KEEP OF CSP_DataIn					: signal IS TRUE;
-		attribute KEEP OF CSP_DataOut					: signal IS TRUE;
-		attribute KEEP OF CSP_State						: signal IS TRUE;
-		attribute KEEP OF CSP_IICBC_Command		: signal IS TRUE;
-		attribute KEEP OF CSP_IICBC_Status		: signal IS TRUE;
-		attribute KEEP OF CSP_Clock_i					: signal IS TRUE;
-		attribute KEEP OF CSP_Clock_t					: signal IS TRUE;
-		attribute KEEP OF CSP_Data_i					: signal IS TRUE;
-		attribute KEEP OF CSP_Data_t					: signal IS TRUE;
+		attribute KEEP of CSP_Command					: signal is TRUE;
+		attribute KEEP of CSP_Status					: signal is TRUE;
+		attribute KEEP of CSP_PhysicalAddress	: signal is TRUE;
+		attribute KEEP of CSP_RegisterAddress	: signal is TRUE;
+		attribute KEEP of CSP_DataIn					: signal is TRUE;
+		attribute KEEP of CSP_DataOut					: signal is TRUE;
+		attribute KEEP of CSP_State						: signal is TRUE;
+		attribute KEEP of CSP_IICBC_Command		: signal is TRUE;
+		attribute KEEP of CSP_IICBC_Status		: signal is TRUE;
+		attribute KEEP of CSP_Clock_i					: signal is TRUE;
+		attribute KEEP of CSP_Clock_t					: signal is TRUE;
+		attribute KEEP of CSP_Data_i					: signal is TRUE;
+		attribute KEEP of CSP_Data_t					: signal is TRUE;
 
-		attribute KEEP OF CSP_Trigger					: signal IS TRUE;
-		attribute KEEP OF CSP_Valid						: signal IS TRUE;
+		attribute KEEP of CSP_Trigger					: signal is TRUE;
+		attribute KEEP of CSP_Valid						: signal is TRUE;
 	begin
 		CSP_DebugVector_i.Command						<= Command;
 		CSP_DebugVector_i.Status						<= Status_i;
@@ -953,7 +953,7 @@ begin
 		SerialClock_t_d			<= SerialClock_t_i		when rising_edge(Clock);
 		SerialData_t_d			<= SerialData_t_i			when rising_edge(Clock);
 
-		Trigger_i						<= (SerialClock_t_i XOR SerialClock_t_d) OR (SerialData_t_i XOR SerialData_t_d);
+		Trigger_i						<= (SerialClock_t_i xor SerialClock_t_d) or (SerialData_t_i xor SerialData_t_d);
 		Trigger_d1					<= Trigger_i					when rising_edge(Clock);
 		Trigger_d2					<= Trigger_d1					when rising_edge(Clock);
 		Trigger_d3					<= Trigger_d2					when rising_edge(Clock);
@@ -962,14 +962,14 @@ begin
 		Trigger_d6					<= Trigger_d5					when rising_edge(Clock);
 
 		CSP_Trigger					<= Trigger_d4;
-		CSP_Valid						<= Trigger_i OR Valid_r;
+		CSP_Valid						<= Trigger_i or Valid_r;
 
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
 				if (Trigger_d6 = '1') then
 					Valid_r				<= '0';
-				ELSif (Trigger_i = '1') then
+				elsif (Trigger_i = '1') then
 					Valid_r				<= '1';
 				end if;
 			end if;

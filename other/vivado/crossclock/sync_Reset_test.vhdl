@@ -39,17 +39,17 @@ entity sync_Reset_test is
 	generic (
 		EXTERNAL_RESET : boolean := true);
 	port (
-		Clock1	: in	STD_LOGIC;
-		Clock2	: in	STD_LOGIC;
-		Input		: in	STD_LOGIC;
-		Output	: out STD_LOGIC_VECTOR(63 downto 0);
-		Busy		: out STD_LOGIC;
-		Changed : out STD_LOGIC);
+		Clock1	: in	std_logic;
+		Clock2	: in	std_logic;
+		Input		: in	std_logic;
+		Output	: out std_logic_vector(63 downto 0);
+		Busy		: out std_logic;
+		Changed : out std_logic);
 
 end entity sync_Reset_test;
 
 architecture rtl of sync_Reset_test is
-	signal Input_r3  : STD_LOGIC;
+	signal Input_r3  : std_logic;
 
 	signal Reset2  : std_logic;
 	signal Counter : unsigned(Output'range);
@@ -61,8 +61,8 @@ begin  -- architecture rtl
 	end generate gExtern;
 
 	gIntern: if not EXTERNAL_RESET generate
-		signal Input_r1  : STD_LOGIC;
-		signal Input_r2  : STD_LOGIC;
+		signal Input_r1  : std_logic;
+		signal Input_r2  : std_logic;
 	begin
 		-- Trigger the reset input by another clock domain instead of an external
 		-- button.

@@ -17,19 +17,19 @@ entity eth_RSLayer_GMII_SGMII_Virtex6_GTXE1 is
 		CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
 	);
 	port (
-		Clock											: in	STD_LOGIC;
-		Reset											: in	STD_LOGIC;
+		Clock											: in	std_logic;
+		Reset											: in	std_logic;
 
 		-- GEMAC-GMII interface
-		RS_TX_Clock								: in	STD_LOGIC;
-		RS_TX_Valid								: in	STD_LOGIC;
+		RS_TX_Clock								: in	std_logic;
+		RS_TX_Valid								: in	std_logic;
 		RS_TX_Data								: in	T_SLV_8;
-		RS_TX_Error								: in	STD_LOGIC;
+		RS_TX_Error								: in	std_logic;
 
-		RS_RX_Clock								: out	STD_LOGIC;
-		RS_RX_Valid								: out	STD_LOGIC;
+		RS_RX_Clock								: out	std_logic;
+		RS_RX_Valid								: out	std_logic;
 		RS_RX_Data								: out	T_SLV_8;
-		RS_RX_Error								: out	STD_LOGIC
+		RS_RX_Error								: out	std_logic
 	);
 end;
 

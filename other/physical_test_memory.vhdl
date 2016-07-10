@@ -82,10 +82,10 @@ architecture rtl of physical_test_memory is
 		report "CONST_1p125_MIB   = " & MEMORY'image(CONST_1p125_MIB) severity note;
 		report "CONST_1_GIB       = " & MEMORY'image(CONST_1_GIB    ) severity note;
 		report "CONST_1p125_GIB   = " & MEMORY'image(CONST_1p125_GIB) severity note;
-		report "CVT_1_BYTE_INT    = " & INTEGER'image(CVT_1_BYTE_INT) severity note;
-		report "CVT_1_KIB_INT     = " & INTEGER'image(CVT_1_KIB_INT ) severity note;
-		report "CVT_1_MIB_INT     = " & INTEGER'image(CVT_1_MIB_INT ) severity note;
-		report "CVT_1_GIB_INT     = " & INTEGER'image(CVT_1_GIB_INT ) severity note;
+		report "CVT_1_BYTE_INT    = " & integer'image(CVT_1_BYTE_INT) severity note;
+		report "CVT_1_KIB_INT     = " & integer'image(CVT_1_KIB_INT ) severity note;
+		report "CVT_1_MIB_INT     = " & integer'image(CVT_1_MIB_INT ) severity note;
+		report "CVT_1_GIB_INT     = " & integer'image(CVT_1_GIB_INT ) severity note;
 		report "CVT_1p5_KIB_REAL  = " & REAL'image(CVT_1p5_KIB_REAL ) severity note;
 		report "CVT_1p5_MIB_REAL  = " & REAL'image(CVT_1p5_MIB_REAL ) severity note;
 		report "CVT_1p5_GIB_REAL  = " & REAL'image(CVT_1p5_GIB_REAL ) severity note;

@@ -41,38 +41,38 @@ use			PoC.net.all;
 
 entity ndp_FSMQuery is
 	port (
-		Clock														: in	STD_LOGIC;
-		Reset														: in	STD_LOGIC;
+		Clock														: in	std_logic;
+		Reset														: in	std_logic;
 
-		NextHop_Query										: in	STD_LOGIC;
-		NextHop_IPv6Address_rst					: out	STD_LOGIC;
-		NextHop_IPv6Address_nxt					: out	STD_LOGIC;
+		NextHop_Query										: in	std_logic;
+		NextHop_IPv6Address_rst					: out	std_logic;
+		NextHop_IPv6Address_nxt					: out	std_logic;
 		NextHop_IPv6Address_Data				: in	T_SLV_8;
 
-		NextHop_Valid										: out	STD_LOGIC;
-		NextHop_MACAddress_rst					: in	STD_LOGIC;
-		NextHop_MACAddress_nxt					: in	STD_LOGIC;
+		NextHop_Valid										: out	std_logic;
+		NextHop_MACAddress_rst					: in	std_logic;
+		NextHop_MACAddress_nxt					: in	std_logic;
 		NextHop_MACAddress_Data					: out	T_SLV_8;
 
-		DCache_Lookup										: out STD_LOGIC;
-		DCache_IPv6Address_rst					: in sTD_LOGIC;
-		DCache_IPv6Address_nxt					: in sTD_LOGIC;
+		DCache_Lookup										: out std_logic;
+		DCache_IPv6Address_rst					: in std_logic;
+		DCache_IPv6Address_nxt					: in std_logic;
 		DCache_IPv6Address_Data					: out T_SLV_8;
 
 		DCache_CacheResult							: in	T_CACHE_RESULT;
-		DCache_NextHopIPv6Address_rst		: out	STD_LOGIC;
-		DCache_NextHopIPv6Address_nxt		: out	STD_LOGIC;
+		DCache_NextHopIPv6Address_rst		: out	std_logic;
+		DCache_NextHopIPv6Address_nxt		: out	std_logic;
 		DCache_NextHopIPv6Address_Data	: in	T_SLV_8;
 		DCache_PathMUT									: in	T_SLV_16;
 
-		NCache_Lookup										: out STD_LOGIC;
-		NCache_IPv6Address_rst					: in sTD_LOGIC;
-		NCache_IPv6Address_nxt					: in sTD_LOGIC;
+		NCache_Lookup										: out std_logic;
+		NCache_IPv6Address_rst					: in std_logic;
+		NCache_IPv6Address_nxt					: in std_logic;
 		NCache_IPv6Address_Data					: out T_SLV_8;
 
 		NCache_CacheResult							: in	T_CACHE_RESULT;
-		NCache_MACAddress_rst						: out	STD_LOGIC;
-		NCache_MACAddress_nxt						: out	STD_LOGIC;
+		NCache_MACAddress_rst						: out	std_logic;
+		NCache_MACAddress_nxt						: out	std_logic;
 		NCache_MACAddress_Data					: in	T_SLV_8;
 		NCache_Reachability							: in	T_NET_NDP_REACHABILITY_STATE
 	);
@@ -95,7 +95,7 @@ architecture rtl of ndp_FSMQuery is
 --	signal NextHop_en						: STD_LOGIC;
 	signal IPv6Address_d				: T_NET_IPV6_ADDRESS		:= C_NET_IPV6_ADDRESS_EMPTY;
 
-	signal MAC_en								: STD_LOGIC;
+	signal MAC_en								: std_logic;
 	signal MACAddress_d					: T_NET_MAC_ADDRESS			:= C_NET_MAC_ADDRESS_EMPTY;
 
 begin
@@ -145,7 +145,7 @@ begin
 
 					if (DCache_CacheResult = CACHE_RESULT_NONE) then
 						NextState				<= ST_DESTCACHE_WAIT;
-					ELSif (DCache_CacheResult = CACHE_RESULT_HIT) then
+					elsif (DCache_CacheResult = CACHE_RESULT_HIT) then
 --						NextHop_en			<= '1';
 						NextState				<= ST_NEIGHBORCACHE_LOOKUP;
 					else
@@ -157,7 +157,7 @@ begin
 				if (DCache_CacheResult = CACHE_RESULT_HIT) then
 --					NextHop_en			<= '1';
 					NextState				<= ST_NEIGHBORCACHE_LOOKUP;
-				ELSif (DCache_CacheResult = CACHE_RESULT_MISS) then
+				elsif (DCache_CacheResult = CACHE_RESULT_MISS) then
 					-- TODO: cachemiss
 				end if;
 
@@ -166,7 +166,7 @@ begin
 
 				if (NCache_CacheResult = CACHE_RESULT_NONE) then
 					NextState				<= ST_NEIGHBORCACHE_WAIT;
-				ELSif (NCache_CacheResult = CACHE_RESULT_HIT) then
+				elsif (NCache_CacheResult = CACHE_RESULT_HIT) then
 					MAC_en					<= '1';
 					NextState				<= ST_VALID;
 				else
@@ -177,7 +177,7 @@ begin
 				if (NCache_CacheResult = CACHE_RESULT_HIT) then
 					MAC_en					<= '1';
 					NextState				<= ST_VALID;
-				ELSif (NCache_CacheResult = CACHE_RESULT_MISS) then
+				elsif (NCache_CacheResult = CACHE_RESULT_MISS) then
 					-- TODO: cachemiss
 				end if;
 
@@ -186,10 +186,10 @@ begin
 				NextState					<= ST_IDLE;
 
 			when ST_PREFIXLIST_LOOKUP =>
-				NULL;
+				null;
 
 			when ST_PREFIXLIST_WAIT =>
-				NULL;
+				null;
 
 		end case;
 	end process;

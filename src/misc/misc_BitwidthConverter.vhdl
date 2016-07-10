@@ -31,42 +31,42 @@ use			PoC.utils.all;
 
 entity misc_BitwidthConverter is
   generic (
-	  REGISTERED					: BOOLEAN			:= FALSE;												-- add output register @Clock2
-		BITS1								: POSITIVE		:= 32;													-- input bit width
-		BITS2								: POSITIVE		:= 16														-- output bit width
+	  REGISTERED					: boolean			:= FALSE;												-- add output register @Clock2
+		BITS1								: positive		:= 32;													-- input bit width
+		BITS2								: positive		:= 16														-- output bit width
 	);
   port (
-	  Clock1							: in	STD_LOGIC;															-- input clock domain
-		Clock2							: in	STD_LOGIC;															-- output clock domain
-		Align								: in	STD_LOGIC;															-- align word (one cycle high impulse)
-		I										: in	STD_LOGIC_VECTOR(BITS1 - 1 downto 0);			-- input word
-		O										: out STD_LOGIC_VECTOR(BITS2 - 1 downto 0)			-- output word
+	  Clock1							: in	std_logic;															-- input clock domain
+		Clock2							: in	std_logic;															-- output clock domain
+		Align								: in	std_logic;															-- align word (one cycle high impulse)
+		I										: in	std_logic_vector(BITS1 - 1 downto 0);			-- input word
+		O										: out std_logic_vector(BITS2 - 1 downto 0)			-- output word
 	);
 end entity;
 
 architecture rtl of misc_BitwidthConverter is
-	constant BITS_1				: POSITIVE	:= BITS1;
-	constant BITS_2				: POSITIVE	:= BITS2;
+	constant BITS_1				: positive	:= BITS1;
+	constant BITS_2				: positive	:= BITS2;
 
 	constant BITS_RATIO		: REAL			:= real(BITS1) / real(BITS2);
-	constant SMALLER			: BOOLEAN		:= BITS_RATIO > 1.0;
+	constant SMALLER			: boolean		:= BITS_RATIO > 1.0;
 
-	constant COUNTER_BITS : POSITIVE	:= log2ceil(integer(ite(SMALLER, BITS_RATIO, (1.0 / BITS_RATIO))));
+	constant COUNTER_BITS : positive	:= log2ceil(integer(ite(SMALLER, BITS_RATIO, (1.0 / BITS_RATIO))));
 
 begin
 	-- word to byte splitter
 	gen1 : if (SMALLER = TRUE) generate
-		TYPE SLV_mux IS array (NATURAL range <>) OF STD_LOGIC_VECTOR(BITS2 - 1 downto 0);
+		type SLV_mux is array (natural range <>) of std_logic_vector(BITS2 - 1 downto 0);
 
-		signal WordBoundary			: STD_LOGIC;
-		signal WordBoundary_d		: STD_LOGIC;
-		signal Align_i					: STD_LOGIC;
+		signal WordBoundary			: std_logic;
+		signal WordBoundary_d		: std_logic;
+		signal Align_i					: std_logic;
 
-		signal I_d							: STD_LOGIC_VECTOR(BITS1 - 1 downto 0);
+		signal I_d							: std_logic_vector(BITS1 - 1 downto 0);
 		signal MuxInput					: SLV_mux(2**COUNTER_BITS - 1 downto 0);
-		signal MuxOutput				: STD_LOGIC_VECTOR(BITS2 - 1 downto 0);
-		signal MuxCounter_us		: UNSIGNED(COUNTER_BITS - 1 downto 0)					:= (others => '0');
-		signal MuxSelect_us			: UNSIGNED(COUNTER_BITS - 1 downto 0);
+		signal MuxOutput				: std_logic_vector(BITS2 - 1 downto 0);
+		signal MuxCounter_us		: unsigned(COUNTER_BITS - 1 downto 0)					:= (others => '0');
+		signal MuxSelect_us			: unsigned(COUNTER_BITS - 1 downto 0);
 
 	begin
 		-- input register @Clock1
@@ -86,11 +86,11 @@ begin
 		MuxOutput <= MuxInput(to_integer(MuxSelect_us));
 
 		-- word boundary T-FF @Clock1 and D-FF @Clock2
-		WordBoundary		<= NOT WordBoundary when rising_edge(Clock1) else WordBoundary;
+		WordBoundary		<= not WordBoundary when rising_edge(Clock1) else WordBoundary;
 		WordBoundary_d	<= WordBoundary			when rising_edge(Clock2) else WordBoundary_d;
 
 		-- generate Align_i signal
-		Align_i <= WordBoundary XOR WordBoundary_d;
+		Align_i <= WordBoundary xor WordBoundary_d;
 
 		-- multiplexer control @Clock2
 		process(Clock2)
@@ -123,11 +123,11 @@ begin
 
 	-- byte to word collection
 	gen2 : if (SMALLER = FALSE) generate
-		signal I_Counter_us					: UNSIGNED(COUNTER_BITS - 1 downto 0)						:= (others => '0');
-		signal I_Select_us					: UNSIGNED(COUNTER_BITS - 1 downto 0);
-		signal I_d									:	STD_LOGIC_VECTOR(BITS2 - BITS1 - 1 downto 0);
-		signal Collected						: STD_LOGIC_VECTOR(BITS2 - 1 downto 0);
-		signal Collected_d					: STD_LOGIC_VECTOR(BITS2 - 1 downto 0);
+		signal I_Counter_us					: unsigned(COUNTER_BITS - 1 downto 0)						:= (others => '0');
+		signal I_Select_us					: unsigned(COUNTER_BITS - 1 downto 0);
+		signal I_d									:	std_logic_vector(BITS2 - BITS1 - 1 downto 0);
+		signal Collected						: std_logic_vector(BITS2 - 1 downto 0);
+		signal Collected_d					: std_logic_vector(BITS2 - 1 downto 0);
 
 	begin
 		-- byte alignment counter @Clock1
@@ -149,7 +149,7 @@ begin
 		begin
 			if rising_edge(Clock1) then
 				for j in 2**COUNTER_BITS - 2 downto 0 loop
-					IF J = to_integer(I_Select_us) then					-- d-FF enable
+					if J = to_integer(I_Select_us) then					-- d-FF enable
 						for k in BITS1 - 1 downto 0 loop
 							I_d((J * BITS1) + K) <= I(K);
 						end loop;

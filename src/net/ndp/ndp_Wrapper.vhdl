@@ -49,17 +49,17 @@ entity NDP_Wrapper is
 		INITIAL_NEIGHBORCACHE_CONTENT				: T_NET_NDP_NEIGHBORCACHE_VECTOR
 	);
 	port (
-		Clock																: in	STD_LOGIC;
-		Reset																: in	STD_LOGIC;
+		Clock																: in	std_logic;
+		Reset																: in	std_logic;
 
-		NextHop_Query												: in	STD_LOGIC;
-		NextHop_IPv6Address_rst							: out	STD_LOGIC;
-		NextHop_IPv6Address_nxt							: out	STD_LOGIC;
+		NextHop_Query												: in	std_logic;
+		NextHop_IPv6Address_rst							: out	std_logic;
+		NextHop_IPv6Address_nxt							: out	std_logic;
 		NextHop_IPv6Address_Data						: in	T_SLV_8;
 
-		NextHop_Valid												: out	STD_LOGIC;
-		NextHop_MACAddress_rst							: in	STD_LOGIC;
-		NextHop_MACAddress_nxt							: in	STD_LOGIC;
+		NextHop_Valid												: out	std_logic;
+		NextHop_MACAddress_rst							: in	std_logic;
+		NextHop_MACAddress_nxt							: in	std_logic;
 		NextHop_MACAddress_Data							: out	T_SLV_8
 	);
 end entity;
@@ -74,19 +74,19 @@ end entity;
 
 architecture rtl of NDP_Wrapper is
 
-	signal FSMQuery_DCache_Lookup										: STD_LOGIC;
+	signal FSMQuery_DCache_Lookup										: std_logic;
 	signal FSMQuery_DCache_IPv6Address_Data					: T_SLV_8;
-	signal FSMQuery_DCache_NextHopIPv6Address_rst		: STD_LOGIC;
-	signal FSMQuery_DCache_NextHopIPv6Address_nxt		: STD_LOGIC;
+	signal FSMQuery_DCache_NextHopIPv6Address_rst		: std_logic;
+	signal FSMQuery_DCache_NextHopIPv6Address_nxt		: std_logic;
 
-	signal FSMQuery_NCache_Lookup										: STD_LOGIC;
+	signal FSMQuery_NCache_Lookup										: std_logic;
 	signal FSMQuery_NCache_IPv6Address_Data					: T_SLV_8;
-	signal FSMQuery_NCache_MACAddress_rst						: STD_LOGIC;
-	signal FSMQuery_NCache_MACAddress_nxt						: STD_LOGIC;
+	signal FSMQuery_NCache_MACAddress_rst						: std_logic;
+	signal FSMQuery_NCache_MACAddress_nxt						: std_logic;
 
 --	signal FSMCache_NewIPv4Address						: T_NDPIPV4_ADDRESS;
 --	signal FSMCache_NewMACAddress							: T_NDPMAC_ADDRESS;
-	signal FSMCache_Lookup													: STD_LOGIC;
+	signal FSMCache_Lookup													: std_logic;
 	signal FSMCache_IPv6Address											: T_NET_IPV6_ADDRESS;
 
 	-- NDP IPPool
@@ -94,24 +94,24 @@ architecture rtl of NDP_Wrapper is
 
 	-- NDP NeighborCache
 	signal NCache_CacheResult												: T_CACHE_RESULT;
-	signal NCache_IPv6Address_rst										: STD_LOGIC;
-	signal NCache_IPv6Address_nxt										: STD_LOGIC;
+	signal NCache_IPv6Address_rst										: std_logic;
+	signal NCache_IPv6Address_nxt										: std_logic;
 	signal NCache_MACAddress_Data										: T_SLV_8;
 	signal NCache_Reachability											: T_NET_NDP_REACHABILITY_STATE;
 
 	-- NDP DestinationCache
-	signal DCache_IPv6Address_rst										: STD_LOGIC;
-	signal DCache_IPv6Address_nxt										: STD_LOGIC;
+	signal DCache_IPv6Address_rst										: std_logic;
+	signal DCache_IPv6Address_nxt										: std_logic;
 	signal DCache_CacheResult												: T_CACHE_RESULT;
 	signal DCache_NextHopIPv6Address_Data						: T_SLV_8;
 	signal DCache_PathMUT														: T_SLV_16;
 
-	signal FSMPrefix_Lookup													: STD_LOGIC;
+	signal FSMPrefix_Lookup													: std_logic;
 	signal FSMPrefix_IPv6Address										: T_NET_IPV6_ADDRESS;
 
 	-- NDP PrefixList
-	signal PList_CacheHit														: STD_LOGIC;
-	signal PList_CacheMiss													: STD_LOGIC;
+	signal PList_CacheHit														: std_logic;
+	signal PList_CacheMiss													: std_logic;
 	signal PList_MACAddress													: T_NET_MAC_ADDRESS;
 begin
 

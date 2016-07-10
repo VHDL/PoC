@@ -82,10 +82,10 @@ architecture rtl of physical_test_baud is
 		report "CONST_1p125_MBD   = " & BAUD'image(CONST_1p125_MBD ) severity note;
 		report "CONST_1_GBD       = " & BAUD'image(CONST_1_GBD     ) severity note;
 		report "CONST_1p125_GBD   = " & BAUD'image(CONST_1p125_GBD ) severity note;
-		report "CVT_1_BD_INT      = " & INTEGER'image(CVT_1_BD_INT ) severity note;
-		report "CVT_1_KBD_INT     = " & INTEGER'image(CVT_1_KBD_INT) severity note;
-		report "CVT_1_MBD_INT     = " & INTEGER'image(CVT_1_MBD_INT) severity note;
-		report "CVT_1_GBD_INT     = " & INTEGER'image(CVT_1_GBD_INT) severity note;
+		report "CVT_1_BD_INT      = " & integer'image(CVT_1_BD_INT ) severity note;
+		report "CVT_1_KBD_INT     = " & integer'image(CVT_1_KBD_INT) severity note;
+		report "CVT_1_MBD_INT     = " & integer'image(CVT_1_MBD_INT) severity note;
+		report "CVT_1_GBD_INT     = " & integer'image(CVT_1_GBD_INT) severity note;
 		report "CVT_1p5_KBD_REAL  = " & REAL'image(CVT_1p5_KBD_REAL) severity note;
 		report "CVT_1p5_MBD_REAL  = " & REAL'image(CVT_1p5_MBD_REAL) severity note;
 		report "CVT_1p5_GBD_REAL  = " & REAL'image(CVT_1p5_GBD_REAL) severity note;

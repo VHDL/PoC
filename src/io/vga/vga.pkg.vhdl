@@ -86,7 +86,7 @@ package vga is
 		vs_pol		: std_logic;					-- vsync_polarity
   end record;
 
-	function io_vga_GetParameters(Mode : T_IO_VGA_MODE; CVT : BOOLEAN) return T_VGA_PARAMETERS;
+	function io_vga_GetParameters(Mode : T_IO_VGA_MODE; CVT : boolean) return T_VGA_PARAMETERS;
 
   -- Control signals which must be passed from the timing module through
   -- the data processing pipeline to the physical layer controller.
@@ -148,7 +148,7 @@ end package;
 package body vga is
 
   -- Calculate timing parameters
-  function io_vga_GetParameters(Mode : T_IO_VGA_MODE; CVT : BOOLEAN) return T_VGA_PARAMETERS is
+  function io_vga_GetParameters(Mode : T_IO_VGA_MODE; CVT : boolean) return T_VGA_PARAMETERS is
 		variable res : T_VGA_PARAMETERS;
   begin
 		case Mode is

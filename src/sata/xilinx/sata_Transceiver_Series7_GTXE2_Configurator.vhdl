@@ -61,50 +61,50 @@ use			PoC.xil.all;
 
 entity sata_Transceiver_Series7_GTXE2_Configurator is
 	generic (
-		DEBUG											: BOOLEAN							:= FALSE;										--
+		DEBUG											: boolean							:= FALSE;										--
 		DRPCLOCK_FREQ							: FREQ								:= 0 MHz;										--
 		INITIAL_SATA_GENERATION		: T_SATA_GENERATION		:= C_SATA_GENERATION_MAX		-- intial SATA Generation
 	);
 	port (
-		DRP_Clock								: in	STD_LOGIC;
-		DRP_Reset								: in	STD_LOGIC;
+		DRP_Clock								: in	std_logic;
+		DRP_Reset								: in	std_logic;
 
-		SATA_Clock							: in	STD_LOGIC;
+		SATA_Clock							: in	std_logic;
 
-		Reconfig								: in	STD_LOGIC;							-- @SATA_Clock
+		Reconfig								: in	std_logic;							-- @SATA_Clock
 		SATAGeneration					: in	T_SATA_GENERATION;			-- @SATA_Clock
-		ReconfigComplete				: out	STD_LOGIC;							-- @SATA_Clock
-		ConfigReloaded					: out	STD_LOGIC;							-- @SATA_Clock
+		ReconfigComplete				: out	std_logic;							-- @SATA_Clock
+		ConfigReloaded					: out	std_logic;							-- @SATA_Clock
 
-		GTX_DRP_Enable					: out	STD_LOGIC;							-- @DRP_Clock
+		GTX_DRP_Enable					: out	std_logic;							-- @DRP_Clock
 		GTX_DRP_Address					: out	T_XIL_DRP_ADDRESS;			-- @DRP_Clock
-		GTX_DRP_ReadWrite				: out	STD_LOGIC;							-- @DRP_Clock
+		GTX_DRP_ReadWrite				: out	std_logic;							-- @DRP_Clock
 		GTX_DRP_DataIn					: in	T_XIL_DRP_DATA;					-- @DRP_Clock
 		GTX_DRP_DataOut					: out	T_XIL_DRP_DATA;					-- @DRP_Clock
-		GTX_DRP_Ack							: in	STD_LOGIC;							-- @DRP_Clock
+		GTX_DRP_Ack							: in	std_logic;							-- @DRP_Clock
 
-		GTX_ReloadConfig				: out	STD_LOGIC;							-- @DRP_Clock
-		GTX_ReloadConfigDone		: in	STD_LOGIC								-- @DRP_Clock
+		GTX_ReloadConfig				: out	std_logic;							-- @DRP_Clock
+		GTX_ReloadConfigDone		: in	std_logic								-- @DRP_Clock
 	);
 end;
 
 
 architecture rtl of sata_Transceiver_Series7_GTXE2_Configurator is
-	attribute KEEP								: BOOLEAN;
-	attribute FSM_ENCODING				: STRING;
+	attribute KEEP								: boolean;
+	attribute FSM_ENCODING				: string;
 
-	function ins(value: STD_LOGIC_VECTOR; Length : NATURAL) return STD_LOGIC_VECTOR is
-		variable Result		: STD_LOGIC_VECTOR(Length - 1 downto 0)		:= (others => '0');
+	function ins(value: std_logic_vector; Length : natural) return std_logic_vector is
+		variable Result		: std_logic_vector(Length - 1 downto 0)		:= (others => '0');
 	begin
 		Result(value'range)	:= value;
 		return Result;
-	END function;
+	end function;
 
 	-- 1. descibe all used generics
-	TYPE GTX_GENERICS IS record
-		RX_CDR_CFG				: STD_LOGIC_VECTOR(71 downto 0);		-- RX CDR Configuration; see Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
-	END record;
-	TYPE GTX_GENERICS_VECTOR IS array(NATURAL range <>) OF GTX_GENERICS;
+	type GTX_GENERICS is record
+		RX_CDR_CFG				: std_logic_vector(71 downto 0);		-- RX CDR Configuration; see Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+	end record;
+	type GTX_GENERICS_VECTOR is array(natural range <>) of GTX_GENERICS;
 
 	-- 2. assign each generic for each speed configuration
 	--		index -> speed configuration
@@ -148,7 +148,7 @@ architecture rtl of sata_Transceiver_Series7_GTXE2_Configurator is
 					LastIndex => 4)
 	);
 
-	constant XILDRP_CONFIGSELECT_BITS	: POSITIVE			:= log2ceilnz(XILDRP_CONFIG_ROM'length);
+	constant XILDRP_CONFIGSELECT_BITS	: positive			:= log2ceilnz(XILDRP_CONFIG_ROM'length);
 
 	type T_STATE is (
 		ST_IDLE,
@@ -159,20 +159,20 @@ architecture rtl of sata_Transceiver_Series7_GTXE2_Configurator is
 	-- GTXE2_Configuration - Statemachine
 	signal State											: T_STATE											:= ST_IDLE;
 	signal NextState									: T_STATE;
-	attribute FSM_ENCODING	OF State	: signal IS getFSMEncoding_gray(DEBUG);
+	attribute FSM_ENCODING	of State	: signal is getFSMEncoding_gray(DEBUG);
 
-	signal Reconfig_DRP								: STD_LOGIC;
-	signal ReconfigComplete_i					: STD_LOGIC;
-	signal ConfigReloaded_i						: STD_LOGIC;
+	signal Reconfig_DRP								: std_logic;
+	signal ReconfigComplete_i					: std_logic;
+	signal ConfigReloaded_i						: std_logic;
 	signal SATAGeneration_DRP					: T_SATA_GENERATION		:= INITIAL_SATA_GENERATION;
 
-	signal doReconfig									: STD_LOGIC;
+	signal doReconfig									: std_logic;
 
-	signal ReloadConfig_i							: STD_LOGIC;
+	signal ReloadConfig_i							: std_logic;
 
-	signal XilDRP_Reconfig						: STD_LOGIC;
-	signal XilDRP_ReconfigDone				: STD_LOGIC;
-	signal XilDRP_ConfigSelect				: STD_LOGIC_VECTOR(XILDRP_CONFIGSELECT_BITS - 1 downto 0);
+	signal XilDRP_Reconfig						: std_logic;
+	signal XilDRP_ReconfigDone				: std_logic;
+	signal XilDRP_ConfigSelect				: std_logic_vector(XILDRP_CONFIGSELECT_BITS - 1 downto 0);
 
 begin
 	-- synchronize Reconfig, SATAGeneration from SATA_Clock to DRP_Clock

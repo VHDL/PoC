@@ -55,15 +55,15 @@ use			IEEE.STD_LOGIC_1164.all;
 entity sata_Transceiver_ClockStable is
 	port (
 		-- @async
-		PLL_Locked            : in  STD_LOGIC;
+		PLL_Locked            : in  std_logic;
 
 		-- the clock of the SATA controller
-		SATA_Clock						: in	STD_LOGIC;
+		SATA_Clock						: in	std_logic;
 
 		-- @sync SATA_Clock, see exception in documentation
-		Kill_Stable						: in 	STD_LOGIC;
-		ResetDone							: out	STD_LOGIC;
-		SATA_Clock_Stable			: out	STD_LOGIC
+		Kill_Stable						: in 	std_logic;
+		ResetDone							: out	std_logic;
+		SATA_Clock_Stable			: out	std_logic
 	);
 end;
 
