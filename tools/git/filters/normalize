@@ -86,11 +86,11 @@ class VhdlCap(Filter):
     package port postponed procedure process pure
     range record register reject rem report return rol ror
     select severity signal shared sla sll sra srl subtype
-    then to transport type 
+    then to transport type
     unaffected units until use
-    variable 
-    wait when while with 
-    xnor xor 
+    variable
+    wait when while with
+    xnor xor
 
     bit bit_vector boolean character integer natural positive signed
     std_logic std_logic_vector string time unsigned
