@@ -33,40 +33,40 @@ use			L_SATAController.SATATypes.all;
 
 entity MMCMConfigurator_Virtex6 is
 	generic (
-		CHIPSCOPE_KEEP					: BOOLEAN											:= TRUE;		--
+		CHIPSCOPE_KEEP					: boolean											:= TRUE;		--
 		DRPCLOCK_FREQ_MHZ				: REAL												:= 0.0;			--
-		PORTS										: POSITIVE										:= 1				-- Number of Ports per Transceiver
+		PORTS										: positive										:= 1				-- Number of Ports per Transceiver
 	);
 	port (
-		DRP_Clock								: in	STD_LOGIC;
-		DRP_Reset								: in	STD_LOGIC;
+		DRP_Clock								: in	std_logic;
+		DRP_Reset								: in	std_logic;
 
-		SATA_Clock							: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		SATA_Clock							: in	std_logic_vector(PORTS - 1 downto 0);
 
-		Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @SATA_Clock
-		ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @SATA_Clock
-		ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @SATA_Clock
-		Lock										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @SATA_Clock
-		Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @SATA_Clock
+		Reconfig								: in	std_logic_vector(PORTS - 1 downto 0);							-- @SATA_Clock
+		ReconfigComplete				: out	std_logic_vector(PORTS - 1 downto 0);							-- @SATA_Clock
+		ConfigReloaded					: out	std_logic_vector(PORTS - 1 downto 0);							-- @SATA_Clock
+		Lock										: in	std_logic_vector(PORTS - 1 downto 0);							-- @SATA_Clock
+		Locked									: out	std_logic_vector(PORTS - 1 downto 0);							-- @SATA_Clock
 
 		SATA_Generation					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);			-- @SATA_Clock
-		NoDevice								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @DRP_Clock
+		NoDevice								: in	std_logic_vector(PORTS - 1 downto 0);							-- @DRP_Clock
 
-		MMCM_DRP_en							: out	STD_LOGIC;																				-- @DRP_Clock
-		MMCM_DRP_Address				: out	STD_LOGIC_VECTOR(6 downto 0);											-- @DRP_Clock
-		MMCM_DRP_we							: out	STD_LOGIC;																				-- @DRP_Clock
+		MMCM_DRP_en							: out	std_logic;																				-- @DRP_Clock
+		MMCM_DRP_Address				: out	std_logic_vector(6 downto 0);											-- @DRP_Clock
+		MMCM_DRP_we							: out	std_logic;																				-- @DRP_Clock
 		MMCM_DRP_DataIn					: in	T_SLV_16;																					-- @DRP_Clock
 		MMCM_DRP_DataOut				: out	T_SLV_16;																					-- @DRP_Clock
-		MMCM_DRP_Ack						: in	STD_LOGIC;																				-- @DRP_Clock
+		MMCM_DRP_Ack						: in	std_logic;																				-- @DRP_Clock
 
-		MMCM_ReloadConfig				: out	STD_LOGIC;																				-- @DRP_Clock
-		MMCM_ReloadConfigDone		: in	STD_LOGIC																					-- @DRP_Clock
+		MMCM_ReloadConfig				: out	std_logic;																				-- @DRP_Clock
+		MMCM_ReloadConfigDone		: in	std_logic																					-- @DRP_Clock
 	);
 end;
 
 architecture rtl of MMCMConfigurator_Virtex6 is
-	attribute KEEP								: BOOLEAN;
-	attribute FSM_ENCODING				: STRING;
+	attribute KEEP								: boolean;
+	attribute FSM_ENCODING				: string;
 
 	constant XilDRP_ConfigROM			: T_XILDRP_CONFIG_ROM(3 downto 0)		:=
 		(0 => (Configs =>																		-- Port 0, GEN_1
@@ -109,36 +109,36 @@ architecture rtl of MMCMConfigurator_Virtex6 is
 	-- MMCM_DualConfiguration - Statemachine
 	signal State											: T_STATE											:= ST_IDLE;
 	signal NextState									: T_STATE;
-	attribute FSM_ENCODING	OF State	: signal IS "gray";
+	attribute FSM_ENCODING	of State	: signal is "gray";
 
 
-	signal Reconfig_i									: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal ReconfigComplete_i					: STD_LOGIC;
-	signal ConfigReloaded_i						: STD_LOGIC;
+	signal Reconfig_i									: std_logic_vector(PORTS - 1 downto 0);
+	signal ReconfigComplete_i					: std_logic;
+	signal ConfigReloaded_i						: std_logic;
 
-	signal Sync1_Lock									: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal Sync1_Lock									: std_logic_vector(PORTS - 1 downto 0);
 	signal Sync1_SATAGeneration				: T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
 
 	signal SATA_Generation_i					: T_SATA_GENERATION_VECTOR(1 downto 0)						:= (others => SATA_GENERATION_1);
 
-	signal Lock_i											: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal Locked_i										: STD_LOGIC;
+	signal Lock_i											: std_logic_vector(PORTS - 1 downto 0);
+	signal Locked_i										: std_logic;
 
-	signal doReconfig									: STD_LOGIC;
-	signal doLock											: STD_LOGIC;
+	signal doReconfig									: std_logic;
+	signal doLock											: std_logic;
 
-	signal ReloadConfigDone						: STD_LOGIC;
-	signal ReloadConfigDone_d					: STD_LOGIC																	:= '0';
-	signal ReloadConfigDone_re				: STD_LOGIC;
+	signal ReloadConfigDone						: std_logic;
+	signal ReloadConfigDone_d					: std_logic																	:= '0';
+	signal ReloadConfigDone_re				: std_logic;
 
-	signal ReloadConfig_i							: STD_LOGIC;
-	signal ReloadConfigDone_i					: STD_LOGIC;
+	signal ReloadConfig_i							: std_logic;
+	signal ReloadConfigDone_i					: std_logic;
 
-	signal XilDRP_Reconfig						: STD_LOGIC;
-	signal XilDRP_ReconfigDone				: STD_LOGIC;
-	signal XilDRP_ConfigSelect				: STD_LOGIC_VECTOR(log2ceilnz(XilDRP_ConfigROM'length) - 1 downto 0);
+	signal XilDRP_Reconfig						: std_logic;
+	signal XilDRP_ReconfigDone				: std_logic;
+	signal XilDRP_ConfigSelect				: std_logic_vector(log2ceilnz(XilDRP_ConfigROM'length) - 1 downto 0);
 
-	function IsSupportedGeneration(SATAGen : T_SATA_GENERATION) return BOOLEAN is
+	function IsSupportedGeneration(SATAGen : T_SATA_GENERATION) return boolean is
 	begin
 		case SATAGen is
 			when SATA_GENERATION_1 =>			return TRUE;
@@ -152,9 +152,9 @@ begin
 
 	-- cross clock domain bit synchronisation
 	genSync1 : for i in 0 to PORTS - 1 generate
-		signal Sync1_Lock_sy						: STD_LOGIC;
-		signal Sync1_Lock_sy1						: STD_LOGIC														:= '0';
-		signal Sync1_Lock_sy2						: STD_LOGIC														:= '0';
+		signal Sync1_Lock_sy						: std_logic;
+		signal Sync1_Lock_sy1						: std_logic														:= '0';
+		signal Sync1_Lock_sy2						: std_logic														:= '0';
 
 		signal Sync1_SATAGeneration_sy	: T_SATA_GENERATION;
 		signal Sync1_SATAGeneration_sy1	: T_SATA_GENERATION										:= SATA_GENERATION_1;
@@ -189,7 +189,7 @@ begin
 				B											=> open
 			);
 
-		Lock_i(I)			<= Sync1_Lock(I) AND (NOT NoDevice(I));
+		Lock_i(I)			<= Sync1_Lock(I) and (not NoDevice(I));
 	end generate;
 
 	-- calculate shared control signals
@@ -197,12 +197,12 @@ begin
 	doLock						<= slv_or(Lock_i);			-- only connected ports can request locks
 
 	genSync2 : for i in 0 to PORTS - 1 generate
-		signal Sync2_Locked_sy			: STD_LOGIC;
-		signal Sync2_Locked_sy1			: STD_LOGIC														:= '0';
-		signal Sync2_Locked_sy2			: STD_LOGIC														:= '0';
+		signal Sync2_Locked_sy			: std_logic;
+		signal Sync2_Locked_sy1			: std_logic														:= '0';
+		signal Sync2_Locked_sy2			: std_logic														:= '0';
 
-		signal Sync2_in							: STD_LOGIC_VECTOR(1 downto 0);
-		signal Sync2_out						: STD_LOGIC_VECTOR(1 downto 0);
+		signal Sync2_in							: std_logic_vector(1 downto 0);
+		signal Sync2_out						: std_logic_vector(1 downto 0);
 
 	begin
 		-- synchronize ReconfigComplete, ConfigReloaded, Locked from DRP_Clock to SATA_Clock
@@ -233,7 +233,7 @@ begin
 	-- rising_edge(MMCM_ReloadConfigDone)
 	ReloadConfigDone		<= MMCM_ReloadConfigDone;
 	ReloadConfigDone_d	<= ReloadConfigDone when rising_edge(DRP_Clock);
-	ReloadConfigDone_re	<= NOT ReloadConfigDone_d AND ReloadConfigDone;
+	ReloadConfigDone_re	<= not ReloadConfigDone_d and ReloadConfigDone;
 
 	process(DRP_Clock)
 	begin
@@ -291,7 +291,7 @@ begin
 					if (doLock = '0') then
 						NextState						<= ST_IDLE;
 					else
-						NULL;
+						null;
 					end if;
 				end if;
 
@@ -309,10 +309,10 @@ begin
 
 				if (PORTS = 1) then
 					XilDRP_ConfigSelect	<= ite((SATA_Generation_i = SATA_GENERATION_1), to_slv(0, 2), to_slv(1, 2));
-				ELSif (PORTS = 2) then
+				elsif (PORTS = 2) then
 					XilDRP_ConfigSelect	<= ite((SATA_Generation_i = SATA_GENERATION_1), to_slv(2, 2), to_slv(3, 2));
 				else
-					NULL;
+					null;
 				end if;
 
 				NextState							<= ST_RECONFIG_WAIT;

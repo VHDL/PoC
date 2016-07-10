@@ -38,38 +38,38 @@ use			PoC.utils.all;
 
 entity WordAligner is
   generic (
-	  REGISTERED		: BOOLEAN			:= FALSE;																					-- add output register @Clock
-		INPUT_BITS		: POSITIVE		:= 32;																						-- input/output bitwidth
-		WORD_BITS			: POSITIVE		:= 8																							-- word bitwidth
+	  REGISTERED		: boolean			:= FALSE;																					-- add output register @Clock
+		INPUT_BITS		: positive		:= 32;																						-- input/output bitwidth
+		WORD_BITS			: positive		:= 8																							-- word bitwidth
 	);
   port (
-		Clock					: in	STD_LOGIC;																								-- clock
-		Align					: in	STD_LOGIC_VECTOR((INPUT_BITS / WORD_BITS) - 1 downto 0);	-- align word (one-hot code)
-		I							: in	STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0);								-- input word
-		O							: out STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0);								-- output word
-		Valid					: out	STD_LOGIC
+		Clock					: in	std_logic;																								-- clock
+		Align					: in	std_logic_vector((INPUT_BITS / WORD_BITS) - 1 downto 0);	-- align word (one-hot code)
+		I							: in	std_logic_vector(INPUT_BITS - 1 downto 0);								-- input word
+		O							: out std_logic_vector(INPUT_BITS - 1 downto 0);								-- output word
+		Valid					: out	std_logic
 	);
 end entity;
 
 architecture rtl of WordAligner is
-	constant SEGMENT_COUNT	: POSITIVE																	:= INPUT_BITS / WORD_BITS;
+	constant SEGMENT_COUNT	: positive																	:= INPUT_BITS / WORD_BITS;
 
-	type T_SEGMENTS IS array(NATURAL range <>) OF STD_LOGIC_VECTOR(WORD_BITS - 1 downto 0);
+	type T_SEGMENTS is array(natural range <>) of std_logic_vector(WORD_BITS - 1 downto 0);
 
-	signal I_d						: STD_LOGIC_VECTOR(I'high downto WORD_BITS)		:= (others => '0');
+	signal I_d						: std_logic_vector(I'high downto WORD_BITS)		:= (others => '0');
 
-	signal O_i						: STD_LOGIC_VECTOR(I'range);
-	signal Align_d				: STD_LOGIC_VECTOR(Align'range)								:= (0 => '1', others => '0');
-	signal Align_i				: STD_LOGIC_VECTOR(Align'range);
-	signal Hold						: STD_LOGIC;
-	signal Changed				: STD_LOGIC;
-	signal Valid_i				: STD_LOGIC;
+	signal O_i						: std_logic_vector(I'range);
+	signal Align_d				: std_logic_vector(Align'range)								:= (0 => '1', others => '0');
+	signal Align_i				: std_logic_vector(Align'range);
+	signal Hold						: std_logic;
+	signal Changed				: std_logic;
+	signal Valid_i				: std_logic;
 
-	signal MuxCtrl				: STD_LOGIC_VECTOR(Align'range);
-	signal bin						: INTEGER;
+	signal MuxCtrl				: std_logic_vector(Align'range);
+	signal bin						: integer;
 
 
-	function onehot2bin(slv : STD_LOGIC_VECTOR) return NATURAL is
+	function onehot2bin(slv : std_logic_vector) return natural is
 	begin
 		for i in 0 to slv'length - 1 loop
 			if (slv(I) = '1') then
@@ -80,12 +80,12 @@ architecture rtl of WordAligner is
 		return 1;
 	end;
 
-	function onehot2muxctrl(slv : STD_LOGIC_VECTOR) return STD_LOGIC_VECTOR is
-		variable Result		: STD_LOGIC_VECTOR(slv'range);
-		variable Flag			: STD_LOGIC													:= '0';
+	function onehot2muxctrl(slv : std_logic_vector) return std_logic_vector is
+		variable Result		: std_logic_vector(slv'range);
+		variable Flag			: std_logic													:= '0';
 	begin
 		for i in 0 to slv'length - 2 loop
-			Flag						:= Flag OR slv(I);
+			Flag						:= Flag or slv(I);
 			Result(I)				:= Flag;
 		end loop;
 
@@ -96,11 +96,11 @@ architecture rtl of WordAligner is
 begin
 
 		I_d				<= I(I_d'range)	when rising_edge(Clock);
-		Align_d		<= Align				when rising_edge(Clock) AND (Hold = '0') AND (Changed = '1');
+		Align_d		<= Align				when rising_edge(Clock) and (Hold = '0') and (Changed = '1');
 
 		Hold			<= slv_nor(Align);
 		Changed		<= to_sl(Align /= Align_d);
-		Valid_i		<= Hold OR Align(Align'low);
+		Valid_i		<= Hold or Align(Align'low);
 		Align_i		<= Align when (Hold = '0') else Align_d;
 
 		O_i		<= I when (Align_i = "01") else I(WORD_BITS - 1 downto 0) & I_d;

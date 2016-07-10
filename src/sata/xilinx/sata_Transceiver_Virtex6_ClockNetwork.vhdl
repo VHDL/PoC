@@ -14,52 +14,52 @@ use			L_SATAController.SATATypes.all;
 entity SATATransceiver_Virtex6_ClockNetwork is
 	generic (
 		CLOCK_IN_FREQ_MHZ					: REAL													:= 150.0;							-- 150 MHz
-		PORTS											: POSITIVE											:= 1
+		PORTS											: positive											:= 1
 	);
 	port (
-		ClockIn_150MHz						: in	STD_LOGIC;																			--
+		ClockIn_150MHz						: in	std_logic;																			--
 
-		ClockNetwork_Reset				: in	STD_LOGIC;																			-- @async:
-		ClockNetwork_ResetDone		:	OUT	STD_LOGIC;																			-- @ClockIn_150MHz:
+		ClockNetwork_Reset				: in	std_logic;																			-- @async:
+		ClockNetwork_ResetDone		:	out	std_logic;																			-- @ClockIn_150MHz:
 
 		SATA_Generation						: in	T_SATA_GENERATION;		-- _VECTOR(PORTS - 1 downto 0);
 
-		GTX_Clock_2X							: out	STD_LOGIC;		-- _VECTOR(PORTS - 1 downto 0);
-		GTX_Clock_4X							: out	STD_LOGIC		-- _VECTOR(PORTS - 1 downto 0)
+		GTX_Clock_2X							: out	std_logic;		-- _VECTOR(PORTS - 1 downto 0);
+		GTX_Clock_4X							: out	std_logic		-- _VECTOR(PORTS - 1 downto 0)
 	);
 end;
 
 architecture rtl of SATATransceiver_Virtex6_ClockNetwork is
-	attribute KEEP											: BOOLEAN;
+	attribute KEEP											: boolean;
 
-	signal ClkNet_Reset_i								: STD_LOGIC;
-	signal ClkNet_Reset_r1							: STD_LOGIC													:= '0';
-	signal ClkNet_Reset_r2							: STD_LOGIC													:= '0';
-	signal ClkNet_Reset									: STD_LOGIC;
+	signal ClkNet_Reset_i								: std_logic;
+	signal ClkNet_Reset_r1							: std_logic													:= '0';
+	signal ClkNet_Reset_r2							: std_logic													:= '0';
+	signal ClkNet_Reset									: std_logic;
 
-	signal MMCM_Reset										: STD_LOGIC;
-	signal MMCM_Locked_i								: STD_LOGIC;
-	signal MMCM_Locked_d1								: STD_LOGIC													:= '0';
-	signal MMCM_Locked_d2								: STD_LOGIC													:= '0';
-	signal MMCM_Locked									: STD_LOGIC;
+	signal MMCM_Reset										: std_logic;
+	signal MMCM_Locked_i								: std_logic;
+	signal MMCM_Locked_d1								: std_logic													:= '0';
+	signal MMCM_Locked_d2								: std_logic													:= '0';
+	signal MMCM_Locked									: std_logic;
 
-	signal MMCM_ClockFB									: STD_LOGIC;
-	signal MMCM_Clock_150MHz						: STD_LOGIC;
-	signal MMCM_Clock_75MHz							: STD_LOGIC;
-	signal MMCM_Clock_37_5MHz						: STD_LOGIC;
+	signal MMCM_ClockFB									: std_logic;
+	signal MMCM_Clock_150MHz						: std_logic;
+	signal MMCM_Clock_75MHz							: std_logic;
+	signal MMCM_Clock_37_5MHz						: std_logic;
 
-	signal MMCM_ClockFB_BUFG						: STD_LOGIC;
-	signal MMCM_Clock_150MHz_BUFG				: STD_LOGIC;
-	signal MMCM_Clock_75MHz_BUFG				: STD_LOGIC;
-	signal MMCM_Clock_37_5MHz_BUFG			: STD_LOGIC;
+	signal MMCM_ClockFB_BUFG						: std_logic;
+	signal MMCM_Clock_150MHz_BUFG				: std_logic;
+	signal MMCM_Clock_75MHz_BUFG				: std_logic;
+	signal MMCM_Clock_37_5MHz_BUFG			: std_logic;
 
-	attribute KEEP OF MMCM_Clock_150MHz_BUFG		: signal IS CHIPSCOPE_KEEP;
-	attribute KEEP OF MMCM_Clock_75MHz_BUFG			: signal IS CHIPSCOPE_KEEP;
-	attribute KEEP OF MMCM_Clock_37_5MHz_BUFG		: signal IS CHIPSCOPE_KEEP;
+	attribute KEEP of MMCM_Clock_150MHz_BUFG		: signal is CHIPSCOPE_KEEP;
+	attribute KEEP of MMCM_Clock_75MHz_BUFG			: signal is CHIPSCOPE_KEEP;
+	attribute KEEP of MMCM_Clock_37_5MHz_BUFG		: signal is CHIPSCOPE_KEEP;
 
-	attribute KEEP OF ClockIn_150MHz						: signal IS CHIPSCOPE_KEEP;
+	attribute KEEP of ClockIn_150MHz						: signal is CHIPSCOPE_KEEP;
 
-	function IsSupportedGeneration(SATAGen : T_SATA_GENERATION) return BOOLEAN is
+	function IsSupportedGeneration(SATAGen : T_SATA_GENERATION) return boolean is
 	begin
 		case SATAGen is
 			when SATA_GENERATION_1 =>			return TRUE;
@@ -77,7 +77,7 @@ begin
 	-- D-FF @ClockIn_150MHz with async reset
 	process(ClockIn_150MHz)
 	begin
-		if ((ClkNet_Reset_r2 = '1') AND (MMCM_Locked = '0')) then
+		if ((ClkNet_Reset_r2 = '1') and (MMCM_Locked = '0')) then
 			ClkNet_Reset_r1			<= '0';
 			ClkNet_Reset_r2			<= '0';
 		else
@@ -111,7 +111,7 @@ begin
 
 	gen1 : for i in 0 to 0 generate
 		signal SATA_Generation_d	: T_SATA_GENERATION			:= SATA_GENERATION_2;		-- FIXME: use INITIAL_SATA_GENERATION !!!!
-		signal MuxControl					: STD_LOGIC;
+		signal MuxControl					: std_logic;
 	begin
 --		SATA_Generation_d(I)	<= SATA_Generation(I) when rising_edge(ClockIn_150MHz);
 --		MuxControl						<= to_sl(SATA_Generation_d(I) = SATA_GENERATION_2);

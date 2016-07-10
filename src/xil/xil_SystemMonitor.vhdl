@@ -62,20 +62,20 @@ use			PoC.xil.all;
 entity xil_SystemMonitor is
 	port (
 		-- Global Control
-		Clock										: in	STD_LOGIC;
-		Reset										: in	STD_LOGIC;
+		Clock										: in	std_logic;
+		Reset										: in	std_logic;
 
 		-- FPGA Temperature values
-		Temperature							: out	STD_LOGIC_VECTOR(11 downto 0);
-		UserTemperature					: out	STD_LOGIC;
-		OverTemperature					: out	STD_LOGIC
+		Temperature							: out	std_logic_vector(11 downto 0);
+		UserTemperature					: out	std_logic;
+		OverTemperature					: out	std_logic
   );
 end entity;
 
 
 architecture rtl of xil_SystemMonitor is
-	signal UserTemperature_async		: STD_LOGIC;
-	signal OverTemperature_async		: STD_LOGIC;
+	signal UserTemperature_async		: std_logic;
+	signal OverTemperature_async		: std_logic;
 
 begin
 	-- System Monitor

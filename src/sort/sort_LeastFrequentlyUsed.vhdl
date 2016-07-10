@@ -35,32 +35,32 @@ use			IEEE.numeric_std.all;
 
 entity sort_LeastFrequentlyUsed is
 	generic (
-		ELEMENTS			: POSITIVE		:= 1024;
-		KEY_BITS			: POSITIVE		:= 16;
-		DATA_BITS			: POSITIVE		:= 16;
-		COUNTER_BITS	: POSITIVE		:= 8
+		ELEMENTS			: positive		:= 1024;
+		KEY_BITS			: positive		:= 16;
+		DATA_BITS			: positive		:= 16;
+		COUNTER_BITS	: positive		:= 8
 	);
 	port (
-		Clock					: in	STD_LOGIC;
-		Reset					: in	STD_LOGIC;
+		Clock					: in	std_logic;
+		Reset					: in	std_logic;
 
-		Access				: in	STD_LOGIC;
-		Key						: in	STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+		Access				: in	std_logic;
+		Key						: in	std_logic_vector(KEY_BITS - 1 downto 0);
 
-		LFU_Valid			: out	STD_LOGIC;
-		LFU_Key				: out	STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0)
+		LFU_Valid			: out	std_logic;
+		LFU_Key				: out	std_logic_vector(KEY_BITS - 1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of sort_LeastFrequentlyUsed is
 	type T_ELEMENT is record
-		Data				: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
-		Counter_us	: UNSIGNED(COUNTER_BITS - 1 downto 0);
-		Valid				: STD_LOGIC;
+		Data				: std_logic_vector(DATA_BITS - 1 downto 0);
+		Counter_us	: unsigned(COUNTER_BITS - 1 downto 0);
+		Valid				: std_logic;
 	end record;
 
-	type T_ELEMENT_VECTOR is array(NATURAL range <>) of T_ELEMENT;
+	type T_ELEMENT_VECTOR is array(natural range <>) of T_ELEMENT;
 
 	constant C_ELEMENT_EMPTY	: T_ELEMENT		:= (Data => (others => '0'), Counter_us => (others => '0'), Valid => '0');
 
@@ -71,12 +71,12 @@ architecture rtl of sort_LeastFrequentlyUsed is
 begin
 
 	genAddSub : for i in 0 to ELEMENTS - 1 generate
-		process(List_d, Data, Access, New)
+		process(List_d, Data, Access, new)
 		begin
 			List_AddSub(i)		<= List_d(i);
 			if ((Access = '1') and (List_d(i).Data(KEY_BITS - 1 downto 0) = Data(KEY_BITS - 1 downto 0)) and (List_d(i).Counter_us /= (others => '1')) then
 				List_AddSub(i).Counter_us		:= List_d(i).Counter_us + 1;
-			elsif (New = '1') then		-- ((New = '1') and (List_d(i).Counter_us /= (others => '0')) then
+			elsif (new = '1') then		-- ((New = '1') and (List_d(i).Counter_us /= (others => '0')) then
 				if (i = 0) then
 					List_AddSub(i).Data					:= Data;
 					List_AddSub(i).Counter_us		:= (others => '0');

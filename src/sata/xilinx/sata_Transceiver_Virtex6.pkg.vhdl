@@ -35,17 +35,17 @@ use			IEEE.NUMERIC_STD.all;
 
 package SATATransceiverTypes is
 	type T_SATA_TRANSCEIVER_COMMON_SIGNALS is record
-		RefClockIn_75_MHz			: STD_LOGIC;
-		RefClockIn_150_MHz		: STD_LOGIC;
+		RefClockIn_75_MHz			: std_logic;
+		RefClockIn_150_MHz		: std_logic;
 	end record;
 
 	type T_SATA_TRANSCEIVER_PRIVATE_SIGNALS is record
-		TX_n									: STD_LOGIC;
-		TX_p									: STD_LOGIC;
-		RX_n									: STD_LOGIC;
-		RX_p									: STD_LOGIC;
+		TX_n									: std_logic;
+		TX_p									: std_logic;
+		RX_n									: std_logic;
+		RX_p									: std_logic;
 	end record;
 
-	type T_SATA_TRANSCEIVER_PRIVATE_SIGNALS_VECTOR is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_SIGNALS;
+	type T_SATA_TRANSCEIVER_PRIVATE_SIGNALS_VECTOR is array(natural range <>) of T_SATA_TRANSCEIVER_PRIVATE_SIGNALS;
 
 end package;

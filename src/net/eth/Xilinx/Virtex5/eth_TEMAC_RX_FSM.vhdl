@@ -10,23 +10,23 @@ use			PoC.vectors.all;
 
 entity eth_TEMAC_RX_FSM is
 	port (
-		Clock							: in	STD_LOGIC;
-		Reset							: in	STD_LOGIC;
+		Clock							: in	std_logic;
+		Reset							: in	std_logic;
 
-		TEMAC_Valid				: in	STD_LOGIC;
+		TEMAC_Valid				: in	std_logic;
 		TEMAC_Data				: in	T_SLV_8;
-		TEMAC_GoodFrame		: in	STD_LOGIC;
-		TEMAC_BadFrame		: in	STD_LOGIC;
+		TEMAC_GoodFrame		: in	std_logic;
+		TEMAC_BadFrame		: in	std_logic;
 
-		OverflowDetected	: out	STD_LOGIC;
+		OverflowDetected	: out	std_logic;
 
-		Valid							: out	STD_LOGIC;
+		Valid							: out	std_logic;
 		Data							: out	T_SLV_8;
-		SOF								: out	STD_LOGIC;
-		EOF								: out	STD_LOGIC;
-		Ack								: in	STD_LOGIC;
-		Commit						: out	STD_LOGIC;
-		Rollback					: out	STD_LOGIC
+		SOF								: out	std_logic;
+		EOF								: out	std_logic;
+		Ack								: in	std_logic;
+		Commit						: out	std_logic;
+		Rollback					: out	std_logic
 	);
 end;
 

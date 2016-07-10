@@ -47,18 +47,18 @@ package net_comp is
 	-- ==========================================================================================================================================================
 	component eth_RSLayer_GMII_GMII_Xilinx is
 		port (
-			Reset_async								: in	STD_LOGIC;																	-- @async:
+			Reset_async								: in	std_logic;																	-- @async:
 
 			-- RS-GMII interface
-			RS_TX_Clock								: in	STD_LOGIC;
-			RS_TX_Valid								: in	STD_LOGIC;
+			RS_TX_Clock								: in	std_logic;
+			RS_TX_Valid								: in	std_logic;
 			RS_TX_Data								: in	T_SLV_8;
-			RS_TX_Error								: in	STD_LOGIC;
+			RS_TX_Error								: in	std_logic;
 
-			RS_RX_Clock								: in	STD_LOGIC;
-			RS_RX_Valid								: out	STD_LOGIC;
+			RS_RX_Clock								: in	std_logic;
+			RS_RX_Valid								: out	std_logic;
 			RS_RX_Data								: out	T_SLV_8;
-			RS_RX_Error								: out	STD_LOGIC;
+			RS_RX_Error								: out	std_logic;
 
 			-- PHY-GMII interface
 			PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
@@ -70,19 +70,19 @@ package net_comp is
 			CLOCK_IN_FREQ							: FREQ													:= 125 MHz					-- 125 MHz
 		);
 		port (
-			Clock											: in	STD_LOGIC;
-			Reset											: in	STD_LOGIC;
+			Clock											: in	std_logic;
+			Reset											: in	std_logic;
 
 			-- GEMAC-GMII interface
-			RS_TX_Clock								: in	STD_LOGIC;
-			RS_TX_Valid								: in	STD_LOGIC;
+			RS_TX_Clock								: in	std_logic;
+			RS_TX_Valid								: in	std_logic;
 			RS_TX_Data								: in	T_SLV_8;
-			RS_TX_Error								: in	STD_LOGIC;
+			RS_TX_Error								: in	std_logic;
 
-			RS_RX_Clock								: in	STD_LOGIC;
-			RS_RX_Valid								: out	STD_LOGIC;
+			RS_RX_Clock								: in	std_logic;
+			RS_RX_Valid								: out	std_logic;
 			RS_RX_Data								: out	T_SLV_8;
-			RS_RX_Error								: out	STD_LOGIC;
+			RS_RX_Error								: out	std_logic;
 
 			-- PHY-SGMII interface
 			PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_SGMII
@@ -94,19 +94,19 @@ package net_comp is
 			CLOCK_IN_FREQ							: FREQ													:= 125 MHz					-- 125 MHz
 		);
 		port (
-			Clock											: in	STD_LOGIC;
-			Reset											: in	STD_LOGIC;
+			Clock											: in	std_logic;
+			Reset											: in	std_logic;
 
 			-- GEMAC-GMII interface
-			RS_TX_Clock								: in	STD_LOGIC;
-			RS_TX_Valid								: in	STD_LOGIC;
+			RS_TX_Clock								: in	std_logic;
+			RS_TX_Valid								: in	std_logic;
 			RS_TX_Data								: in	T_SLV_8;
-			RS_TX_Error								: in	STD_LOGIC;
+			RS_TX_Error								: in	std_logic;
 
-			RS_RX_Clock								: in	STD_LOGIC;
-			RS_RX_Valid								: out	STD_LOGIC;
+			RS_RX_Clock								: in	std_logic;
+			RS_RX_Valid								: out	std_logic;
 			RS_RX_Data								: out	T_SLV_8;
-			RS_RX_Error								: out	STD_LOGIC;
+			RS_RX_Error								: out	std_logic;
 
 			-- PHY-SGMII interface
 			PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_SGMII
@@ -118,19 +118,19 @@ package net_comp is
 			CLOCK_IN_FREQ							: FREQ													:= 125 MHz					-- 125 MHz
 		);
 		port (
-			Clock											: in	STD_LOGIC;
-			Reset											: in	STD_LOGIC;
+			Clock											: in	std_logic;
+			Reset											: in	std_logic;
 
 			-- GEMAC-GMII interface
-			RS_TX_Clock								: in	STD_LOGIC;
-			RS_TX_Valid								: in	STD_LOGIC;
+			RS_TX_Clock								: in	std_logic;
+			RS_TX_Valid								: in	std_logic;
 			RS_TX_Data								: in	T_SLV_8;
-			RS_TX_Error								: in	STD_LOGIC;
+			RS_TX_Error								: in	std_logic;
 
-			RS_RX_Clock								: in	STD_LOGIC;
-			RS_RX_Valid								: out	STD_LOGIC;
+			RS_RX_Clock								: in	std_logic;
+			RS_RX_Valid								: out	std_logic;
 			RS_RX_Data								: out	T_SLV_8;
-			RS_RX_Error								: out	STD_LOGIC;
+			RS_RX_Error								: out	std_logic;
 
 			-- PHY-SGMII interface
 			PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_SGMII
@@ -144,60 +144,60 @@ package net_comp is
 		port (
 			-- Core <=> Transceiver Interface
 			------------------------------
-			mgt_rx_reset         : out STD_LOGIC;                    -- Transceiver connection: reset for the receiver half of the Transceiver
-			mgt_tx_reset         : out STD_LOGIC;                    -- Transceiver connection: reset for the transmitter half of the Transceiver
-			userclk              : in STD_LOGIC;                     -- Routed to TXUSERCLK and RXUSERCLK of Transceiver.
-			userclk2             : in STD_LOGIC;                     -- Routed to TXUSERCLK2 and RXUSERCLK2 of Transceiver.
-			dcm_locked           : in STD_LOGIC;                     -- LOCKED signal from DCM.
+			mgt_rx_reset         : out std_logic;                    -- Transceiver connection: reset for the receiver half of the Transceiver
+			mgt_tx_reset         : out std_logic;                    -- Transceiver connection: reset for the transmitter half of the Transceiver
+			userclk              : in std_logic;                     -- Routed to TXUSERCLK and RXUSERCLK of Transceiver.
+			userclk2             : in std_logic;                     -- Routed to TXUSERCLK2 and RXUSERCLK2 of Transceiver.
+			dcm_locked           : in std_logic;                     -- LOCKED signal from DCM.
 
-			rxbufstatus          : in STD_LOGIC_VECTOR (1 downto 0); -- Transceiver connection: Elastic Buffer Status.
-			rxchariscomma        : in STD_LOGIC;                     -- Transceiver connection: Comma detected in RXDATA.
-			rxcharisk            : in STD_LOGIC;                     -- Transceiver connection: K character received (or extra data bit) in RXDATA.
-			rxclkcorcnt          : in STD_LOGIC_VECTOR(2 downto 0);  -- Transceiver connection: Indicates clock correction.
-			rxdata               : in STD_LOGIC_VECTOR(7 downto 0);  -- Transceiver connection: Data after 8B/10B decoding.
-			rxdisperr            : in STD_LOGIC;                     -- Transceiver connection: Disparity-error in RXDATA.
-			rxnotintable         : in STD_LOGIC;                     -- Transceiver connection: Non-existent 8B/10 code indicated.
-			rxrundisp            : in STD_LOGIC;                     -- Transceiver connection: Running Disparity of RXDATA (or extra data bit).
-			txbuferr             : in STD_LOGIC;                     -- Transceiver connection: TX Buffer error (overflow or underflow).
+			rxbufstatus          : in std_logic_vector (1 downto 0); -- Transceiver connection: Elastic Buffer Status.
+			rxchariscomma        : in std_logic;                     -- Transceiver connection: Comma detected in RXDATA.
+			rxcharisk            : in std_logic;                     -- Transceiver connection: K character received (or extra data bit) in RXDATA.
+			rxclkcorcnt          : in std_logic_vector(2 downto 0);  -- Transceiver connection: Indicates clock correction.
+			rxdata               : in std_logic_vector(7 downto 0);  -- Transceiver connection: Data after 8B/10B decoding.
+			rxdisperr            : in std_logic;                     -- Transceiver connection: Disparity-error in RXDATA.
+			rxnotintable         : in std_logic;                     -- Transceiver connection: Non-existent 8B/10 code indicated.
+			rxrundisp            : in std_logic;                     -- Transceiver connection: Running Disparity of RXDATA (or extra data bit).
+			txbuferr             : in std_logic;                     -- Transceiver connection: TX Buffer error (overflow or underflow).
 
-			powerdown            : out STD_LOGIC;                    -- Transceiver connection: Powerdown the Transceiver
-			txchardispmode       : out STD_LOGIC;                    -- Transceiver connection: Set running disparity for current byte.
-			txchardispval        : out STD_LOGIC;                    -- Transceiver connection: Set running disparity value.
-			txcharisk            : out STD_LOGIC;                    -- Transceiver connection: K character transmitted in TXDATA.
-			txdata               : out STD_LOGIC_VECTOR(7 downto 0); -- Transceiver connection: Data for 8B/10B encoding.
-			enablealign          : out STD_LOGIC;                    -- Allow the transceivers to serially realign to a comma character.
+			powerdown            : out std_logic;                    -- Transceiver connection: Powerdown the Transceiver
+			txchardispmode       : out std_logic;                    -- Transceiver connection: Set running disparity for current byte.
+			txchardispval        : out std_logic;                    -- Transceiver connection: Set running disparity value.
+			txcharisk            : out std_logic;                    -- Transceiver connection: K character transmitted in TXDATA.
+			txdata               : out std_logic_vector(7 downto 0); -- Transceiver connection: Data for 8B/10B encoding.
+			enablealign          : out std_logic;                    -- Allow the transceivers to serially realign to a comma character.
 
 			-- GMII Interface
 			-----------------
-			gmii_txd             : in STD_LOGIC_VECTOR(7 downto 0);  -- Transmit data from client MAC.
-			gmii_tx_en           : in STD_LOGIC;                     -- Transmit control signal from client MAC.
-			gmii_tx_er           : in STD_LOGIC;                     -- Transmit control signal from client MAC.
-			gmii_rxd             : out STD_LOGIC_VECTOR(7 downto 0); -- Received Data to client MAC.
-			gmii_rx_dv           : out STD_LOGIC;                    -- Received control signal to client MAC.
-			gmii_rx_er           : out STD_LOGIC;                    -- Received control signal to client MAC.
-			gmii_isolate         : out STD_LOGIC;                    -- Tristate control to electrically isolate GMII.
+			gmii_txd             : in std_logic_vector(7 downto 0);  -- Transmit data from client MAC.
+			gmii_tx_en           : in std_logic;                     -- Transmit control signal from client MAC.
+			gmii_tx_er           : in std_logic;                     -- Transmit control signal from client MAC.
+			gmii_rxd             : out std_logic_vector(7 downto 0); -- Received Data to client MAC.
+			gmii_rx_dv           : out std_logic;                    -- Received control signal to client MAC.
+			gmii_rx_er           : out std_logic;                    -- Received control signal to client MAC.
+			gmii_isolate         : out std_logic;                    -- Tristate control to electrically isolate GMII.
 
 			-- Management: MDIO Interface
 			-----------------------------
-			mdc                  : in    STD_LOGIC;                  -- Management Data Clock
-			mdio_in              : in    STD_LOGIC;                  -- Management Data In
-			mdio_out             : out   STD_LOGIC;                  -- Management Data Out
-			mdio_tri             : out   STD_LOGIC;                  -- Management Data Tristate
-			phyad                : in STD_LOGIC_VECTOR(4 downto 0);  -- Port address to for MDIO to recognise.
-			configuration_vector : in STD_LOGIC_VECTOR(4 downto 0);  -- Alternative to MDIO interface.
-			configuration_valid  : in STD_LOGIC;                     -- Validation signal for Config vector.
+			mdc                  : in    std_logic;                  -- Management Data Clock
+			mdio_in              : in    std_logic;                  -- Management Data In
+			mdio_out             : out   std_logic;                  -- Management Data Out
+			mdio_tri             : out   std_logic;                  -- Management Data Tristate
+			phyad                : in std_logic_vector(4 downto 0);  -- Port address to for MDIO to recognise.
+			configuration_vector : in std_logic_vector(4 downto 0);  -- Alternative to MDIO interface.
+			configuration_valid  : in std_logic;                     -- Validation signal for Config vector.
 
-			an_interrupt         : out STD_LOGIC;                    -- Interrupt to processor to signal that Auto-Negotiation has completed
-			an_adv_config_vector : in STD_LOGIC_VECTOR(15 downto 0); -- Alternate interface to program REG4 (AN ADV)
-			an_adv_config_val    : in STD_LOGIC;                     -- Validation signal for AN ADV
-			an_restart_config    : in STD_LOGIC;                     -- Alternate signal to modify AN restart bit in REG0
-			link_timer_value     : in STD_LOGIC_VECTOR(8 downto 0);  -- Programmable Auto-Negotiation Link Timer Control
+			an_interrupt         : out std_logic;                    -- Interrupt to processor to signal that Auto-Negotiation has completed
+			an_adv_config_vector : in std_logic_vector(15 downto 0); -- Alternate interface to program REG4 (AN ADV)
+			an_adv_config_val    : in std_logic;                     -- Validation signal for AN ADV
+			an_restart_config    : in std_logic;                     -- Alternate signal to modify AN restart bit in REG0
+			link_timer_value     : in std_logic_vector(8 downto 0);  -- Programmable Auto-Negotiation Link Timer Control
 
 			-- General IO's
 			---------------
-			status_vector        : out STD_LOGIC_VECTOR(15 downto 0); -- Core status.
-			reset                : in STD_LOGIC;                     -- Asynchronous reset for entire core.
-			signal_detect        : in STD_LOGIC                      -- Input from PMD to indicate presence of optical input.
+			status_vector        : out std_logic_vector(15 downto 0); -- Core status.
+			reset                : in std_logic;                     -- Asynchronous reset for entire core.
+			signal_detect        : in std_logic                      -- Input from PMD to indicate presence of optical input.
 		);
 	end component;
 
@@ -206,7 +206,7 @@ package net_comp is
 	-- ==========================================================================================================================================================
 	component eth_Wrapper_Virtex5 is
 		generic (
-			DEBUG											: BOOLEAN														:= FALSE;															--
+			DEBUG											: boolean														:= FALSE;															--
 			CLOCKIN_FREQ							: FREQ															:= 125 MHz;													-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		--
@@ -214,39 +214,39 @@ package net_comp is
 		);
 		port (
 			-- clock interface
-			RS_TX_Clock								: in	STD_LOGIC;
-			RS_RX_Clock								: in	STD_LOGIC;
-			Eth_TX_Clock							: in	STD_LOGIC;
-			Eth_RX_Clock							: in	STD_LOGIC;
-			TX_Clock									: in	STD_LOGIC;
-			RX_Clock									: in	STD_LOGIC;
+			RS_TX_Clock								: in	std_logic;
+			RS_RX_Clock								: in	std_logic;
+			Eth_TX_Clock							: in	std_logic;
+			Eth_RX_Clock							: in	std_logic;
+			TX_Clock									: in	std_logic;
+			RX_Clock									: in	std_logic;
 
 			-- reset interface
-			Reset											: in	STD_LOGIC;
+			Reset											: in	std_logic;
 
 			-- Command-Status-Error interface
 
 			-- MAC LocalLink interface
-			TX_Valid									: in	STD_LOGIC;
+			TX_Valid									: in	std_logic;
 			TX_Data										: in	T_SLV_8;
-			TX_SOF										: in	STD_LOGIC;
-			TX_EOF										: in	STD_LOGIC;
-			TX_Ack										: out	STD_LOGIC;
+			TX_SOF										: in	std_logic;
+			TX_EOF										: in	std_logic;
+			TX_Ack										: out	std_logic;
 
-			RX_Valid									: out	STD_LOGIC;
+			RX_Valid									: out	std_logic;
 			RX_Data										: out	T_SLV_8;
-			RX_SOF										: out	STD_LOGIC;
-			RX_EOF										: out	STD_LOGIC;
-			RX_Ack										: In	STD_LOGIC;
+			RX_SOF										: out	std_logic;
+			RX_EOF										: out	std_logic;
+			RX_Ack										: in	std_logic;
 
 			-- PHY-SGMII interface
-			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
+			PHY_Interface							:	inout	T_NET_ETH_PHY_INTERFACES
 		);
 	end component;
 
 	component eth_Wrapper_Virtex6 is
 		generic (
-			DEBUG											: BOOLEAN														:= FALSE;															--
+			DEBUG											: boolean														:= FALSE;															--
 			CLOCKIN_FREQ							: FREQ															:= 125 MHz;													-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
 			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		--
@@ -254,39 +254,39 @@ package net_comp is
 		);
 		port (
 			-- clock interface
-			RS_TX_Clock								: in	STD_LOGIC;
-			RS_RX_Clock								: in	STD_LOGIC;
-			Eth_TX_Clock							: in	STD_LOGIC;
-			Eth_RX_Clock							: in	STD_LOGIC;
-			TX_Clock									: in	STD_LOGIC;
-			RX_Clock									: in	STD_LOGIC;
+			RS_TX_Clock								: in	std_logic;
+			RS_RX_Clock								: in	std_logic;
+			Eth_TX_Clock							: in	std_logic;
+			Eth_RX_Clock							: in	std_logic;
+			TX_Clock									: in	std_logic;
+			RX_Clock									: in	std_logic;
 
 			-- reset interface
-			Reset											: in	STD_LOGIC;
+			Reset											: in	std_logic;
 
 			-- Command-Status-Error interface
 
 			-- MAC LocalLink interface
-			TX_Valid									: in	STD_LOGIC;
+			TX_Valid									: in	std_logic;
 			TX_Data										: in	T_SLV_8;
-			TX_SOF										: in	STD_LOGIC;
-			TX_EOF										: in	STD_LOGIC;
-			TX_Ack										: out	STD_LOGIC;
+			TX_SOF										: in	std_logic;
+			TX_EOF										: in	std_logic;
+			TX_Ack										: out	std_logic;
 
-			RX_Valid									: out	STD_LOGIC;
+			RX_Valid									: out	std_logic;
 			RX_Data										: out	T_SLV_8;
-			RX_SOF										: out	STD_LOGIC;
-			RX_EOF										: out	STD_LOGIC;
-			RX_Ack										: In	STD_LOGIC;
+			RX_SOF										: out	std_logic;
+			RX_EOF										: out	std_logic;
+			RX_Ack										: in	std_logic;
 
 			-- PHY-SGMII interface
-			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
+			PHY_Interface							:	inout	T_NET_ETH_PHY_INTERFACES
 		);
 	end component;
 
 	component eth_Wrapper_Series7 is
 		generic (
-			DEBUG											: BOOLEAN														:= FALSE;															--
+			DEBUG											: boolean														:= FALSE;															--
 
 			CLOCKIN_FREQ							: FREQ															:= 125 MHz;													-- 125 MHz
 			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
@@ -295,33 +295,33 @@ package net_comp is
 		);
 		port (
 			-- clock interface
-			RS_TX_Clock								: in	STD_LOGIC;
-			RS_RX_Clock								: in	STD_LOGIC;
-			Eth_TX_Clock							: in	STD_LOGIC;
-			Eth_RX_Clock							: in	STD_LOGIC;
-			TX_Clock									: in	STD_LOGIC;
-			RX_Clock									: in	STD_LOGIC;
+			RS_TX_Clock								: in	std_logic;
+			RS_RX_Clock								: in	std_logic;
+			Eth_TX_Clock							: in	std_logic;
+			Eth_RX_Clock							: in	std_logic;
+			TX_Clock									: in	std_logic;
+			RX_Clock									: in	std_logic;
 
 			-- reset interface
-			Reset											: in	STD_LOGIC;
+			Reset											: in	std_logic;
 
 			-- Command-Status-Error interface
 
 			-- MAC LocalLink interface
-			TX_Valid									: in	STD_LOGIC;
+			TX_Valid									: in	std_logic;
 			TX_Data										: in	T_SLV_8;
-			TX_SOF										: in	STD_LOGIC;
-			TX_EOF										: in	STD_LOGIC;
-			TX_Ack										: out	STD_LOGIC;
+			TX_SOF										: in	std_logic;
+			TX_EOF										: in	std_logic;
+			TX_Ack										: out	std_logic;
 
-			RX_Valid									: out	STD_LOGIC;
+			RX_Valid									: out	std_logic;
 			RX_Data										: out	T_SLV_8;
-			RX_SOF										: out	STD_LOGIC;
-			RX_EOF										: out	STD_LOGIC;
-			RX_Ack										: In	STD_LOGIC;
+			RX_SOF										: out	std_logic;
+			RX_EOF										: out	std_logic;
+			RX_Ack										: in	std_logic;
 
 			-- PHY-SGMII interface
-			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
+			PHY_Interface							:	inout	T_NET_ETH_PHY_INTERFACES
 		);
 	end component;
 
@@ -331,56 +331,56 @@ package net_comp is
 	component TEMAC_GMII_Virtex5 is
 		port (
 			-- Client Receiver Interface - EMAC0
-			EMAC0CLIENTRXCLIENTCLKOUT       : out STD_LOGIC;
-			CLIENTEMAC0RXCLIENTCLKIN        : in  STD_LOGIC;
-			EMAC0CLIENTRXD                  : out STD_LOGIC_VECTOR(7 downto 0);
-			EMAC0CLIENTRXDVLD               : out STD_LOGIC;
-			EMAC0CLIENTRXDVLDMSW            : out STD_LOGIC;
-			EMAC0CLIENTRXGOODFRAME          : out STD_LOGIC;
-			EMAC0CLIENTRXBADFRAME           : out STD_LOGIC;
-			EMAC0CLIENTRXFRAMEDROP          : out STD_LOGIC;
-			EMAC0CLIENTRXSTATS              : out STD_LOGIC_VECTOR(6 downto 0);
-			EMAC0CLIENTRXSTATSVLD           : out STD_LOGIC;
-			EMAC0CLIENTRXSTATSBYTEVLD       : out STD_LOGIC;
+			EMAC0CLIENTRXCLIENTCLKOUT       : out std_logic;
+			CLIENTEMAC0RXCLIENTCLKIN        : in  std_logic;
+			EMAC0CLIENTRXD                  : out std_logic_vector(7 downto 0);
+			EMAC0CLIENTRXDVLD               : out std_logic;
+			EMAC0CLIENTRXDVLDMSW            : out std_logic;
+			EMAC0CLIENTRXGOODFRAME          : out std_logic;
+			EMAC0CLIENTRXBADFRAME           : out std_logic;
+			EMAC0CLIENTRXFRAMEDROP          : out std_logic;
+			EMAC0CLIENTRXSTATS              : out std_logic_vector(6 downto 0);
+			EMAC0CLIENTRXSTATSVLD           : out std_logic;
+			EMAC0CLIENTRXSTATSBYTEVLD       : out std_logic;
 
 			-- Client Transmitter Interface - EMAC0
-			EMAC0CLIENTTXCLIENTCLKOUT       : out STD_LOGIC;
-			CLIENTEMAC0TXCLIENTCLKIN        : in  STD_LOGIC;
-			CLIENTEMAC0TXD                  : in  STD_LOGIC_VECTOR(7 downto 0);
-			CLIENTEMAC0TXDVLD               : in  STD_LOGIC;
-			CLIENTEMAC0TXDVLDMSW            : in  STD_LOGIC;
-			EMAC0CLIENTTXACK                : out STD_LOGIC;
-			CLIENTEMAC0TXFIRSTBYTE          : in  STD_LOGIC;
-			CLIENTEMAC0TXUNDERRUN           : in  STD_LOGIC;
-			EMAC0CLIENTTXCOLLISION          : out STD_LOGIC;
-			EMAC0CLIENTTXRETRANSMIT         : out STD_LOGIC;
-			CLIENTEMAC0TXIFGDELAY           : in  STD_LOGIC_VECTOR(7 downto 0);
-			EMAC0CLIENTTXSTATS              : out STD_LOGIC;
-			EMAC0CLIENTTXSTATSVLD           : out STD_LOGIC;
-			EMAC0CLIENTTXSTATSBYTEVLD       : out STD_LOGIC;
+			EMAC0CLIENTTXCLIENTCLKOUT       : out std_logic;
+			CLIENTEMAC0TXCLIENTCLKIN        : in  std_logic;
+			CLIENTEMAC0TXD                  : in  std_logic_vector(7 downto 0);
+			CLIENTEMAC0TXDVLD               : in  std_logic;
+			CLIENTEMAC0TXDVLDMSW            : in  std_logic;
+			EMAC0CLIENTTXACK                : out std_logic;
+			CLIENTEMAC0TXFIRSTBYTE          : in  std_logic;
+			CLIENTEMAC0TXUNDERRUN           : in  std_logic;
+			EMAC0CLIENTTXCOLLISION          : out std_logic;
+			EMAC0CLIENTTXRETRANSMIT         : out std_logic;
+			CLIENTEMAC0TXIFGDELAY           : in  std_logic_vector(7 downto 0);
+			EMAC0CLIENTTXSTATS              : out std_logic;
+			EMAC0CLIENTTXSTATSVLD           : out std_logic;
+			EMAC0CLIENTTXSTATSBYTEVLD       : out std_logic;
 
 			-- MAC Control Interface - EMAC0
-			CLIENTEMAC0PAUSEREQ             : in  STD_LOGIC;
-			CLIENTEMAC0PAUSEVAL             : in  STD_LOGIC_VECTOR(15 downto 0);
+			CLIENTEMAC0PAUSEREQ             : in  std_logic;
+			CLIENTEMAC0PAUSEVAL             : in  std_logic_vector(15 downto 0);
 
 			-- Clock Signal - EMAC0
-			GTX_CLK_0                       : in  STD_LOGIC;
-			PHYEMAC0TXGMIIMIICLKIN          : in  STD_LOGIC;
-			EMAC0PHYTXGMIIMIICLKOUT         : out STD_LOGIC;
+			GTX_CLK_0                       : in  std_logic;
+			PHYEMAC0TXGMIIMIICLKIN          : in  std_logic;
+			EMAC0PHYTXGMIIMIICLKOUT         : out std_logic;
 
 			-- GMII Interface - EMAC0
-			GMII_TXD_0                      : out STD_LOGIC_VECTOR(7 downto 0);
-			GMII_TX_EN_0                    : out STD_LOGIC;
-			GMII_TX_ER_0                    : out STD_LOGIC;
-			GMII_RXD_0                      : in  STD_LOGIC_VECTOR(7 downto 0);
-			GMII_RX_DV_0                    : in  STD_LOGIC;
-			GMII_RX_ER_0                    : in  STD_LOGIC;
-			GMII_RX_CLK_0                   : in  STD_LOGIC;
+			GMII_TXD_0                      : out std_logic_vector(7 downto 0);
+			GMII_TX_EN_0                    : out std_logic;
+			GMII_TX_ER_0                    : out std_logic;
+			GMII_RXD_0                      : in  std_logic_vector(7 downto 0);
+			GMII_RX_DV_0                    : in  std_logic;
+			GMII_RX_ER_0                    : in  std_logic;
+			GMII_RX_CLK_0                   : in  std_logic;
 
-			DCM_LOCKED_0                    : in  STD_LOGIC;
+			DCM_LOCKED_0                    : in  std_logic;
 
 			-- Asynchronous Reset
-			RESET                           : in  STD_LOGIC
+			RESET                           : in  std_logic
 		);
 	end component;
 

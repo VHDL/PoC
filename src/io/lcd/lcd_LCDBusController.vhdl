@@ -42,55 +42,55 @@ use			PoC.lcd.all;
 
 entity lcd_LCDBusController is
 	generic (
-		SPEEDUP_SIMULATION				: BOOLEAN												:= TRUE;
+		SPEEDUP_SIMULATION				: boolean												:= TRUE;
 		CLOCK_FREQ								: FREQ													:= 100 MHz;
-		LCD_BUS_BITS							: POSITIVE											:= 4
+		LCD_BUS_BITS							: positive											:= 4
 	);
 	port (
-		Clock											: in	STD_LOGIC;
-		Reset											: in	STD_LOGIC;
+		Clock											: in	std_logic;
+		Reset											: in	std_logic;
 
 		Command										: in	T_IO_LCDBUS_COMMAND;
 		Status										: out	T_IO_LCDBUS_STATUS;
-		RegisterAddress						: in	STD_LOGIC;
+		RegisterAddress						: in	std_logic;
 
 		DataIn										: in	T_SLV_8;
 		DataOut										: out	T_SLV_8;
 
-		LCD_BusEnable							: out	STD_LOGIC;
-		LCD_ReadWrite							: out	STD_LOGIC;
-		LCD_RegisterSelect				: out	STD_LOGIC;
-		LCD_Data_i								: in	STD_LOGIC_VECTOR(7 downto (8 - LCD_BUS_BITS));
-		LCD_Data_o								: out	STD_LOGIC_VECTOR(7 downto (8 - LCD_BUS_BITS));
-		LCD_Data_t								: out	STD_LOGIC_VECTOR(7 downto (8 - LCD_BUS_BITS))
+		LCD_BusEnable							: out	std_logic;
+		LCD_ReadWrite							: out	std_logic;
+		LCD_RegisterSelect				: out	std_logic;
+		LCD_Data_i								: in	std_logic_vector(7 downto (8 - LCD_BUS_BITS));
+		LCD_Data_o								: out	std_logic_vector(7 downto (8 - LCD_BUS_BITS));
+		LCD_Data_t								: out	std_logic_vector(7 downto (8 - LCD_BUS_BITS))
 	);
 end entity;
 
 
 architecture rtl of lcd_LCDBusController is
-	attribute KEEP														: BOOLEAN;
-	attribute FSM_ENCODING										: STRING;
+	attribute KEEP														: boolean;
+	attribute FSM_ENCODING										: string;
 
 --	constant CLOCK_DUTY_CYCLE									: REAL			:= 0.50;		-- 50% high time
-	constant TIME_BUSENABLE_HIGH							: TIME			:= 250 ns;		--Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * 			CLOCK_DUTY_CYCLE);
-	constant TIME_BUSENABLE_LOW								: TIME			:= 250 ns;		--Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * (1 - CLOCK_DUTY_CYCLE));
+	constant TIME_BUSENABLE_HIGH							: time			:= 250 ns;		--Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * 			CLOCK_DUTY_CYCLE);
+	constant TIME_BUSENABLE_LOW								: time			:= 250 ns;		--Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * (1 - CLOCK_DUTY_CYCLE));
 
-	constant TIME_SETUP_REGSEL								: TIME			:= 40 ns;
-	constant TIME_SETUP_DATA									: TIME			:= 80 ns;
-	constant TIME_HOLD_REGSEL									: TIME			:= 10 ns;
-	constant TIME_HOLD_DATA										: TIME			:= 10 ns;
-	constant TIME_VALID_DATA									: TIME			:= 5 ns;
-	constant TIME_DELAY_DATA									: TIME			:= 120 ns;
+	constant TIME_SETUP_REGSEL								: time			:= 40 ns;
+	constant TIME_SETUP_DATA									: time			:= 80 ns;
+	constant TIME_HOLD_REGSEL									: time			:= 10 ns;
+	constant TIME_HOLD_DATA										: time			:= 10 ns;
+	constant TIME_VALID_DATA									: time			:= 5 ns;
+	constant TIME_DELAY_DATA									: time			:= 120 ns;
 
 	-- Timing table ID
-	constant TTID_BUSENABLE_LOW								: NATURAL		:= 0;
-	constant TTID_BUSENABLE_HIGH							: NATURAL		:= 1;
-	constant TTID_SETUP_REGSEL								: NATURAL		:= 2;
-	constant TTID_SETUP_DATA									: NATURAL		:= 3;
-	constant TTID_HOLD_REGSEL									: NATURAL		:= 4;
-	constant TTID_HOLD_DATA										: NATURAL		:= 5;
-	constant TTID_VALID_DATA									: NATURAL		:= 6;
-	constant TTID_DELAY_DATA									: NATURAL		:= 7;
+	constant TTID_BUSENABLE_LOW								: natural		:= 0;
+	constant TTID_BUSENABLE_HIGH							: natural		:= 1;
+	constant TTID_SETUP_REGSEL								: natural		:= 2;
+	constant TTID_SETUP_DATA									: natural		:= 3;
+	constant TTID_HOLD_REGSEL									: natural		:= 4;
+	constant TTID_HOLD_DATA										: natural		:= 5;
+	constant TTID_VALID_DATA									: natural		:= 6;
+	constant TTID_DELAY_DATA									: natural		:= 7;
 
 	-- Timing table
 	constant TIMING_TABLE											: T_NATVEC	:= (
@@ -105,12 +105,12 @@ architecture rtl of lcd_LCDBusController is
 	);
 
 	-- Bus TimingCounter (BusTC)
-	subtype T_BUSTC_SLOT_INDEX								IS INTEGER range 0 to TIMING_TABLE'length - 1;
+	subtype T_BUSTC_SLOT_INDEX								is integer range 0 to TIMING_TABLE'length - 1;
 
-	signal BusTC_en														: STD_LOGIC;
-	signal BusTC_Load													: STD_LOGIC;
+	signal BusTC_en														: std_logic;
+	signal BusTC_Load													: std_logic;
 	signal BusTC_Slot													: T_BUSTC_SLOT_INDEX;
-	signal BusTC_Timeout											: STD_LOGIC;
+	signal BusTC_Timeout											: std_logic;
 
 	type T_STATE is (
 		ST_RESET,
@@ -133,15 +133,15 @@ architecture rtl of lcd_LCDBusController is
 	signal State								: T_STATE						:= ST_IDLE;
 	signal NextState						: T_STATE;
 
-	signal Reg_RegisterAddress_en		: STD_LOGIC;
-	signal Reg_RegisterAddress			: STD_LOGIC					:= '0';
-	signal Reg_Data_Load						: STD_LOGIC;
-	signal Reg_Data_en0							: STD_LOGIC;
-	signal Reg_Data_en1							: STD_LOGIC;
+	signal Reg_RegisterAddress_en		: std_logic;
+	signal Reg_RegisterAddress			: std_logic					:= '0';
+	signal Reg_Data_Load						: std_logic;
+	signal Reg_Data_en0							: std_logic;
+	signal Reg_Data_en1							: std_logic;
 	signal Reg_Data									: T_SLV_8						:= (others => '0');
 
 begin
-	assert ((LCD_BUS_BITS = 4) OR (LCD_BUS_BITS = 8)) report "LCD_BUS_WIDTH is out of range {4,8}" severity FAILURE;
+	assert ((LCD_BUS_BITS = 4) or (LCD_BUS_BITS = 8)) report "LCD_BUS_WIDTH is out of range {4,8}" severity FAILURE;
 
 
 	process(Clock)
@@ -181,7 +181,7 @@ begin
 			when ST_IDLE =>
 				case Command is
 					when IO_LCDBUS_CMD_NONE =>
-						NULL;
+						null;
 
 					when IO_LCDBUS_CMD_WRITE =>
 						Reg_RegisterAddress_en	<= '1';
@@ -250,7 +250,7 @@ begin
 				if (BusTC_Timeout = '1') then
 					if (LCD_BUS_BITS = 4) then
 						NextState				<= ST_WRITE_LOWER_NIBBLE_SETUP_REGSEL;
-					ELSif (LCD_BUS_BITS = 8) then
+					elsif (LCD_BUS_BITS = 8) then
 						Status					<= IO_LCDBUS_STATUS_WRITE_COMPLETE;
 
 						NextState				<= ST_IDLE;
@@ -352,7 +352,7 @@ begin
 				if (BusTC_Timeout = '1') then
 					if (LCD_BUS_BITS = 4) then
 						NextState				<= ST_READ_LOWER_NIBBLE_SETUP_REGSEL;
-					ELSif (LCD_BUS_BITS = 8) then
+					elsif (LCD_BUS_BITS = 8) then
 						Status					<= IO_LCDBUS_STATUS_READ_COMPLETE;
 
 						NextState				<= ST_IDLE;
@@ -430,9 +430,9 @@ begin
 
 				if (Reg_Data_Load = '1') then
 					Reg_Data														<= DataIn;
-				ELSif (Reg_Data_en1 = '1') then
+				elsif (Reg_Data_en1 = '1') then
 					Reg_Data(7 downto 8 - LCD_BUS_BITS)	<= LCD_Data_i;
-				ELSif (Reg_Data_en0 = '1') then
+				elsif (Reg_Data_en0 = '1') then
 					Reg_Data(LCD_BUS_BITS downto 0)			<= LCD_Data_i;
 				end if;
 			end if;

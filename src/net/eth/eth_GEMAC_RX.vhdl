@@ -41,29 +41,29 @@ use			PoC.net.all;
 
 entity Eth_GEMAC_RX is
 	generic (
-		DEBUG						: BOOLEAN						:= FALSE
+		DEBUG						: boolean						:= FALSE
 	);
 	port (
-		RS_RX_Clock								: in	STD_LOGIC;
-		RS_RX_Reset								: in	STD_LOGIC;
+		RS_RX_Clock								: in	std_logic;
+		RS_RX_Reset								: in	std_logic;
 
 		-- MAC interface
-		RX_Valid									: out	STD_LOGIC;
+		RX_Valid									: out	std_logic;
 		RX_Data										: out	T_SLV_8;
-		RX_SOF										: out	STD_LOGIC;
-		RX_EOF										: out	STD_LOGIC;
-		RX_GoodFrame							: out	STD_LOGIC;
+		RX_SOF										: out	std_logic;
+		RX_EOF										: out	std_logic;
+		RX_GoodFrame							: out	std_logic;
 
 		-- Reconcilation Sublayer interface
-		RS_RX_Valid								: in	STD_LOGIC;
+		RS_RX_Valid								: in	std_logic;
 		RS_RX_Data								: in	T_SLV_8;
-		RS_RX_Error								: in	STD_LOGIC
+		RS_RX_Error								: in	std_logic
 	);
 end entity;
 
 architecture rtl of Eth_GEMAC_RX is
-	attribute KEEP										: BOOLEAN;
-	attribute FSM_ENCODING						: STRING;
+	attribute KEEP										: boolean;
+	attribute FSM_ENCODING						: string;
 
 	type T_STATE is (
 		ST_IDLE,
@@ -75,28 +75,28 @@ architecture rtl of Eth_GEMAC_RX is
 
 	signal State											: T_STATE									:= ST_IDLE;
 	signal NextState									: T_STATE;
-	attribute FSM_ENCODING OF State		: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	attribute FSM_ENCODING of State		: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	constant PREAMBLE_COUNTER_BW			: POSITIVE																			:= log2ceilnz(C_NET_ETH_PREMABLE_LENGTH);
-	signal PreambleCounter_rst				: STD_LOGIC;
-	signal PreambleCounter_en					: STD_LOGIC;
-	signal PreambleCounter_eq					: STD_LOGIC;
-	signal PreambleCounter_us					: UNSIGNED(PREAMBLE_COUNTER_BW - 1 downto 0)		:= (others => '0');
+	constant PREAMBLE_COUNTER_BW			: positive																			:= log2ceilnz(C_NET_ETH_PREMABLE_LENGTH);
+	signal PreambleCounter_rst				: std_logic;
+	signal PreambleCounter_en					: std_logic;
+	signal PreambleCounter_eq					: std_logic;
+	signal PreambleCounter_us					: unsigned(PREAMBLE_COUNTER_BW - 1 downto 0)		:= (others => '0');
 
-	signal Register_en								: STD_LOGIC;
+	signal Register_en								: std_logic;
 	signal DataRegister_d							: T_SLVV_8(4 downto 0)													:= (others => (others => '0'));
-	signal SOFRegister_en							: STD_LOGIC;
-	signal SOFRegister_d							: STD_LOGIC_VECTOR(4 downto 0)									:= (others => '0');
-	signal Valid_rst									: STD_LOGIC;
-	signal Valid_set									: STD_LOGIC;
-	signal Valid_r										: STD_LOGIC;
+	signal SOFRegister_en							: std_logic;
+	signal SOFRegister_d							: std_logic_vector(4 downto 0)									:= (others => '0');
+	signal Valid_rst									: std_logic;
+	signal Valid_set									: std_logic;
+	signal Valid_r										: std_logic;
 
-	signal CRC_rst										: STD_LOGIC;
-	signal CRC_en											: STD_LOGIC;
-	signal CRC_OK											: STD_LOGIC;
+	signal CRC_rst										: std_logic;
+	signal CRC_en											: std_logic;
+	signal CRC_OK											: std_logic;
 
-	signal FSM_SOF										: STD_LOGIC;
-	signal FSM_EOF										: STD_LOGIC;
+	signal FSM_SOF										: std_logic;
+	signal FSM_EOF										: std_logic;
 
 begin
 	process(RS_RX_Clock)
@@ -142,7 +142,7 @@ begin
 				if (RS_RX_Valid = '1') then
 					if (RS_RX_Data = x"55") then
 						PreambleCounter_en	<= '1';
-					ELSif (RS_RX_Data = x"D5") then
+					elsif (RS_RX_Data = x"D5") then
 						NextState						<= ST_RECEIVED_START_OF_FRAME_DELIMITER;
 					else
 						NextState						<= ST_DISCARD_FRAME;
@@ -223,16 +223,16 @@ begin
 	process(RS_RX_Clock)
 	begin
 		if rising_edge(RS_RX_Clock) then
-			if ((RS_RX_Reset OR Valid_rst) = '1') then
+			if ((RS_RX_Reset or Valid_rst) = '1') then
 				Valid_r				<= '0';
-			ELSif (Valid_set = '1') then
+			elsif (Valid_set = '1') then
 				Valid_r				<= '1';
 			end if;
 		end if;
 	end process;
 
 	blkCRC : block
-		constant CRC32_POLYNOMIAL					: BIT_VECTOR(35 downto 0) := x"104C11DB7";
+		constant CRC32_POLYNOMIAL					: bit_vector(35 downto 0) := x"104C11DB7";
 		constant CRC32_INIT								: T_SLV_32								:=  x"FFFFFFFF";
 
 		signal CRC_DataIn									: T_SLV_8;
@@ -244,9 +244,9 @@ begin
 		signal CRC_Byte2_d								: T_SLVV_8(2 downto 0);
 		signal CRC_Byte3_d								: T_SLVV_8(3 downto 0);
 
-		signal CRC_ByteMatched_d					: STD_LOGIC_VECTOR(3 downto 0);
+		signal CRC_ByteMatched_d					: std_logic_vector(3 downto 0);
 
-		attribute KEEP OF CRC_Value						: signal IS TRUE;
+		attribute KEEP of CRC_Value						: signal is TRUE;
 
 -- for debugging
 --		attribute KEEP OF CRC_Byte0_d					: signal IS TRUE;
@@ -278,10 +278,10 @@ begin
 			);
 
 		-- manipulate CRC value
-		CRC_Value			<= NOT reverse(CRC_DataOut);
+		CRC_Value			<= not reverse(CRC_DataOut);
 
-		CRC_Byte0_d(0)	<= CRC_Value(7	DOWNTO	0);
-		CRC_Byte1_d(0)	<= CRC_Value(15 DOWNTO	8);
+		CRC_Byte0_d(0)	<= CRC_Value(7	downto	0);
+		CRC_Byte1_d(0)	<= CRC_Value(15 downto	8);
 		CRC_Byte2_d(0)	<= CRC_Value(23 downto 16);
 		CRC_Byte3_d(0)	<= CRC_Value(31 downto 24);
 
@@ -297,9 +297,9 @@ begin
 
 		-- calculate byte matches and delay it
 		CRC_ByteMatched_d(0)		<=  to_sl(CRC_Byte0_d(CRC_Byte0_d'high) = RS_RX_Data)															when rising_edge(RS_RX_Clock);
-		CRC_ByteMatched_d(1)		<= (to_sl(CRC_Byte1_d(CRC_Byte1_d'high) = RS_RX_Data) AND CRC_ByteMatched_d(0))		when rising_edge(RS_RX_Clock);
-		CRC_ByteMatched_d(2)		<= (to_sl(CRC_Byte2_d(CRC_Byte2_d'high) = RS_RX_Data) AND CRC_ByteMatched_d(1))		when rising_edge(RS_RX_Clock);
-		CRC_ByteMatched_d(3)		<= (to_sl(CRC_Byte3_d(CRC_Byte3_d'high) = RS_RX_Data) AND CRC_ByteMatched_d(2))		when rising_edge(RS_RX_Clock);
+		CRC_ByteMatched_d(1)		<= (to_sl(CRC_Byte1_d(CRC_Byte1_d'high) = RS_RX_Data) and CRC_ByteMatched_d(0))		when rising_edge(RS_RX_Clock);
+		CRC_ByteMatched_d(2)		<= (to_sl(CRC_Byte2_d(CRC_Byte2_d'high) = RS_RX_Data) and CRC_ByteMatched_d(1))		when rising_edge(RS_RX_Clock);
+		CRC_ByteMatched_d(3)		<= (to_sl(CRC_Byte3_d(CRC_Byte3_d'high) = RS_RX_Data) and CRC_ByteMatched_d(2))		when rising_edge(RS_RX_Clock);
 
 		-- now a possible CRC_OK was delayed 4 times, so it should occur along with EOF
 		CRC_OK <= CRC_ByteMatched_d(3);
@@ -309,5 +309,5 @@ begin
 	RX_Data				<= DataRegister_d(DataRegister_d'high);
 	RX_SOF				<= SOFRegister_d(SOFRegister_d'high);
 	RX_EOF				<= FSM_EOF;
-	RX_GoodFrame	<= FSM_EOF AND CRC_OK;
+	RX_GoodFrame	<= FSM_EOF and CRC_OK;
 end;

@@ -46,17 +46,17 @@ entity stream_Sink is
 		TESTCASES					: T_SIM_STREAM_FRAMEGROUP_VECTOR_8
 	);
 	port (
-		Clock							: in	STD_LOGIC;
-		Reset							: in	STD_LOGIC;
+		Clock							: in	std_logic;
+		Reset							: in	std_logic;
 		-- Control interface
-		Enable						: in	STD_LOGIC;
-		Error							: out	STD_LOGIC;
+		Enable						: in	std_logic;
+		Error							: out	std_logic;
 		-- IN Port
-		In_Valid					: in	STD_LOGIC;
+		In_Valid					: in	std_logic;
 		In_Data						: in	T_SLV_8;
-		In_SOF						: in	STD_LOGIC;
-		In_EOF						: in	STD_LOGIC;
-		In_Ack						: out	STD_LOGIC
+		In_SOF						: in	std_logic;
+		In_EOF						: in	std_logic;
+		In_Ack						: out	std_logic
 	);
 end entity;
 

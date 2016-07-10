@@ -43,28 +43,28 @@ use			PoC.net.all;
 
 entity Eth_PHYController_Marvell_88E1111 is
 	generic (
-		DEBUG											: BOOLEAN													:= FALSE;
+		DEBUG											: boolean													:= FALSE;
 		CLOCK_FREQ								: FREQ														:= 125 MHz;
 		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS		:= "XXXXXXXX"
 	);
 	port (
-		Clock											: in	STD_LOGIC;
-		Reset											: in	STD_LOGIC;
+		Clock											: in	std_logic;
+		Reset											: in	std_logic;
 
 		-- PHYController interface
 		Command										: in	T_NET_ETH_PHYCONTROLLER_COMMAND;
 		Status										: out	T_NET_ETH_PHYCONTROLLER_STATUS;
 		Error											: out	T_NET_ETH_PHYCONTROLLER_ERROR;
 
-		PHY_Reset									: out		STD_LOGIC;
-		PHY_Interrupt							: in		STD_LOGIC;
+		PHY_Reset									: out		std_logic;
+		PHY_Interrupt							: in		std_logic;
 
 		MDIO_Command							: out	T_IO_MDIO_MDIOCONTROLLER_COMMAND;
 		MDIO_Status								: in	T_IO_MDIO_MDIOCONTROLLER_STATUS;
 		MDIO_Error								: in	T_IO_MDIO_MDIOCONTROLLER_ERROR;
 
-		MDIO_Physical_Address			: out	STD_LOGIC_VECTOR(6 downto 0);
-		MDIO_Register_Address			: out	STD_LOGIC_VECTOR(4 downto 0);
+		MDIO_Physical_Address			: out	std_logic_vector(6 downto 0);
+		MDIO_Register_Address			: out	std_logic_vector(4 downto 0);
 		MDIO_Register_DataIn			: in	T_SLV_16;
 		MDIO_Register_DataOut			: out	T_SLV_16
 	);
@@ -72,8 +72,8 @@ end entity;
 
 
 architecture rtl of Eth_PHYController_Marvell_88E1111 is
-	attribute KEEP																		: BOOLEAN;
-	attribute FSM_ENCODING														: STRING;
+	attribute KEEP																		: boolean;
+	attribute FSM_ENCODING														: string;
 
 	type T_STATE is (
 		ST_RESET,											ST_RESET_WAIT,
@@ -87,56 +87,56 @@ architecture rtl of Eth_PHYController_Marvell_88E1111 is
 	);
 
 	signal State																			: T_STATE													:= ST_RESET;
-	SIGNAl NextState																	: T_STATE;
+	signal NextState																	: T_STATE;
 
-	attribute FSM_ENCODING OF State										: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	attribute FSM_ENCODING of State										: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	constant C_MDIO_REGADR_COMMAND										: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv( 0, 5);
-	constant C_MDIO_REGADR_STATUS											: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv( 1, 5);
-	constant C_MDIO_REGADR_EXT_STATUS									: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(15, 5);
-	constant C_MDIO_REGADR_PHY_IDENTIFIER_1						: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv( 2, 5);
-	constant C_MDIO_REGADR_PHY_IDENTIFIER_2						: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv( 3, 5);
-	constant C_MDIO_REGADR_NEXTPAGE_TRANSMIT					: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv( 7, 5);
-	constant C_MDIO_REGADR_AUTONEG_ADVERTISEMENT			: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv( 4, 5);
-	constant C_MDIO_REGADR_AUTONEG_EXPANION						: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv( 6, 5);
-	constant C_MDIO_REGADR_LINKPARTNER_ABILITY				: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv( 5, 5);
-	constant C_MDIO_REGADR_LINKPARTNER_NEXTPAGE				: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv( 8, 5);
-	constant C_MDIO_REGADR_1000BASET_CONTROL					: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv( 9, 5);
-	constant C_MDIO_REGADR_1000BASET_STATUS						: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(10, 5);
-	constant C_MDIO_REGADR_PHY_SPECIFIC_CONTROL				: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(16, 5);
-	constant C_MDIO_REGADR_EXT_PHY_SPECIFIC_CONTROL		: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(20, 5);
-	constant C_MDIO_REGADR_EXT_PHY_SPECIFIC_CONTROL2	: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(26, 5);
-	constant C_MDIO_REGADR_PHY_SPECIFIC_STATUS				: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(17, 5);
-	constant C_MDIO_REGADR_EXT_PHY_SPECIFIC_STATUS		: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(27, 5);
-	constant C_MDIO_REGADR_INTERRUPT_ENABLE						: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(18, 5);
-	constant C_MDIO_REGADR_INTERRUPT_STATUS						: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(19, 5);
-	constant C_MDIO_REGADR_EXT_ADDRESS								: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(22, 5);
-	constant C_MDIO_REGADR_GLOBAL_STATUS							: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(23, 5);
-	constant C_MDIO_REGADR_LED_CONTROL								: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(24, 5);
-	constant C_MDIO_REGADR_LED_OVERRIDE								: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(25, 5);
-	constant C_MDIO_REGADR_RECEIVE_ERROR_COUNTER			: STD_LOGIC_VECTOR(4 downto 0)		:= to_slv(21, 5);
+	constant C_MDIO_REGADR_COMMAND										: std_logic_vector(4 downto 0)		:= to_slv( 0, 5);
+	constant C_MDIO_REGADR_STATUS											: std_logic_vector(4 downto 0)		:= to_slv( 1, 5);
+	constant C_MDIO_REGADR_EXT_STATUS									: std_logic_vector(4 downto 0)		:= to_slv(15, 5);
+	constant C_MDIO_REGADR_PHY_IDENTIFIER_1						: std_logic_vector(4 downto 0)		:= to_slv( 2, 5);
+	constant C_MDIO_REGADR_PHY_IDENTIFIER_2						: std_logic_vector(4 downto 0)		:= to_slv( 3, 5);
+	constant C_MDIO_REGADR_NEXTPAGE_TRANSMIT					: std_logic_vector(4 downto 0)		:= to_slv( 7, 5);
+	constant C_MDIO_REGADR_AUTONEG_ADVERTISEMENT			: std_logic_vector(4 downto 0)		:= to_slv( 4, 5);
+	constant C_MDIO_REGADR_AUTONEG_EXPANION						: std_logic_vector(4 downto 0)		:= to_slv( 6, 5);
+	constant C_MDIO_REGADR_LINKPARTNER_ABILITY				: std_logic_vector(4 downto 0)		:= to_slv( 5, 5);
+	constant C_MDIO_REGADR_LINKPARTNER_NEXTPAGE				: std_logic_vector(4 downto 0)		:= to_slv( 8, 5);
+	constant C_MDIO_REGADR_1000BASET_CONTROL					: std_logic_vector(4 downto 0)		:= to_slv( 9, 5);
+	constant C_MDIO_REGADR_1000BASET_STATUS						: std_logic_vector(4 downto 0)		:= to_slv(10, 5);
+	constant C_MDIO_REGADR_PHY_SPECIFIC_CONTROL				: std_logic_vector(4 downto 0)		:= to_slv(16, 5);
+	constant C_MDIO_REGADR_EXT_PHY_SPECIFIC_CONTROL		: std_logic_vector(4 downto 0)		:= to_slv(20, 5);
+	constant C_MDIO_REGADR_EXT_PHY_SPECIFIC_CONTROL2	: std_logic_vector(4 downto 0)		:= to_slv(26, 5);
+	constant C_MDIO_REGADR_PHY_SPECIFIC_STATUS				: std_logic_vector(4 downto 0)		:= to_slv(17, 5);
+	constant C_MDIO_REGADR_EXT_PHY_SPECIFIC_STATUS		: std_logic_vector(4 downto 0)		:= to_slv(27, 5);
+	constant C_MDIO_REGADR_INTERRUPT_ENABLE						: std_logic_vector(4 downto 0)		:= to_slv(18, 5);
+	constant C_MDIO_REGADR_INTERRUPT_STATUS						: std_logic_vector(4 downto 0)		:= to_slv(19, 5);
+	constant C_MDIO_REGADR_EXT_ADDRESS								: std_logic_vector(4 downto 0)		:= to_slv(22, 5);
+	constant C_MDIO_REGADR_GLOBAL_STATUS							: std_logic_vector(4 downto 0)		:= to_slv(23, 5);
+	constant C_MDIO_REGADR_LED_CONTROL								: std_logic_vector(4 downto 0)		:= to_slv(24, 5);
+	constant C_MDIO_REGADR_LED_OVERRIDE								: std_logic_vector(4 downto 0)		:= to_slv(25, 5);
+	constant C_MDIO_REGADR_RECEIVE_ERROR_COUNTER			: std_logic_vector(4 downto 0)		:= to_slv(21, 5);
 
-	constant TTID_RESET_PULSE													: NATURAL		:= 0;
-	constant TTID_WAITTIME_AFTER_LINK_UP							: NATURAL		:= 1;
+	constant TTID_RESET_PULSE													: natural		:= 0;
+	constant TTID_WAITTIME_AFTER_LINK_UP							: natural		:= 1;
 
 	constant TIMING_TABLE															: T_NATVEC	:= (
 		TTID_RESET_PULSE								=> TimingToCycles(5000 ms,	CLOCK_FREQ),
 		TTID_WAITTIME_AFTER_LINK_UP			=> TimingToCycles(1 ms,			CLOCK_FREQ)
 	);
 
-	signal TC_Enable																	: STD_LOGIC;
-	signal TC_Load																		: STD_LOGIC;
-	signal TC_Slot																		: INTEGER;
-	signal TC_Timeout																	: STD_LOGIC;
+	signal TC_Enable																	: std_logic;
+	signal TC_Load																		: std_logic;
+	signal TC_Slot																		: integer;
+	signal TC_Timeout																	: std_logic;
 
-	signal PHY_Interrupt_rst													: STD_LOGIC;
-	signal PHY_Interrupt_meta													: STD_LOGIC												:= '0';
-	signal PHY_Interrupt_d														: STD_LOGIC												:= '0';
-	signal PHY_Interrupt_l														: STD_LOGIC												:= '0';
+	signal PHY_Interrupt_rst													: std_logic;
+	signal PHY_Interrupt_meta													: std_logic												:= '0';
+	signal PHY_Interrupt_d														: std_logic												:= '0';
+	signal PHY_Interrupt_l														: std_logic												:= '0';
 
-	signal Status_rst																	: STD_LOGIC;
-	signal Status_set																	: STD_LOGIC;
-	signal Status_r																		: STD_LOGIC												:= '0';
+	signal Status_rst																	: std_logic;
+	signal Status_set																	: std_logic;
+	signal Status_r																		: std_logic												:= '0';
 
 begin
 
@@ -149,7 +149,7 @@ begin
 
 			if (PHY_Interrupt_rst = '1') then
 				PHY_Interrupt_l				<= '0';
-			ELSif (PHY_Interrupt_d = '1') then
+			elsif (PHY_Interrupt_d = '1') then
 				PHY_Interrupt_l				<= '1';
 			end if;
 		end if;
@@ -219,7 +219,7 @@ begin
 
 				case MDIO_Status is
 					when IO_MDIO_MDIOC_STATUS_CHECKING =>
-						NULL;
+						null;
 
 					when IO_MDIO_MDIOC_STATUS_CHECK_OK =>
 						NextState				<= ST_READ_DEVICE_ID_1;
@@ -247,7 +247,7 @@ begin
 
 				case MDIO_Status is
 					when IO_MDIO_MDIOC_STATUS_READING =>
-						NULL;
+						null;
 
 					when IO_MDIO_MDIOC_STATUS_READ_COMPLETE =>
 						if (MDIO_Register_DataIn = x"0141") then									-- OUI
@@ -277,11 +277,11 @@ begin
 
 				case MDIO_Status is
 					when IO_MDIO_MDIOC_STATUS_READING =>
-						NULL;
+						null;
 
 					when IO_MDIO_MDIOC_STATUS_READ_COMPLETE =>
-						if ((MDIO_Register_DataIn(15 downto 10) = "000011") AND		-- OUI LSB
-								(MDIO_Register_DataIn( 9 DOWNTO	 4) = "001100"))			-- Model Number - 88E1111
+						if ((MDIO_Register_DataIn(15 downto 10) = "000011") and		-- OUI LSB
+								(MDIO_Register_DataIn( 9 downto	 4) = "001100"))			-- Model Number - 88E1111
 						then
 --							NextState					<= ST_WRITE_INTERRUPT;
 							NextState					<= ST_READ_PHY_SPECIFIC_STATUS;
@@ -311,7 +311,7 @@ begin
 
 				case MDIO_Status is
 					when IO_MDIO_MDIOC_STATUS_WRITING =>
-						NULL;
+						null;
 
 					when IO_MDIO_MDIOC_STATUS_WRITE_COMPLETE =>
 --						NextState					<= ST_READ_STATUS;
@@ -346,18 +346,18 @@ begin
 
 				case MDIO_Status is
 					when IO_MDIO_MDIOC_STATUS_READING =>
-						NULL;
+						null;
 
 					when IO_MDIO_MDIOC_STATUS_READ_COMPLETE =>
-						if ((MDIO_Register_DataIn(15)	= '0') AND
-								(MDIO_Register_DataIn(10)	= '0') AND
-								(MDIO_Register_DataIn(9)	= '0') AND
-								(MDIO_Register_DataIn(8)	= '1') AND
-								(MDIO_Register_DataIn(6)	= '1') AND
-								(MDIO_Register_DataIn(5)	= '1') AND
-								(MDIO_Register_DataIn(4)	= '0') AND
-								(MDIO_Register_DataIn(3)	= '1') AND
-								(MDIO_Register_DataIn(2)	= '1') AND
+						if ((MDIO_Register_DataIn(15)	= '0') and
+								(MDIO_Register_DataIn(10)	= '0') and
+								(MDIO_Register_DataIn(9)	= '0') and
+								(MDIO_Register_DataIn(8)	= '1') and
+								(MDIO_Register_DataIn(6)	= '1') and
+								(MDIO_Register_DataIn(5)	= '1') and
+								(MDIO_Register_DataIn(4)	= '0') and
+								(MDIO_Register_DataIn(3)	= '1') and
+								(MDIO_Register_DataIn(2)	= '1') and
 								(MDIO_Register_DataIn(0)	= '1'))
 						then
 							Status_set			<= '1';
@@ -396,14 +396,14 @@ begin
 
 				case MDIO_Status is
 					when IO_MDIO_MDIOC_STATUS_READING =>
-						NULL;
+						null;
 
 					when IO_MDIO_MDIOC_STATUS_READ_COMPLETE =>
-						if ((MDIO_Register_DataIn(15)	= '1') AND
-								(MDIO_Register_DataIn(14)	= '0') AND
-								(MDIO_Register_DataIn(13)	= '1') AND
-								(MDIO_Register_DataIn(11)	= '1') AND
-								(MDIO_Register_DataIn(10)	= '1') AND
+						if ((MDIO_Register_DataIn(15)	= '1') and
+								(MDIO_Register_DataIn(14)	= '0') and
+								(MDIO_Register_DataIn(13)	= '1') and
+								(MDIO_Register_DataIn(11)	= '1') and
+								(MDIO_Register_DataIn(10)	= '1') and
 								(MDIO_Register_DataIn(4)	= '0'))
 						then
 							Status_set			<= '1';
@@ -423,7 +423,7 @@ begin
 
 			when ST_ERROR =>
 				Status								<= NET_ETH_PHYC_STATUS_ERROR;
-				NULL;
+				null;
 
 		end case;
 	end process;
@@ -431,9 +431,9 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR Status_rst) = '1') then
+			if ((Reset or Status_rst) = '1') then
 				Status_r			<= '0';
-			ELSif (Status_set = '1') then
+			elsif (Status_set = '1') then
 				Status_r			<= '1';
 			end if;
 		end if;

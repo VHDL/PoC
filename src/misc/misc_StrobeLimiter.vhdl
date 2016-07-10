@@ -38,26 +38,26 @@ use			PoC.utils.all;
 
 entity misc_StrobeLimiter is
 	generic (
-		MIN_STROBE_PERIOD_CYCLES		: POSITIVE		:= 16;
-		INITIAL_LOCKED							: BOOLEAN			:= FALSE;
-		INITIAL_STROBE							: BOOLEAN			:= TRUE--;
+		MIN_STROBE_PERIOD_CYCLES		: positive		:= 16;
+		INITIAL_LOCKED							: boolean			:= FALSE;
+		INITIAL_STROBE							: boolean			:= TRUE--;
 --		REGISTERED_OUTPUT						: BOOLEAN			:= FALSE			-- TODO:
 	);
 	port (
-		Clock				: in	STD_LOGIC;
-		I						:	IN	STD_LOGIC;
-		O						: out	STD_LOGIC
+		Clock				: in	std_logic;
+		I						:	in	std_logic;
+		O						: out	std_logic
 	);
 end entity;
 
 
 architecture rtl of misc_StrobeLimiter is
-	constant COUNTER_INIT_VALUE		: POSITIVE		:= MIN_STROBE_PERIOD_CYCLES - 2;
-	constant COUNTER_BITS					: NATURAL			:= log2ceilnz(COUNTER_INIT_VALUE);
+	constant COUNTER_INIT_VALUE		: positive		:= MIN_STROBE_PERIOD_CYCLES - 2;
+	constant COUNTER_BITS					: natural			:= log2ceilnz(COUNTER_INIT_VALUE);
 
 	type T_STATE is (ST_IDLE, ST_LOCKED, ST_LOCKED2);
 
-	function InitialState(InitialLocked : BOOLEAN; InitialStrobe : BOOLEAN) return T_STATE is
+	function InitialState(InitialLocked : boolean; InitialStrobe : boolean) return T_STATE is
 	begin
 		if (InitialLocked = TRUE) then
 			if (InitialStrobe = TRUE) then
@@ -73,9 +73,9 @@ architecture rtl of misc_StrobeLimiter is
 	signal State						: T_STATE					:= InitialState(INITIAL_LOCKED, INITIAL_STROBE);
 	signal NextState				: T_STATE;
 
-	signal Counter_en				: STD_LOGIC;
-	signal Counter_s				: SIGNED(COUNTER_BITS downto 0)		:= to_signed(COUNTER_INIT_VALUE, COUNTER_BITS + 1);
-	signal Counter_ov				: STD_LOGIC;
+	signal Counter_en				: std_logic;
+	signal Counter_s				: signed(COUNTER_BITS downto 0)		:= to_signed(COUNTER_INIT_VALUE, COUNTER_BITS + 1);
+	signal Counter_ov				: std_logic;
 
 begin
 

@@ -93,10 +93,10 @@ architecture rtl of physical_test_freq is
 		report "CVT_INT_1_KHZ     = " & FREQ'image(CVT_INT_1_KHZ   ) severity note;
 		report "CVT_INT_1_MHZ     = " & FREQ'image(CVT_INT_1_MHZ   ) severity note;
 		report "CVT_INT_1_GHZ     = " & FREQ'image(CVT_INT_1_GHZ   ) severity note;
-		report "CVT_1_HZ_INT      = " & INTEGER'image(CVT_1_HZ_INT ) severity note;
-		report "CVT_1_KHZ_INT     = " & INTEGER'image(CVT_1_KHZ_INT) severity note;
-		report "CVT_1_MHZ_INT     = " & INTEGER'image(CVT_1_MHZ_INT) severity note;
-		report "CVT_1_GHZ_INT     = " & INTEGER'image(CVT_1_GHZ_INT) severity note;
+		report "CVT_1_HZ_INT      = " & integer'image(CVT_1_HZ_INT ) severity note;
+		report "CVT_1_KHZ_INT     = " & integer'image(CVT_1_KHZ_INT) severity note;
+		report "CVT_1_MHZ_INT     = " & integer'image(CVT_1_MHZ_INT) severity note;
+		report "CVT_1_GHZ_INT     = " & integer'image(CVT_1_GHZ_INT) severity note;
 		report "CVT_REAL_1p5_KHZ  = " & FREQ'image(CVT_REAL_1p5_KHZ) severity note;
 		report "CVT_REAL_1p5_MHZ  = " & FREQ'image(CVT_REAL_1p5_MHZ) severity note;
 		report "CVT_REAL_1p5_GHZ  = " & FREQ'image(CVT_REAL_1p5_GHZ) severity note;

@@ -42,13 +42,13 @@ use			PoC.lcd.all;
 entity lcd_LCDBuffer is
 	generic (
 		CLOCK_FREQ						: FREQ				:= 100 MHz;
-		MIN_REFRESH_PERIOD		: TIME				:= 100 ms
+		MIN_REFRESH_PERIOD		: time				:= 100 ms
 	);
 	port (
-		Clock				: in	STD_LOGIC;
-		Reset				: in	STD_LOGIC;
+		Clock				: in	std_logic;
+		Reset				: in	std_logic;
 
-		Load				: in	STD_LOGIC;
+		Load				: in	std_logic;
 		LCDBuffer		:	in	T_LCD;
 
 		CharColumn	:	in	T_LCD_COLUMN_INDEX;
@@ -59,7 +59,7 @@ end entity;
 
 
 architecture rtl of lcd_LCDBuffer is
-	signal LCDBuffer_Load		: STD_LOGIC;
+	signal LCDBuffer_Load		: std_logic;
 	signal LCDBuffer_d			: T_LCD			:= (others => (others => to_RawChar(' ')));
 
 begin

@@ -67,7 +67,7 @@ library work;
 
 entity Eth_Wrapper is
 	generic (
-		DEBUG											: BOOLEAN															:= FALSE;
+		DEBUG											: boolean															:= FALSE;
 		CLOCKIN_FREQ							: FREQ																:= 125 MHz;																	-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE														:= IPSTYLE_SOFT;														--
 		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE					:= NET_ETH_RS_DATA_INTERFACE_GMII;					--
@@ -77,37 +77,37 @@ entity Eth_Wrapper is
 		PHY_MANAGEMENT_INTERFACE	: T_NET_ETH_PHY_MANAGEMENT_INTERFACE	:= NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO		--
 	);
 	port (
-		Ethernet_Reset						: in	STD_LOGIC;				-- TODO: replace this signal by 6 aligned reset for each clock-domain
+		Ethernet_Reset						: in	std_logic;				-- TODO: replace this signal by 6 aligned reset for each clock-domain
 
-		RS_TX_Clock								: in	STD_LOGIC;
-		RS_RX_Clock								: in	STD_LOGIC;
-		Eth_TX_Clock							: in	STD_LOGIC;
-		Eth_RX_Clock							: in	STD_LOGIC;
-		TX_Clock									: in	STD_LOGIC;
-		RX_Clock									: in	STD_LOGIC;
+		RS_TX_Clock								: in	std_logic;
+		RS_RX_Clock								: in	std_logic;
+		Eth_TX_Clock							: in	std_logic;
+		Eth_RX_Clock							: in	std_logic;
+		TX_Clock									: in	std_logic;
+		RX_Clock									: in	std_logic;
 
 		Command										: in	T_NET_ETH_COMMAND;
 		Status										: out	T_NET_ETH_STATUS;
 		Error											: out	T_NET_ETH_ERROR;
 
 		-- LocalLink interface
-		TX_Valid									: in	STD_LOGIC;
+		TX_Valid									: in	std_logic;
 		TX_Data										: in	T_SLV_8;
-		TX_SOF										: in	STD_LOGIC;
-		TX_EOF										: in	STD_LOGIC;
-		TX_Ack										: out	STD_LOGIC;
+		TX_SOF										: in	std_logic;
+		TX_EOF										: in	std_logic;
+		TX_Ack										: out	std_logic;
 
-		RX_Valid									: out	STD_LOGIC;
+		RX_Valid									: out	std_logic;
 		RX_Data										: out	T_SLV_8;
-		RX_SOF										: out	STD_LOGIC;
-		RX_EOF										: out	STD_LOGIC;
-		RX_Ack										: in	STD_LOGIC;
+		RX_SOF										: out	std_logic;
+		RX_EOF										: out	std_logic;
+		RX_Ack										: in	std_logic;
 
 		-- GMII PHY interface
 -- TODO:		GMII_Reset								: out	STD_LOGIC;				-- 						 RST		-> PHY Reset
 -- TODO:		GMII_Interrupt						: in	STD_LOGIC;				--						 INT		-> Interrupt
 
-		PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
+		PHY_Interface							:	inout	T_NET_ETH_PHY_INTERFACES
 	);
 end entity;
 
@@ -115,18 +115,18 @@ end entity;
 architecture rtl of Eth_Wrapper is
 
 	-- Bus interface
-	signal Strobe											: STD_LOGIC;
-	signal PHY_Address								: STD_LOGIC_VECTOR(4 downto 0);
-	signal Register_we								: STD_LOGIC;
-	signal Register_Address						: STD_LOGIC_VECTOR(4 downto 0);
+	signal Strobe											: std_logic;
+	signal PHY_Address								: std_logic_vector(4 downto 0);
+	signal Register_we								: std_logic;
+	signal Register_Address						: std_logic_vector(4 downto 0);
 	signal Register_DataIn						: T_SLV_16;
 	signal Register_DataOut						: T_SLV_16;
-	signal Register_Valid							: STD_LOGIC;
+	signal Register_Valid							: std_logic;
 
-	signal ManagementData_Clock				: STD_LOGIC;
-	signal ManagementData_Data_i			: STD_LOGIC;
-	signal ManagementData_Data_o			: STD_LOGIC;
-	signal ManagementData_Data_t			: STD_LOGIC;
+	signal ManagementData_Clock				: std_logic;
+	signal ManagementData_Data_i			: std_logic;
+	signal ManagementData_Data_o			: std_logic;
+	signal ManagementData_Data_t			: std_logic;
 
 begin
 

@@ -44,20 +44,20 @@ entity lcd_LCDSynchronizer is
 		CLOCK_FREQ					: FREQ		:= 100 MHz
 	);
 	port (
-		Clock								: in	STD_LOGIC;
-		Reset								: in	STD_LOGIC;
+		Clock								: in	std_logic;
+		Reset								: in	std_logic;
 
-		Synchronize					: in	STD_LOGIC;
-		Synchronized				: out	STD_LOGIC;
+		Synchronize					: in	std_logic;
+		Synchronized				: out	std_logic;
 
 		Column							: out	T_LCD_COLUMN_INDEX;
 		Row									:	out	T_LCD_ROW_INDEX;
 		Char								: in	T_LCD_CHAR;
 
 		-- LCD interface
-		LCD_en							:	out	STD_LOGIC;
-		LCD_rw							: out	STD_LOGIC;
-		LCD_rs							: out	STD_LOGIC;								-- LCD Register Select
+		LCD_en							:	out	std_logic;
+		LCD_rw							: out	std_logic;
+		LCD_rs							: out	std_logic;								-- LCD Register Select
 		LCD_Data_o					: out	T_SLV_4;
     LCD_Data_i    			: in  T_SLV_4
 	);
@@ -65,7 +65,7 @@ end entity;
 
 
 architecture rtl of lcd_LCDSynchronizer is
-	attribute KEEP		: STRING;
+	attribute KEEP		: string;
 
 	type T_STATE is (
 		ST_RESET,
@@ -82,30 +82,30 @@ architecture rtl of lcd_LCDSynchronizer is
 	signal State			: T_STATE			:= ST_RESET;
 	signal NextState	: T_STATE;
 
-	constant COLAC_BITS			: POSITIVE																			:= T_LCD_COLUMN_INDEX_BW;
-	constant ROWAC_BITS			: POSITIVE																			:= T_LCD_ROW_INDEX_BW;
+	constant COLAC_BITS			: positive																			:= T_LCD_COLUMN_INDEX_BW;
+	constant ROWAC_BITS			: positive																			:= T_LCD_ROW_INDEX_BW;
 
-	signal ColAC_inc				: STD_LOGIC;
-	signal ColAC_Load				: STD_LOGIC;
-	signal ColAC_Address		: STD_LOGIC_VECTOR(COLAC_BITS - 1 downto 0);
-	signal ColAC_Address_us	: UNSIGNED(COLAC_BITS - 1 downto 0);
-	signal ColAC_Finished		: STD_LOGIC;
+	signal ColAC_inc				: std_logic;
+	signal ColAC_Load				: std_logic;
+	signal ColAC_Address		: std_logic_vector(COLAC_BITS - 1 downto 0);
+	signal ColAC_Address_us	: unsigned(COLAC_BITS - 1 downto 0);
+	signal ColAC_Finished		: std_logic;
 
-	signal RowAC_inc				: STD_LOGIC;
-	signal RowAC_Load				: STD_LOGIC;
-	signal RowAC_Address		: STD_LOGIC_VECTOR(ROWAC_BITS - 1 downto 0);
-	signal RowAC_Address_us	: UNSIGNED(ROWAC_BITS - 1 downto 0);
-	signal RowAC_Finished		: STD_LOGIC;
+	signal RowAC_inc				: std_logic;
+	signal RowAC_Load				: std_logic;
+	signal RowAC_Address		: std_logic_vector(ROWAC_BITS - 1 downto 0);
+	signal RowAC_Address_us	: unsigned(ROWAC_BITS - 1 downto 0);
+	signal RowAC_Finished		: std_logic;
 
-	signal LCDI_Strobe			: STD_LOGIC;
-	signal LCDI_Address			: STD_LOGIC;
+	signal LCDI_Strobe			: std_logic;
+	signal LCDI_Address			: std_logic;
 	signal LCDI_Data				: T_SLV_8;
-	signal LCDI_Ready				: STD_LOGIC;
+	signal LCDI_Ready				: std_logic;
 
-	signal LCD_Data_tt			: STD_LOGIC;
+	signal LCD_Data_tt			: std_logic;
 
-	signal CSP_Trigger_1		: STD_LOGIC;
-	attribute KEEP OF CSP_Trigger_1 : signal IS "TRUE";
+	signal CSP_Trigger_1		: std_logic;
+	attribute KEEP of CSP_Trigger_1 : signal is "TRUE";
 
 begin
 
@@ -251,7 +251,7 @@ begin
 	end process;
 
 	blkColAC : block
-		signal Counter_us				: UNSIGNED(COLAC_BITS - 1 downto 0)		:= to_unsigned(0, COLAC_BITS);
+		signal Counter_us				: unsigned(COLAC_BITS - 1 downto 0)		:= to_unsigned(0, COLAC_BITS);
 	begin
 		process(Clock)
 		begin
@@ -272,7 +272,7 @@ begin
 	end block;
 
 	blkRowAC : block
-		signal Counter_us				: UNSIGNED(ROWAC_BITS - 1 downto 0)		:= to_unsigned(0, ROWAC_BITS);
+		signal Counter_us				: unsigned(ROWAC_BITS - 1 downto 0)		:= to_unsigned(0, ROWAC_BITS);
 	begin
 		process(Clock)
 		begin

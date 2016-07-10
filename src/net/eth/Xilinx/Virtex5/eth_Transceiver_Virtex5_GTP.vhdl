@@ -16,39 +16,39 @@ use			PoC.xil.all;
 
 entity eth_Transceiver_Virtex5_GTP is
 	generic (
-		DEBUG											: BOOLEAN											:= FALSE;																	-- generate ChipScope debugging "pins"
+		DEBUG											: boolean											:= FALSE;																	-- generate ChipScope debugging "pins"
 		CLOCK_IN_FREQ							: FREQ												:= 125 MHz;																-- 150 MHz
-		PORTS											: POSITIVE										:= 2																			-- Number of Ports per Transceiver
+		PORTS											: positive										:= 2																			-- Number of Ports per Transceiver
 	);
 	port (
-		PowerDown								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RefClockIn_125_MHz			: in	STD_LOGIC;
-		ClockNetwork_Reset			: in	STD_LOGIC;
-		ClockNetwork_ResetDone	: out	STD_LOGIC;
+		PowerDown								: in	std_logic_vector(PORTS - 1 downto 0);
+		RefClockIn_125_MHz			: in	std_logic;
+		ClockNetwork_Reset			: in	std_logic;
+		ClockNetwork_ResetDone	: out	std_logic;
 
-		TX_Clock								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_Clock								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Clock								: in	std_logic_vector(PORTS - 1 downto 0);
+		RX_Clock								: in	std_logic_vector(PORTS - 1 downto 0);
 
-		TX_Reset								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_Reset								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Reset								: in	std_logic_vector(PORTS - 1 downto 0);
+		RX_Reset								: in	std_logic_vector(PORTS - 1 downto 0);
 
-		LoopBack								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);										-- perform loopback testing
-		EnableCommaAlign				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- enable comma alignment
+		LoopBack								: in	std_logic_vector(PORTS - 1 downto 0);										-- perform loopback testing
+		EnableCommaAlign				: in	std_logic_vector(PORTS - 1 downto 0);						-- enable comma alignment
 
 		-- TX interface
 		TX_Data									: in	T_SLVV_8(PORTS - 1 downto 0);
-		TX_CharIsK							: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		TX_DisparityMode				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		TX_DisparityValue				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		TX_BufferError					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_CharIsK							: in	std_logic_vector(PORTS - 1 downto 0);
+		TX_DisparityMode				: in	std_logic_vector(PORTS - 1 downto 0);
+		TX_DisparityValue				: in	std_logic_vector(PORTS - 1 downto 0);
+		TX_BufferError					: out	std_logic_vector(PORTS - 1 downto 0);
 
 		-- RX interface
 		RX_Data									: out	T_SLVV_8(PORTS - 1 downto 0);
-		RX_CharIsK							: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_CharIsComma					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_RunningDisparity			: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_DisparityError				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_NotInTable						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_CharIsK							: out	std_logic_vector(PORTS - 1 downto 0);
+		RX_CharIsComma					: out	std_logic_vector(PORTS - 1 downto 0);
+		RX_RunningDisparity			: out	std_logic_vector(PORTS - 1 downto 0);
+		RX_DisparityError				: out	std_logic_vector(PORTS - 1 downto 0);
+		RX_NotInTable						: out	std_logic_vector(PORTS - 1 downto 0);
 		RX_BufferStatus					: out	T_SLVV_2(PORTS - 1 downto 0);
 		RX_ClockCorrectionCount	: out	T_SLVV_3(PORTS - 1 downto 0);
 
@@ -59,54 +59,54 @@ end;
 
 
 architecture rtl of eth_Transceiver_Virtex5_GTP is
-	attribute KEEP 														: BOOLEAN;
-	attribute TNM 														: STRING;
+	attribute KEEP 														: boolean;
+	attribute TNM 														: string;
 
 	-- ===========================================================================
 	-- Ethernet SGMII configuration
 	-- ===========================================================================
 	constant C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
 
-	signal ClockIn_125MHz											: STD_LOGIC;
-	signal ResetDone_i												: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal ClockIn_125MHz											: std_logic;
+	signal ResetDone_i												: std_logic_vector(PORTS - 1 downto 0);
 
-	signal GTP_Reset													: STD_LOGIC;
-	signal GTP_ResetDone											: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal GTP_ResetDone_i										: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal GTP_PLL_Reset											: STD_LOGIC;
-	signal GTP_PLL_ResetDone									:	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal GTP_PLL_ResetDone_i								:	STD_LOGIC;
+	signal GTP_Reset													: std_logic;
+	signal GTP_ResetDone											: std_logic_vector(PORTS - 1 downto 0);
+	signal GTP_ResetDone_i										: std_logic_vector(PORTS - 1 downto 0);
+	signal GTP_PLL_Reset											: std_logic;
+	signal GTP_PLL_ResetDone									:	std_logic_vector(PORTS - 1 downto 0);
+	signal GTP_PLL_ResetDone_i								:	std_logic;
 
-	signal GTP_RefClockIn											: STD_LOGIC;
-	signal GTP_RefClockOut										: STD_LOGIC;
-	signal GTP_RefClockOut_i									: STD_LOGIC;
-	signal GTP_TX_RefClockOut									: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal GTP_RX_RefClockOut									: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal Control_Clock											: STD_LOGIC;
+	signal GTP_RefClockIn											: std_logic;
+	signal GTP_RefClockOut										: std_logic;
+	signal GTP_RefClockOut_i									: std_logic;
+	signal GTP_TX_RefClockOut									: std_logic_vector(PORTS - 1 downto 0);
+	signal GTP_RX_RefClockOut									: std_logic_vector(PORTS - 1 downto 0);
+	signal Control_Clock											: std_logic;
 
-	signal ClkNet_Reset												: STD_LOGIC;
-	signal ClkNet_Reset_i											: STD_LOGIC;
-	signal ClkNet_Reset_x											: STD_LOGIC;
-	signal ClkNet_ResetDone										: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal ClkNet_ResetDone_i									: STD_LOGIC;
-	signal ClockNetwork_ResetDone_i						: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal ClkNet_Reset												: std_logic;
+	signal ClkNet_Reset_i											: std_logic;
+	signal ClkNet_Reset_x											: std_logic;
+	signal ClkNet_ResetDone										: std_logic_vector(PORTS - 1 downto 0);
+	signal ClkNet_ResetDone_i									: std_logic;
+	signal ClockNetwork_ResetDone_i						: std_logic_vector(PORTS - 1 downto 0);
 
-	signal GTP_PortReset											: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal GTP_PortReset											: std_logic_vector(PORTS - 1 downto 0);
 
 	-- keep internal clock nets, so timing constrains from UCF can find them
-	attribute KEEP OF GTP_TX_RefClockOut			: signal IS DEBUG;
-	attribute KEEP OF GTP_RX_RefClockOut			: signal IS DEBUG;
-	attribute KEEP OF GTP_RefClockOut 				: signal IS DEBUG;
+	attribute KEEP of GTP_TX_RefClockOut			: signal is DEBUG;
+	attribute KEEP of GTP_RX_RefClockOut			: signal is DEBUG;
+	attribute KEEP of GTP_RefClockOut 				: signal is DEBUG;
 
 --	attribute KEEP OF SATA_Clock_i										: signal IS TRUE;
 --	attribute TNM OF SATA_Clock_i											: signal IS "TGRP_SATA_Clock0";
 
-	signal RX_CharIsComma_float								: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal RX_CharIsK_float										: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal RX_DisparityError_float						: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal RX_CharIsComma_float								: std_logic_vector(PORTS - 1 downto 0);
+	signal RX_CharIsK_float										: std_logic_vector(PORTS - 1 downto 0);
+	signal RX_DisparityError_float						: std_logic_vector(PORTS - 1 downto 0);
 	signal RX_Data_float											: T_SLVV_8(PORTS - 1 downto 0);
-	signal RX_NotInTable_float								: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal RX_RunningDisparity_float					: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal RX_NotInTable_float								: std_logic_vector(PORTS - 1 downto 0);
+	signal RX_RunningDisparity_float					: std_logic_vector(PORTS - 1 downto 0);
 	signal GTP_RX_BufferStatus_float					: T_SLVV_2(PORTS - 1 downto 0);
 	signal GTP_TX_BufferStatus_float					: T_SLVV_2(PORTS - 1 downto 0);
 
@@ -125,7 +125,7 @@ begin
 	ClkNet_Reset_i										<= ClockNetwork_Reset;
 
 	blkSync1 : block
-		signal ClkNet_Reset_shift				: STD_LOGIC_VECTOR(15 downto 0)				:= (others => '0');
+		signal ClkNet_Reset_shift				: std_logic_vector(15 downto 0)				:= (others => '0');
 	begin
 		process(Control_Clock)
 		begin
@@ -142,18 +142,18 @@ begin
 	GTP_Reset													<= GTP_PLL_Reset;					-- PLL reset must be mapped to global GTP reset
 
 	genSync0 : for i in 0 to PORTS - 1 generate
-		signal GTP_Reset_meta						: STD_LOGIC				:= '0';
-		signal GTP_Reset_d							: STD_LOGIC				:= '0';
+		signal GTP_Reset_meta						: std_logic				:= '0';
+		signal GTP_Reset_d							: std_logic				:= '0';
 
 		-- ------------------------------------------
-		signal ClkNet_ResetDone_meta		: STD_LOGIC				:= '0';
-		signal ClkNet_ResetDone_d				: STD_LOGIC				:= '0';
+		signal ClkNet_ResetDone_meta		: std_logic				:= '0';
+		signal ClkNet_ResetDone_d				: std_logic				:= '0';
 
-		signal GTP_PLL_ResetDone_meta		: STD_LOGIC				:= '0';
-		signal GTP_PLL_ResetDone_d			: STD_LOGIC				:= '0';
+		signal GTP_PLL_ResetDone_meta		: std_logic				:= '0';
+		signal GTP_PLL_ResetDone_d			: std_logic				:= '0';
 
-		signal GTP_ResetDone_meta				: STD_LOGIC				:= '0';
-		signal GTP_ResetDone_d					: STD_LOGIC				:= '0';
+		signal GTP_ResetDone_meta				: std_logic				:= '0';
+		signal GTP_ResetDone_d					: std_logic				:= '0';
 
 	begin
 		GTP_Reset_meta									<= GTP_Reset				when rising_edge(Control_Clock);
@@ -175,7 +175,7 @@ begin
 
 	ClockNetwork_ResetDone						<= ClkNet_ResetDone;
 
-	ClockNetwork_ResetDone_i					<= GTP_PLL_ResetDone				AND ClkNet_ResetDone;
+	ClockNetwork_ResetDone_i					<= GTP_PLL_ResetDone				and ClkNet_ResetDone;
 --	ResetDone													<= ClockNetwork_ResetDone_i AND GTP_ResetDone;
 
 	-- ==================================================================

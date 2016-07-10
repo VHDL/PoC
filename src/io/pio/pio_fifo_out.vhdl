@@ -38,28 +38,28 @@ use			PoC.io.all;
 entity pio_fifo_out is
 	generic (
 		DATARATE		: T_IO_DATARATE	:= IO_DATARATE_SDR;
-		BITS				: POSITIVE			:= 8
+		BITS				: positive			:= 8
 	);
 	port (
-		Clock				: in	STD_LOGIC;
-		Reset				: in	STD_LOGIC;
+		Clock				: in	std_logic;
+		Reset				: in	std_logic;
 
-		put					: in	STD_LOGIC;
-		DataIn			: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
-		Full				: out	STD_LOGIC;
+		put					: in	std_logic;
+		DataIn			: in	std_logic_vector(BITS - 1 downto 0);
+		Full				: out	std_logic;
 
-		Pad_Clock		: out	STD_LOGIC;
-		Pad_DataOut	: out	STD_LOGIC_VECTOR(BITS downto 0);
-		Pad_DataIn	: in	STD_LOGIC_VECTOR(0 downto 0)
+		Pad_Clock		: out	std_logic;
+		Pad_DataOut	: out	std_logic_vector(BITS downto 0);
+		Pad_DataIn	: in	std_logic_vector(0 downto 0)
 	);
 end entity;
 
 
 architecture rtl of pio_fifo_out is
-	signal FIFO_Valid			: STD_LOGIC;
-	signal FIFO_DataOut		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal FIFO_Data			: STD_LOGIC_VECTOR(BITS downto 0);
-	signal PIO_Ack				: STD_LOGIC;
+	signal FIFO_Valid			: std_logic;
+	signal FIFO_DataOut		: std_logic_vector(BITS - 1 downto 0);
+	signal FIFO_Data			: std_logic_vector(BITS downto 0);
+	signal PIO_Ack				: std_logic;
 begin
 	FIFO : entity PoC.fifo_cc_got
 		generic map (

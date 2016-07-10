@@ -41,59 +41,59 @@ use			PoC.net.all;
 
 entity eth_GEMAC_GMII is
 	generic (
-		DEBUG														: BOOLEAN									:= TRUE;
+		DEBUG														: boolean									:= TRUE;
 		CLOCK_FREQ_MHZ									: REAL										:= 125.0;					-- 125 MHz
 
-		TX_FIFO_DEPTH										: POSITIVE								:= 2048;					-- 2 KiB TX Buffer
-		TX_INSERT_CROSSCLOCK_FIFO				: BOOLEAN									:= TRUE;					-- true = crossclock fifo; false = fifo_glue
-		TX_SUPPORT_JUMBO_FRAMES					: BOOLEAN									:= FALSE;					-- TODO:
-		TX_DISABLE_UNDERRUN_PROTECTION	: BOOLEAN									:= FALSE;					-- TODO: 							true: no protection; false: store complete frame in buffer befor transmitting it
+		TX_FIFO_DEPTH										: positive								:= 2048;					-- 2 KiB TX Buffer
+		TX_INSERT_CROSSCLOCK_FIFO				: boolean									:= TRUE;					-- true = crossclock fifo; false = fifo_glue
+		TX_SUPPORT_JUMBO_FRAMES					: boolean									:= FALSE;					-- TODO:
+		TX_DISABLE_UNDERRUN_PROTECTION	: boolean									:= FALSE;					-- TODO: 							true: no protection; false: store complete frame in buffer befor transmitting it
 
-		RX_FIFO_DEPTH										: POSITIVE								:= 4096;					-- 4 KiB TX Buffer
-		RX_INSERT_CROSSCLOCK_FIFO				: BOOLEAN									:= TRUE;					-- true = crossclock fifo; false = fifo_glue
-		RX_SUPPORT_JUMBO_FRAMES					: BOOLEAN									:= FALSE					-- TODO:
+		RX_FIFO_DEPTH										: positive								:= 4096;					-- 4 KiB TX Buffer
+		RX_INSERT_CROSSCLOCK_FIFO				: boolean									:= TRUE;					-- true = crossclock fifo; false = fifo_glue
+		RX_SUPPORT_JUMBO_FRAMES					: boolean									:= FALSE					-- TODO:
 	);
 	port (
 		-- clock interface
-		TX_Clock									: in	STD_LOGIC;
-		RX_Clock									: in	STD_LOGIC;
-		Eth_TX_Clock							: in	STD_LOGIC;
-		Eth_RX_Clock							: in	STD_LOGIC;
-		RS_TX_Clock								: in	STD_LOGIC;
-		RS_RX_Clock								: in	STD_LOGIC;
+		TX_Clock									: in	std_logic;
+		RX_Clock									: in	std_logic;
+		Eth_TX_Clock							: in	std_logic;
+		Eth_RX_Clock							: in	std_logic;
+		RS_TX_Clock								: in	std_logic;
+		RS_RX_Clock								: in	std_logic;
 
 		-- reset interface
-		TX_Reset									: in	STD_LOGIC;
-		RX_Reset									: in	STD_LOGIC;
-		RS_TX_Reset								: in	STD_LOGIC;
-		RS_RX_Reset								: in	STD_LOGIC;
+		TX_Reset									: in	std_logic;
+		RX_Reset									: in	std_logic;
+		RS_TX_Reset								: in	std_logic;
+		RS_RX_Reset								: in	std_logic;
 
 		-- Command-Status-Error interface
-		TX_BufferUnderrun					: out	STD_LOGIC;
-		RX_FrameDrop							: out	STD_LOGIC;
-		RX_FrameCorrupt						: out	STD_LOGIC;
+		TX_BufferUnderrun					: out	std_logic;
+		RX_FrameDrop							: out	std_logic;
+		RX_FrameCorrupt						: out	std_logic;
 
 		-- MAC LocalLink interface
-		TX_Valid									: in	STD_LOGIC;
+		TX_Valid									: in	std_logic;
 		TX_Data										: in	T_SLV_8;
-		TX_SOF										: in	STD_LOGIC;
-		TX_EOF										: in	STD_LOGIC;
-		TX_Ack										: out	STD_LOGIC;
+		TX_SOF										: in	std_logic;
+		TX_EOF										: in	std_logic;
+		TX_Ack										: out	std_logic;
 
-		RX_Valid									: out	STD_LOGIC;
+		RX_Valid									: out	std_logic;
 		RX_Data										: out	T_SLV_8;
-		RX_SOF										: out	STD_LOGIC;
-		RX_EOF										: out	STD_LOGIC;
-		RX_Ack										: In	STD_LOGIC;
+		RX_SOF										: out	std_logic;
+		RX_EOF										: out	std_logic;
+		RX_Ack										: in	std_logic;
 
 		-- MAC-GMII interface
-		RS_TX_Valid								: out	STD_LOGIC;
+		RS_TX_Valid								: out	std_logic;
 		RS_TX_Data								: out	T_SLV_8;
-		RS_TX_Error								: out	STD_LOGIC;
+		RS_TX_Error								: out	std_logic;
 
-		RS_RX_Valid								: in	STD_LOGIC;
+		RS_RX_Valid								: in	std_logic;
 		RS_RX_Data								: in	T_SLV_8;
-		RS_RX_Error								: in	STD_LOGIC--;
+		RS_RX_Error								: in	std_logic--;
 
 		-- Management Data Input/Output
 --		MDIO											: inout T_ETHERNET_PHY_INTERFACE_MDIO
@@ -102,32 +102,32 @@ end entity;
 
 
 architecture rtl of eth_GEMAC_GMII is
-	attribute KEEP							: BOOLEAN;
+	attribute KEEP							: boolean;
 
-	constant SOF_BIT						: NATURAL			:= 8;
-	constant EOF_BIT						: NATURAL			:= 9;
+	constant SOF_BIT						: natural			:= 8;
+	constant EOF_BIT						: natural			:= 9;
 
 
-	signal TX_FIFO_Valid				: STD_LOGIC;
+	signal TX_FIFO_Valid				: std_logic;
 	signal TX_FIFO_Data					: T_SLV_8;
-	signal TX_FIFO_SOF					: STD_LOGIC;
-	signal TX_FIFO_EOF					: STD_LOGIC;
-	signal TX_FIFO_Commit				: STD_LOGIC;
+	signal TX_FIFO_SOF					: std_logic;
+	signal TX_FIFO_EOF					: std_logic;
+	signal TX_FIFO_Commit				: std_logic;
 
-	signal TX_MAC_Ack						: STD_LOGIC;
+	signal TX_MAC_Ack						: std_logic;
 
 
-	signal RX_MAC_Valid					: STD_LOGIC;
+	signal RX_MAC_Valid					: std_logic;
 	signal RX_MAC_Data					: T_SLV_8;
-	signal RX_MAC_SOF						: STD_LOGIC;
-	signal RX_MAC_EOF						: STD_LOGIC;
-	signal RX_MAC_GoodFrame			: STD_LOGIC;
+	signal RX_MAC_SOF						: std_logic;
+	signal RX_MAC_EOF						: std_logic;
+	signal RX_MAC_GoodFrame			: std_logic;
 
-	signal RX_FIFO_put					: STD_LOGIC;
-	signal RX_FIFO_Full					: STD_LOGIC;
+	signal RX_FIFO_put					: std_logic;
+	signal RX_FIFO_Full					: std_logic;
 
-	signal RX_FIFO_Commit				: STD_LOGIC;
-	signal RX_FIFO_Rollback			: STD_LOGIC;
+	signal RX_FIFO_Commit				: std_logic;
+	signal RX_FIFO_Rollback			: std_logic;
 
 begin
 	-- ==========================================================================================================================================================
@@ -140,15 +140,15 @@ begin
 	-- TX path
 	-- ==========================================================================================================================================================
 	blkTXFIFO : block
-		signal XClk_TX_FIFO_DataIn				: STD_LOGIC_VECTOR(9 downto 0);
-		signal XClk_TX_FIFO_Full					: STD_LOGIC;
+		signal XClk_TX_FIFO_DataIn				: std_logic_vector(9 downto 0);
+		signal XClk_TX_FIFO_Full					: std_logic;
 
-		signal XClk_TX_FIFO_Valid					: STD_LOGIC;
-		signal XClk_TX_FIFO_DataOut				: STD_LOGIC_VECTOR(XClk_TX_FIFO_DataIn'range);
+		signal XClk_TX_FIFO_Valid					: std_logic;
+		signal XClk_TX_FIFO_DataOut				: std_logic_vector(XClk_TX_FIFO_DataIn'range);
 
-		signal XClk_TX_FIFO_got						: STD_LOGIC;
-		signal TX_FIFO_DataOut						: STD_LOGIC_VECTOR(XClk_TX_FIFO_DataIn'range);
-		signal TX_FIFO_Full								: STD_LOGIC;
+		signal XClk_TX_FIFO_got						: std_logic;
+		signal TX_FIFO_DataOut						: std_logic_vector(XClk_TX_FIFO_DataIn'range);
+		signal TX_FIFO_Full								: std_logic;
 
 	begin
 		XClk_TX_FIFO_DataIn(TX_Data'range)		<= TX_Data;
@@ -183,7 +183,7 @@ begin
 					fstate_rd						=> open
 				);
 
-			TX_Ack		<= NOT XClk_TX_FIFO_Full;
+			TX_Ack		<= not XClk_TX_FIFO_Full;
 		end generate;
 		genTX_XClk_1 : if (TX_INSERT_CROSSCLOCK_FIFO = FALSE) generate
 			Glue_TX_FIFO : entity PoC.fifo_glue
@@ -249,7 +249,7 @@ begin
 				fstate_rd						=> open
 			);
 
-		XClk_TX_FIFO_got		<= NOT TX_FIFO_Full;
+		XClk_TX_FIFO_got		<= not TX_FIFO_Full;
 
 		TX_FIFO_Data		<= TX_FIFO_DataOut(TX_FIFO_Data'range);
 		TX_FIFO_SOF			<= TX_FIFO_DataOut(SOF_BIT);
@@ -306,12 +306,12 @@ begin
 		signal State					: T_STATE					:= ST_IDLE;
 		signal NextState			: T_STATE;
 
-		signal RX_Is_SOF			: STD_LOGIC;
-		signal RX_Is_EOF			: STD_LOGIC;
+		signal RX_Is_SOF			: std_logic;
+		signal RX_Is_EOF			: std_logic;
 
 	begin
-		RX_Is_SOF							<= RX_MAC_Valid AND RX_MAC_SOF;
-		RX_Is_EOF							<= RX_MAC_Valid AND RX_MAC_EOF;
+		RX_Is_SOF							<= RX_MAC_Valid and RX_MAC_SOF;
+		RX_Is_EOF							<= RX_MAC_Valid and RX_MAC_EOF;
 
 		process(RS_RX_Clock)
 		begin
@@ -376,15 +376,15 @@ begin
 	end block;
 
 	blkRXFIFO : block
-		signal RX_FIFO_DataIn				: STD_LOGIC_VECTOR(9 downto 0);
+		signal RX_FIFO_DataIn				: std_logic_vector(9 downto 0);
 --		signal RX_FIFO_Full					: STD_LOGIC;
 
-		signal RX_FIFO_got					: STD_LOGIC;
-		signal RX_FIFO_Valid				: STD_LOGIC;
-		signal RX_FIFO_DataOut			: STD_LOGIC_VECTOR(RX_FIFO_DataIn'range);
+		signal RX_FIFO_got					: std_logic;
+		signal RX_FIFO_Valid				: std_logic;
+		signal RX_FIFO_DataOut			: std_logic_vector(RX_FIFO_DataIn'range);
 
-		signal XClk_RX_FIFO_Full		: STD_LOGIC;
-		signal XClk_RX_FIFO_DataOut	: STD_LOGIC_VECTOR(RX_FIFO_DataIn'range);
+		signal XClk_RX_FIFO_Full		: std_logic;
+		signal XClk_RX_FIFO_DataOut	: std_logic_vector(RX_FIFO_DataIn'range);
 
 	begin
 		RX_FIFO_DataIn(RX_MAC_Data'range)		<= RX_MAC_Data;
@@ -422,7 +422,7 @@ begin
 				fstate_rd						=> open
 			);
 
-		RX_FIFO_got			<= NOT XClk_RX_FIFO_Full;
+		RX_FIFO_got			<= not XClk_RX_FIFO_Full;
 
 
 		genRX_XClk_0 : if (RX_INSERT_CROSSCLOCK_FIFO = FALSE) generate

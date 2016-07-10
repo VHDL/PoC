@@ -44,47 +44,47 @@ use			PoC.sata.all;
 
 entity sata_Transceiver_Virtex5_GTP_ClockNetwork is
 	generic (
-		DEBUG											: BOOLEAN												:= TRUE;
+		DEBUG											: boolean												:= TRUE;
 		CLOCK_IN_FREQ							: FREQ													:= 150 MHz;																-- 150 MHz
-		PORTS											: POSITIVE											:= 1;																			-- Number of Ports per Transceiver
+		PORTS											: positive											:= 1;																			-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR			:= (0 to 1 => C_SATA_GENERATION_MAX)			-- intial SATA Generation
 	);
 	port (
-		ClockIn_150MHz						: in	STD_LOGIC;
+		ClockIn_150MHz						: in	std_logic;
 
-		ClockNetwork_Reset				: in	STD_LOGIC;
-		ClockNetwork_ResetDone		:	OUT	STD_LOGIC;
+		ClockNetwork_Reset				: in	std_logic;
+		ClockNetwork_ResetDone		:	out	std_logic;
 
 		SATAGeneration						: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
 
-		GTP_Clock_1X							: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		GTP_Clock_4X							: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0)
+		GTP_Clock_1X							: out	std_logic_vector(PORTS - 1 downto 0);
+		GTP_Clock_4X							: out	std_logic_vector(PORTS - 1 downto 0)
 	);
 end;
 
 
 architecture rtl of sata_Transceiver_Virtex5_GTP_ClockNetwork is
-	attribute KEEP											: BOOLEAN;
+	attribute KEEP											: boolean;
 
-	signal ClkNet_Reset									: STD_LOGIC;
-	signal ClkNet_Reset_i								: STD_LOGIC;
-	signal ClkNet_Reset_r1							: STD_LOGIC		:= '0';
-	signal ClkNet_Reset_r2							: STD_LOGIC		:= '0';
-	signal ClkNet_Reset_r3							: STD_LOGIC		:= '0';
+	signal ClkNet_Reset									: std_logic;
+	signal ClkNet_Reset_i								: std_logic;
+	signal ClkNet_Reset_r1							: std_logic		:= '0';
+	signal ClkNet_Reset_r2							: std_logic		:= '0';
+	signal ClkNet_Reset_r3							: std_logic		:= '0';
 
-	signal DCM_Reset										: STD_LOGIC;
+	signal DCM_Reset										: std_logic;
 --	signal DCM_Locked										: STD_LOGIC;
 --	signal DCM_Locked_d1								: STD_LOGIC		:= '0';
 --	signal DCM_Locked_d2								: STD_LOGIC		:= '0';
-	signal DCM_Locked_i									: STD_LOGIC;
+	signal DCM_Locked_i									: std_logic;
 
-	signal DCM_Clock_37_5MHz						: STD_LOGIC;
-	signal DCM_Clock_75MHz							: STD_LOGIC;
-	signal DCM_Clock_150MHz							: STD_LOGIC;
-	signal DCM_Clock_300MHz							: STD_LOGIC;
+	signal DCM_Clock_37_5MHz						: std_logic;
+	signal DCM_Clock_75MHz							: std_logic;
+	signal DCM_Clock_150MHz							: std_logic;
+	signal DCM_Clock_300MHz							: std_logic;
 
-	signal GTP_Clock_1X_i								: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal GTP_Clock_4X_i								: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal GTP_Clock_1X_i								: std_logic_vector(PORTS - 1 downto 0);
+	signal GTP_Clock_4X_i								: std_logic_vector(PORTS - 1 downto 0);
 
 begin
 	assert (PORTS <= 2)	report "to many ports per transceiver"	severity FAILURE;
@@ -126,9 +126,9 @@ begin
 	gen1 : for i in 0 to PORTS - 1 generate
 		signal SATAGeneration_d1				: T_SATA_GENERATION		:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
 		signal SATAGeneration_d2				: T_SATA_GENERATION		:= INITIAL_SATA_GENERATIONS(INITIAL_SATA_GENERATIONS'low + I);
-		signal MuxControl								: STD_LOGIC;
+		signal MuxControl								: std_logic;
 
-		attribute KEEP OF MuxControl		: signal IS DEBUG;
+		attribute KEEP of MuxControl		: signal is DEBUG;
 	begin
 		SATAGeneration_d1		<= SATAGeneration(I) when rising_edge(ClockIn_150MHz);
 		SATAGeneration_d2		<= SATAGeneration_d1 when rising_edge(ClockIn_150MHz);
@@ -191,9 +191,9 @@ begin
 	GTP_Clock_4X			<= GTP_Clock_4X_i;
 
 	genCSP : if (DEBUG = TRUE) generate
-		signal DBG_Clock_300MHz								: STD_LOGIC;
+		signal DBG_Clock_300MHz								: std_logic;
 
-		attribute KEEP OF DBG_Clock_300MHz		: signal IS TRUE;
+		attribute KEEP of DBG_Clock_300MHz		: signal is TRUE;
 	begin
 		BUFG_Clock_300MHz : BUFG
 			port map (

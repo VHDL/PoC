@@ -43,40 +43,40 @@ use			PoC.vectors.all;
 
 entity list_lru_systolic is
 	generic (
-		ELEMENTS									: POSITIVE					:= 32;
-		KEY_BITS									: POSITIVE					:= 16;
-		DATA_BITS									: POSITIVE					:= 16;
-		INSERT_PIPELINE_AFTER			: NATURAL						:= 16
+		ELEMENTS									: positive					:= 32;
+		KEY_BITS									: positive					:= 16;
+		DATA_BITS									: positive					:= 16;
+		INSERT_PIPELINE_AFTER			: natural						:= 16
 	);
 	port (
-		Clock											: in	STD_LOGIC;
-		Reset											: in	STD_LOGIC;
+		Clock											: in	std_logic;
+		Reset											: in	std_logic;
 
-		Insert										: in	STD_LOGIC;
-		DataIn										: in	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+		Insert										: in	std_logic;
+		DataIn										: in	std_logic_vector(DATA_BITS - 1 downto 0);
 
-		Valid											: out	STD_LOGIC;
-		DataOut										: out	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+		Valid											: out	std_logic;
+		DataOut										: out	std_logic_vector(DATA_BITS - 1 downto 0);
 
 		DBG_Data									: out	T_SLM(ELEMENTS - 1 downto 0, DATA_BITS - 1 downto 0);
-		DBG_Valids								: out STD_LOGIC_VECTOR(ELEMENTS - 1 downto 0)
+		DBG_Valids								: out std_logic_vector(ELEMENTS - 1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of list_lru_systolic is
-	subtype T_KEY					is STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
-	type T_KEY_VECTOR			is array (NATURAL range <>) OF T_KEY;
+	subtype T_KEY					is std_logic_vector(KEY_BITS - 1 downto 0);
+	type T_KEY_VECTOR			is array (natural range <>) of T_KEY;
 
 	signal NewKeysUp			: T_KEY_VECTOR(ELEMENTS downto 0);
 
 	signal KeysUp					: T_KEY_VECTOR(ELEMENTS downto 0);
 	signal KeysDown				: T_KEY_VECTOR(ELEMENTS downto 0);
-	signal ValidsUp				: STD_LOGIC_VECTOR(ELEMENTS downto 0);
-	signal ValidsDown			: STD_LOGIC_VECTOR(ELEMENTS downto 0);
+	signal ValidsUp				: std_logic_vector(ELEMENTS downto 0);
+	signal ValidsDown			: std_logic_vector(ELEMENTS downto 0);
 
-	signal MovesDown			: STD_LOGIC_VECTOR(ELEMENTS downto 0);
-	signal MovesUp				: STD_LOGIC_VECTOR(ELEMENTS downto 0);
+	signal MovesDown			: std_logic_vector(ELEMENTS downto 0);
+	signal MovesUp				: std_logic_vector(ELEMENTS downto 0);
 
 	signal DBG_Keys_i			: T_SLM(ELEMENTS - 1 downto 0, KEY_BITS - 1 downto 0)			:= (others => (others => 'Z'));
 
@@ -89,17 +89,17 @@ begin
 
 	-- current element
 	genElements : for i in ELEMENTS - 1 downto 0 generate
-		constant INITIAL_KEY			: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0)					:= get_row(INITIAL_KEYS, I);
-		constant INITIAL_VALID		: STD_LOGIC																				:= INITIAL_VALIDS(I);
+		constant INITIAL_KEY			: std_logic_vector(KEY_BITS - 1 downto 0)					:= get_row(INITIAL_KEYS, I);
+		constant INITIAL_VALID		: std_logic																				:= INITIAL_VALIDS(I);
 
-		signal Key_nxt						: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
-		signal Key_d							: STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0)					:= INITIAL_KEY;
-		signal Valid_nxt					: STD_LOGIC;
-		signal Valid_d						: STD_LOGIC																				:= INITIAL_VALID;
+		signal Key_nxt						: std_logic_vector(KEY_BITS - 1 downto 0);
+		signal Key_d							: std_logic_vector(KEY_BITS - 1 downto 0)					:= INITIAL_KEY;
+		signal Valid_nxt					: std_logic;
+		signal Valid_d						: std_logic																				:= INITIAL_VALID;
 
-		signal Unequal						: STD_LOGIC;
-		signal MoveDown						: STD_LOGIC;
-		signal MoveUp							: STD_LOGIC;
+		signal Unequal						: std_logic;
+		signal MoveDown						: std_logic;
+		signal MoveUp							: std_logic;
 
 	begin
 		-- local movements

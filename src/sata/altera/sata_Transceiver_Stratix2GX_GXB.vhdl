@@ -20,16 +20,16 @@ use		PoC.sata_TransceiverTypes.all;
 entity sata_Transceiver_Stratix2GX_GXB is
 	generic (
 		CLOCK_IN_FREQ							: FREQ											:= 150 MHz;
-		PORTS											: POSITIVE									:= 2;			-- Number of Ports per Transceiver
+		PORTS											: positive									:= 2;			-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR	:= (0 => C_SATA_GENERATION_MAX, 1 => C_SATA_GENERATION_MAX)	-- intial SATA Generation
 	);
 	port (
-		ClockNetwork_Reset			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		ClockNetwork_ResetDone	: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Reset										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		ResetDone								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		ClockNetwork_Reset			: in	std_logic_vector(PORTS - 1 downto 0);
+		ClockNetwork_ResetDone	: out	std_logic_vector(PORTS - 1 downto 0);
+		Reset										: in	std_logic_vector(PORTS - 1 downto 0);
+		ResetDone								: out	std_logic_vector(PORTS - 1 downto 0);
 
-		PowerDown		: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		PowerDown		: in	std_logic_vector(PORTS - 1 downto 0);
 		Command			: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
 		Status			: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
 		Error				: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
@@ -38,26 +38,26 @@ entity sata_Transceiver_Stratix2GX_GXB is
 --		DebugPortIn		: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
 --		DebugPortOut		: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-		SATA_Clock		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		SATA_Clock		: out	std_logic_vector(PORTS - 1 downto 0);
 
-		RP_Reconfig		: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_Reconfig		: in	std_logic_vector(PORTS - 1 downto 0);
 		RP_SATAGeneration	: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
-		RP_ReconfigComplete	: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RP_ConfigReloaded	: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RP_Lock			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RP_Locked		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_ReconfigComplete	: out	std_logic_vector(PORTS - 1 downto 0);
+		RP_ConfigReloaded	: out	std_logic_vector(PORTS - 1 downto 0);
+		RP_Lock			: in	std_logic_vector(PORTS - 1 downto 0);
+		RP_Locked		: out	std_logic_vector(PORTS - 1 downto 0);
 
 		OOB_TX_Command		: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
-		OOB_TX_Complete		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		OOB_TX_Complete		: out	std_logic_vector(PORTS - 1 downto 0);
 		OOB_RX_Received		: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
-		OOB_HandshakeComplete	: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		OOB_HandshakeComplete	: in	std_logic_vector(PORTS - 1 downto 0);
 
 		TX_Data			: in	T_SLVV_32(PORTS - 1 downto 0);
 		TX_CharIsK		: in	T_SLVV_4(PORTS - 1 downto 0);
 
 		RX_Data			: out	T_SLVV_32(PORTS - 1 downto 0);
 		RX_CharIsK		: out	T_SLVV_4(PORTS - 1 downto 0);
-		RX_Valid		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Valid		: out	std_logic_vector(PORTS - 1 downto 0);
 
 		-- Altera specific GXB ports
 		-- needs to be split in IN and OUT
@@ -69,8 +69,8 @@ end;
 
 architecture rtl of sata_Transceiver_Stratix2GX_GXB is
 
-	constant NO_DEVICE_TIMEOUT		: TIME	:= 50 ms;			-- simulation: 20 us, synthesis: 50 ms
-	constant NEW_DEVICE_TIMEOUT		: TIME	:= 1000 ms;		--
+	constant NO_DEVICE_TIMEOUT		: time	:= 50 ms;			-- simulation: 20 us, synthesis: 50 ms
+	constant NEW_DEVICE_TIMEOUT		: time	:= 1000 ms;		--
 
 	constant C_DEVICE_INFO			: T_DEVICE_INFO		:= DEVICE_INFO;
 

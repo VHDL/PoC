@@ -54,12 +54,12 @@ use			PoC.satadbg.all;
 
 entity sata_FISEncoder is
 	generic (
-		DEBUG												: BOOLEAN						:= FALSE;
-		ENABLE_DEBUGPORT						: BOOLEAN						:= FALSE
+		DEBUG												: boolean						:= FALSE;
+		ENABLE_DEBUGPORT						: boolean						:= FALSE
 	);
 	port (
-		Clock												: in	STD_LOGIC;
-		Reset												: in	STD_LOGIC;
+		Clock												: in	std_logic;
+		Reset												: in	std_logic;
 
 		FISType											: in	T_SATA_FISTYPE;
 		Status											: out	T_SATA_FISENCODER_STATUS;
@@ -69,35 +69,35 @@ entity sata_FISEncoder is
 		DebugPortOut								: out	T_SATADBG_TRANS_FISE_OUT;
 
 		-- writer interface
-		TX_Ack											: out	STD_LOGIC;
-		TX_SOP											: in	STD_LOGIC;
-		TX_EOP											: in	STD_LOGIC;
+		TX_Ack											: out	std_logic;
+		TX_SOP											: in	std_logic;
+		TX_EOP											: in	std_logic;
 		TX_Data											: in	T_SLV_32;
-		TX_Valid										: in	STD_LOGIC;
-		TX_InsertEOP								: out	STD_LOGIC;
+		TX_Valid										: in	std_logic;
+		TX_InsertEOP								: out	std_logic;
 
 		-- LinkLayer CSE
 		Link_Status									: in	T_SATA_LINK_STATUS;
 
 		-- LinkLayer FIFO interface
-		Link_TX_Ack									: in	STD_LOGIC;
+		Link_TX_Ack									: in	std_logic;
 		Link_TX_Data								: out	T_SLV_32;
-		Link_TX_SOF									: out STD_LOGIC;
-		Link_TX_EOF									: out STD_LOGIC;
-		Link_TX_Valid								: out	STD_LOGIC;
-		Link_TX_InsertEOF						: in	STD_LOGIC;
+		Link_TX_SOF									: out std_logic;
+		Link_TX_EOF									: out std_logic;
+		Link_TX_Valid								: out	std_logic;
+		Link_TX_InsertEOF						: in	std_logic;
 
-		Link_TX_FS_Ack							: out	STD_LOGIC;
-		Link_TX_FS_SendOK						: in	STD_LOGIC;
-		Link_TX_FS_SyncEsc					: in	STD_LOGIC;
-		Link_TX_FS_Valid						: in	STD_LOGIC
+		Link_TX_FS_Ack							: out	std_logic;
+		Link_TX_FS_SendOK						: in	std_logic;
+		Link_TX_FS_SyncEsc					: in	std_logic;
+		Link_TX_FS_Valid						: in	std_logic
 	);
 end entity;
 
 
 architecture rtl of sata_FISEncoder is
-	attribute KEEP									: BOOLEAN;
-	attribute FSM_ENCODING					: STRING;
+	attribute KEEP									: boolean;
+	attribute FSM_ENCODING					: string;
 
 	type T_STATE is (
 		ST_RESET, ST_IDLE,
@@ -110,35 +110,35 @@ architecture rtl of sata_FISEncoder is
 	-- Alias-Definitions for FISType Register Transfer Host => Device (27h)
 	-- ====================================================================================
 	-- Word 0
-	ALIAS Alias_FISType										: T_SLV_8													IS Link_TX_Data(7 downto 0);
-	ALIAS Alias_FlagC											: STD_LOGIC												IS Link_TX_Data(15);
-	ALIAS Alias_CommandReg								: T_SLV_8													IS Link_TX_Data(23 downto 16);			-- Command register
-	ALIAS Alias_FeatureReg								: T_SLV_8													IS Link_TX_Data(31 downto 24);			-- Feature register
+	alias Alias_FISType										: T_SLV_8													is Link_TX_Data(7 downto 0);
+	alias Alias_FlagC											: std_logic												is Link_TX_Data(15);
+	alias Alias_CommandReg								: T_SLV_8													is Link_TX_Data(23 downto 16);			-- Command register
+	alias Alias_FeatureReg								: T_SLV_8													is Link_TX_Data(31 downto 24);			-- Feature register
 
 	-- Word 1
-	ALIAS Alias_LBA0											: T_SLV_8													IS Link_TX_Data(7 downto 0);				-- Sector Number
-	ALIAS Alias_LBA8											: T_SLV_8													IS Link_TX_Data(15 downto 8);				-- Sector Number expanded
-	ALIAS Alias_LBA16											: T_SLV_8													IS Link_TX_Data(23 downto 16);			-- Cylinder Low
-	ALIAS Alias_Head											: T_SLV_4													IS Link_TX_Data(27 downto 24);			-- Head number
-	ALIAS Alias_Device										: STD_LOGIC_VECTOR(0 downto 0)		IS Link_TX_Data(28 downto 28);			-- Device number
-	ALIAS Alias_FlagLBA48									: STD_LOGIC												IS Link_TX_Data(30);								-- is LBA-48 address
+	alias Alias_LBA0											: T_SLV_8													is Link_TX_Data(7 downto 0);				-- Sector Number
+	alias Alias_LBA8											: T_SLV_8													is Link_TX_Data(15 downto 8);				-- Sector Number expanded
+	alias Alias_LBA16											: T_SLV_8													is Link_TX_Data(23 downto 16);			-- Cylinder Low
+	alias Alias_Head											: T_SLV_4													is Link_TX_Data(27 downto 24);			-- Head number
+	alias Alias_Device										: std_logic_vector(0 downto 0)		is Link_TX_Data(28 downto 28);			-- Device number
+	alias Alias_FlagLBA48									: std_logic												is Link_TX_Data(30);								-- is LBA-48 address
 
 	-- Word 2
-	ALIAS Alias_LBA24											: T_SLV_8													IS Link_TX_Data(7 downto 0);				-- Cylinder Low expanded
-	ALIAS Alias_LBA32											: T_SLV_8													IS Link_TX_Data(15 downto 8);				-- Cylinder High
-	ALIAS Alias_LBA40											: T_SLV_8													IS Link_TX_Data(23 downto 16);			-- Cylinder High expanded
+	alias Alias_LBA24											: T_SLV_8													is Link_TX_Data(7 downto 0);				-- Cylinder Low expanded
+	alias Alias_LBA32											: T_SLV_8													is Link_TX_Data(15 downto 8);				-- Cylinder High
+	alias Alias_LBA40											: T_SLV_8													is Link_TX_Data(23 downto 16);			-- Cylinder High expanded
 
 	-- Word 3
-	ALIAS Alias_SecCount0									: T_SLV_8													IS Link_TX_Data(7 downto 0);				-- Sector Count
-	ALIAS Alias_SecCount8									: T_SLV_8													IS Link_TX_Data(15 downto 8);				-- Sector Count expanded
-	ALIAS Alias_ControlReg								: T_SLV_8													IS Link_TX_Data(31 downto 24);			-- Control register
+	alias Alias_SecCount0									: T_SLV_8													is Link_TX_Data(7 downto 0);				-- Sector Count
+	alias Alias_SecCount8									: T_SLV_8													is Link_TX_Data(15 downto 8);				-- Sector Count expanded
+	alias Alias_ControlReg								: T_SLV_8													is Link_TX_Data(31 downto 24);			-- Control register
 
 	-- Word 4
 --	ALIAS Alias_TransferCount							: T_SLV_16												IS Link_TX_Data(15 downto 0);				-- Transfer Count
 
 	signal State													: T_STATE													:= ST_RESET;
 	signal NextState											: T_STATE;
-	attribute FSM_ENCODING	OF State			: signal IS getFSMEncoding_gray(DEBUG);
+	attribute FSM_ENCODING	of State			: signal is getFSMEncoding_gray(DEBUG);
 
 begin
 
@@ -240,7 +240,7 @@ begin
 						end if;
 
 					when others =>
-						NULL;
+						null;
 
 				end case;
 
@@ -374,7 +374,7 @@ begin
 	-- debug ports
 	-- ==========================================================================================================================================================
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
-		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		function dbg_EncodeState(st : T_STATE) return std_logic_vector is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;

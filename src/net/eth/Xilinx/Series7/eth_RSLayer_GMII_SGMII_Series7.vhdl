@@ -17,19 +17,19 @@ entity eth_RSLayer_GMII_SGMII_Series7 is
 		CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
 	);
 	port (
-		Clock											: in		STD_LOGIC;
-		Reset											: in		STD_LOGIC;
+		Clock											: in		std_logic;
+		Reset											: in		std_logic;
 
 		-- GEMAC-GMII interface
-		RS_TX_Clock								: in		STD_LOGIC;
-		RS_TX_Valid								: in		STD_LOGIC;
+		RS_TX_Clock								: in		std_logic;
+		RS_TX_Valid								: in		std_logic;
 		RS_TX_Data								: in		T_SLV_8;
-		RS_TX_Error								: in		STD_LOGIC;
+		RS_TX_Error								: in		std_logic;
 
-		RS_RX_Clock								: in		STD_LOGIC;
-		RS_RX_Valid								: out		STD_LOGIC;
+		RS_RX_Clock								: in		std_logic;
+		RS_RX_Valid								: out		std_logic;
 		RS_RX_Data								: out		T_SLV_8;
-		RS_RX_Error								: out		STD_LOGIC;
+		RS_RX_Error								: out		std_logic;
 
 		-- PHY-SGMII interface
 		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_SGMII;
@@ -38,25 +38,25 @@ entity eth_RSLayer_GMII_SGMII_Series7 is
 end;
 
 architecture rtl of eth_RSLayer_GMII_SGMII_Series7 is
-	attribute KEEP							: BOOLEAN;
+	attribute KEEP							: boolean;
 
-	signal MMCM_Reset						: STD_LOGIC;
-	signal MMCM_Locked					: STD_LOGIC;
+	signal MMCM_Reset						: std_logic;
+	signal MMCM_Locked					: std_logic;
 
-	signal MMCM_RefClock_In			: STD_LOGIC;
-	signal MMCM_Clock_FB				: STD_LOGIC;
+	signal MMCM_RefClock_In			: std_logic;
+	signal MMCM_Clock_FB				: std_logic;
 
-	signal MMCM_Clock_62_5_MHz	: STD_LOGIC;
-	signal MMCM_Clock_125_MHz		: STD_LOGIC;
+	signal MMCM_Clock_62_5_MHz	: std_logic;
+	signal MMCM_Clock_125_MHz		: std_logic;
 
-	signal Clock_62_5_MHz				: STD_LOGIC;
-	signal Clock_125_MHz				: STD_LOGIC;
+	signal Clock_62_5_MHz				: std_logic;
+	signal Clock_125_MHz				: std_logic;
 
-	signal SGMII_RefClock_Out		: STD_LOGIC;
-	signal SGMII_ResetDone			: STD_LOGIC;
+	signal SGMII_RefClock_Out		: std_logic;
+	signal SGMII_ResetDone			: std_logic;
 
 	signal SGMII_Status					: T_SLV_16;
-	attribute KEEP OF SGMII_Status		: signal IS TRUE;
+	attribute KEEP of SGMII_Status		: signal is TRUE;
 
 begin
 	MMCM_RefClock_In		<= SGMII_RefClock_Out;
@@ -123,7 +123,7 @@ begin
 			RST                  => MMCM_Reset
 		);
 
-	MMCM_Reset <= Reset OR (NOT SGMII_ResetDone);
+	MMCM_Reset <= Reset or (not SGMII_ResetDone);
 
 	-- TODO: review comment
 	-- This 62.5MHz clock is placed onto global clock routing and is then used
@@ -150,37 +150,37 @@ begin
 
 
 	genPCSIPCore : if (TRUE) generate
-		constant PCSCORE_MDIO_ADDRESS						: STD_LOGIC_VECTOR(4 downto 0)		:= "00101";
-		constant PCSCORE_CONFIGURATION					: BOOLEAN													:= TRUE;
-		constant PCSCORE_CONFIGURATION_VECTOR		: STD_LOGIC_VECTOR(4 downto 0)		:= "10000";
+		constant PCSCORE_MDIO_ADDRESS						: std_logic_vector(4 downto 0)		:= "00101";
+		constant PCSCORE_CONFIGURATION					: boolean													:= TRUE;
+		constant PCSCORE_CONFIGURATION_VECTOR		: std_logic_vector(4 downto 0)		:= "10000";
 
 		-- Core <=> Transceiver interconnect
-		signal plllock           : STD_LOGIC;                        -- The PLL Locked status of the Transceiver
-		signal mgt_rx_reset      : STD_LOGIC;                        -- Reset for the receiver half of the Transceiver
-		signal mgt_tx_reset      : STD_LOGIC;                        -- Reset for the transmitter half of the Transceiver
-		signal rxbufstatus       : STD_LOGIC_VECTOR (1 downto 0);    -- Elastic Buffer Status (bit 1 asserted indicates overflow or underflow).
-		signal rxchariscomma     : STD_LOGIC;                        -- Comma detected in RXDATA.
-		signal rxcharisk         : STD_LOGIC;                        -- K character received (or extra data bit) in RXDATA.
-		signal rxclkcorcnt       : STD_LOGIC_VECTOR(2 downto 0);     -- Indicates clock correction.
+		signal plllock           : std_logic;                        -- The PLL Locked status of the Transceiver
+		signal mgt_rx_reset      : std_logic;                        -- Reset for the receiver half of the Transceiver
+		signal mgt_tx_reset      : std_logic;                        -- Reset for the transmitter half of the Transceiver
+		signal rxbufstatus       : std_logic_vector (1 downto 0);    -- Elastic Buffer Status (bit 1 asserted indicates overflow or underflow).
+		signal rxchariscomma     : std_logic;                        -- Comma detected in RXDATA.
+		signal rxcharisk         : std_logic;                        -- K character received (or extra data bit) in RXDATA.
+		signal rxclkcorcnt       : std_logic_vector(2 downto 0);     -- Indicates clock correction.
 		signal rxdata            : T_SLV_8;														-- Data after 8B/10B decoding.
-		signal rxdisperr         : STD_LOGIC;                        -- Disparity-error in RXDATA.
-		signal rxnotintable      : STD_LOGIC;                        -- Non-existent 8B/10 code indicated.
-		signal rxrundisp         : STD_LOGIC;                        -- Running Disparity after current byte, becomes 9th data bit when RXNOTINTABLE='1'.
-		signal txbuferr          : STD_LOGIC;                        -- TX Buffer error (overflow or underflow).
-		signal powerdown         : STD_LOGIC;                        -- Powerdown the Transceiver
-		signal txchardispmode    : STD_LOGIC;                        -- Set running disparity for current byte.
-		signal txchardispval     : STD_LOGIC;                        -- Set running disparity value.
-		signal txcharisk         : STD_LOGIC;                        -- K character transmitted in TXDATA.
+		signal rxdisperr         : std_logic;                        -- Disparity-error in RXDATA.
+		signal rxnotintable      : std_logic;                        -- Non-existent 8B/10 code indicated.
+		signal rxrundisp         : std_logic;                        -- Running Disparity after current byte, becomes 9th data bit when RXNOTINTABLE='1'.
+		signal txbuferr          : std_logic;                        -- TX Buffer error (overflow or underflow).
+		signal powerdown         : std_logic;                        -- Powerdown the Transceiver
+		signal txchardispmode    : std_logic;                        -- Set running disparity for current byte.
+		signal txchardispval     : std_logic;                        -- Set running disparity value.
+		signal txcharisk         : std_logic;                        -- K character transmitted in TXDATA.
 		signal txdata            : T_SLV_8;														-- Data for 8B/10B encoding.
-		signal enablealign       : STD_LOGIC;                        -- Allow the transceivers to serially realign to a comma character.
+		signal enablealign       : std_logic;                        -- Allow the transceivers to serially realign to a comma character.
 
 		-- GMII signals routed between core and SGMII Adaptation Module
 		signal Adapter_TX_Data				: T_SLV_8;											-- Internal gmii_txd signal (between core and SGMII adaptation module).
-		signal Adapter_TX_Valid				: STD_LOGIC;										-- Internal gmii_tx_en signal (between core and SGMII adaptation module).
-		signal Adapter_TX_Error				: STD_LOGIC;										-- Internal gmii_tx_er signal (between core and SGMII adaptation module).
+		signal Adapter_TX_Valid				: std_logic;										-- Internal gmii_tx_en signal (between core and SGMII adaptation module).
+		signal Adapter_TX_Error				: std_logic;										-- Internal gmii_tx_er signal (between core and SGMII adaptation module).
 		signal PCSCore_RX_Data				: T_SLV_8;											-- Internal gmii_rxd signal (between core and SGMII adaptation module).
-		signal PCSCore_RX_Valid				: STD_LOGIC;										-- Internal gmii_rx_dv signal (between core and SGMII adaptation module).
-		signal PCSCore_RX_Error				: STD_LOGIC;										-- Internal gmii_rx_er signal (between core and SGMII adaptation module).
+		signal PCSCore_RX_Valid				: std_logic;										-- Internal gmii_rx_dv signal (between core and SGMII adaptation module).
+		signal PCSCore_RX_Error				: std_logic;										-- Internal gmii_rx_er signal (between core and SGMII adaptation module).
 
 		signal SGMII_Status_i					: T_SLV_16;
 	begin
@@ -250,7 +250,7 @@ begin
 				gmii_rxd             => PCSCore_RX_Data,								-- Received Data to client MAC.
 				gmii_rx_dv           => PCSCore_RX_Valid,								-- Received control SIGNAL to client MAC.
 				gmii_rx_er           => PCSCore_RX_Error,								-- Received control SIGNAL to client MAC.
-				gmii_isolate         => OPEN,														-- Tristate control to electrically isolate GMII
+				gmii_isolate         => open,														-- Tristate control to electrically isolate GMII
 
 				phyad                => PCSCORE_MDIO_ADDRESS,
 				mdc                  => PHY_Management.Clock_ts.i,					-- PHY_Management Data Clock
