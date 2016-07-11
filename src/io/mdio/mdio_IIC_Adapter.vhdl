@@ -43,39 +43,39 @@ use			PoC.net.all;
 
 entity mdio_IIC_Adapter is
 	generic (
-		DEBUG													: BOOLEAN												:= TRUE
+		DEBUG													: boolean												:= TRUE
 	);
 	port (
-		Clock													: in	STD_LOGIC;
-		Reset													: in	STD_LOGIC;
+		Clock													: in	std_logic;
+		Reset													: in	std_logic;
 
 		-- MDIO interface
 		Command												: in	T_IO_MDIO_MDIOCONTROLLER_COMMAND;
 		Status												: out	T_IO_MDIO_MDIOCONTROLLER_STATUS;
 		Error													: out	T_IO_MDIO_MDIOCONTROLLER_ERROR;
 
-		DeviceAddress									: in	STD_LOGIC_VECTOR(6 downto 0);
-		RegisterAddress								: in	STD_LOGIC_VECTOR(4 downto 0);
+		DeviceAddress									: in	std_logic_vector(6 downto 0);
+		RegisterAddress								: in	std_logic_vector(4 downto 0);
 		DataIn												: in	T_SLV_16;
 		DataOut												: out	T_SLV_16;
 
 		-- IICController master interface
-		IICC_Request									: out	STD_LOGIC;
-		IICC_Grant										: in	STD_LOGIC;
+		IICC_Request									: out	std_logic;
+		IICC_Grant										: in	std_logic;
 		IICC_Command									: out	T_IO_IIC_COMMAND;
 		IICC_Status										: in	T_IO_IIC_STATUS;
 		IICC_Error										: in	T_IO_IIC_ERROR;
 
 		IICC_Address									: out	T_SLV_8;
 
-		IICC_WP_Valid									: out	STD_LOGIC;
+		IICC_WP_Valid									: out	std_logic;
 		IICC_WP_Data									: out	T_SLV_8;
-		IICC_WP_Last									: out	STD_LOGIC;
-		IICC_WP_Ack										: in	STD_LOGIC;
-		IICC_RP_Valid									: in	STD_LOGIC;
+		IICC_WP_Last									: out	std_logic;
+		IICC_WP_Ack										: in	std_logic;
+		IICC_RP_Valid									: in	std_logic;
 		IICC_RP_Data									: in	T_SLV_8;
-		IICC_RP_Last									: in	STD_LOGIC;
-		IICC_RP_Ack										: out	STD_LOGIC
+		IICC_RP_Last									: in	std_logic;
+		IICC_RP_Ack										: out	std_logic
 	);
 end entity;
 
@@ -83,8 +83,8 @@ end entity;
 --	add Status := IO_MDIO_MDIOC_STATUS_ADDRESS_ERROR if IICC.Status = ACK_ERROR
 
 architecture rtl of mdio_IIC_Adapter is
-	attribute KEEP										: BOOLEAN;
-	attribute FSM_ENCODING						: STRING;
+	attribute KEEP										: boolean;
+	attribute FSM_ENCODING						: string;
 
 	type T_STATE is (
 		ST_IDLE,
@@ -105,17 +105,17 @@ architecture rtl of mdio_IIC_Adapter is
 
 	signal State												: T_STATE										:= ST_IDLE;
 	signal NextState										: T_STATE;
-	attribute FSM_ENCODING OF State			: signal IS "gray";
+	attribute FSM_ENCODING of State			: signal is "gray";
 
-	signal DeviceAddressRegister_Load		: STD_LOGIC;
-	signal DeviceAddressRegister_d			: STD_LOGIC_VECTOR(DeviceAddress'range)		:= (others => '0');
+	signal DeviceAddressRegister_Load		: std_logic;
+	signal DeviceAddressRegister_d			: std_logic_vector(DeviceAddress'range)		:= (others => '0');
 
-	signal RegisterAddressRegister_Load	: STD_LOGIC;
-	signal RegisterAddressRegister_d		: STD_LOGIC_VECTOR(RegisterAddress'range)	:= (others => '0');
+	signal RegisterAddressRegister_Load	: std_logic;
+	signal RegisterAddressRegister_d		: std_logic_vector(RegisterAddress'range)	:= (others => '0');
 
-	subtype T_BYTE_INDEX IS NATURAL  range 0 to 1;
-	signal DataRegister_Load						: STD_LOGIC;
-	signal DataRegister_we							: STD_LOGIC;
+	subtype T_BYTE_INDEX is natural  range 0 to 1;
+	signal DataRegister_Load						: std_logic;
+	signal DataRegister_we							: std_logic;
 	signal DataRegister_d								: T_SLVV_8(1 downto 0)										:= (others => (others => '0'));
 	signal DataRegister_idx							: T_BYTE_INDEX;
 
@@ -159,7 +159,7 @@ begin
 
 				case Command is
 					when IO_MDIO_MDIOC_CMD_NONE =>
-						NULL;
+						null;
 
 					when IO_MDIO_MDIOC_CMD_READ =>
 						DeviceAddressRegister_Load		<= '1';
@@ -248,7 +248,7 @@ begin
 				IICC_Request							<= '1';
 
 				case IICC_Status is
-					when IO_IIC_STATUS_CALLING =>						NULL;
+					when IO_IIC_STATUS_CALLING =>						null;
 					when IO_IIC_STATUS_CALL_COMPLETE =>			NextState		<= ST_READ_BYTES_COMPLETE;
 					when IO_IIC_STATUS_ERROR =>
 						case IICC_Error is
@@ -332,7 +332,7 @@ begin
 				IICC_Request							<= '1';
 
 				case IICC_Status is
-					when IO_IIC_STATUS_SENDING =>						NULL;
+					when IO_IIC_STATUS_SENDING =>						null;
 					when IO_IIC_STATUS_SEND_COMPLETE =>			NextState		<= ST_WRITE_BYTES_COMPLETE;
 					when IO_IIC_STATUS_ERROR =>
 						case IICC_Error is
@@ -380,7 +380,7 @@ begin
 				if (DataRegister_Load	= '1') then
 					DataRegister_d										<= to_slvv_8(DataIn);
 --					DataRegister_d(1)									<= DataIn(15 downto 8);
-				ELSif (DataRegister_we	= '1') then
+				elsif (DataRegister_we	= '1') then
 					DataRegister_d(DataRegister_idx)	<= IICC_RP_Data;
 				end if;
 			end if;

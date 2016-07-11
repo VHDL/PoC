@@ -50,23 +50,23 @@ architecture test of io_7SegmentMux_tb is
 
 	signal SimStop				: std_logic 	:= '0';
 
-	signal Clock					: STD_LOGIC		:= '1';
+	signal Clock					: std_logic		:= '1';
 
-	constant DIGITS				: POSITIVE		:= 5;
+	constant DIGITS				: positive		:= 5;
 
 	signal BCDDigits			: T_BCD_VECTOR(DIGITS - 1 downto 0);
-	signal BCDDots				: STD_LOGIC_VECTOR(DIGITS - 1 downto 0);
+	signal BCDDots				: std_logic_vector(DIGITS - 1 downto 0);
 	signal HEXDigits			: T_SLVV_4(DIGITS - 1 downto 0);
-	signal HEXDots				: STD_LOGIC_VECTOR(DIGITS - 1 downto 0);
+	signal HEXDots				: std_logic_vector(DIGITS - 1 downto 0);
 
-	signal BCD_SegmentControl	: STD_LOGIC_VECTOR(7 downto 0);
-	signal BCD_DigitControl		: STD_LOGIC_VECTOR(DIGITS - 1 downto 0);
-	signal HEX_SegmentControl	: STD_LOGIC_VECTOR(7 downto 0);
-	signal HEX_DigitControl		: STD_LOGIC_VECTOR(DIGITS - 1 downto 0);
+	signal BCD_SegmentControl	: std_logic_vector(7 downto 0);
+	signal BCD_DigitControl		: std_logic_vector(DIGITS - 1 downto 0);
+	signal HEX_SegmentControl	: std_logic_vector(7 downto 0);
+	signal HEX_DigitControl		: std_logic_vector(DIGITS - 1 downto 0);
 
 begin
 	blkClock : block
-		constant CLOCK_PERIOD		: TIME	:= to_time(CLOCK_FREQ);
+		constant CLOCK_PERIOD		: time	:= to_time(CLOCK_FREQ);
 	begin
 		Clock <= Clock xnor SimStop after CLOCK_PERIOD / 2.0;
 	end block;

@@ -43,7 +43,7 @@ use			PoC.net.all;
 
 entity stack_UDPv4 is
 	generic (
-		DEBUG															: BOOLEAN															:= FALSE;																																									--
+		DEBUG															: boolean															:= FALSE;																																									--
 		CLOCK_FREQ												: FREQ																:= 125 MHz;																																								--
 		ETHERNET_IPSTYLE									: T_IPSTYLE														:= to_IPStyle(												MY_BOARD_STRUCT.Ethernet.IPStyle);									--
 		ETHERNET_RS_DATA_INTERFACE				: T_NET_ETH_RS_DATA_INTERFACE					:= to_net_eth_RSDataInterface(				MY_BOARD_STRUCT.Ethernet.RS_DataInterface);					--
@@ -56,50 +56,50 @@ entity stack_UDPv4 is
 		IP_ADDRESS												: T_NET_IPV4_ADDRESS;
 		UDP_PORTS													: T_NET_UDP_PORTPAIR_VECTOR;
 
-		MAC_ENABLE_LOOPBACK								: BOOLEAN															:= FALSE;
-		IPV4_ENABLE_LOOPBACK							: BOOLEAN															:= FALSE;
-		UDP_ENABLE_LOOPBACK								: BOOLEAN															:= FALSE;
-		ICMP_ENABLE_ECHO									: BOOLEAN															:= FALSE;
-		PING															: BOOLEAN															:= FALSE
+		MAC_ENABLE_LOOPBACK								: boolean															:= FALSE;
+		IPV4_ENABLE_LOOPBACK							: boolean															:= FALSE;
+		UDP_ENABLE_LOOPBACK								: boolean															:= FALSE;
+		ICMP_ENABLE_ECHO									: boolean															:= FALSE;
+		PING															: boolean															:= FALSE
 	);
 	port (
-		Ethernet_Clock										: in		STD_LOGIC;
-		Ethernet_Reset										: in		STD_LOGIC;
+		Ethernet_Clock										: in		std_logic;
+		Ethernet_Reset										: in		std_logic;
 
 		Ethernet_Command									: in		T_NET_ETH_COMMAND;
 		Ethernet_Status										: out		T_NET_ETH_STATUS;
 
-		PHY_Interface											:	inoUT	T_NET_ETH_PHY_INTERFACES;
+		PHY_Interface											:	inout	T_NET_ETH_PHY_INTERFACES;
 
 		-- UDP ports
-		TX_Valid													: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		TX_Valid													: in	std_logic_vector(UDP_PORTS'length - 1 downto 0);
 		TX_Data														: in	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
-		TX_SOF														: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
-		TX_EOF														: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
-		TX_Ack														: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
-		TX_Meta_rst												: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
-		TX_Meta_SrcIPv4Address_nxt				: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		TX_SOF														: in	std_logic_vector(UDP_PORTS'length - 1 downto 0);
+		TX_EOF														: in	std_logic_vector(UDP_PORTS'length - 1 downto 0);
+		TX_Ack														: out	std_logic_vector(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_rst												: out	std_logic_vector(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_SrcIPv4Address_nxt				: out	std_logic_vector(UDP_PORTS'length - 1 downto 0);
 		TX_Meta_SrcIPv4Address_Data				: in	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
-		TX_Meta_DestIPv4Address_nxt				: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		TX_Meta_DestIPv4Address_nxt				: out	std_logic_vector(UDP_PORTS'length - 1 downto 0);
 		TX_Meta_DestIPv4Address_Data			: in	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
 		TX_Meta_SrcPort										: in	T_SLVV_16(UDP_PORTS'length - 1 downto 0);
 		TX_Meta_DestPort									: in	T_SLVV_16(UDP_PORTS'length - 1 downto 0);
 		TX_Meta_Length										: in	T_SLVV_16(UDP_PORTS'length - 1 downto 0);
 
-		RX_Valid													: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Valid													: out	std_logic_vector(UDP_PORTS'length - 1 downto 0);
 		RX_Data														: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
-		RX_SOF														: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
-		RX_EOF														: out	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
-		RX_Ack														: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
-		RX_Meta_rst												: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
-		RX_Meta_SrcMACAddress_nxt					: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_SOF														: out	std_logic_vector(UDP_PORTS'length - 1 downto 0);
+		RX_EOF														: out	std_logic_vector(UDP_PORTS'length - 1 downto 0);
+		RX_Ack														: in	std_logic_vector(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_rst												: in	std_logic_vector(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_SrcMACAddress_nxt					: in	std_logic_vector(UDP_PORTS'length - 1 downto 0);
 		RX_Meta_SrcMACAddress_Data				: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
-		RX_Meta_DestMACAddress_nxt				: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_DestMACAddress_nxt				: in	std_logic_vector(UDP_PORTS'length - 1 downto 0);
 		RX_Meta_DestMACAddress_Data				: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
 		RX_Meta_EthType										: out	T_SLVV_16(UDP_PORTS'length - 1 downto 0);
-		RX_Meta_SrcIPv4Address_nxt				: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_SrcIPv4Address_nxt				: in	std_logic_vector(UDP_PORTS'length - 1 downto 0);
 		RX_Meta_SrcIPv4Address_Data				: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
-		RX_Meta_DestIPv4Address_nxt				: in	STD_LOGIC_VECTOR(UDP_PORTS'length - 1 downto 0);
+		RX_Meta_DestIPv4Address_nxt				: in	std_logic_vector(UDP_PORTS'length - 1 downto 0);
 		RX_Meta_DestIPv4Address_Data			: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
 --		RX_Meta_TrafficClass							: out	T_SLVV_8(UDP_PORTS'length - 1 downto 0);
 --		RX_Meta_FlowLabel									: out	T_SLVV_24(UDP_PORTS'length - 1 downto 0);
@@ -112,32 +112,32 @@ end entity;
 
 
 architecture rtl of stack_UDPv4 is
-	attribute KEEP											: BOOLEAN;
-	attribute KEEP_HIERARCHY						: STRING;
+	attribute KEEP											: boolean;
+	attribute KEEP_HIERARCHY						: string;
 
-	attribute KEEP OF Ethernet_Clock		: signal IS TRUE;
+	attribute KEEP of Ethernet_Clock		: signal is TRUE;
 
-	function if_append(cond : BOOLEAN; vector : T_NET_IPV4_PROTOCOL_VECTOR; item : T_NET_IPV4_PROTOCOL) return T_NET_IPV4_PROTOCOL_VECTOR is
+	function if_append(cond : boolean; vector : T_NET_IPV4_PROTOCOL_VECTOR; item : T_NET_IPV4_PROTOCOL) return T_NET_IPV4_PROTOCOL_VECTOR is
 	begin
-		IF cond then
+		if cond then
 			return item & vector;
 		else
 			return vector;
 		end if;
-	END function;
+	end function;
 
-	function if_append(cond : BOOLEAN; vector : T_NET_UDP_PORTPAIR_VECTOR; item : T_NET_UDP_PORTPAIR) return T_NET_UDP_PORTPAIR_VECTOR is
+	function if_append(cond : boolean; vector : T_NET_UDP_PORTPAIR_VECTOR; item : T_NET_UDP_PORTPAIR) return T_NET_UDP_PORTPAIR_VECTOR is
 	begin
-		IF cond then
+		if cond then
 			return item & vector;
 		else
 			return vector;
 		end if;
-	END function;
+	end function;
 
 	function get_MAC_Configuration return T_NET_MAC_CONFIGURATION_VECTOR is
 	begin
-		IF NOT MAC_ENABLE_LOOPBACK then
+		if not MAC_ENABLE_LOOPBACK then
 			return (
 				-- network interface 0 - MAC_ADDRESS
 				0 => (
@@ -188,23 +188,23 @@ architecture rtl of stack_UDPv4 is
 						others =>			C_NET_MAC_ETHERNETTYPE_EMPTY))
 			);
 		end if;
-	END function;
+	end function;
 
 	-- define ethernet configuration
 	constant MAC_CONFIGURATION			: T_NET_MAC_CONFIGURATION_VECTOR	:= get_MAC_Configuration;
-	constant ETHERNET_PORTS					: POSITIVE												:= getPortCount(MAC_CONFIGURATION);
+	constant ETHERNET_PORTS					: positive												:= getPortCount(MAC_CONFIGURATION);
 
 	-- define ethernet port numbers for unicast addresses
 	-- --------------------------------------------------------------------------
 	-- eth0
-	constant ARP_MAC_UC_PORT_NUMBER		: NATURAL					:= 0;
-	constant IPV4_MAC_PORT_NUMBER			: NATURAL					:= 1;
-	constant MAC_LOOP_MAC_PORT_NUMBER		: NATURAL					:= 2;
+	constant ARP_MAC_UC_PORT_NUMBER		: natural					:= 0;
+	constant IPV4_MAC_PORT_NUMBER			: natural					:= 1;
+	constant MAC_LOOP_MAC_PORT_NUMBER		: natural					:= 2;
 
 	-- define ethernet port numbers for multicast address
 	-- --------------------------------------------------------------------------
 	-- eth1 - broadcast
-	constant ARP_MAC_BC_PORT_NUMBER		: NATURAL					:= ETHERNET_PORTS - 1;	-- ite(NOT MAC_ENABLE_LOOPBACK, 2, 3);
+	constant ARP_MAC_BC_PORT_NUMBER		: natural					:= ETHERNET_PORTS - 1;	-- ite(NOT MAC_ENABLE_LOOPBACK, 2, 3);
 
 
 	-- ARP configuration
@@ -224,8 +224,8 @@ architecture rtl of stack_UDPv4 is
 
 	-- IPv4 configuration
 	-- ==========================================================================================================================================================
-	constant ICMPV4_IPV4_PORT_NUMBER				: NATURAL				:= 0;
-	constant UDPV4_IPV4_PORT_NUMBER					: NATURAL				:= 1;
+	constant ICMPV4_IPV4_PORT_NUMBER				: natural				:= 0;
+	constant UDPV4_IPV4_PORT_NUMBER					: natural				:= 1;
 
 	constant IPV4_PACKET_TYPES							: T_NET_IPV4_PROTOCOL_VECTOR		:= if_append(IPV4_ENABLE_LOOPBACK, (
 		ICMPV4_IPV4_PORT_NUMBER =>	C_NET_IP_PROTOCOL_ICMP,
@@ -233,16 +233,16 @@ architecture rtl of stack_UDPv4 is
 		C_NET_IP_PROTOCOL_LOOPBACK
 	);
 
-	constant IPV4_PORTS											: POSITIVE			:= IPV4_PACKET_TYPES'length;
-	constant IPV4_LOOP_IPV4_PORT_NUMBER			: NATURAL				:= IPV4_PORTS - 1;
+	constant IPV4_PORTS											: positive			:= IPV4_PACKET_TYPES'length;
+	constant IPV4_LOOP_IPV4_PORT_NUMBER			: natural				:= IPV4_PORTS - 1;
 
 
 	-- UDPv4 configuration
 	-- ==========================================================================================================================================================
 	constant UDPV4_PORTPAIRS								: T_NET_UDP_PORTPAIR_VECTOR			:= if_append(UDP_ENABLE_LOOPBACK, UDP_PORTS, (C_NET_TCP_PORTNUMBER_LOOPBACK, C_NET_TCP_PORTNUMBER_LOOPBACK));
 
-	constant UDPV4_PORTS										: POSITIVE		:= UDPV4_PORTPAIRS'length;
-	constant UDP_LOOP_UDPV4_PORT_NUMBER			: NATURAL			:= UDPV4_PORTS - 1;
+	constant UDPV4_PORTS										: positive		:= UDPV4_PORTPAIRS'length;
+	constant UDP_LOOP_UDPV4_PORT_NUMBER			: natural			:= UDPV4_PORTS - 1;
 
 
 	-- Ethernet layer signals
@@ -250,81 +250,81 @@ architecture rtl of stack_UDPv4 is
 	signal Eth_Status												: T_NET_ETH_STATUS;
 	signal Eth_Error												: T_NET_ETH_ERROR;
 
-	signal Eth_TX_Ack												: STD_LOGIC;																										--attribute KEEP OF Eth_TX_Ack			: signal IS TRUE;
+	signal Eth_TX_Ack												: std_logic;																										--attribute KEEP OF Eth_TX_Ack			: signal IS TRUE;
 
-	signal Eth_RX_Valid											: STD_LOGIC;																										--attribute KEEP OF Eth_RX_Valid		: signal IS TRUE;
+	signal Eth_RX_Valid											: std_logic;																										--attribute KEEP OF Eth_RX_Valid		: signal IS TRUE;
 	signal Eth_RX_Data											: T_SLV_8;																											--attribute KEEP OF Eth_RX_Data			: signal IS TRUE;
-	signal Eth_RX_SOF												: STD_LOGIC;																										--attribute KEEP OF Eth_RX_SOF			: signal IS TRUE;
-	signal Eth_RX_EOF												: STD_LOGIC;																										--attribute KEEP OF Eth_RX_EOF			: signal IS TRUE;
+	signal Eth_RX_SOF												: std_logic;																										--attribute KEEP OF Eth_RX_SOF			: signal IS TRUE;
+	signal Eth_RX_EOF												: std_logic;																										--attribute KEEP OF Eth_RX_EOF			: signal IS TRUE;
 
 	-- Ethernet MAC layer signals
-	signal MAC_TX_Valid											: STD_LOGIC;																										--attribute KEEP OF MAC_TX_Valid		: signal IS TRUE;
+	signal MAC_TX_Valid											: std_logic;																										--attribute KEEP OF MAC_TX_Valid		: signal IS TRUE;
 	signal MAC_TX_Data											: T_SLV_8;																											--attribute KEEP OF MAC_TX_Data			: signal IS TRUE;
-	signal MAC_TX_SOF												: STD_LOGIC;																										--attribute KEEP OF MAC_TX_SOF			: signal IS TRUE;
-	signal MAC_TX_EOF												: STD_LOGIC;																										--attribute KEEP OF MAC_TX_EOF			: signal IS TRUE;
+	signal MAC_TX_SOF												: std_logic;																										--attribute KEEP OF MAC_TX_SOF			: signal IS TRUE;
+	signal MAC_TX_EOF												: std_logic;																										--attribute KEEP OF MAC_TX_EOF			: signal IS TRUE;
 
-	signal MAC_RX_Ack												: STD_LOGIC;																										--attribute KEEP OF MAC_RX_Ack			: signal IS TRUE;
+	signal MAC_RX_Ack												: std_logic;																										--attribute KEEP OF MAC_RX_Ack			: signal IS TRUE;
 
-	signal MAC_TX_Ack												: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_TX_Ack											: signal IS TRUE;
-	signal MAC_TX_Meta_rst									: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_TX_Meta_rst									: signal IS TRUE;
-	signal MAC_TX_Meta_DestMACAddress_nxt		: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_TX_Meta_DestMACAddress_nxt	: signal IS TRUE;
+	signal MAC_TX_Ack												: std_logic_vector(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_TX_Ack											: signal IS TRUE;
+	signal MAC_TX_Meta_rst									: std_logic_vector(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_TX_Meta_rst									: signal IS TRUE;
+	signal MAC_TX_Meta_DestMACAddress_nxt		: std_logic_vector(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_TX_Meta_DestMACAddress_nxt	: signal IS TRUE;
 
-	signal MAC_RX_Valid											: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_RX_Valid										: signal IS TRUE;
+	signal MAC_RX_Valid											: std_logic_vector(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_RX_Valid										: signal IS TRUE;
 	signal MAC_RX_Data											: T_SLVV_8(ETHERNET_PORTS - 1 downto 0);												--attribute KEEP OF MAC_RX_Data											: signal IS TRUE;
-	signal MAC_RX_SOF												: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_RX_SOF											: signal IS TRUE;
-	signal MAC_RX_EOF												: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_RX_EOF											: signal IS TRUE;
+	signal MAC_RX_SOF												: std_logic_vector(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_RX_SOF											: signal IS TRUE;
+	signal MAC_RX_EOF												: std_logic_vector(ETHERNET_PORTS - 1 downto 0);								--attribute KEEP OF MAC_RX_EOF											: signal IS TRUE;
 	signal MAC_RX_Meta_DestMACAddress_Data	: T_SLVV_8(ETHERNET_PORTS - 1 downto 0);												--attribute KEEP OF MAC_RX_Meta_DestMACAddress_Data	: signal IS TRUE;
 	signal MAC_RX_Meta_SrcMACAddress_Data		: T_SLVV_8(ETHERNET_PORTS - 1 downto 0);												--attribute KEEP OF MAC_RX_Meta_SrcMACAddress_Data	: signal IS TRUE;
 	signal MAC_RX_Meta_EthType							: T_NET_MAC_ETHERNETTYPE_VECTOR(ETHERNET_PORTS - 1 downto 0);		--attribute KEEP OF MAC_RX_Meta_EthType							: signal IS TRUE;
 
 	-- Address Resolution Protocol layer signals
-	signal ARP_UC_TX_Valid												: STD_LOGIC;
+	signal ARP_UC_TX_Valid												: std_logic;
 	signal ARP_UC_TX_Data													: T_SLV_8;
-	signal ARP_UC_TX_SOF													: STD_LOGIC;
-	signal ARP_UC_TX_EOF													: STD_LOGIC;
+	signal ARP_UC_TX_SOF													: std_logic;
+	signal ARP_UC_TX_EOF													: std_logic;
 	signal ARP_UC_TX_Meta_DestMACAddress_Data			: T_SLV_8;
 
-	signal ARP_UC_RX_Ack													: STD_LOGIC;
-	signal ARP_UC_RX_Meta_rst											: STD_LOGIC;
-	signal ARP_UC_RX_Meta_SrcMACAddress_nxt				: STD_LOGIC;
-	signal ARP_UC_RX_Meta_DestMACAddress_nxt			: STD_LOGIC;
+	signal ARP_UC_RX_Ack													: std_logic;
+	signal ARP_UC_RX_Meta_rst											: std_logic;
+	signal ARP_UC_RX_Meta_SrcMACAddress_nxt				: std_logic;
+	signal ARP_UC_RX_Meta_DestMACAddress_nxt			: std_logic;
 
-	signal ARP_IPCache_IPv4Address_rst						: STD_LOGIC;
-	signal ARP_IPCache_IPv4Address_nxt						: STD_LOGIC;
-	signal ARP_IPCache_Valid											: STD_LOGIC;
+	signal ARP_IPCache_IPv4Address_rst						: std_logic;
+	signal ARP_IPCache_IPv4Address_nxt						: std_logic;
+	signal ARP_IPCache_Valid											: std_logic;
 	signal ARP_IPCache_MACAddress_Data						: T_SLV_8;
 
-	signal ARP_BC_RX_Ack													: STD_LOGIC;
-	signal ARP_BC_RX_Meta_rst											: STD_LOGIC;
-	signal ARP_BC_RX_Meta_SrcMACAddress_nxt				: STD_LOGIC;
-	signal ARP_BC_RX_Meta_DestMACAddress_nxt			: STD_LOGIC;
+	signal ARP_BC_RX_Ack													: std_logic;
+	signal ARP_BC_RX_Meta_rst											: std_logic;
+	signal ARP_BC_RX_Meta_SrcMACAddress_nxt				: std_logic;
+	signal ARP_BC_RX_Meta_DestMACAddress_nxt			: std_logic;
 
 	-- Internet Protocol Version 4 layer signals
-	signal IPv4_TX_Valid													: STD_LOGIC;
+	signal IPv4_TX_Valid													: std_logic;
 	signal IPv4_TX_Data														: T_SLV_8;
-	signal IPv4_TX_SOF														: STD_LOGIC;
-	signal IPv4_TX_EOF														: STD_LOGIC;
+	signal IPv4_TX_SOF														: std_logic;
+	signal IPv4_TX_EOF														: std_logic;
 	signal IPv4_TX_Meta_DestMACAddress_Data				: T_SLV_8;
 
-	signal IPv4_RX_Ack														: STD_LOGIC;
-	signal IPv4_RX_Meta_rst												: STD_LOGIC;
-	signal IPv4_RX_Meta_SrcMACAddress_nxt					: STD_LOGIC;
-	signal IPv4_RX_Meta_DestMACAddress_nxt				: STD_LOGIC;
+	signal IPv4_RX_Ack														: std_logic;
+	signal IPv4_RX_Meta_rst												: std_logic;
+	signal IPv4_RX_Meta_SrcMACAddress_nxt					: std_logic;
+	signal IPv4_RX_Meta_DestMACAddress_nxt				: std_logic;
 
-	signal IPv4_ARP_Query													: STD_LOGIC;
+	signal IPv4_ARP_Query													: std_logic;
 	signal IPv4_ARP_IPv4Address_Data							: T_SLV_8;
-	signal IPv4_ARP_MACAddress_rst								: STD_LOGIC;
-	signal IPv4_ARP_MACAddress_nxt								: STD_LOGIC;
+	signal IPv4_ARP_MACAddress_rst								: std_logic;
+	signal IPv4_ARP_MACAddress_nxt								: std_logic;
 
-	signal IPv4_TX_Ack														: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-	signal IPv4_TX_Meta_rst												: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-	signal IPv4_TX_Meta_SrcIPv4Address_nxt				: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-	signal IPv4_TX_Meta_DestIPv4Address_nxt				: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
+	signal IPv4_TX_Ack														: std_logic_vector(IPV4_PORTS - 1 downto 0);
+	signal IPv4_TX_Meta_rst												: std_logic_vector(IPV4_PORTS - 1 downto 0);
+	signal IPv4_TX_Meta_SrcIPv4Address_nxt				: std_logic_vector(IPV4_PORTS - 1 downto 0);
+	signal IPv4_TX_Meta_DestIPv4Address_nxt				: std_logic_vector(IPV4_PORTS - 1 downto 0);
 
-	signal IPv4_RX_Valid													: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
+	signal IPv4_RX_Valid													: std_logic_vector(IPV4_PORTS - 1 downto 0);
 	signal IPv4_RX_Data														: T_SLVV_8(IPV4_PORTS - 1 downto 0);
-	signal IPv4_RX_SOF														: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-	signal IPv4_RX_EOF														: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
+	signal IPv4_RX_SOF														: std_logic_vector(IPV4_PORTS - 1 downto 0);
+	signal IPv4_RX_EOF														: std_logic_vector(IPV4_PORTS - 1 downto 0);
 	signal IPv4_RX_Meta_SrcMACAddress_Data				: T_SLVV_8(IPV4_PORTS - 1 downto 0);
 	signal IPv4_RX_Meta_DestMACAddress_Data				: T_SLVV_8(IPV4_PORTS - 1 downto 0);
 	signal IPv4_RX_Meta_EthType										: T_SLVV_16(IPV4_PORTS - 1 downto 0);
@@ -333,30 +333,30 @@ architecture rtl of stack_UDPv4 is
 	signal IPv4_RX_Meta_Length										: T_SLVV_16(IPV4_PORTS - 1 downto 0);
 	signal IPv4_RX_Meta_Protocol									: T_SLVV_8(IPV4_PORTS - 1 downto 0);
 
-	signal UDPv4_TX_Valid													: STD_LOGIC;
+	signal UDPv4_TX_Valid													: std_logic;
 	signal UDPv4_TX_Data													: T_SLV_8;
-	signal UDPv4_TX_SOF														: STD_LOGIC;
-	signal UDPv4_TX_EOF														: STD_LOGIC;
+	signal UDPv4_TX_SOF														: std_logic;
+	signal UDPv4_TX_EOF														: std_logic;
 	signal UDPv4_TX_Meta_SrcIPv4Address_Data			: T_SLV_8;
 	signal UDPv4_TX_Meta_DestIPv4Address_Data			: T_SLV_8;
 	signal UDPv4_TX_Meta_Length										: T_SLV_16;
 
-	signal UDPv4_RX_Ack														: STD_LOGIC;
-	signal UDPv4_RX_Meta_rst											: STD_LOGIC;
-	signal UDPv4_RX_Meta_SrcMACAddress_nxt				: STD_LOGIC;
-	signal UDPv4_RX_Meta_DestMACAddress_nxt				: STD_LOGIC;
-	signal UDPv4_RX_Meta_SrcIPv4Address_nxt				: STD_LOGIC;
-	signal UDPv4_RX_Meta_DestIPv4Address_nxt			: STD_LOGIC;
+	signal UDPv4_RX_Ack														: std_logic;
+	signal UDPv4_RX_Meta_rst											: std_logic;
+	signal UDPv4_RX_Meta_SrcMACAddress_nxt				: std_logic;
+	signal UDPv4_RX_Meta_DestMACAddress_nxt				: std_logic;
+	signal UDPv4_RX_Meta_SrcIPv4Address_nxt				: std_logic;
+	signal UDPv4_RX_Meta_DestIPv4Address_nxt			: std_logic;
 
-	signal UDPv4_TX_Ack														: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-	signal UDPv4_TX_Meta_rst											: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-	signal UDPv4_TX_Meta_SrcIPv4Address_nxt				: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-	signal UDPv4_TX_Meta_DestIPv4Address_nxt			: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
+	signal UDPv4_TX_Ack														: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+	signal UDPv4_TX_Meta_rst											: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+	signal UDPv4_TX_Meta_SrcIPv4Address_nxt				: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+	signal UDPv4_TX_Meta_DestIPv4Address_nxt			: std_logic_vector(UDPV4_PORTS - 1 downto 0);
 
-	signal UDPv4_RX_Valid													: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
+	signal UDPv4_RX_Valid													: std_logic_vector(UDPV4_PORTS - 1 downto 0);
 	signal UDPv4_RX_Data													: T_SLVV_8(UDPV4_PORTS - 1 downto 0);
-	signal UDPv4_RX_SOF														: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-	signal UDPv4_RX_EOF														: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
+	signal UDPv4_RX_SOF														: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+	signal UDPv4_RX_EOF														: std_logic_vector(UDPV4_PORTS - 1 downto 0);
 	signal UDPv4_RX_Meta_SrcMACAddress_Data				: T_SLVV_8(UDPV4_PORTS - 1 downto 0);
 	signal UDPv4_RX_Meta_DestMACAddress_Data			: T_SLVV_8(UDPV4_PORTS - 1 downto 0);
 	signal UDPv4_RX_Meta_EthType									: T_SLVV_16(UDPV4_PORTS - 1 downto 0);
@@ -370,12 +370,12 @@ architecture rtl of stack_UDPv4 is
 begin
 
 	blkEth : block
-		signal TX_Clock							: STD_LOGIC;
-		signal RX_Clock							: STD_LOGIC;
-		signal Eth_TX_Clock					: STD_LOGIC;
-		signal Eth_RX_Clock					: STD_LOGIC;
-		signal RS_TX_Clock					: STD_LOGIC;
-		signal RS_RX_Clock					: STD_LOGIC;
+		signal TX_Clock							: std_logic;
+		signal RX_Clock							: std_logic;
+		signal Eth_TX_Clock					: std_logic;
+		signal Eth_RX_Clock					: std_logic;
+		signal RS_TX_Clock					: std_logic;
+		signal RS_RX_Clock					: std_logic;
 
 	begin
 		Eth_Command						<= Ethernet_Command;
@@ -443,18 +443,18 @@ begin
 	end block;
 
 	blkMAC : block
-		attribute KEEP_HIERARCHY OF MAC : LABEL IS "FALSE";
+		attribute KEEP_HIERARCHY of MAC : label is "FALSE";
 
-		signal blkMAC_TX_Valid										: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);
+		signal blkMAC_TX_Valid										: std_logic_vector(ETHERNET_PORTS - 1 downto 0);
 		signal blkMAC_TX_Data											: T_SLVV_8(ETHERNET_PORTS - 1 downto 0);
-		signal blkMAC_TX_SOF											: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);
-		signal blkMAC_TX_EOF											: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);
+		signal blkMAC_TX_SOF											: std_logic_vector(ETHERNET_PORTS - 1 downto 0);
+		signal blkMAC_TX_EOF											: std_logic_vector(ETHERNET_PORTS - 1 downto 0);
 		signal blkMAC_TX_Meta_DestMACAddress_Data	: T_SLVV_8(ETHERNET_PORTS - 1 downto 0);
 
-		signal blkMAC_RX_Ack											: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);
-		signal blkMAC_RX_Meta_rst									: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);
-		signal blkMAC_RX_Meta_DestMACAddress_nxt	: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);
-		signal blkMAC_RX_Meta_SrcMACAddress_nxt		: STD_LOGIC_VECTOR(ETHERNET_PORTS - 1 downto 0);
+		signal blkMAC_RX_Ack											: std_logic_vector(ETHERNET_PORTS - 1 downto 0);
+		signal blkMAC_RX_Meta_rst									: std_logic_vector(ETHERNET_PORTS - 1 downto 0);
+		signal blkMAC_RX_Meta_DestMACAddress_nxt	: std_logic_vector(ETHERNET_PORTS - 1 downto 0);
+		signal blkMAC_RX_Meta_SrcMACAddress_nxt		: std_logic_vector(ETHERNET_PORTS - 1 downto 0);
 
 	begin
 		MAC : entity PoC.mac_Wrapper
@@ -543,18 +543,18 @@ begin
 
 		genLB1 : if (MAC_ENABLE_LOOPBACK = TRUE) generate
 			-- LoopBack layer signals
-			signal MAC_LOOP_TX_Valid											: STD_LOGIC;
+			signal MAC_LOOP_TX_Valid											: std_logic;
 			signal MAC_LOOP_TX_Data												: T_SLV_8;
-			signal MAC_LOOP_TX_SOF												: STD_LOGIC;
-			signal MAC_LOOP_TX_EOF												: STD_LOGIC;
+			signal MAC_LOOP_TX_SOF												: std_logic;
+			signal MAC_LOOP_TX_EOF												: std_logic;
 			signal MAC_LOOP_TX_Meta_DestMACAddress_Data		: T_SLV_8;
 			signal MAC_LOOP_TX_Meta_SrcMACAddress_Data		: T_SLV_8;
 			signal MAC_LOOP_TX_Meta_EthType								: T_NET_MAC_ETHERNETTYPE;
 
-			signal MAC_LOOP_RX_Ack												: STD_LOGIC;
-			signal MAC_LOOP_RX_Meta_rst										: STD_LOGIC;
-			signal MAC_LOOP_RX_Meta_DestMACAddress_nxt		: STD_LOGIC;
-			signal MAC_LOOP_RX_Meta_SrcMACAddress_nxt			: STD_LOGIC;
+			signal MAC_LOOP_RX_Ack												: std_logic;
+			signal MAC_LOOP_RX_Meta_rst										: std_logic;
+			signal MAC_LOOP_RX_Meta_DestMACAddress_nxt		: std_logic;
+			signal MAC_LOOP_RX_Meta_SrcMACAddress_nxt			: std_logic;
 		begin
 			-- Ethernet Port 2 -> LoopBack
 			-- ========================================================================
@@ -618,7 +618,7 @@ begin
 	end block;
 
 	blkARP : block
-		attribute KEEP_HIERARCHY OF ARP 					: LABEL IS "FALSE";
+		attribute KEEP_HIERARCHY of ARP 					: label is "FALSE";
 
 	begin
 		--
@@ -682,52 +682,52 @@ begin
 	end block;
 
 	blkIPv4 : block
-		attribute KEEP_HIERARCHY OF IPv4						: LABEL IS "FALSE";
-		attribute KEEP_HIERARCHY OF ICMPv4					: LABEL IS "FALSE";
+		attribute KEEP_HIERARCHY of IPv4						: label is "FALSE";
+		attribute KEEP_HIERARCHY of ICMPv4					: label is "FALSE";
 
-		signal blk_TX_Valid													: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
+		signal blk_TX_Valid													: std_logic_vector(IPV4_PORTS - 1 downto 0);
 		signal blk_TX_Data													: T_SLVV_8(IPV4_PORTS - 1 downto 0);
-		signal blk_TX_SOF														: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-		signal blk_TX_EOF														: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-		signal blk_TX_Meta_rst											: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
+		signal blk_TX_SOF														: std_logic_vector(IPV4_PORTS - 1 downto 0);
+		signal blk_TX_EOF														: std_logic_vector(IPV4_PORTS - 1 downto 0);
+		signal blk_TX_Meta_rst											: std_logic_vector(IPV4_PORTS - 1 downto 0);
 		signal blk_TX_Meta_SrcIPv4Address_Data			: T_SLVV_8(IPV4_PORTS - 1 downto 0);
 		signal blk_TX_Meta_DestIPv4Address_Data			: T_SLVV_8(IPV4_PORTS - 1 downto 0);
 		signal blk_TX_Meta_Length										: T_SLVV_16(IPV4_PORTS - 1 downto 0);
 
-		signal blk_RX_Ack														: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-		signal blk_RX_Meta_rst											: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-		signal blk_RX_Meta_SrcMACAddress_nxt				: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-		signal blk_RX_Meta_DestMACAddress_nxt				: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-		signal blk_RX_Meta_SrcIPv4Address_nxt				: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
-		signal blk_RX_Meta_DestIPv4Address_nxt			: STD_LOGIC_VECTOR(IPV4_PORTS - 1 downto 0);
+		signal blk_RX_Ack														: std_logic_vector(IPV4_PORTS - 1 downto 0);
+		signal blk_RX_Meta_rst											: std_logic_vector(IPV4_PORTS - 1 downto 0);
+		signal blk_RX_Meta_SrcMACAddress_nxt				: std_logic_vector(IPV4_PORTS - 1 downto 0);
+		signal blk_RX_Meta_DestMACAddress_nxt				: std_logic_vector(IPV4_PORTS - 1 downto 0);
+		signal blk_RX_Meta_SrcIPv4Address_nxt				: std_logic_vector(IPV4_PORTS - 1 downto 0);
+		signal blk_RX_Meta_DestIPv4Address_nxt			: std_logic_vector(IPV4_PORTS - 1 downto 0);
 
-		signal blk_IPCache_Query										: STD_LOGIC;
+		signal blk_IPCache_Query										: std_logic;
 		signal blk_IPCache_IPv4Address_Data					: T_SLV_8;
-		signal blk_IPCache_IPv4Address_rst					: STD_LOGIC;
-		signal blk_IPCache_IPv4Address_nxt					: STD_LOGIC;
-		signal blk_IPCache_Valid										: STD_LOGIC;
+		signal blk_IPCache_IPv4Address_rst					: std_logic;
+		signal blk_IPCache_IPv4Address_nxt					: std_logic;
+		signal blk_IPCache_Valid										: std_logic;
 		signal blk_IPCache_MACAddress_Data					: T_SLV_8;
-		signal blk_IPCache_MACAddress_rst						: STD_LOGIC;
-		signal blk_IPCache_MACAddress_nxt						: STD_LOGIC;
+		signal blk_IPCache_MACAddress_rst						: std_logic;
+		signal blk_IPCache_MACAddress_nxt						: std_logic;
 
 		signal ICMPv4_Command												: T_NET_ICMPV4_COMMAND		:= NET_ICMPV4_CMD_NONE;
 		signal ICMPv4_Status												: T_NET_ICMPV4_STATUS;
 		signal ICMPv4_Error													: T_NET_ICMPV4_ERROR;
 
-		signal ICMPv4_TX_Valid											: STD_LOGIC;
+		signal ICMPv4_TX_Valid											: std_logic;
 		signal ICMPv4_TX_Data												: T_SLV_8;
-		signal ICMPv4_TX_SOF												: STD_LOGIC;
-		signal ICMPv4_TX_EOF												: STD_LOGIC;
+		signal ICMPv4_TX_SOF												: std_logic;
+		signal ICMPv4_TX_EOF												: std_logic;
 		signal ICMPv4_TX_Meta_SrcIPv4Address_Data		: T_SLV_8;
 		signal ICMPv4_TX_Meta_DestIPv4Address_Data	: T_SLV_8;
 		signal ICMPv4_TX_Meta_Length								: T_SLV_16;
 
-		signal ICMPv4_RX_Ack												: STD_LOGIC;
-		signal ICMPv4_RX_Meta_rst										: STD_LOGIC;
-		signal ICMPv4_RX_Meta_SrcMACAddress_nxt			: STD_LOGIC;
-		signal ICMPv4_RX_Meta_DestMACAddress_nxt		: STD_LOGIC;
-		signal ICMPv4_RX_Meta_SrcIPv4Address_nxt		: STD_LOGIC;
-		signal ICMPv4_RX_Meta_DestIPv4Address_nxt		: STD_LOGIC;
+		signal ICMPv4_RX_Ack												: std_logic;
+		signal ICMPv4_RX_Meta_rst										: std_logic;
+		signal ICMPv4_RX_Meta_SrcMACAddress_nxt			: std_logic;
+		signal ICMPv4_RX_Meta_DestMACAddress_nxt		: std_logic;
+		signal ICMPv4_RX_Meta_SrcIPv4Address_nxt		: std_logic;
+		signal ICMPv4_RX_Meta_DestIPv4Address_nxt		: std_logic;
 
 --		signal ICMPv4_IPv4Address_rst								: STD_LOGIC;
 --		signal ICMPv4_IPv4Address_nxt								: STD_LOGIC;
@@ -839,22 +839,22 @@ begin
 --
 --		end generate;
 		genLB1 : if (IPV4_ENABLE_LOOPBACK = TRUE) generate
-			signal IPV4_LOOP_TX_Valid											: STD_LOGIC;
+			signal IPV4_LOOP_TX_Valid											: std_logic;
 			signal IPV4_LOOP_TX_Data											: T_SLV_8;
-			signal IPV4_LOOP_TX_SOF												: STD_LOGIC;
-			signal IPV4_LOOP_TX_EOF												: STD_LOGIC;
+			signal IPV4_LOOP_TX_SOF												: std_logic;
+			signal IPV4_LOOP_TX_EOF												: std_logic;
 			signal IPV4_LOOP_TX_Meta_SrcIPv4Address_Data	: T_SLV_8;
 			signal IPV4_LOOP_TX_Meta_DestIPv4Address_Data	: T_SLV_8;
 			signal IPV4_LOOP_TX_Meta_Length								: T_SLV_16;
 
-			signal IPV4_LOOP_TX_Meta_rst									: STD_LOGIC;
-			signal IPV4_LOOP_TX_Meta_SrcIPv4Address_nxt		: STD_LOGIC;
-			signal IPV4_LOOP_TX_Meta_DestIPv4Address_nxt	: STD_LOGIC;
+			signal IPV4_LOOP_TX_Meta_rst									: std_logic;
+			signal IPV4_LOOP_TX_Meta_SrcIPv4Address_nxt		: std_logic;
+			signal IPV4_LOOP_TX_Meta_DestIPv4Address_nxt	: std_logic;
 
-			signal IPV4_LOOP_RX_Ack												: STD_LOGIC;
-			signal IPV4_LOOP_RX_Meta_rst									: STD_LOGIC;
-			signal IPV4_LOOP_RX_Meta_SrcIPv4Address_nxt		: STD_LOGIC;
-			signal IPV4_LOOP_RX_Meta_DestIPv4Address_nxt	: STD_LOGIC;
+			signal IPV4_LOOP_RX_Ack												: std_logic;
+			signal IPV4_LOOP_RX_Meta_rst									: std_logic;
+			signal IPV4_LOOP_RX_Meta_SrcIPv4Address_nxt		: std_logic;
+			signal IPV4_LOOP_RX_Meta_DestIPv4Address_nxt	: std_logic;
 		begin
 			-- IPv4 Port 2 - Loopback
 			blk_TX_Valid(IPV4_LOOP_IPV4_PORT_NUMBER)											<= IPV4_LOOP_TX_Valid;
@@ -957,23 +957,23 @@ begin
 	end block;
 
 	blkUDPv4 : block
-		signal blk_TX_Valid														: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
+		signal blk_TX_Valid														: std_logic_vector(UDPV4_PORTS - 1 downto 0);
 		signal blk_TX_Data														: T_SLVV_8(UDPV4_PORTS - 1 downto 0);
-		signal blk_TX_SOF															: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-		signal blk_TX_EOF															: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-		signal blk_TX_Meta_rst												: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
+		signal blk_TX_SOF															: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+		signal blk_TX_EOF															: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+		signal blk_TX_Meta_rst												: std_logic_vector(UDPV4_PORTS - 1 downto 0);
 		signal blk_TX_Meta_SrcIPv4Address_Data				: T_SLVV_8(UDPV4_PORTS - 1 downto 0);
 		signal blk_TX_Meta_DestIPv4Address_Data				: T_SLVV_8(UDPV4_PORTS - 1 downto 0);
 		signal blk_TX_Meta_Length											: T_SLVV_16(UDPV4_PORTS - 1 downto 0);
 		signal blk_TX_Meta_SrcPort										: T_SLVV_16(UDPV4_PORTS - 1 downto 0);
 		signal blk_TX_Meta_DestPort										: T_SLVV_16(UDPV4_PORTS - 1 downto 0);
 
-		signal blk_RX_Ack															: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-		signal blk_RX_Meta_rst												: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-		signal blk_RX_Meta_SrcMACAddress_nxt					: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-		signal blk_RX_Meta_DestMACAddress_nxt					: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-		signal blk_RX_Meta_SrcIPv4Address_nxt					: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
-		signal blk_RX_Meta_DestIPv4Address_nxt				: STD_LOGIC_VECTOR(UDPV4_PORTS - 1 downto 0);
+		signal blk_RX_Ack															: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+		signal blk_RX_Meta_rst												: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+		signal blk_RX_Meta_SrcMACAddress_nxt					: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+		signal blk_RX_Meta_DestMACAddress_nxt					: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+		signal blk_RX_Meta_SrcIPv4Address_nxt					: std_logic_vector(UDPV4_PORTS - 1 downto 0);
+		signal blk_RX_Meta_DestIPv4Address_nxt				: std_logic_vector(UDPV4_PORTS - 1 downto 0);
 
 	begin
 		UDP : entity PoC.udp_Wrapper
@@ -1075,26 +1075,26 @@ begin
 --		end generate;
 
 		genLB1 : if (UDP_ENABLE_LOOPBACK = TRUE) generate
-			signal UDP_LOOP_TX_Valid											: STD_LOGIC;
+			signal UDP_LOOP_TX_Valid											: std_logic;
 			signal UDP_LOOP_TX_Data												: T_SLV_8;
-			signal UDP_LOOP_TX_SOF												: STD_LOGIC;
-			signal UDP_LOOP_TX_EOF												: STD_LOGIC;
+			signal UDP_LOOP_TX_SOF												: std_logic;
+			signal UDP_LOOP_TX_EOF												: std_logic;
 			signal UDP_LOOP_TX_Meta_SrcIPv4Address_Data		: T_SLV_8;
 			signal UDP_LOOP_TX_Meta_DestIPv4Address_Data	: T_SLV_8;
 			signal UDP_LOOP_TX_Meta_Length								: T_SLV_16;
 			signal UDP_LOOP_TX_Meta_SrcPort								: T_SLV_16;
 			signal UDP_LOOP_TX_Meta_DestPort							: T_SLV_16;
 
-			signal UDP_LOOP_TX_Meta_rst										: STD_LOGIC;
-			signal UDP_LOOP_TX_Meta_SrcIPv4Address_nxt		: STD_LOGIC;
-			signal UDP_LOOP_TX_Meta_DestIPv4Address_nxt		: STD_LOGIC;
+			signal UDP_LOOP_TX_Meta_rst										: std_logic;
+			signal UDP_LOOP_TX_Meta_SrcIPv4Address_nxt		: std_logic;
+			signal UDP_LOOP_TX_Meta_DestIPv4Address_nxt		: std_logic;
 
-			signal UDP_LOOP_RX_Ack												: STD_LOGIC;
-			signal UDP_LOOP_RX_Meta_rst										: STD_LOGIC;
-			signal UDP_LOOP_RX_Meta_SrcMACAddress_nxt			: STD_LOGIC;
-			signal UDP_LOOP_RX_Meta_DestMACAddress_nxt		: STD_LOGIC;
-			signal UDP_LOOP_RX_Meta_SrcIPv4Address_nxt		: STD_LOGIC;
-			signal UDP_LOOP_RX_Meta_DestIPv4Address_nxt		: STD_LOGIC;
+			signal UDP_LOOP_RX_Ack												: std_logic;
+			signal UDP_LOOP_RX_Meta_rst										: std_logic;
+			signal UDP_LOOP_RX_Meta_SrcMACAddress_nxt			: std_logic;
+			signal UDP_LOOP_RX_Meta_DestMACAddress_nxt		: std_logic;
+			signal UDP_LOOP_RX_Meta_SrcIPv4Address_nxt		: std_logic;
+			signal UDP_LOOP_RX_Meta_DestIPv4Address_nxt		: std_logic;
 		begin
 			-- UDPv4 Port n+1 - LoopBack
 			blk_TX_Valid(UDP_LOOP_UDPV4_PORT_NUMBER)												<= UDP_LOOP_TX_Valid;
@@ -1159,17 +1159,17 @@ begin
 	genCSP : if (DEBUG = TRUE) generate
 		signal Eth_Status_d										: T_NET_ETH_STATUS;
 
-		signal CSP_Ethernet_Clock							: STD_LOGIC;
-		signal CSP_NewConnection							: STD_LOGIC;
+		signal CSP_Ethernet_Clock							: std_logic;
+		signal CSP_NewConnection							: std_logic;
 
-		attribute KEEP OF CSP_Ethernet_Clock	: signal IS TRUE;
-		attribute KEEP OF CSP_NewConnection		: signal IS TRUE;
+		attribute KEEP of CSP_Ethernet_Clock	: signal is TRUE;
+		attribute KEEP of CSP_NewConnection		: signal is TRUE;
 
 	begin
 		CSP_Ethernet_Clock	<= Ethernet_Clock;
 
 		Eth_Status_d				<= Eth_Status when rising_edge(Ethernet_Clock);
-		CSP_NewConnection		<= to_sl((Eth_Status_d /= NET_ETH_STATUS_CONNECTED) AND (Eth_Status = NET_ETH_STATUS_CONNECTED));
+		CSP_NewConnection		<= to_sl((Eth_Status_d /= NET_ETH_STATUS_CONNECTED) and (Eth_Status = NET_ETH_STATUS_CONNECTED));
 
 	end generate;
 end architecture;

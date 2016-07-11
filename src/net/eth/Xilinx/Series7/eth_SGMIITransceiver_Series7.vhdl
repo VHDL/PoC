@@ -13,17 +13,17 @@ use			PoC.net.all;
 
 entity Ethernet_SGMIITransceiver_Virtex7 is
 	generic (
-		SIM_SPEEDUP								: BOOLEAN				:= TRUE;
+		SIM_SPEEDUP								: boolean				:= TRUE;
 		CLOCK_IN_FREQ_MHZ					: REAL					:= 125.0
 	);
 	port (
-		TX_RefClock_In						: in		STD_LOGIC;
-		RX_RefClock_In						: in		STD_LOGIC;
-		TX_RefClock_Out						: out		STD_LOGIC;
-		RX_RefClock_Out						: out		STD_LOGIC;
+		TX_RefClock_In						: in		std_logic;
+		RX_RefClock_In						: in		std_logic;
+		TX_RefClock_Out						: out		std_logic;
+		RX_RefClock_Out						: out		std_logic;
 
-		ClockNetwork_Reset				: in		STD_LOGIC;
-		ClockNetwork_ResetDone		: out		STD_LOGIC;
+		ClockNetwork_Reset				: in		std_logic;
+		ClockNetwork_ResetDone		: out		std_logic;
 
 --		Command										: in		T_ETHERNET_SGMIITRANSCEIVER_COMMAND;
 --		Status										: out		T_ETHERNET_SGMIITRANSCEIVER_STATUS;
@@ -31,18 +31,18 @@ entity Ethernet_SGMIITransceiver_Virtex7 is
 
 		TX_Data										: in		T_SLV_16;
 		TX_CharIsK								: in		T_SLV_2;
-		TX_RunningDisparity				: out		STD_LOGIC;
+		TX_RunningDisparity				: out		std_logic;
 
 		RX_Data										: out		T_SLV_16;
 		RX_CharIsK								: out		T_SLV_2;
 		RX_CharIsComma						: out		T_SLV_2;
 		RX_CharIsNotInTable				: out		T_SLV_2;
-		RX_RunningDisparity				: out		STD_LOGIC;
+		RX_RunningDisparity				: out		std_logic;
 
-		TX_n											: out		STD_LOGIC;
-		TX_p											: out		STD_LOGIC;
-		RX_n											: in		STD_LOGIC;
-		RX_p											: in		STD_LOGIC
+		TX_n											: out		std_logic;
+		TX_p											: out		std_logic;
+		RX_n											: in		std_logic;
+		RX_p											: in		std_logic
 	);
 end;
 
@@ -51,7 +51,7 @@ end;
 
 architecture rtl of Ethernet_SGMIITransceiver_Virtex7 is
 
-	constant GT_SIM_GTRESET_SPEEDUP					: STRING			:= ite(SIM_SPEEDUP, "true", "false");
+	constant GT_SIM_GTRESET_SPEEDUP					: string			:= ite(SIM_SPEEDUP, "true", "false");
 
 	signal TX_Data_i												: T_SLV_64;
 	signal RX_Data_i												: T_SLV_64;

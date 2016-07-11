@@ -41,24 +41,24 @@ use			PoC.net.all;
 
 entity icmpv6_RX is
 	port (
-		Clock											: in	STD_LOGIC;																	--
-		Reset											: in	STD_LOGIC;																	--
+		Clock											: in	std_logic;																	--
+		Reset											: in	std_logic;																	--
 
-		Error											: out	STD_LOGIC;
+		Error											: out	std_logic;
 
-		RX_Valid									: in	STD_LOGIC;
+		RX_Valid									: in	std_logic;
 		RX_Data										: in	T_SLV_8;
-		RX_SOF										: in	STD_LOGIC;
-		RX_EOF										: in	STD_LOGIC;
-		RX_Ack										: out	STD_LOGIC;
+		RX_SOF										: in	std_logic;
+		RX_EOF										: in	std_logic;
+		RX_Ack										: out	std_logic;
 
-		Received_EchoRequest			: out	STD_LOGIC
+		Received_EchoRequest			: out	std_logic
 	);
 end entity;
 
 
 architecture rtl of icmpv6_RX is
-	attribute FSM_ENCODING						: STRING;
+	attribute FSM_ENCODING						: string;
 
 	type T_STATE		is (
 		ST_IDLE,
@@ -73,8 +73,8 @@ architecture rtl of icmpv6_RX is
 	signal NextState									: T_STATE;
 	attribute FSM_ENCODING of State		: signal is "gray";		--"speed1";
 
-	signal Is_SOF											: STD_LOGIC;
-	signal Is_EOF											: STD_LOGIC;
+	signal Is_SOF											: std_logic;
+	signal Is_EOF											: std_logic;
 
 begin
 

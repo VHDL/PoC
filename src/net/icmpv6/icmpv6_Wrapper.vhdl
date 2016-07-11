@@ -41,23 +41,23 @@ use			PoC.net.all;
 
 entity icmpv6_Wrapper is
 	port (
-		Clock															: in	STD_LOGIC;
-		Reset															: in	STD_LOGIC;
+		Clock															: in	std_logic;
+		Reset															: in	std_logic;
 
-		IP_TX_Valid												: out	STD_LOGIC;
+		IP_TX_Valid												: out	std_logic;
 		IP_TX_Data												: out	T_SLV_8;
-		IP_TX_SOF													: out	STD_LOGIC;
-		IP_TX_EOF													: out	STD_LOGIC;
-		IP_TX_Ack													: in	STD_LOGIC;
-		IP_TX_Meta_rst										: in	STD_LOGIC;
-		IP_TX_Meta_DestIPv6Address_nxt		: in	STD_LOGIC;
+		IP_TX_SOF													: out	std_logic;
+		IP_TX_EOF													: out	std_logic;
+		IP_TX_Ack													: in	std_logic;
+		IP_TX_Meta_rst										: in	std_logic;
+		IP_TX_Meta_DestIPv6Address_nxt		: in	std_logic;
 		IP_TX_Meta_DestIPv6Address_Data		: out	T_SLV_8;
 
-		IP_RX_Valid												: in	STD_LOGIC;
+		IP_RX_Valid												: in	std_logic;
 		IP_RX_Data												: in	T_SLV_8;
-		IP_RX_SOF													: in	STD_LOGIC;
-		IP_RX_EOF													: in	STD_LOGIC;
-		IP_RX_Ack													: out	STD_LOGIC--;
+		IP_RX_SOF													: in	std_logic;
+		IP_RX_EOF													: in	std_logic;
+		IP_RX_Ack													: out	std_logic--;
 
 --		Command										: in	T_ETHERNET_ICMPV6_COMMAND;
 --		Status										: out	T_ETHERNET_ICMPV6_STATUS
@@ -68,7 +68,7 @@ end entity;
 
 
 architecture rtl of icmpv6_Wrapper is
-	signal RX_Received_EchoRequest			: STD_LOGIC;
+	signal RX_Received_EchoRequest			: std_logic;
 
 begin
 

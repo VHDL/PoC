@@ -40,21 +40,21 @@ use			PoC.components.all;
 
 entity misc_PulseTrain is
 	generic (
-		PULSE_TRAIN				: STD_LOGIC_VECTOR
+		PULSE_TRAIN				: std_logic_vector
 	);
 	port (
-		Clock							: in	STD_LOGIC;
-		StartSequence			: in	STD_LOGIC;
-		SequenceCompleted	: out	STD_LOGIC;
-		Output						: out	STD_LOGIC
+		Clock							: in	std_logic;
+		StartSequence			: in	std_logic;
+		SequenceCompleted	: out	std_logic;
+		Output						: out	std_logic
 	);
 end entity;
 
 
 architecture rtl of misc_PulseTrain is
-	signal IsIdle_r							: STD_LOGIC																							:= '0';
-	signal Counter_us						: UNSIGNED(log2ceilnz(PULSE_TRAIN'length) - 1 downto 0)	:= (others => '0');
-	signal Counter_ov						: STD_LOGIC;
+	signal IsIdle_r							: std_logic																							:= '0';
+	signal Counter_us						: unsigned(log2ceilnz(PULSE_TRAIN'length) - 1 downto 0)	:= (others => '0');
+	signal Counter_ov						: std_logic;
 
 begin
 	-- state control is done by a basic RS-FF

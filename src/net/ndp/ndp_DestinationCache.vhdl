@@ -42,23 +42,23 @@ use			PoC.net.all;
 entity ndp_DestinationCache is
 	generic (
 		CLOCK_FREQ_MHZ						: REAL																	:= 125.0;					-- 125 MHz
-		REPLACEMENT_POLICY				: STRING																:= "LRU";
+		REPLACEMENT_POLICY				: string																:= "LRU";
 		TAG_BYTE_ORDER						: T_BYTE_ORDER													:= BIG_ENDIAN;
 		DATA_BYTE_ORDER						: T_BYTE_ORDER													:= BIG_ENDIAN;
 		INITIAL_CACHE_CONTENT			: T_NET_NDP_DESTINATIONCACHE_VECTOR
 	);
 	port (
-		Clock											: in	STD_LOGIC;																	--
-		Reset											: in	STD_LOGIC;																	--
+		Clock											: in	std_logic;																	--
+		Reset											: in	std_logic;																	--
 
-		Lookup										: in	STD_LOGIC;
-		IPv6Address_rst						: out	STD_LOGIC;
-		IPv6Address_nxt						: out	STD_LOGIC;
+		Lookup										: in	std_logic;
+		IPv6Address_rst						: out	std_logic;
+		IPv6Address_nxt						: out	std_logic;
 		IPv6Address_Data					: in	T_SLV_8;
 
 		CacheResult								: out	T_CACHE_RESULT;
-		NextHopIPv6Address_rst		: in	STD_LOGIC;
-		NextHopIPv6Address_nxt		: in	STD_LOGIC;
+		NextHopIPv6Address_rst		: in	std_logic;
+		NextHopIPv6Address_nxt		: in	std_logic;
 		NextHopIPv6Address_Data		: out	T_SLV_8;
 		PathMTU										: out T_SLV_16
 	);
@@ -66,17 +66,17 @@ end entity;
 
 
 architecture rtl of ndp_DestinationCache is
-	attribute KEEP										: BOOLEAN;
+	attribute KEEP										: boolean;
 
-	constant CACHE_LINES							: POSITIVE			:= 8;
-	constant TAG_BITS									: POSITIVE			:= 128;
-	constant DATA_BITS								:	POSITIVE			:= 128;
-	constant TAGCHUNK_BITS						: POSITIVE			:= 8;
-	constant DATACHUNK_BITS						: POSITIVE			:= 8;
+	constant CACHE_LINES							: positive			:= 8;
+	constant TAG_BITS									: positive			:= 128;
+	constant DATA_BITS								:	positive			:= 128;
+	constant TAGCHUNK_BITS						: positive			:= 8;
+	constant DATACHUNK_BITS						: positive			:= 8;
 
-	constant DATACHUNKS								: POSITIVE	:= div_ceil(DATA_BITS, DATACHUNK_BITS);
-	constant DATACHUNK_INDEX_BITS			: POSITIVE	:= log2ceilnz(DATACHUNKS);
-	constant CACHEMEMORY_INDEX_BITS		: POSITIVE	:= log2ceilnz(CACHE_LINES);
+	constant DATACHUNKS								: positive	:= div_ceil(DATA_BITS, DATACHUNK_BITS);
+	constant DATACHUNK_INDEX_BITS			: positive	:= log2ceilnz(DATACHUNKS);
+	constant CACHEMEMORY_INDEX_BITS		: positive	:= log2ceilnz(CACHE_LINES);
 
 	function to_TagData(CacheContent : T_NET_NDP_DESTINATIONCACHE_VECTOR) return T_SLM is
 		variable slvv		: T_SLVV_128(CACHE_LINES - 1 downto 0)	:= (others => (others => '0'));
@@ -85,7 +85,7 @@ architecture rtl of ndp_DestinationCache is
 			slvv(I)	:= to_slv(CacheContent(I).Tag);
 		end loop;
 		return to_slm(slvv);
-	END function;
+	end function;
 
 	function to_CacheData_slvv_128(CacheContent : T_NET_NDP_DESTINATIONCACHE_VECTOR) return T_SLVV_128 is
 		variable slvv		: T_SLVV_128(CACHE_LINES - 1 downto 0)	:= (others => (others => '0'));
@@ -94,10 +94,10 @@ architecture rtl of ndp_DestinationCache is
 			slvv(I)	:= to_slv(CacheContent(I).NextHop);
 		end loop;
 		return slvv;
-	END function;
+	end function;
 
 	function to_CacheMemory(CacheContent : T_NET_NDP_DESTINATIONCACHE_VECTOR) return T_SLVV_8 is
-		constant BYTES_PER_LINE	: POSITIVE																								:= 16;
+		constant BYTES_PER_LINE	: positive																								:= 16;
 		constant slvv						: T_SLVV_128(CACHE_LINES - 1 downto 0)										:= to_CacheData_slvv_128(CacheContent);
 		variable result					: T_SLVV_8((CACHE_LINES * BYTES_PER_LINE) - 1 downto 0);
 	begin
@@ -107,41 +107,41 @@ architecture rtl of ndp_DestinationCache is
 			end loop;
 		end loop;
 		return result;
-	END function;
+	end function;
 
 	constant INITIAL_TAGS						: T_SLM			:= to_TagData(INITIAL_CACHE_CONTENT);
 	constant INITIAL_DATALINES			: T_SLVV_8	:= to_CacheMemory(INITIAL_CACHE_CONTENT);
 
-	signal ReadWrite								: STD_LOGIC;
+	signal ReadWrite								: std_logic;
 
-	signal Insert										: STD_LOGIC;
-	signal TU_NewTag_rst						: STD_LOGIC;
-	signal TU_NewTag_nxt						: STD_LOGIC;
+	signal Insert										: std_logic;
+	signal TU_NewTag_rst						: std_logic;
+	signal TU_NewTag_nxt						: std_logic;
 	signal NewTag_Data							: T_SLV_8;
-	signal NewCacheLine_rst					: STD_LOGIC;
-	signal NewCacheLine_nxt					: STD_LOGIC;
+	signal NewCacheLine_rst					: std_logic;
+	signal NewCacheLine_nxt					: std_logic;
 	signal NewCacheLine_Data				: T_SLV_8;
-	signal TU_Tag_rst								: STD_LOGIC;
-	signal TU_Tag_nxt								: STD_LOGIC;
+	signal TU_Tag_rst								: std_logic;
+	signal TU_Tag_nxt								: std_logic;
 	signal TU_Tag_Data							: T_SLV_8;
-	signal CacheHit									: STD_LOGIC;
-	signal CacheMiss								: STD_LOGIC;
+	signal CacheHit									: std_logic;
+	signal CacheMiss								: std_logic;
 
-	signal TU_Index									: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-	signal TU_Index_d								: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-	signal TU_Index_us							: UNSIGNED(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-	signal TU_NewIndex							: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-	signal TU_Replace								: STD_LOGIC;
+	signal TU_Index									: std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+	signal TU_Index_d								: std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+	signal TU_Index_us							: unsigned(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+	signal TU_NewIndex							: std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
+	signal TU_Replace								: std_logic;
 
-	signal TU_TagHit								: STD_LOGIC;
-	signal TU_TagMiss								: STD_LOGIC;
+	signal TU_TagHit								: std_logic;
+	signal TU_TagMiss								: std_logic;
 
-	signal DataChunkIndex_us				: UNSIGNED(DATACHUNK_INDEX_BITS - 1 downto 0)													:= (others => '0');
+	signal DataChunkIndex_us				: unsigned(DATACHUNK_INDEX_BITS - 1 downto 0)													:= (others => '0');
 	signal CacheMemory							: T_SLVV_8((CACHE_LINES * T_NET_IPV6_ADDRESS'length) - 1 downto 0)		:= INITIAL_DATALINES;
-	signal Memory_ReadWrite					: STD_LOGIC;
-	signal MemoryIndex_us						: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0);
-	signal ReplaceIndex_us					: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0);
-	signal ReplacedIndex_us					: UNSIGNED((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0);
+	signal Memory_ReadWrite					: std_logic;
+	signal MemoryIndex_us						: unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0);
+	signal ReplaceIndex_us					: unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0);
+	signal ReplacedIndex_us					: unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0);
 
 
 begin
@@ -207,13 +207,13 @@ begin
 		);
 
 	-- latch TU_Index on TagHit
-	TU_Index_us		<= unsigned(TU_Index) when rising_edge(Clock) AND (TU_TagHit = '1');
+	TU_Index_us		<= unsigned(TU_Index) when rising_edge(Clock) and (TU_TagHit = '1');
 
 	-- ChunkIndex counter
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR NextHopIPv6Address_rst) = '1') then
+			if ((Reset or NextHopIPv6Address_rst) = '1') then
 				if (DATA_BYTE_ORDER = LITTLE_ENDIAN) then
 					DataChunkIndex_us			<= to_unsigned(0,									DataChunkIndex_us'length);
 				else
@@ -241,7 +241,7 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Memory_ReadWrite AND TU_TagHit) = '1') then
+			if ((Memory_ReadWrite and TU_TagHit) = '1') then
 --					CacheMemory(to_integer(MemoryIndex_us))	<= CacheLineIn;
 			end if;
 

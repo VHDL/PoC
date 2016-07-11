@@ -39,35 +39,35 @@ use			PoC.utils.all;
 
 entity misc_Sequencer is
   generic (
-	  INPUT_BITS					: POSITIVE					:= 32;
-		OUTPUT_BITS					: POSITIVE					:= 8;
-		REGISTERED					: BOOLEAN						:= FALSE
+	  INPUT_BITS					: positive					:= 32;
+		OUTPUT_BITS					: positive					:= 8;
+		REGISTERED					: boolean						:= FALSE
 	);
   port (
-	  Clock								: in	STD_LOGIC;
-		Reset								: in	STD_LOGIC;
+	  Clock								: in	std_logic;
+		Reset								: in	std_logic;
 
-		Input								: in	STD_LOGIC_VECTOR(INPUT_BITS - 1 downto 0);
-		rst									:	IN	STD_LOGIC;
-		rev									:	IN	STD_LOGIC;
-		nxt									:	IN	STD_LOGIC;
-		Output							: out STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0)
+		Input								: in	std_logic_vector(INPUT_BITS - 1 downto 0);
+		rst									:	in	std_logic;
+		rev									:	in	std_logic;
+		nxt									:	in	std_logic;
+		Output							: out std_logic_vector(OUTPUT_BITS - 1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of misc_Sequencer is
-	constant CHUNKS				: POSITIVE := div_ceil(INPUT_BITS, OUTPUT_BITS);
-	constant COUNTER_BITS	: POSITIVE := log2ceilnz(CHUNKS);
+	constant CHUNKS				: positive := div_ceil(INPUT_BITS, OUTPUT_BITS);
+	constant COUNTER_BITS	: positive := log2ceilnz(CHUNKS);
 
-	subtype T_CHUNK				IS STD_LOGIC_VECTOR(OUTPUT_BITS - 1 downto 0);
-	TYPE		T_MUX					IS array (NATURAL range <>) OF T_CHUNK;
+	subtype T_CHUNK				is std_logic_vector(OUTPUT_BITS - 1 downto 0);
+	type		T_MUX					is array (natural range <>) of T_CHUNK;
 
 	signal Mux_Data				: T_MUX(CHUNKS - 1 downto 0);
 	signal Mux_Data_d			: T_MUX(CHUNKS - 1 downto 0);
-	signal Mux_sel_us			: UNSIGNED(COUNTER_BITS - 1 downto 0)		:= (others => '0');
+	signal Mux_sel_us			: unsigned(COUNTER_BITS - 1 downto 0)		:= (others => '0');
 
-	signal rev_l					: STD_LOGIC															:= '0';
+	signal rev_l					: std_logic															:= '0';
 
 begin
 	genMuxData : for i in 0 to CHUNKS - 1 generate
@@ -93,7 +93,7 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR rst) = '1') then
+			if ((Reset or rst) = '1') then
 				rev_l							<= rev;
 
 				if (rev = '0') then

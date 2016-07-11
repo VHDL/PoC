@@ -40,17 +40,17 @@ use			PoC.ddrio.all;
 entity pio_out is
 	generic (
 		DATARATE		: T_IO_DATARATE	:= IO_DATARATE_SDR;
-		DATA_BITS		: NATURAL				:= 8;
-		REV_BITS		: NATURAL				:= 0
+		DATA_BITS		: natural				:= 8;
+		REV_BITS		: natural				:= 0
 	);
 	port (
-		Clock				: in	STD_LOGIC;
-		DataIn			: in	STD_LOGIC_VECTOR(ite((DATARATE = IO_DATARATE_DDR), 2*DATA_BITS, DATA_BITS) - 1 downto 0);
-		DataOut			: out	STD_LOGIC_VECTOR(ite((DATARATE = IO_DATARATE_DDR), 2*REV_BITS, REV_BITS) - 1 downto 0);
+		Clock				: in	std_logic;
+		DataIn			: in	std_logic_vector(ite((DATARATE = IO_DATARATE_DDR), 2*DATA_BITS, DATA_BITS) - 1 downto 0);
+		DataOut			: out	std_logic_vector(ite((DATARATE = IO_DATARATE_DDR), 2*REV_BITS, REV_BITS) - 1 downto 0);
 
-		Pad_Clock		: out	STD_LOGIC;
-		Pad_DataOut	: out	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
-		Pad_DataIn	: in	STD_LOGIC_VECTOR(REV_BITS - 1 downto 0)
+		Pad_Clock		: out	std_logic;
+		Pad_DataOut	: out	std_logic_vector(DATA_BITS - 1 downto 0);
+		Pad_DataIn	: in	std_logic_vector(REV_BITS - 1 downto 0)
 	);
 end entity;
 
@@ -71,8 +71,8 @@ begin
 		);
 
 	genSDR : if (DATARATE = IO_DATARATE_SDR) generate
-		signal DataOut_iob		: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0)	:= (others => '0');
-		signal DataIn_iob			: STD_LOGIC_VECTOR(REV_BITS - 1 downto 0)		:= (others => '0');
+		signal DataOut_iob		: std_logic_vector(DATA_BITS - 1 downto 0)	:= (others => '0');
+		signal DataIn_iob			: std_logic_vector(REV_BITS - 1 downto 0)		:= (others => '0');
 	begin
 		DataOut_iob		<= DataIn when rising_edge(Clock);
 		Pad_DataOut		<= DataOut_iob;

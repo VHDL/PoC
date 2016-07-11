@@ -49,58 +49,58 @@ use			PoC.satadbg.all;
 
 entity sata_Physical_OOBControl_Device is
 	generic (
-		DEBUG											: BOOLEAN														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
-		ENABLE_DEBUGPORT					: BOOLEAN														:= FALSE;												-- enables the assignment of signals to the debugport
-		ALLOW_STANDARD_VIOLATION	: BOOLEAN														:= FALSE;
-		OOB_TIMEOUT								: TIME															:= TIME'low
+		DEBUG											: boolean														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: boolean														:= FALSE;												-- enables the assignment of signals to the debugport
+		ALLOW_STANDARD_VIOLATION	: boolean														:= FALSE;
+		OOB_TIMEOUT								: time															:= time'low
 	);
 	port (
-		Clock											: in	STD_LOGIC;
-		Reset											: in	STD_LOGIC;
+		Clock											: in	std_logic;
+		Reset											: in	std_logic;
 		-- debug ports
 		DebugPortOut							: out	T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 
-		Timeout										: out	STD_LOGIC;
+		Timeout										: out	std_logic;
 		SATAGeneration						: in	T_SATA_GENERATION;
-		HostDetected							: out	STD_LOGIC;
-		LinkOK										: out	STD_LOGIC;
-		LinkDead									: out	STD_LOGIC;
+		HostDetected							: out	std_logic;
+		LinkOK										: out	std_logic;
+		LinkDead									: out	std_logic;
 
 		OOB_TX_Command						: out	T_SATA_OOB;
-		OOB_TX_Complete						: in	STD_LOGIC;
+		OOB_TX_Complete						: in	std_logic;
 		OOB_RX_Received						: in	T_SATA_OOB;
-		OOB_HandshakeComplete			:	OUT	STD_LOGIC;
+		OOB_HandshakeComplete			:	out	std_logic;
 
 		TX_Primitive							: out	T_SATA_PRIMITIVE;
 		RX_Primitive							: in	T_SATA_PRIMITIVE;
-		RX_Valid									: in	STD_LOGIC
+		RX_Valid									: in	std_logic
 	);
 end entity;
 
 
 architecture rtl of sata_Physical_OOBControl_Device is
-	attribute KEEP												: BOOLEAN;
-	attribute FSM_ENCODING								: STRING;
+	attribute KEEP												: boolean;
+	attribute FSM_ENCODING								: string;
 
 	constant CLOCK_GEN1_FREQ							: FREQ				:= 37500 kHz;		-- SATAClock frequency for SATA generation 1
 	constant CLOCK_GEN2_FREQ							: FREQ				:= 75 MHz;			-- SATAClock frequency for SATA generation 2
 	constant CLOCK_GEN3_FREQ							: FREQ				:= 150 MHz;			-- SATAClock frequency for SATA generation 3
 
-	constant DEFAULT_OOB_TIMEOUT					: TIME				:= 880 us;
+	constant DEFAULT_OOB_TIMEOUT					: time				:= 880 us;
 
-	constant OOB_TIMEOUT_I								: TIME				:= ite((OOB_TIMEOUT = TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
-	constant COMRESET_TIMEOUT							: TIME				:= 450 ns;
-	constant COMWAKE_TIMEOUT							: TIME				:= 250 ns;
+	constant OOB_TIMEOUT_I								: time				:= ite((OOB_TIMEOUT = time'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
+	constant COMRESET_TIMEOUT							: time				:= 450 ns;
+	constant COMWAKE_TIMEOUT							: time				:= 250 ns;
 
-	constant TTID1_OOB_TIMEOUT_GEN1				: NATURAL			:= 0;
-	constant TTID1_OOB_TIMEOUT_GEN2				: NATURAL			:= 1;
-	constant TTID1_OOB_TIMEOUT_GEN3				: NATURAL			:= 2;
-	constant TTID2_COMRESET_TIMEOUT_GEN1	: NATURAL			:= 0;
-	constant TTID2_COMRESET_TIMEOUT_GEN2	: NATURAL			:= 1;
-	constant TTID2_COMRESET_TIMEOUT_GEN3	: NATURAL			:= 2;
-	constant TTID2_COMWAKE_TIMEOUT_GEN1		: NATURAL			:= 3;
-	constant TTID2_COMWAKE_TIMEOUT_GEN2		: NATURAL			:= 4;
-	constant TTID2_COMWAKE_TIMEOUT_GEN3		: NATURAL			:= 5;
+	constant TTID1_OOB_TIMEOUT_GEN1				: natural			:= 0;
+	constant TTID1_OOB_TIMEOUT_GEN2				: natural			:= 1;
+	constant TTID1_OOB_TIMEOUT_GEN3				: natural			:= 2;
+	constant TTID2_COMRESET_TIMEOUT_GEN1	: natural			:= 0;
+	constant TTID2_COMRESET_TIMEOUT_GEN2	: natural			:= 1;
+	constant TTID2_COMRESET_TIMEOUT_GEN3	: natural			:= 2;
+	constant TTID2_COMWAKE_TIMEOUT_GEN1		: natural			:= 3;
+	constant TTID2_COMWAKE_TIMEOUT_GEN2		: natural			:= 4;
+	constant TTID2_COMWAKE_TIMEOUT_GEN3		: natural			:= 5;
 
 	constant TC1_TIMING_TABLE					: T_NATVEC				:= (--		 880 us
 		TTID1_OOB_TIMEOUT_GEN1 => TimingToCycles(OOB_TIMEOUT_I,	CLOCK_GEN1_FREQ),							-- slot 0
@@ -135,34 +135,34 @@ architecture rtl of sata_Physical_OOBControl_Device is
 	-- OOB-Statemachine
 	signal State											: T_STATE														:= ST_DEV_RESET;
 	signal NextState									: T_STATE;
-	attribute FSM_ENCODING OF State		: signal IS getFSMEncoding_gray(DEBUG);
+	attribute FSM_ENCODING of State		: signal is getFSMEncoding_gray(DEBUG);
 
-	signal HostDetected_i							: STD_LOGIC;
-	signal LinkOK_i										: STD_LOGIC;
-	signal LinkDead_i									: STD_LOGIC;
-	signal Timeout_i									: STD_LOGIC;
-	signal ReceivedReset_i						: STD_LOGIC;
+	signal HostDetected_i							: std_logic;
+	signal LinkOK_i										: std_logic;
+	signal LinkDead_i									: std_logic;
+	signal Timeout_i									: std_logic;
+	signal ReceivedReset_i						: std_logic;
 
 	signal OOB_TX_Command_i						: T_SATA_OOB;
-	signal OOB_HandshakeComplete_i		: STD_LOGIC;
+	signal OOB_HandshakeComplete_i		: std_logic;
 
 	-- Timing-Counter
 	-- ===========================================================================
 	-- general timeouts
-	signal TC1_en										: STD_LOGIC;
-	signal TC1_Load									: STD_LOGIC;
-	signal TC1_Slot									: NATURAL;
-	signal TC1_Timeout							: STD_LOGIC;
+	signal TC1_en										: std_logic;
+	signal TC1_Load									: std_logic;
+	signal TC1_Slot									: natural;
+	signal TC1_Timeout							: std_logic;
 
 	-- OOB state specific timeouts
-	signal TC2_en										: STD_LOGIC;
-	signal TC2_Load									: STD_LOGIC;
-	signal TC2_Slot									: NATURAL;
-	signal TC2_Timeout							: STD_LOGIC;
+	signal TC2_en										: std_logic;
+	signal TC2_Load									: std_logic;
+	signal TC2_Slot									: natural;
+	signal TC2_Timeout							: std_logic;
 
 begin
-	assert ((SATAGeneration = SATA_GENERATION_1) OR
-					(SATAGeneration = SATA_GENERATION_2) OR
+	assert ((SATAGeneration = SATA_GENERATION_1) or
+					(SATAGeneration = SATA_GENERATION_2) or
 					(SATAGeneration = SATA_GENERATION_3))
 		report "Member of T_SATA_GENERATION not supported"
 		severity FAILURE;
@@ -254,7 +254,7 @@ begin
 																		 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMRESET_TIMEOUT_GEN2,
 																		 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMRESET_TIMEOUT_GEN3,
 																																								TTID2_COMRESET_TIMEOUT_GEN3)));
-					ELSif (TC2_Timeout = '1') then
+					elsif (TC2_Timeout = '1') then
 						OOB_TX_Command_i			<= SATA_OOB_COMRESET;
 
 						NextState							<= ST_DEV_SEND_COMINIT;
@@ -266,7 +266,7 @@ begin
 
 					if (OOB_TX_Complete = '1') then
 						NextState					<= ST_DEV_WAIT_HOST_COMWAKE;
-					ELSif ((ALLOW_STANDARD_VIOLATION = TRUE) AND (OOB_RX_Received = SATA_OOB_COMWAKE)) then					-- allow premature OOB response
+					elsif ((ALLOW_STANDARD_VIOLATION = TRUE) and (OOB_RX_Received = SATA_OOB_COMWAKE)) then					-- allow premature OOB response
 						NextState					<= ST_DEV_WAIT_AFTER_COMWAKE;
 					end if;
 
@@ -293,7 +293,7 @@ begin
 																 ite((SATAGeneration = SATA_GENERATION_2), TTID2_COMWAKE_TIMEOUT_GEN2,
 																 ite((SATAGeneration = SATA_GENERATION_3), TTID2_COMWAKE_TIMEOUT_GEN3,
 																																						TTID2_COMWAKE_TIMEOUT_GEN3)));
-					ELSif (TC2_Timeout = '1') then
+					elsif (TC2_Timeout = '1') then
 						OOB_TX_Command_i			<= SATA_OOB_COMWAKE;
 
 						NextState							<= ST_DEV_SEND_COMWAKE;
@@ -317,7 +317,7 @@ begin
 					TX_Primitive						<= SATA_PRIMITIVE_ALIGN;
 					TC1_en 									<= '1';
 
-					if ((RX_Primitive = SATA_PRIMITIVE_ALIGN) AND (RX_Valid = '1')) then												-- ALIGN detected
+					if ((RX_Primitive = SATA_PRIMITIVE_ALIGN) and (RX_Valid = '1')) then												-- ALIGN detected
 						NextState							<= ST_DEV_LINK_OK;
 					end if;
 
@@ -393,7 +393,7 @@ begin
 	-- debug port
 	-- ===========================================================================
 	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
-		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		function dbg_EncodeState(st : T_STATE) return std_logic_vector is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;

@@ -61,74 +61,74 @@ use			PoC.xil.all;
 
 entity sata_Transceiver_Virtex5_GTP_Configurator is
 	generic (
-		DEBUG											: BOOLEAN											:= FALSE;																--
+		DEBUG											: boolean											:= FALSE;																--
 		DRPCLOCK_FREQ							: FREQ												:= 100 MHz;															--
-		PORTS											: POSITIVE										:= 1;																		-- Number of Ports per Transceiver
+		PORTS											: positive										:= 1;																		-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 1 => C_SATA_GENERATION_MAX)		-- initial SATA Generation
 	);
 	port (
-		DRP_Clock								: in	STD_LOGIC;
-		DRP_Reset								: in	STD_LOGIC;
+		DRP_Clock								: in	std_logic;
+		DRP_Reset								: in	std_logic;
 
-		SATA_Clock							: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		SATA_Clock							: in	std_logic_vector(PORTS - 1 downto 0);
 
-		Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @SATA_Clock
+		Reconfig								: in	std_logic_vector(PORTS - 1 downto 0);							-- @SATA_Clock
 		SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);			-- @SATA_Clock
-		ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @SATA_Clock
-		ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @SATA_Clock
-		Lock										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @SATA_Clock
-		Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @SATA_Clock
+		ReconfigComplete				: out	std_logic_vector(PORTS - 1 downto 0);							-- @SATA_Clock
+		ConfigReloaded					: out	std_logic_vector(PORTS - 1 downto 0);							-- @SATA_Clock
+		Lock										: in	std_logic_vector(PORTS - 1 downto 0);							-- @SATA_Clock
+		Locked									: out	std_logic_vector(PORTS - 1 downto 0);							-- @SATA_Clock
 
-		NoDevice								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);							-- @DRP_Clock
+		NoDevice								: in	std_logic_vector(PORTS - 1 downto 0);							-- @DRP_Clock
 
-		GTP_DRP_en							: out	STD_LOGIC;																				-- @DRP_Clock
+		GTP_DRP_en							: out	std_logic;																				-- @DRP_Clock
 		GTP_DRP_Address					: out	T_XIL_DRP_ADDRESS;																-- @DRP_Clock
-		GTP_DRP_we							: out	STD_LOGIC;																				-- @DRP_Clock
+		GTP_DRP_we							: out	std_logic;																				-- @DRP_Clock
 		GTP_DRP_DataIn					: in	T_XIL_DRP_DATA;																		-- @DRP_Clock
 		GTP_DRP_DataOut					: out	T_XIL_DRP_DATA;																		-- @DRP_Clock
-		GTP_DRP_Ack							: in	STD_LOGIC;																				-- @DRP_Clock
+		GTP_DRP_Ack							: in	std_logic;																				-- @DRP_Clock
 
-		GTP_ReloadConfig				: out	STD_LOGIC;																				-- @DRP_Clock
-		GTP_ReloadConfigDone		: in	STD_LOGIC																					-- @DRP_Clock
+		GTP_ReloadConfig				: out	std_logic;																				-- @DRP_Clock
+		GTP_ReloadConfigDone		: in	std_logic																					-- @DRP_Clock
 	);
 end;
 
 architecture rtl of sata_Transceiver_Virtex5_GTP_Configurator is
-	attribute KEEP								: BOOLEAN;
-	attribute FSM_ENCODING				: STRING;
+	attribute KEEP								: boolean;
+	attribute FSM_ENCODING				: string;
 
-	function vec(value : STD_LOGIC) return STD_LOGIC_VECTOR is
-		variable Result : STD_LOGIC_VECTOR(0 downto 0) := (others => value);
+	function vec(value : std_logic) return std_logic_vector is
+		variable Result : std_logic_vector(0 downto 0) := (others => value);
 	begin
 		return Result;
-	END function;
+	end function;
 
-	function mv(value : STD_LOGIC_VECTOR; move : INTEGER) return STD_LOGIC_VECTOR is
-		variable Result : STD_LOGIC_VECTOR(value'left + move downto value'right + move) := value;
+	function mv(value : std_logic_vector; move : integer) return std_logic_vector is
+		variable Result : std_logic_vector(value'left + move downto value'right + move) := value;
 	begin
 		return Result;
-	END function;
+	end function;
 
-	function ins(value: STD_LOGIC_VECTOR; Length : NATURAL) return STD_LOGIC_VECTOR is
-		variable Result		: STD_LOGIC_VECTOR(Length - 1 downto 0)		:= (others => '0');
+	function ins(value: std_logic_vector; Length : natural) return std_logic_vector is
+		variable Result		: std_logic_vector(Length - 1 downto 0)		:= (others => '0');
 	begin
 		Result(value'range)	:= value;
 		return Result;
-	END function;
+	end function;
 
-	function slv(value : UNSIGNED) return STD_LOGIC_VECTOR is
+	function slv(value : unsigned) return std_logic_vector is
 	begin
 		return std_logic_vector(value);
-	END function;
+	end function;
 
 	-- 1. descibe all used generics
-	TYPE GTP_GENERICS IS record
-		PLL_TXDIVSEL_OUT_0		: UNSIGNED(1 downto 0);			-- Port 0: PLL TX ClockDivider
-		PLL_RXDIVSEL_OUT_0		: UNSIGNED(1 downto 0);			-- Port 0: PLL RX ClockDivider
-		PLL_TXDIVSEL_OUT_1		: UNSIGNED(1 downto 0);			-- Port 1: PLL TX ClockDivider
-		PLL_RXDIVSEL_OUT_1		: UNSIGNED(1 downto 0);			-- Port 1: PLL RX ClockDivider
-	END record;
-	TYPE GTP_GENERICS_VECTOR IS array(NATURAL range <>) OF GTP_GENERICS;
+	type GTP_GENERICS is record
+		PLL_TXDIVSEL_OUT_0		: unsigned(1 downto 0);			-- Port 0: PLL TX ClockDivider
+		PLL_RXDIVSEL_OUT_0		: unsigned(1 downto 0);			-- Port 0: PLL RX ClockDivider
+		PLL_TXDIVSEL_OUT_1		: unsigned(1 downto 0);			-- Port 1: PLL TX ClockDivider
+		PLL_RXDIVSEL_OUT_1		: unsigned(1 downto 0);			-- Port 1: PLL RX ClockDivider
+	end record;
+	type GTP_GENERICS_VECTOR is array(natural range <>) of GTP_GENERICS;
 
 	-- 2. assign each generic for each speed configuration
 	-- *DIVSEL_OUT_*:		0 -> divide by 1,		1 -> divide by 2
@@ -181,7 +181,7 @@ architecture rtl of sata_Transceiver_Virtex5_GTP_Configurator is
 					LastIndex => 3)
 		);
 
-	constant XILDRP_CONFIGSELECT_BITS	: POSITIVE										:= log2ceilnz(XILDRP_CONFIG_ROM'length);
+	constant XILDRP_CONFIGSELECT_BITS	: positive										:= log2ceilnz(XILDRP_CONFIG_ROM'length);
 
 	type T_STATE is (
 		ST_IDLE,
@@ -196,31 +196,31 @@ architecture rtl of sata_Transceiver_Virtex5_GTP_Configurator is
 	-- GTP_DualConfiguration - Statemachine
 	signal State											: T_STATE											:= ST_IDLE;
 	signal NextState									: T_STATE;
-	attribute FSM_ENCODING	OF State	: signal IS getFSMEncoding_gray(DEBUG);
+	attribute FSM_ENCODING	of State	: signal is getFSMEncoding_gray(DEBUG);
 
-	signal Reconfig_DRP								: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal ReconfigComplete_i					: STD_LOGIC;
-	signal ConfigReloaded_i						: STD_LOGIC;
+	signal Reconfig_DRP								: std_logic_vector(PORTS - 1 downto 0);
+	signal ReconfigComplete_i					: std_logic;
+	signal ConfigReloaded_i						: std_logic;
 	signal SATAGeneration_DRP					: T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0)	:= INITIAL_SATA_GENERATIONS;
 
-	signal Lock_DRP										: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal Locked_i										: STD_LOGIC;
+	signal Lock_DRP										: std_logic_vector(PORTS - 1 downto 0);
+	signal Locked_i										: std_logic;
 
-	signal doReconfig									: STD_LOGIC;
-	signal doLock											: STD_LOGIC;
+	signal doReconfig									: std_logic;
+	signal doLock											: std_logic;
 
-	signal ReloadConfig_i							: STD_LOGIC;
+	signal ReloadConfig_i							: std_logic;
 
-	signal XilDRP_Reconfig						: STD_LOGIC;
-	signal XilDRP_ReconfigDone				: STD_LOGIC;
-	signal XilDRP_ConfigSelect				: STD_LOGIC_VECTOR(XILDRP_CONFIGSELECT_BITS - 1 downto 0);
+	signal XilDRP_Reconfig						: std_logic;
+	signal XilDRP_ReconfigDone				: std_logic;
+	signal XilDRP_ConfigSelect				: std_logic_vector(XILDRP_CONFIGSELECT_BITS - 1 downto 0);
 
 begin
 	assert (PORTS <= 2)	report "to many ports per transceiver"	severity FAILURE;
 
 	-- cross clock domain bit synchronisation
 	genSyncSATA_DRP : for i in 0 to PORTS - 1 generate
-		signal Lock_i								: STD_LOGIC;
+		signal Lock_i								: std_logic;
 		signal SATAGeneration_SATA	: T_SATA_GENERATION			:= INITIAL_SATA_GENERATIONS(I);
 	begin
 		-- synchronize Reconfig(I), Lock(I), SATAGeneration(I) from SATA_Clock to DRP_Clock
@@ -240,7 +240,7 @@ begin
 			);
 
 		-- only connected ports can request locks
-		Lock_DRP(I)					<= Lock_i	AND (NOT NoDevice(I));
+		Lock_DRP(I)					<= Lock_i	and (not NoDevice(I));
 
 		-- register SATAGeneration in old clock domain
 		SATAGeneration_SATA	<= SATAGeneration(I) when rising_edge(SATA_Clock(I));
@@ -340,7 +340,7 @@ begin
 					if (doLock = '0') then
 						NextState						<= ST_IDLE;
 					else
-						NULL;
+						null;
 					end if;
 				end if;
 

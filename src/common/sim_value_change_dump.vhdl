@@ -67,21 +67,21 @@ library PoC;
 use			PoC.utils.all;
 
 package sim_value_change_dump is
-	subtype T_VCDLINE		IS		STRING(1 to 80);
+	subtype T_VCDLINE		is		string(1 to 80);
 
-	function to_nat(str : STRING) return INTEGER;
-	function resize(str : STRING; size : POSITIVE) return STRING;
+	function to_nat(str : string) return integer;
+	function resize(str : string; size : positive) return string;
 
-	procedure VCD_ReadHeader(FILE VCDFile : TEXT; VCDLine : inout T_VCDLINE);
-	procedure VCD_ReadLine(FILE VCDFile : TEXT; VCDLine : out STRING);
+	procedure VCD_ReadHeader(file VCDFile : TEXT; VCDLine : inout T_VCDLINE);
+	procedure VCD_ReadLine(file VCDFile : TEXT; VCDLine : out string);
 
-	procedure VCD_Read_StdLogic(VCDLine : STRING; signal sl : out STD_LOGIC; WaveName : STRING);
-	procedure VCD_Read_StdLogicVector(VCDLine : STRING; signal slv : out STD_LOGIC_VECTOR; WaveName : STRING; def : STD_LOGIC := '0');
+	procedure VCD_Read_StdLogic(VCDLine : string; signal sl : out std_logic; WaveName : string);
+	procedure VCD_Read_StdLogicVector(VCDLine : string; signal slv : out std_logic_vector; WaveName : string; def : std_logic := '0');
 
-END sim_value_change_dump;
+end sim_value_change_dump;
 
 package body sim_value_change_dump is
-	function to_digit(chr : CHARACTER) return INTEGER is
+	function to_digit(chr : character) return integer is
 	begin
 		case (chr) is
 			when '0' =>			return 0;
@@ -98,9 +98,9 @@ package body sim_value_change_dump is
 		end case;
 	end;
 
-	function to_nat(str : STRING) return INTEGER is
-		variable Result			: NATURAL		:= 0;
-		variable Digit			: INTEGER;
+	function to_nat(str : string) return integer is
+		variable Result			: natural		:= 0;
+		variable Digit			: integer;
 	begin
 		if (to_digit(str(str'low)) /= -1) then
 			for i in str'range loop
@@ -118,7 +118,7 @@ package body sim_value_change_dump is
 		end if;
 	end;
 
-	function to_sl(Value : BOOLEAN) return STD_LOGIC is
+	function to_sl(Value : boolean) return std_logic is
 	begin
 		if (Value = TRUE) then
 			return '1';
@@ -127,7 +127,7 @@ package body sim_value_change_dump is
 		end if;
 	end;
 
-	function to_sl(Value : CHARACTER) return STD_LOGIC is
+	function to_sl(Value : character) return std_logic is
 	begin
 		case Value is
 			when 'U' =>			return 'U';
@@ -143,7 +143,7 @@ package body sim_value_change_dump is
 		end case;
 	end;
 
-	function is_sl(char : CHARACTER) return BOOLEAN is
+	function is_sl(char : character) return boolean is
 	begin
 		case char is
 			when 'U' =>			return TRUE;
@@ -159,8 +159,8 @@ package body sim_value_change_dump is
 		end case;
 	end;
 
-	function str_length(str : STRING) return NATURAL is
-		variable l	: NATURAL		:= 0;
+	function str_length(str : string) return natural is
+		variable l	: natural		:= 0;
 	begin
 		for i in str'range loop
 			if (str(I) = NUL) then
@@ -173,8 +173,8 @@ package body sim_value_change_dump is
 		return str'length;
 	end;
 
-	function str_equal(str1 : STRING; str2 : STRING) return BOOLEAN is
-		variable L				: POSITIVE	:= imin(str_length(str1), str_length(str2));
+	function str_equal(str1 : string; str2 : string) return boolean is
+		variable L				: positive	:= imin(str_length(str1), str_length(str2));
 	begin
 		for i in 0 to L - 1 loop
 			if (str1(str1'low + I) /= str2(str2'low + I)) then
@@ -185,17 +185,17 @@ package body sim_value_change_dump is
 		return TRUE;
 	end;
 
-	function resize(str : STRING; size : POSITIVE) return STRING is
-		constant MaxLength	: POSITIVE							:= imin(size, str'length);
-		variable Result			: STRING(1 to size)			:= (others => nul);
+	function resize(str : string; size : positive) return string is
+		constant MaxLength	: positive							:= imin(size, str'length);
+		variable Result			: string(1 to size)			:= (others => nul);
 	begin
 		Result(1 to MaxLength) := str(1 to MaxLength);
 		return Result;
 	end;
 
-	procedure VCD_ReadHeader(FILE VCDFile : TEXT; VCDLine : inout T_VCDLINE) is
+	procedure VCD_ReadHeader(file VCDFile : TEXT; VCDLine : inout T_VCDLINE) is
 	begin
-		WHILE (NOT endfile(VCDFile)) loop
+		while (not endfile(VCDFile)) loop
 			VCD_ReadLine(VCDFile, VCDLine);
 
 			if (VCDLine(1) = '#') then
@@ -205,22 +205,22 @@ package body sim_value_change_dump is
 		end loop;
 	end;
 
-	procedure VCD_ReadLine(FILE VCDFile : TEXT; VCDLine : out STRING) is
+	procedure VCD_ReadLine(file VCDFile : TEXT; VCDLine : out string) is
 		variable l					: LINE;
-		variable c					: CHARACTER;
-		variable is_string	: BOOLEAN;
+		variable c					: character;
+		variable is_string	: boolean;
 	begin
 		readline(VCDFile, l);
 
 		-- clear VCDLine
-		FOR I in VCDLine'range loop
+		for I in VCDLine'range loop
 			VCDLine(I)		:= NUL;
 		end loop;
 
 		-- TODO: use imin of ranges, not 'range
 		for i in VCDLine'range loop
 			read(l, c, is_string);
-			IF NOT is_string then
+			if not is_string then
 				exit;
 			end if;
 
@@ -228,16 +228,16 @@ package body sim_value_change_dump is
 		end loop;
 	end;
 
-	procedure VCD_Read_StdLogic(VCDLine : STRING; signal sl : out STD_LOGIC; WaveName : STRING) is
+	procedure VCD_Read_StdLogic(VCDLine : string; signal sl : out std_logic; WaveName : string) is
 	begin
 		if (str_equal(VCDLine(2 to VCDLine'high), WaveName)) then
 			sl	<= to_sl(VCDLine(1));
 		end if;
 	end;
 
-	procedure VCD_Read_StdLogicVector(VCDLine : STRING; signal slv : out STD_LOGIC_VECTOR; WaveName : STRING; def : STD_LOGIC := '0') is
-		variable Result	: STD_LOGIC_VECTOR(slv'range)			:= (others => def);
-		variable k			: NATURAL													:= 0;
+	procedure VCD_Read_StdLogicVector(VCDLine : string; signal slv : out std_logic_vector; WaveName : string; def : std_logic := '0') is
+		variable Result	: std_logic_vector(slv'range)			:= (others => def);
+		variable k			: natural													:= 0;
 	begin
 		for i in VCDLine'range loop
 			if (is_sl(VCDLine(I)) = FALSE) then

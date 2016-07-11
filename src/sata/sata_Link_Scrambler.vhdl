@@ -34,28 +34,28 @@ use			IEEE.STD_LOGIC_1164.all;
 
 entity sata_Scrambler is
 	generic (
-		POLYNOMIAL	: BIT_VECTOR					:= x"1A011";
-		SEED				: BIT_VECTOR					:= x"FFFF";
-		WIDTH				: POSITIVE						:= 32
+		POLYNOMIAL	: bit_vector					:= x"1A011";
+		SEED				: bit_vector					:= x"FFFF";
+		WIDTH				: positive						:= 32
 	);
 	port (
-		Clock				: in	STD_LOGIC;
-		Enable			: in	STD_LOGIC;
-		Reset				: in	STD_LOGIC;
+		Clock				: in	std_logic;
+		Enable			: in	std_logic;
+		Reset				: in	std_logic;
 
-		DataIn			: in	STD_LOGIC_VECTOR(WIDTH - 1 downto 0);
-		DataOut			: out	STD_LOGIC_VECTOR(WIDTH - 1 downto 0)
+		DataIn			: in	std_logic_vector(WIDTH - 1 downto 0);
+		DataOut			: out	std_logic_vector(WIDTH - 1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of sata_Scrambler is
-	function normalize(G : BIT_VECTOR) return BIT_VECTOR is
-		variable GN		: BIT_VECTOR(G'length - 1 downto 0);
+	function normalize(G : bit_vector) return bit_vector is
+		variable GN		: bit_vector(G'length - 1 downto 0);
 	begin
 		GN := G;
 
-		FOR i IN GN'left downto 1 loop
+		for i in GN'left downto 1 loop
 			if (GN(i) = '1') then
 				return GN(i - 1 downto 0);
 			end if;
@@ -65,23 +65,23 @@ architecture rtl of sata_Scrambler is
 		return G;
 	end;
 
-	constant GENERATOR	: BIT_VECTOR		:= normalize(POLYNOMIAL);
+	constant GENERATOR	: bit_vector		:= normalize(POLYNOMIAL);
 
-	signal LFSR					: STD_LOGIC_VECTOR(GENERATOR'range);
-	signal Mask					: STD_LOGIC_VECTOR(DataIn'range);
+	signal LFSR					: std_logic_vector(GENERATOR'range);
+	signal Mask					: std_logic_vector(DataIn'range);
 
 begin
 
 -- TODO: test SEED length
 
 	process(Clock, Reset, Enable, LFSR)
-		variable Vector		: STD_LOGIC_VECTOR(LFSR'range);
+		variable Vector		: std_logic_vector(LFSR'range);
 	begin
 		if rising_edge(Clock) then
 			if (Reset = '1') then
 				Vector := to_stdlogicvector(SEED);
 
-				FOR i IN Mask'low to Mask'high loop
+				for i in Mask'low to Mask'high loop
 					Mask(i) <= Vector(Vector'left);
 
 					-- Galois LFSR
@@ -93,7 +93,7 @@ begin
 				if (Enable = '1') then
 					Vector := LFSR;
 
-					FOR i IN Mask'low to Mask'high loop
+					for i in Mask'low to Mask'high loop
 						Mask(i) <= Vector(Vector'left);
 
 						-- Galois LFSR
@@ -106,5 +106,5 @@ begin
 		end if;
 	end process;
 
-	DataOut <= DataIn XOR Mask;
+	DataOut <= DataIn xor Mask;
 end;

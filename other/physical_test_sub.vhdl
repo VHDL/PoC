@@ -66,8 +66,8 @@ architecture rtl of physical_test_sub is
 	function f return boolean is
 	begin
 		report "CLOCK_FREQ   = " & FREQ'image(CLOCK_FREQ  ) severity note;
-		report "DELAY_TIME   = " & TIME'image(DELAY_TIME  ) severity note;
-		report "CLOCK_PERIOD = " & TIME'image(CLOCK_PERIOD) severity note;
+		report "DELAY_TIME   = " & time'image(DELAY_TIME  ) severity note;
+		report "CLOCK_PERIOD = " & time'image(CLOCK_PERIOD) severity note;
 		report "STEPS        = " & integer'image(STEPS       ) severity note;
 		report "EXPECT_STEPS = " & integer'image(EXPECT_STEPS) severity note;
 	return true;

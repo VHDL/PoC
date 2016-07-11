@@ -43,7 +43,7 @@ use			PoC.sata.all;
 
 entity sata_PrimitiveDetector is
 	port (
-		Clock									: in	STD_LOGIC;
+		Clock									: in	std_logic;
 
 		RX_DataIn							: in	T_SLV_32;
 		RX_CharIsK						: in	T_SLV_4;
@@ -65,10 +65,10 @@ end entity;
 architecture rtl of sata_PrimitiveDetector is
 	signal Primitive_i							: T_SATA_PRIMITIVE;
 
-	signal PrimitiveReg_ctrl_rst		: STD_LOGIC;
-	signal PrimitiveReg_ctrl_set		: STD_LOGIC;
-	signal PrimitiveReg_ctrl				: STD_LOGIC						:= '1';
-	signal PrimitiveReg_en					: STD_LOGIC;
+	signal PrimitiveReg_ctrl_rst		: std_logic;
+	signal PrimitiveReg_ctrl_set		: std_logic;
+	signal PrimitiveReg_ctrl				: std_logic						:= '1';
+	signal PrimitiveReg_en					: std_logic;
 	signal PrimitiveReg_d						: T_SATA_PRIMITIVE		:= SATA_PRIMITIVE_NONE;
 
 begin
@@ -79,19 +79,19 @@ begin
 	-- ===========================================================================
 	-- PrimitiveReg_ctrl - if CONT ocours -> disable PrimitiveReg
 	PrimitiveReg_ctrl_rst		<= to_sl(Primitive_i = SATA_PRIMITIVE_CONT);
-	PrimitiveReg_ctrl_set		<= NOT to_sl((Primitive_i = SATA_PRIMITIVE_CONT) OR
-																			 (Primitive_i = SATA_PRIMITIVE_ALIGN) OR
-																			 (Primitive_i = SATA_PRIMITIVE_NONE) OR
+	PrimitiveReg_ctrl_set		<= not to_sl((Primitive_i = SATA_PRIMITIVE_CONT) or
+																			 (Primitive_i = SATA_PRIMITIVE_ALIGN) or
+																			 (Primitive_i = SATA_PRIMITIVE_NONE) or
 																			 (Primitive_i = SATA_PRIMITIVE_ILLEGAL));
 
 	PrimitiveReg_ctrl	<= ffsr(q => PrimitiveReg_ctrl, rst => PrimitiveReg_ctrl_rst, set => PrimitiveReg_ctrl_set) when rising_edge(Clock);
-	PrimitiveReg_en		<= (PrimitiveReg_ctrl OR PrimitiveReg_ctrl_set) AND NOT PrimitiveReg_ctrl_rst;
+	PrimitiveReg_en		<= (PrimitiveReg_ctrl or PrimitiveReg_ctrl_set) and not PrimitiveReg_ctrl_rst;
 
 	-- PrimitiveReg - save last received primitive
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if (PrimitiveReg_en = '1') AND NOT (Primitive_i = SATA_PRIMITIVE_ALIGN) then
+			if (PrimitiveReg_en = '1') and not (Primitive_i = SATA_PRIMITIVE_ALIGN) then
 				PrimitiveReg_d	<= Primitive_i;
 			end if;
 		end if;

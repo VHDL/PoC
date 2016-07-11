@@ -45,18 +45,18 @@ use			PoC.net.all;
 
 entity eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1 is
 	port (
-		Reset_async								: in	STD_LOGIC;																	-- @async:
+		Reset_async								: in	std_logic;																	-- @async:
 
 		-- RS-GMII interface
-		RS_TX_Clock								: in	STD_LOGIC;
-		RS_TX_Valid								: in	STD_LOGIC;
+		RS_TX_Clock								: in	std_logic;
+		RS_TX_Valid								: in	std_logic;
 		RS_TX_Data								: in	T_SLV_8;
-		RS_TX_Error								: in	STD_LOGIC;
+		RS_TX_Error								: in	std_logic;
 
-		RS_RX_Clock								: in	STD_LOGIC;
-		RS_RX_Valid								: out	STD_LOGIC;
+		RS_RX_Clock								: in	std_logic;
+		RS_RX_Valid								: out	std_logic;
 		RS_RX_Data								: out	T_SLV_8;
-		RS_RX_Error								: out	STD_LOGIC;
+		RS_RX_Error								: out	std_logic;
 
 		-- PHY-GMII interface
 		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
@@ -68,11 +68,11 @@ end;
 -- use IDELAY instances on GMII_RX_Clock to move the clock into alignment with the data (GMII_RX_Data[7:0])
 
 architecture rtl of eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1 is
-	signal IODelay_RX_Clock	: STD_LOGIC;
+	signal IODelay_RX_Clock	: std_logic;
 
 	signal IDelay_Data			: T_SLV_8;
-	signal IDelay_Valid			: STD_LOGIC;
-	signal IDelay_Error			: STD_LOGIC;
+	signal IDelay_Valid			: std_logic;
+	signal IDelay_Error			: std_logic;
 begin
 
 

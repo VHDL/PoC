@@ -14,21 +14,21 @@ use			PoC.io.all;
 
 entity Dummy is
 	port (
-		clk		: in	STD_LOGIC;
-		rst		: in	STD_LOGIC;
+		clk		: in	std_logic;
+		rst		: in	std_logic;
 
-		led		: out	STD_LOGIC
+		led		: out	std_logic
 	);
 end entity;
 
 architecture rtl of Dummy is
-	signal clk1		: STD_LOGIC;
-	signal rst1		: STD_LOGIC;
-	signal clk2		: STD_LOGIC;
-	signal rst2		: STD_LOGIC;
+	signal clk1		: std_logic;
+	signal rst1		: std_logic;
+	signal clk2		: std_logic;
+	signal rst2		: std_logic;
 
-	signal shiftchain_in		: STD_LOGIC_VECTOR(7 downto 0)	:= (others => '0');
-	signal shiftchain_out		: STD_LOGIC_VECTOR(6 downto 0);
+	signal shiftchain_in		: std_logic_vector(7 downto 0)	:= (others => '0');
+	signal shiftchain_out		: std_logic_vector(6 downto 0);
 
 begin
 	clk1	<= clk;
@@ -46,8 +46,8 @@ begin
 	led							<= shiftchain_in(7);
 
 	blkFIFO : block
-		signal chain_in		: STD_LOGIC_VECTOR(63 downto 0)		:= (others => '0');
-		signal chain_out	: STD_LOGIC_VECTOR(62 downto 0);
+		signal chain_in		: std_logic_vector(63 downto 0)		:= (others => '0');
+		signal chain_out	: std_logic_vector(62 downto 0);
 	begin
 		shiftchain_out(0)	<= chain_in(chain_in'high);
 
@@ -223,8 +223,8 @@ begin
 
 	blkIO : block
 
-		signal chain_in		: STD_LOGIC_VECTOR(63 downto 0);
-		signal chain_out	: STD_LOGIC_VECTOR(62 downto 0);
+		signal chain_in		: std_logic_vector(63 downto 0);
+		signal chain_out	: std_logic_vector(62 downto 0);
 	begin
 		shiftchain_out(1)	<= chain_in(chain_in'high);
 
@@ -309,8 +309,8 @@ begin
 
 	blkMisc : block
 
-		signal chain_in		: STD_LOGIC_VECTOR(63 downto 0);
-		signal chain_out	: STD_LOGIC_VECTOR(62 downto 0);
+		signal chain_in		: std_logic_vector(63 downto 0);
+		signal chain_out	: std_logic_vector(62 downto 0);
 	begin
 		shiftchain_out(2)	<= chain_in(chain_in'high);
 

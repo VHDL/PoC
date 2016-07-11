@@ -58,17 +58,17 @@ use			PoC.satadbg.all;
 
 entity sata_PhysicalLayerFSM is
 	generic (
-		DEBUG											: BOOLEAN							:= FALSE;												ALLOW_SPEED_NEGOTIATION		: BOOLEAN							:= TRUE;
+		DEBUG											: boolean							:= FALSE;												ALLOW_SPEED_NEGOTIATION		: boolean							:= TRUE;
 		-- generate additional debug signals and preserve them (attribute keep)
-		ENABLE_DEBUGPORT					: BOOLEAN							:= FALSE;												-- enables the assignment of signals to the debugport
+		ENABLE_DEBUGPORT					: boolean							:= FALSE;												-- enables the assignment of signals to the debugport
 		INITIAL_SATA_GENERATION		: T_SATA_GENERATION		:= C_SATA_GENERATION_MAX;
-		GENERATION_CHANGE_COUNT		: INTEGER							:= 32;
-		ATTEMPTS_PER_GENERATION		: INTEGER							:= 8
+		GENERATION_CHANGE_COUNT		: integer							:= 32;
+		ATTEMPTS_PER_GENERATION		: integer							:= 8
 	);
 	port (
-		Clock											: in	STD_LOGIC;
-		ClockEnable 							: in  STD_LOGIC;
-		Reset											: in	STD_LOGIC;
+		Clock											: in	std_logic;
+		ClockEnable 							: in  std_logic;
+		Reset											: in	std_logic;
 
 		Command										: in	T_SATA_PHY_COMMAND;
 		Status										: out	T_SATA_PHY_STATUS;
@@ -78,29 +78,29 @@ entity sata_PhysicalLayerFSM is
 
 		DebugPortOut							: out	T_SATADBG_PHYSICAL_PFSM_OUT;
 
-		OOBC_Timeout							: in	STD_LOGIC;
-		OOBC_DeviceOrHostDetected	: in  STD_LOGIC;
-		OOBC_LinkOK 							: in  STD_LOGIC;
-		OOBC_LinkDead 						: in  STD_LOGIC;
-		OOBC_Reset								: out	STD_LOGIC;
+		OOBC_Timeout							: in	std_logic;
+		OOBC_DeviceOrHostDetected	: in  std_logic;
+		OOBC_LinkOK 							: in  std_logic;
+		OOBC_LinkDead 						: in  std_logic;
+		OOBC_Reset								: out	std_logic;
 
 		-- Transceiver interface
-		Trans_ResetDone						: in	STD_LOGIC;
+		Trans_ResetDone						: in	std_logic;
 		Trans_Status							: in	T_SATA_TRANSCEIVER_STATUS;
 
-		Trans_RP_Reconfig					: out	STD_LOGIC;
+		Trans_RP_Reconfig					: out	std_logic;
 		Trans_RP_SATAGeneration		: out	T_SATA_GENERATION;									--
-		Trans_RP_ConfigReloaded		: in	STD_LOGIC
+		Trans_RP_ConfigReloaded		: in	std_logic
 	);
 end entity;
 
 
 architecture rtl of sata_PhysicalLayerFSM is
-	attribute FSM_ENCODING	: STRING;
+	attribute FSM_ENCODING	: string;
 
-	type T_SGEN_SGEN	IS array (T_SATA_GENERATION) OF T_SATA_GENERATION;
-	type T_SGEN2_SGEN	IS array (T_SATA_GENERATION) OF T_SGEN_SGEN;
-	type T_SGEN3_SGEN	IS array (T_SATA_GENERATION) OF T_SGEN2_SGEN;
+	type T_SGEN_SGEN	is array (T_SATA_GENERATION) of T_SATA_GENERATION;
+	type T_SGEN2_SGEN	is array (T_SATA_GENERATION) of T_SGEN_SGEN;
+	type T_SGEN3_SGEN	is array (T_SATA_GENERATION) of T_SGEN2_SGEN;
 
 	function StartGen return T_SGEN2_SGEN is
 		constant ERROR_VALUE	: T_SATA_GENERATION	:= ite(SIMULATION, SATA_GENERATION_ERROR, SATA_GENERATION_1);
@@ -206,8 +206,8 @@ architecture rtl of sata_PhysicalLayerFSM is
 	constant ROM_StartGeneration							: T_SGEN2_SGEN	:= StartGen;
 	constant ROM_NextGeneration 							: T_SGEN3_SGEN	:= NextGen;
 
-	constant GENERATION_CHANGE_COUNTER_BITS		: POSITIVE			:= log2ceilnz(GENERATION_CHANGE_COUNT + 1);
-	constant TRY_PER_GENERATION_COUNTER_BITS	: POSITIVE			:= log2ceilnz(ATTEMPTS_PER_GENERATION);
+	constant GENERATION_CHANGE_COUNTER_BITS		: positive			:= log2ceilnz(GENERATION_CHANGE_COUNT + 1);
+	constant TRY_PER_GENERATION_COUNTER_BITS	: positive			:= log2ceilnz(ATTEMPTS_PER_GENERATION);
 
 	type T_STATE is (
 		ST_RESET,
@@ -222,34 +222,34 @@ architecture rtl of sata_PhysicalLayerFSM is
 	-- Statemachine
 	signal State												: T_STATE												:= ST_RESET;
 	signal NextState										: T_STATE;
-	attribute FSM_ENCODING	OF State		: signal IS getFSMEncoding_gray(DEBUG);
+	attribute FSM_ENCODING	of State		: signal is getFSMEncoding_gray(DEBUG);
 
 	signal Status_i											: T_SATA_PHY_STATUS;
 	signal Error_r											: T_SATA_PHY_ERROR;
 	signal Error_nxt										: T_SATA_PHY_ERROR;
-	signal Error_en											: STD_LOGIC;
+	signal Error_en											: std_logic;
 
-	signal OOBC_Reset_i 								: STD_LOGIC;
-	signal Trans_RP_Reconfig_i					: STD_LOGIC;
+	signal OOBC_Reset_i 								: std_logic;
+	signal Trans_RP_Reconfig_i					: std_logic;
 
 	-- Speed Negotiation specific
-	signal SATAGeneration_rst						: STD_LOGIC;
-	signal SATAGeneration_Change				: STD_LOGIC;
-	signal SATAGeneration_Changed				: STD_LOGIC;
+	signal SATAGeneration_rst						: std_logic;
+	signal SATAGeneration_Change				: std_logic;
+	signal SATAGeneration_Changed				: std_logic;
 	signal SATAGeneration_cur						: T_SATA_GENERATION							:= INITIAL_SATA_GENERATION;
 	signal SATAGeneration_nxt						: T_SATA_GENERATION;
 
 	-- Rec
 
-	signal GenerationChange_Counter_rst	: STD_LOGIC;
-	signal GenerationChange_Counter_en	: STD_LOGIC;
-	signal GenerationChange_Counter_us	: UNSIGNED(GENERATION_CHANGE_COUNTER_BITS downto 0) := (others => '0');
-	signal GenerationChange_Counter_ov	: STD_LOGIC;
+	signal GenerationChange_Counter_rst	: std_logic;
+	signal GenerationChange_Counter_en	: std_logic;
+	signal GenerationChange_Counter_us	: unsigned(GENERATION_CHANGE_COUNTER_BITS downto 0) := (others => '0');
+	signal GenerationChange_Counter_ov	: std_logic;
 
-	signal TryPerGeneration_Counter_rst	: STD_LOGIC;
-	signal TryPerGeneration_Counter_en	: STD_LOGIC;
-	signal TryPerGeneration_Counter_us	: UNSIGNED(TRY_PER_GENERATION_COUNTER_BITS downto 0) := (others => '0');
-	signal TryPerGeneration_Counter_ov	: STD_LOGIC;
+	signal TryPerGeneration_Counter_rst	: std_logic;
+	signal TryPerGeneration_Counter_en	: std_logic;
+	signal TryPerGeneration_Counter_us	: unsigned(TRY_PER_GENERATION_COUNTER_BITS downto 0) := (others => '0');
+	signal TryPerGeneration_Counter_ov	: std_logic;
 
 begin
 
@@ -549,13 +549,13 @@ begin
 	-- debug port
 	-- ===========================================================================
 	genSim : if (SIMULATION = TRUE) generate
-		signal sim_SATAGeneration	: UNSIGNED(2 downto 0);
+		signal sim_SATAGeneration	: unsigned(2 downto 0);
 	begin
 		sim_SATAGeneration	<= to_unsigned(SATAGeneration_cur, 3) + 1;
 	end generate;
 
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
-		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		function dbg_EncodeState(st : T_STATE) return std_logic_vector is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;

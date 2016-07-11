@@ -21,21 +21,21 @@ end entity;
 
 
 architecture tb of sortnet_BitonicSort_tb is
-	constant INPUTS									: POSITIVE	:= 4;
-	constant KEY_BITS								: POSITIVE	:= 8;
-	constant DATA_BITS							: POSITIVE	:= 8;
-	constant PIPELINE_STAGE_AFTER		: NATURAL		:= 2;
+	constant INPUTS									: positive	:= 4;
+	constant KEY_BITS								: positive	:= 8;
+	constant DATA_BITS							: positive	:= 8;
+	constant PIPELINE_STAGE_AFTER		: natural		:= 2;
 
-	constant LOOP_COUNT							: POSITIVE	:= 1024;
+	constant LOOP_COUNT							: positive	:= 1024;
 
-	constant STAGES									: POSITIVE	:= triangularNumber(log2ceil(INPUTS));
-	constant DELAY									: NATURAL		:= STAGES / PIPELINE_STAGE_AFTER;
+	constant STAGES									: positive	:= triangularNumber(log2ceil(INPUTS));
+	constant DELAY									: natural		:= STAGES / PIPELINE_STAGE_AFTER;
 
-	subtype T_KEY					is STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
-	subtype T_DATA				is STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+	subtype T_KEY					is std_logic_vector(KEY_BITS - 1 downto 0);
+	subtype T_DATA				is std_logic_vector(DATA_BITS - 1 downto 0);
 
-	type T_KEY_VECTOR			is array(NATURAL range <>) of T_KEY;
-	type T_DATA_VECTOR		is array(NATURAL range <>) of T_DATA;
+	type T_KEY_VECTOR			is array(natural range <>) of T_KEY;
+	type T_DATA_VECTOR		is array(natural range <>) of T_DATA;
 
 	function to_kv(slm : T_SLM) return T_KEY_VECTOR is
 		variable Result	: T_KEY_VECTOR(slm'range(1));
@@ -81,8 +81,8 @@ architecture tb of sortnet_BitonicSort_tb is
 		return Result;
 	end function;
 
-	constant CLOCK_PERIOD			: TIME				:= 10 ns;
-	signal Clock							: STD_LOGIC		:= '1';
+	constant CLOCK_PERIOD			: time				:= 10 ns;
+	signal Clock							: std_logic		:= '1';
 
 	signal KeyInputVector			: T_KEY_VECTOR(INPUTS - 1 downto 0)			:= (others => (others => '0'));
 	signal DataInputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0)		:= (others => (others => '0'));
@@ -93,7 +93,7 @@ architecture tb of sortnet_BitonicSort_tb is
 	signal KeyOutputVector		: T_KEY_VECTOR(INPUTS - 1 downto 0);
 	signal DataOutputVector		: T_DATA_VECTOR(INPUTS - 1 downto 0);
 
-	signal StopSimulation			: STD_LOGIC		:= '0';
+	signal StopSimulation			: std_logic		:= '0';
 begin
 
 	Clock	<= Clock xnor StopSimulation after CLOCK_PERIOD;
@@ -140,9 +140,9 @@ begin
 	KeyOutputVector	<= to_kv(DataOutputMatrix);
 
 	process
-		variable	Check		: BOOLEAN;
+		variable	Check		: boolean;
 	begin
-		report "Delay=" & INTEGER'image(DELAY) severity NOTE;
+		report "Delay=" & integer'image(DELAY) severity NOTE;
 
 		for i in 0 to DELAY - 1 loop
 			wait until rising_edge(Clock);

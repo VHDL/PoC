@@ -44,7 +44,7 @@ use			PoC.net.all;
 
 entity Eth_PHYController is
 	generic (
-		DEBUG											: BOOLEAN																	:= FALSE;																			--
+		DEBUG											: boolean																	:= FALSE;																			--
 		CLOCK_FREQ								: FREQ																		:= 125 MHz;																		-- 125 MHz
 		PCSCORE										: T_NET_ETH_PCSCORE												:= NET_ETH_PCSCORE_GENERIC_GMII;							--
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE										:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;					--
@@ -53,32 +53,32 @@ entity Eth_PHYController is
 		BAUDRATE									: BAUD																		:= 1 MBd																			-- 1.0 MBit/s
 	);
 	port (
-		Clock											: in		STD_LOGIC;
-		Reset											: in		STD_LOGIC;
+		Clock											: in		std_logic;
+		Reset											: in		std_logic;
 
 		-- PHYController interface
 		Command										: in		T_NET_ETH_PHYCONTROLLER_COMMAND;
 		Status										: out		T_NET_ETH_PHYCONTROLLER_STATUS;
 		Error											: out		T_NET_ETH_PHYCONTROLLER_ERROR;
 
-		PHY_Reset									: out		STD_LOGIC;															--
-		PHY_Interrupt							: in		STD_LOGIC;															--
+		PHY_Reset									: out		std_logic;															--
+		PHY_Interrupt							: in		std_logic;															--
 		PHY_MDIO									: inout T_NET_ETH_PHY_INTERFACE_MDIO						-- Management Data Input/Output
 	);
 end entity;
 
 
 architecture rtl of Eth_PHYController is
-	attribute KEEP											: BOOLEAN;
-	attribute FSM_ENCODING							: STRING;
+	attribute KEEP											: boolean;
+	attribute FSM_ENCODING							: string;
 
 	signal PHYC_MDIO_Command						: T_IO_MDIO_MDIOCONTROLLER_COMMAND;
 	signal MDIO_Status									: T_IO_MDIO_MDIOCONTROLLER_STATUS;
 	signal MDIO_Error										: T_IO_MDIO_MDIOCONTROLLER_ERROR;
 
 --	signal Strobe												: STD_LOGIC;
-	signal PHYC_MDIO_Physical_Address		: STD_LOGIC_VECTOR(6 downto 0);
-	signal PHYC_MDIO_Register_Address		: STD_LOGIC_VECTOR(4 downto 0);
+	signal PHYC_MDIO_Physical_Address		: std_logic_vector(6 downto 0);
+	signal PHYC_MDIO_Register_Address		: std_logic_vector(4 downto 0);
 	signal MDIOC_Register_DataIn				: T_SLV_16;
 	signal PHYC_MDIO_Register_DataOut		: T_SLV_16;
 
@@ -152,21 +152,21 @@ begin
 	end generate;
 
 	genMDIOC1 : if (PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO_OVER_IIC) generate
-		signal Adapter_IICC_Request			: STD_LOGIC;
+		signal Adapter_IICC_Request			: std_logic;
 		signal Adapter_IICC_Command			: T_IO_IIC_COMMAND;
 		signal Adapter_IICC_Address			: T_SLV_8;
-		signal Adapter_IICC_WP_Valid		: STD_LOGIC;
+		signal Adapter_IICC_WP_Valid		: std_logic;
 		signal Adapter_IICC_WP_Data			: T_SLV_8;
-		signal Adapter_IICC_WP_Last			: STD_LOGIC;
-		signal Adapter_IICC_RP_Ack			: STD_LOGIC;
+		signal Adapter_IICC_WP_Last			: std_logic;
+		signal Adapter_IICC_RP_Ack			: std_logic;
 
-		signal IICC_Grant								: STD_LOGIC;
+		signal IICC_Grant								: std_logic;
 		signal IICC_Status							: T_IO_IIC_STATUS;
 		signal IICC_Error								: T_IO_IIC_ERROR;
-		signal IICC_WP_Ack							: STD_LOGIC;
-		signal IICC_RP_Valid						: STD_LOGIC;
+		signal IICC_WP_Ack							: std_logic;
+		signal IICC_RP_Valid						: std_logic;
 		signal IICC_RP_Data							: T_SLV_8;
-		signal IICC_RP_Last							: STD_LOGIC;
+		signal IICC_RP_Last							: std_logic;
 
 	begin
 		Adapter : entity PoC.mdio_IIC_Adapter

@@ -18,26 +18,26 @@ use			L_SATAController.SATATransceiverTypes.all;
 
 entity SATATransceiver_Virtex6_GTXE1 is
 	generic (
-		CHIPSCOPE_KEEP						: BOOLEAN											:= TRUE;
+		CHIPSCOPE_KEEP						: boolean											:= TRUE;
 		CLOCK_IN_FREQ_MHZ					: REAL												:= 150.0;																	-- 150 MHz
-		PORTS											: POSITIVE										:= 2;																			-- Number of Ports per Transceiver
+		PORTS											: positive										:= 2;																			-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3 => C_SATA_GENERATION_MAX)			-- intial SATA Generation
 	);
 	port (
-		SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
+		SATA_Clock								: out	std_logic_vector(PORTS	- 1 downto 0);
 
-		ResetDone									: out	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
-		ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
-		ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
+		ResetDone									: out	std_logic_vector(PORTS	- 1 downto 0);
+		ClockNetwork_Reset				: in	std_logic_vector(PORTS	- 1 downto 0);
+		ClockNetwork_ResetDone		: out	std_logic_vector(PORTS	- 1 downto 0);
 
-		RP_Reconfig								: in	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
-		RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
-		RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
-		RP_Lock										:	IN	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
-		RP_Locked									: out	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
+		RP_Reconfig								: in	std_logic_vector(PORTS	- 1 downto 0);
+		RP_ReconfigComplete				: out	std_logic_vector(PORTS	- 1 downto 0);
+		RP_ConfigReloaded					: out	std_logic_vector(PORTS	- 1 downto 0);
+		RP_Lock										:	in	std_logic_vector(PORTS	- 1 downto 0);
+		RP_Locked									: out	std_logic_vector(PORTS	- 1 downto 0);
 
 		SATA_Generation						: in	T_SATA_GENERATION_VECTOR(PORTS	- 1 downto 0);
-		OOB_HandshakingComplete		: in	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
+		OOB_HandshakingComplete		: in	std_logic_vector(PORTS	- 1 downto 0);
 
 		Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS	- 1 downto 0);
 		Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS	- 1 downto 0);
@@ -50,10 +50,10 @@ entity SATATransceiver_Virtex6_GTXE1 is
 		RX_OOBStatus							: out	T_SATA_OOB_VECTOR(PORTS	- 1 downto 0);
 		RX_Data										: out	T_SLVV_32(PORTS	- 1 downto 0);
 		RX_CharIsK								: out	T_SATA_CIK_VECTOR(PORTS	- 1 downto 0);
-		RX_IsAligned							: out STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
+		RX_IsAligned							: out std_logic_vector(PORTS	- 1 downto 0);
 
 		TX_OOBCommand							: in	T_SATA_OOB_VECTOR(PORTS	- 1 downto 0);
-		TX_OOBComplete						: out	STD_LOGIC_VECTOR(PORTS	- 1 downto 0);
+		TX_OOBComplete						: out	std_logic_vector(PORTS	- 1 downto 0);
 		TX_Data										: in	T_SLVV_32(PORTS	- 1 downto 0);
 		TX_CharIsK								: in	T_SATA_CIK_VECTOR(PORTS	- 1 downto 0);
 
@@ -65,7 +65,7 @@ end;
 
 
 architecture rtl of SATATransceiver_Virtex6_GTXE1 is
-	attribute KEEP 														: BOOLEAN;
+	attribute KEEP 														: boolean;
 
 -- ==================================================================
 -- SATATransceiver configuration
@@ -73,7 +73,7 @@ architecture rtl of SATATransceiver_Virtex6_GTXE1 is
 	constant NO_DEVICE_TIMEOUT_MS							: REAL						:= 50.0;					-- 50 ms
 	constant NEW_DEVICE_TIMEOUT_MS						: REAL						:= 0.001;				-- FIXME: not used -> remove ???
 
-	function IsSupportedGeneration(SATAGen : T_SATA_GENERATION) return BOOLEAN is
+	function IsSupportedGeneration(SATAGen : T_SATA_GENERATION) return boolean is
 	begin
 		case SATAGen is
 			when SATA_GENERATION_1	=> return TRUE;
@@ -82,19 +82,19 @@ architecture rtl of SATATransceiver_Virtex6_GTXE1 is
 		end case;
 	end;
 
-	signal ClockIn_75MHz											: STD_LOGIC;
-	signal ClockIn_150MHz											: STD_LOGIC;
-	signal ClockIn_150MHz_BUFR								: STD_LOGIC;
+	signal ClockIn_75MHz											: std_logic;
+	signal ClockIn_150MHz											: std_logic;
+	signal ClockIn_150MHz_BUFR								: std_logic;
 
-	signal Control_Clock											: STD_LOGIC;
+	signal Control_Clock											: std_logic;
 
-	signal GTXConfig_Reset										: STD_LOGIC;
-	signal GTXConfig_Reconfig									: STD_LOGIC;
-	signal GTXConfig_ReconfigComplete					: STD_LOGIC;
-	SIGNAl GTXConfig_ConfigReloaded						: STD_LOGIC;
-	signal GTXConfig_GTX_ReloadConfig					: STD_LOGIC;
+	signal GTXConfig_Reset										: std_logic;
+	signal GTXConfig_Reconfig									: std_logic;
+	signal GTXConfig_ReconfigComplete					: std_logic;
+	signal GTXConfig_ConfigReloaded						: std_logic;
+	signal GTXConfig_GTX_ReloadConfig					: std_logic;
 
-	attribute KEEP OF Control_Clock						: signal IS CHIPSCOPE_KEEP;
+	attribute KEEP of Control_Clock						: signal is CHIPSCOPE_KEEP;
 begin
 -- ==================================================================
 -- Assert statements
@@ -152,92 +152,92 @@ begin
 		signal RX_OOBStatus_i											: T_SATA_OOB;
 		signal RX_OOBStatus_d											: T_SATA_OOB;			--						:= OOB_NONE;
 
-		signal ClkNet_Reset												: STD_LOGIC;
-		signal ClkNet_ResetDone										: STD_LOGIC;
-		signal ClockNetwork_ResetDone_i						: STD_LOGIC;
+		signal ClkNet_Reset												: std_logic;
+		signal ClkNet_ResetDone										: std_logic;
+		signal ClockNetwork_ResetDone_i						: std_logic;
 
-		signal GTX_TX_RefClockIn									: STD_LOGIC;
-		signal GTX_RX_RefClockIn									: STD_LOGIC;
-		signal GTX_RefClockOut										: STD_LOGIC;
+		signal GTX_TX_RefClockIn									: std_logic;
+		signal GTX_RX_RefClockIn									: std_logic;
+		signal GTX_RefClockOut										: std_logic;
 
-		signal GTX_FABClockOut										: STD_LOGIC_VECTOR(1 downto 0);
-		signal GTX_TX_RefClockOut									: STD_LOGIC;
-		signal GTX_TX_PCSClockOut									: STD_LOGIC;
-		signal GTX_RX_RefClockOut									: STD_LOGIC;
-		signal GTX_RX_PCSClockOut									: STD_LOGIC;
+		signal GTX_FABClockOut										: std_logic_vector(1 downto 0);
+		signal GTX_TX_RefClockOut									: std_logic;
+		signal GTX_TX_PCSClockOut									: std_logic;
+		signal GTX_RX_RefClockOut									: std_logic;
+		signal GTX_RX_PCSClockOut									: std_logic;
 
-		signal GTX_Clock_2X												: STD_LOGIC;
-		signal GTX_Clock_4X												: STD_LOGIC;
+		signal GTX_Clock_2X												: std_logic;
+		signal GTX_Clock_4X												: std_logic;
 
-		signal GTX_ResetDone											: STD_LOGIC;
+		signal GTX_ResetDone											: std_logic;
 
-		signal GTX_TX_Reset												: STD_LOGIC;
-		signal GTX_TX_ResetDone										: STD_LOGIC;
+		signal GTX_TX_Reset												: std_logic;
+		signal GTX_TX_ResetDone										: std_logic;
 
-		signal GTX_RX_Reset												: STD_LOGIC;
-		signal GTX_RX_ResetDone										: STD_LOGIC;
+		signal GTX_RX_Reset												: std_logic;
+		signal GTX_RX_ResetDone										: std_logic;
 
-		signal GTX_PLL_Reset											: STD_LOGIC;
-		signal GTX_PLL_Reset_r										:	STD_LOGIC																:= '0';
-		signal GTX_PLL_ResetDone_i								:	STD_LOGIC;
-		signal GTX_PLL_ResetDone_d								:	STD_LOGIC																:= '0';
-		signal GTX_PLL_ResetDone_d2								:	STD_LOGIC																:= '0';
-		signal GTX_PLL_ResetDone									:	STD_LOGIC;
+		signal GTX_PLL_Reset											: std_logic;
+		signal GTX_PLL_Reset_r										:	std_logic																:= '0';
+		signal GTX_PLL_ResetDone_i								:	std_logic;
+		signal GTX_PLL_ResetDone_d								:	std_logic																:= '0';
+		signal GTX_PLL_ResetDone_d2								:	std_logic																:= '0';
+		signal GTX_PLL_ResetDone									:	std_logic;
 
-		signal GTX_TXPLL_Reset										:	STD_LOGIC;
-		signal GTX_TXPLL_ResetDone								:	STD_LOGIC;
-		signal GTX_RXPLL_Reset										:	STD_LOGIC;
-		signal GTX_RXPLL_ResetDone								:	STD_LOGIC;
+		signal GTX_TXPLL_Reset										:	std_logic;
+		signal GTX_TXPLL_ResetDone								:	std_logic;
+		signal GTX_RXPLL_Reset										:	std_logic;
+		signal GTX_RXPLL_ResetDone								:	std_logic;
 
 		signal GTX_TX_LineRate										: T_SLV_2																	:= "00";
-		signal GTX_TX_LineRate_Changed						: STD_LOGIC;
-		signal GTX_TX_LineRate_Locked							: STD_LOGIC																:= '0';
+		signal GTX_TX_LineRate_Changed						: std_logic;
+		signal GTX_TX_LineRate_Locked							: std_logic																:= '0';
 		signal GTX_RX_LineRate										: T_SLV_2																	:= "00";
-		signal GTX_RX_LineRate_Changed						: STD_LOGIC;
-		signal GTX_RX_LineRate_Locked							: STD_LOGIC																:= '0';
-		signal GTX_LineRate_Locked								: STD_LOGIC;
+		signal GTX_RX_LineRate_Changed						: std_logic;
+		signal GTX_RX_LineRate_Locked							: std_logic																:= '0';
+		signal GTX_LineRate_Locked								: std_logic;
 
-		signal GTX_TX_ElectricalIDLE							: STD_LOGIC																:= '0';
-		signal GTX_TX_ComInit											: STD_LOGIC																:= '0';
-		signal GTX_TX_ComWake											: STD_LOGIC																:= '0';
-		signal GTX_TX_OOBComplete									: STD_LOGIC;
+		signal GTX_TX_ElectricalIDLE							: std_logic																:= '0';
+		signal GTX_TX_ComInit											: std_logic																:= '0';
+		signal GTX_TX_ComWake											: std_logic																:= '0';
+		signal GTX_TX_OOBComplete									: std_logic;
 
 		signal GTX_TX_InvalidK										: T_SLV_4;
 		signal GTX_TX_BufferStatus								: T_SLV_2;
 
-		signal GTX_RX_ElectricalIDLE_i						: STD_LOGIC;
-		signal GTX_RX_ElectricalIDLE_d						: STD_LOGIC																:= '0';
-		signal GTX_RX_ElectricalIDLE_d2						: STD_LOGIC																:= '0';
-		signal GTX_RX_ElectricalIDLE							: STD_LOGIC;
-		signal GTX_RX_ComInit											: STD_LOGIC;
-		signal GTX_RX_ComWake											: STD_LOGIC;
+		signal GTX_RX_ElectricalIDLE_i						: std_logic;
+		signal GTX_RX_ElectricalIDLE_d						: std_logic																:= '0';
+		signal GTX_RX_ElectricalIDLE_d2						: std_logic																:= '0';
+		signal GTX_RX_ElectricalIDLE							: std_logic;
+		signal GTX_RX_ComInit											: std_logic;
+		signal GTX_RX_ComWake											: std_logic;
 
 		signal GTX_RX_Status											: T_SLV_3;
-		SIGNAl GTX_RX_DisparityError							: T_SLV_4;
-		SIGNAl GTX_RX_Illegal8B10BCode						: T_SLV_4;
+		signal GTX_RX_DisparityError							: T_SLV_4;
+		signal GTX_RX_Illegal8B10BCode						: T_SLV_4;
 		signal GTX_RX_LossOfSync									: T_SLV_2;																-- unused
 		signal GTX_RX_BufferStatus								: T_SLV_3;
 
 		signal GTX_RX_Data												: T_SLV_32;
-		signal GTX_RX_CommaDetected								: STD_LOGIC;															-- unused
+		signal GTX_RX_CommaDetected								: std_logic;															-- unused
 		signal GTX_RX_CharIsComma									: T_SLV_4;																-- unused
 		signal GTX_RX_CharIsK											: T_SLV_4;
-		signal GTX_RX_ByteIsAligned								: STD_LOGIC;
-		signal GTX_RX_ByteRealign									: STD_LOGIC;															-- unused
-		signal GTX_RX_Valid												: STD_LOGIC;															-- unused
+		signal GTX_RX_ByteIsAligned								: std_logic;
+		signal GTX_RX_ByteRealign									: std_logic;															-- unused
+		signal GTX_RX_Valid												: std_logic;															-- unused
 
 		signal GTX_TX_Data												: T_SLV_32;
 		signal GTX_TX_CharIsK											: T_SLV_4;
 
-		signal GTX_TX_n														: STD_LOGIC;
-		signal GTX_TX_p														: STD_LOGIC;
-		signal GTX_RX_n														: STD_LOGIC;
-		signal GTX_RX_p														: STD_LOGIC;
+		signal GTX_TX_n														: std_logic;
+		signal GTX_TX_p														: std_logic;
+		signal GTX_RX_n														: std_logic;
+		signal GTX_RX_p														: std_logic;
 
-		signal DD_NoDevice_i											: STD_LOGIC;
-		signal DD_NoDevice												: STD_LOGIC;
-		signal DD_NewDevice_i											: STD_LOGIC;
-		signal DD_NewDevice												: STD_LOGIC;
+		signal DD_NoDevice_i											: std_logic;
+		signal DD_NoDevice												: std_logic;
+		signal DD_NewDevice_i											: std_logic;
+		signal DD_NewDevice												: std_logic;
 
 		signal TX_Error_i													: T_SATA_TRANSCEIVER_TX_ERROR;
 		signal RX_Error_i													: T_SATA_TRANSCEIVER_RX_ERROR;
@@ -245,8 +245,8 @@ begin
 		signal WA_Align														: T_SLV_2;
 
 		-- keep internal clock nets, so timing constrains from UCF can find them
-		attribute KEEP OF GTX_Clock_2X						: signal IS CHIPSCOPE_KEEP;
-		attribute KEEP OF GTX_Clock_4X						: signal IS CHIPSCOPE_KEEP;
+		attribute KEEP of GTX_Clock_2X						: signal is CHIPSCOPE_KEEP;
+		attribute KEEP of GTX_Clock_4X						: signal is CHIPSCOPE_KEEP;
 
 	begin
 		-- TX path
@@ -292,19 +292,19 @@ begin
 		-- ResetControl
 		-- ==================================================================
 		blkReset : block
-			signal GTX_PLL_Reset											: STD_LOGIC;
-			signal GTX_PLL_Reset_r1										: STD_LOGIC																:= '0';
-			signal GTX_PLL_Reset_r2										: STD_LOGIC																:= '0';
+			signal GTX_PLL_Reset											: std_logic;
+			signal GTX_PLL_Reset_r1										: std_logic																:= '0';
+			signal GTX_PLL_Reset_r2										: std_logic																:= '0';
 
-			signal GTX_PLL_ResetDone_i								: STD_LOGIC;
-			signal GTX_PLL_ResetDone_d1								: STD_LOGIC																:= '0';
-			signal GTX_PLL_ResetDone_d2								: STD_LOGIC																:= '0';
-			signal GTX_PLL_ResetDone									: STD_LOGIC;
+			signal GTX_PLL_ResetDone_i								: std_logic;
+			signal GTX_PLL_ResetDone_d1								: std_logic																:= '0';
+			signal GTX_PLL_ResetDone_d2								: std_logic																:= '0';
+			signal GTX_PLL_ResetDone									: std_logic;
 
-			signal ClockNetwork_ResetDone_d1					: STD_LOGIC																:= '0';
-			signal ClockNetwork_ResetDone_d2					: STD_LOGIC																:= '0';
+			signal ClockNetwork_ResetDone_d1					: std_logic																:= '0';
+			signal ClockNetwork_ResetDone_d2					: std_logic																:= '0';
 
-			signal GTX_Port_Reset											: STD_LOGIC;
+			signal GTX_Port_Reset											: std_logic;
 		begin
 			-- clock related reset generation
 			-- ======================================================================
@@ -315,7 +315,7 @@ begin
 			-- D-FF @Control_Clock with async reset
 			process(Control_Clock)
 			begin
-				if ((GTX_PLL_Reset_r2 = '1') AND (GTX_PLL_ResetDone = '0')) then
+				if ((GTX_PLL_Reset_r2 = '1') and (GTX_PLL_ResetDone = '0')) then
 					GTX_PLL_Reset_r1			<= '0';
 					GTX_PLL_Reset_r2			<= '0';
 				else
@@ -333,7 +333,7 @@ begin
 			-- clock related resetdone evaluation
 			-- ======================================================================
 			-- combine TX and RX PLLs
-			GTX_PLL_ResetDone_i						<= GTX_TXPLL_ResetDone AND GTX_RXPLL_ResetDone;						-- @async
+			GTX_PLL_ResetDone_i						<= GTX_TXPLL_ResetDone and GTX_RXPLL_ResetDone;						-- @async
 
 			-- synchronize signal
 			GTX_PLL_ResetDone_d1					<= GTX_PLL_ResetDone_i	when rising_edge(Control_Clock);
@@ -341,7 +341,7 @@ begin
 			GTX_PLL_ResetDone							<= GTX_PLL_ResetDone_d2;
 
 			-- combine all clock related resetdone signals
-			ClockNetwork_ResetDone_i			<= GTX_PLL_ResetDone AND ClkNet_ResetDone;								-- @Control_Clock: is high, if all clocknetwork components are stable
+			ClockNetwork_ResetDone_i			<= GTX_PLL_ResetDone and ClkNet_ResetDone;								-- @Control_Clock: is high, if all clocknetwork components are stable
 			ClockNetwork_ResetDone(I)			<= ClockNetwork_ResetDone_i;
 
 	--		GTX_RX_LineRate_Changed_d			<= GTX_RX_LineRate_Changed	when rising_edge(Control_Clock);
@@ -355,12 +355,12 @@ begin
 
 			-- logic related resetdone evaluation
 			-- ======================================================================
-			GTX_ResetDone									<= GTX_TX_ResetDone AND GTX_RX_ResetDone;									-- @GTX_Clock_4X
+			GTX_ResetDone									<= GTX_TX_ResetDone and GTX_RX_ResetDone;									-- @GTX_Clock_4X
 
 			ClockNetwork_ResetDone_d1			<= ClockNetwork_ResetDone_i		when rising_edge(GTX_Clock_4X);
 			ClockNetwork_ResetDone_d2			<= ClockNetwork_ResetDone_d1	when rising_edge(GTX_Clock_4X);
 
-			ResetDone(I)									<= GTX_ResetDone AND ClockNetwork_ResetDone_d2;						-- @GTX_Clock_4X: gate output with clocknetwork resetdone to ensure a delayed release of signal
+			ResetDone(I)									<= GTX_ResetDone and ClockNetwork_ResetDone_d2;						-- @GTX_Clock_4X: gate output with clocknetwork resetdone to ensure a delayed release of signal
 		end block;
 
 		-- ==================================================================
@@ -404,11 +404,11 @@ begin
 			if rising_edge(GTX_Clock_4X) then
 				case TX_OOBCommand_d is
 					when SATA_OOB_NONE =>
-						NULL;
+						null;
 
 					when SATA_OOB_READY =>
 --						GTX_TX_ElectricalIDLE		<= '1';
-						NULL;
+						null;
 
 					when SATA_OOB_COMRESET =>
 						GTX_TX_ElectricalIDLE		<= '1';
@@ -494,7 +494,7 @@ begin
 
 				if (GTX_RX_ComInit = '1') then
 					RX_OOBStatus_i				<= SATA_OOB_COMRESET;
-				ELSif (GTX_RX_ComWake = '1') then
+				elsif (GTX_RX_ComWake = '1') then
 					RX_OOBStatus_i				<= SATA_OOB_COMWAKE;
 				end if;
 			end if;
@@ -513,7 +513,7 @@ begin
 
 			if (slv_or(GTX_TX_InvalidK) = '1') then
 				TX_Error_i	<= SATA_TRANSCEIVER_TX_ERROR_ENCODER;
-			ELSif (GTX_TX_BufferStatus(1) = '1') then
+			elsif (GTX_TX_BufferStatus(1) = '1') then
 				TX_Error_i	<= SATA_TRANSCEIVER_TX_ERROR_BUFFER;
 			end if;
 		end process;
@@ -525,11 +525,11 @@ begin
 
 			if (GTX_RX_ByteIsAligned = '0') then
 				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_ALIGNEMENT;
-			ELSif (slv_or(GTX_RX_DisparityError) = '1') then
+			elsif (slv_or(GTX_RX_DisparityError) = '1') then
 				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_DISPARITY;
-			ELSif (slv_or(GTX_RX_Illegal8B10BCode) = '1') then
+			elsif (slv_or(GTX_RX_Illegal8B10BCode) = '1') then
 				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_DECODER;
-			ELSif (GTX_RX_BufferStatus(2) = '1') then
+			elsif (GTX_RX_BufferStatus(2) = '1') then
 				RX_Error_i	<= SATA_TRANSCEIVER_RX_ERROR_BUFFER;
 			end if;
 		end process;
@@ -556,8 +556,8 @@ begin
 			);
 
 		blkSync1 : block
-			signal NoDevice_sy1				: STD_LOGIC									:= '0';
-			signal NoDevice_sy2				: STD_LOGIC									:= '0';
+			signal NoDevice_sy1				: std_logic									:= '0';
+			signal NoDevice_sy2				: std_logic									:= '0';
 		begin
 			NoDevice_sy1						<= DD_NoDevice_i	when rising_edge(GTX_Clock_4X);
 			NoDevice_sy2						<= NoDevice_sy1		when rising_edge(GTX_Clock_4X);
@@ -583,11 +583,11 @@ begin
 
 			if (GTX_ResetDone = '0') then
 				Status(I)							<= SATA_TRANSCEIVER_STATUS_RESETING;
-			ELSif (DD_NoDevice = '1') then
+			elsif (DD_NoDevice = '1') then
 				Status(I)							<= SATA_TRANSCEIVER_STATUS_NO_DEVICE;
-			ELSif ((TX_Error_i /= SATA_TRANSCEIVER_TX_ERROR_NONE) OR (RX_Error_i /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
+			elsif ((TX_Error_i /= SATA_TRANSCEIVER_TX_ERROR_NONE) or (RX_Error_i /= SATA_TRANSCEIVER_RX_ERROR_NONE)) then
 				Status(I)							<= SATA_TRANSCEIVER_STATUS_ERROR;
-			ELSif (DD_NewDevice = '1') then
+			elsif (DD_NewDevice = '1') then
 				Status(I)							<= SATA_TRANSCEIVER_STATUS_NEW_DEVICE;
 
 -- TODO:
@@ -643,8 +643,8 @@ begin
 			end if;
 		end process;
 
-		GTX_LineRate_Locked						<= GTX_TX_LineRate_Locked AND GTX_RX_LineRate_Locked;
-		RP_ConfigReloaded(I)					<= GTX_LineRate_Locked AND ClockNetwork_ResetDone_i;
+		GTX_LineRate_Locked						<= GTX_TX_LineRate_Locked and GTX_RX_LineRate_Locked;
+		RP_ConfigReloaded(I)					<= GTX_LineRate_Locked and ClockNetwork_ResetDone_i;
 
 -- ==================================================================
 -- GTXE1 - instance for Port I
@@ -1215,14 +1215,14 @@ begin
 -- ChipScope debugging signals
 -- ==================================================================
 		genCSP : if (CHIPSCOPE_KEEP = TRUE) generate
-			signal DBG_ClockTX_1X												: STD_LOGIC;
-			signal DBG_ClockTX_4X												: STD_LOGIC;
+			signal DBG_ClockTX_1X												: std_logic;
+			signal DBG_ClockTX_4X												: std_logic;
 
-			signal DBG_GTP_RX_ByteIsAligned							: STD_LOGIC;
-			signal DBG_GTP_RX_CharIsComma								: STD_LOGIC;
-			signal DBG_GTP_RX_CharIsK										: STD_LOGIC;
+			signal DBG_GTP_RX_ByteIsAligned							: std_logic;
+			signal DBG_GTP_RX_CharIsComma								: std_logic;
+			signal DBG_GTP_RX_CharIsK										: std_logic;
 			signal DBG_GTP_RX_Data											: T_SLV_8;
-			signal DBG_GTP_TX_CharIsK										: STD_LOGIC;
+			signal DBG_GTP_TX_CharIsK										: std_logic;
 			signal DBG_GTP_TX_Data											: T_SLV_8;
 
 			signal DBG_RX_CharIsK												: T_SATA_CIK;
@@ -1230,36 +1230,36 @@ begin
 			signal DBG_TX_CharIsK												: T_SATA_CIK;
 			signal DBG_TX_Data													: T_SLV_32;
 
-			signal DBG_OOBCommand_COMRESET							: STD_LOGIC;
-			signal DBG_OOBCommand_COMWAKE								: STD_LOGIC;
-			signal DBG_GTX_COMRESET											: STD_LOGIC;
-			signal DBG_GTX_COMWAKE											: STD_LOGIC;
+			signal DBG_OOBCommand_COMRESET							: std_logic;
+			signal DBG_OOBCommand_COMWAKE								: std_logic;
+			signal DBG_GTX_COMRESET											: std_logic;
+			signal DBG_GTX_COMWAKE											: std_logic;
 
-			signal DBG_OOBStatus_COMRESET								: STD_LOGIC;
-			signal DBG_OOBStatus_COMWAKE								: STD_LOGIC;
+			signal DBG_OOBStatus_COMRESET								: std_logic;
+			signal DBG_OOBStatus_COMWAKE								: std_logic;
 
-			attribute KEEP OF DBG_ClockTX_1X						: signal IS TRUE;
-			attribute KEEP OF DBG_ClockTX_4X						: signal IS TRUE;
+			attribute KEEP of DBG_ClockTX_1X						: signal is TRUE;
+			attribute KEEP of DBG_ClockTX_4X						: signal is TRUE;
 
-			attribute KEEP OF DBG_GTP_RX_ByteIsAligned	: signal IS TRUE;
-			attribute KEEP OF DBG_GTP_RX_CharIsComma		: signal IS TRUE;
-			attribute KEEP OF DBG_GTP_RX_CharIsK				: signal IS TRUE;
-			attribute KEEP OF DBG_GTP_RX_Data						: signal IS TRUE;
-			attribute KEEP OF DBG_GTP_TX_CharIsK				: signal IS TRUE;
-			attribute KEEP OF DBG_GTP_TX_Data						: signal IS TRUE;
+			attribute KEEP of DBG_GTP_RX_ByteIsAligned	: signal is TRUE;
+			attribute KEEP of DBG_GTP_RX_CharIsComma		: signal is TRUE;
+			attribute KEEP of DBG_GTP_RX_CharIsK				: signal is TRUE;
+			attribute KEEP of DBG_GTP_RX_Data						: signal is TRUE;
+			attribute KEEP of DBG_GTP_TX_CharIsK				: signal is TRUE;
+			attribute KEEP of DBG_GTP_TX_Data						: signal is TRUE;
 
-			attribute KEEP OF DBG_RX_CharIsK						: signal IS TRUE;
-			attribute KEEP OF DBG_RX_Data								: signal IS TRUE;
-			attribute KEEP OF DBG_TX_CharIsK						: signal IS TRUE;
-			attribute KEEP OF DBG_TX_Data								: signal IS TRUE;
+			attribute KEEP of DBG_RX_CharIsK						: signal is TRUE;
+			attribute KEEP of DBG_RX_Data								: signal is TRUE;
+			attribute KEEP of DBG_TX_CharIsK						: signal is TRUE;
+			attribute KEEP of DBG_TX_Data								: signal is TRUE;
 
-			attribute KEEP OF DBG_OOBCommand_COMRESET		: signal IS TRUE;
-			attribute KEEP OF DBG_OOBCommand_COMWAKE		: signal IS TRUE;
-			attribute KEEP OF DBG_GTX_COMRESET					: signal IS TRUE;
-			attribute KEEP OF DBG_GTX_COMWAKE						: signal IS TRUE;
+			attribute KEEP of DBG_OOBCommand_COMRESET		: signal is TRUE;
+			attribute KEEP of DBG_OOBCommand_COMWAKE		: signal is TRUE;
+			attribute KEEP of DBG_GTX_COMRESET					: signal is TRUE;
+			attribute KEEP of DBG_GTX_COMWAKE						: signal is TRUE;
 
-			attribute KEEP OF DBG_OOBStatus_COMRESET		: signal IS TRUE;
-			attribute KEEP OF DBG_OOBStatus_COMWAKE			: signal IS TRUE;
+			attribute KEEP of DBG_OOBStatus_COMRESET		: signal is TRUE;
+			attribute KEEP of DBG_OOBStatus_COMWAKE			: signal is TRUE;
 		begin
 --			DBG_ClockTX_1X							<= GTP_ClockTX_1X;
 --			DBG_ClockTX_4X							<= GTP_ClockTX_4X;

@@ -11,23 +11,23 @@ use			PoC.physical.all;
 entity LocalLink_PerformanceCounter is
 	generic (
 		CLOCK_IN_FREQ							: FREQ									:= 100 MHz;
-		AGGREGATION_INTERVAL			: TIME									:= 500 ms
+		AGGREGATION_INTERVAL			: time									:= 500 ms
 	);
 	port (
-		Clock											: in	STD_LOGIC;
-		Reset											: in	STD_LOGIC;
+		Clock											: in	std_logic;
+		Reset											: in	std_logic;
 
-		In_Valid									: in	STD_LOGIC;
+		In_Valid									: in	std_logic;
 		In_Data										: in	T_SLV_8;
-		In_SOF										: in	STD_LOGIC;
-		In_EOF										: in	STD_LOGIC;
-		In_Ack										: out	STD_LOGIC;
+		In_SOF										: in	std_logic;
+		In_EOF										: in	std_logic;
+		In_Ack										: out	std_logic;
 
-		Out_Valid									: out	STD_LOGIC;
+		Out_Valid									: out	std_logic;
 		Out_Data									: out	T_SLV_8;
-		Out_SOF										: out	STD_LOGIC;
-		Out_EOF										: out	STD_LOGIC;
-		Out_Ack										: in	STD_LOGIC;
+		Out_SOF										: out	std_logic;
+		Out_EOF										: out	std_logic;
+		Out_Ack										: in	std_logic;
 
 		PacketsPerSecond					: out	T_SLV_32;
 		BytesPerSecond						: out	T_SLV_32
@@ -35,26 +35,26 @@ entity LocalLink_PerformanceCounter is
 end;
 
 architecture rtl of LocalLink_PerformanceCounter is
-	attribute KEEP										: BOOLEAN;
-	attribute FSM_ENCODING						: STRING;
+	attribute KEEP										: boolean;
+	attribute FSM_ENCODING						: string;
 
-	signal In_Ack_i									: STD_LOGIC;
+	signal In_Ack_i									: std_logic;
 
-	signal Is_NewPacket								: STD_LOGIC;
-	signal Is_DataFlow								: STD_LOGIC;
+	signal Is_NewPacket								: std_logic;
+	signal Is_DataFlow								: std_logic;
 
-	signal PacketCounter_rst					: STD_LOGIC;
-	signal PacketCounter_en						: STD_LOGIC;
-	signal PacketCounter_us						: UNSIGNED(31 downto 0)			:= (others => '0');
+	signal PacketCounter_rst					: std_logic;
+	signal PacketCounter_en						: std_logic;
+	signal PacketCounter_us						: unsigned(31 downto 0)			:= (others => '0');
 
-	signal ByteCounter_rst						: STD_LOGIC;
-	signal ByteCounter_en							: STD_LOGIC;
-	signal ByteCounter_us							: UNSIGNED(31 downto 0)			:= (others => '0');
+	signal ByteCounter_rst						: std_logic;
+	signal ByteCounter_en							: std_logic;
+	signal ByteCounter_us							: unsigned(31 downto 0)			:= (others => '0');
 
-	signal TimeBaseCounter_rst				: STD_LOGIC;
-	signal TimeBaseCounter_en					: STD_LOGIC;
-	signal TimeBaseCounter_us					: UNSIGNED(31 downto 0)			:= (others => '0');
-	signal TimeBaseCounter_ov					: STD_LOGIC;
+	signal TimeBaseCounter_rst				: std_logic;
+	signal TimeBaseCounter_en					: std_logic;
+	signal TimeBaseCounter_us					: unsigned(31 downto 0)			:= (others => '0');
+	signal TimeBaseCounter_ov					: std_logic;
 
 	signal PacketsPerSecond_d					: T_SLV_32									:= (others => '0');
 	signal BytesPerSecond_d						: T_SLV_32									:= (others => '0');
@@ -69,8 +69,8 @@ begin
 	In_Ack			<= In_Ack_i;
 
 	-- triggers
-	Is_NewPacket	<= In_Valid AND In_SOF;
-	Is_DataFlow		<= In_Valid AND In_Ack_i;
+	Is_NewPacket	<= In_Valid and In_SOF;
+	Is_DataFlow		<= In_Valid and In_Ack_i;
 
 	-- counter control
 	PacketCounter_rst	<= TimeBaseCounter_ov;
@@ -83,7 +83,7 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR PacketCounter_rst) = '1') then
+			if ((Reset or PacketCounter_rst) = '1') then
 				PacketCounter_us				<= (others => '0');
 			else
 				if (PacketCounter_en = '1') then
@@ -91,7 +91,7 @@ begin
 				end if;
 			end if;
 
-			if ((Reset OR ByteCounter_rst)= '1') then
+			if ((Reset or ByteCounter_rst)= '1') then
 				ByteCounter_us					<= (others => '0');
 			else
 				if (ByteCounter_en = '1') then
@@ -105,7 +105,7 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR TimeBaseCounter_rst) = '1') then
+			if ((Reset or TimeBaseCounter_rst) = '1') then
 				TimeBaseCounter_us				<= (others => '0');
 			else
 				if (TimeBaseCounter_en = '1') then

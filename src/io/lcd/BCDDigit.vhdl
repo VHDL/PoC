@@ -9,32 +9,32 @@ use			PoC.utils.all;
 
 entity BCDDigit is
 	generic (
-		RADIX				: POSITIVE					:= 4
+		RADIX				: positive					:= 4
 	);
 	port (
-		Clock				: in	STD_LOGIC;
-		Reset				: in	STD_LOGIC;
-		Strobe			: in	STD_LOGIC;
-		C_In				: in	STD_LOGIC_VECTOR(RADIX - 1 downto 0);
-		C_Out				: out	STD_LOGIC_VECTOR(RADIX - 1 downto 0);
+		Clock				: in	std_logic;
+		Reset				: in	std_logic;
+		Strobe			: in	std_logic;
+		C_In				: in	std_logic_vector(RADIX - 1 downto 0);
+		C_Out				: out	std_logic_vector(RADIX - 1 downto 0);
 		BCD					: out T_BCD_VECTOR(RADIX - 1 downto 0)
 	);
 end;
 
 architecture rtl of BCDDigit is
-	type T_BCDSUM		IS array (NATURAL range <>)		OF UNSIGNED(3 downto 0);
+	type T_BCDSUM		is array (natural range <>)		of unsigned(3 downto 0);
 
 begin
 	process(Clock)
 		variable BCDSum			: T_BCDSUM(RADIX - 1 downto 0)				:= (others => (others => '0'));
-		variable Carray			: STD_LOGIC_VECTOR(RADIX downto 0);
+		variable Carray			: std_logic_vector(RADIX downto 0);
 
 	begin
 		if rising_edge(Clock) then
-			IF Reset = '1' then
+			if Reset = '1' then
 			 BCDSum								:= (others => (others => '0'));
 			else
-				IF Strobe = '1' then
+				if Strobe = '1' then
 					for i in RADIX - 1 downto 0 loop
 
 						Carray(0)				:= C_In(I);

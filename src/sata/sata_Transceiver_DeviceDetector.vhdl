@@ -43,41 +43,41 @@ use			PoC.physical.all;
 
 entity sata_DeviceDetector is
 	generic (
-		DEBUG								: BOOLEAN	:= FALSE;
+		DEBUG								: boolean	:= FALSE;
 		CLOCK_FREQ					: FREQ		:= 150 MHz;
-		NO_DEVICE_TIMEOUT		: TIME		:= 50 ms;
-		NEW_DEVICE_TIMEOUT	: TIME		:= 1 ms
+		NO_DEVICE_TIMEOUT		: time		:= 50 ms;
+		NEW_DEVICE_TIMEOUT	: time		:= 1 ms
 	);
 	port (
-		Clock						: in STD_LOGIC;
-		ElectricalIDLE	: in STD_LOGIC;
-		RxComReset			: in STD_LOGIC;
-		NoDevice				: out STD_LOGIC;
-		NewDevice				: out STD_LOGIC
+		Clock						: in std_logic;
+		ElectricalIDLE	: in std_logic;
+		RxComReset			: in std_logic;
+		NoDevice				: out std_logic;
+		NewDevice				: out std_logic
 	);
 end entity;
 
 
 architecture rtl of sata_DeviceDetector is
-	attribute KEEP					: BOOLEAN;
-	attribute FSM_ENCODING	: STRING;
+	attribute KEEP					: boolean;
+	attribute FSM_ENCODING	: string;
 
 	-- Statemachine
 	type T_State is (ST_NORMAL_MODE, ST_NO_DEVICE, ST_OOB_RESET, ST_NEW_DEVICE);
 
 	signal State										: T_State	:= ST_NORMAL_MODE;
 	signal NextState								: T_State;
-	attribute FSM_ENCODING OF State	: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	attribute FSM_ENCODING of State	: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	signal ElectricalIDLE_sync	: STD_LOGIC;
-	signal ElectricalIDLE_i			: STD_LOGIC_VECTOR(1 downto 0) := "00";
-	signal RxComReset_i					: STD_LOGIC_VECTOR(1 downto 0);
+	signal ElectricalIDLE_sync	: std_logic;
+	signal ElectricalIDLE_i			: std_logic_vector(1 downto 0) := "00";
+	signal RxComReset_i					: std_logic_vector(1 downto 0);
 
-	signal TC_load				: STD_LOGIC;
-	signal TC_en					: STD_LOGIC;
-	signal TC_timeout			: STD_LOGIC;
-	signal TD_load				: STD_LOGIC;
-	signal TD_timeout			: STD_LOGIC;
+	signal TC_load				: std_logic;
+	signal TC_en					: std_logic;
+	signal TC_timeout			: std_logic;
+	signal TD_load				: std_logic;
+	signal TD_timeout			: std_logic;
 
 begin
 
@@ -116,7 +116,7 @@ begin
 			when ST_NO_DEVICE =>
 				NoDevice		<= '1';
 
-				IF RxComReset_i = "01" then
+				if RxComReset_i = "01" then
 					NextState	<= ST_OOB_RESET;
 					TD_load		<= '1';
 				end if;
