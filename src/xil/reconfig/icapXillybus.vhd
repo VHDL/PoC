@@ -42,7 +42,7 @@ library poc;
 use poc.utils.all;
 
 
-entity icap_controller is
+entity icap_xillybus is
 	generic (
 		MIN_DEPTH_OUT     : positive := 256;
 		MIN_DEPTH_IN      : positive := 256
@@ -71,9 +71,9 @@ entity icap_controller is
 		read_eof 		: buffer	std_logic;
 		read_open 		: in		std_logic
 	);
-end icap_controller;
+end icap_xillybus;
 
-architecture Behavioral of icap_controller is
+architecture Behavioral of icap_xillybus is
 
 	signal reset					: std_logic;
 	signal read_valid				: std_logic;
