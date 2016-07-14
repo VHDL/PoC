@@ -7,6 +7,9 @@ README.md
 # Xilinx Memory Interface Generator (MIG)
 mig/
 
+# reconfig
+reconfig/
+
 # Package
 xil.pkg.vhdl
 
@@ -26,6 +29,10 @@ xil_BSCAN.vhdl
 # xil_DRP_BusSync.vhdl
 xil_Reconfigurator.files
 xil_Reconfigurator.vhdl
+
+# ICAP
+xil_ICAP.vhdl
+xil_ICAP.files
 
 # SystemMonitor
 # xil_SystemMonitor.files
