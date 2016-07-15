@@ -15,10 +15,11 @@ requirements.txt
 # Documentation files
 docs/
 AUTHORS.md
+CHANGES.md
+CONTRIBUTING.md
 LICENSE.md
 README.tpl
 README.md
-CHANGES.md
 
 # Configuration scripts
 poc.sh
