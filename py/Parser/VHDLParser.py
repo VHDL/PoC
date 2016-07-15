@@ -295,7 +295,7 @@ class VHDL:
 		EntityDeclaration_Identifier =        102
 		EntityDeclaration_WhiteSpace2 =       103
 		EntityDeclaration_DeclarativeRegion = 104
-
+		
 		GenericList_KeywordGeneric =          110
 		GenericList_WhiteSpace1 =             111
 		GenericList_OpeningParenthesis =      112
@@ -533,7 +533,7 @@ class VHDL:
 						continue
 					else:
 						raise ParserException("Expected one of these keywords: generic, port, begin, end.")
-
+					
 				if (not isinstance(lastBlock, EntityBlock)):
 					startToken = tokenBuffer.Get()
 					newBlock = EntityBlock(lastBlock, startToken, endToken=token.PreviousToken)
@@ -697,14 +697,14 @@ class VHDL:
 						parserState.Pop()
 						tokenBuffer += token
 						continue
-
+				
 				if (not isinstance(token, StringToken)):
 					raise ParserException("Expected port name (identifier).")
-
+				
 				startToken = tokenBuffer.Get()
 				if (startToken != token):
 					newBlock = IndentationBlock(lastBlock, startToken, token)
-
+				
 				parserState <<= cls.State.PortList_ItemRemainder
 				newToken = IdentifierToken(token)
 				tokenBuffer += newToken
@@ -712,13 +712,13 @@ class VHDL:
 				startToken = tokenBuffer.Get()
 				newToken1 = DelimiterToken(startToken)
 				newBlock = PortList_DelimiterBlock(lastBlock, newToken1, newToken1)
-
+				
 				if ((isinstance(token, CharacterToken) and (token.Value == "\n")) or (isinstance(token, SpaceToken))):
 					parserState <<= cls.State.PortList_OpeningParenthesis
 					continue
 				if (not isinstance(token, StringToken)):
 					raise ParserException("Expected port name (identifier).")
-
+				
 				parserState <<= cls.State.PortList_ItemRemainder
 				newToken = IdentifierToken(token)
 				newToken.PreviousToken = newToken1

@@ -19,3 +19,4 @@ compile-xilinx-vivado.sh
 # Generic Colourizer rules
 ghdl.grcrules
 ghdl.skipwarning.grcrules
+

@@ -11,11 +11,11 @@
 -- This module generates a PWM signal for a 3-pin (transistor controlled) or
 -- 4-pin fan header. The FPGAs temperature is read from device specific system
 -- monitors (normal, user temperature, over temperature).
---
+-- 
 -- For example the Xilinx System Monitors are configured as follows:
---
+-- 
 -- .. code-block:: None
---
+--    
 --                    |                      /-----\
 --    Temp_ov   on=80 | - - - - - - /-------/       \
 --                    |            /        |        \

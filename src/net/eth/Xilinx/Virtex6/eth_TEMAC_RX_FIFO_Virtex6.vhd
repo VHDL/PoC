@@ -438,7 +438,7 @@ begin
 
   -- assign to rd_src_rd_n output
   rd_src_rdy_n <= rd_src_rdy_n_int;
-
+  
   -- decode internal control signals
   -- rd_en is used to enable the BRAM read and load the output pipe
   rd_en_p : process(rd_state, rd_dst_rdy_n)

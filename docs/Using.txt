@@ -57,10 +57,10 @@ Don't forget to activate the new XST parser in new projects and to append the IP
   pre-configured IP cores. These netlists are copied into the
   ``<PoCRoot>\netlist\<DEVICE>`` folder. This folder and its subfolders
   need to be added to the IP core search directory.
-
+    
   **->** Open the *XST Process Property* window and append the directory to the ``-sd`` option.
   **->** Open *Translate Process Property* and append the paths here, too. ::
-
+    
       D:\git\PoC\netlist\XC7VX485T-2FFG1761|      ↩
       D:\git\PoC\netlist\XC7VX485T-2FFG1761\xil|  ↩
       D:\git\PoC\netlist\XC7VX485T-2FFG1761\sata

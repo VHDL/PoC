@@ -18,4 +18,4 @@ Automatically tries to establish a communication when Reset is deasserted.
 Source file: `sata/sata_Physical_OOBControl_Device.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sata/sata_Physical_OOBControl_Device.vhdl>`_
 
 
- 
+	 
