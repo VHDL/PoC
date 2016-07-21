@@ -2,24 +2,17 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
---            ____        ____    _     _ _
---           |  _ \ ___  / ___|  | |   (_) |__  _ __ __ _ _ __ _   _
---           | |_) / _ \| |      | |   | | '_ \| '__/ _` | '__| | | |
---           |  __/ (_) | |___   | |___| | |_) | | | (_| | |  | |_| |
---           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
---                                                             |___/
--- =============================================================================
--- Module:					sata_Transceiver_ClockStable
---
 -- Authors:					Martin Zabel
+--
+-- Entity:					sata_Transceiver_ClockStable
 --
 -- Package:					PoC.sata
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Generic reset handling for Altera FPGAs to be embedded into the SATA
 -- transceiver layer. In contrast to the Xilinx version, Async_Reset is not
--- supported. 
+-- supported.
 --
 -- Generates proper ResetDone and SATA_Clock_Stable signals in dependence on:
 -- - asynchronous state of the PLL/DLL generating the SATA_Clock (PLL_Locked)
@@ -42,13 +35,13 @@
 -- -----------------------------------------------------------------------------
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -62,15 +55,15 @@ use			IEEE.STD_LOGIC_1164.all;
 entity sata_Transceiver_ClockStable is
 	port (
 		-- @async
-		PLL_Locked            : in  STD_LOGIC;
+		PLL_Locked            : in  std_logic;
 
 		-- the clock of the SATA controller
-		SATA_Clock						: in	STD_LOGIC;
-		
+		SATA_Clock						: in	std_logic;
+
 		-- @sync SATA_Clock, see exception in documentation
-		Kill_Stable						: in 	STD_LOGIC;
-		ResetDone							: out	STD_LOGIC;
-		SATA_Clock_Stable			: out	STD_LOGIC
+		Kill_Stable						: in 	std_logic;
+		ResetDone							: out	std_logic;
+		SATA_Clock_Stable			: out	std_logic
 	);
 end;
 
@@ -82,7 +75,7 @@ architecture rtl of sata_Transceiver_ClockStable is
 	signal Locked_rising 		: std_logic;
 	signal Clock_Stable			: std_logic := '0';
 	signal ResetDone_i			: std_logic := '0';
-	
+
 begin
 	-- Only Locked_meta has a metastability problem. At all other FFs input D and
 	-- output Q are the same (zero) when the FPGA is powered-up.
@@ -90,14 +83,14 @@ begin
 	-- Locked_meta even if PLL_Locked is always high.
 
 	Locked_rising <= Locked_sync1 and not Locked_sync2;
-	
+
 	process(SATA_Clock)
 	begin
 		if rising_edge(SATA_Clock) then
 			Locked_meta  <= PLL_Locked;
 			Locked_sync1 <= Locked_meta;
 			Locked_sync2 <= Locked_sync1;
-			
+
 			-- R/S-Flipflop:
 			-- reset when Kill_Stable (high priority)
 			-- set   when Locked rises (low priority)
@@ -108,7 +101,7 @@ begin
 			ResetDone_i <= ResetDone_i or Clock_Stable;
 		end if;
 	end process;
-	
+
 	SATA_Clock_Stable <= Clock_Stable;
 	ResetDone <= ResetDone_i;
 

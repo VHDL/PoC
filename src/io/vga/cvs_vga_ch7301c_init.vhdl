@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: vga_ch7301c_init
 -- Author(s): Martin Zabel
--- 
+--
 -- Generates IIC initialization sequence to setup a CH7301C DVI transmitter.
 -- The IIC master itself is not part of this entity.
 -- See also ../README.
@@ -51,7 +51,7 @@
 --
 
 library ieee;
-use ieee.std_logic_1164.ALL;
+use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library poc;
@@ -69,7 +69,7 @@ entity vga_ch7301c_init is
     rst     : in  std_logic;
     status  : out std_logic_vector(1 downto 0);
     error   : out std_logic_vector(3 downto 0);
-    
+
     start   : out std_logic;
     stop    : out std_logic;
     read    : out std_logic;
@@ -93,7 +93,7 @@ architecture rtl of vga_ch7301c_init is
                       TSTP1, TSTP2, TSTP3);
     signal fsm_cs : FSM_TYPE;
     signal fsm_ns : FSM_TYPE;
-    
+
     signal set_err : std_logic;
 begin  -- rtl
     process (fsm_cs, cmd_ack, ack_out)
@@ -101,7 +101,7 @@ begin  -- rtl
       fsm_ns  <= fsm_cs;
       set_err <= '0';
       status  <= "00";
-      
+
       start  <= '0';
       stop   <= '0';
       read   <= '0';
@@ -152,7 +152,7 @@ begin  -- rtl
             end if;
           end if;
 
-          
+
         when DID4 =>
           read   <= '1';
           ack_in <= '1';                -- NACK: last byte
@@ -386,7 +386,7 @@ begin  -- rtl
           if cmd_ack = '1' then
             --fsm_ns <= TSTP1;            -- chip-internal TPG
             fsm_ns <= FINISHED;         -- own test-pattern
-            
+
             if ack_out = '1' then       -- no ACK from slave
               fsm_ns  <= FAIL;
               set_err <= '1';
@@ -431,13 +431,13 @@ begin  -- rtl
             end if;
           end if;
 
-          
+
         when FINISHED =>
           status <= "01";
-          
+
         when FAIL     =>
           status <= "10";
-                         
+
       end case;
     end process;
 

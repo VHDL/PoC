@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Thomas B. Preusser
 --
 -- Testbench:				Testbench for a FIFO with independent clocks
--- 
+--
 -- Description:
 -- ------------------------------------
 --		TODO
@@ -15,13 +15,13 @@
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -58,7 +58,7 @@ architecture tb of fifo_ic_got_tb is
   -- Sequence Generator
   constant GEN : bit_vector       := "100110001";
   constant ORG : std_logic_vector :=  "00000001";
-  
+
   -- Clock Generation and Reset
   signal rst  : std_logic;
   signal clk0 : std_logic;
@@ -85,15 +85,15 @@ architecture tb of fifo_ic_got_tb is
   signal got2 : std_logic;
 
   signal dat2 : std_logic_vector(D_BITS-1 downto 0);
-  
+
 begin
 	-- initialize global simulation status
-	simInitialize(MaxSimulationRuntime => 1 us);
+	simInitialize;
 	-- generate global testbench clock
 	simGenerateClock(clk0, 14 ns);
 	simGenerateClock(clk1, 24 ns);
 	simGenerateClock(clk2, 10 ns);
-	simGenerateWaveform(rst,	simGenerateWaveform_Reset(Pause => 0 ns, ResetPulse => 16 ns));
+	simGenerateWaveform(rst,	simGenerateWaveform_Reset(Pause => 0 ns, ResetPulse => 30 ns));
 
   -----------------------------------------------------------------------------
   -- Initial Generator
@@ -109,16 +109,16 @@ begin
       step => put0,
       mask => di0
     );
-	
+
   -- Writer
 	procWriter : process
 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Writer");
-		
+
     variable cnt : natural := 0;
   begin
     put0 <= '0';
     wait until rst = '0' and rising_edge(clk0);
-    
+
     -- Slow Input Phase
     while cnt < 2*MIN_DEPTH loop
       wait until falling_edge(clk0);
@@ -144,12 +144,12 @@ begin
     -- Let it drain
     wait until falling_edge(clk0);
     put0 <= '0';
-		
+
     -- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever
   end process;
-  
+
   fifo0_1 : entity PoC.fifo_ic_got
     generic map (
       D_BITS         => D_BITS,
@@ -194,15 +194,21 @@ begin
 	-- Pass-thru checker
 	procChecker : process
 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Pass-thru checker");
-    
+
     variable cnt : natural := 0;
   begin
     -- Pass-thru Checking
-    wait until rising_edge(clk1);
-		simAssertion(((rst = '1') or (put1 = '0') or (do1 = di1)), "Mismatch in clk1.");
-    if put1 = '1' then
-      cnt := cnt + 1;
-    end if;
+		while cnt < 4*MIN_DEPTH loop
+			wait until rising_edge(clk1);
+			simAssertion(((rst = '1') or (put1 = '0') or (do1 = di1)), "Mismatch in clk1.");
+			if put1 = '1' then
+				cnt := cnt + 1;
+			end if;
+		end loop;
+
+    -- This process is finished
+		simDeactivateProcess(simProcessID);
+		wait;
   end process;
 
   fifo1_2 : entity PoC.fifo_ic_got
@@ -247,28 +253,28 @@ begin
 	-- Reader
 	procReader : process
 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Reader");
-		
+
     variable cnt : natural := 0;
     variable del : natural := 0;
   begin
     -- Final Checking
-    wait until rising_edge(clk2);
-    got2 <= '0';
-    if vld2 = '1' then
-      del := del + 1;
-      if del = 3 then
-        got2 <= '1';
-				simAssertion((dat2 = do2), "Mismatch in clk2.");
-        cnt := cnt + 1;
-        del := 0;
-      end if;
-    end if;
-    --port "Count: "&integer'image(cnt) severity note;
-    wait until (cnt = 4 * MIN_DEPTH);
-		
+		while cnt < 4*MIN_DEPTH loop
+			wait until rising_edge(clk2);
+			got2 <= '0';
+			if vld2 = '1' then
+				del := del + 1;
+				if del = 3 then
+					got2 <= '1';
+					simAssertion((dat2 = do2), "Mismatch in clk2.");
+					cnt := cnt + 1;
+					del := 0;
+				end if;
+			end if;
+		end loop;
+
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever
   end process;
-  
+
 end architecture;

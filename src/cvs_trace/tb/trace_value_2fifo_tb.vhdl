@@ -1,18 +1,18 @@
 -------------------------------------------------------------------------------
 -- Title      : Testbench for design "trace_value_2fifo"
--- Project    : 
+-- Project    :
 -------------------------------------------------------------------------------
 -- File       : trace_value_2fifo_tb.vhdl
 -- Author     : Martin Zabel  <zabel@ite161.inf.tu-dresden.de>
--- Company    : 
+-- Company    :
 -- Created    : 2013-10-23
 -- Last update: 2013-10-23
--- Platform   : 
+-- Platform   :
 -- Standard   : VHDL'87
 -------------------------------------------------------------------------------
--- Description: 
+-- Description:
 -------------------------------------------------------------------------------
--- Copyright (c) 2013 
+-- Copyright (c) 2013
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author  Description
@@ -102,7 +102,7 @@ begin  -- sim
     fifo_full      <= '0';
     in_value_valid <= '0';
     in_value_fill  <= "1010";
-    
+
     wait until rising_edge(clk);
     wait until rising_edge(clk);
     wait until rising_edge(clk);
@@ -196,7 +196,7 @@ begin  -- sim
     wait;
   end process WaveGen_Proc;
 
-  
+
 
 end sim;
 

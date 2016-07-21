@@ -1,13 +1,13 @@
 -------------------------------------------------------------------------------
---   ____  ____ 
---  /   /\/   / 
--- /___/  \  /    Vendor: Xilinx 
--- \   \   \/     Version : 1.8 
---  \   \         Application : GTP Wizard 
+--   ____  ____
+--  /   /\/   /
+-- /___/  \  /    Vendor: Xilinx
+-- \   \   \/     Version : 1.8
+--  \   \         Application : GTP Wizard
 --  /   /         Filename : rocketio_wrapper.vhd
 -- /___/   /\     Timestamp : 02/08/2005 09:12:43
--- \   \  /  \ 
---  \___\/\___\ 
+-- \   \  /  \
+--  \___\/\___\
 --
 --
 -- Module ROCKETIO_WRAPPER (a GTP Wrapper)
@@ -17,7 +17,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 library UNISIM;
-use UNISIM.VCOMPONENTS.ALL;
+use UNISIM.VcomponentS.all;
 
 
 --***************************** Entity Declaration ****************************
@@ -31,7 +31,7 @@ generic
 );
 port
 (
-    
+
     --_________________________________________________________________________
     --_________________________________________________________________________
     --TILE0  (Location)
@@ -136,17 +136,17 @@ architecture RTL of ROCKETIO_WRAPPER_GTP is
     signal  tied_to_ground_i                :   std_logic;
     signal  tied_to_ground_vec_i            :   std_logic_vector(63 downto 0);
     signal  tied_to_vcc_i                   :   std_logic;
-    
+
 
 --********************************* Main Body of Code**************************
 
-begin                       
+begin
 
     tied_to_ground_i                    <= '0';
     tied_to_ground_vec_i(63 downto 0)   <= (others => '0');
     tied_to_vcc_i                       <= '1';
 
-    --------------------------- Tile Instances  -------------------------------   
+    --------------------------- Tile Instances  -------------------------------
 
 
     --_________________________________________________________________________
@@ -163,7 +163,7 @@ begin
         -- Channel bonding attributes
         TILE_CHAN_BOND_MODE_0        => "OFF",
         TILE_CHAN_BOND_LEVEL_0       => 0,
-    
+
         TILE_CHAN_BOND_MODE_1        => "OFF",
         TILE_CHAN_BOND_LEVEL_1       => 0
     )
@@ -254,6 +254,6 @@ begin
 
     );
 
-    
-     
+
+
 end RTL;

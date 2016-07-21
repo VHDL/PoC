@@ -1,7 +1,6 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
 -- =============================================================================
 -- Authors:					Thomas B. Preusser
 --									Steffen Koehler
@@ -12,20 +11,20 @@
 --									associated to the PoC.fifo namespace
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		For detailed documentation see below.
--- 
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -65,13 +64,13 @@ package fifo is
     );
   end component;
 
-  -- Minimal Local-Link-FIFO with single clock and first-word-fall-through mode. 
+  -- Minimal Local-Link-FIFO with single clock and first-word-fall-through mode.
   component fifo_ll_glue
     generic (
       D_BITS          : positive;
       FRAME_USER_BITS : natural;
       REGISTER_PATH   : boolean
-      ); 
+      );
     port (
       clk   : in std_logic;
       reset : in std_logic;
@@ -162,7 +161,7 @@ package fifo is
       valid  : out std_logic;
       dout   : out std_logic_vector(D_BITS - 1 downto 0));
   end component;
-  
+
   component fifo_ic_got
     generic (
       D_BITS         : positive;          -- Data Width
@@ -252,5 +251,40 @@ package fifo is
       rollback  : in  std_logic
     );
   end component;
-	
+
+	component fifo_ic_assembly is
+		generic (
+			D_BITS : positive;  								-- Data Width
+			A_BITS : positive;  								-- Address Bits
+			G_BITS : positive  									-- Generation Guard Bits
+		);
+		port (
+			-- Write Interface
+			clk_wr : in std_logic;
+			rst_wr : in std_logic;
+
+			-- Only write addresses in the range [base, base+2**(A_BITS-G_BITS)) are
+			-- acceptable. This is equivalent to the test
+			--   tmp(A_BITS-1 downto A_BITS-G_BITS) = 0 where tmp = addr - base.
+			-- Writes performed outside the allowable range will assert the failure
+			-- indicator, which will stick until the next reset.
+			-- No write is to be performed before base turns zero (0) for the first
+			-- time.
+			base   : out std_logic_vector(A_BITS-1 downto 0);
+			failed : out std_logic;
+
+			addr : in  std_logic_vector(A_BITS-1 downto 0);
+			din  : in  std_logic_vector(D_BITS-1 downto 0);
+			put  : in  std_logic;
+
+			-- Read Interface
+			clk_rd : in std_logic;
+			rst_rd : in std_logic;
+
+			dout : out std_logic_vector(D_BITS-1 downto 0);
+			vld  : out std_logic;
+			got  : in  std_logic
+		);
+	end component;
+
 end package;

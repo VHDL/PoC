@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					SATA Physical Layer
+-- Entity:					SATA Physical Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Represents the PhysicalLayer of the SATA stack. Detects if a device is
 -- present and establishes a communication, both using OOB.
 --
@@ -19,7 +18,7 @@
 -- this layer automatically tries to establish a communication with speed
 -- negotiation. A device is detected by indefinitly polling using OOB COMRESET.
 -- The result is indicated by output Status:
--- 
+--
 -- Status can be one of the following:
 -- - SATA_PHY_STATUS_RESET: 					PhysicalLayer is resetting.
 -- - SATA_PHY_STATUS_NODEVICE: 				No device detected yet.
@@ -45,18 +44,18 @@
 -- - SATA_PHY_CMD_NONE: 							Do nothing.
 -- - SATA_PHY_CMD_INIT_CONNECTION: 		Init connection with speed negotiation.
 -- - SATA_PHY_CMD_REINIT_CONNECTION: 	Reinit connection at same speed.
--- 
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -81,23 +80,23 @@ use			PoC.satadbg.all;
 
 entity sata_PhysicalLayer is
 	generic (
-		DEBUG														: BOOLEAN													:= FALSE;
-		ENABLE_DEBUGPORT								: BOOLEAN													:= FALSE;
+		DEBUG														: boolean													:= FALSE;
+		ENABLE_DEBUGPORT								: boolean													:= FALSE;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
-		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
+		ALLOW_SPEED_NEGOTIATION					: boolean													:= TRUE;
 		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
-		ALLOW_STANDARD_VIOLATION				: BOOLEAN													:= FALSE;
-		OOB_TIMEOUT											: TIME														:= TIME'low;
-		GENERATION_CHANGE_COUNT					: INTEGER													:= 8;
-		ATTEMPTS_PER_GENERATION					: INTEGER													:= 4
+		ALLOW_STANDARD_VIOLATION				: boolean													:= FALSE;
+		OOB_TIMEOUT											: time														:= time'low;
+		GENERATION_CHANGE_COUNT					: integer													:= 8;
+		ATTEMPTS_PER_GENERATION					: integer													:= 4
 	);
 	port (
-		Clock														: in	STD_LOGIC;
-		ClockEnable											: in	STD_LOGIC;
-		Reset														: in	STD_LOGIC;										-- general logic reset without some counter resets while Clock is unstable
+		Clock														: in	std_logic;
+		ClockEnable											: in	std_logic;
+		Reset														: in	std_logic;										-- general logic reset without some counter resets while Clock is unstable
 																																				--   => preserve SATAGeneration between connection-cycles
-		SATAGenerationMin								: in	T_SATA_GENERATION;						-- 
-		SATAGenerationMax								: in	T_SATA_GENERATION;						-- 
+		SATAGenerationMin								: in	T_SATA_GENERATION;						--
+		SATAGenerationMax								: in	T_SATA_GENERATION;						--
 
 		-- PhysicalLayer interface
 		Command													: in	T_SATA_PHY_COMMAND;
@@ -108,43 +107,43 @@ entity sata_PhysicalLayer is
 
 		Link_RX_Data										: out	T_SLV_32;
 		Link_RX_CharIsK									: out	T_SLV_4;
-		
+
 		Link_TX_Data										: in	T_SLV_32;
 		Link_TX_CharIsK									: in	T_SLV_4;
 
 		-- TransceiverLayer interface
-		Trans_ResetDone									: in	STD_LOGIC;
-		
+		Trans_ResetDone									: in	std_logic;
+
 		Trans_Command										: out	T_SATA_TRANSCEIVER_COMMAND;
 		Trans_Status										: in	T_SATA_TRANSCEIVER_STATUS;
 		Trans_Error											: in	T_SATA_TRANSCEIVER_ERROR;
 
-		Trans_RP_Reconfig								: out	STD_LOGIC;
+		Trans_RP_Reconfig								: out	std_logic;
 		Trans_RP_SATAGeneration					: out	T_SATA_GENERATION;
-		Trans_RP_ConfigReloaded					: in	STD_LOGIC;
+		Trans_RP_ConfigReloaded					: in	std_logic;
 
 		Trans_OOB_TX_Command						: out	T_SATA_OOB;
-		Trans_OOB_TX_Complete						: in	STD_LOGIC;
+		Trans_OOB_TX_Complete						: in	std_logic;
 		Trans_OOB_RX_Received						: in	T_SATA_OOB;
-		Trans_OOB_HandshakeComplete			: out	STD_LOGIC;		
-		Trans_OOB_AlignDetected    			: out	STD_LOGIC;		
+		Trans_OOB_HandshakeComplete			: out	std_logic;
+		Trans_OOB_AlignDetected    			: out	std_logic;
 
 		Trans_TX_Data										: out	T_SLV_32;
 		Trans_TX_CharIsK								: out T_SLV_4;
 
 		Trans_RX_Data										: in	T_SLV_32;
 		Trans_RX_CharIsK								: in	T_SLV_4;
-		Trans_RX_Valid									: in	STD_LOGIC
+		Trans_RX_Valid									: in	std_logic
 	);
-END;
+end entity;
 
 
 architecture rtl of sata_PhysicalLayer is
-	signal OOBC_Reset									: STD_LOGIC;
-	signal OOBC_DeviceOrHostDetected	: STD_LOGIC;
-	signal OOBC_LinkOK								: STD_LOGIC;
-	signal OOBC_LinkDead							: STD_LOGIC;
-	signal OOBC_Timeout								: STD_LOGIC;
+	signal OOBC_Reset									: std_logic;
+	signal OOBC_DeviceOrHostDetected	: std_logic;
+	signal OOBC_LinkOK								: std_logic;
+	signal OOBC_LinkDead							: std_logic;
+	signal OOBC_Timeout								: std_logic;
 
 	signal Trans_RP_SATAGeneration_i	: T_SATA_GENERATION;
 
@@ -152,17 +151,17 @@ architecture rtl of sata_PhysicalLayer is
 	signal RX_Primitive								: T_SATA_PRIMITIVE;
 	signal Trans_TX_Data_i						: T_SLV_32;
 	signal Trans_TX_CharIsK_i					: T_SLV_4;
-	
+
 	signal OOBC_DebugPortOut					: T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 	signal PFSM_DebugPortOut					: T_SATADBG_PHYSICAL_PFSM_OUT;
-	
+
 begin
 
 	assert FALSE report "Physical Layer"																															severity NOTE;
 	assert FALSE report "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)			severity NOTE;
 	assert FALSE report "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)							severity NOTE;
 	assert FALSE report "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION)						severity NOTE;
-	assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
+	assert FALSE report "  Init. SATA Generation:  Gen" & integer'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
 
 	-- The FSM
 	-- ===========================================================================
@@ -198,7 +197,7 @@ begin
 	-- TODO Feature Request: Replace Trans_RP_* signals by CSE interface
 	Trans_Command 					<= SATA_TRANSCEIVER_CMD_NONE;
 	Trans_RP_SATAGeneration <= Trans_RP_SATAGeneration_i;
-	
+
 	-- OOB (out of band) signaling
 	-- ===========================================================================
 	genHost : if (CONTROLLER_TYPE = SATA_DEVICE_TYPE_HOST) generate
@@ -212,7 +211,7 @@ begin
 			port map (
 				Clock											=> Clock,
 				Reset											=> OOBC_Reset,
-				
+
 				DebugPortOut							=> OOBC_DebugPortOut,
 
 				SATAGeneration						=> Trans_RP_SATAGeneration_i,
@@ -220,13 +219,13 @@ begin
 				DeviceDetected 						=> OOBC_DeviceOrHostDetected,
 				LinkOK										=> OOBC_LinkOK,
 				LinkDead									=> OOBC_LinkDead,
-				
+
 				OOB_TX_Command						=> Trans_OOB_TX_Command,
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
 				OOB_RX_Received						=> Trans_OOB_RX_Received,
 				OOB_HandshakeComplete			=> Trans_OOB_HandshakeComplete,
 				OOB_AlignDetected					=> Trans_OOB_AlignDetected,
-				
+
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
 				RX_Valid									=> Trans_RX_Valid
@@ -243,7 +242,7 @@ begin
 			port map (
 				Clock											=> Clock,
 				Reset											=> OOBC_Reset,
-				
+
 				DebugPortOut							=> OOBC_DebugPortOut,
 
 				SATAGeneration						=> Trans_RP_SATAGeneration_i,
@@ -251,13 +250,13 @@ begin
 				Timeout										=> OOBC_Timeout,
 				LinkOK										=> OOBC_LinkOK,
 				LinkDead									=> OOBC_LinkDead,
-				
+
 				OOB_TX_Command						=> Trans_OOB_TX_Command,
 				OOB_TX_Complete						=> Trans_OOB_TX_Complete,
 				OOB_RX_Received						=> Trans_OOB_RX_Received,
 				OOB_HandshakeComplete			=> Trans_OOB_HandshakeComplete,
 --			OOB_AlignDetected					=> Trans_OOB_AlignDetected,
-				
+
 				TX_Primitive							=> OOBC_TX_Primitive,
 				RX_Primitive							=> RX_Primitive,
 				RX_Valid									=> Trans_RX_Valid
@@ -265,7 +264,7 @@ begin
 
 		Trans_OOB_AlignDetected <= '0';
 	end generate;
-	
+
 
 
 	-- physical layer PrimitiveMux
@@ -276,7 +275,7 @@ begin
 			when SATA_PRIMITIVE_ALIGN =>																			-- ALIGN				D27.3 D10.2 D10.2 K28.5
 				Trans_TX_Data_i			<= to_sata_word(SATA_PRIMITIVE_ALIGN);			-- x"7B4A4ABC";
 				Trans_TX_CharIsK_i	<= "0001";
-				
+
 			when SATA_PRIMITIVE_DIAL_TONE =>																	-- Dial Tone		D10.2 D10.2 D10.2 D10.2
 				Trans_TX_Data_i			<= to_sata_word(SATA_PRIMITIVE_DIAL_TONE);	-- x"4A4A4A4A";
 				Trans_TX_CharIsK_i	<= "0000";
@@ -288,23 +287,23 @@ begin
 			when others =>
 				Trans_TX_Data_i			<= to_sata_word(SATA_PRIMITIVE_DIAL_TONE);
 				Trans_TX_CharIsK_i	<= "0000";
-				
+
 				assert FALSE report "Illegal PRIMTIVE" severity FAILURE;
-				
+
 		end case;
 	end process;
-	
+
 	Trans_TX_Data			<= Trans_TX_Data_i;
 	Trans_TX_CharIsK	<= Trans_TX_CharIsK_i;
-	
+
 	-- physical layer PrimtiveDetector
 	RX_Primitive			<= to_sata_primitive(Trans_RX_Data, Trans_RX_CharIsK);
-	
+
 	-- passthrought RX data
 	Link_RX_Data			<= Trans_RX_Data;
 	Link_RX_CharIsK		<= Trans_RX_CharIsK;
-	
-		
+
+
 	-- debug port
 	-- ===========================================================================
 	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
@@ -314,7 +313,7 @@ begin
 		DebugPortOut.RX_Data				<= Trans_RX_Data;
 		DebugPortOut.RX_CharIsK			<= Trans_RX_CharIsK;
 		DebugPortOut.RX_Valid				<= Trans_RX_Valid;
-	
+
 		DebugPortOut.OOBControl			<= OOBC_DebugPortOut;
 		DebugPortOut.PFSM 					<= PFSM_DebugPortOut;
 	end generate;

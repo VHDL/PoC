@@ -1,15 +1,15 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Martin Zabel
 --                  Patrick Lehmann
--- 
+--
 -- Module:					Sub-module for test of physical type `TIME` and conversion
 -- 									routines defined in `physical.pkg.vhdl`.
 --
--- 
+--
 -- Description:
 -- ------------------------------------
 -- Synthesis reports a multiple driver error / critical-warning when
@@ -26,13 +26,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ library poc;
 use poc.physical.all;
 
 entity physical_test_time is
-  
+
 	generic (
 		CONST_1_FS		 : time := 1 fs;
 		CONST_1_PS		 : time := 1 ps;
@@ -96,47 +96,47 @@ end entity physical_test_time;
 architecture rtl of physical_test_time is
 	function f return boolean is
 	begin
-		report "CONST_1_FS        = " & TIME'image(CONST_1_FS      ) severity note;
-		report "CONST_1_PS        = " & TIME'image(CONST_1_PS      ) severity note;
-		report "CONST_1p125_PS    = " & TIME'image(CONST_1p125_PS  ) severity note;
-		report "CONST_1_NS        = " & TIME'image(CONST_1_NS      ) severity note;
-		report "CONST_1p125_NS    = " & TIME'image(CONST_1p125_NS  ) severity note;
-		report "CONST_1_US        = " & TIME'image(CONST_1_US      ) severity note;
-		report "CONST_1p125_US    = " & TIME'image(CONST_1p125_US  ) severity note;
-		report "CONST_1_MS        = " & TIME'image(CONST_1_MS      ) severity note;
-		report "CONST_1p125_MS    = " & TIME'image(CONST_1p125_MS  ) severity note;
-		report "CONST_1_SEC       = " & TIME'image(CONST_1_SEC     ) severity note;
-		report "CONST_1p125_SEC   = " & TIME'image(CONST_1p125_SEC ) severity note;
-		report "CONST_1_MIN       = " & TIME'image(CONST_1_MIN     ) severity note;
-		report "CONST_1_HR        = " & TIME'image(CONST_1_HR      ) severity note;
-		report "CVT_INT_1_FS      = " & TIME'image(CVT_INT_1_FS    ) severity note;
-		report "CVT_INT_1_PS      = " & TIME'image(CVT_INT_1_PS    ) severity note;
-		report "CVT_INT_1_NS      = " & TIME'image(CVT_INT_1_NS    ) severity note;
-		report "CVT_INT_1_US      = " & TIME'image(CVT_INT_1_US    ) severity note;
-		report "CVT_INT_1_MS      = " & TIME'image(CVT_INT_1_MS    ) severity note;
-		report "CVT_INT_1_SEC     = " & TIME'image(CVT_INT_1_SEC   ) severity note;
-		report "CVT_1_FS_INT      = " & INTEGER'image(CVT_1_FS_INT ) severity note;
-		report "CVT_1_PS_INT      = " & INTEGER'image(CVT_1_PS_INT ) severity note;
-		report "CVT_1_NS_INT      = " & INTEGER'image(CVT_1_NS_INT ) severity note;
-		report "CVT_1_US_INT      = " & INTEGER'image(CVT_1_US_INT ) severity note;
-		report "CVT_1_MS_INT      = " & INTEGER'image(CVT_1_MS_INT ) severity note;
-		report "CVT_1_SEC_INT     = " & INTEGER'image(CVT_1_SEC_INT) severity note;
-		report "CVT_REAL_1p5_PS   = " & TIME'image(CVT_REAL_1p5_PS ) severity note;
-		report "CVT_REAL_1p5_NS   = " & TIME'image(CVT_REAL_1p5_NS ) severity note;
-		report "CVT_REAL_1p5_US   = " & TIME'image(CVT_REAL_1p5_US ) severity note;
-		report "CVT_REAL_1p5_MS   = " & TIME'image(CVT_REAL_1p5_MS ) severity note;
-		report "CVT_REAL_1p5_SEC  = " & TIME'image(CVT_REAL_1p5_SEC) severity note;
+		report "CONST_1_FS        = " & time'image(CONST_1_FS      ) severity note;
+		report "CONST_1_PS        = " & time'image(CONST_1_PS      ) severity note;
+		report "CONST_1p125_PS    = " & time'image(CONST_1p125_PS  ) severity note;
+		report "CONST_1_NS        = " & time'image(CONST_1_NS      ) severity note;
+		report "CONST_1p125_NS    = " & time'image(CONST_1p125_NS  ) severity note;
+		report "CONST_1_US        = " & time'image(CONST_1_US      ) severity note;
+		report "CONST_1p125_US    = " & time'image(CONST_1p125_US  ) severity note;
+		report "CONST_1_MS        = " & time'image(CONST_1_MS      ) severity note;
+		report "CONST_1p125_MS    = " & time'image(CONST_1p125_MS  ) severity note;
+		report "CONST_1_SEC       = " & time'image(CONST_1_SEC     ) severity note;
+		report "CONST_1p125_SEC   = " & time'image(CONST_1p125_SEC ) severity note;
+		report "CONST_1_MIN       = " & time'image(CONST_1_MIN     ) severity note;
+		report "CONST_1_HR        = " & time'image(CONST_1_HR      ) severity note;
+		report "CVT_INT_1_FS      = " & time'image(CVT_INT_1_FS    ) severity note;
+		report "CVT_INT_1_PS      = " & time'image(CVT_INT_1_PS    ) severity note;
+		report "CVT_INT_1_NS      = " & time'image(CVT_INT_1_NS    ) severity note;
+		report "CVT_INT_1_US      = " & time'image(CVT_INT_1_US    ) severity note;
+		report "CVT_INT_1_MS      = " & time'image(CVT_INT_1_MS    ) severity note;
+		report "CVT_INT_1_SEC     = " & time'image(CVT_INT_1_SEC   ) severity note;
+		report "CVT_1_FS_INT      = " & integer'image(CVT_1_FS_INT ) severity note;
+		report "CVT_1_PS_INT      = " & integer'image(CVT_1_PS_INT ) severity note;
+		report "CVT_1_NS_INT      = " & integer'image(CVT_1_NS_INT ) severity note;
+		report "CVT_1_US_INT      = " & integer'image(CVT_1_US_INT ) severity note;
+		report "CVT_1_MS_INT      = " & integer'image(CVT_1_MS_INT ) severity note;
+		report "CVT_1_SEC_INT     = " & integer'image(CVT_1_SEC_INT) severity note;
+		report "CVT_REAL_1p5_PS   = " & time'image(CVT_REAL_1p5_PS ) severity note;
+		report "CVT_REAL_1p5_NS   = " & time'image(CVT_REAL_1p5_NS ) severity note;
+		report "CVT_REAL_1p5_US   = " & time'image(CVT_REAL_1p5_US ) severity note;
+		report "CVT_REAL_1p5_MS   = " & time'image(CVT_REAL_1p5_MS ) severity note;
+		report "CVT_REAL_1p5_SEC  = " & time'image(CVT_REAL_1p5_SEC) severity note;
 		report "CVT_1p5_PS_REAL   = " & REAL'image(CVT_1p5_PS_REAL ) severity note;
 		report "CVT_1p5_NS_REAL   = " & REAL'image(CVT_1p5_NS_REAL ) severity note;
 		report "CVT_1p5_US_REAL   = " & REAL'image(CVT_1p5_US_REAL ) severity note;
 		report "CVT_1p5_MS_REAL   = " & REAL'image(CVT_1p5_MS_REAL ) severity note;
 		report "CVT_1p5_SEC_REAL  = " & REAL'image(CVT_1p5_SEC_REAL) severity note;
-		report "tmax(SOME_TIMES)  = " & TIME'image(tmax(SOME_TIMES)) severity note;
-		report "tmin(SOME_TIMES)  = " & TIME'image(tmin(SOME_TIMES)) severity note;
-		report "tsum(SOME_TIMES)  = " & TIME'image(tsum(SOME_TIMES)) severity note;
+		report "tmax(SOME_TIMES)  = " & time'image(tmax(SOME_TIMES)) severity note;
+		report "tmin(SOME_TIMES)  = " & time'image(tmin(SOME_TIMES)) severity note;
+		report "tsum(SOME_TIMES)  = " & time'image(tsum(SOME_TIMES)) severity note;
 	return true;
 	end f;
-	
+
 	constant C : boolean := f;
 
 begin  -- architecture rtl
@@ -150,56 +150,56 @@ begin  -- architecture rtl
 	checkConst1fs: if CONST_1_FS <= 0 sec generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1ps: if CONST_1_PS <= 0 sec or CONST_1_PS /= 1000 fs generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125ps: if CONST_1p125_PS <= 0 sec or CONST_1p125_PS /= 1125 fs generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1ns: if CONST_1_NS <= 0 sec or CONST_1_NS /= 1000 ps generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125ns: if CONST_1p125_NS <= 0 sec or CONST_1p125_NS /= 1125 ps generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1us: if CONST_1_US <= 0 sec or CONST_1_US /= 1000 ns generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125us: if CONST_1p125_US <= 0 sec or CONST_1p125_US /= 1125 ns generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1ms: if CONST_1_MS <= 0 sec or CONST_1_MS /= 1000 us generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125ms: if CONST_1p125_MS <= 0 sec or CONST_1p125_MS /= 1125 us generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1sec: if CONST_1_SEC <= 0 sec or CONST_1_SEC /= 1000 ms generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125sec: if CONST_1p125_SEC <= 0 sec or CONST_1p125_SEC /= 1125 ms generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1min: if CONST_1_MIN <= 0 sec or CONST_1_MIN /= 60 sec generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1hr: if CONST_1_HR <= 0 sec or CONST_1_HR /= 3600 sec generate
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkCvtInt1fs: if CVT_INT_1_FS /= 1 fs generate
 		y <= '1';
@@ -273,7 +273,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkCvt1p5psReal: if CVT_1p5_PS_REAL /= 1.5 generate
 		y <= '1';
@@ -295,7 +295,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkMax: if tmax(SOME_TIMES) /= 1 us generate
 		y <= '1';

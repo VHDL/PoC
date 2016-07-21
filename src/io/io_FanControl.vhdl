@@ -1,14 +1,13 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	Generic Fan Controller
+-- Entity:				 	Generic Fan Controller
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		This module generates a PWM signal for a 3-pin (transistor controlled) or
 --		4-pin fan header. The FPGAs temperature is read from device specific system
 --		monitors (normal, user temperature, over temperature).
@@ -29,7 +28,7 @@
 --
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -44,7 +43,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -62,48 +61,48 @@ use			PoC.xil.all;
 entity io_FanControl is
 	generic (
 		CLOCK_FREQ							: FREQ;
-		ADD_INPUT_SYNCHRONIZERS	: BOOLEAN			:= TRUE;
-		ENABLE_TACHO						: BOOLEAN			:= FALSE
+		ADD_INPUT_SYNCHRONIZERS	: boolean			:= TRUE;
+		ENABLE_TACHO						: boolean			:= FALSE
 	);
 	port (
 		-- Global Control
-		Clock										: in	STD_LOGIC;
-		Reset										: in	STD_LOGIC;
+		Clock										: in	std_logic;
+		Reset										: in	std_logic;
 
 		-- Fan Control derived from internal System Health Monitor
-		Fan_PWM									: out	STD_LOGIC;
+		Fan_PWM									: out	std_logic;
 
     -- Decoding of Speed Sensor (Requires ENABLE_TACHO)
     Fan_Tacho      : in  std_logic := 'X';
     TachoFrequency : out std_logic_vector(15 downto 0)
   );
-end;
+end entity;
 
 
 architecture rtl of io_FanControl is
 	-- constant TIME_STARTUP			: TIME																					:= 500 ms;		-- StartUp time
 	-- Use frequencies only to make Vivado work.
 	constant TIME_STARTUP_INVERSE : FREQ																					:= 2 Hz;		-- StartUp time
-	constant PWM_RESOLUTION		: POSITIVE																					:= 4;					-- 4 Bit resolution => 0 to 15 steps
+	constant PWM_RESOLUTION		: positive																					:= 4;					-- 4 Bit resolution => 0 to 15 steps
 	constant PWM_FREQ					: FREQ																							:= 10 Hz;			--
 
-	constant TACHO_RESOLUTION	: POSITIVE																					:= 8;
+	constant TACHO_RESOLUTION	: positive																					:= 8;
 
-	signal PWM_PWMIn					: STD_LOGIC_VECTOR(PWM_RESOLUTION - 1 downto 0);
-	signal PWM_PWMOut					: STD_LOGIC																					:= '0';
+	signal PWM_PWMIn					: std_logic_vector(PWM_RESOLUTION - 1 downto 0);
+	signal PWM_PWMOut					: std_logic																					:= '0';
 
 begin
 	-- System Monitor and temperature to PWM ratio calculation for Virtex6
 	-- ==========================================================================================================================================================
 	genXilinx : if (VENDOR = VENDOR_XILINX) generate
-		signal OverTemperature_async	: STD_LOGIC;
-		signal OverTemperature_sync		: STD_LOGIC;
+		signal OverTemperature_async	: std_logic;
+		signal OverTemperature_sync		: std_logic;
 
-		signal UserTemperature_async	: STD_LOGIC;
-		signal UserTemperature_sync		: STD_LOGIC;
+		signal UserTemperature_async	: std_logic;
+		signal UserTemperature_sync		: std_logic;
 
-		signal TC_Timeout					: STD_LOGIC;
-		signal StartUp						: STD_LOGIC;
+		signal TC_Timeout					: std_logic;
+		signal StartUp						: std_logic;
 	begin
 		genML605 : if (str_imatch(BOARD_NAME, "ML605") = TRUE) generate
 			SystemMonitor : xil_SystemMonitor_Virtex6
@@ -170,13 +169,13 @@ begin
 
 	genAltera : if (VENDOR = VENDOR_ALTERA) generate
 --		signal OverTemperature_async	: STD_LOGIC;
-		signal OverTemperature_sync		: STD_LOGIC;
+		signal OverTemperature_sync		: std_logic;
 
 --		signal UserTemperature_async	: STD_LOGIC;
-		signal UserTemperature_sync		: STD_LOGIC;
+		signal UserTemperature_sync		: std_logic;
 
-		signal TC_Timeout					: STD_LOGIC;
-		signal StartUp						: STD_LOGIC;
+		signal TC_Timeout					: std_logic;
+		signal StartUp						: std_logic;
 	begin
 		genDE4 : if (str_imatch(BOARD_NAME, "DE4") = TRUE) generate
 			OverTemperature_sync		<= '0';
@@ -233,8 +232,8 @@ begin
 		TachoFrequency <= (TachoFrequency'range => 'X');
 	end generate;
 	genTacho : if (ENABLE_TACHO = TRUE) generate
-		signal Tacho_sync					: STD_LOGIC;
-		signal Tacho_Freq					: STD_LOGIC_VECTOR(TACHO_RESOLUTION - 1 downto 0);
+		signal Tacho_sync					: std_logic;
+		signal Tacho_Freq					: std_logic_vector(TACHO_RESOLUTION - 1 downto 0);
 	begin
 		-- Input Synchronization
 		genNoSync : if (ADD_INPUT_SYNCHRONIZERS = FALSE) generate

@@ -1,34 +1,33 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
 -- =============================================================================
 -- Authors:					Thomas B. Preusser
 --									Patrick Lehmann
 --
--- Module:					Computes the Cyclic Redundancy Check (CRC)
--- 
--- Description:
--- ------------------------------------
---		Computes the Cyclic Redundancy Check (CRC) for a data packet as remainder
---		of the polynomial division of the message by the given generator
---		polynomial (GEN).
+-- Entity:					Computes the Cyclic Redundancy Check (CRC)
 --
---		The computation is unrolled so as to process an arbitrary number of
---		message bits per step. The generated CRC is independent from the chosen
---		processing width.
+-- Description:
+-- -------------------------------------
+-- Computes the Cyclic Redundancy Check (CRC) for a data packet as remainder
+-- of the polynomial division of the message by the given generator
+-- polynomial (GEN).
+-- 
+-- The computation is unrolled so as to process an arbitrary number of
+-- message bits per step. The generated CRC is independent from the chosen
+-- processing width.
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,16 +52,16 @@ entity comm_crc is
 	);
 	port (
 		clk	: in	std_logic;																-- Clock
-		
+
 		set	: in	std_logic;																-- Parallel Preload of Remainder
-		init : in	std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- 
+		init : in	std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	--
 		step : in	std_logic;																-- Process Input Data (MSB first)
-		din	: in	std_logic_vector(BITS-1 downto 0);				-- 
+		din	: in	std_logic_vector(BITS-1 downto 0);				--
 
 		rmd	: out std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- Remainder
 		zero : out std_logic																-- Remainder is Zero
 	);
-end comm_crc;
+end entity comm_crc;
 
 
 architecture rtl of comm_crc is
@@ -124,4 +123,4 @@ begin
 	rmd	<= lfso;
 	zero <= '1' when lfso = (lfso'range => '0') else '0';
 
-end rtl;
+end architecture;

@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Package: trace_functions
 -- Author(s): Stefan Alex
--- 
+--
 ------------------------------------------------------
 -- all functions for generic trace-architecture     --
 ------------------------------------------------------
@@ -4745,11 +4745,11 @@ package body trace_functions is
   begin
 
     case INDEX is
-      when 0 => 
+      when 0 =>
         return Normal;
       when 1 =>
         return Start;
-      when others => 
+      when others =>
         return Stop;
     end case;
 

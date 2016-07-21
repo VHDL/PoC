@@ -1,29 +1,28 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
 -- =============================================================================
 -- Authors:					Thomas B. Preusser
 --
--- Module:					Computes XOR masks for stream scrambling from an LFSR generator.
--- 
+-- Entity:					Computes XOR masks for stream scrambling from an LFSR generator.
+--
 -- Description:
--- ------------------------------------
---		The LFSR computation is unrolled to generate an arbitrary number of mask
---		bits in parallel. The mask are output in little endian. The generated bit
---		sequence is independent from the chosen output width.
+-- -------------------------------------
+-- The LFSR computation is unrolled to generate an arbitrary number of mask
+-- bits in parallel. The mask are output in little endian. The generated bit
+-- sequence is independent from the chosen output width.
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,18 +37,18 @@ use			IEEE.std_logic_1164.all;
 entity comm_scramble is
   generic (
     GEN  : bit_vector;       -- Generator Polynomial (little endian)
-    BITS : positive          -- Width of Mask Bits to be computed in parallel
+    BITS : positive          -- Width of Mask Bits to be computed in parallel in each step
   );
   port (
     clk  : in  std_logic;    -- Clock
 
-    set  : in  std_logic;    -- Set LFSR to provided Value
-    din  : in  std_logic_vector(GEN'length-2 downto 0);
+    set  : in  std_logic;    -- Set LFSR to value provided on din
+    din  : in  std_logic_vector(GEN'length-2 downto 0) := (others => '0');
 
     step : in  std_logic;    -- Compute a Mask Output
     mask : out std_logic_vector(BITS-1 downto 0)
   );
-end comm_scramble;
+end entity comm_scramble;
 
 
 architecture rtl of comm_scramble is
@@ -70,13 +69,13 @@ architecture rtl of comm_scramble is
     report "Cannot use absolute constant as generator."
       severity failure;
   end normalize;
-  
+
   -- Normalized Generator
   constant GN : bit_vector := normalize(GEN);
 
   -- LFSR Value
   signal lfsr : std_logic_vector(GN'range);
-  
+
 begin
   process(clk)
     -- Intermediate LFSR Values for single-bit Steps
@@ -97,4 +96,4 @@ begin
     end if;
   end process;
 
-end rtl;
+end architecture;

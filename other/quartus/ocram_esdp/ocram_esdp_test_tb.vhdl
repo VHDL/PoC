@@ -1,18 +1,18 @@
 -------------------------------------------------------------------------------
 -- Title      : Testbench for design "ocram_esdp_test"
--- Project    : 
+-- Project    :
 -------------------------------------------------------------------------------
 -- File       : ocram_esdp_test_tb.vhdl
 -- Author     : Martin Zabel  <zabel@ite161.inf.tu-dresden.de>
--- Company    : 
+-- Company    :
 -- Created    : 2015-02-17
 -- Last update: 2015-02-18
--- Platform   : 
+-- Platform   :
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description: 
+-- Description:
 -------------------------------------------------------------------------------
--- Copyright (c) 2015 
+-- Copyright (c) 2015
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author  Description
@@ -69,9 +69,9 @@ begin  -- architecture sim
   -- clock generation
   clk1   <= not clk1   after 60 ns;
   clk2_i <= not clk2_i after 10 ns;
-  
+
   clk2   <= transport clk2_i after 100 ps; -- small phase shift
-  
+
   WriteGen_Proc: process
   begin
     wait until rising_edge(clk1);

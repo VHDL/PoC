@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -92,7 +92,7 @@ entity uart_sfc is
 
     -- state
     overflow : out std_logic;
-    
+
     -- line
     rxd : in  std_logic;
     txd : out std_logic);
@@ -113,11 +113,11 @@ architecture uart_sfc_impl of uart_sfc is
 
   constant XON_TRIG : integer := integer(XON_TRIGGER *
                                          real(2**RF_FSTATE_BITS));
-  
+
   -----------------------------------------------------------------------------
   -- signals declaration
   -----------------------------------------------------------------------------
-  
+
   signal bclk_r    : std_logic;
   signal bclk_x8_r : std_logic;
 
@@ -145,7 +145,7 @@ architecture uart_sfc_impl of uart_sfc is
   signal discard_user         : std_logic;
 
   signal set_overflow : std_logic;
-  
+
   -- registers
   signal xoff_transmitted : std_logic;
 
@@ -154,7 +154,7 @@ begin  -- uart_sfc_impl
   -----------------------------------------------------------------------------
   -- components instantiation
   -----------------------------------------------------------------------------
-  
+
   rx: uart_rx
     generic map (
       OUT_REGS => RX_OUT_REGS)
@@ -249,7 +249,7 @@ begin  -- uart_sfc_impl
   rf_din <= rx_dout;
 
   set_overflow <= rf_full and rx_dos;
-  
+
   -- registers
   process (clk)
   begin  -- process

@@ -1,16 +1,16 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Martin Zabel
 --                  Patrick Lehmann
--- 
+--
 -- Module:					Sub-module for test of conversion routines defined in
 -- 									`physical.pkg.vhdl` between physical types `TIME` and
 -- 									`FREQ`.
 --
--- 
+--
 -- Description:
 -- ------------------------------------
 -- Synthesis reports a multiple driver error / critical-warning when
@@ -27,13 +27,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,7 +48,7 @@ library poc;
 use poc.physical.all;
 
 entity physical_test_freq2time is
-  
+
 	generic (
 		CVT_LIT_1_Hz		 : time := to_time(1 Hz);
 		CVT_LIT_2_Hz		 : time := to_time(2 Hz);
@@ -119,7 +119,7 @@ architecture rtl of physical_test_freq2time is
 		report "CVT_LIT_1_SEC     = " & freq'image(CVT_LIT_1_SEC    ) severity note;
 	return true;
 	end f;
-	
+
 	constant C : boolean := f;
 
 begin  -- architecture rtl

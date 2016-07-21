@@ -1,4 +1,5 @@
 # git files
+.gitattributes
 .gitignore
 .gitempty
 #.gitmodules
@@ -6,6 +7,7 @@
 # *.yml files
 .landscape.yml
 .travis.yml
+readthedocs.yml
 
 # Python 3 - package requirements
 requirements.txt
@@ -13,9 +15,11 @@ requirements.txt
 # Documentation files
 docs/
 AUTHORS.md
-LICENSE.md
-README.md
 CHANGES.md
+CONTRIBUTING.md
+LICENSE.md
+README.tpl
+README.md
 
 # Configuration scripts
 poc.sh

@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
--- 
+--
 -- Testbench:				Pseudo-Random Number Generator (PRNG).
--- 
+--
 -- Description:
 -- ------------------------------------
 --		Automated testbench for PoC.arith_prng
@@ -17,13 +17,13 @@
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -72,15 +72,15 @@ architecture tb of arith_prng_tb is
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
-	constant BITS				: POSITIVE					:= 8;
-	constant SEED				: STD_LOGIC_VECTOR	:= x"12";
-	constant simTestID	: T_SIM_TEST_ID			:= simCreateTest("Test setup for BITS=" & INTEGER'image(BITS) & "; SEED=0x" & raw_format_slv_hex(SEED));
-	
-	signal Clock				: STD_LOGIC;
-	signal Reset				: STD_LOGIC;
-	signal Test_got			: STD_LOGIC;
-	signal PRNG_Value		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	
+	constant BITS				: positive					:= 8;
+	constant SEED				: std_logic_vector	:= x"12";
+	constant simTestID	: T_SIM_TEST_ID			:= simCreateTest("Test setup for BITS=" & integer'image(BITS) & "; SEED=0x" & raw_format_slv_hex(SEED));
+
+	signal Clock				: std_logic;
+	signal Reset				: std_logic;
+	signal Test_got			: std_logic;
+	signal PRNG_Value		: std_logic_vector(BITS - 1 downto 0);
+
 begin
 	-- initialize global simulation status
 	simInitialize;
@@ -94,34 +94,34 @@ begin
 			SEED		=> SEED
 		)
 		port map (
-			clk			=> Clock,						
+			clk			=> Clock,
 			rst			=> Reset,						-- reset value to initial seed
 			got			=> Test_got,				-- the current value has been got, and a new value should be calculated
 			val			=> PRNG_Value				-- the pseudo-random number
 		);
 
 	procChecker : process
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Checker for " & INTEGER'image(BITS) & " bits");
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Checker for " & integer'image(BITS) & " bits");
 	begin
 		Test_got						<= '0';
-		
+
 		wait until falling_edge(Reset);
 		wait until rising_edge(Clock);
 
 		for i in COMPARE_LIST_8_BITS'range loop
 			Test_got			<= '1';
-			
+
 			wait until rising_edge(Clock);
 			simAssertion((PRNG_Value = COMPARE_LIST_8_BITS(i)),
-				str_ralign(INTEGER'image(i), log10ceil(COMPARE_LIST_8_BITS'high)) &
+				str_ralign(integer'image(i), log10ceil(COMPARE_LIST_8_BITS'high)) &
 				": Value=" &		raw_format_slv_hex(PRNG_Value) &
 				" Expected=" &	raw_format_slv_hex(COMPARE_LIST_8_BITS(i))
 			);
 		end loop;
-		
+
 		Test_got				<= '0';
 		simWaitUntilRisingEdge(Clock, 4);
-		
+
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever

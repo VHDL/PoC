@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
@@ -10,18 +10,18 @@
 -- Description:
 -- ------------------------------------
 --	TODO
--- 
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -87,28 +87,28 @@ architecture tb of stat_Average_tb is
 	);
 
 	type T_RESULT is record
-		Minimum			: NATURAL;
-		Count				: POSITIVE;
+		Minimum			: natural;
+		Count				: positive;
 	end record;
-	
-	type T_RESULT_VECTOR	is array(NATURAL range <>) of T_RESULT;
-	
-	constant DATA_BITS		: POSITIVE				:= 8;
-	constant COUNTER_BITS	: POSITIVE				:= 16;
-	constant simTestID		: T_SIM_TEST_ID		:= simCreateTest("Test setup for DATA_BITS=" & INTEGER'image(DATA_BITS) & "  COUNTER_BITS=" & INTEGER'image(COUNTER_BITS));
+
+	type T_RESULT_VECTOR	is array(natural range <>) of T_RESULT;
+
+	constant DATA_BITS		: positive				:= 8;
+	constant COUNTER_BITS	: positive				:= 16;
+	constant simTestID		: T_SIM_TEST_ID		:= simCreateTest("Test setup for DATA_BITS=" & integer'image(DATA_BITS) & "  COUNTER_BITS=" & INTEGER'image(COUNTER_BITS));
 
   -- component ports
-  signal Clock		: STD_LOGIC;
-  signal Reset		: STD_LOGIC;
-	
-  signal Enable		: STD_LOGIC		:= '0';
-  signal DataIn		: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
+  signal Clock		: std_logic;
+  signal Reset		: std_logic;
 
-	signal Count		: STD_LOGIC_VECTOR(COUNTER_BITS - 1 downto 0);
-	signal Sum			: STD_LOGIC_VECTOR(COUNTER_BITS - 1 downto 0);
-	signal Average	: STD_LOGIC_VECTOR(COUNTER_BITS - 1 downto 0);
-	signal Valid		: STD_LOGIC;
-	
+  signal Enable		: std_logic		:= '0';
+  signal DataIn		: std_logic_vector(DATA_BITS - 1 downto 0);
+
+	signal Count		: std_logic_vector(COUNTER_BITS - 1 downto 0);
+	signal Sum			: std_logic_vector(COUNTER_BITS - 1 downto 0);
+	signal Average	: std_logic_vector(COUNTER_BITS - 1 downto 0);
+	signal Valid		: std_logic;
+
 begin
 	-- initialize global simulation status
 	simInitialize;
@@ -116,7 +116,7 @@ begin
 	simGenerateClock(simTestID,			Clock,	CLOCK_FREQ);
 	simGenerateWaveform(simTestID,	Reset,	simGenerateWaveform_Reset(Pause =>  5 ns, ResetPulse => 10 ns));
 	simGenerateWaveform(simTestID,	Enable,	simGenerateWaveform_Reset(Pause => 25 ns, ResetPulse => (VALUES'length * 10 ns)));
-  
+
   -- component instantiation
   UUT: entity PoC.stat_Average
     generic map (
@@ -126,10 +126,10 @@ begin
     port map (
       Clock			=> Clock,
       Reset			=> Reset,
-			
+
 			Enable		=> Enable,
 			DataIn		=> DataIn,
-			
+
 			Count			=> Count,
 			Sum				=> Sum,
 			Average		=> Average,
@@ -138,9 +138,9 @@ begin
 
 	procStimuli : process
 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Generator and Checker");
-		variable ExpectedCnt	: NATURAL;
-		variable ExpectedSum	: NATURAL;
-		variable ExpectedAvg	: NATURAL;
+		variable ExpectedCnt	: natural;
+		variable ExpectedSum	: natural;
+		variable ExpectedAvg	: natural;
 	begin
 		DataIn		<= (others => '0');
 		wait until (Enable = '1') and falling_edge(Clock);
@@ -152,15 +152,15 @@ begin
 		end loop;
 
 		wait until (Valid = '0') and rising_edge(Clock);
-		
+
 		ExpectedCnt := VALUES'length;
 		ExpectedSum := isum(VALUES);
 		ExpectedAvg := ExpectedSum / ExpectedCnt;
-		
-		simAssertion((unsigned(Count) = ExpectedCnt), "Count mismatch. Count=" & INTEGER'image(to_integer(unsigned(Count))) & "  Expected=" & INTEGER'image(ExpectedCnt));
-		simAssertion((unsigned(Sum) = ExpectedSum), "Sum mismatch. Sum=" & INTEGER'image(to_integer(unsigned(Sum))) & "  Expected=" & INTEGER'image(ExpectedSum));
-		simAssertion((unsigned(Average) = ExpectedAvg), "Average mismatch. Average=" & INTEGER'image(to_integer(unsigned(Average))) & "  Expected=" & INTEGER'image(ExpectedAvg));
-		
+
+		simAssertion((unsigned(Count) = ExpectedCnt), "Count mismatch. Count=" & integer'image(to_integer(unsigned(Count))) & "  Expected=" & INTEGER'image(ExpectedCnt));
+		simAssertion((unsigned(Sum) = ExpectedSum), "Sum mismatch. Sum=" & integer'image(to_integer(unsigned(Sum))) & "  Expected=" & INTEGER'image(ExpectedSum));
+		simAssertion((unsigned(Average) = ExpectedAvg), "Average mismatch. Average=" & integer'image(to_integer(unsigned(Average))) & "  Expected=" & INTEGER'image(ExpectedAvg));
+
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever

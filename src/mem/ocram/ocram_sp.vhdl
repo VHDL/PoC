@@ -1,41 +1,40 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Martin Zabel
 --									Patrick Lehmann
--- 
--- Module:				 	Single-port memory.
+--
+-- Entity:				 	Single-port memory.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Inferring / instantiating single-port RAM
 --
 -- - single clock, clock enable
 -- - 1 read/write port
--- 
+--
 -- Written data is passed through the memory and output again as read-data 'q'.
 -- This is the normal behaviour of a single-port RAM and also known as
 -- write-first mode or read-through-write behaviour.
--- 
+--
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 
 library	IEEE;
@@ -54,7 +53,7 @@ entity ocram_sp is
 	generic (
 		A_BITS		: positive;
 		D_BITS		: positive;
-		FILENAME	: STRING		:= ""
+		FILENAME	: string		:= ""
 	);
 	port (
 		clk : in	std_logic;
@@ -77,7 +76,7 @@ begin
 		-- XST Advanced HDL Synthesis generates single-port memory as expected.
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
 		type		ram_t		is array(0 to DEPTH - 1) of word_t;
-		
+
 		-- Compute the initialization of a RAM array, if specified, from the passed file.
 		impure function ocram_InitMemory(FilePath : string) return ram_t is
 			variable Memory		: T_SLM(DEPTH - 1 downto 0, word_t'range);
@@ -102,7 +101,7 @@ begin
 
 		signal ram		: ram_t		:= ocram_InitMemory(FILENAME);
 		signal a_reg	: unsigned(A_BITS-1 downto 0);
-		
+
 	begin
 		process (clk)
 		begin
@@ -125,7 +124,7 @@ begin
 			generic (
 				A_BITS		: positive;
 				D_BITS		: positive;
-				FILENAME	: STRING		:= ""
+				FILENAME	: string		:= ""
 			);
 			port (
 				clk : in	std_logic;
@@ -154,7 +153,7 @@ begin
 				q	 => q
 			);
 	end generate gAltera;
-	
+
 	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
 		report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported."
 		severity failure;

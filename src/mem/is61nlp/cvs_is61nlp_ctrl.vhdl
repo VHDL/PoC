@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: is61nlp_ctrl
 -- Author(s): Martin Zabel
--- 
+--
 -- Controller for IS61NLP ZBT Synchronous SRAM.
 --
 -- Configuration:
@@ -106,7 +106,7 @@ architecture rtl of is61nlp_ctrl is
   -- byte enable register
   signal bw_p0_n  : std_logic_vector(BW_CNT-1 downto 0);
   signal bw_nxt_n : std_logic_vector(BW_CNT-1 downto 0);
-  
+
   -- write data register
   signal wdata_p0  : std_logic_vector(D_BITS-1 downto 0);
   signal wdata_p1  : std_logic_vector(D_BITS-1 downto 0);
@@ -115,7 +115,7 @@ architecture rtl of is61nlp_ctrl is
 
   -- sample user address and data
   signal get_user : std_logic;
-  
+
   -- signals whether a read operation is currently executed
   signal reading_p0  : std_logic;
   signal reading_p1  : std_logic;
@@ -126,11 +126,11 @@ architecture rtl of is61nlp_ctrl is
   signal writing_p0_n  : std_logic;
   signal writing_p1_n  : std_logic;
   signal writing_nxt_n : std_logic;
-  
+
   -- Own output enable, low-active
   signal own_oe_r_n   : std_logic_vector(D_BITS-1 downto 0);
   signal own_oe_nxt_n : std_logic;
-  
+
   -- SRAM write enable, low-active
   signal sram_we_r_n   : std_logic;
   signal sram_we_nxt_n : std_logic;
@@ -153,13 +153,13 @@ begin
   bw_nxt_n  <= not bw;
   addr_nxt  <= addr;
   wdata_nxt <= wdata;
-  
+
   get_user      <= req;
   reading_nxt   <= req and not write;
   writing_nxt_n <= req nand write;
   own_oe_nxt_n  <= writing_p1_n;
   sram_we_nxt_n <= writing_nxt_n;
-  
+
   -----------------------------------------------------------------------------
   -- Registers
   -----------------------------------------------------------------------------
@@ -212,7 +212,7 @@ begin
         if reading_p2 = '1' then
           rdata <= sram_data;
         end if;
-        
+
         if rst = '1' then
           rstb <= '0';
         else
@@ -221,10 +221,10 @@ begin
       end if;
     end process;
   end generate gSdinReg;
-  
+
   sram_bw_n <= bw_p0_n;
   sram_addr <= addr_p0;
-  
+
   l1: for i in 0 to D_BITS-1 generate
     -- each bit needs its own output enable
     sram_data(i) <= wdata_p2(i) when own_oe_r_n(i) = '0' else 'Z';

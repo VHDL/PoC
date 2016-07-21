@@ -7,15 +7,15 @@ use poc.ddrio.all;
 entity ddrio_in_test is
 
   generic (
-    BITS	: POSITIVE := 2;
-    INIT_VALUE 	: BIT_VECTOR(1 downto 0) := "10");
+    BITS	: positive := 2;
+    INIT_VALUE 	: bit_vector(1 downto 0) := "10");
 
   port (
-    Clock	: in	STD_LOGIC;
-    ClockEnable : in	STD_LOGIC;
-    DataIn_high : out	STD_LOGIC_VECTOR(BITS - 1 downto 0);
-    DataIn_low	: out	STD_LOGIC_VECTOR(BITS - 1 downto 0);
-    Pad		: inout STD_LOGIC_VECTOR(BITS - 1 downto 0));
+    Clock	: in	std_logic;
+    ClockEnable : in	std_logic;
+    DataIn_high : out	std_logic_vector(BITS - 1 downto 0);
+    DataIn_low	: out	std_logic_vector(BITS - 1 downto 0);
+    Pad		: inout std_logic_vector(BITS - 1 downto 0));
 
 end entity ddrio_in_test;
 

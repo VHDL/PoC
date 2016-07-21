@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -52,7 +52,7 @@ architecture tb of arith_same_tb is
     (x"1FFFF", "000"),
     (x"FFFF8", "110")
   );
-  
+
   signal arg : std_logic_vector(19 downto 0);
   signal res : std_logic_vector( 2 downto 0);
 
