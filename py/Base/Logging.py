@@ -4,6 +4,7 @@
 # 
 # ==============================================================================
 # Authors:          Patrick Lehmann
+#                   Thomas B. Preusser
 #
 # Python Class:      TODO
 #
@@ -39,61 +40,88 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Base.PoCBase")
 
-from colorama                import Fore as Foreground
-from enum                    import Enum, unique
-	
+
+from enum             import Enum, unique
+
+from lib.Functions    import Init
+
+
 @unique
 class Severity(Enum):
-	Fatal =      30
-	Error =      25
-	Quiet =      20
-	Warning =    15
+	Fatal =     30
+	Error =     25
+	Quiet =     20
+	Warning =   15
 	Info =      10
 	Normal =     4
 	Verbose =    2
 	Debug =      1
 	All =        0
-	
+
+	def __init__(self, *_):
+		"""Patch the embedded MAP dictionary"""
+		for k,v in self.__class__.__VHDL_SEVERITY_LEVEL_MAP__.items():
+			if ((not isinstance(v, self.__class__)) and (v == self.value)):
+				self.__class__.__VHDL_SEVERITY_LEVEL_MAP__[k] = self
+
+	def __hash__(self):
+		return hash(self.name)
+
 	def __eq__(self, other):    return self.value ==  other.value
 	def __ne__(self, other):    return self.value !=  other.value
 	def __lt__(self, other):    return self.value <		other.value
 	def __le__(self, other):    return self.value <=  other.value
 	def __gt__(self, other):    return self.value >		other.value
 	def __ge__(self, other):    return self.value >=  other.value
-	
+
+	__VHDL_SEVERITY_LEVEL_MAP__ =  {
+		"failure": Fatal,
+		"error":   Error,
+		"warning": Warning,
+		"note":    Info
+	}
+
+	@classmethod
+	def ParseVHDLSeverityLevel(cls, severity, fallback=None):
+		return cls.__VHDL_SEVERITY_LEVEL_MAP__.get(severity, fallback)
+
 
 class LogEntry:
 	def __init__(self, message, severity=Severity.Normal, indent=0):
 		self._severity =  severity
 		self._message =    message
 		self._indent =    indent
-	
+
+	__LOG_MESSAGE_FORMAT__ = {
+		Severity.Fatal:     "FATAL: {message}",
+		Severity.Error:     "ERROR: {message}",
+		Severity.Warning:   "WARNING: {message}",
+		Severity.Info:      "INFO: {message}",
+		Severity.Quiet:     "{message}",
+		Severity.Normal:    "{message}",
+		Severity.Verbose:   "VERBOSE: {message}",
+		Severity.Debug:     "DEBUG: {message}"
+	}
+
 	@property
-	def Severity(self):    return self._severity
+	def Severity(self):   return self._severity
 	@property
-	def Indent(self):      return self._indent
+	def Indent(self):     return self._indent
 	@property
 	def Message(self):    return ("  " * self._indent) + self._message
 
 	def IndentBy(self, indent):
 		self._indent += indent
-	
+
 	def __str__(self):
-		if (self._severity is Severity.Fatal):      return "FATAL: " +		self._message
-		elif (self._severity is Severity.Error):    return "ERROR: " +		self._message
-		elif (self._severity is Severity.Warning):  return "WARNING: " +	self._message
-		elif (self._severity is Severity.Info):      return "INFO: " +			self._message
-		elif (self._severity is Severity.Quiet):    return 								self._message
-		elif (self._severity is Severity.Normal):    return 								self._message
-		elif (self._severity is Severity.Verbose):  return "VERBOSE: " +	self._message
-		elif (self._severity is Severity.Debug):    return "DEBUG: " +		self._message
+		return self.__LOG_MESSAGE_FORMAT__[self._severity].format(message=self._message)
 
 class Logger:
 	def __init__(self, host, logLevel, printToStdOut=True):
 		self._host =          host
 		self._logLevel =      logLevel
-		self._printToStdOut =  printToStdOut
-		self._entries =        []
+		self._printToStdOut = printToStdOut
+		self._entries =       []
 	
 	@property
 	def LogLevel(self):
@@ -101,20 +129,23 @@ class Logger:
 	@LogLevel.setter
 	def LogLevel(self, value):
 		self._logLevel = value
-	
+
+	__LOG_MESSAGE_FORMAT__ = {
+		Severity.Fatal:   "{DARKRED}{message}{NOCOLOR}",
+		Severity.Error:   "{RED}{message}{NOCOLOR}",
+		Severity.Quiet:   "{message}",
+		Severity.Warning: "{YELLOW}{message}{NOCOLOR}",
+		Severity.Info:    "{WHITE}{message}{NOCOLOR}",
+		Severity.Normal:  "{message}",
+		Severity.Verbose: "{GRAY}{message}{NOCOLOR}",
+		Severity.Debug:   "{DARK_GRAY}{message}{NOCOLOR}"
+	}
+
 	def Write(self, entry):
 		if (entry.Severity >= self._logLevel):
 			self._entries.append(entry)
 			if self._printToStdOut:
-				if (entry.Severity is Severity.Fatal):      print("{0}{1}{2}".format(Foreground.RED, entry.Message, Foreground.RESET))
-				elif (entry.Severity is Severity.Error):    print("{0}{1}{2}".format(Foreground.LIGHTRED_EX, entry.Message, Foreground.RESET))
-				elif (entry.Severity is Severity.Quiet):    print(entry.Message)
-				elif (entry.Severity is Severity.Warning):  print("{0}{1}{2}".format(Foreground.LIGHTYELLOW_EX, entry.Message, Foreground.RESET))
-				elif (entry.Severity is Severity.Info):      print("{0}{1}{2}".format(Foreground.CYAN, entry.Message, Foreground.RESET))
-				elif (entry.Severity is Severity.Normal):    print(entry.Message)
-				elif (entry.Severity is Severity.Verbose):  print("{0}{1}{2}".format(Foreground.WHITE, entry.Message, Foreground.RESET))
-				elif (entry.Severity is Severity.Debug):    print("{0}{1}{2}".format(Foreground.LIGHTBLACK_EX, entry.Message, Foreground.RESET))
-
+				print(self.__LOG_MESSAGE_FORMAT__[entry.Severity].format(message=entry.Message, **Init.Foreground))
 			return True
 		else:
 			return False

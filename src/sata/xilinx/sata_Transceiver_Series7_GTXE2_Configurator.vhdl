@@ -1,45 +1,44 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
--- Package:					TODO
---
+-- =============================================================================
 -- Authors:					Patrick Lehmann
--- 
+--
+-- Entity:					TODO
+--
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		For detailed documentation see below.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
---USE			PoC.vectors.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.sata.ALL;
-USE			PoC.xil.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+--use			PoC.vectors.all;
+use			PoC.physical.all;
+use			PoC.sata.all;
+use			PoC.xil.all;
 
 
 -- ==================================================================
@@ -50,7 +49,7 @@ USE			PoC.xil.ALL;
 
 --	used configuration words
 --	address		bits		|	GTX_DUAL generic name				GEN_1			GEN_2		Note GEN_1			Note GEN_2
--- ============================================================================================================================================================
+-- =============================================================================
 --	0x05			[3]			|	PLL_TXDIVSEL_OUT_1 [1]				 0				 0		divide by 2			divide by 1
 --	0x05			[4]			|	PLL_TXDIVSEL_OUT_1 [0]				 1				 0		divide by 2			divide by 1
 --	0x09			[15]		|	PLL_RXDIVSEL_OUT_1 [1]				 0				 0		divide by 2			divide by 1
@@ -60,56 +59,56 @@ USE			PoC.xil.ALL;
 --	0x46			[3..2]	|	PLL_RXDIVSEL_OUT_0 [1:0]			01				00		divide by 2			divide by 1
 
 
-ENTITY sata_Transceiver_Series7_GTXE2_Configurator IS
-	GENERIC (
-		DEBUG											: BOOLEAN							:= FALSE;										-- 
-		DRPCLOCK_FREQ							: FREQ								:= 0 MHz;										-- 
+entity sata_Transceiver_Series7_GTXE2_Configurator is
+	generic (
+		DEBUG											: boolean							:= FALSE;										--
+		DRPCLOCK_FREQ							: FREQ								:= 0 MHz;										--
 		INITIAL_SATA_GENERATION		: T_SATA_GENERATION		:= C_SATA_GENERATION_MAX		-- intial SATA Generation
 	);
-	PORT (
-		DRP_Clock								: IN	STD_LOGIC;
-		DRP_Reset								: IN	STD_LOGIC;
-		
-		SATA_Clock							: IN	STD_LOGIC;
-		
-		Reconfig								: IN	STD_LOGIC;							-- @SATA_Clock
-		SATAGeneration					: IN	T_SATA_GENERATION;			-- @SATA_Clock
-		ReconfigComplete				: OUT	STD_LOGIC;							-- @SATA_Clock
-		ConfigReloaded					: OUT	STD_LOGIC;							-- @SATA_Clock
-		
-		GTX_DRP_Enable					: OUT	STD_LOGIC;							-- @DRP_Clock
-		GTX_DRP_Address					: OUT	T_XIL_DRP_ADDRESS;			-- @DRP_Clock
-		GTX_DRP_ReadWrite				: OUT	STD_LOGIC;							-- @DRP_Clock
-		GTX_DRP_DataIn					: IN	T_XIL_DRP_DATA;					-- @DRP_Clock
-		GTX_DRP_DataOut					: OUT	T_XIL_DRP_DATA;					-- @DRP_Clock
-		GTX_DRP_Ack							: IN	STD_LOGIC;							-- @DRP_Clock
-		
-		GTX_ReloadConfig				: OUT	STD_LOGIC;							-- @DRP_Clock
-		GTX_ReloadConfigDone		: IN	STD_LOGIC								-- @DRP_Clock
+	port (
+		DRP_Clock								: in	std_logic;
+		DRP_Reset								: in	std_logic;
+
+		SATA_Clock							: in	std_logic;
+
+		Reconfig								: in	std_logic;							-- @SATA_Clock
+		SATAGeneration					: in	T_SATA_GENERATION;			-- @SATA_Clock
+		ReconfigComplete				: out	std_logic;							-- @SATA_Clock
+		ConfigReloaded					: out	std_logic;							-- @SATA_Clock
+
+		GTX_DRP_Enable					: out	std_logic;							-- @DRP_Clock
+		GTX_DRP_Address					: out	T_XIL_DRP_ADDRESS;			-- @DRP_Clock
+		GTX_DRP_ReadWrite				: out	std_logic;							-- @DRP_Clock
+		GTX_DRP_DataIn					: in	T_XIL_DRP_DATA;					-- @DRP_Clock
+		GTX_DRP_DataOut					: out	T_XIL_DRP_DATA;					-- @DRP_Clock
+		GTX_DRP_Ack							: in	std_logic;							-- @DRP_Clock
+
+		GTX_ReloadConfig				: out	std_logic;							-- @DRP_Clock
+		GTX_ReloadConfigDone		: in	std_logic								-- @DRP_Clock
 	);
-END;
+end;
 
 
-ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2_Configurator IS
-	ATTRIBUTE KEEP								: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING				: STRING;
+architecture rtl of sata_Transceiver_Series7_GTXE2_Configurator is
+	attribute KEEP								: boolean;
+	attribute FSM_ENCODING				: string;
 
-	FUNCTION ins(value: STD_LOGIC_VECTOR; Length : NATURAL) RETURN STD_LOGIC_VECTOR IS
-		VARIABLE Result		: STD_LOGIC_VECTOR(Length - 1 DOWNTO 0)		:= (OTHERS => '0');
-	BEGIN
+	function ins(value: std_logic_vector; Length : natural) return std_logic_vector is
+		variable Result		: std_logic_vector(Length - 1 downto 0)		:= (others => '0');
+	begin
 		Result(value'range)	:= value;
-		RETURN Result;
-	END FUNCTION;
+		return Result;
+	end function;
 
-	-- 1. descibe all used GENERICs
-	TYPE GTX_GENERICS IS RECORD
-		RX_CDR_CFG				: STD_LOGIC_VECTOR(71 DOWNTO 0);		-- RX CDR Configuration; see Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
-	END RECORD;
-	TYPE GTX_GENERICS_VECTOR IS ARRAY(NATURAL RANGE <>) OF GTX_GENERICS;
-	
-	-- 2. assign each GENERIC for each speed configuration
+	-- 1. descibe all used generics
+	type GTX_GENERICS is record
+		RX_CDR_CFG				: std_logic_vector(71 downto 0);		-- RX CDR Configuration; see Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
+	end record;
+	type GTX_GENERICS_VECTOR is array(natural range <>) of GTX_GENERICS;
+
+	-- 2. assign each generic for each speed configuration
 	--		index -> speed configuration
-	CONSTANT GTX_CONFIGS			: GTX_GENERICS_VECTOR := (
+	constant GTX_CONFIGS			: GTX_GENERICS_VECTOR := (
 		-- SATA Generation 1: set RX_CDR_CFG for 1.5 GHz line rate
 		0 => (RX_CDR_CFG	=> x"0380008BFF40100008"),
 		-- SATA Generation 2: set RX_CDR_CFG for 3.0 GHz line rate
@@ -117,68 +116,68 @@ ARCHITECTURE rtl OF sata_Transceiver_Series7_GTXE2_Configurator IS
 		-- SATA Generation 3: set RX_CDR_CFG for 6.0 GHz line rate
 		2 => (RX_CDR_CFG	=> x"0380008BFF10200010")
 	);
-		
-	-- 3. convert GENERICs into ConfigROM enties for each config set and each speed configuration
-	CONSTANT XILDRP_CONFIG_ROM								: T_XIL_DRP_CONFIG_ROM := (
+
+	-- 3. convert generics into ConfigROM enties for each config set and each speed configuration
+	constant XILDRP_CONFIG_ROM								: T_XIL_DRP_CONFIG_ROM := (
 		-- Set 0, SATA Generation 1
-		0 => (Configs =>																				--											SET		GENERIC			slice						DRP-Addr		Bits				Mask
+		0 => (Configs =>																				--											SET		generic			slice						DRP-Addr		Bits				Mask
 							(0 => (Address => x"00A8", Mask => x"FFFF", Data =>					GTX_CONFIGS(0).RX_CDR_CFG(15 downto 0)),		-- 0x0A8,	[15..0]			xxxx xxxx xxxx xxxx
 							 1 => (Address => x"00A9", Mask => x"FFFF", Data =>					GTX_CONFIGS(0).RX_CDR_CFG(31 downto 16)),		-- 0x0A9,	[15..0]			xxxx xxxx xxxx xxxx
 							 2 => (Address => x"00AA", Mask => x"FFFF", Data =>					GTX_CONFIGS(0).RX_CDR_CFG(47 downto 32)),		-- 0x0AA,	[15..0]			xxxx xxxx xxxx xxxx
 							 3 => (Address => x"00AB", Mask => x"FFFF", Data =>					GTX_CONFIGS(0).RX_CDR_CFG(63 downto 48)),		-- 0x0AB,	[15..0]			xxxx xxxx xxxx xxxx
 							 4 => (Address => x"00AC", Mask => x"00FF", Data => x"00" & GTX_CONFIGS(0).RX_CDR_CFG(71 downto 64)),		-- 0x0AC,	[7..0]			____ ____ xxxx xxxx
-							 OTHERS => C_XIL_DRP_CONFIG_EMPTY),
+							 others => C_XIL_DRP_CONFIG_EMPTY),
 					LastIndex => 4),
 		-- Set 0, SATA Generation 2
-		1 => (Configs =>																				--											SET		GENERIC			slice						DRP-Addr		Bits				Mask
+		1 => (Configs =>																				--											SET		generic			slice						DRP-Addr		Bits				Mask
 							(0 => (Address => x"00A8", Mask => x"FFFF", Data =>					GTX_CONFIGS(1).RX_CDR_CFG(15 downto 0)),		-- 0x0A8,	[15..0]			xxxx xxxx xxxx xxxx
 							 1 => (Address => x"00A9", Mask => x"FFFF", Data =>					GTX_CONFIGS(1).RX_CDR_CFG(31 downto 16)),		-- 0x0A9,	[15..0]			xxxx xxxx xxxx xxxx
 							 2 => (Address => x"00AA", Mask => x"FFFF", Data =>					GTX_CONFIGS(1).RX_CDR_CFG(47 downto 32)),		-- 0x0AA,	[15..0]			xxxx xxxx xxxx xxxx
 							 3 => (Address => x"00AB", Mask => x"FFFF", Data =>					GTX_CONFIGS(1).RX_CDR_CFG(63 downto 48)),		-- 0x0AB,	[15..0]			xxxx xxxx xxxx xxxx
 							 4 => (Address => x"00AC", Mask => x"00FF", Data => x"00" & GTX_CONFIGS(1).RX_CDR_CFG(71 downto 64)),		-- 0x0AC,	[7..0]			____ ____ xxxx xxxx
-							 OTHERS => C_XIL_DRP_CONFIG_EMPTY),
+							 others => C_XIL_DRP_CONFIG_EMPTY),
 					LastIndex => 4),
 		-- Set 0, SATA Generation 3
-		2 => (Configs =>																				--											SET		GENERIC			slice						DRP-Addr		Bits				Mask
+		2 => (Configs =>																				--											SET		generic			slice						DRP-Addr		Bits				Mask
 							(0 => (Address => x"00A8", Mask => x"FFFF", Data =>					GTX_CONFIGS(2).RX_CDR_CFG(15 downto 0)),		-- 0x0A8,	[15..0]			xxxx xxxx xxxx xxxx
 							 1 => (Address => x"00A9", Mask => x"FFFF", Data =>					GTX_CONFIGS(2).RX_CDR_CFG(31 downto 16)),		-- 0x0A9,	[15..0]			xxxx xxxx xxxx xxxx
 							 2 => (Address => x"00AA", Mask => x"FFFF", Data =>					GTX_CONFIGS(2).RX_CDR_CFG(47 downto 32)),		-- 0x0AA,	[15..0]			xxxx xxxx xxxx xxxx
 							 3 => (Address => x"00AB", Mask => x"FFFF", Data =>					GTX_CONFIGS(2).RX_CDR_CFG(63 downto 48)),		-- 0x0AB,	[15..0]			xxxx xxxx xxxx xxxx
 							 4 => (Address => x"00AC", Mask => x"00FF", Data => x"00" & GTX_CONFIGS(2).RX_CDR_CFG(71 downto 64)),		-- 0x0AC,	[7..0]			____ ____ xxxx xxxx
-							 OTHERS => C_XIL_DRP_CONFIG_EMPTY),
+							 others => C_XIL_DRP_CONFIG_EMPTY),
 					LastIndex => 4)
 	);
-	
-	CONSTANT XILDRP_CONFIGSELECT_BITS	: POSITIVE			:= log2ceilnz(XILDRP_CONFIG_ROM'length);
-	
-	TYPE T_STATE IS (
+
+	constant XILDRP_CONFIGSELECT_BITS	: positive			:= log2ceilnz(XILDRP_CONFIG_ROM'length);
+
+	type T_STATE is (
 		ST_IDLE,
 		ST_RECONFIG,	ST_RECONFIG_WAIT,
 		ST_RELOAD,		ST_RELOAD_WAIT
 	);
-	
-	-- GTXE2_Configuration - Statemachine
-	SIGNAL State											: T_STATE											:= ST_IDLE;
-	SIGNAL NextState									: T_STATE;
-	ATTRIBUTE FSM_ENCODING	OF State	: SIGNAL IS getFSMEncoding_gray(DEBUG);
-	
-	SIGNAL Reconfig_DRP								: STD_LOGIC;
-	SIGNAL ReconfigComplete_i					: STD_LOGIC;
-	SIGNAL ConfigReloaded_i						: STD_LOGIC;
-	SIGNAL SATAGeneration_DRP					: T_SATA_GENERATION		:= INITIAL_SATA_GENERATION;
-	
-	SIGNAL doReconfig									: STD_LOGIC;
-	
-	SIGNAL ReloadConfig_i							: STD_LOGIC;
-	
-	SIGNAL XilDRP_Reconfig						: STD_LOGIC;
-	SIGNAL XilDRP_ReconfigDone				: STD_LOGIC;
-	SIGNAL XilDRP_ConfigSelect				: STD_LOGIC_VECTOR(XILDRP_CONFIGSELECT_BITS - 1 DOWNTO 0);
 
-BEGIN
+	-- GTXE2_Configuration - Statemachine
+	signal State											: T_STATE											:= ST_IDLE;
+	signal NextState									: T_STATE;
+	attribute FSM_ENCODING	of State	: signal is getFSMEncoding_gray(DEBUG);
+
+	signal Reconfig_DRP								: std_logic;
+	signal ReconfigComplete_i					: std_logic;
+	signal ConfigReloaded_i						: std_logic;
+	signal SATAGeneration_DRP					: T_SATA_GENERATION		:= INITIAL_SATA_GENERATION;
+
+	signal doReconfig									: std_logic;
+
+	signal ReloadConfig_i							: std_logic;
+
+	signal XilDRP_Reconfig						: std_logic;
+	signal XilDRP_ReconfigDone				: std_logic;
+	signal XilDRP_ConfigSelect				: std_logic_vector(XILDRP_CONFIGSELECT_BITS - 1 downto 0);
+
+begin
 	-- synchronize Reconfig, SATAGeneration from SATA_Clock to DRP_Clock
-	sync1 : ENTITY PoC.sync_Strobe
-		PORT MAP (
+	sync1 : entity PoC.sync_Strobe
+		port map (
 			Clock1			=> SATA_Clock,
 			Clock2			=> DRP_Clock,
 			Input(0)		=> Reconfig,
@@ -186,23 +185,23 @@ BEGIN
 		);
 
 	-- sample SATAGeneration in new clock domain if Reconfig occurs (SATAGeneration was stable for several cycles)
-	PROCESS(DRP_Clock)
-	BEGIN
-		IF rising_edge(DRP_Clock) THEN
-			IF (Reconfig_DRP = '1') THEN
+	process(DRP_Clock)
+	begin
+		if rising_edge(DRP_Clock) then
+			if (Reconfig_DRP = '1') then
 				SATAGeneration_DRP	<= SATAGeneration;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
 	doReconfig				<= Reconfig_DRP;
 
-	-- synchronize ReconfigComplete, ConfigReloaded, Locked from DRP_Clock to SATA_Clock		
-	sync2 : ENTITY PoC.sync_Strobe
-		GENERIC MAP (
+	-- synchronize ReconfigComplete, ConfigReloaded, Locked from DRP_Clock to SATA_Clock
+	sync2 : entity PoC.sync_Strobe
+		generic map (
 			BITS				=> 2
 		)
-		PORT MAP (
+		port map (
 			Clock1			=> DRP_Clock,
 			Clock2			=> SATA_Clock,
 			Input(0)		=> ReconfigComplete_i,
@@ -211,19 +210,19 @@ BEGIN
 			Output(1)		=> ConfigReloaded
 		);
 
-	PROCESS(DRP_Clock)
-	BEGIN
-		IF rising_edge(DRP_Clock) THEN
-			IF (DRP_Reset = '1') THEN
+	process(DRP_Clock)
+	begin
+		if rising_edge(DRP_Clock) then
+			if (DRP_Reset = '1') then
 				State				<= ST_IDLE;
-			ELSE
+			else
 				State				<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, doReconfig, XilDRP_ReconfigDone, GTX_ReloadConfigDone, SATAGeneration_DRP)
-	BEGIN
+	process(State, doReconfig, XilDRP_ReconfigDone, GTX_ReloadConfigDone, SATAGeneration_DRP)
+	begin
 		NextState								<= State;
 
 		-- default assignments
@@ -231,84 +230,84 @@ BEGIN
 		ReconfigComplete_i			<= '0';
 		ConfigReloaded_i				<= '0';
 		ReloadConfig_i					<= '0';
-		
+
 		-- internal modules
 		XilDRP_Reconfig					<= '0';
 		XilDRP_ConfigSelect			<= to_slv(0, XILDRP_CONFIGSELECT_BITS);
-		
-		CASE State IS
-			WHEN ST_IDLE =>
-				IF (doReconfig = '1') THEN
+
+		case State is
+			when ST_IDLE =>
+				if (doReconfig = '1') then
 					NextState					<= ST_RECONFIG;		-- do reconfig
-				END IF;
+				end if;
 
 			-- activate XilinxReconfigurator
 			-- ------------------------------------------------------------------
-			WHEN ST_RECONFIG =>
+			when ST_RECONFIG =>
 				XilDRP_Reconfig				<= '1';
-				
+
 				case SATAGeneration_DRP is
 					when SATA_GENERATION_1 =>		XilDRP_ConfigSelect <= to_slv(0, XILDRP_CONFIGSELECT_BITS);
 					when SATA_GENERATION_2 =>		XilDRP_ConfigSelect <= to_slv(1, XILDRP_CONFIGSELECT_BITS);
 					when SATA_GENERATION_3 =>		XilDRP_ConfigSelect <= to_slv(2, XILDRP_CONFIGSELECT_BITS);
 					when others =>							XilDRP_ConfigSelect <= to_slv(0, XILDRP_CONFIGSELECT_BITS);
 				end case;
-					
+
 				NextState							<= ST_RECONFIG_WAIT;
-			
-			WHEN ST_RECONFIG_WAIT =>
+
+			when ST_RECONFIG_WAIT =>
 				case SATAGeneration_DRP is
 					when SATA_GENERATION_1 =>		XilDRP_ConfigSelect <= to_slv(0, XILDRP_CONFIGSELECT_BITS);
 					when SATA_GENERATION_2 =>		XilDRP_ConfigSelect <= to_slv(1, XILDRP_CONFIGSELECT_BITS);
 					when SATA_GENERATION_3 =>		XilDRP_ConfigSelect <= to_slv(2, XILDRP_CONFIGSELECT_BITS);
 					when others =>							XilDRP_ConfigSelect <= to_slv(0, XILDRP_CONFIGSELECT_BITS);
 				end case;
-				
-				IF (XilDRP_ReconfigDone = '1') THEN
+
+				if (XilDRP_ReconfigDone = '1') then
 					ReconfigComplete_i	<= '1';
 					NextState						<= ST_RELOAD;
-				END IF;
-				
+				end if;
+
 			-- reload GTX_DUAL configuration
 			-- ------------------------------------------------------------------
 			-- assign ReloadConfig until ReloadConfigDone goes to '0'
-			WHEN ST_RELOAD =>
+			when ST_RELOAD =>
 				ReloadConfig_i				<= '1';
 				NextState							<= ST_RELOAD_WAIT;
-			
+
 			-- wait for ReloadConfigDone
-			WHEN ST_RELOAD_WAIT =>
-				IF (GTX_ReloadConfigDone = '1') THEN
+			when ST_RELOAD_WAIT =>
+				if (GTX_ReloadConfigDone = '1') then
 					ConfigReloaded_i		<= '1';
 					NextState						<= ST_IDLE;
-				END IF;
-			
-		END CASE;
-	END PROCESS;
+				end if;
 
-	XilDRP : ENTITY PoC.xil_Reconfigurator
-		GENERIC MAP (
+		end case;
+	end process;
+
+	XilDRP : entity PoC.xil_Reconfigurator
+		generic map (
 			DEBUG						=> DEBUG,
 			CLOCK_FREQ			=> DRPCLOCK_FREQ,
 			CONFIG_ROM			=> XILDRP_CONFIG_ROM
 		)
-		PORT MAP (
+		port map (
 			Clock						=> DRP_Clock,
 			Reset						=> DRP_Reset,
-			
+
 			Reconfig				=> XilDRP_Reconfig,
 			ReconfigDone		=> XilDRP_ReconfigDone,
 			ConfigSelect		=> XilDRP_ConfigSelect,
-			
+
 			DRP_en					=> GTX_DRP_Enable,
 			DRP_Address			=> GTX_DRP_Address,
 			DRP_we					=> GTX_DRP_ReadWrite,
 			DRP_DataIn			=> GTX_DRP_DataIn,
 			DRP_DataOut			=> GTX_DRP_DataOut,
-			DRP_Ack					=> GTX_DRP_Ack	
+			DRP_Ack					=> GTX_DRP_Ack
 		);
-		
+
 	-- GTX_ReloadConfig**** interface
 	GTX_ReloadConfig	<= ReloadConfig_i;
-	
-END;
+
+end;

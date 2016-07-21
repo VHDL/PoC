@@ -1,57 +1,87 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- =============================================================================
+-- Authors:				 	Patrick Lehmann
+--
+-- Entity:				 	TODO
+--
+-- Description:
+-- -------------------------------------
+-- .. TODO:: No documentation available.
+--
+-- License:
+-- =============================================================================
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--		http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.cache.ALL;
-USE			PoC.net.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
+
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.cache.all;
+use			PoC.net.all;
 
 
-ENTITY ndp_FSMQuery IS
-	PORT (
-		Clock														: IN	STD_LOGIC;
-		Reset														: IN	STD_LOGIC;
-		
-		NextHop_Query										: IN	STD_LOGIC;
-		NextHop_IPv6Address_rst					: OUT	STD_LOGIC;
-		NextHop_IPv6Address_nxt					: OUT	STD_LOGIC;
-		NextHop_IPv6Address_Data				: IN	T_SLV_8;
-		
-		NextHop_Valid										: OUT	STD_LOGIC;
-		NextHop_MACAddress_rst					: IN	STD_LOGIC;
-		NextHop_MACAddress_nxt					: IN	STD_LOGIC;
-		NextHop_MACAddress_Data					: OUT	T_SLV_8;
-		
-		DCache_Lookup										: OUT STD_LOGIC;
-		DCache_IPv6Address_rst					: IN STD_LOGIC;
-		DCache_IPv6Address_nxt					: IN STD_LOGIC;
-		DCache_IPv6Address_Data					: OUT T_SLV_8;
-		
-		DCache_CacheResult							: IN	T_CACHE_RESULT;
-		DCache_NextHopIPv6Address_rst		: OUT	STD_LOGIC;
-		DCache_NextHopIPv6Address_nxt		: OUT	STD_LOGIC;
-		DCache_NextHopIPv6Address_Data	: IN	T_SLV_8;
-		DCache_PathMUT									: IN	T_SLV_16;
-		
-		NCache_Lookup										: OUT STD_LOGIC;
-		NCache_IPv6Address_rst					: IN STD_LOGIC;
-		NCache_IPv6Address_nxt					: IN STD_LOGIC;
-		NCache_IPv6Address_Data					: OUT T_SLV_8;
-		
-		NCache_CacheResult							: IN	T_CACHE_RESULT;
-		NCache_MACAddress_rst						: OUT	STD_LOGIC;
-		NCache_MACAddress_nxt						: OUT	STD_LOGIC;
-		NCache_MACAddress_Data					: IN	T_SLV_8;
-		NCache_Reachability							: IN	T_NET_NDP_REACHABILITY_STATE
+entity ndp_FSMQuery is
+	port (
+		Clock														: in	std_logic;
+		Reset														: in	std_logic;
+
+		NextHop_Query										: in	std_logic;
+		NextHop_IPv6Address_rst					: out	std_logic;
+		NextHop_IPv6Address_nxt					: out	std_logic;
+		NextHop_IPv6Address_Data				: in	T_SLV_8;
+
+		NextHop_Valid										: out	std_logic;
+		NextHop_MACAddress_rst					: in	std_logic;
+		NextHop_MACAddress_nxt					: in	std_logic;
+		NextHop_MACAddress_Data					: out	T_SLV_8;
+
+		DCache_Lookup										: out std_logic;
+		DCache_IPv6Address_rst					: in std_logic;
+		DCache_IPv6Address_nxt					: in std_logic;
+		DCache_IPv6Address_Data					: out T_SLV_8;
+
+		DCache_CacheResult							: in	T_CACHE_RESULT;
+		DCache_NextHopIPv6Address_rst		: out	std_logic;
+		DCache_NextHopIPv6Address_nxt		: out	std_logic;
+		DCache_NextHopIPv6Address_Data	: in	T_SLV_8;
+		DCache_PathMUT									: in	T_SLV_16;
+
+		NCache_Lookup										: out std_logic;
+		NCache_IPv6Address_rst					: in std_logic;
+		NCache_IPv6Address_nxt					: in std_logic;
+		NCache_IPv6Address_Data					: out T_SLV_8;
+
+		NCache_CacheResult							: in	T_CACHE_RESULT;
+		NCache_MACAddress_rst						: out	std_logic;
+		NCache_MACAddress_nxt						: out	std_logic;
+		NCache_MACAddress_Data					: in	T_SLV_8;
+		NCache_Reachability							: in	T_NET_NDP_REACHABILITY_STATE
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF ndp_FSMQuery IS
+architecture rtl of ndp_FSMQuery is
 
-	TYPE T_STATE IS (
+	type T_STATE is (
 		ST_IDLE,
 		ST_DESTCACHE_WAIT,
 		ST_NEIGHBORCACHE_LOOKUP,	ST_NEIGHBORCACHE_WAIT,
@@ -59,129 +89,129 @@ ARCHITECTURE rtl OF ndp_FSMQuery IS
 		ST_VALID
 	);
 
-	SIGNAL State								: T_STATE								:= ST_IDLE;
-	SIGNAL NextState						: T_STATE;
+	signal State								: T_STATE								:= ST_IDLE;
+	signal NextState						: T_STATE;
 
---	SIGNAL NextHop_en						: STD_LOGIC;
-	SIGNAL IPv6Address_d				: T_NET_IPV6_ADDRESS		:= C_NET_IPV6_ADDRESS_EMPTY;
-	
-	SIGNAL MAC_en								: STD_LOGIC;
-	SIGNAL MACAddress_d					: T_NET_MAC_ADDRESS			:= C_NET_MAC_ADDRESS_EMPTY;
-	
-BEGIN
+--	signal NextHop_en						: STD_LOGIC;
+	signal IPv6Address_d				: T_NET_IPV6_ADDRESS		:= C_NET_IPV6_ADDRESS_EMPTY;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	signal MAC_en								: std_logic;
+	signal MACAddress_d					: T_NET_MAC_ADDRESS			:= C_NET_MAC_ADDRESS_EMPTY;
+
+begin
+
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State				<= ST_IDLE;
-			ELSE
+			else
 				State				<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State,
+	process(State,
 					NextHop_Query,
-					NextHop_MACAddress_rst, NextHop_MACAddress_nxt, NextHop_IPv6Address_Data,--NextHop_MACAddress_rev, 
-					DCache_CacheResult, DCache_IPv6Address_rst, DCache_IPv6Address_nxt, DCache_NextHopIPv6Address_Data,--DCache_IPv6Address_rev, 
-					NCache_CacheResult, NCache_IPv6Address_rst, NCache_IPv6Address_nxt, NCache_MACAddress_Data)--NCache_IPv6Address_rev, 
-	BEGIN
+					NextHop_MACAddress_rst, NextHop_MACAddress_nxt, NextHop_IPv6Address_Data,--NextHop_MACAddress_rev,
+					DCache_CacheResult, DCache_IPv6Address_rst, DCache_IPv6Address_nxt, DCache_NextHopIPv6Address_Data,--DCache_IPv6Address_rev,
+					NCache_CacheResult, NCache_IPv6Address_rst, NCache_IPv6Address_nxt, NCache_MACAddress_Data)--NCache_IPv6Address_rev,
+	begin
 		NextState												<= State;
-		
+
 		NextHop_IPv6Address_rst					<= DCache_IPv6Address_rst;
 		NextHop_IPv6Address_nxt					<= DCache_IPv6Address_nxt;
 		NextHop_Valid										<= '0';
-	
+
 		DCache_Lookup										<= '0';
 		DCache_IPv6Address_Data					<= NextHop_IPv6Address_Data;
 		DCache_NextHopIPv6Address_rst		<= NCache_IPv6Address_rst;
 		DCache_NextHopIPv6Address_nxt		<= NCache_IPv6Address_nxt;
-			
+
 		NCache_Lookup										<= '0';
 		NCache_IPv6Address_Data					<= DCache_NextHopIPv6Address_Data;
 		NCache_MACAddress_rst						<= NextHop_MACAddress_rst;
 		NCache_MACAddress_nxt						<= NextHop_MACAddress_nxt;
-	
+
 		NextHop_MACAddress_Data					<= NCache_MACAddress_Data;
-	
+
 --		NextHop_en								<= '0';
 		MAC_en										<= '0';
-	
-		CASE State IS
-			WHEN ST_IDLE =>
-				IF (NextHop_Query = '1') THEN
+
+		case State is
+			when ST_IDLE =>
+				if (NextHop_Query = '1') then
 					DCache_Lookup		<= '1';
-				
-					IF (DCache_CacheResult = CACHE_RESULT_NONE) THEN
+
+					if (DCache_CacheResult = CACHE_RESULT_NONE) then
 						NextState				<= ST_DESTCACHE_WAIT;
-					ELSIF (DCache_CacheResult = CACHE_RESULT_HIT) THEN
+					elsif (DCache_CacheResult = CACHE_RESULT_HIT) then
 --						NextHop_en			<= '1';
 						NextState				<= ST_NEIGHBORCACHE_LOOKUP;
-					ELSE
+					else
 						-- TODO: cachemiss
-					END IF;
-				END IF;
-	
-			WHEN ST_DESTCACHE_WAIT =>
-				IF (DCache_CacheResult = CACHE_RESULT_HIT) THEN
+					end if;
+				end if;
+
+			when ST_DESTCACHE_WAIT =>
+				if (DCache_CacheResult = CACHE_RESULT_HIT) then
 --					NextHop_en			<= '1';
 					NextState				<= ST_NEIGHBORCACHE_LOOKUP;
-				ELSIF (DCache_CacheResult = CACHE_RESULT_MISS) THEN
+				elsif (DCache_CacheResult = CACHE_RESULT_MISS) then
 					-- TODO: cachemiss
-				END IF;
-			
-			WHEN ST_NEIGHBORCACHE_LOOKUP =>
+				end if;
+
+			when ST_NEIGHBORCACHE_LOOKUP =>
 				NCache_Lookup				<= '1';
-			
-				IF (NCache_CacheResult = CACHE_RESULT_NONE) THEN
+
+				if (NCache_CacheResult = CACHE_RESULT_NONE) then
 					NextState				<= ST_NEIGHBORCACHE_WAIT;
-				ELSIF (NCache_CacheResult = CACHE_RESULT_HIT) THEN
+				elsif (NCache_CacheResult = CACHE_RESULT_HIT) then
 					MAC_en					<= '1';
 					NextState				<= ST_VALID;
-				ELSE
+				else
 					-- TODO: cachemiss
-				END IF;
-							
-			WHEN ST_NEIGHBORCACHE_WAIT =>
-				IF (NCache_CacheResult = CACHE_RESULT_HIT) THEN
+				end if;
+
+			when ST_NEIGHBORCACHE_WAIT =>
+				if (NCache_CacheResult = CACHE_RESULT_HIT) then
 					MAC_en					<= '1';
 					NextState				<= ST_VALID;
-				ELSIF (NCache_CacheResult = CACHE_RESULT_MISS) THEN
+				elsif (NCache_CacheResult = CACHE_RESULT_MISS) then
 					-- TODO: cachemiss
-				END IF;
-			
-			WHEN ST_VALID =>
+				end if;
+
+			when ST_VALID =>
 				NextHop_Valid			<= '1';
 				NextState					<= ST_IDLE;
-			
-			WHEN ST_PREFIXLIST_LOOKUP =>
-				NULL;
-			
-			WHEN ST_PREFIXLIST_WAIT =>
-				NULL;
-			
-		END CASE;
-	END PROCESS;
+
+			when ST_PREFIXLIST_LOOKUP =>
+				null;
+
+			when ST_PREFIXLIST_WAIT =>
+				null;
+
+		end case;
+	end process;
 
 
---	PROCESS(Clock)
---	BEGIN
---		IF rising_edge(Clock) THEN
---			IF (Reset = '1') THEN
+--	process(Clock)
+--	begin
+--		if rising_edge(Clock) then
+--			if (Reset = '1') then
 --				IPv6Address_d		<= C_NET_IPV6_ADDRESS_EMPTY;
 --				MACAddress_d		<= C_ETH_MAC_ADDRESS_EMPTY;
---			ELSE
---				IF (NextHop_en = '1') THEN
+--			else
+--				if (NextHop_en = '1') then
 --					IPv6Address_d		<= DCache_NextHopIPv6Address;
---				END IF;
---				
---				IF (MAC_en = '1') THEN
+--				end if;
+--
+--				if (MAC_en = '1') then
 --					MACAddress_d		<= NCache_MACAddress;
---				END IF;
---			END IF;
---		END IF;
---	END PROCESS;
+--				end if;
+--			end if;
+--		end if;
+--	end process;
 
 	NextHop_MACAddress_Data		<= NCache_MACAddress_Data;
-END ARCHITECTURE;
+end architecture;

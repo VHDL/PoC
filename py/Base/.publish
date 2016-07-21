@@ -15,5 +15,6 @@ Executable.py
 Logging.py
 # Processor.py
 Project.py
+Shared.py
 Simulator.py
 ToolChain.py

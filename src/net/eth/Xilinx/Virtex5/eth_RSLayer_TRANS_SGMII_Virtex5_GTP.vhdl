@@ -1,129 +1,128 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
--- Module:				 	TODO
---
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
--- 
+--
+-- Entity:				 	TODO
+--
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VcomponentS.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+library L_Global;
+use			PoC.GlobalTypes.all;
 
-LIBRARY L_Ethernet;
-USE			L_Ethernet.EthTypes.ALL;
+library L_Ethernet;
+use			L_Ethernet.EthTypes.all;
 
-ENTITY Eth_RSLayer_TRANS_GMII_Virtex5 IS
-	PORT (
-		Reset_async								: IN	STD_LOGIC;																	-- @async: 
-		
+entity Eth_RSLayer_TRANS_GMII_Virtex5 is
+	port (
+		Reset_async								: in	std_logic;																	-- @async:
+
 		-- RS-GMII interface
-		RS_TX_Clock								: IN	STD_LOGIC;
-		RS_TX_Valid								: IN	STD_LOGIC;
-		RS_TX_Data								: IN	T_SLV_8;
-		RS_TX_Error								: IN	STD_LOGIC;
-		
-		RS_RX_Clock								: IN	STD_LOGIC;
-		RS_RX_Valid								: OUT	STD_LOGIC;
-		RS_RX_Data								: OUT	T_SLV_8;
-		RS_RX_Error								: OUT	STD_LOGIC;
+		RS_TX_Clock								: in	std_logic;
+		RS_TX_Valid								: in	std_logic;
+		RS_TX_Data								: in	T_SLV_8;
+		RS_TX_Error								: in	std_logic;
 
-		-- PHY-GMII interface		
-		PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_GMII
+		RS_RX_Clock								: in	std_logic;
+		RS_RX_Valid								: out	std_logic;
+		RS_RX_Data								: out	T_SLV_8;
+		RS_RX_Error								: out	std_logic;
+
+		-- PHY-GMII interface
+		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
 	);
-END;
+end;
 
 -- Note:
--- ============================================================================================================================================================
+-- =============================================================================
 -- use IDELAY instances on GMII_RX_Clock to move the clock into alignment with the data (GMII_RX_Data[7:0])
 
-ARCHITECTURE rtl OF Eth_RSLayer_TRANS_GMII_Virtex5 IS
-	SIGNAL IODelay_RX_Clock	: STD_LOGIC;
-	
-	SIGNAL IDelay_Data			: T_SLV_8;
-	SIGNAL IDelay_Valid			: STD_LOGIC;
-	SIGNAL IDelay_Error			: STD_LOGIC;
-BEGIN
+architecture rtl of Eth_RSLayer_TRANS_GMII_Virtex5 is
+	signal IODelay_RX_Clock	: std_logic;
+
+	signal IDelay_Data			: T_SLV_8;
+	signal IDelay_Valid			: std_logic;
+	signal IDelay_Error			: std_logic;
+begin
 	-- global IDELAYCTRL instances
 	-- ========================================================================================================================================================
 
 	-- delay reset signal
-	blkIDELAYCTRL : BLOCK
-		SIGNAL IODelay_Reset_shift		: T_SLV_16;
-	BEGIN
-		PROCESS(IODelay_Clock, IODelay_Reset)
-		BEGIN
-			IF (IODelay_Reset = '1') THEN
-				IODelay_Reset_shift			<= (OTHERS => '1');
-			ELSE
-				IF rising_edge(IODelay_Clock) THEN
-					IODelay_Reset_shift		<= IODelay_Reset_shift(IODelay_Reset_shift'left - 1 DOWNTO 0) & '0';
-				END IF;
-			END IF;
-		END PROCESS;
-		
+	blkIDELAYCTRL : block
+		signal IODelay_Reset_shift		: T_SLV_16;
+	begin
+		process(IODelay_Clock, IODelay_Reset)
+		begin
+			if (IODelay_Reset = '1') then
+				IODelay_Reset_shift			<= (others => '1');
+			else
+				if rising_edge(IODelay_Clock) then
+					IODelay_Reset_shift		<= IODelay_Reset_shift(IODelay_Reset_shift'left - 1 downto 0) & '0';
+				end if;
+			end if;
+		end process;
+
 		IODelay_Reset_i		<= IODelay_Reset_shift(IODelay_Reset_shift'left);
-	END BLOCK;
+	end block;
 
 	-- instantiate IDELAYCTRL for the IDELAY in Fixed Tap Delay Mode
 	-- two controller are required:
 	--	o one for GMII_RX_Clock
 	--	o one for GMII_RX_Data
 	IDELAYCTRL_RX_Clock : IDELAYCTRL
-		PORT MAP (
+		port map (
 			REFCLK	=> IODelay_Clock,
 			RST			=> IODelay_Reset_i,
-			RDY			=> OPEN
-		);		
-	
+			RDY			=> open
+		);
+
 	IDELAYCTRL_RX_Data : IDELAYCTRL
-		PORT MAP (
+		port map (
 			REFCLK	=> IODelay_Clock,
 			RST			=> IODelay_Reset_i,
-			RDY			=> OPEN
-		); 
-	
-	
+			RDY			=> open
+		);
+
+
 	-- Transmitter Clock
 	-- ==========================================================================================================================================================
 	-- Instantiate a DDR output register.  This is a good way to drive
 	-- GMII_TX_Clock since the clock-to-PAD delay will be the same as that for
 	-- data driven from IOB Ouput flip-flops eg GMII_TX_Data[7:0].
   TX_Clock_ODDR : ODDR
-		PORT MAP (
+		port map (
 			Q		=> PHY_Interface.TX_Clock,
 			C		=> RS_TX_Clock,
 			CE	=> '1',
@@ -138,13 +137,13 @@ BEGIN
 	-- please modify the value of the IOBDELAYs according to your design.
 	-- for more information on IDELAYCTRL and IODELAY, please refer to the Virtex-5 User Guide.
 	IODly_RX_Clock : IODELAY
-		GENERIC MAP (
+		generic map (
 			IDELAY_TYPE			=> "FIXED",
 			IDELAY_VALUE		=> 0,
 			DELAY_SRC				=> "I",
 			SIGNAL_PATTERN	=> "CLOCK"
 		)
-		PORT MAP (
+		port map (
 			IDATAIN					=> PHY_Interface.RX_Clock,
 			ODATAIN					=> '0',
 			DATAOUT					=> IODelay_RX_Clock,
@@ -155,50 +154,50 @@ BEGIN
 			INC							=> '0',
 			RST							=> '0'
 		);
-		
+
 	BUFG_RX_Clock : BUFG
-		PORT MAP (
+		port map (
 			I								=> IODelay_RX_Clock,
 			O								=> PHY_Interface.RX_RefClock
 		);
-	
-	-- Output Logic : Drive TX signals through IOBs onto PHY-GMII interface	
+
+	-- Output Logic : Drive TX signals through IOBs onto PHY-GMII interface
 	-- ==========================================================================================================================================================
-	PROCESS(RS_TX_Clock, Reset_async)
-  BEGIN
-		IF (Reset_async = '1') THEN
-			PHY_Interface.TX_Data				<= (OTHERS => '0');
+	process(RS_TX_Clock, Reset_async)
+  begin
+		if (Reset_async = '1') then
+			PHY_Interface.TX_Data				<= (others => '0');
 			PHY_Interface.TX_Valid			<= '0';
 			PHY_Interface.TX_Error			<= '0';
-		ELSE
-			IF rising_edge(RS_TX_Clock) THEN
+		else
+			if rising_edge(RS_TX_Clock) then
 				PHY_Interface.TX_Data			<= RS_TX_Data;
 				PHY_Interface.TX_Valid		<= RS_TX_Valid;
 				PHY_Interface.TX_Error		<= RS_TX_Error;
-			END IF;
-		END IF;
-	END PROCESS;
-	
-	-- Input Logic : Receive RX signals through IDELAYs and IOBs from PHY-GMII interface	
+			end if;
+		end if;
+	end process;
+
+	-- Input Logic : Receive RX signals through IDELAYs and IOBs from PHY-GMII interface
 	-- ==========================================================================================================================================================
-	blkIDelay : BLOCK
-		CONSTANT RX_VALID_BIT		: NATURAL													:= 8;
-		CONSTANT RX_ERROR_BIT		: NATURAL													:= 9;
-	
-		SIGNAL IDelay_DataIn		: STD_LOGIC_VECTOR(9 DOWNTO 0);
-		SIGNAL IDelay_DataOut		: STD_LOGIC_VECTOR(9 DOWNTO 0);
-	BEGIN
+	blkIDelay : block
+		constant RX_VALID_BIT		: natural													:= 8;
+		constant RX_ERROR_BIT		: natural													:= 9;
+
+		signal IDelay_DataIn		: std_logic_vector(9 downto 0);
+		signal IDelay_DataOut		: std_logic_vector(9 downto 0);
+	begin
 		IDelay_DataIn(PHY_Interface.RX_Data'range)	<= PHY_Interface.RX_Data;
 		IDelay_DataIn(RX_VALID_BIT)									<= PHY_Interface.RX_Valid;
 		IDelay_DataIn(RX_ERROR_BIT)									<= PHY_Interface.RX_Error;
-	
-		genIDelay : FOR I IN IDelay_DataIn'reverse_range GENERATE
+
+		genIDelay : for i in IDelay_DataIn'reverse_range generate
 			dly : IDELAY
-				GENERIC MAP (
+				generic map (
 					IOBDELAY_TYPE		=> "FIXED",
 					IOBDELAY_VALUE	=> 0
 				)
-				PORT MAP (
+				port map (
 					I								=> IDelay_DataIn(I),
 					O								=> IDelay_DataOut(I),
 					C								=> '0',
@@ -206,25 +205,25 @@ BEGIN
 					INC							=> '0',
 					RST							=> '0'
 				);
-		END GENERATE;
-		
+		end generate;
+
 		IDelay_Data				<= IDelay_DataOut(IDelay_Data'range);
 		IDelay_Valid			<= IDelay_DataOut(RX_VALID_BIT);
 		IDelay_Error			<= IDelay_DataOut(RX_ERROR_BIT);
-	END BLOCK;
+	end block;
 
-	PROCESS(RS_RX_Clock, Reset_async)
-	BEGIN
-		IF (Reset_async = '1') THEN
-			RS_RX_Data			<= (OTHERS => '0');
+	process(RS_RX_Clock, Reset_async)
+	begin
+		if (Reset_async = '1') then
+			RS_RX_Data			<= (others => '0');
 			RS_RX_Valid			<= '0';
 			RS_RX_Error			<= '0';
-		ELSE
-			IF rising_edge(RS_RX_Clock) THEN
+		else
+			if rising_edge(RS_RX_Clock) then
 				RS_RX_Data		<= IDelay_Data;
 				RS_RX_Valid		<= IDelay_Valid;
 				RS_RX_Error		<= IDelay_Error;
-			END IF;
-		END IF;
-	END PROCESS;
-END;
+			end if;
+		end if;
+	end process;
+end;

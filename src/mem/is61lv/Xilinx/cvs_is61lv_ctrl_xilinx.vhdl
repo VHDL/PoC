@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: is61lv_ctrl_xilinx
 -- Author(s): Martin Zabel
--- 
+--
 -- Controller for IS61LV Asynchronous SRAM.
 --
 -- See common description on is61lv_ctrl.
@@ -93,7 +93,7 @@ architecture rtl of is61lv_ctrl_xilinx is
   -- ready register
   signal rdy_r   : std_logic;
   signal rdy_nxt : std_logic;
-  
+
   -- address register
   signal addr_r   : unsigned(A_BITS-1 downto 0);
   signal addr_nxt : unsigned(A_BITS-1 downto 0);
@@ -101,14 +101,14 @@ architecture rtl of is61lv_ctrl_xilinx is
   -- byte enable register
   signal be_r_n   : std_logic_vector(BE_CNT-1 downto 0);
   signal be_nxt_n : std_logic_vector(BE_CNT-1 downto 0);
-  
+
   -- write data register
   signal wdata_r   : std_logic_vector(D_BITS-1 downto 0);
   signal wdata_nxt : std_logic_vector(D_BITS-1 downto 0);
 
   -- sample user address and data
   signal get_user : std_logic;
-  
+
   -- signals whether a read operation is currently executed
   signal reading_r   : std_logic;
   signal reading_nxt : std_logic;
@@ -137,7 +137,7 @@ begin
   be_nxt_n  <= not be;
   addr_nxt  <= addr;
   wdata_nxt <= wdata;
-  
+
   -----------------------------------------------------------------------------
   -- FSM
   -----------------------------------------------------------------------------
@@ -159,7 +159,7 @@ begin
       when RUNNING =>
         -- due to fsm_ns <= fsm_cs by default
         rdy_nxt <= '1';
-        
+
         if req = '1' then
           get_user <= '1';
 
@@ -180,7 +180,7 @@ begin
             reading_nxt   <= '1';
           end if;
         end if;
-        
+
       when WAR =>
         -- write to SRAM after data-bus direction changed
         own_oe_nxt_n  <= '0';
@@ -222,7 +222,7 @@ begin
 
   -- Required for ModelSim
   clk_n <= not clk;
-  
+
   -- Output sram_we_nxt_n only in the first half of the clock period. Data gets
   -- written with the rising edge of sram_we_r_n which is outputted with the
   -- falling edge of the clock.
@@ -236,7 +236,7 @@ begin
       D0 => sram_we_nxt_n,
       D1 => '1',
       Q  => sram_we_r_n);
-  
+
   -----------------------------------------------------------------------------
   -- Outputs
   -----------------------------------------------------------------------------
@@ -256,7 +256,7 @@ begin
         if reading_r = '1' then             -- don't collect garbage
           rdata <= sram_data;
         end if;
-        
+
         if rst = '1' then
           rstb <= '0';
         else
@@ -268,7 +268,7 @@ begin
 
   sram_be_n <= be_r_n;
   sram_addr <= addr_r;
-  
+
   l1: for i in 0 to D_BITS-1 generate
     -- each bit needs its own output enable
     sram_data(i) <= wdata_r(i) when own_oe_r_n(i) = '0' else 'Z';

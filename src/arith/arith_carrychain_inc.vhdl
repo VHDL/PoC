@@ -1,35 +1,34 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
+-- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					Carray-chain abstraction for increment by one operations
+-- Entity:					Carry-chain abstraction for increment by one operations
 --
 -- Description:
--- ------------------------------------
---	This is a generic carray-chain abstraction for increment by one operations.
+-- -------------------------------------
+--	This is a generic carry-chain abstraction for increment by one operations.
 --
 --	Y <= X + (0...0) & Cin
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.std_logic_1164.all;
@@ -43,28 +42,28 @@ use			PoC.arith.all;
 
 entity arith_carrychain_inc is
 	generic (
-		BITS			: POSITIVE
+		BITS			: positive
 	);
 	port (
-		X		: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
-		CIn	: in	STD_LOGIC															:= '1';
-		Y		: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)
+		X		: in	std_logic_vector(BITS - 1 downto 0);
+		CIn	: in	std_logic															:= '1';
+		Y		: out	std_logic_vector(BITS - 1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of arith_carrychain_inc is
 	-- Force Carry-chain use for pointer increments on Xilinx architectures
-  constant XILINX_FORCE_CARRAYCHAIN		: BOOLEAN		:= (not SIMULATION) and (VENDOR = VENDOR_XILINX) and (BITS > 4);
-	
+  constant XILINX_FORCE_CARRYCHAIN		: boolean		:= (not SIMULATION) and (VENDOR = VENDOR_XILINX) and (BITS > 4);
+
 begin
-	genGeneric : if (XILINX_FORCE_CARRAYCHAIN = FALSE) generate
-		signal Zero		: UNSIGNED(BITS - 1 downto 1)		:= (others => '0');
+	genGeneric : if (XILINX_FORCE_CARRYCHAIN = FALSE) generate
+		signal Zero		: unsigned(BITS - 1 downto 1)		:= (others => '0');
 	begin
 		Y <= std_logic_vector(unsigned(X) + (Zero & CIn));
 	end generate;
-	
-	genXilinx : if (XILINX_FORCE_CARRAYCHAIN = TRUE) generate
+
+	genXilinx : if (XILINX_FORCE_CARRYCHAIN = TRUE) generate
 		inc : arith_carrychain_inc_xilinx
 			generic map (
 				BITS		=> BITS

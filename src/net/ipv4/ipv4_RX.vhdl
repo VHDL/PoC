@@ -1,33 +1,32 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
--- 
--- Module:				 	TODO
+--
+-- Entity:				 	TODO
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -42,40 +41,40 @@ use			PoC.net.all;
 
 entity ipv4_RX is
 	generic (
-		DEBUG														: BOOLEAN							:= FALSE
+		DEBUG														: boolean							:= FALSE
 	);
 	port (
-		Clock														: in	STD_LOGIC;									-- 
-		Reset														: in	STD_LOGIC;									-- 
+		Clock														: in	std_logic;									--
+		Reset														: in	std_logic;									--
 		-- STATUS port
-		Error														: out	STD_LOGIC;
+		Error														: out	std_logic;
 		-- IN port
-		In_Valid												: in	STD_LOGIC;
+		In_Valid												: in	std_logic;
 		In_Data													: in	T_SLV_8;
-		In_SOF													: in	STD_LOGIC;
-		In_EOF													: in	STD_LOGIC;
-		In_Ack													: out	STD_LOGIC;
-		In_Meta_rst											: out	STD_LOGIC;
-		In_Meta_SrcMACAddress_nxt				: out	STD_LOGIC;
+		In_SOF													: in	std_logic;
+		In_EOF													: in	std_logic;
+		In_Ack													: out	std_logic;
+		In_Meta_rst											: out	std_logic;
+		In_Meta_SrcMACAddress_nxt				: out	std_logic;
 		In_Meta_SrcMACAddress_Data			: in	T_SLV_8;
-		In_Meta_DestMACAddress_nxt			: out	STD_LOGIC;
+		In_Meta_DestMACAddress_nxt			: out	std_logic;
 		In_Meta_DestMACAddress_Data			: in	T_SLV_8;
 		In_Meta_EthType									: in	T_SLV_16;
 		-- OUT port
-		Out_Valid												: out	STD_LOGIC;
+		Out_Valid												: out	std_logic;
 		Out_Data												: out	T_SLV_8;
-		Out_SOF													: out	STD_LOGIC;
-		Out_EOF													: out	STD_LOGIC;
-		Out_Ack													: in	STD_LOGIC;
-		Out_Meta_rst										: in	STD_LOGIC;
-		Out_Meta_SrcMACAddress_nxt			: in	STD_LOGIC;
+		Out_SOF													: out	std_logic;
+		Out_EOF													: out	std_logic;
+		Out_Ack													: in	std_logic;
+		Out_Meta_rst										: in	std_logic;
+		Out_Meta_SrcMACAddress_nxt			: in	std_logic;
 		Out_Meta_SrcMACAddress_Data			: out	T_SLV_8;
-		Out_Meta_DestMACAddress_nxt			: in	STD_LOGIC;
+		Out_Meta_DestMACAddress_nxt			: in	std_logic;
 		Out_Meta_DestMACAddress_Data		: out	T_SLV_8;
 		Out_Meta_EthType								: out	T_SLV_16;
-		Out_Meta_SrcIPv4Address_nxt			: in	STD_LOGIC;
+		Out_Meta_SrcIPv4Address_nxt			: in	std_logic;
 		Out_Meta_SrcIPv4Address_Data		: out	T_SLV_8;
-		Out_Meta_DestIPv4Address_nxt		: in	STD_LOGIC;
+		Out_Meta_DestIPv4Address_nxt		: in	std_logic;
 		Out_Meta_DestIPv4Address_Data		: out	T_SLV_8;
 		Out_Meta_Length									: out	T_SLV_16;
 		Out_Meta_Protocol								: out	T_SLV_8
@@ -84,8 +83,8 @@ end entity;
 
 
 architecture rtl of ipv4_RX is
-	attribute FSM_ENCODING						: STRING;
-	
+	attribute FSM_ENCODING						: string;
+
 	type T_STATE is (
 		ST_IDLE,
 																		ST_RECEIVE_TYPE_OF_SERVICE,		ST_RECEIVE_TOTAL_LENGTH_0,		ST_RECEIVE_TOTAL_LENGTH_1,
@@ -101,45 +100,45 @@ architecture rtl of ipv4_RX is
 
 	signal State													: T_STATE											:= ST_IDLE;
 	signal NextState											: T_STATE;
-	attribute FSM_ENCODING of State				: signal IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	attribute FSM_ENCODING of State				: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	signal In_Ack_i												: STD_LOGIC;
-	signal Is_DataFlow										: STD_LOGIC;
-	signal Is_SOF													: STD_LOGIC;
-	signal Is_EOF													: STD_LOGIC;
+	signal In_Ack_i												: std_logic;
+	signal Is_DataFlow										: std_logic;
+	signal Is_SOF													: std_logic;
+	signal Is_EOF													: std_logic;
 
-	signal Out_Valid_i										: STD_LOGIC;
-	signal Out_SOF_i											: STD_LOGIC;
-	signal Out_EOF_i											: STD_LOGIC;
+	signal Out_Valid_i										: std_logic;
+	signal Out_SOF_i											: std_logic;
+	signal Out_EOF_i											: std_logic;
 
-	subtype T_IPV4_BYTEINDEX	 						is NATURAL range 0 to 3;
+	subtype T_IPV4_BYTEINDEX	 						is natural range 0 to 3;
 	signal IP_ByteIndex										: T_IPV4_BYTEINDEX;
 
-	signal Register_rst										: STD_LOGIC;
-	
+	signal Register_rst										: std_logic;
+
 	-- IPv4 Basic Header
-	signal HeaderLength_en								: STD_LOGIC;
-	signal TypeOfService_en								: STD_LOGIC;
-	signal TotalLength_en0								: STD_LOGIC;
-	signal TotalLength_en1								: STD_LOGIC;
+	signal HeaderLength_en								: std_logic;
+	signal TypeOfService_en								: std_logic;
+	signal TotalLength_en0								: std_logic;
+	signal TotalLength_en1								: std_logic;
 --	signal Identification_en0							: STD_LOGIC;
 --	signal Identification_en1							: STD_LOGIC;
-	signal Flags_en												: STD_LOGIC;
+	signal Flags_en												: std_logic;
 --	signal FragmentOffset_en0							: STD_LOGIC;
 --	signal FragmentOffset_en1							: STD_LOGIC;
-	signal TimeToLive_en									: STD_LOGIC;
-	signal Protocol_en										: STD_LOGIC;
-	signal HeaderChecksum_en0							: STD_LOGIC;
-	signal HeaderChecksum_en1							: STD_LOGIC;
-	signal SourceIPv4Address_en						: STD_LOGIC;
-	signal DestIPv4Address_en							: STD_LOGIC;
-	
+	signal TimeToLive_en									: std_logic;
+	signal Protocol_en										: std_logic;
+	signal HeaderChecksum_en0							: std_logic;
+	signal HeaderChecksum_en1							: std_logic;
+	signal SourceIPv4Address_en						: std_logic;
+	signal DestIPv4Address_en							: std_logic;
+
 	signal HeaderLength_d									: T_SLV_4													:= (others => '0');
 	signal TypeOfService_d								: T_SLV_8													:= (others => '0');
 	signal TotalLength_d									: T_SLV_16												:= (others => '0');
 --	signal Identification_d								: T_SLV_16												:= (others => '0');
-	signal Flag_DontFragment_d						: STD_LOGIC												:= '0';
-	signal Flag_MoreFragmenta_d						: STD_LOGIC												:= '0';
+	signal Flag_DontFragment_d						: std_logic												:= '0';
+	signal Flag_MoreFragmenta_d						: std_logic												:= '0';
 --	signal FragmentOffset_d								: STD_LOGIC_VECTOR(12 downto 0)		:= (others => '0');
 	signal TimeToLive_d										: T_SLV_8													:= (others => '0');
 	signal Protocol_d											: T_SLV_8													:= (others => '0');
@@ -147,26 +146,26 @@ architecture rtl of ipv4_RX is
 	signal SourceIPv4Address_d						: T_NET_IPV4_ADDRESS							:= (others => (others => '0'));
 	signal DestIPv4Address_d							: T_NET_IPV4_ADDRESS							:= (others => (others => '0'));
 
-	constant IPV4_ADDRESS_LENGTH					: POSITIVE												:= 4;			-- IPv4 -> 4 bytes
-	constant IPV4_ADDRESS_READER_BITS			: POSITIVE												:= log2ceilnz(IPV4_ADDRESS_LENGTH);
+	constant IPV4_ADDRESS_LENGTH					: positive												:= 4;			-- IPv4 -> 4 bytes
+	constant IPV4_ADDRESS_READER_BITS			: positive												:= log2ceilnz(IPV4_ADDRESS_LENGTH);
 
-	signal IPv4SeqCounter_rst							: STD_LOGIC;
-	signal IPv4SeqCounter_en							: STD_LOGIC;
-	signal IPv4SeqCounter_us							: UNSIGNED(IPV4_ADDRESS_READER_BITS - 1 downto 0)		:= to_unsigned(IPV4_ADDRESS_LENGTH - 1, IPV4_ADDRESS_READER_BITS);
+	signal IPv4SeqCounter_rst							: std_logic;
+	signal IPv4SeqCounter_en							: std_logic;
+	signal IPv4SeqCounter_us							: unsigned(IPV4_ADDRESS_READER_BITS - 1 downto 0)		:= to_unsigned(IPV4_ADDRESS_LENGTH - 1, IPV4_ADDRESS_READER_BITS);
 
-	signal SrcIPv4Address_Reader_rst			: STD_LOGIC;
-	signal SrcIPv4Address_Reader_en				: STD_LOGIC;
-	signal SrcIPv4Address_Reader_us				: UNSIGNED(IPV4_ADDRESS_READER_BITS - 1 downto 0)		:= to_unsigned(IPV4_ADDRESS_LENGTH - 1, IPV4_ADDRESS_READER_BITS);
-	signal DestIPv4Address_Reader_rst			: STD_LOGIC;
-	signal DestIPv4Address_Reader_en			: STD_LOGIC;
-	signal DestIPv4Address_Reader_us			: UNSIGNED(IPV4_ADDRESS_READER_BITS - 1 downto 0)		:= to_unsigned(IPV4_ADDRESS_LENGTH - 1, IPV4_ADDRESS_READER_BITS);
+	signal SrcIPv4Address_Reader_rst			: std_logic;
+	signal SrcIPv4Address_Reader_en				: std_logic;
+	signal SrcIPv4Address_Reader_us				: unsigned(IPV4_ADDRESS_READER_BITS - 1 downto 0)		:= to_unsigned(IPV4_ADDRESS_LENGTH - 1, IPV4_ADDRESS_READER_BITS);
+	signal DestIPv4Address_Reader_rst			: std_logic;
+	signal DestIPv4Address_Reader_en			: std_logic;
+	signal DestIPv4Address_Reader_us			: unsigned(IPV4_ADDRESS_READER_BITS - 1 downto 0)		:= to_unsigned(IPV4_ADDRESS_LENGTH - 1, IPV4_ADDRESS_READER_BITS);
 
 begin
 
 	In_Ack				<= In_Ack_i;
-	Is_DataFlow		<= In_Valid AND In_Ack_i;
-	Is_SOF				<= In_Valid AND In_SOF;
-	Is_EOF				<= In_Valid AND In_EOF;
+	Is_DataFlow		<= In_Valid and In_Ack_i;
+	Is_SOF				<= In_Valid and In_SOF;
+	Is_EOF				<= In_Valid and In_EOF;
 
 	process(Clock)
 	begin
@@ -184,7 +183,7 @@ begin
 		NextState									<= State;
 
 		Error											<= '0';
-		
+
 		In_Ack_i									<= '0';
 		Out_Valid_i								<= '0';
 		Out_SOF_i									<= '0';
@@ -215,7 +214,7 @@ begin
 			when ST_IDLE =>
 				if (Is_SOF = '1') then
 					In_Ack_i								<= '1';
-				
+
 					if (Is_EOF = '0') then
 						if (In_Data(3 downto 0) = x"4") then
 							HeaderLength_en			<= '1';
@@ -227,11 +226,11 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-			
+
 			when ST_RECEIVE_TYPE_OF_SERVICE =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 						TypeOfService_en			<= '1';
 						NextState							<= ST_RECEIVE_TOTAL_LENGTH_0;
@@ -239,11 +238,11 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-				
+
 			when ST_RECEIVE_TOTAL_LENGTH_0 =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 						TotalLength_en0				<= '1';
 						NextState							<= ST_RECEIVE_TOTAL_LENGTH_1;
@@ -251,11 +250,11 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-				
+
 			when ST_RECEIVE_TOTAL_LENGTH_1 =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 						TotalLength_en1				<= '1';
 						NextState							<= ST_RECEIVE_IDENTIFICATION_0;
@@ -263,11 +262,11 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-				
+
 			when ST_RECEIVE_IDENTIFICATION_0 =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 --						Identification_en0		<= '1';
 						NextState							<= ST_RECEIVE_IDENTIFICATION_1;
@@ -275,11 +274,11 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-				
+
 			when ST_RECEIVE_IDENTIFICATION_1 =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 --						Identification_en1		<= '1';
 						NextState							<= ST_RECEIVE_FLAGS;
@@ -287,11 +286,11 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-				
+
 			when ST_RECEIVE_FLAGS =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 						Flags_en							<= '1';
 --						FragmentOffset_en0		<= '1';
@@ -300,11 +299,11 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-				
+
 			when ST_RECEIVE_FRAGMENT_OFFSET_1 =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 --						FragmentOffset_en1		<= '1';
 						NextState							<= ST_RECEIVE_TIME_TO_LIVE;
@@ -312,11 +311,11 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-				
+
 			when ST_RECEIVE_TIME_TO_LIVE =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 						TimeToLive_en					<= '1';
 						NextState							<= ST_RECEIVE_PROTOCOL;
@@ -324,11 +323,11 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-				
+
 			when ST_RECEIVE_PROTOCOL =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 						Protocol_en						<= '1';
 						NextState							<= ST_RECEIVE_HEADER_CHECKSUM_0;
@@ -340,7 +339,7 @@ begin
 			when ST_RECEIVE_HEADER_CHECKSUM_0 =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 						HeaderChecksum_en0		<= '1';
 						NextState							<= ST_RECEIVE_HEADER_CHECKSUM_1;
@@ -351,10 +350,10 @@ begin
 
 			when ST_RECEIVE_HEADER_CHECKSUM_1 =>
 				IPv4SeqCounter_rst				<= '1';
-				
+
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					if (Is_EOF = '0') then
 						HeaderChecksum_en1		<= '1';
 						NextState							<= ST_RECEIVE_SOURCE_ADDRESS;
@@ -362,14 +361,14 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-			
+
 			when ST_RECEIVE_SOURCE_ADDRESS =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					SourceIPv4Address_en		<= '1';
 					IPv4SeqCounter_en				<= '1';
-					
+
 					if (Is_EOF = '0') then
 						if (IPv4SeqCounter_us = 0) then
 							IPv4SeqCounter_rst	<= '1';
@@ -379,14 +378,14 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-			
+
 			when ST_RECEIVE_DESTINATION_ADDRESS =>
 				if (In_Valid = '1') then
 					In_Ack_i								<= '1';
-					
+
 					DestIPv4Address_en			<= '1';
 					IPv4SeqCounter_en				<= '1';
-					
+
 					if (Is_EOF = '0') then
 						if (IPv4SeqCounter_us = 0) then
 							IPv4SeqCounter_rst	<= '1';
@@ -396,13 +395,13 @@ begin
 						NextState							<= ST_ERROR;
 					end if;
 				end if;
-				
+
 			when ST_RECEIVE_DATA_1 =>
 				In_Ack_i									<= Out_Ack;
 				Out_Valid_i								<= In_Valid;
 				Out_SOF_i									<= '1';
 				Out_EOF_i									<= In_EOF;
-			
+
 				if (Is_DataFlow = '1') then
 					if (Is_EOF = '0') then
 						NextState							<= ST_RECEIVE_DATA_N;
@@ -410,35 +409,35 @@ begin
 						NextState							<= ST_IDLE;
 					end if;
 				end if;
-			
+
 			when ST_RECEIVE_DATA_N =>
 				In_Ack_i									<= Out_Ack;
 				Out_Valid_i								<= In_Valid;
 				Out_EOF_i									<= In_EOF;
-				
+
 				if (Is_EOF = '1') then
 					NextState								<= ST_IDLE;
 				end if;
-				
+
 			when ST_DISCARD_FRAME =>
 				In_Ack_i									<= '1';
-				
+
 				if (Is_EOF = '1') then
 					NextState								<= ST_ERROR;
 				end if;
-			
+
 			when ST_ERROR =>
 				Error											<= '1';
 				NextState									<= ST_IDLE;
-			
+
 		end case;
 	end process;
-	
-	
+
+
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR Register_rst) = '1') then
+			if ((Reset or Register_rst) = '1') then
 				HeaderLength_d						<= (others => '0');
 				TypeOfService_d						<= (others => '0');
 				TotalLength_d							<= (others => '0');
@@ -455,30 +454,30 @@ begin
 				if (HeaderLength_en = '1') then
 					HeaderLength_d									<= In_Data(3 downto 0);
 				end if;
-				
+
 				if (TypeOfService_en = '1') then
 					TypeOfService_d									<= In_Data;
 				end if;
-				
+
 				if (TotalLength_en0 = '1') then
 					TotalLength_d(15 downto 8)			<= In_Data;
 				end if;
 				if (TotalLength_en1 = '1') then
 					TotalLength_d(7 downto 0)				<= In_Data;
 				end if;
-				
+
 --				if (Identification_en0 = '1') then
 --					Identification_d(15 downto 8)		<= In_Data;
 --				end if;
 --				if (Identification_en1 = '1') then
 --					Identification_d(7 downto 0)		<= In_Data;
 --				end if;
-				
+
 				if (Flags_en = '1') then
 					Flag_DontFragment_d							<= In_Data(6);
 					Flag_MoreFragmenta_d						<= In_Data(5);
 				end if;
-				
+
 --				if (FragmentOffset_en0 = '1') then
 --					FragmentOffset_d(12 downto 8)		<= In_Data(4 downto 0);
 --				end if;
@@ -489,7 +488,7 @@ begin
 				if (TimeToLive_en = '1') then
 					TimeToLive_d										<= In_Data;
 				end if;
-				
+
 				if (Protocol_en = '1') then
 					Protocol_d											<= In_Data;
 				end if;
@@ -504,7 +503,7 @@ begin
 				if (SourceIPv4Address_en = '1') then
 					SourceIPv4Address_d(to_integer(IPv4SeqCounter_us))	<= In_Data;
 				end if;
-				
+
 				if (DestIPv4Address_en = '1') then
 					DestIPv4Address_d(to_integer(IPv4SeqCounter_us))		<= In_Data;
 				end if;
@@ -515,41 +514,41 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR IPv4SeqCounter_rst) = '1') then
+			if ((Reset or IPv4SeqCounter_rst) = '1') then
 				IPv4SeqCounter_us				<= to_unsigned(IPV4_ADDRESS_LENGTH - 1, IPV4_ADDRESS_READER_BITS);
 			elsif (IPv4SeqCounter_en = '1') then
 				IPv4SeqCounter_us				<= IPv4SeqCounter_us - 1;
 			end if;
 		end if;
 	end process;
-	
+
 	SrcIPv4Address_Reader_rst		<= Out_Meta_rst;
 	SrcIPv4Address_Reader_en		<= Out_Meta_SrcIPv4Address_nxt;
 	DestIPv4Address_Reader_rst	<= Out_Meta_rst;
 	DestIPv4Address_Reader_en		<= Out_Meta_DestIPv4Address_nxt;
-	
+
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR SrcIPv4Address_Reader_rst) = '1') then
+			if ((Reset or SrcIPv4Address_Reader_rst) = '1') then
 				SrcIPv4Address_Reader_us		<= to_unsigned(IPV4_ADDRESS_LENGTH - 1, IPV4_ADDRESS_READER_BITS);
 			elsif (SrcIPv4Address_Reader_en = '1') then
 				SrcIPv4Address_Reader_us		<= SrcIPv4Address_Reader_us - 1;
 			end if;
 		end if;
 	end process;
-	
+
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR DestIPv4Address_Reader_rst) = '1') then
+			if ((Reset or DestIPv4Address_Reader_rst) = '1') then
 				DestIPv4Address_Reader_us		<= to_unsigned(IPV4_ADDRESS_LENGTH - 1, IPV4_ADDRESS_READER_BITS);
 			elsif (DestIPv4Address_Reader_en = '1') then
 				DestIPv4Address_Reader_us		<= DestIPv4Address_Reader_us - 1;
 			end if;
 		end if;
 	end process;
-	
+
 	In_Meta_rst												<= Out_Meta_rst;
 	In_Meta_SrcMACAddress_nxt					<= Out_Meta_SrcMACAddress_nxt;
 	In_Meta_DestMACAddress_nxt				<= Out_Meta_DestMACAddress_nxt;
@@ -565,5 +564,5 @@ begin
 	Out_Meta_DestIPv4Address_Data			<= DestIPv4Address_d(to_integer(DestIPv4Address_Reader_us));
 	Out_Meta_Length										<= TotalLength_d;
 	Out_Meta_Protocol									<= Protocol_d;
-	
+
 end architecture;

@@ -1,10 +1,10 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Martin Zabel
--- 
+--
 -- Testbench:				for component ddrio_out
 --
 -- Description:
@@ -15,13 +15,13 @@
 -- ============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,17 +48,17 @@ end entity;
 
 architecture sim of ddrio_out_tb is
   -- component generics
-  constant NO_OUTPUT_ENABLE	: BOOLEAN	 		:= false;
-  constant BITS							: POSITIVE   	:= 2;
-  constant INIT_VALUE				: BIT_VECTOR(1 downto 0) := "10";
+  constant NO_OUTPUT_ENABLE	: boolean	 		:= false;
+  constant BITS							: positive   	:= 2;
+  constant INIT_VALUE				: bit_vector(1 downto 0) := "10";
 
   -- component ports
-  signal Clock				: STD_LOGIC := '1';
-  signal ClockEnable	: STD_LOGIC := '0';
-  signal OutputEnable	: STD_LOGIC := '0';
-  signal DataOut_high	: STD_LOGIC_VECTOR(BITS - 1 downto 0);
-  signal DataOut_low	: STD_LOGIC_VECTOR(BITS - 1 downto 0);
-  signal Pad					: STD_LOGIC_VECTOR(BITS - 1 downto 0);
+  signal Clock				: std_logic := '1';
+  signal ClockEnable	: std_logic := '0';
+  signal OutputEnable	: std_logic := '0';
+  signal DataOut_high	: std_logic_vector(BITS - 1 downto 0);
+  signal DataOut_low	: std_logic_vector(BITS - 1 downto 0);
+  signal Pad					: std_logic_vector(BITS - 1 downto 0);
 
 	-- period of signal "Clock"
 	constant CLOCK_PERIOD : time := 10 ns;
@@ -140,7 +140,7 @@ begin
 		wait for OUTPUT_DELAY;
 		simAssertion(ite(NO_OUTPUT_ENABLE, Pad = to_stdlogicvector(INIT_VALUE),
 										 Pad = (Pad'range => 'Z')), "Wrong initial Pad value");
-		
+
 		-- wait until Clock is enabled from process above
 		wait until rising_edge(Clock) and ClockEnable = '1';
 		wait for OUTPUT_DELAY;
@@ -150,7 +150,7 @@ begin
 		wait for OUTPUT_DELAY;
 		simAssertion(ite(NO_OUTPUT_ENABLE, Pad = to_stdlogicvector(not INIT_VALUE),
 										 Pad = (Pad'range => 'Z')), "Wrong initial Pad value");
-		
+
 		-- wait until output is enabled from process above
 		wait until rising_edge(Clock) and OutputEnable = '1';
 
@@ -164,10 +164,10 @@ begin
 			simAssertion((Pad = ii(3 downto 2)), "Wrong Pad during clock low");
 			wait until rising_edge(Clock);
 		end loop;
-		
+
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever
 	end process WaveCheck_Proc;
-  
+
 end architecture;

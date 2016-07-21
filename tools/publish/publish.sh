@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 # EMACS settings: -*-   tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
@@ -102,6 +102,7 @@ rsyncOptions=( \
     '--filter=P .git' \
     '--filter=P .gitmodules' \
     '--filter=P lib/*' \
+    '--filter=P docs/_themes/*' \
     --delete --delete-excluded --prune-empty-dirs \
     --stats)
 

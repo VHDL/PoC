@@ -1,34 +1,33 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
+-- =============================================================================
 -- Authors:					Patrick Lehmann
--- 
+--
 -- Package:					VHDL package for component declarations, types and
 --									functions associated to the PoC.io.iic namespace
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		For detailed documentation see below.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -60,7 +59,7 @@ package iic is
 		IO_IICBUS_CMD_SEND_HIGH,
 		IO_IICBUS_CMD_RECEIVE
 	);
-	
+
 	type T_IO_IICBUS_STATUS is (
 		IO_IICBUS_STATUS_RESETING,
 		IO_IICBUS_STATUS_IDLE,
@@ -74,7 +73,7 @@ package iic is
 		IO_IICBUS_STATUS_ERROR,
 		IO_IICBUS_STATUS_BUS_ERROR
 	);
-	
+
 	-- IICController
 	-- ==========================================================================================================================================================
 	type T_IO_IIC_COMMAND is (
@@ -85,7 +84,7 @@ package iic is
 		IO_IIC_CMD_RECEIVE_BYTES,
 		IO_IIC_CMD_PROCESS_CALL
 	);
-	
+
 	type T_IO_IIC_STATUS is (
 		IO_IIC_STATUS_IDLE,
 		IO_IIC_STATUS_EXECUTING,
@@ -107,8 +106,8 @@ package iic is
 		IO_IIC_ERROR_BUS_ERROR,
 		IO_IIC_ERROR_FSM
 	);
-	
-	type T_IO_IIC_COMMAND_VECTOR	is array(NATURAL range <>) of T_IO_IIC_COMMAND;
-	type T_IO_IIC_STATUS_VECTOR		is array(NATURAL range <>) of T_IO_IIC_STATUS;
-	type T_IO_IIC_ERROR_VECTOR		is array(NATURAL range <>) of T_IO_IIC_ERROR;
+
+	type T_IO_IIC_COMMAND_VECTOR	is array(natural range <>) of T_IO_IIC_COMMAND;
+	type T_IO_IIC_STATUS_VECTOR		is array(natural range <>) of T_IO_IIC_STATUS;
+	type T_IO_IIC_ERROR_VECTOR		is array(natural range <>) of T_IO_IIC_ERROR;
 end package;

@@ -1,16 +1,15 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Martin Zabel
 --									Thomas B. Preusser
 --									Patrick Lehmann
 --
--- Module:				 	Simple dual-port memory.
+-- Entity:				 	Simple dual-port memory.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Inferring / instantiating simple dual-port memory, with:
 --	* dual clock, clock enable,
 --	* 1 read port plus 1 write port.
@@ -38,7 +37,7 @@
 -- TODO: implement correct behavior for RT-level simulation
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -53,7 +52,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
@@ -71,7 +70,7 @@ entity ocram_sdp is
 	generic (
 		A_BITS		: positive;
 		D_BITS		: positive;
-		FILENAME	: STRING		:= ""
+		FILENAME	: string		:= ""
 	);
 	port (
 		rclk	: in	std_logic;														-- read clock
@@ -91,7 +90,7 @@ architecture rtl of ocram_sdp is
   constant DEPTH : positive := 2**A_BITS;
 
 begin
-	
+
 	gInfer : if ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
 		-- RAM can be inferred correctly
 		-- Xilinx notes:
@@ -103,9 +102,9 @@ begin
 		--	 This is the expected behaviour.
 		--	 With two different clocks, synthesis complains about an undefined
 		--	 read-write behaviour, that can be ignored.
-		
+
     attribute ramstyle : string;
-		
+
     subtype	word_t	is std_logic_vector(D_BITS - 1 downto 0);
     type		ram_t		is array(0 to DEPTH - 1) of word_t;
 
@@ -154,7 +153,7 @@ begin
 				end if;
 			end if;
 		end process;
-		
+
 		process(rclk)
 		begin
 			if rising_edge(rclk) then
@@ -164,7 +163,7 @@ begin
 					--synthesis translate_off
 					if Is_X(std_logic_vector(ra)) then
 						q <= (others => 'X');
-					elsif (ra = wa) and (wce = '1') and (we = '1') and rising_edge(wclk) then
+					elsif wce = '1' and we = '1' and ra = wa and rising_edge(wclk) then
 						-- read data unknown when reading at write address,
 						-- and both clock-edges are at almost the same time
 						q <= (others => 'X');

@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_value_2fifo
 -- Author(s): Stefan Alex
--- 
+--
 ------------------------------------------------------
 -- Put value to fifo                                --
 --                                                  --
@@ -223,8 +223,8 @@ begin
 
   fifo_put_i   <= fill_value_filled and not fifo_full and in_value_valid;
 
-  in_value_got  <= '1' when fifo_full = '0' and in_value_valid = '1' 
-                        and (fill_value_filled = '0' or (fill_value_filled = '1' and reg_blocks <= OUT_BLOCKS-1)) 
+  in_value_got  <= '1' when fifo_full = '0' and in_value_valid = '1'
+                        and (fill_value_filled = '0' or (fill_value_filled = '1' and reg_blocks <= OUT_BLOCKS-1))
                        else '0';
 
   fifo_put <= fifo_put_i;

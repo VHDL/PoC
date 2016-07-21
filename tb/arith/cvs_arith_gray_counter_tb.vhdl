@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: arith_gray_counter_tb
 -- Author(s): Thomas Preusser <thomas.preusser@tu-dresden.de>
--- 
+--
 -- Testbench for arith_gray_counter
 --
 -- Revision:    $Revision: 1.4 $

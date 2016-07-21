@@ -1,18 +1,18 @@
 -------------------------------------------------------------------------------
 -- Title      : Testbench for design "ocram_esdp_test"
--- Project    : 
+-- Project    :
 -------------------------------------------------------------------------------
 -- File       : ocram_esdp_test_tb.vhdl
 -- Author     : Martin Zabel  <zabel@ite161.inf.tu-dresden.de>
--- Company    : 
+-- Company    :
 -- Created    : 2015-02-17
 -- Last update: 2015-02-18
--- Platform   : 
+-- Platform   :
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
--- Description: 
+-- Description:
 -------------------------------------------------------------------------------
--- Copyright (c) 2015 
+-- Copyright (c) 2015
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author  Description
@@ -43,7 +43,7 @@ architecture sim of fifo_ic_got_test_tb is
   constant OUTPUT_REG	  : boolean  := false;
   constant ESTATE_WR_BITS : natural  := 0;
   constant FSTATE_RD_BITS : natural  := 0;
-  
+
   -- component ports
   signal clk_wr	   : std_logic := '1';
   signal rst_wr	   : std_logic;
@@ -75,17 +75,17 @@ begin  -- architecture sim
       valid	=> valid,
       dout	=> dout,
       fstate_rd => fstate_rd);
-  
+
   -- clock generation
   clk_wr <= not clk_wr after 60 ns;
   clk_rd <= not clk_rd after 10 ns;
-  
+
   WriteGen_Proc: process
   begin
     -- Apply reset at both ports at the same time!
     rst_wr <= '1';
     wait for 100 ns;
-    
+
     wait until rising_edge(clk_wr);
     put    <= '0';
     rst_wr <= '0';
@@ -105,13 +105,13 @@ begin  -- architecture sim
 
   -- Apply "got" as soon as possible.
   got <= valid;
-  
+
   ReadGen_Proc: process is
   begin
     -- Apply reset at both ports at the same time!
     rst_rd <= '1';
     wait for 100 ns;
-    
+
     wait until rising_edge(clk_rd);
     rst_rd <= '0';
 

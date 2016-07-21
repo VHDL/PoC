@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --									Thomas B. Preusser
--- 
--- Module:				 	Debounce module for BITS many bouncing input pins.
+--
+-- Entity:				 	Debounce module for BITS many bouncing input pins.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		This module debounces several input pins preventing input changes
 --    following a previous one within the configured BOUNCE_TIME to pass.
 --    Internally, the forwarded state is locked for, at least, this BOUNCE_TIME.
@@ -24,22 +23,22 @@
 --    of a two-FF input synchronizer on each input bit.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -55,6 +54,7 @@ entity io_Debounce is
     CLOCK_FREQ 							: FREQ;
     BOUNCE_TIME							: time;
     BITS                    : positive := 1;
+		INIT										: std_logic_vector		:= x"00000000";	-- initial state of Output
     ADD_INPUT_SYNCHRONIZERS : boolean  := true;
     COMMON_LOCK             : boolean  := false
   );
@@ -62,9 +62,9 @@ entity io_Debounce is
     Clock		: in	std_logic;
 		Reset		: in	std_logic							:= '0';
     Input		: in	std_logic_vector(BITS-1 downto 0);
-    Output	: out	std_logic_vector(BITS-1 downto 0)
+    Output	: out	std_logic_vector(BITS-1 downto 0) := resize(descend(INIT), BITS)
   );
-end;
+end entity;
 
 
 architecture rtl of io_Debounce is
@@ -85,7 +85,8 @@ begin
   genSync: if ADD_INPUT_SYNCHRONIZERS generate
     sync_i : entity PoC.sync_Bits
       generic map (
-        BITS => BITS
+        BITS => BITS,
+				INIT => INIT
       )
       port map (
         Clock  => Clock,  	-- Clock to be synchronized to

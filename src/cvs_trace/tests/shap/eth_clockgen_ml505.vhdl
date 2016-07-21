@@ -1,7 +1,7 @@
 --
 -- Entity: clockgen_ml505
 -- Author(s): Martin Zabel
--- 
+--
 -- Clock generator for ML505 board.
 --
 -- Signal names in capital letter correspond to board schmetic signal names.
@@ -50,7 +50,7 @@ library UNISIM;
 use UNISIM.vcomponents.all;
 
 entity eth_clockgen_ml505 is
-  
+
   port (
     CLK_FPGA_P       : in  std_logic;
     CLK_FPGA_N       : in  std_logic;
@@ -77,15 +77,15 @@ architecture rtl of eth_clockgen_ml505 is
   signal pll125_clkfbout : std_logic;
   signal pll125_locked   : std_logic;
   signal clk_125mhz      : std_logic;
-  
+
   signal clk_eth_i       : std_logic;
   signal clk_delayctrl_i : std_logic;
-  
+
   signal locked_i : std_logic;
 
   signal rst_eth_i       : std_logic_vector(6 downto 0);
   signal rst_delayctrl_i : std_logic_vector(12 downto 0);
-  
+
 begin  -- rtl
 
   -----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ begin  -- rtl
   fpga_cpu_reset <= not FPGA_CPU_RESET_B;
   async_rst_i    <= fpga_cpu_reset or (not locked_i);
   async_rst      <= async_rst_i;
-  
+
   -----------------------------------------------------------------------------
   -- Clock Buffer for External Clock Pins
   -----------------------------------------------------------------------------
@@ -189,7 +189,7 @@ begin  -- rtl
   bufg_gmii_rx : BUFG port map (
     I => phy_rxclk_dlyd,
     O => clk_gmii_rx);
-  
+
   -----------------------------------------------------------------------------
   -- Combined "locked"
   -----------------------------------------------------------------------------
@@ -212,7 +212,7 @@ begin  -- rtl
 
   rst_eth <= rst_eth_i(rst_eth_i'left);
 
-  
+
   rstgen_delayctrl :process (clk_delayctrl_i, async_rst_i)
   begin
     if (async_rst_i = '1') then
@@ -223,5 +223,5 @@ begin  -- rtl
   end process rstgen_delayctrl;
 
   rst_delayctrl <= rst_delayctrl_i(rst_delayctrl_i'left);
-  
+
 end rtl;

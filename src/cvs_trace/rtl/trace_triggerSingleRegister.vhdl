@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_triggerSingleRegister
 -- Author(s): Stefan Alex
--- 
+--
 ------------------------------------------------------
 -- A single register for trigger-inputs             --
 ------------------------------------------------------
@@ -56,7 +56,7 @@ end trace_triggerSingleRegister;
 
 architecture rtl of trace_triggerSingleRegister is
 
-  constant REG_INIT_I : std_logic_vector(WIDTH-1 downto 0) := ifThenElse(REG_INIT'length = 1, (WIDTH-1 downto 0 => REG_INIT(0)), 
+  constant REG_INIT_I : std_logic_vector(WIDTH-1 downto 0) := ifThenElse(REG_INIT'length = 1, (WIDTH-1 downto 0 => REG_INIT(0)),
                                                                          REG_INIT(WIDTH-1 downto 0));
 
   signal reg_r   : std_logic_vector(WIDTH-1 downto 0) := REG_INIT_I;
@@ -108,4 +108,4 @@ begin
     end if;
   end process clk_proc;
 
-end rtl; 
+end rtl;

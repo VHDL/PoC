@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -60,7 +60,7 @@ end trace_fifo_ic;
 architecture rtl of trace_fifo_ic is
   -- Minimum address size, regardless of FIFO implementation
   constant A_BITS : natural := log2ceil(MIN_DEPTH);
-  
+
   -- Calculate fill-state in parts of 2**ESTATE_WR_BITS.
   -- Default: part of sixteen
   constant ESTATE_WR_BITS : positive := imin(4, A_BITS);
@@ -96,7 +96,7 @@ begin
       valid     => valid,
       dout      => dout,
       fstate_rd => open);
-  
+
   -- Register fstate_wr to shorten critical path.
   process (clk_wr)
   begin  -- process
@@ -112,5 +112,5 @@ begin
       end if;
     end if;
   end process;
-  
+
 end rtl;

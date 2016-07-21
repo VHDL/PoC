@@ -1,7 +1,6 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
 -- =============================================================================
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
@@ -11,20 +10,20 @@
 --									associated to the PoC.arith namespace
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		For detailed documentation see below.
--- 
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,7 +62,7 @@ package arith is
 			inc			: in	std_logic;
 			val			: out T_BCD_VECTOR(DIGITS-1 downto 0));
 	end component;
-	
+
 	component arith_counter_gray is
 		generic (
 			BITS	: positive;								-- Bit width of the counter
@@ -152,7 +151,7 @@ package arith is
 	type tArch		 is (AAM, CAI, CCA, PAI);
 	type tBlocking is (DFLT, FIX, ASC, DESC);
 	type tSkipping is (PLAIN, CCC, PPN_KS, PPN_BK);
-	
+
 	component arith_addw is
 		generic (
 			N						: positive;						-- Operand Width
@@ -182,18 +181,18 @@ package arith is
 			y		: out std_logic												-- All-same Output
 		);
 	end component;
-	
+
 	component arith_carrychain_inc_xilinx is
 		generic (
-			BITS			: POSITIVE
+			BITS			: positive
 		);
 		port (
-			X		: in	STD_LOGIC_VECTOR(BITS - 1 downto 0);
-			CIn	: in	STD_LOGIC															:= '1';
-			Y		: out	STD_LOGIC_VECTOR(BITS - 1 downto 0)
+			X		: in	std_logic_vector(BITS - 1 downto 0);
+			CIn	: in	std_logic															:= '1';
+			Y		: out	std_logic_vector(BITS - 1 downto 0)
 		);
 	end component;
-	
+
 	component arith_prefix_and_xilinx is
 		generic (
 			N : positive
@@ -203,7 +202,7 @@ package arith is
 			y : out std_logic_vector(N-1 downto 0)
 		);
 	end component;
-	
+
 	component arith_prefix_or_xilinx is
 		generic (
 			N : positive
@@ -213,7 +212,7 @@ package arith is
 			y : out std_logic_vector(N-1 downto 0)
 		);
 	end component;
-	
+
 	component arith_inc_ovcy_xilinx is
 		generic (
 			N		: positive												 		-- Bit Width

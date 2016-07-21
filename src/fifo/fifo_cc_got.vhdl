@@ -1,63 +1,89 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
+-- =============================================================================
 -- Authors:					Thomas B. Preusser
 --									Steffen Koehler
 --									Martin Zabel
 --									Patrick Lehmann
 --
--- Module:					FIFO, Common Clock (cc), Pipelined Interface
+-- Entity:					FIFO, Common Clock (cc), Pipelined Interface
 --
 -- Description:
--- ------------------------------------
---		The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
---		
---		DATA_REG (=true) is a hint, that distributed memory or registers should be
---		used as data storage. The actual memory type depends on the device
---		architecture. See implementation for details.
---		
---		*STATE_*_BITS defines the granularity of the fill state indicator
---		'*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
---		the guaranteed number of words available in the FIFO. 'estate_wr' is
---		associated with the write clock domain and outputs the number of words that
---		is guaranteed to be accepted by the FIFO without a capacity overflow. Note
---		that both these indicators cannot replace the 'full' or 'valid' outputs as
---		they may be implemented as giving pessimistic bounds that are minimally off
---		the true fill state.
---		
---		If a fill state is not of interest, set *STATE_*_BITS = 0.
---		
---		'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
---		comparator (subtractor) in their path.
---		
---		Examples:
---		- FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
---		                      fstate_rd == 1 => 1/2 full (half full)
---		
---		- FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
---		                      fstate_rd == 1 => 1/4 full
---		                      fstate_rd == 2 => 2/4 full
---		                      fstate_rd == 3 => 3/4 full
+-- -------------------------------------
+-- This module implements a regular FIFO with common clock (cc), pipelined
+-- interface. Common clock means read and write port use the same clock. The
+-- FIFO size can be configured in word width (``D_BITS``) and minimum word count
+-- ``MIN_DEPTH``. The specified depth is rounded up to the next suitable value.
+-- 
+-- ``DATA_REG`` (=true) is a hint, that distributed memory or registers should
+-- be used as data storage. The actual memory type depends on the device
+-- architecture. See implementation for details.
+-- 
+-- ``*STATE_*_BITS`` defines the granularity of the fill state indicator
+-- ``*state_*``. If a fill state is not of interest, set ``*STATE_*_BITS = 0``.
+-- ``fstate_rd`` is associated with the read clock domain and outputs the
+-- guaranteed number of words available in the FIFO. ``estate_wr`` is associated
+-- with the write clock domain and outputs the number of words that is
+-- guaranteed to be accepted by the FIFO without a capacity overflow. Note that
+-- both these indicators cannot replace the ``full`` or ``valid`` outputs as
+-- they may be implemented as giving pessimistic bounds that are minimally off
+-- the true fill state.
+-- 
+-- ``fstate_rd`` and ``estate_wr`` are combinatorial outputs and include an address
+-- comparator (subtractor) in their path.
+-- 
+-- .. rubric:: Examples:
+-- 
+-- * FSTATE_RD_BITS = 1:
+--   
+--   +-----------+----------------------+
+--   | fstate_rd | filled (at least)    |
+--   +===========+======================+
+--   |    0      | 0/2 full             |
+--   +-----------+----------------------+
+--   |    1      | 1/2 full (half full) |
+--   +-----------+----------------------+
+-- 
+-- * FSTATE_RD_BITS = 2:
+-- 
+--   +-----------+----------------------+
+--   | fstate_rd | filled (at least)    |
+--   +===========+======================+
+--   |    0      | 0/4 full             |
+--   +-----------+----------------------+
+--   |    1      | 1/4 full             |
+--   +-----------+----------------------+
+--   |    2      | 2/4 full (half full) |
+--   +-----------+----------------------+
+--   |    3      | 3/4 full             |
+--   +-----------+----------------------+
+--
+-- SeeAlso:
+-- :doc:`PoC.fifo.dc_got </PoC/fifo/fifo_dc_got>`
+--   For a FIFO with dependent clocks.
+-- :doc:`PoC.fifo.ic_got </PoC/fifo/fifo_ic_got>`
+--   For a FIFO with independent clocks (cross-clock FIFO).
+-- :doc:`PoC.fifo.glue </PoC/fifo/fifo_glue>`
+--   For a minimal FIFO / pipeline decoupling.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
@@ -95,7 +121,7 @@ entity fifo_cc_got is
     valid     : out std_logic;
     fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS-1) downto 0)
   );
-end fifo_cc_got;
+end entity fifo_cc_got;
 
 
 architecture rtl of fifo_cc_got is
@@ -112,7 +138,7 @@ architecture rtl of fifo_cc_got is
   -- Incremented Input and Output Pointers
   signal IP1 : unsigned(A_BITS-1 downto 0);
   signal OP1 : unsigned(A_BITS-1 downto 0);
-  
+
   -----------------------------------------------------------------------------
   -- Backing Memory Connectivity
 
@@ -132,14 +158,14 @@ begin
   -----------------------------------------------------------------------------
   -- Pointer Logic
 	blkPointer : block
-		signal IP0_slv		: STD_LOGIC_VECTOR(IP0'range);
-		signal IP1_slv		: STD_LOGIC_VECTOR(IP0'range);
-		signal OP0_slv		: STD_LOGIC_VECTOR(IP0'range);
-		signal OP1_slv		: STD_LOGIC_VECTOR(IP0'range);
+		signal IP0_slv		: std_logic_vector(IP0'range);
+		signal IP1_slv		: std_logic_vector(IP0'range);
+		signal OP0_slv		: std_logic_vector(IP0'range);
+		signal OP1_slv		: std_logic_vector(IP0'range);
 	begin
 		IP0_slv	<= std_logic_vector(IP0);
 		OP0_slv	<= std_logic_vector(OP0);
-		
+
 		incIP : entity PoC.arith_carrychain_inc
 			generic map (
 				BITS		=> A_BITS
@@ -157,7 +183,7 @@ begin
 				X				=> OP0_slv,
 				Y				=> OP1_slv
 			);
-		
+
 		IP1			<= unsigned(IP1_slv);
 		OP1			<= unsigned(OP1_slv);
 	end block;
@@ -352,7 +378,7 @@ begin
       dout  <= Buf;
       valid <= Vld(1);
     end generate genOutputReg;
-    
+
   end generate genLarge;
 
   genSmall: if DATA_REG generate
@@ -365,9 +391,9 @@ begin
 
     -- Altera Quartus II: Allow automatic RAM type selection.
     -- For small RAMs, registers are used on Cyclone devices and the M512 type
-    -- is used on Stratix devices. Pass-through logic is automatically added 
+    -- is used on Stratix devices. Pass-through logic is automatically added
     -- if required. (Warning can be ignored.)
-  
+
   begin
 
     -- Memory State
@@ -375,7 +401,7 @@ begin
     begin
       if rising_edge(clk) then
         --synthesis translate_off
-        if SIMULATION AND (rst = '1') then
+        if SIMULATION and (rst = '1') then
           regfile <= (others => (others => '-'));
         else
         --synthesis translate_on

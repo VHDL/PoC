@@ -6,7 +6,7 @@ README.md
 
 # --------------------------------------
 fifo_cc_got_tb.*
-fifo_cc_got_tempgot_tb.*
+#fifo_cc_got_tempgot_tb.*
 fifo_cc_got_tempput_tb.*
 fifo_ic_got_tb.*
 fifo_ic_assembly_tb.*

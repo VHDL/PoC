@@ -5,8 +5,9 @@
 # ==============================================================================
 # Authors:          Patrick Lehmann
 #                   Martin Zabel
+#                   Thomas B. Preusser
 #
-# Python Class:      GHDL specific classes
+# Python Class:     GHDL specific classes
 #
 # Description:
 # ------------------------------------
@@ -42,17 +43,17 @@ else:
 
 
 from pathlib                import Path
-from re                      import compile as RegExpCompile
-from subprocess             import check_output
+from re                     import compile as RegExpCompile
+from subprocess             import check_output, CalledProcessError
 
-from Base.Configuration      import Configuration as BaseConfiguration, ConfigurationException
+from Base.Configuration     import Configuration as BaseConfiguration, ConfigurationException
 from Base.Exceptions        import PlatformNotSupportedException
 from Base.Executable        import Executable
 from Base.Executable        import ExecutableArgument, PathArgument, StringArgument, ValuedFlagListArgument
 from Base.Executable        import ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, CommandLineArgumentList
-from Base.Logging            import LogEntry, Severity
-from Base.Simulator          import PoCSimulationResultFilter, SimulationResult
-from Base.ToolChain          import ToolChainException
+from Base.Logging           import LogEntry, Severity
+from Base.Simulator         import PoCSimulationResultFilter, SimulationResult
+from Base.ToolChain         import ToolChainException
 from lib.Functions          import CallByRefParam
 
 
@@ -74,22 +75,25 @@ class Configuration(BaseConfiguration):
 				"Version":                "0.34dev",
 				"InstallationDirectory":  "C:/Tools/GHDL/0.34dev",
 				"BinaryDirectory":        "${InstallationDirectory}/bin",
+				"ScriptDirectory":        "${InstallationDirectory}/scripts",
 				"Backend":                "mcode"
 			}
 		},
 		"Linux": {
 			_section: {
 				"Version":                "0.34dev",
-				"InstallationDirectory":  "/usr/bin/ghdl",
-				"BinaryDirectory":        "${InstallationDirectory}",
+				"InstallationDirectory":  "/usr/local",
+				"BinaryDirectory":        "${InstallationDirectory}/bin",
+				"ScriptDirectory":        "${InstallationDirectory}/lib/ghdl/vendors",
 				"Backend":                "llvm"
 			}
 		},
 		"Darwin": {
 			_section: {
 				"Version":                "0.34dev",
-				"InstallationDirectory":  None,
-				"BinaryDirectory":        "${InstallationDirectory}",
+				"InstallationDirectory":  "/usr/local",
+				"BinaryDirectory":        "${InstallationDirectory}/bin",
+				"ScriptDirectory":        "${InstallationDirectory}/lib/ghdl/vendors",
 				"Backend":                "llvm"
 			}
 		}
@@ -109,10 +113,28 @@ class Configuration(BaseConfiguration):
 
 	def _GetDefaultInstallationDirectory(self):
 		if (self._host.Platform in ["Linux", "Darwin"]):
-			name = check_output(["which", "ghdl"], universal_newlines=True)
-			if name != "": return str(Path(name[:-1]).parent)
+			try:
+				name = check_output(["which", "ghdl"], universal_newlines=True)
+				if name != "": return Path(name[:-1]).parent.as_posix()
+			except CalledProcessError:
+				pass # `which` returns non-zero exit code if GHDL is not in PATH
 
 		return super()._GetDefaultInstallationDirectory()
+
+	def _ConfigureBinaryDirectory(self):
+		"""Updates section with value from _template and returns directory as Path object."""
+		self._ConfigureScriptDirectory()
+		return super()._ConfigureBinaryDirectory()
+		
+	def _ConfigureScriptDirectory(self):
+		"""Updates section with value from _template and returns directory as Path object."""
+		unresolved = self._template[self._host.Platform][self._section]['ScriptDirectory']
+		self._host.PoCConfig[self._section]['ScriptDirectory'] = unresolved  # create entry
+		scriptPath = Path(self._host.PoCConfig[self._section]['ScriptDirectory'])  # resolve entry
+
+		if (not scriptPath.exists()):
+			raise ConfigurationException("{0!s} script directory '{1!s}' does not exist.".format(self, scriptPath)) \
+				from NotADirectoryError(str(scriptPath))
 
 	def __WriteGHDLSection(self, binPath):
 		if (self._host.Platform == "Windows"):
@@ -130,7 +152,7 @@ class Configuration(BaseConfiguration):
 		backend = None
 		versionRegExpStr = r"^GHDL (.+?) "
 		versionRegExp = RegExpCompile(versionRegExpStr)
-		backendRegExpStr = r" (\w+) code generator"
+		backendRegExpStr = r"(?i).*(mcode|gcc|llvm).* code generator"
 		backendRegExp = RegExpCompile(backendRegExpStr)
 		for line in output.split('\n'):
 			if version is None:
@@ -141,16 +163,19 @@ class Configuration(BaseConfiguration):
 			if backend is None:
 				match = backendRegExp.match(line)
 				if match is not None:
-					backend = match.group(1)
-
+					backend = match.group(1).lower()
+		
+		if ((version is None) or (backend is None)):
+			raise ConfigurationException("Version number or back-end name not found in '{0!s} -v' output.".format(ghdlPath))
+		
 		self._host.PoCConfig[self._section]['Version'] = version
 		self._host.PoCConfig[self._section]['Backend'] = backend
 
 
 class GHDL(Executable):
 	def __init__(self, platform, binaryDirectoryPath, version, backend, logger=None):
-		if (platform == "Windows"):      executablePath = binaryDirectoryPath/ "ghdl.exe"
-		elif (platform == "Linux"):      executablePath = binaryDirectoryPath/ "ghdl"
+		if (platform == "Windows"):     executablePath = binaryDirectoryPath/ "ghdl.exe"
+		elif (platform == "Linux"):     executablePath = binaryDirectoryPath/ "ghdl"
 		elif (platform == "Darwin"):    executablePath = binaryDirectoryPath/ "ghdl"
 		else:                                            raise PlatformNotSupportedException(platform)
 		super().__init__(platform, executablePath, logger=logger)
@@ -161,9 +186,9 @@ class GHDL(Executable):
 		if (platform == "Windows"):
 			if (backend not in ["mcode"]):                raise GHDLException("GHDL for Windows does not support backend '{0}'.".format(backend))
 		elif (platform == "Linux"):
-			if (backend not in ["gcc", "llvm", "mcode"]):  raise GHDLException("GHDL for Linux does not support backend '{0}'.".format(backend))
+			if (backend not in ["gcc", "llvm", "mcode"]): raise GHDLException("GHDL for Linux does not support backend '{0}'.".format(backend))
 		elif (platform == "Darwin"):
-			if (backend not in ["gcc", "llvm", "mcode"]):  raise GHDLException("GHDL for OS X does not support backend '{0}'.".format(backend))
+			if (backend not in ["gcc", "llvm", "mcode"]): raise GHDLException("GHDL for OS X does not support backend '{0}'.".format(backend))
 
 		self._binaryDirectoryPath =  binaryDirectoryPath
 		self._backend =              backend
@@ -457,34 +482,37 @@ class GHDLRun(GHDL):
 
 
 def GHDLAnalyzeFilter(gen):
-	warningRegExpPattern =  r".+?:\d+:\d+:warning: (?P<Message>.*)"			# <Path>:<line>:<column>:warning: <message>
-	errorRegExpPattern =    r".+?:\d+:\d+: (?P<Message>.*)"  						# <Path>:<line>:<column>: <message>
-
-	warningRegExp =  RegExpCompile(warningRegExpPattern)
-	errorRegExp =    RegExpCompile(errorRegExpPattern)
+	filterPattern = r".+?:\d+:\d+:(?P<warning>warning:)? (?P<message>.*)"			# <Path>:<line>:<column>:[warning:] <message>
+	filterRegExp  = RegExpCompile(filterPattern)
 
 	for line in gen:
-		warningRegExpMatch = warningRegExp.match(line)
-		if (warningRegExpMatch is not None):
-			yield LogEntry(line, Severity.Warning)
-		else:
-			errorRegExpMatch = errorRegExp.match(line)
-			if (errorRegExpMatch is not None):
-				message = errorRegExpMatch.group('Message')
-				if message.endswith("has changed and must be reanalysed"):
-					raise GHDLReanalyzeException(message)
-				yield LogEntry(line, Severity.Error)
-			else:
-				yield LogEntry(line, Severity.Normal)
+		filterMatch = filterRegExp.match(line)
+		if (filterMatch is not None):
+			if (filterMatch.group('warning') is not None):
+				yield LogEntry(line, Severity.Warning)
+				continue
+
+			message = filterMatch.group('message')
+			if message.endswith("has changed and must be reanalysed"):
+				raise GHDLReanalyzeException(message)
+			yield LogEntry(line, Severity.Error)
+			continue
+
+		yield LogEntry(line, Severity.Normal)
 
 GHDLElaborateFilter = GHDLAnalyzeFilter
 
 def GHDLRunFilter(gen):
-	warningRegExpPattern = r".+?:\d+:\d+:warning: (?P<Message>.*)"  # <Path>:<line>:<column>:warning: <message>
-	errorRegExpPattern = r".+?:\d+:\d+: (?P<Message>.*)"  # <Path>:<line>:<column>: <message>
+	#  Pattern                                                             Classification
+	# ------------------------------------------------------------------------------------------------------
+	#  <path>:<line>:<column>: <message>                                -> Severity.Error (by (*))
+	#  <path>:<line>:<column>:<severity>: <message>                     -> According to <severity>
+	#  <path>:<line>:<column>:@<time>:(report <severity>): <message>    -> According to <severity>
+	#  others                                                           -> Severity.Normal
+	#  (*) -> unknown <severity>                                        -> Severity.Error
 
-	warningRegExp = RegExpCompile(warningRegExpPattern)
-	errorRegExp = RegExpCompile(errorRegExpPattern)
+	filterPattern = r".+?:\d+:\d+:((?P<report>@\w+:\((?:report|assertion) )?(?P<severity>\w+)(?(report)\)):)? (?P<message>.*)"
+	filterRegExp = RegExpCompile(filterPattern)
 
 	lineno = 0
 	for line in gen:
@@ -493,18 +521,13 @@ def GHDLRunFilter(gen):
 			if ("Linking in memory" in line):
 				yield LogEntry(line, Severity.Verbose)
 				continue
-			elif ("Starting simulation" in line):
+			if ("Starting simulation" in line):
 				yield LogEntry(line, Severity.Verbose)
 				continue
 
-		warningRegExpMatch = warningRegExp.match(line)
-		if (warningRegExpMatch is not None):
-			yield LogEntry(line, Severity.Warning)
-			continue
-
-		errorRegExpMatch = errorRegExp.match(line)
-		if (errorRegExpMatch is not None):
-			yield LogEntry(line, Severity.Error)
+		filterMatch = filterRegExp.match(line)
+		if filterMatch is not None:
+			yield LogEntry(line, Severity.ParseVHDLSeverityLevel(filterMatch.group('severity'), Severity.Error))
 			continue
 
 		yield LogEntry(line, Severity.Normal)
