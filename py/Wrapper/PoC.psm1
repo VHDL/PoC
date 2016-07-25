@@ -33,20 +33,19 @@
 # Module parameters
 [CmdletBinding()]
 param(
-	[Parameter(Mandatory=$true)][string]	$PythonMinVersion,
 	[Parameter(Mandatory=$true)][string]	$PoC_RootDir
 )
 #
 # ==============================================================================
 # find suitable python version for PoC
-$Major,$Minor = $PythonMinVersion.Split(".")
+$PythonVersion_Major, $PythonVersion_Minor =	(3, 5)
 
 $Py_exe =		"py.exe"
-$Command =	"$Py_exe -$Major -c `"import sys; sys.exit(not (0x{0:00}{1:00}00 < sys.hexversion < 0x04000000))`" 2>&1" -f ([int] $Major, [int] $Minor)
+$Command =	"$Py_exe -{0} -c `"import sys; sys.exit(not (0x{0:00}{1:00}0000 < sys.hexversion < 0x04000000))`"" -f ($PythonVersion_Major, $PythonVersion_Minor)
 Invoke-Expression $Command | Out-Null
 if ($LastExitCode -eq 0)
 {	$Python_Interpreter = $Py_exe
-	$Python_Parameters =	(,"-$Major")
+	$Python_Parameters =	(,"-$PythonVersion_Major")
 }
 else
 {	Write-Host "[ERROR]: No suitable Python interpreter found." -ForegroundColor Red
@@ -244,6 +243,7 @@ function Get-PoCEnvironmentArray
 	return $Debug, $PoCEnv
 }
 
+# TODO: build an overload of Get-PoCEnvironmentArray
 function Set-PoCEnvironmentArray
 {	<#
 		.SYNOPSIS
