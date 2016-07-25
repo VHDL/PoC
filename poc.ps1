@@ -30,27 +30,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
 # Change this, if PoC solutions and PoC projects are used
-$PoC_RootDir_RelPath =			"."		# relative path to PoC root directory
-$PoC_Solution =							""		# solution name
-
-# Configure wrapper here
-$PoC_Script =								"PoC.py"
-$Python_MinVersion =				"3.5.0"
+$RootDir_RelPath =			"."		# relative path to PoC root directory
+$PoC_Solution =					""		# solution name
 
 # save parameters and current working directory
-$PyWrapper_Parameters =			$args
-$PyWrapper_WorkingDir =			Get-Location
-# 
-$PoC_RootDir =							Convert-Path (Resolve-Path ($PSScriptRoot + "\" + $PoC_RootDir_RelPath))
-$PyWrapper_WrapperScript =	"$PoC_RootDir\py\Wrapper\Wrapper.ps1"
+$PyWrapper_Parameters =	$args
+$PyWrapper_WorkingDir =	Get-Location
+$PyWrapper_ExitCode =		0
+
+# Configure PoC environment here
+$PoC_PythonDir =				"py"
+$PoC_WrapperDir =				"py\Wrapper"
+$PoC_Module =						"PoC"
+$PoC_Wrapper =					"Wrapper.ps1"
+
+# Configure wrapper here
+$Py_MinVersion =				"3.5"
+$PoC_ScriptPy =					"$PoC_PythonDir\PoC.py"
+
+$PoCRootDir =						Convert-Path (Resolve-Path ($PSScriptRoot + "\" + $RootDir_RelPath))
+Import-Module "$PoCRootDir\$PoC_WrapperDir\$PoC_Module.psm1" -ArgumentList @($Py_MinVersion, $PoCRootDir)
 
 # invoke main wrapper
-. $PyWrapper_WrapperScript
+. "$PoCRootDir\$PoC_WrapperDir\$PoC_Wrapper"
 
 # restore working directory if changed
 Set-Location $PyWrapper_WorkingDir
 
+# unload PowerShell module
+Remove-Module $PoC_Module
+
 # return exit status
-exit $PoC_ExitCode
+exit $PyWrapper_ExitCode
