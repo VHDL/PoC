@@ -1,9 +1,27 @@
 # git files
-.gitignore
+.gitempty
 
-# subnamespace
+# Documentation
+README.md
+
+# PoC subnamespaces
+# --------------------------------------
+# FPGA device specific I/O abstraction
+ddrio/
+
+# low speed protocols
+iic/
+lcd/
+mdio/
+ow/
+pmod/
+ps2/
 uart/
+vga/
+
+# devices
+#device/
 
 # --------------------------------------
 #io_7SegmentMux_tb.*
-#io_Debounce_tb.*
+io_Debounce_tb.*

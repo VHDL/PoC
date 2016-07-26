@@ -1,29 +1,22 @@
 # git files
-.gitignore
+.gitempty
 
-# subnamespace
+# Documentation
+README.md
 
 # PoC.my_config examples
-my_config_Atlys.vhdl
-my_config_DE4.vhdl
-my_config_KC705.vhdl
-my_config_ML505.vhdl
-my_config_ML506.vhdl
-my_config_ML605.vhdl
-my_config_S2GXAV.vhdl
-my_config_S3SK1000.vhdl
-my_config_VC707.vhdl
-my_config_XUPV5.vhdl
+my_config.files
+my_config_*.vhdl
 # DON'T PUBLISH my_project.vhdl !
 
-# simulation packages
-simulation.v93.vhdl
-simulation.v08.vhdl
+# Python simulation helper packages
+lru_dict.py
+utils.py
 
 # --------------------------------------
 # package / function tests
 config_tb.*
-#physical_tb.*
+physical_tb.*
 strings_tb.*
 #utils_tb.*
 #vectors_tb.*

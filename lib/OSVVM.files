@@ -1,0 +1,44 @@
+# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+# vim: tabstop=2:shiftwidth=2:noexpandtab
+# kate: tab-width 2; replace-tabs off; indent-width 2;
+# ==============================================================================
+# Note: all files are relative to PoC root directory
+#
+path PreCompiled =      ${CONFIG.DirectoryNames:PrecompiledFiles}
+path OSVVM_Directory =  "osvvm"
+
+if (VHDLVersion < 2008) then
+	report "OSVVM requires VHDL-2008; See OSVVM documentation for VHDL-2002 support."
+elseif (VHDLVersion = 2008) then
+	if (Tool = "GHDL") then
+		path GHDLPath = (PreCompiled / ${CONFIG.DirectoryNames:GHDLFiles})
+		if ?{((GHDLPath / OSVVM_Directory) / "v08/osvvm-obj08.cf")} then
+			library osvvm	GHDLPath
+		else
+			report "No precompiled OSVVM library for GHDL found."
+		end if
+	elseif (Tool = "Mentor_vSim") then
+		path OSVVM_LibraryPath = (PreCompiled / (${CONFIG.DirectoryNames:ModelSimFiles} / OSVVM_Directory))
+		if ?{OSVVM_LibraryPath} then
+			library osvvm	OSVVM_LibraryPath
+		else
+			report "No precompiled QuestaSim/ModelSim library for GHDL found."
+		end if
+	else
+		# TODO self-compile section?
+		vhdl	osvvm	"lib/osvvm/NamePkg.vhd"									# OSVVM 
+		vhdl	osvvm	"lib/osvvm/OsvvmGlobalPkg.vhd"					# OSVVM 
+		vhdl	osvvm	"lib/osvvm/TextUtilPkg.vhd"							# OSVVM 
+		vhdl	osvvm	"lib/osvvm/TranscriptPkg.vhd"						# OSVVM 
+		vhdl	osvvm	"lib/osvvm/AlertLogPkg.vhd"							# OSVVM 
+		vhdl	osvvm	"lib/osvvm/MemoryPkg.vhd"								# OSVVM 
+		vhdl	osvvm	"lib/osvvm/MessagePkg.vhd"							# OSVVM 
+		vhdl	osvvm	"lib/osvvm/SortListPkg_int.vhd"					# OSVVM 
+		vhdl	osvvm	"lib/osvvm/RandomBasePkg.vhd"						# OSVVM 
+		vhdl	osvvm	"lib/osvvm/RandomPkg.vhd"								# OSVVM 
+		vhdl	osvvm	"lib/osvvm/CoveragePkg.vhd"							# OSVVM 
+		vhdl	osvvm	"lib/osvvm/OsvvmContext.vhd"						# OSVVM 
+	end if
+else
+	report "VHDL version not supported by OSVVM."
+end if

@@ -1,20 +1,19 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Martin Zabel
 --									Patrick Lehmann
--- 
--- Module:				 	True dual-port memory.
+--
+-- Entity:				 	True dual-port memory.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Inferring / instantiating true dual-port memory, with:
 --
 -- * dual clock, clock enable,
 -- * 2 read/write ports.
--- 
+--
 -- The generalized behavior across Altera and Xilinx FPGAs since
 -- Stratix/Cyclone and Spartan-3/Virtex-5, respectively, is as follows:
 --
@@ -45,22 +44,22 @@
 -- TODO: implement correct behavior for RT-level simulation
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 
 library	IEEE;
@@ -79,7 +78,7 @@ entity ocram_tdp is
 	generic (
 		A_BITS		: positive;
 		D_BITS		: positive;
-		FILENAME	: STRING		:= ""
+		FILENAME	: string		:= ""
 	);
 	port (
 		clk1 : in	std_logic;
@@ -102,11 +101,11 @@ architecture rtl of ocram_tdp is
 	constant DEPTH : positive := 2**A_BITS;
 
 begin
-	gInfer : if ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
+	gInfer : if ((VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
 		-- RAM can be inferred correctly only if '-use_new_parser yes' is enabled in XST options
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
 		type		ram_t		is array(0 to DEPTH - 1) of word_t;
-		
+
 		-- Compute the initialization of a RAM array, if specified, from the passed file.
 		impure function ocram_InitMemory(FilePath : string) return ram_t is
 			variable Memory		: T_SLM(DEPTH - 1 downto 0, word_t'range);
@@ -132,9 +131,9 @@ begin
 		signal ram			: ram_t		:= ocram_InitMemory(FILENAME);
 		signal a1_reg		: unsigned(A_BITS-1 downto 0);
 		signal a2_reg		: unsigned(A_BITS-1 downto 0);
-		
+
 	begin
-		
+
 		process (clk1, clk2)
 		begin	-- process
 			if rising_edge(clk1) then
@@ -157,17 +156,17 @@ begin
 				end if;
 			end if;
 		end process;
-		
+
 		q1 <= ram(to_integer(a1_reg));		-- returns new data
 		q2 <= ram(to_integer(a2_reg));		-- returns new data
 	end generate gInfer;
-	
+
 	gAltera: if VENDOR = VENDOR_ALTERA generate
 		component ocram_tdp_altera
 			generic (
 				A_BITS		: positive;
 				D_BITS		: positive;
-				FILENAME	: STRING		:= ""
+				FILENAME	: string		:= ""
 			);
 			port (
 				clk1 : in	std_logic;
@@ -188,7 +187,7 @@ begin
 		-- Direct instantiation of altsyncram (including component
 		-- declaration above) is not sufficient for ModelSim.
 		-- That requires also usage of altera_mf library.
-		
+
 		i: ocram_tdp_altera
 			generic map (
 				A_BITS		=> A_BITS,
@@ -210,8 +209,8 @@ begin
 				q2		=> q2
 			);
 	end generate gAltera;
-	
-	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
+
+	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
 		report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported."
 		severity failure;
 end architecture;

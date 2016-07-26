@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_global_time
 -- Author(s): Stefan Alex, Martin Zabel
--- 
+--
 -- Global time basis. Count clock cycles between messages.
 --
 -- Outputs for value_sel:
@@ -23,7 +23,7 @@
 -- 'no_data' = '1': no messages at all time-levels.
 --    => component 'value_sel' must insert TIME_CMP_LEVELS
 --    time-stamps with value all-one.
---    
+--
 -- 'no_data' = '0': message(s) strobed with time 'current_time' at level
 --    'current_level'. if 'current_level' > 0 then component 'value_sel'
 --    must insert 'current_level' time-stamps with value all-one before
@@ -101,7 +101,7 @@ begin
     signal time_en   : std_logic;
     signal add_en    : std_logic;
     signal keep_enabled : std_logic;
-    
+
     -- clk-eth-domain
     signal gt_fifo_got   : std_logic;
     signal gt_fifo_valid : std_logic;
@@ -229,10 +229,10 @@ begin
       signal level_rst  : std_logic;
       signal level_inc  : std_logic;
       signal level_last : std_logic;
-      
+
       -- saved time values
       signal time_r : std_logic_vector(TIME_BITS*(TIME_CMP_LEVELS-1)-1 downto 0);
-      
+
     begin
       level_last <= '1' when level_r = TIME_CMP_LEVELS-1 else '0';
       level_rst  <= gt_fifo_put and not gt_fifo_full;
@@ -240,7 +240,7 @@ begin
 
       gt_fifo_put <= (time_put and level_last);
       gt_fifo_din <= time_val & time_r;  -- insert at top, see also below
-      
+
       add_en       <= not (level_last and gt_fifo_full);
 
       clk_proc : process(clk_trc)
@@ -258,10 +258,10 @@ begin
               time_r(time_r'left-TIME_BITS downto 0) <=
                 time_r(time_r'left downto TIME_BITS);
             end if;
-            
+
             time_r(time_r'left downto time_r'left-TIME_BITS+1) <= time_val;
           end if;
-          
+
           -- In case of trace-stop: keep enabled until a complete time-vector
           -- with all-ones has been written to the FIFO.
           -- Because 'level_sel_blk/more_cmp_levels_gen' requires a valid
@@ -321,7 +321,7 @@ begin
 
       type TIME_ARRAY is array(natural range<>) of
         std_logic_vector(TIME_BITS-1 downto 0);
-      
+
       signal window          : TIME_ARRAY(0 to TIME_CMP_LEVELS-1);
 
       -- Using integers did not work with simulation, due to possibly undefined
@@ -351,7 +351,7 @@ begin
         g2: for j in sel_range'range generate
           sel_range(j) <= full_time((i+j+1)*TIME_BITS-1 downto (i+j)*TIME_BITS);
         end generate g2;
-        
+
         window(i) <= sel_range(to_integer(window_ptr_r));
       end generate g1;
 
@@ -366,7 +366,7 @@ begin
         current_level_nxt <= (others => '-');
 
         for i in 0 to TIME_CMP_LEVELS-1 loop
-          
+
           if (not found) and (window(i) /= CMP_VALUE) then
             found := true;
             current_level_nxt <= to_unsigned(i, current_level_nxt'length);

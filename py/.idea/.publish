@@ -1,0 +1,18 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# PyCharm project files
+dictionaries/*
+inspectionProfiles/*
+
+.name
+codeStyleSettings.xml
+encodings.xml
+misc.xml
+modules.xml
+py.iml
+vcs.xml
+workspace.xml

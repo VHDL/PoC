@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_ctrl
 -- Author(s): Stefan Alex
--- 
+--
 ------------------------------------------------------
 -- Controller                                       --
 ------------------------------------------------------
@@ -174,7 +174,7 @@ architecture Behavioral of trace_ctrl is
   signal trace_init         : std_logic;
 
   signal tracer_valid2 : std_logic;
-  
+
   signal sys2trc_rdy : std_logic;
 
   signal trig_rsp_sys : std_logic;
@@ -206,7 +206,7 @@ begin
     signal cpu_start_cmd_trc : std_logic;
 
   begin
-  
+
     no_ice_trig_gen : if not HAVE_ICE_TRIGGER generate
       ice_trig_fired <= '0';
     end generate no_ice_trig_gen;
@@ -533,7 +533,7 @@ begin
       eth_last_cmd       <= '0';
       send_finish_cmd    <= '0';
       send_data_fifo_clear <= '0';
-      
+
       case state_cs is
 
         when WAITING_AND_DECODE =>
@@ -782,7 +782,7 @@ begin
           -- insert some stop messages, actually more than one to also clear
           -- pipeline registers inside the funnel
           send_finish_cmd <= '1';
-          
+
           cnt_inc <= '1';
           if cnt_finish = '1' then
             cnt_rst  <= '1';
@@ -797,7 +797,7 @@ begin
             state_ns <= WAIT_FOR_FINISH;
           end if;
 
-          
+
         when WAIT_FOR_FINISH =>
           -- clear fifos
           send_data_fifo_clear <= '1';
@@ -868,14 +868,14 @@ begin
         value_out => trace_running_trc);
 
     trace_running <= trace_running_trc;
-    
+
     -- Initialize trace-components for a new trace, e.g.
     -- value_sel and value_2fifo.
     -- Do not use it to reset trace_fifo_ic or fifo_ic_*. These
     -- components have two clocks for which reset must be applied at the same
     -- time!
     trace_init <= rst_sys or trace_reinit_r;
-    
+
     ---------------
     -- trc-2-sys --
     ---------------
@@ -1329,7 +1329,7 @@ begin
     end process;
 
     send_finish <= '1' when finish_cnt_r /= 0 else '0';
-    
+
     st_msg(0)     <= send_finish;
     st_stb_finish <= send_finish;
 
@@ -1453,17 +1453,17 @@ begin
       end process;
 
       disable <= '1' when enabled_r = 0 else '0';
-      
+
       -- Enable immediatly with trace_running.
       -- Hold enable also while ctrl-message-tracer is strobing stop-messages.
       -- Do not use trace_working, it is in the wrong clock domain.
       enable <= (not disable) or
                 trace_running_trc or tracer_stbs(TRACER_CNT-1);
-      
+
       tracer_stb_en    <= global_time_stb_en and tracer_time_stb_en;
       tracer_valid2    <= global_time_valid and (no_data or tracer_valid);
       trace_working    <= global_time_valid or tracer_time_valid;
-      
+
       global_time_stb  <= '1' when tracer_time_stb_en = '1' and unsigned(tracer_stbs) /= 0
                               else '0';
 
@@ -1480,7 +1480,7 @@ begin
       current_time          <= (others => '0');
       current_level         <= (others => '0');
     end generate no_cyc_acc_gen;
-    
+
     -----------------
     -- tracer_time --
     -----------------

@@ -5,7 +5,13 @@
 README.md
 
 # Package
-
+pmod.pkg.vhdl
 
 # Entities
 # --------------------------------------
+pmod_KYPD.files
+pmod_KYPD.vhdl
+pmod_SSD.files
+pmod_SSD.vhdl
+pmod_USBUART.files
+pmod_USBUART.vhdl

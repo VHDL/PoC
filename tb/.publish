@@ -4,23 +4,19 @@
 # Documentation
 README.md
 
-# wrapper scripts
-testbench.sh
-testbench.ps1
-
-# Configuration files
-configuration.ini
-
 # PoC subnamespaces
 arith/
 bus/
+cache/
 comm/
 common/
+dstruct/
 fifo/
 io/
 mem/
 misc/
 # DON'T PUBLISH sata/ !
+sim/
 sort/
 xil/
-# DON'T PUBLISH xilinx/ !
+

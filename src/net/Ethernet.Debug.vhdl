@@ -1,19 +1,19 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
 
-LIBRARY L_Global;
-USE			L_Global.GlobalTypes.ALL;
+library L_Global;
+use			PoC.GlobalTypes.all;
 
-PACKAGE EthDebug IS
+package EthDebug is
 
 
-END;
+end;
 
-PACKAGE BODY EthDebug IS
+package body EthDebug is
 
-END PACKAGE BODY;
+end package body;

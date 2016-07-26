@@ -1,11 +1,12 @@
 # git files
-.gitignore
+.gitempty
 
-# subnamespace
+# Documentation
+README.md
 
 # --------------------------------------
-fifo_cc_got_tb.vhdl
-fifo_cc_got_tempgot_tb.vhdl
-fifo_cc_got_tempput_tb.vhdl
-fifo_ic_got_tb.vhdl
-#fifo_dc_got_tb.vhdl
+fifo_cc_got_tb.*
+#fifo_cc_got_tempgot_tb.*
+fifo_cc_got_tempput_tb.*
+fifo_ic_got_tb.*
+fifo_ic_assembly_tb.*

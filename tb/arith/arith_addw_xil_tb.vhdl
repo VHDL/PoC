@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Entity:      arith_addw_xil_tb
 --
@@ -16,9 +16,9 @@
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --              http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,7 +44,7 @@ architecture tb of arith_addw_xil_tb is
 
 	subtype tArch_test is tArch range AAM to CCA;
 	subtype tSkip_test is tSkipping;
-	
+
   -- component ports
   subtype word is std_logic_vector(N-1 downto 0);
   type word_vector is array(tArch_test, tSkip_test) of word;
@@ -97,7 +97,7 @@ begin
             severity failure;
 				 end loop;
         end loop;
-        
+
         cin <= '1';
         wait for 5 ns;
         for arch in tArch_test loop

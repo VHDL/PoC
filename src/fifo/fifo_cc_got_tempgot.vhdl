@@ -1,71 +1,71 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================================================================================================
--- Module:					FIFO, common clock (cc), pipelined interface,
--- 									reads only become effective after explicit commit
---
+-- =============================================================================
 -- Authors:					Thomas B. Preusser
 --									Steffen Koehler
 --									Martin Zabel
+--									Patrick Lehmann
+--
+-- Entity:					FIFO, common clock (cc), pipelined interface, reads only become effective after explicit commit
 --
 -- Description:
--- ------------------------------------
---		The specified depth (MIN_DEPTH) is rounded up to the next suitable value.
---		
---		As uncommitted reads occupy FIFO space that is not yet available for
---		writing, an instance of this FIFO can, indeed, report 'full' and 'not vld'
---		at the same time. While a 'commit' would eventually make space available for
---		writing ('not ful'), a 'rollback' would re-iterate data for reading
---		('vld').
---		
---		'commit' and 'rollback' are inclusive and apply to all reads ('got') since
---		the previous 'commit' or 'rollback' up to and including a potentially
---		simultaneous read.
---		
---		The FIFO state upon a simultaneous assertion of 'commit' and 'rollback' is
---		*undefined*! 
---		
---		*STATE_*_BITS defines the granularity of the fill state indicator
---		'*state_*'. 'fstate_rd' is associated with the read clock domain and outputs
---		the guaranteed number of words available in the FIFO. 'estate_wr' is
---		associated with the write clock domain and outputs the number of words that
---		is guaranteed to be accepted by the FIFO without a capacity overflow. Note
---		that both these indicators cannot replace the 'full' or 'valid' outputs as
---		they may be implemented as giving pessimistic bounds that are minimally off
---		the true fill state.
---		
---		If a fill state is not of interest, set *STATE_*_BITS = 0.
---		
---		'fstate_rd' and 'estate_wr' are combinatorial outputs and include an address
---		comparator (subtractor) in their path.
---		
---		Examples:
---		- FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
---		                      fstate_rd == 1 => 1/2 full (half full)
---		
---		- FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
---		                      fstate_rd == 1 => 1/4 full
---		                      fstate_rd == 2 => 2/4 full
---		                      fstate_rd == 3 => 3/4 full
+-- -------------------------------------
+-- The specified depth (``MIN_DEPTH``) is rounded up to the next suitable value.
+-- 
+-- As uncommitted reads occupy FIFO space that is not yet available for
+-- writing, an instance of this FIFO can, indeed, report ``full`` and ``not vld``
+-- at the same time. While a ``commit`` would eventually make space available for
+-- writing (``not ful``), a ``rollback`` would re-iterate data for reading
+-- (``vld``).
+-- 
+-- ``commit`` and ``rollback`` are inclusive and apply to all reads (``got``) since
+-- the previous ``commit`` or ``rollback`` up to and including a potentially
+-- simultaneous read.
+-- 
+-- The FIFO state upon a simultaneous assertion of ``commit`` and ``rollback`` is
+-- *undefined*!
+-- 
+-- ``*STATE_*_BITS`` defines the granularity of the fill state indicator
+-- ``*state_*``. ``fstate_rd`` is associated with the read clock domain and outputs
+-- the guaranteed number of words available in the FIFO. ``estate_wr`` is
+-- associated with the write clock domain and outputs the number of words that
+-- is guaranteed to be accepted by the FIFO without a capacity overflow. Note
+-- that both these indicators cannot replace the ``full`` or ``valid`` outputs as
+-- they may be implemented as giving pessimistic bounds that are minimally off
+-- the true fill state.
+-- 
+-- If a fill state is not of interest, set ``*STATE_*_BITS = 0``.
+-- 
+-- ``fstate_rd`` and ``estate_wr`` are combinatorial outputs and include an address
+-- comparator (subtractor) in their path.
+-- 
+-- Examples:
+-- - FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
+--                       fstate_rd == 1 => 1/2 full (half full)
+-- 
+-- - FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
+--                       fstate_rd == 1 => 1/4 full
+--                       fstate_rd == 2 => 2/4 full
+--                       fstate_rd == 3 => 3/4 full
 -- 
 -- License:
--- ============================================================================================================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany, Chair for VLSI-Design, Diagnostics and Architecture
--- 
+-- =============================================================================
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+--										 Chair for VLSI-Design, Diagnostics and Architecture
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================================================================================================
+-- =============================================================================
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
@@ -106,11 +106,11 @@ entity fifo_cc_got_tempgot is
     commit    : in  std_logic;
     rollback  : in  std_logic
   );
-end fifo_cc_got_tempgot;
+end entity fifo_cc_got_tempgot;
 
 
 architecture rtl of fifo_cc_got_tempgot is
-  
+
   -- Address Width
   constant A_BITS : natural := log2ceil(MIN_DEPTH);
 
@@ -130,7 +130,7 @@ architecture rtl of fifo_cc_got_tempgot is
 
   -- Commited Read Pointer (Commit Marker)
   signal OPm : unsigned(A_BITS-1 downto 0) := (others => '0');
-  
+
   -----------------------------------------------------------------------------
   -- Backing Memory Connectivity
 
@@ -150,63 +150,36 @@ begin
 
   -----------------------------------------------------------------------------
   -- Pointer Logic
-  genCCN: if not FORCE_XILCY generate
-    IP1 <= IP0 + 1;
-    OP1 <= OP0 + 1;
-  end generate;
-  genCCY: if FORCE_XILCY generate
-    component MUXCY
-      port (
-        O  : out std_ulogic;
-        CI : in  std_ulogic;
-        DI : in  std_ulogic;
-        S  : in  std_ulogic
-      );
-    end component;
-    component XORCY
-      port (
-        O  : out std_ulogic;
-        CI : in  std_ulogic;
-        LI : in  std_ulogic
-      );
-    end component;
+	blkPointer : block
+		signal IP0_slv		: std_logic_vector(IP0'range);
+		signal IP1_slv		: std_logic_vector(IP0'range);
+		signal OP0_slv		: std_logic_vector(IP0'range);
+		signal OP1_slv		: std_logic_vector(IP0'range);
+	begin
+		IP0_slv	<= std_logic_vector(IP0);
+		OP0_slv	<= std_logic_vector(OP0);
 
-    signal ci, co : std_logic_vector(A_BITS downto 0);
-  begin
-    ci(0) <= '1';
-    genCCI : for i in 0 to A_BITS-1 generate
-      MUXCY_inst : MUXCY
-        port map (
-          O  => ci(i+1),
-          CI => ci(i),
-          DI => '0',
-          S  => IP0(i)
-        );
-      XORCY_inst : XORCY
-        port map (
-          O  => IP1(i),
-          CI => ci(i),
-          LI => IP0(i)
-        );
-    end generate genCCI;
+		incIP : entity PoC.arith_carrychain_inc
+			generic map (
+				BITS		=> A_BITS
+			)
+			port map (
+				X				=> IP0_slv,
+				Y				=> IP1_slv
+			);
 
-    co(0) <= '1';
-    genCCO: for i in 0 to A_BITS-1 generate
-      MUXCY_inst : MUXCY
-        port map (
-          O  => co(i+1),
-          CI => co(i),
-          DI => '0',
-          S  => OP0(i)
-        );
-      XORCY_inst : XORCY
-        port map (
-          O  => OP1(i),
-          CI => co(i),
-          LI => OP0(i)
-        );
-    end generate genCCO;
-  end generate;
+		incOP : entity PoC.arith_carrychain_inc
+			generic map (
+				BITS		=> A_BITS
+			)
+			port map (
+				X				=> OP0_slv,
+				Y				=> OP1_slv
+			);
+
+		IP1			<= unsigned(IP1_slv);
+		OP1			<= unsigned(OP1_slv);
+	end block;
 
   process(clk)
   begin
@@ -309,7 +282,7 @@ begin
           elsif we = '1' and IP1 = OPm then
             Ful <= '1';
           end if;
-          
+
           -- Update Empty Indicator
           if we = '1' or (rollback = '1' and Pnd = '1') then
             Avl <= '1';
@@ -337,7 +310,7 @@ begin
   begin
 
     -- Backing Memory
-    ram : ocram_sdp
+    ram : entity PoC.ocram_sdp
       generic map (
         A_BITS => A_BITS,
         D_BITS => D_BITS
@@ -401,7 +374,7 @@ begin
       dout  <= Buf;
       valid <= Vld(1);
     end generate genOutputReg;
-    
+
   end generate genLarge;
 
   genSmall: if DATA_REG generate
@@ -414,9 +387,9 @@ begin
 
     -- Altera Quartus II: Allow automatic RAM type selection.
     -- For small RAMs, registers are used on Cyclone devices and the M512 type
-    -- is used on Stratix devices. Pass-through logic is automatically added 
+    -- is used on Stratix devices. Pass-through logic is automatically added
     -- if required. (Warning can be ignored.)
-  
+
   begin
 
     -- Memory State
@@ -424,7 +397,7 @@ begin
     begin
       if rising_edge(clk) then
         --synthesis translate_off
-        if SIMULATION AND (rst = '1') then
+        if SIMULATION and (rst = '1') then
           regfile <= (others => (others => '-'));
         else
         --synthesis translate_on
@@ -445,4 +418,4 @@ begin
 
   end generate genSmall;
 
-end rtl;
+end architecture;

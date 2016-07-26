@@ -1,28 +1,27 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Package:					TODO
+-- Entity:					TODO
 --
 -- Description:
--- ------------------------------------
---		TODO
--- 
+-- -------------------------------------
+-- .. TODO:: No documentation available.
+--
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,25 +48,25 @@ use			PoC.xil.all;
 
 entity sata_StreamingStack is
 	generic (
-		DEBUG												: BOOLEAN;
-		ENABLE_CHIPSCOPE						: BOOLEAN;
-		ENABLE_DEBUGPORT						: BOOLEAN;
+		DEBUG												: boolean;
+		ENABLE_CHIPSCOPE						: boolean;
+		ENABLE_DEBUGPORT						: boolean;
 
 		REFCLOCK_FREQ								: FREQ;
 		INITIAL_SATA_GENERATION			: T_SATA_GENERATION;
-		ALLOW_SPEED_NEGOTIATION			: BOOLEAN;
+		ALLOW_SPEED_NEGOTIATION			: boolean;
 		LOGICAL_BLOCK_SIZE					: MEMORY
 	);
 	port (
 		-- SATA stack common interface
-		PowerDown										: in		STD_LOGIC;
-		ClockNetwork_Reset					: in		STD_LOGIC;
-		ClockNetwork_ResetDone			: out		STD_LOGIC;
-		SATA_Clock									: out		STD_LOGIC;
-		SATA_Clock_Stable						: out		STD_LOGIC;
-		Reset												: in		STD_LOGIC;
-		ResetDone										: out		STD_LOGIC;
-		
+		PowerDown										: in		std_logic;
+		ClockNetwork_Reset					: in		std_logic;
+		ClockNetwork_ResetDone			: out		std_logic;
+		SATA_Clock									: out		std_logic;
+		SATA_Clock_Stable						: out		std_logic;
+		Reset												: in		std_logic;
+		ResetDone										: out		std_logic;
+
 		-- Config interface
 		SATAGenerationMin						: in		T_SATA_GENERATION;
 		SATAGenerationMax						: in		T_SATA_GENERATION;
@@ -75,7 +74,7 @@ entity sata_StreamingStack is
 		Config_BurstSize						: in		T_SLV_16;									-- for measurement purposes only
 		DriveInformation						: out		T_SATA_DRIVE_INFORMATION;
 		IDF_Bus											: out		T_SATA_IDF_BUS;
-		
+
 		-- ATA StreamingLayer interface
 		Command											: in		T_SATA_STREAMING_COMMAND;
 		Status											: out		T_SATA_STREAMINGSTACK_STATUS;
@@ -84,99 +83,99 @@ entity sata_StreamingStack is
 		Address_LB									: in		T_SLV_48;
 		BlockCount_LB								: in		T_SLV_48;
 		-- TX path
-		TX_Valid										: in		STD_LOGIC;
+		TX_Valid										: in		std_logic;
 		TX_Data											: in		T_SLV_32;
-		TX_SOR											: in		STD_LOGIC;
-		TX_EOR											: in		STD_LOGIC;
-		TX_Ack											: out		STD_LOGIC;
+		TX_SOR											: in		std_logic;
+		TX_EOR											: in		std_logic;
+		TX_Ack											: out		std_logic;
 		-- RX path
-		RX_Valid										: out		STD_LOGIC;
+		RX_Valid										: out		std_logic;
 		RX_Data											: out		T_SLV_32;
-		RX_SOR											: out		STD_LOGIC;
-		RX_EOR											: out		STD_LOGIC;
-		RX_Ack											: in		STD_LOGIC;
-			
-		-- Debug ports	
+		RX_SOR											: out		std_logic;
+		RX_EOR											: out		std_logic;
+		RX_Ack											: in		std_logic;
+
+		-- Debug ports
 		DebugPortIn									: in		T_SATADBG_STREAMINGSTACK_IN;
 		DebugPortOut								: out		T_SATADBG_STREAMINGSTACK_OUT;
 
 		-- ChipScope ports
-		DebugClock											: in		STD_LOGIC;
+		DebugClock											: in		std_logic;
 --		TransMonitor_ILA_ControlBus			: inout	T_XIL_CHIPSCOPE_CONTROL;
 		TransceiverLayer_ILA_ControlBus	: inout	T_XIL_CHIPSCOPE_CONTROL;
 		PhyLayer_ILA_ControlBus					: inout	T_XIL_CHIPSCOPE_CONTROL;
 		LinkLayer_ILA_ControlBus				: inout	T_XIL_CHIPSCOPE_CONTROL;
 		TransportLayer_ILA_ControlBus		: inout	T_XIL_CHIPSCOPE_CONTROL;
 		CommandLayer_ILA_ControlBus			: inout	T_XIL_CHIPSCOPE_CONTROL;
-		SoFPGA_Tracer_TriggerEvent			: in		STD_LOGIC;
-			
-		-- vendor specific ports	
-		SATA_Common_In							: in		T_SATA_TRANSCEIVER_COMMON_IN_signalS;
-		SATA_Private_In							: in		T_SATA_TRANSCEIVER_PRIVATE_IN_signalS;
-		SATA_Private_Out						: out		T_SATA_TRANSCEIVER_PRIVATE_OUT_signalS
+		SoFPGA_Tracer_TriggerEvent			: in		std_logic;
+
+		-- vendor specific ports
+		SATA_Common_In							: in		T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+		SATA_Private_In							: in		T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
+		SATA_Private_Out						: out		T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_StreamingStack is
-	attribute KEEP											: BOOLEAN;
-	attribute ENUM_ENCODING							: STRING;
+	attribute KEEP											: boolean;
+	attribute ENUM_ENCODING							: string;
 
 	-- ===========================================================================
 	-- StreamDBStack configuration
 	-- ===========================================================================
-	constant PORTS											: POSITIVE							:= 1;
+	constant PORTS											: positive							:= 1;
 	constant CONTROLLER_TYPE						: T_SATA_DEVICE_TYPE		:= SATA_DEVICE_TYPE_HOST;
-	constant ENABLE_TRANS_GLUE_FIFOS		: BOOLEAN								:= FALSE;
-	
+	constant ENABLE_TRANS_GLUE_FIFOS		: boolean								:= FALSE;
+
 	-- ===========================================================================
 	-- signal declarations
 	-- ===========================================================================
-	signal ClockNetwork_ResetDone_i 		: STD_LOGIC;
-	
+	signal ClockNetwork_ResetDone_i 		: std_logic;
+
 	-- SATAController signals
 	-- ===========================================================================
 --	signal SATAGeneration_i							: T_SATA_GENERATION;
-	
+
 	-- StreamingLayer
 	-- ================================================================
 	-- clock and reset signals
-	signal SATASC_ResetDone 						: STD_LOGIC;
-	
+	signal SATASC_ResetDone 						: std_logic;
+
 	-- CSE signals
 	signal SATASC_Status								: T_SATA_STREAMING_STATUS;
 	signal SATASC_Error									: T_SATA_STREAMING_ERROR;
 	signal SATASC_SATAC_Command					: T_SATA_TRANS_COMMAND;
 	signal SATASC_ATAHostRegisters 			: T_SATA_ATA_HOST_REGISTERS;
-	
+
 	-- signals to lower layer
-	signal SATASC_TX_Valid							: STD_LOGIC;
+	signal SATASC_TX_Valid							: std_logic;
 	signal SATASC_TX_Data								: T_SLV_32;
-	signal SATASC_TX_SOT								: STD_LOGIC;
-	signal SATASC_TX_EOT								: STD_LOGIC;
-	signal SATASC_RX_Ack								: STD_LOGIC;
+	signal SATASC_TX_SOT								: std_logic;
+	signal SATASC_TX_EOT								: std_logic;
+	signal SATASC_RX_Ack								: std_logic;
 
 	-- SATA Controller
 	-- ================================================================
 	-- clock and reset signals
-	signal SATAC_Clock									: STD_LOGIC;
-	signal SATAC_Clock_Stable						: STD_LOGIC;
-	signal SATAC_ResetDone							: STD_LOGIC;
-	
-	-- CSE signals	
+	signal SATAC_Clock									: std_logic;
+	signal SATAC_Clock_Stable						: std_logic;
+	signal SATAC_ResetDone							: std_logic;
+
+	-- CSE signals
 	signal SATAC_Status									: T_SATA_SATACONTROLLER_STATUS;
 	signal SATAC_Error									: T_SATA_SATACONTROLLER_ERROR;
 	signal SATAC_ATADeviceRegisters 		: T_SATA_ATA_DEVICE_REGISTERS;
-	
+
 	signal SATAC_SATAGeneration					: T_SATA_GENERATION;
-	
-	-- signals to upper layer					
-	signal SATAC_TX_Ack									: STD_LOGIC;
-	signal SATAC_RX_SOT									: STD_LOGIC;
-	signal SATAC_RX_EOT									: STD_LOGIC;
-	signal SATAC_RX_Valid								: STD_LOGIC;
+
+	-- signals to upper layer
+	signal SATAC_TX_Ack									: std_logic;
+	signal SATAC_RX_SOT									: std_logic;
+	signal SATAC_RX_EOT									: std_logic;
+	signal SATAC_RX_Valid								: std_logic;
 	signal SATAC_RX_Data								: T_SLV_32;
-	
+
 	-- DebugPort
 	-- ================================================================
 	signal SATAC_DebugPortIn		: T_SATADBG_SATACONTROLLER_IN;
@@ -184,20 +183,20 @@ architecture rtl of sata_StreamingStack is
 --	signal SATASC_DebugPortIn		: T_SATADBG_SATASC_IN;
 	signal SATASC_DebugPortOut	: T_SATADBG_STREAMING_OUT;
 	signal SATAS_DebugPortOut		: T_SATADBG_STREAMINGSTACK_OUT;
-	
+
 begin
 	assert FALSE report "sata_StreamingStack configuration:"																					severity NOTE;
-	assert FALSE report "  Ports:                  " & INTEGER'image(PORTS)														severity NOTE;
+	assert FALSE report "  Ports:                  " & integer'image(PORTS)														severity NOTE;
 	assert FALSE report "  Debug:                  " & to_string(DEBUG)																severity NOTE;
 	assert FALSE report "  Enable ChipScope:       " & to_string(ENABLE_CHIPSCOPE)										severity NOTE;
 	assert FALSE report "  Enable DebugPort:       " & to_string(ENABLE_DEBUGPORT)										severity NOTE;
 	assert FALSE report "  ClockIn Frequency:      " & to_string(REFCLOCK_FREQ, 3)										severity NOTE;
 	assert FALSE report "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)			severity NOTE;
-	assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
+	assert FALSE report "  Init. SATA Generation:  Gen" & integer'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
 	assert FALSE report "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)							severity NOTE;
 	assert FALSE report "  LogicalBlockSize (App): " & to_string(LOGICAL_BLOCK_SIZE, 3)								severity NOTE;
 	assert FALSE report "  Enable TransGlueFIFOs:  " & to_string(ENABLE_TRANS_GLUE_FIFOS)							severity NOTE;
-	
+
 	-- Main interface outputs
 	-- ===========================================================================
 	SATA_Clock							<= SATAC_Clock;
@@ -205,21 +204,21 @@ begin
 	ClockNetwork_ResetDone	<= ClockNetwork_ResetDone_i;
 	ResetDone 							<= SATASC_ResetDone;
 	SATAGeneration					<= SATAC_SATAGeneration;
-	
+
 	-- assign status record
-	Status.Streaminglayer 	<= SATASC_Status;
+	Status.StreamingLayer 	<= SATASC_Status;
 	Status.TransportLayer		<= SATAC_Status.TransportLayer;
 	Status.LinkLayer				<= SATAC_Status.LinkLayer;
 	Status.PhysicalLayer		<= SATAC_Status.PhysicalLayer;
 	Status.TransceiverLayer	<= SATAC_Status.TransceiverLayer;
-	
+
 	-- assign error record
 	Error.StreamingLayer 		<= SATASC_Error;
 	Error.TransportLayer		<= SATAC_Error.TransportLayer;
 	Error.LinkLayer					<= SATAC_Error.LinkLayer;
 	Error.PhysicalLayer			<= SATAC_Error.PhysicalLayer;
 	Error.TransceiverLayer	<= SATAC_Error.TransceiverLayer;
-	
+
 	Stream : entity PoC.sata_StreamingLayer
 		generic map (
 			DEBUG											=> DEBUG,
@@ -233,7 +232,7 @@ begin
 
 			-- for measurement purposes only
 			Config_BurstSize					=> Config_BurstSize,
-			
+
 			-- StreamingLayer interface
 			Command										=> Command,
 			Status										=> SATASC_Status,
@@ -258,7 +257,7 @@ begin
 			RX_SOR										=> RX_SOR,
 			RX_EOR										=> RX_EOR,
 			RX_Ack										=> RX_Ack,
-	
+
 			-- SATAController interface
 			Trans_ResetDone 					=> SATAC_ResetDone, -- input from lower layer
 			Trans_Command							=> SATASC_SATAC_Command,
@@ -267,7 +266,7 @@ begin
 
 			Trans_ATAHostRegisters 		=> SATASC_ATAHostRegisters,
 			Trans_ATADeviceRegisters 	=> SATAC_ATADeviceRegisters,
-			
+
 			-- TX data port
 			Trans_TX_SOT							=> SATASC_TX_SOT,
 			Trans_TX_EOT							=> SATASC_TX_EOT,
@@ -304,7 +303,7 @@ begin
 			PowerDown(0)									=> PowerDown,
 			Reset(0)											=> Reset,
 			ResetDone(0)									=> SATAC_ResetDone,
-			
+
 			SATA_Clock(0)									=> SATAC_Clock,
 			SATA_Clock_Stable(0)					=> SATAC_Clock_Stable,
 			-- CSE interface
@@ -313,7 +312,7 @@ begin
 			Error(0)											=> SATAC_Error,
 			ATAHostRegisters(0) 					=> SATASC_ATAHostRegisters,
 			ATADeviceRegisters(0) 				=> SATAC_ATADeviceRegisters,
-			
+
 			-- Config interface
 			SATAGenerationMin(0)					=> SATAGenerationMin,
 			SATAGenerationMax(0)					=> SATAGenerationMax,
@@ -322,7 +321,7 @@ begin
 			-- debug ports
 			DebugPortIn(0)								=> SATAC_DebugPortIn,
 			DebugPortOut(0)								=> SATAC_DebugPortOut,
-			
+
 			-- TX port
 			TX_Valid(0)										=> SATASC_TX_Valid,
 			TX_SOT(0)											=> SATASC_TX_SOT,
@@ -335,7 +334,7 @@ begin
 			RX_EOT(0)											=> SATAC_RX_EOT,
 			RX_Data(0)										=> SATAC_RX_Data,
 			RX_Ack(0)											=> SATASC_RX_Ack,
-			
+
 			-- vendor specific signals
 			VSS_Common_In									=> SATA_Common_In,
 			VSS_Private_In(0)							=> SATA_Private_In,
@@ -343,7 +342,7 @@ begin
 		);
 
 	-- ===========================================================================
-	-- DebugPorts 
+	-- DebugPorts
 	-- ===========================================================================
 	genNoDebug : if (ENABLE_DEBUGPORT = FALSE) generate
 	begin
@@ -356,27 +355,27 @@ begin
 		-- assign debug ports
 		SATAC_DebugPortIn.TransceiverLayer			<= DebugPortIn.TransceiverLayer;
 		SATAC_DebugPortIn.LinkLayer							<= DebugPortIn.LinkLayer;
-	
+
 		SATAS_DebugPortOut.TransceiverLayer			<= SATAC_DebugPortOut.TransceiverLayer;
 		SATAS_DebugPortOut.Transceiver_Command	<= SATAC_DebugPortOut.Transceiver_Command;
 		SATAS_DebugPortOut.Transceiver_Status		<= SATAC_DebugPortOut.Transceiver_Status;
 		SATAS_DebugPortOut.Transceiver_Error		<= SATAC_DebugPortOut.Transceiver_Error;
-		
-		SATAS_DebugPortOut.PhysicalLayer				<= SATAC_DebugPortOut.Physicallayer;
+
+		SATAS_DebugPortOut.PhysicalLayer				<= SATAC_DebugPortOut.PhysicalLayer;
 		SATAS_DebugPortOut.Physical_Command			<= SATAC_DebugPortOut.Physical_Command;
 		SATAS_DebugPortOut.Physical_Status			<= SATAC_DebugPortOut.Physical_Status;
 		SATAS_DebugPortOut.Physical_Error				<= SATAC_DebugPortOut.Physical_Error;
-		
+
 		SATAS_DebugPortOut.LinkLayer						<= SATAC_DebugPortOut.LinkLayer;
 		SATAS_DebugPortOut.Link_Command					<= SATAC_DebugPortOut.Link_Command;
 		SATAS_DebugPortOut.Link_Status					<= SATAC_DebugPortOut.Link_Status;
 		SATAS_DebugPortOut.Link_Error						<= SATAC_DebugPortOut.Link_Error;
-		
+
 		SATAS_DebugPortOut.TransportLayer				<= SATAC_DebugPortOut.TransportLayer;
 		SATAS_DebugPortOut.Transport_Command		<= SATAC_DebugPortOut.Transport_Command;
 		SATAS_DebugPortOut.Transport_Status			<= SATAC_DebugPortOut.Transport_Status;
 		SATAS_DebugPortOut.Transport_Error			<= SATAC_DebugPortOut.Transport_Error;
-		
+
 		SATAS_DebugPortOut.StreamingLayer				<= SATASC_DebugPortOut;
 		SATAS_DebugPortOut.Streaming_Command		<= SATASC_DebugPortOut.Command;
 		SATAS_DebugPortOut.Streaming_Status			<= SATASC_DebugPortOut.Status;
@@ -385,80 +384,80 @@ begin
 		DebugPortOut														<= SATAS_DebugPortOut;
 	end generate;
 	genChipScopeComplete : if (ENABLE_CHIPSCOPE = TRUE) generate
-		signal DebugPortIn_TriggerEvent 		: STD_LOGIC;
-		
-		signal TransceiverILA_Trigger0			: STD_LOGIC_VECTOR(29 downto 0);
-		signal TransceiverILA_TriggerEvent	: STD_LOGIC;
+		signal DebugPortIn_TriggerEvent 		: std_logic;
 
-		signal PhyILA_Data						: STD_LOGIC_VECTOR(150 downto 0);
-		signal PhyILA_Trigger0				: STD_LOGIC_VECTOR(7 downto 0);
-		signal PhyILA_Trigger1				: STD_LOGIC_VECTOR(35 downto 0);
-		signal PhyILA_Trigger2				: STD_LOGIC_VECTOR(35 downto 0);
-		signal PhyILA_Trigger3				: STD_LOGIC_VECTOR(25 downto 0);
-		signal PhyILA_Trigger4				: STD_LOGIC_VECTOR(12 downto 0);
-		signal PhyILA_TriggerEvent		: STD_LOGIC;
+		signal TransceiverILA_Trigger0			: std_logic_vector(29 downto 0);
+		signal TransceiverILA_TriggerEvent	: std_logic;
 
-		signal PhyILA_Data_d					: STD_LOGIC_VECTOR(150 downto 0)	:= (others => '0');
-		signal PhyILA_Trigger0_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal PhyILA_Trigger1_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal PhyILA_Trigger2_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal PhyILA_Trigger3_d			: STD_LOGIC_VECTOR(25 downto 0)		:= (others => '0');
-		signal PhyILA_Trigger4_d			: STD_LOGIC_VECTOR(12 downto 0)		:= (others => '0');
+		signal PhyILA_Data						: std_logic_vector(150 downto 0);
+		signal PhyILA_Trigger0				: std_logic_vector(7 downto 0);
+		signal PhyILA_Trigger1				: std_logic_vector(35 downto 0);
+		signal PhyILA_Trigger2				: std_logic_vector(35 downto 0);
+		signal PhyILA_Trigger3				: std_logic_vector(25 downto 0);
+		signal PhyILA_Trigger4				: std_logic_vector(12 downto 0);
+		signal PhyILA_TriggerEvent		: std_logic;
 
-		signal LinkILA_Data						: STD_LOGIC_VECTOR(253 downto 0);
-		signal LinkILA_Trigger0				: STD_LOGIC_VECTOR(7 downto 0);
-		signal LinkILA_Trigger1				: STD_LOGIC_VECTOR(39 downto 0);
-		signal LinkILA_Trigger2				: STD_LOGIC_VECTOR(35 downto 0);
-		signal LinkILA_Trigger3				: STD_LOGIC_VECTOR(39 downto 0);
-		signal LinkILA_Trigger4				: STD_LOGIC_VECTOR(35 downto 0);
-		signal LinkILA_Trigger5				: STD_LOGIC_VECTOR(15 downto 0);
-		signal LinkILA_Trigger6				: STD_LOGIC_VECTOR(15 downto 0);
-		signal LinkILA_TriggerEvent		: STD_LOGIC;
-		
-		signal LinkILA_Data_d					: STD_LOGIC_VECTOR(253 downto 0)	:= (others => '0');
-		signal LinkILA_Trigger0_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger1_d			: STD_LOGIC_VECTOR(39 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger2_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger3_d			: STD_LOGIC_VECTOR(39 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger4_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger5_d			: STD_LOGIC_VECTOR(15 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger6_d			: STD_LOGIC_VECTOR(15 downto 0)		:= (others => '0');
+		signal PhyILA_Data_d					: std_logic_vector(150 downto 0)	:= (others => '0');
+		signal PhyILA_Trigger0_d			: std_logic_vector(7 downto 0)		:= (others => '0');
+		signal PhyILA_Trigger1_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal PhyILA_Trigger2_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal PhyILA_Trigger3_d			: std_logic_vector(25 downto 0)		:= (others => '0');
+		signal PhyILA_Trigger4_d			: std_logic_vector(12 downto 0)		:= (others => '0');
 
-		signal TransILA_Data					: STD_LOGIC_VECTOR(180 downto 0);
-		signal TransILA_Trigger0			: STD_LOGIC_VECTOR(7 downto 0);
-		signal TransILA_Trigger1			: STD_LOGIC_VECTOR(35 downto 0);
-		signal TransILA_Trigger2			: STD_LOGIC_VECTOR(13 downto 0);
-		signal TransILA_Trigger3			: STD_LOGIC_VECTOR(13 downto 0);
-		signal TransILA_Trigger4			: STD_LOGIC_VECTOR(25 downto 0);
-		signal TransILA_Trigger5			: STD_LOGIC_VECTOR(19 downto 0);
-		signal TransILA_TriggerEvent	: STD_LOGIC;
-		
-		signal TransILA_Data_d				: STD_LOGIC_VECTOR(180 downto 0)	:= (others => '0');
-		signal TransILA_Trigger0_d		: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal TransILA_Trigger1_d		: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal TransILA_Trigger2_d		: STD_LOGIC_VECTOR(13 downto 0)		:= (others => '0');
-		signal TransILA_Trigger3_d		: STD_LOGIC_VECTOR(13 downto 0)		:= (others => '0');
-		signal TransILA_Trigger4_d		: STD_LOGIC_VECTOR(25 downto 0)		:= (others => '0');
-		signal TransILA_Trigger5_d		: STD_LOGIC_VECTOR(19 downto 0)		:= (others => '0');
+		signal LinkILA_Data						: std_logic_vector(253 downto 0);
+		signal LinkILA_Trigger0				: std_logic_vector(7 downto 0);
+		signal LinkILA_Trigger1				: std_logic_vector(39 downto 0);
+		signal LinkILA_Trigger2				: std_logic_vector(35 downto 0);
+		signal LinkILA_Trigger3				: std_logic_vector(39 downto 0);
+		signal LinkILA_Trigger4				: std_logic_vector(35 downto 0);
+		signal LinkILA_Trigger5				: std_logic_vector(15 downto 0);
+		signal LinkILA_Trigger6				: std_logic_vector(15 downto 0);
+		signal LinkILA_TriggerEvent		: std_logic;
 
-		signal Stream_Data						: STD_LOGIC_VECTOR(183 downto 0);
-		signal Stream_Trigger0				: STD_LOGIC_VECTOR(7 downto 0);
-		signal Stream_Trigger1				: STD_LOGIC_VECTOR(35 downto 0);
-		signal Stream_Trigger2				: STD_LOGIC_VECTOR(8 downto 0);
-		signal Stream_Trigger3				: STD_LOGIC_VECTOR(4 downto 0);
-		signal Stream_Trigger4				: STD_LOGIC_VECTOR(7 downto 0);
-		signal Stream_Trigger5				: STD_LOGIC_VECTOR(35 downto 0);
-		signal Stream_Trigger6				: STD_LOGIC_VECTOR(37 downto 0);
-		signal Stream_TriggerEvent		: STD_LOGIC;
-		
-		signal Stream_Data_d					: STD_LOGIC_VECTOR(183 downto 0)	:= (others => '0');
-		signal Stream_Trigger0_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal Stream_Trigger1_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal Stream_Trigger2_d			: STD_LOGIC_VECTOR(8 downto 0)		:= (others => '0');
-		signal Stream_Trigger3_d			: STD_LOGIC_VECTOR(4 downto 0)		:= (others => '0');
-		signal Stream_Trigger4_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal Stream_Trigger5_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal Stream_Trigger6_d			: STD_LOGIC_VECTOR(37 downto 0)		:= (others => '0');
+		signal LinkILA_Data_d					: std_logic_vector(253 downto 0)	:= (others => '0');
+		signal LinkILA_Trigger0_d			: std_logic_vector(7 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger1_d			: std_logic_vector(39 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger2_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger3_d			: std_logic_vector(39 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger4_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger5_d			: std_logic_vector(15 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger6_d			: std_logic_vector(15 downto 0)		:= (others => '0');
+
+		signal TransILA_Data					: std_logic_vector(180 downto 0);
+		signal TransILA_Trigger0			: std_logic_vector(7 downto 0);
+		signal TransILA_Trigger1			: std_logic_vector(35 downto 0);
+		signal TransILA_Trigger2			: std_logic_vector(13 downto 0);
+		signal TransILA_Trigger3			: std_logic_vector(13 downto 0);
+		signal TransILA_Trigger4			: std_logic_vector(25 downto 0);
+		signal TransILA_Trigger5			: std_logic_vector(19 downto 0);
+		signal TransILA_TriggerEvent	: std_logic;
+
+		signal TransILA_Data_d				: std_logic_vector(180 downto 0)	:= (others => '0');
+		signal TransILA_Trigger0_d		: std_logic_vector(7 downto 0)		:= (others => '0');
+		signal TransILA_Trigger1_d		: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal TransILA_Trigger2_d		: std_logic_vector(13 downto 0)		:= (others => '0');
+		signal TransILA_Trigger3_d		: std_logic_vector(13 downto 0)		:= (others => '0');
+		signal TransILA_Trigger4_d		: std_logic_vector(25 downto 0)		:= (others => '0');
+		signal TransILA_Trigger5_d		: std_logic_vector(19 downto 0)		:= (others => '0');
+
+		signal Stream_Data						: std_logic_vector(183 downto 0);
+		signal Stream_Trigger0				: std_logic_vector(7 downto 0);
+		signal Stream_Trigger1				: std_logic_vector(35 downto 0);
+		signal Stream_Trigger2				: std_logic_vector(8 downto 0);
+		signal Stream_Trigger3				: std_logic_vector(4 downto 0);
+		signal Stream_Trigger4				: std_logic_vector(7 downto 0);
+		signal Stream_Trigger5				: std_logic_vector(35 downto 0);
+		signal Stream_Trigger6				: std_logic_vector(37 downto 0);
+		signal Stream_TriggerEvent		: std_logic;
+
+		signal Stream_Data_d					: std_logic_vector(183 downto 0)	:= (others => '0');
+		signal Stream_Trigger0_d			: std_logic_vector(7 downto 0)		:= (others => '0');
+		signal Stream_Trigger1_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal Stream_Trigger2_d			: std_logic_vector(8 downto 0)		:= (others => '0');
+		signal Stream_Trigger3_d			: std_logic_vector(4 downto 0)		:= (others => '0');
+		signal Stream_Trigger4_d			: std_logic_vector(7 downto 0)		:= (others => '0');
+		signal Stream_Trigger5_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal Stream_Trigger6_d			: std_logic_vector(37 downto 0)		:= (others => '0');
 
 		function dbg_EncodePrimitive(Data : T_SLV_32; CharIsK : T_SLV_4) return T_SLV_2 is
 		begin
@@ -482,7 +481,7 @@ begin
 			end case;
 		end function;
 
-		function dbg_EncodeFISType(FISType : T_SATA_FISTYPE) return STD_LOGIC_VECTOR is
+		function dbg_EncodeFISType(FISType : T_SATA_FISTYPE) return std_logic_vector is
 		begin
 			return to_slv(T_SATA_FISTYPE'pos(FISType), log2ceilnz(T_SATA_FISTYPE'pos(T_SATA_FISTYPE'high) + 1));
 		end function;
@@ -493,12 +492,12 @@ begin
 		signal LinkILA_RX_Trigger2		: std_logic_vector(7 downto 0);
 		signal LinkILA_RX_Trigger3		: std_logic_vector(7 downto 0);
 
-		signal clocktest												: STD_LOGIC			:= '0';
+		signal clocktest												: std_logic			:= '0';
 	begin
 		DebugPortIn_TriggerEvent <= DebugPortIn.TransceiverLayer.InsertBitErrorTX or DebugPortIn.TransceiverLayer.InsertBitErrorRX or DebugPortIn.LinkLayer.InsertBitErrorHeaderTX;
-		
+
 		clocktest <= fftre(q => clocktest, t => '1') when rising_edge(SATAC_Clock);
-		
+
 		TransceiverILA_Trigger0(0)						<=				SATAS_DebugPortOut.TransceiverLayer.PowerDown;
 		TransceiverILA_Trigger0(1)						<=				SATAS_DebugPortOut.TransceiverLayer.ClockNetwork_Reset;
 		TransceiverILA_Trigger0(2)						<=				SATAS_DebugPortOut.TransceiverLayer.ClockNetwork_ResetDone;
@@ -524,12 +523,12 @@ begin
 --		TransceiverILA_Trigger0(34)						<= SATAS_DebugPortOut.TransceiverLayer.RX_RateSelectionDone;
 --  	TransceiverILA_Trigger0(35)						<= SATAS_DebugPortOut.TransceiverLayer.RP_Reconfig;
 --		TransceiverILA_Trigger0(36)						<= SATAS_DebugPortOut.TransceiverLayer.RP_ConfigRealoaded;
-		
+
 --		TransceiverILA_Trigger0(24)						<= SATAS_DebugPortOut.TransceiverLayer.DD_NoDevice;
 --		TransceiverILA_Trigger0(25)						<= SATAS_DebugPortOut.TransceiverLayer.DD_NewDevice;
 --		TransceiverILA_Trigger0(26)						<= SATAS_DebugPortOut.TransceiverLayer.RX_ElectricalIDLE;
 --		TransceiverILA_Trigger0(28)						<= PhyILA_TriggerEvent;
-		
+
 		PhyILA_Data(31 downto 0)			<= SATAS_DebugPortOut.TransceiverLayer.TX_Data;
 		PhyILA_Data(35 downto 32)			<= SATAS_DebugPortOut.TransceiverLayer.TX_CharIsK;
 		PhyILA_Data(67 downto 36)			<= SATAS_DebugPortOut.TransceiverLayer.RX_Data;
@@ -550,7 +549,7 @@ begin
 		PhyILA_Data(92 downto 91)			<= SATAS_DebugPortOut.TransceiverLayer.TX_BufferStatus;
 		PhyILA_Data(96 downto 93)			<= SATAS_DebugPortOut.TransceiverLayer.RX_DisparityError;
 		PhyILA_Data(100 downto 97)		<= SATAS_DebugPortOut.TransceiverLayer.RX_NotInTableError;
-		
+
 		PhyILA_Data(103 downto 101)		<= 							to_slv(SATAS_DebugPortOut.PhysicalLayer.PFSM.Status); 							-- 3 bit
 		PhyILA_Data(105 downto 104)		<= 							to_slv(SATAS_DebugPortOut.PhysicalLayer.PFSM.Error); 								-- 2 bit
 		PhyILA_Data(106) 							<= '0';
@@ -573,9 +572,9 @@ begin
 		PhyILA_Data(132)							<= '0';
 		PhyILA_Data(133)							<=										 SATAS_DebugPortOut.PhysicalLayer.PFSM.Trans_ConfigReloaded;
 		PhyILA_Data(141 downto	134)	<=										 SATAS_DebugPortOut.PhysicalLayer.PFSM.TrysPerGeneration;
-		PhyILA_Data(149 downto	142)	<=										 SATAS_DebugPortOut.PhysicalLayer.PFSM.GenerationChanges;		
+		PhyILA_Data(149 downto	142)	<=										 SATAS_DebugPortOut.PhysicalLayer.PFSM.GenerationChanges;
 		PhyILA_Data(150)							<=										 SATAS_DebugPortOut.TransceiverLayer.RX_CDR_Hold;
-		
+
 		PhyILA_Trigger0(0)						<= SATAS_DebugPortOut.TransceiverLayer.GTX_TX_ResetDone;
 		PhyILA_Trigger0(1)						<= SATAS_DebugPortOut.TransceiverLayer.GTX_RX_ResetDone;
 		PhyILA_Trigger0(2)						<= TransceiverILA_TriggerEvent;
@@ -584,10 +583,10 @@ begin
 		PhyILA_Trigger0(5)						<= TransILA_TriggerEvent;
 		PhyILA_Trigger0(6)						<= Stream_TriggerEvent;
 		PhyILA_Trigger0(7)						<= DebugPortIn_TriggerEvent;
-		
+
 		PhyILA_Trigger1(31 downto 0)	<= SATAS_DebugPortOut.TransceiverLayer.TX_Data;
 		PhyILA_Trigger1(35 downto 32)	<= SATAS_DebugPortOut.TransceiverLayer.TX_CharIsK;
-		
+
 		PhyILA_Trigger2(31 downto 0)	<= SATAS_DebugPortOut.TransceiverLayer.RX_Data;
 		PhyILA_Trigger2(35 downto 32)	<= SATAS_DebugPortOut.TransceiverLayer.RX_CharIsK;
 
@@ -614,12 +613,12 @@ begin
 		PhyILA_Trigger3(23)						<=			 SATAS_DebugPortOut.PhysicalLayer.PFSM.Trans_Reconfig;
 		PhyILA_Trigger3(24)						<=			 SATAS_DebugPortOut.PhysicalLayer.PFSM.Trans_ConfigReloaded;
 		PhyILA_Trigger3(25)						<=			 SATAS_DebugPortOut.TransceiverLayer.GTX_RX_ResetDone;
-		
+
 		PhyILA_Trigger4( 3 downto	 0)	<=				SATAS_DebugPortOut.PhysicalLayer.PFSM.FSM;
 		PhyILA_Trigger4( 7 downto	 4)	<=				SATAS_DebugPortOut.PhysicalLayer.OOBControl.FSM;
 		PhyILA_Trigger4(10 downto	 8)	<= to_slv(SATAS_DebugPortOut.PhysicalLayer.PFSM.Status);
 		PhyILA_Trigger4(12 downto	11)	<= to_slv(SATAS_DebugPortOut.PhysicalLayer.PFSM.SATAGeneration, 2);
-		
+
 		LinkILA_Data(4 downto 0)			<= SATAS_DebugPortOut.LinkLayer.LLFSM.FSM;
 		LinkILA_Data(5)								<= SATAS_DebugPortOut.LinkLayer.TX_InsertEOF;
 		LinkILA_Data(6)								<= SATAS_DebugPortOut.LinkLayer.RX_FIFO_rollback;
@@ -684,7 +683,7 @@ begin
 		-- TX: to Physical Layer
 		LinkILA_Data(249 downto 218)	<= SATAS_DebugPortOut.LinkLayer.TX_Phy_Data;
 		LinkILA_Data(253 downto 250)	<= SATAS_DebugPortOut.LinkLayer.TX_Phy_CiK;
-		
+
 		-- LinkLayer Trigger
 		LinkILA_Trigger0(0)							<= '0';		-- clkdone
 		LinkILA_Trigger0(1)							<= '0';		-- rstdone
@@ -694,7 +693,7 @@ begin
 		LinkILA_Trigger0(5)							<= TransILA_TriggerEvent;
 		LinkILA_Trigger0(6)							<= Stream_TriggerEvent;
 		LinkILA_Trigger0(7)							<= DebugPortIn_TriggerEvent;
-		
+
 		LinkILA_Trigger1(31 downto 0)		<= SATAS_DebugPortOut.LinkLayer.RX_Data;
 		LinkILA_Trigger1(32)						<= SATAS_DebugPortOut.LinkLayer.RX_Valid;
 		LinkILA_Trigger1(33)						<= SATAS_DebugPortOut.LinkLayer.RX_SOF;
@@ -704,10 +703,10 @@ begin
 		LinkILA_Trigger1(37)						<= SATAS_DebugPortOut.LinkLayer.RX_FS_CRCOK;
 		LinkILA_Trigger1(38)						<= SATAS_DebugPortOut.LinkLayer.RX_FS_SyncEsc;
 		LinkILA_Trigger1(39)						<= SATAS_DebugPortOut.LinkLayer.RX_FS_Ack;
-		
+
 		LinkILA_Trigger2(31 downto 0)		<= SATAS_DebugPortOut.LinkLayer.RX_Phy_Data;
 		LinkILA_Trigger2(35 downto 32)	<= SATAS_DebugPortOut.LinkLayer.RX_Phy_CiK;
-		
+
 		LinkILA_Trigger3(31 downto 0)		<= SATAS_DebugPortOut.LinkLayer.TX_Data;
 		LinkILA_Trigger3(32)						<= SATAS_DebugPortOut.LinkLayer.TX_Valid;
 		LinkILA_Trigger3(33)						<= SATAS_DebugPortOut.LinkLayer.TX_SOF;
@@ -716,35 +715,35 @@ begin
 		LinkILA_Trigger3(36)						<= SATAS_DebugPortOut.LinkLayer.TX_FS_Valid;
 		LinkILA_Trigger3(37)						<= SATAS_DebugPortOut.LinkLayer.TX_FS_SendOK;
 		LinkILA_Trigger3(38)						<= SATAS_DebugPortOut.LinkLayer.TX_FS_SyncEsc;
-		LinkILA_Trigger3(39)						<= SATAS_DebugPortOut.LinkLayer.TX_FS_Ack;	
-		
+		LinkILA_Trigger3(39)						<= SATAS_DebugPortOut.LinkLayer.TX_FS_Ack;
+
 		LinkILA_Trigger4(31 downto 0)		<= SATAS_DebugPortOut.LinkLayer.TX_Phy_Data;
 		LinkILA_Trigger4(35 downto 32)	<= SATAS_DebugPortOut.LinkLayer.TX_Phy_CiK;
-		
+
 		LinkILA_Trigger5(0)							<= SATAS_DebugPortOut.LinkLayer.LLFSM.TX_IsLongFrame;
 		LinkILA_Trigger5(1)							<= SATAS_DebugPortOut.LinkLayer.LLFSM.TX_RetryFailed;
 		LinkILA_Trigger5(15 downto 2)		<= (others => '0');
-		
+
 		LinkILA_Trigger6(4 downto 0)		<= SATAS_DebugPortOut.LinkLayer.LLFSM.FSM;
 		LinkILA_Trigger6(15 downto 5)		<= (others => '0');
-		
+
 		TransILA_Data(4 downto 0)			<= SATAS_DebugPortOut.TransportLayer.TFSM.FSM;
 		TransILA_Data(8 downto 5)			<= SATAS_DebugPortOut.TransportLayer.FISE.FSM;
 		TransILA_Data(13 downto 9)		<= SATAS_DebugPortOut.TransportLayer.FISD.FSM;
-		
+
 		TransILA_Data(14)							<= SATAS_DebugPortOut.TransportLayer.UpdateATAHostRegisters;
 		TransILA_Data(15)							<= SATAS_DebugPortOut.TransportLayer.ATAHostRegisters.Flag_C;
 		TransILA_Data(23 downto 16)		<= SATAS_DebugPortOut.TransportLayer.ATAHostRegisters.Command;
 		TransILA_Data(31 downto 24)		<= SATAS_DebugPortOut.TransportLayer.ATAHostRegisters.Control;
 		TransILA_Data(39 downto 32)		<= SATAS_DebugPortOut.TransportLayer.ATAHostRegisters.Feature;
 		TransILA_Data(40)							<= SATAS_DebugPortOut.TransportLayer.UpdateATADeviceRegisters;
-		
+
 		TransILA_Data(41)							<= SATAS_DebugPortOut.TransportLayer.TX_Valid;
 		TransILA_Data(73 downto 42)		<= SATAS_DebugPortOut.TransportLayer.TX_Data;
 		TransILA_Data(74)							<= SATAS_DebugPortOut.TransportLayer.TX_SOT;
 		TransILA_Data(75)							<= SATAS_DebugPortOut.TransportLayer.TX_EOT;
 		TransILA_Data(76)							<= SATAS_DebugPortOut.TransportLayer.TX_Ack;
-		
+
 		TransILA_Data(77)							<= SATAS_DebugPortOut.TransportLayer.RX_Valid;
 		TransILA_Data(109 downto 78)	<= SATAS_DebugPortOut.TransportLayer.RX_Data;
 		TransILA_Data(110)						<= SATAS_DebugPortOut.TransportLayer.RX_SOT;
@@ -752,12 +751,12 @@ begin
 		TransILA_Data(112)						<= SATAS_DebugPortOut.TransportLayer.RX_Ack;
 		TransILA_Data(113)						<= SATAS_DebugPortOut.TransportLayer.RX_LastWord;
 		TransILA_Data(114)						<= '0';
-		
+
 		TransILA_Data(118 downto 115)	<= dbg_EncodeFISType(SATAS_DebugPortOut.TransportLayer.FISE_FISType);
 		TransILA_Data(121 downto 119)	<= to_slv(SATAS_DebugPortOut.TransportLayer.FISE_Status);
 		TransILA_Data(125 downto 122)	<= dbg_EncodeFISType(SATAS_DebugPortOut.TransportLayer.FISD_FISType);
 		TransILA_Data(128 downto 126)	<= to_slv(SATAS_DebugPortOut.TransportLayer.FISD_Status);
-		
+
 		TransILA_Data(129) 						<= SATAS_DebugPortOut.TransportLayer.ATADeviceRegisters.Flags.Interrupt;
 		TransILA_Data(130) 						<= SATAS_DebugPortOut.TransportLayer.ATADeviceRegisters.Flags.Direction;
 		TransILA_Data(131) 						<= SATAS_DebugPortOut.TransportLayer.ATADeviceRegisters.Flags.C;
@@ -780,7 +779,7 @@ begin
 		TransILA_Data(148) 						<= SATAS_DebugPortOut.TransportLayer.ATADeviceRegisters.Error.InterfaceCRCError ;
 		TransILA_Data(164 downto 149)	<= SATAS_DebugPortOut.TransportLayer.ATADeviceRegisters.SectorCount;
 		TransILA_Data(180 downto 165)	<= SATAS_DebugPortOut.TransportLayer.ATADeviceRegisters.TransferCount;
-		
+
 		-- TransportLayer Trigger
 		TransILA_Trigger0(0)						<= '0';		-- clkdone
 		TransILA_Trigger0(1)						<= '0';		-- rstdone
@@ -841,12 +840,12 @@ begin
 --    Stream_Data(13)								<= SATAS_DebugPortOut.StreamingLayer.SFSM.Load;
     Stream_Data(14)								<= SATAS_DebugPortOut.StreamingLayer.SFSM.NextTransfer;
     Stream_Data(15)								<= SATAS_DebugPortOut.StreamingLayer.SFSM.LastTransfer;
-		
+
 --    Stream_Data(97 downto 95)			<= SATAS_DebugPortOut.StreamingLayer.Address_AppLB;
 --    Stream_Data(97 downto 95)			<= SATAS_DebugPortOut.StreamingLayer.BlockCount_AppLB;
     Stream_Data(47 downto 16)			<= SATAS_DebugPortOut.StreamingLayer.Address_DevLB(31 downto 0);				-- 32 bit
     Stream_Data(63 downto 48)			<= SATAS_DebugPortOut.StreamingLayer.BlockCount_DevLB(15 downto 0);			-- 16 bit
-    
+
     -- identify device filter
     Stream_Data(64)								<= SATAS_DebugPortOut.StreamingLayer.IDF_Reset;
     Stream_Data(65)								<= SATAS_DebugPortOut.StreamingLayer.IDF_Enable;
@@ -854,27 +853,27 @@ begin
     Stream_Data(67)								<= SATAS_DebugPortOut.StreamingLayer.IDF_Finished;
     Stream_Data(68)								<= '0';
     Stream_Data(69)								<= SATAS_DebugPortOut.StreamingLayer.IDF_DriveInformation.Valid;
-    
+
     -- RX datapath to upper layer
     Stream_Data(70)								<= SATAS_DebugPortOut.StreamingLayer.RX_Valid;
     Stream_Data(102 downto 71)		<= SATAS_DebugPortOut.StreamingLayer.RX_Data;
     Stream_Data(103)							<= SATAS_DebugPortOut.StreamingLayer.RX_SOR;
     Stream_Data(104)							<= SATAS_DebugPortOut.StreamingLayer.RX_EOR;
     Stream_Data(105)							<= SATAS_DebugPortOut.StreamingLayer.RX_Ack;
-    
+
 		-- RX datapath between demultiplexer, RX_FIFO and SFSM
     Stream_Data(106)							<= SATAS_DebugPortOut.StreamingLayer.SFSM_RX_Valid;
     Stream_Data(107)							<= SATAS_DebugPortOut.StreamingLayer.SFSM_RX_SOR;
     Stream_Data(108)							<= SATAS_DebugPortOut.StreamingLayer.SFSM_RX_EOR;
     Stream_Data(109)							<= SATAS_DebugPortOut.StreamingLayer.SFSM_RX_Ack;
-		
+
     -- TX datapath to upper layer
     Stream_Data(110)							<= SATAS_DebugPortOut.StreamingLayer.TX_Valid;
     Stream_Data(142 downto 111)		<= SATAS_DebugPortOut.StreamingLayer.TX_Data;
     Stream_Data(143)							<= SATAS_DebugPortOut.StreamingLayer.TX_SOR;
     Stream_Data(144)							<= SATAS_DebugPortOut.StreamingLayer.TX_EOR;
     Stream_Data(145)							<= SATAS_DebugPortOut.StreamingLayer.TX_Ack;
-    
+
     -- TX datapath of transport cutter
     Stream_Data(146)							<= SATAS_DebugPortOut.StreamingLayer.TC_TX_Valid;
     Stream_Data(178 downto 147)		<= SATAS_DebugPortOut.StreamingLayer.TC_TX_Data;
@@ -883,7 +882,7 @@ begin
     Stream_Data(181)							<= SATAS_DebugPortOut.StreamingLayer.TC_TX_Ack;
     Stream_Data(182)							<= SATAS_DebugPortOut.StreamingLayer.SFSM_TX_ForceEOT;
     Stream_Data(183)							<= SATAS_DebugPortOut.StreamingLayer.TC_TX_InsertEOT;
-		
+
 		-- StreamingLayer Trigger
 		Stream_Trigger0(0)							<= '0';		-- clkdone
 		Stream_Trigger0(1)							<= '0';		-- rstdone
@@ -893,19 +892,19 @@ begin
 		Stream_Trigger0(5)							<= TransILA_TriggerEvent;
 		Stream_Trigger0(6)							<= '0';	--Stream_TriggerEvent;
 		Stream_Trigger0(7)							<= DebugPortIn_TriggerEvent;
-		
+
     Stream_Trigger1(31 downto 0)		<= SATAS_DebugPortOut.StreamingLayer.RX_Data;
 		Stream_Trigger1(32)							<= SATAS_DebugPortOut.StreamingLayer.RX_Valid;
     Stream_Trigger1(33)							<= SATAS_DebugPortOut.StreamingLayer.RX_SOR;
     Stream_Trigger1(34)							<= SATAS_DebugPortOut.StreamingLayer.RX_EOR;
     Stream_Trigger1(35)							<= SATAS_DebugPortOut.StreamingLayer.RX_Ack;
-		
+
 		Stream_Trigger2(2 downto 0)			<= to_slv(SATAS_DebugPortOut.Streaming_Command);
     Stream_Trigger2(5 downto 3)			<= to_slv(SATAS_DebugPortOut.Streaming_Status);
     Stream_Trigger2(8 downto 6)			<= to_slv(SATAS_DebugPortOut.Streaming_Error);
 
 		Stream_Trigger3(4 downto 0)			<= SATAS_DebugPortOut.StreamingLayer.SFSM.FSM;
-		
+
 		Stream_Trigger4(0)							<= SATAS_DebugPortOut.StreamingLayer.SFSM.Load;
     Stream_Trigger4(1)							<= SATAS_DebugPortOut.StreamingLayer.SFSM.NextTransfer;
     Stream_Trigger4(2)							<= SATAS_DebugPortOut.StreamingLayer.SFSM.LastTransfer;
@@ -914,13 +913,13 @@ begin
     Stream_Trigger4(5)							<= SATAS_DebugPortOut.StreamingLayer.IDF_Finished;
     Stream_Trigger4(6)							<= '0';
     Stream_Trigger4(7)							<= SATAS_DebugPortOut.StreamingLayer.IDF_DriveInformation.Valid;
-		
+
     Stream_Trigger5(31 downto 0)		<= SATAS_DebugPortOut.StreamingLayer.TX_Data;
 		Stream_Trigger5(32)							<= SATAS_DebugPortOut.StreamingLayer.TX_Valid;
     Stream_Trigger5(33)							<= SATAS_DebugPortOut.StreamingLayer.TX_SOR;
     Stream_Trigger5(34)							<= SATAS_DebugPortOut.StreamingLayer.TX_EOR;
     Stream_Trigger5(35)							<= SATAS_DebugPortOut.StreamingLayer.TX_Ack;
-		
+
     Stream_Trigger6(31 downto 0)		<= SATAS_DebugPortOut.StreamingLayer.TC_TX_Data;
 		Stream_Trigger6(32)							<= SATAS_DebugPortOut.StreamingLayer.TC_TX_Valid;
     Stream_Trigger6(33)							<= SATAS_DebugPortOut.StreamingLayer.TC_TX_SOT;
@@ -928,7 +927,7 @@ begin
     Stream_Trigger6(35)							<= SATAS_DebugPortOut.StreamingLayer.TC_TX_Ack;
     Stream_Trigger6(36)							<= SATAS_DebugPortOut.StreamingLayer.SFSM_TX_ForceEOT;
     Stream_Trigger6(37)							<= SATAS_DebugPortOut.StreamingLayer.TC_TX_InsertEOT;
-		
+
 		PhyILA_Data_d				<= PhyILA_Data			when rising_edge(SATAC_Clock);
 		PhyILA_Trigger0_d		<= PhyILA_Trigger0	when rising_edge(SATAC_Clock);
 		PhyILA_Trigger1_d		<= PhyILA_Trigger1	when rising_edge(SATAC_Clock);
@@ -944,7 +943,7 @@ begin
 		LinkILA_Trigger4_d	<= LinkILA_Trigger4	when rising_edge(SATAC_Clock);
 		LinkILA_Trigger5_d	<= LinkILA_Trigger5	when rising_edge(SATAC_Clock);
 		LinkILA_Trigger6_d	<= LinkILA_Trigger6	when rising_edge(SATAC_Clock);
-		                    
+
 		TransILA_Data_d			<= TransILA_Data			when rising_edge(SATAC_Clock);
 		TransILA_Trigger0_d	<= TransILA_Trigger0	when rising_edge(SATAC_Clock);
 		TransILA_Trigger1_d	<= TransILA_Trigger1	when rising_edge(SATAC_Clock);
@@ -952,7 +951,7 @@ begin
 		TransILA_Trigger3_d	<= TransILA_Trigger3	when rising_edge(SATAC_Clock);
 		TransILA_Trigger4_d	<= TransILA_Trigger4	when rising_edge(SATAC_Clock);
 		TransILA_Trigger5_d	<= TransILA_Trigger5	when rising_edge(SATAC_Clock);
-		
+
 		Stream_Data_d				<= Stream_Data			when rising_edge(SATAC_Clock);
 		Stream_Trigger0_d		<= Stream_Trigger0	when rising_edge(SATAC_Clock);
 		Stream_Trigger1_d		<= Stream_Trigger1	when rising_edge(SATAC_Clock);
@@ -962,16 +961,16 @@ begin
 		Stream_Trigger5_d		<= Stream_Trigger5	when rising_edge(SATAC_Clock);
 		Stream_Trigger6_d		<= Stream_Trigger6	when rising_edge(SATAC_Clock);
 
-		
-		TransceiverILA : ENTITY PoC.sata_TransceiverLayer_ILA
-			PORT MAP (
+
+		TransceiverILA : entity PoC.sata_TransceiverLayer_ILA
+			port map (
 				CONTROL		=> TransceiverLayer_ILA_ControlBus,
 				CLK				=> DebugClock,
 				TRIG0			=> TransceiverILA_Trigger0,
 				TRIG_OUT	=> TransceiverILA_TriggerEvent
 			);
 
-		PhyILA : ENTITY PoC.sata_PhysicalLayer_ILA
+		PhyILA : entity PoC.sata_PhysicalLayer_ILA
 			port map (
 				CONTROL		=> PhyLayer_ILA_ControlBus,
 				CLK				=> SATAC_Clock,
@@ -1028,5 +1027,5 @@ begin
 				TRIG_OUT	=> Stream_TriggerEvent
 			);
 	end generate;
-	
-end;
+
+end architecture;

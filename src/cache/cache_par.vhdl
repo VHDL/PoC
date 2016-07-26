@@ -1,184 +1,172 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
--- Module:				 	TODO
+-- =============================================================================
+-- Authors:					Patrick Lehmann
+--									Martin Zabel
 --
--- Authors:				 	Patrick Lehmann
--- 
+-- Entity:					Cache with parallel tag-unit and data memory.
+--
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- All inputs are synchronous to the rising-edge of the clock `clock`.
+--
+-- Command truth table:
+--
+--	Request | ReadWrite | Invalidate	| Replace | Command
+--	--------+-----------+-------------+---------+--------------------------------
+--		0			|		0				|		0					|		0			| None
+--		1			|		0				|		0					|		0			| Read cache line
+--		1			|		1				|		0					|		0			| Update cache line
+--		1			|		0				|		1					|		0			| Read cache line and discard it
+--		1			|		1				|		1					|		0			| Write cache line and discard it
+--		0			|		-				|		0					|		1			| Replace cache line.
+--	--------+-----------+-------------+------------------------------------------
+--
+-- All commands use `Address` to lookup (request) or replace a cache line.
+-- `Address` and `OldAddress` do not include the word/byte select part.
+-- Each command is completed within one clock cycle, but outputs are delayed as
+-- described below.
+--
+-- Upon requests, the outputs `CacheMiss` and `CacheHit` indicate (high-active)
+-- whether the `Address` is stored within the cache, or not. Both outputs have a
+-- latency of one clock cycle.
+--
+-- Upon writing a cache line, the new content is given by `CacheLineIn`.
+-- Upon reading a cache line, the current content is outputed on `CacheLineOut`
+-- with a latency of one clock cycle.
+--
+-- Upon replacing a cache line, the new content is given by `CacheLineIn`. The
+-- old content is outputed on `CacheLineOut` and the old tag on `OldAddress`,
+-- both with a latency of one clock cycle.
 --
 -- License:
--- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- =============================================================================
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
+library PoC;
+use			PoC.utils.all;
+use			PoC.vectors.all;
 
 
--- cache
-
-ENTITY cache_par IS
-	GENERIC (
-		REPLACEMENT_POLICY				: STRING													:= "LRU";
-		CACHE_LINES								: POSITIVE												:= 32;
-		ASSOCIATIVITY							: POSITIVE												:= 32;
-		TAG_BITS									: POSITIVE												:= 8;
-		DATA_BITS									: POSITIVE												:= 32;
-		INITIAL_TAGS							: T_SLM;
-		INITIAL_DATALINES					: T_SLM
+entity cache_par is
+	generic (
+		REPLACEMENT_POLICY : string		:= "LRU";
+		CACHE_LINES				 : positive := 32;--1024;
+		ASSOCIATIVITY			 : positive := 32;--4;
+		ADDRESS_BITS			 : positive := 8; --32-6;
+		DATA_BITS					 : positive := 8  --64*8
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock : in std_logic;
+		Reset : in std_logic;
 
-		Insert										: IN	STD_LOGIC;
-		NewTag										: IN	STD_LOGIC_VECTOR(TAG_BITS - 1 DOWNTO 0);
-		NewCacheLine							: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		
-		Request										: IN	STD_LOGIC;
-		ReadWrite									: IN	STD_LOGIC;
-		Invalidate								: IN	STD_LOGIC;
-		Tag												: IN	STD_LOGIC_VECTOR(TAG_BITS - 1 DOWNTO 0);
-		
-		CacheLineIn								: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		CacheLineOut							: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		CacheHit									: OUT	STD_LOGIC;
-		CacheMiss									: OUT	STD_LOGIC;
-		
-		Replaced									: OUT	STD_LOGIC;
-		OldTag										: OUT	STD_LOGIC_VECTOR(TAG_BITS - 1 DOWNTO 0);
-		OldCacheLine							: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0)
+		Request		 : in std_logic;
+		ReadWrite	 : in std_logic;
+		Invalidate : in std_logic;
+		Replace 	 : in std_logic;
+		Address		 : in std_logic_vector(ADDRESS_BITS - 1 downto 0);
+
+		CacheLineIn	 : in	 std_logic_vector(DATA_BITS - 1 downto 0);
+		CacheLineOut : out std_logic_vector(DATA_BITS - 1 downto 0);
+		CacheHit		 : out std_logic := '0';
+		CacheMiss		 : out std_logic := '0';
+		OldAddress	 : out std_logic_vector(ADDRESS_BITS - 1 downto 0)
 	);
-END;
+end entity;
 
--- Cache access commands
--- ==========================
---
---	| Request	| ReadWrite	| Invalidate		| Command
---	+---------+-----------+---------------+------------------------------------
---	|		0			|		0				|		0						|	None
---	|		1			|		0				|		0						|	Read cache line
---	|		1			|		1				|		0						|	Update cache line
---	|		1			|		0				|		1						|	Read cache line and discard it
---	|		1			|		1				|		1						|	write cache line and discard it
---	+---------+-----------+---------------+------------------------------------
---
--- Cache update signals
--- ==========================
---	Insert		insert new cache line (New*)
---	Updated		cache line was replaced, the victim can be read from Old*
 
-ARCHITECTURE rtl OF cache_par IS
-	ATTRIBUTE KEEP										: BOOLEAN;
+architecture rtl of cache_par is
+	attribute KEEP : boolean;
 
-	CONSTANT CACHEMEMORY_INDEX_BITS		: POSITIVE														:= log2ceilnz(CACHE_LINES);
-	
-	SUBTYPE	T_CACHE_LINE							IS STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-	TYPE		T_CACHE_LINE_VECTOR				IS ARRAY (NATURAL RANGE <>)		OF T_CACHE_LINE;
+	constant LINE_INDEX_BITS : positive := log2ceilnz(CACHE_LINES);
 
-	FUNCTION to_datamemory(slm : T_SLM) RETURN T_CACHE_LINE_VECTOR IS
-		VARIABLE result		: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 DOWNTO 0)			:= (OTHERS => (OTHERS => '0'));
-	BEGIN
-		FOR I IN slm'range LOOP
-			result(I)	:= get_row(slm, I);
-		END LOOP;
-		RETURN result;
-	END FUNCTION;
+	subtype T_CACHE_LINE is std_logic_vector(DATA_BITS - 1 downto 0);
+	type T_CACHE_LINE_VECTOR is array (natural range <>) of T_CACHE_LINE;
 
-	SIGNAL TU_OldIndex								: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	SIGNAL TU_Replace									: STD_LOGIC;
+	-- look-up (request)
+	signal TU_LineIndex : std_logic_vector(LINE_INDEX_BITS - 1 downto 0);
+	signal TU_TagHit		: std_logic;
+	signal TU_TagMiss		: std_logic;
 
-	SIGNAL TU_Index										: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	SIGNAL TU_NewIndex								: STD_LOGIC_VECTOR(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	SIGNAL TU_TagHit									: STD_LOGIC;
-	SIGNAL TU_TagMiss									: STD_LOGIC;
-	
-	SIGNAL Memory_ReadWrite						: STD_LOGIC;
-	SIGNAL MemoryIndex_us							: UNSIGNED(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	SIGNAL ReplaceIndex_us						: UNSIGNED(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	SIGNAL ReplacedIndex_us						: UNSIGNED(CACHEMEMORY_INDEX_BITS - 1 DOWNTO 0);
-	SIGNAL CacheMemory								: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 DOWNTO 0)						:= to_datamemory(INITIAL_DATALINES);
-	
-BEGIN
+	-- replace
+	signal TU_ReplaceLineIndex : std_logic_vector(LINE_INDEX_BITS - 1 downto 0);
+	signal TU_OldAddress			 : std_logic_vector(ADDRESS_BITS - 1 downto 0);
+
+	signal MemoryIndex_us : unsigned(LINE_INDEX_BITS - 1 downto 0);
+	signal CacheMemory		: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 downto 0);
+
+begin
 
 	-- Cache TagUnit
-	TU : ENTITY PoC.cache_TagUnit_par
-		GENERIC MAP (
-			REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
-			CACHE_LINES								=> CACHE_LINES,
-			ASSOCIATIVITY							=> ASSOCIATIVITY,
-			TAG_BITS									=> TAG_BITS,
-			INITIAL_TAGS							=> INITIAL_TAGS
+	TU : entity PoC.cache_tagunit_par
+		generic map (
+			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
+			CACHE_LINES				 => CACHE_LINES,
+			ASSOCIATIVITY			 => ASSOCIATIVITY,
+			ADDRESS_BITS			 => ADDRESS_BITS
 		)
-		PORT MAP (
-			Clock											=> Clock,
-			Reset											=> Reset,
-			
-			Replace										=> Insert,
-			NewTag										=> Tag,
-			NewIndex									=> TU_NewIndex,
-			OldTag										=> OldTag,
-			OldIndex									=> TU_OldIndex,
-			Replaced									=> TU_Replace,
-			
-			Request										=> Request,
-			ReadWrite									=> ReadWrite,
-			Invalidate								=> Invalidate,
-			Tag												=> Tag,
-			Index											=> TU_Index,
-			TagHit										=> TU_TagHit,
-			TagMiss										=> TU_TagMiss
+		port map (
+			Clock => Clock,
+			Reset => Reset,
+
+			Replace					 => Replace,
+			ReplaceLineIndex => TU_ReplaceLineIndex,
+			NewAddress			 => Address,
+			OldAddress			 => TU_OldAddress,
+
+			Request		 => Request,
+			ReadWrite	 => ReadWrite,
+			Invalidate => Invalidate,
+			Address		 => Address,
+			LineIndex	 => TU_LineIndex,
+			TagHit		 => TU_TagHit,
+			TagMiss		 => TU_TagMiss
 		);
 
-	-- Cache Memory - port 1
-	Memory_ReadWrite	<= ReadWrite;
-	MemoryIndex_us		<= unsigned(TU_Index);
-	
-	-- Cache Memory - port 2
-	ReplaceIndex_us		<= unsigned(TU_NewIndex);
-	ReplacedIndex_us	<= unsigned(TU_OldIndex);
-	
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Memory_ReadWrite AND TU_TagHit) = '1') THEN
-				CacheMemory(to_integer(MemoryIndex_us))	<= CacheLineIn;
-			END IF;
-			
-			IF (TU_Replace = '1') THEN
-				CacheMemory(to_integer(ReplaceIndex_us))	<= NewCacheLine;
-			END IF;
-		END IF;
-	END PROCESS;
+	-- Address selector
+	MemoryIndex_us <= unsigned(TU_LineIndex) when Request = '1' else
+										unsigned(TU_ReplaceLineIndex);
 
-	CacheHit					<= TU_TagHit;
-	CacheMiss					<= TU_TagMiss;
-	CacheLineOut			<= CacheMemory(to_integer(MemoryIndex_us));
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Request and TU_TagHit and ReadWrite) or Replace) = '1' then
+				CacheMemory(to_integer(MemoryIndex_us)) <= CacheLineIn;
+			end if;
 
-	Replaced					<= TU_Replace;
-	OldCacheLine			<= CacheMemory(to_integer(ReplacedIndex_us));
+			-- Single-port memory with read before write is required here.
+			-- Cannot be mapped to `PoC.ocram_sdp`.
+			CacheLineOut <= CacheMemory(to_integer(MemoryIndex_us));
 
-END ARCHITECTURE;
+			-- Control outputs have same latency as cache line data.
+			if Reset = '1' then
+				CacheMiss <= '0';
+				CacheHit	<= '0';
+			else
+				CacheMiss <= TU_TagMiss;
+				CacheHit	<= TU_TagHit;
+			end if;
+
+			OldAddress <= TU_OldAddress;
+		end if;
+	end process;
+end architecture;

@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: trace_instTracer_tb
 -- Author(s): Stefan Alex
--- 
+--
 -- Test instrTracer.
 --
 -- Revision:    $Revision: 1.10 $
@@ -90,7 +90,7 @@ architecture behavioral of trace_instTracer_tb is
   constant INDIRECT_NOT   : std_logic_vector(2 downto 0) := "100";
   constant INDIRECT_TAKEN : std_logic_vector(2 downto 0) := "101";
   constant EXCEPTION      : std_logic_vector(2 downto 0) := "101";
-  
+
 begin  -- behavioral
 
   -- component instantiation
@@ -159,7 +159,7 @@ begin  -- behavioral
     --   Trace starts and stops during sequential execution.
     --   Trace includes wait states and branches
     ---------------------------------------------------------------------------
-    
+
     -- Some strobes before trigger
     adr_stb <= '1';
     adr     <= x"0000000D";
@@ -172,7 +172,7 @@ begin  -- behavioral
     -- PointTrigger
     send_enable <= '1';
     trc_enable  <= '1';
-    
+
     adr_stb <= '1';
     adr     <= x"00000010";             -- following address
     wait until rising_edge(clk_trc);
@@ -212,7 +212,7 @@ begin  -- behavioral
     -- Some strobes after trigger
     send_enable <= '0';                 -- release trigger
     trc_enable  <= '0';                 -- release trigger
-    
+
     adr_stb <= '1';
     adr     <= x"00000020";             -- following address
     wait until rising_edge(clk_trc);
@@ -260,7 +260,7 @@ begin  -- behavioral
     -- Branch after Trigger
     send_enable <= '0';                 -- release trigger
     trc_enable  <= '0';                 -- release trigger
-    
+
     adr_stb <= '1';
     adr     <= x"00000040";             -- branch
     branch  <= DIRECT_TAKEN;
@@ -275,11 +275,11 @@ begin  -- behavioral
     -- Third Test:
     --   Trace starts and stops with wait state.
     ---------------------------------------------------------------------------
-    
+
     -- PointTrigger
     send_enable <= '1';
     trc_enable  <= '1';
-    
+
     adr_stb <= '0';                     -- wait state
     wait until rising_edge(clk_trc);
     wait until rising_edge(clk_trc);
@@ -309,11 +309,11 @@ begin  -- behavioral
     -- Fourth Test:
     --   Trace starts and stops with wait state and branch.
     ---------------------------------------------------------------------------
-    
+
     -- PointTrigger
     send_enable <= '1';
     trc_enable  <= '1';
-    
+
     adr_stb <= '0';                     -- wait state followed by
     wait until rising_edge(clk_trc);
     wait until rising_edge(clk_trc);
@@ -351,17 +351,17 @@ begin  -- behavioral
     -- PointTrigger
     send_enable <= '1';
     trc_enable  <= '1';
-    
+
     adr_stb <= '0';                     -- just wait state
     wait until rising_edge(clk_trc);
     wait until rising_edge(clk_trc);
-    
+
     -- No Trigger
     send_enable <= '0';                 -- release trigger
     trc_enable  <= '0';                 -- release trigger
     wait until rising_edge(clk_trc);
     wait until rising_edge(clk_trc);
-    
+
     ---------------------------------------------------------------------------
     -- Sixth Test:
     --   Post Trigger
@@ -370,7 +370,7 @@ begin  -- behavioral
     -- Before Trigger, tracing only
     send_enable <= '0';
     trc_enable  <= '1';
-    
+
     adr_stb <= '1';
     adr     <= x"00000100";             -- branch
     branch  <= DIRECT_TAKEN;
@@ -387,13 +387,13 @@ begin  -- behavioral
     wait until rising_edge(clk_trc);
     adr     <= x"00000104";
     wait until rising_edge(clk_trc);
-    
+
     -- No Trigger
     send_enable <= '0';                 -- release trigger
     trc_enable  <= '0';                 -- release trigger
     adr     <= x"00000105";
     wait until rising_edge(clk_trc);
-    
+
     ---------------------------------------------------------------------------
     -- Seventh Test:
     --   History fill and overflow
@@ -403,7 +403,7 @@ begin  -- behavioral
     -- PointTrigger
     send_enable <= '1';
     trc_enable  <= '1';
-    
+
     adr_stb <= '1';
     adr     <= x"00000110";             -- branch
     branch  <= DIRECT_TAKEN;
@@ -448,7 +448,7 @@ begin  -- behavioral
     adr_stb     <= '0';
     branch      <= NO_BRANCH;
     wait until rising_edge(clk_trc);
-    
+
     ---------------------------------------------------------------------------
     -- Eight Test:
     --   Threshold check.
@@ -463,7 +463,7 @@ begin  -- behavioral
       wait until rising_edge(clk_sys);  -- output settle
       wait for 1 ns;
     end loop;
-    
+
     -- Before trigger, tracing only.
     send_enable <= '0';
     trc_enable  <= '1';
@@ -490,7 +490,7 @@ begin  -- behavioral
     adr_stb     <= '0';
     branch      <= NO_BRANCH;
     wait until rising_edge(clk_trc);
-    
+
     -- EMPTY FIFO:
     wait until rising_edge(clk_sys);
     wait for 1 ns;                      -- output settle
@@ -499,7 +499,7 @@ begin  -- behavioral
       wait until rising_edge(clk_sys);  -- output settle
       wait for 1 ns;
     end loop;
-    
+
     ---------------------------------------------------------------------------
     -- End
     ---------------------------------------------------------------------------
@@ -512,9 +512,9 @@ begin  -- behavioral
     stb_enable  <= '0';
     send_enable <= '0';
     wait;
-    
+
   end process WaveGen_Proc;
 
-  
+
 
 end behavioral;

@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
--- Testbench:				Debouncer.
--- 
 -- Authors:					Patrick Lehmann
--- 
+--
+-- Testbench:				Debouncer.
+--
 -- Description:
 -- ------------------------------------
 --		Automated testbench for 'PoC.io_Debounce'.
@@ -14,15 +14,15 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,43 +39,49 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
+-- simulation only packages
+use			PoC.sim_types.all;
 use			PoC.simulation.all;
+use			PoC.waveform.all;
 
 
 entity io_Debounce_tb is
-end;
+end entity;
 
 
-architecture test of io_Debounce_tb is 
+architecture tb of io_Debounce_tb is
 	constant CLOCK_FREQ			: FREQ					:= 100 MHz;
 
 	-- simulation signals
-	signal SimStop					: STD_LOGIC 		:= '0';
-	signal Clock						: STD_LOGIC			:= '1';
+	signal SimStop					: std_logic 		:= '0';
+	signal Clock						: std_logic			:= '1';
 
-	signal EventCounter			: NATURAL				:= 0;
-	
+	signal EventCounter			: natural				:= 0;
+
 	-- unit Under Test (UUT) configuration
-	constant BOUNCE_TIME		:	TIME					:= 50 ns;
-	
-	signal RawInput					: STD_LOGIC			:= '0';
-	signal deb_out					: STD_LOGIC;
+	constant BOUNCE_TIME		:	T_TIME				:= 50.0e-9;
+
+	signal RawInput					: std_logic			:= '0';
+	signal deb_out					: std_logic;
 
 begin
+	-- initialize global simulation status
+	simInitialize;
+	-- generate global testbench clock
+	simGenerateClock(Clock, CLOCK_FREQ);
 
-	-- common clock generation
-	Clock <= Clock xnor SimStop after (to_time(CLOCK_FREQ) / 2.0);
-	
-	process
+
+	procGenerator : process
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Generator");
 	begin
 		wait for 5 ns;
-	
+
 		RawInput	<= '0';
 		wait for 200 ns;
-		
+
 		RawInput	<= '1';
 		wait for 200 ns;
-		
+
 		RawInput	<= '0';
 		wait for 20 ns;
 
@@ -84,10 +90,10 @@ begin
 
 		RawInput	<= '0';
 		wait for 200 ns;
-		
+
 		RawInput	<= '1';
 		wait for 20 ns;
-		
+
 		RawInput	<= '0';
 		wait for 200 ns;
 
@@ -99,14 +105,13 @@ begin
 
 		-- shut down simulation
 		RawInput	<= '0';
-		
+
 		-- final assertion
-		tbAssert((EventCounter = 4), "Events counted=" & INTEGER'image(EventCounter) &	" Expected=4");
-		
-		-- Report overall simulation result
-		tbPrintResult;
-		SimStop	<= '1';
-		wait;
+		simAssertion((EventCounter = 6), "Events counted=" & integer'image(EventCounter) &	" Expected=6");
+
+		-- This process is finished
+		simDeactivateProcess(simProcessID);
+		wait;  -- forever
 	end process;
 
 	process(deb_out)
@@ -116,8 +121,8 @@ begin
 			EventCounter <= EventCounter + 1;
 		end if;
 	end process;
-	
-	uut : entity PoC.io_Debounce
+
+	UUT : entity PoC.io_Debounce
 		generic map (
 			CLOCK_FREQ							=> CLOCK_FREQ,
 			BOUNCE_TIME							=> BOUNCE_TIME,
@@ -131,4 +136,4 @@ begin
 			Input(0)	=> RawInput,
 			Output(0)	=> deb_out
 		);
-END;
+end architecture;

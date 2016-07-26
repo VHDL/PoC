@@ -1,8 +1,20 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
 # Package
 __init__.py
 
 # Modules
-Base.py
+Compiler.py
+Configuration.py
 Exceptions.py
-PoCBase.py
-#SolutionBase.py
+Executable.py
+Logging.py
+# Processor.py
+Project.py
+Shared.py
+Simulator.py
+ToolChain.py

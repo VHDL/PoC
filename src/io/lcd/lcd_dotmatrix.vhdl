@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- =============================================================================
+-- Authors:					Thomas B. Preußer
 --
--- ============================================================================
--- Authors:  Thomas B. Preußer
---
--- Module:   Interface to Dot-Matrix LCD Controllers
+-- Entity:					Interface to Dot-Matrix LCD Controllers
 --
 -- Description:
 -- ------------
---           TODO
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,7 +26,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 library IEEE;
 use IEEE.std_logic_1164.all;
 
@@ -36,7 +35,7 @@ use PoC.physical.all;
 
 entity lcd_dotmatrix is
   generic(
-    CLOCK_FREQ : freq;
+    CLOCK_FREQ : FREQ;
     DATA_WIDTH : positive;  				-- Width of data bus (4 or 8)
 
     T_W        : t_time     :=  500.0e-9; -- Minimum width of E pulse

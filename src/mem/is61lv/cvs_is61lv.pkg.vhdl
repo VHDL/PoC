@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Package: is61lv
 -- Author(s): Martin Zabel
--- 
+--
 -- Package for IS61LV Asynchronous SRAM
 --
 -- Revision:    $Revision: 1.1 $
@@ -76,5 +76,5 @@ package is61lv is
 			sram_addr : out   unsigned(WA_BITS-1 downto 0);
 			sram_data : inout std_logic_vector(D_BITS-1 downto 0));
 	end component;
-  
+
 end package;

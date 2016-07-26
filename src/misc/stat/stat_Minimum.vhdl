@@ -1,27 +1,26 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					Counts the least significant data words
+-- Entity:					Counts the least significant data words
 --
 -- Description:
--- ------------------------------------
---		TODO
--- 
+-- -------------------------------------
+-- .. TODO:: No documentation available.
+--
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,18 +39,18 @@ use			PoC.vectors.all;
 
 entity stat_Minimum is
 	generic (
-		DEPTH					: POSITIVE		:= 8;
-		DATA_BITS			: POSITIVE		:= 16;
-		COUNTER_BITS	: POSITIVE		:= 16
+		DEPTH					: positive		:= 8;
+		DATA_BITS			: positive		:= 16;
+		COUNTER_BITS	: positive		:= 16
 	);
 	port (
-		Clock					: in	STD_LOGIC;
-		Reset					: in	STD_LOGIC;
-		
-		Enable				: in	STD_LOGIC;
-		DataIn				: in	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
-		
-		Valids				: out	STD_LOGIC_VECTOR(DEPTH - 1 downto 0);
+		Clock					: in	std_logic;
+		Reset					: in	std_logic;
+
+		Enable				: in	std_logic;
+		DataIn				: in	std_logic_vector(DATA_BITS - 1 downto 0);
+
+		Valids				: out	std_logic_vector(DEPTH - 1 downto 0);
 		Minimums			: out	T_SLM(DEPTH - 1 downto 0, DATA_BITS - 1 downto 0);
 		Counts				: out	T_SLM(DEPTH - 1 downto 0, COUNTER_BITS - 1 downto 0)
 	);
@@ -59,12 +58,12 @@ end entity;
 
 
 architecture rtl of stat_Minimum is
-	type T_TAG_MEMORY				is array(NATURAL range <>) of UNSIGNED(DATA_BITS - 1 downto 0);
-	type T_COUNTER_MEMORY		is array(NATURAL range <>) of UNSIGNED(COUNTER_BITS - 1 downto 0);
+	type T_TAG_MEMORY				is array(natural range <>) of unsigned(DATA_BITS - 1 downto 0);
+	type T_COUNTER_MEMORY		is array(natural range <>) of unsigned(COUNTER_BITS - 1 downto 0);
 
 	-- create matrix from vector-vector
-	function to_slm(usv : T_TAG_MEMORY) return t_slm is
-		variable slm		: t_slm(usv'range, DATA_BITS - 1 downto 0);
+	function to_slm(usv : T_TAG_MEMORY) return T_SLM is
+		variable slm		: T_SLM(usv'range, DATA_BITS - 1 downto 0);
 	begin
 		for i in usv'range loop
 			for j in DATA_BITS - 1 downto 0 loop
@@ -73,9 +72,9 @@ architecture rtl of stat_Minimum is
 		end loop;
 		return slm;
 	end function;
-	
-	function to_slm(usv : T_COUNTER_MEMORY) return t_slm is
-		variable slm		: t_slm(usv'range, COUNTER_BITS - 1 downto 0);
+
+	function to_slm(usv : T_COUNTER_MEMORY) return T_SLM is
+		variable slm		: T_SLM(usv'range, COUNTER_BITS - 1 downto 0);
 	begin
 		for i in usv'range loop
 			for j in COUNTER_BITS - 1 downto 0 loop
@@ -85,15 +84,15 @@ architecture rtl of stat_Minimum is
 		return slm;
 	end function;
 
-	signal DataIn_us				: UNSIGNED(DataIn'range);
+	signal DataIn_us				: unsigned(DataIn'range);
 
-	signal TagHit						: STD_LOGIC_VECTOR(DEPTH - 1 downto 0);
-	signal MinimumHit				: STD_LOGIC_VECTOR(DEPTH - 1 downto 0);
+	signal TagHit						: std_logic_vector(DEPTH - 1 downto 0);
+	signal MinimumHit				: std_logic_vector(DEPTH - 1 downto 0);
 	signal TagMemory				: T_TAG_MEMORY(DEPTH - 1 downto 0)			:= (others => (others => '1'));
 	signal CounterMemory		: T_COUNTER_MEMORY(DEPTH - 1 downto 0)	:= (others => (others => '0'));
-	signal MinimumIndex			: STD_LOGIC_VECTOR(DEPTH - 1 downto 0)	:= ((DEPTH - 1) => '1', others => '0');
-	signal ValidMemory			: STD_LOGIC_VECTOR(DEPTH - 1 downto 0)	:= (others => '0');
-	
+	signal MinimumIndex			: std_logic_vector(DEPTH - 1 downto 0)	:= '1' & (DEPTH - 2 downto 0 => '0');	--((DEPTH - 1) => '1', others => '0'); -- WORKAROUND: GHDL says  not static choice exclude others choice;  non-locally static choice for an aggregate is allowed only if only choice
+	signal ValidMemory			: std_logic_vector(DEPTH - 1 downto 0)	:= (others => '0');
+
 begin
 	DataIn_us		<= unsigned(DataIn);
 
@@ -103,14 +102,8 @@ begin
 	end generate;
 
 	process(Clock)
-		variable NewMinimum_nxt		: STD_LOGIC_VECTOR(DEPTH - 1 downto 0);
-		variable NewMinimum_idx 	: NATURAL;
-		variable TagHit_idx 			: NATURAL;
+		variable TagHit_idx 			: natural;
 	begin
-		NewMinimum_nxt	:= MinimumIndex(MinimumIndex'high - 1 downto 0) & MinimumIndex(MinimumIndex'high);	
-		NewMinimum_idx	:= to_index(onehot2bin(NewMinimum_nxt));
-		TagHit_idx			:= to_index(onehot2bin(TagHit));
-	
 		if rising_edge(Clock) then
 			if (Reset = '1') then
 				ValidMemory										<= (others => '0');
@@ -147,7 +140,8 @@ begin
 					end if;
 				end loop;
 			elsif ((slv_or(TagHit) and Enable)= '1') then
-				CounterMemory(TagHit_idx)			<= CounterMemory(TagHit_idx) + 1;
+				TagHit_idx								:= to_index(onehot2bin(TagHit, 0));
+				CounterMemory(TagHit_idx)	<= CounterMemory(TagHit_idx) + 1;
 			end if;
 		end if;
 	end process;

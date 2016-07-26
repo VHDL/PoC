@@ -1,13 +1,13 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ===========================================================================
 -- Testbench:				Binary-serial to parallel BCD converter for integers and
 --                  fractions.
--- 
+--
 -- Authors:					Thomas B. Preusser
--- 
+--
 -- Description:
 -- ------------
 --		Automated testbench for PoC.arith_bcdcollect
@@ -16,13 +16,13 @@
 -- ===========================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -81,7 +81,7 @@ begin
 		signal ena : std_logic;
 		signal bcd : t_bcd_vector(7 downto 0);
 	begin
-	
+
 		dut: arith_bcdcollect
 			generic map (
 				BITS     => BITS,
@@ -106,7 +106,7 @@ begin
 
 			variable t : integer;
 			variable x : unsigned(BITS-1 downto 0);
-			
+
 		begin
 			for i in TESTS'range loop
 				-- Reset Collector
@@ -128,13 +128,13 @@ begin
 					tbAssert(to_integer(unsigned(bcd(j))) = (t mod 10), "Integer BCD: Wrong output.");
 					t := t / 10;
 				end loop;
-				
+
 			end loop;
 
 			done(false) <= true;
 			wait;
 		end process;
-		
+
 	end block;
 
 	blkFraction: block is
@@ -173,7 +173,7 @@ begin
 			variable x : std_logic_vector(1 to BITS);
       variable ok     : boolean;
       variable l      : line;
-			
+
 		begin
 			for i in TESTS'range loop
 				-- Reset Collector

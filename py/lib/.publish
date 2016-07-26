@@ -1,6 +1,23 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
 # Package
 __init__.py
 
+# Patches for the Python Standard Library
+ConfigParser.py
+
 # Modules
-Decorator.py
+Decorators.py
 Functions.py
+
+# pyAttributes
+pyAttribute.py
+ArgParseAttributes.py
+
+# Parser and Code Document Object Model (CodeDOM)
+Parser.py
+CodeDOM.py

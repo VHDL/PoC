@@ -107,12 +107,12 @@ begin  -- behavioral
     tracer_stb <= '1';
     wait until rising_edge(clk_trc);
     tracer_stb <= '0';
-    
+
     wait for clk_trc_period*20;
     tracer_stb <= '1';
     wait until rising_edge(clk_trc);
     tracer_stb <= '0';
-    
+
     wait for clk_trc_period*100;
     tracer_stb <= '1';
     wait until rising_edge(clk_trc);

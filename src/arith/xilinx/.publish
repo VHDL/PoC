@@ -1,5 +1,5 @@
 # git files
-.gitignore
+.gitempty
 
 # Documentation
 README.md
@@ -10,3 +10,6 @@ README.md
 # Arithmetic
 arith_addw_xilinx.vhdl
 arith_inc_ovcy_xilinx.vhdl
+arith_carrychain_inc_xilinx.vhdl
+arith_prefix_and_xilinx.vhdl
+arith_prefix_or_xilinx.vhdl

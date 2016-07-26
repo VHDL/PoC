@@ -1,7 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Thomas B. Preusser
 --
@@ -10,19 +10,19 @@
 -- Description:
 -- ------------------------------------
 --		TODO
---		
+--
 --
 -- License:
 -- ============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,18 +30,25 @@
 -- limitations under the License.
 -- ============================================================================
 
-entity fifo_cc_got_tb is
-end entity;
-
 library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
 library	PoC;
 use			PoC.utils.all;
+use			PoC.physical.all;
+-- simulation only packages
+use			PoC.sim_types.all;
+use			PoC.simulation.all;
+use			PoC.waveform.all;
+
+
+entity fifo_cc_got_tb is
+end entity;
 
 
 architecture tb of fifo_cc_got_tb is
+	constant CLOCK_FREQ			: FREQ					:= 100 MHz;
 
   -- component generics
   constant D_BITS         : positive := 8;
@@ -51,19 +58,22 @@ architecture tb of fifo_cc_got_tb is
 
   -- Clock Control
   signal rst  : std_logic;
-  signal clk  : std_logic                := '0';
-  signal done : std_logic_vector(0 to 7) := (others => '0');
-  
-begin
+  signal clk  : std_logic;
 
-  clk <= not clk after 5 ns when done /= (done'range => '1') else '0';
-  rst <= '1', '0' after 10 ns;
+begin
+	-- initialize global simulation status
+	simInitialize;
+	-- generate global testbench clock
+	simGenerateClock(clk,		CLOCK_FREQ);
+	simGenerateWaveform(rst,	simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));
 
   genDUTs: for c in 0 to 7 generate
 		constant DATA_REG   : boolean :=  c mod 2 > 0;
 		constant STATE_REG  : boolean :=  c mod 4 > 1;
 		constant OUTPUT_REG : boolean :=  c mod 8 > 3;
-    
+
+		constant simTestID	: T_SIM_TEST_ID			:= simCreateTest("Test setup for DATA_REG=" & boolean'image(DATA_REG) & " STATE_REG=" & BOOLEAN'image(STATE_REG) & " OUTPUT_REG=" & boolean'image(OUTPUT_REG));
+
     -- Local Component Ports
     signal put				: std_logic;
     signal din				: std_logic_vector(D_BITS-1 downto 0);
@@ -100,12 +110,13 @@ begin
       );
 
     -- Writer
-    process
+    procWriter : process
+			constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Writer for DATA_REG=" & boolean'image(DATA_REG) & " STATE_REG=" & BOOLEAN'image(STATE_REG) & " OUTPUT_REG=" & boolean'image(OUTPUT_REG));
     begin
       din <= (others => '-');
       put <= '0';
       wait until rising_edge(clk) and rst = '0';
-    
+
       for i in 0 to 2**(D_BITS-1)-1 loop
         din <= std_logic_vector(to_unsigned(i, D_BITS));
         put <= '1';
@@ -123,31 +134,30 @@ begin
 
       din <= (others => '-');
       put <= '0';
-      wait;                             -- forever
-    
+
+      -- This process is finished
+			simDeactivateProcess(simProcessID);
+			wait;  -- forever
     end process;
 
     -- Reader
-    process
+		procReader : process
+			constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Reader for DATA_REG=" & boolean'image(DATA_REG) & " STATE_REG=" & BOOLEAN'image(STATE_REG) & " OUTPUT_REG=" & boolean'image(OUTPUT_REG));
     begin
       got <= '0';
       for i in 0 to 2**D_BITS-1 loop
         wait until rising_edge(clk) and valid = '1';
-        assert dout = std_logic_vector(to_unsigned(i, D_BITS))
-          report
-             "Output Failure in Configuration "&integer'image(c)&
-             " @ Pos "&integer'image(i)
-          severity failure;
+				simAssertion((dout = std_logic_vector(to_unsigned(i, D_BITS))), "Output failure in configuration " & integer'image(c) & " @ Pos " & INTEGER'image(i));
         got <= '1';
         wait until rising_edge(clk);
         got <= '0';
         wait until rising_edge(clk);
       end loop;
-    
-      done(c) <= '1';
-      report "Test "&integer'image(c)&" completed." severity note;
-      wait;                             -- forever
+
+      -- This process is finished
+			simDeactivateProcess(simProcessID);
+			simFinalizeTest(simTestID);
+			wait;  -- forever
     end process;
   end generate genDUTs;
-
-end;
+end architecture;

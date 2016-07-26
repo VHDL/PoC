@@ -1,15 +1,15 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- ============================================================================
 -- Authors:					Martin Zabel
 --                  Patrick Lehmann
--- 
+--
 -- Module:					Sub-module for test of physical type `BAUD` and conversion
 -- 									routines defined in `physical.pkg.vhdl`.
 --
--- 
+--
 -- Description:
 -- ------------------------------------
 -- Synthesis reports a multiple driver error / critical-warning when
@@ -26,13 +26,13 @@
 -- ============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ library poc;
 use poc.physical.all;
 
 entity physical_test_baud is
-  
+
 	generic (
 		CONST_1_BD			 : baud			 := 1 Bd;
 		CONST_1_KBD			 : baud			 := 1 kBd;
@@ -82,10 +82,10 @@ architecture rtl of physical_test_baud is
 		report "CONST_1p125_MBD   = " & BAUD'image(CONST_1p125_MBD ) severity note;
 		report "CONST_1_GBD       = " & BAUD'image(CONST_1_GBD     ) severity note;
 		report "CONST_1p125_GBD   = " & BAUD'image(CONST_1p125_GBD ) severity note;
-		report "CVT_1_BD_INT      = " & INTEGER'image(CVT_1_BD_INT ) severity note;
-		report "CVT_1_KBD_INT     = " & INTEGER'image(CVT_1_KBD_INT) severity note;
-		report "CVT_1_MBD_INT     = " & INTEGER'image(CVT_1_MBD_INT) severity note;
-		report "CVT_1_GBD_INT     = " & INTEGER'image(CVT_1_GBD_INT) severity note;
+		report "CVT_1_BD_INT      = " & integer'image(CVT_1_BD_INT ) severity note;
+		report "CVT_1_KBD_INT     = " & integer'image(CVT_1_KBD_INT) severity note;
+		report "CVT_1_MBD_INT     = " & integer'image(CVT_1_MBD_INT) severity note;
+		report "CVT_1_GBD_INT     = " & integer'image(CVT_1_GBD_INT) severity note;
 		report "CVT_1p5_KBD_REAL  = " & REAL'image(CVT_1p5_KBD_REAL) severity note;
 		report "CVT_1p5_MBD_REAL  = " & REAL'image(CVT_1p5_MBD_REAL) severity note;
 		report "CVT_1p5_GBD_REAL  = " & REAL'image(CVT_1p5_GBD_REAL) severity note;
@@ -94,7 +94,7 @@ architecture rtl of physical_test_baud is
 		report "bsum(SOME_BAUDS)  = " & BAUD'image(bsum(SOME_BAUDS)) severity note;
 	return true;
 	end f;
-	
+
 	constant C : boolean := f;
 
 begin  -- architecture rtl
@@ -108,32 +108,32 @@ begin  -- architecture rtl
 	checkConst1Bd: if CONST_1_BD <= 0 Bd generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1kBd: if CONST_1_KBD <= 0 Bd or CONST_1_KBD /= 1000 Bd generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125kBd: if CONST_1p125_KBD <= 0 Bd or CONST_1p125_KBD /= 1125 Bd generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1MBd: if CONST_1_MBD <= 0 Bd or CONST_1_MBD /= 1000 kBd generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125MBd: if CONST_1p125_MBD <= 0 Bd or CONST_1p125_MBD /= 1125 kBd generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1GBd: if CONST_1_GBD <= 0 Bd or CONST_1_GBD /= 1000 MBd generate
 		y <= '1';
 	end generate;
-	
+
 	checkConst1p125GBd: if CONST_1p125_GBD <= 0 Bd or CONST_1p125_GBD /= 1125 MBd generate
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkCvt1BdInt: if CVT_1_BD_INT /= 1 generate
 		y <= '1';
@@ -165,7 +165,7 @@ begin  -- architecture rtl
 		y <= '1';
 	end generate;
 
-	
+
 	-----------------------------------------------------------------------------
 	checkMax: if bmax(SOME_BAUDS) /= 1000 MBd generate
 		y <= '1';

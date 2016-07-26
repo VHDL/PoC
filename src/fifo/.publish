@@ -1,5 +1,5 @@
 # git files
-.gitignore
+.gitempty
 
 # Documentation
 README.md
@@ -8,13 +8,23 @@ README.md
 fifo.pkg.vhdl
 
 # Basic FIFOs
+fifo_glue.files
 fifo_glue.vhdl
+fifo_shift.files
 fifo_shift.vhdl
 
 # Regular FIFOs
+fifo_cc_got.files
 fifo_cc_got.vhdl
+fifo_ic_got.files
 fifo_ic_got.vhdl
 
 # Transactional FIFOs
+fifo_cc_got_tempgot.files
 fifo_cc_got_tempgot.vhdl
+fifo_cc_got_tempput.files
 fifo_cc_got_tempput.vhdl
+
+# Special-purpose FIFOs
+fifo_ic_assembly.files
+fifo_ic_assembly.vhdl

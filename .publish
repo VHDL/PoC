@@ -1,12 +1,24 @@
 # git files
+.gitattributes
 .gitignore
 .gitempty
 #.gitmodules
 
+# *.yml files
+.landscape.yml
+.travis.yml
+readthedocs.yml
+
+# Python 3 - package requirements
+requirements.txt
+
 # Documentation files
+docs/
 AUTHORS.md
-LICENSE
+LICENSE.md
+README.tpl
 README.md
+CHANGES.md
 
 # Configuration scripts
 poc.sh
@@ -20,6 +32,7 @@ py/
 sim/
 src/
 tb/
+tcl/
 temp/
 tools/
 ucf/

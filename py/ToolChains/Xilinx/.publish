@@ -1,0 +1,17 @@
+# git files
+.gitempty
+
+# Documentation files
+README.md
+
+# Package
+__init__.py
+
+# Modules
+Xilinx.py
+
+ISE.py
+LabTools.py
+
+Vivado.py
+HardwareServer.py

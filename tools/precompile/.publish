@@ -1,0 +1,22 @@
+# git files
+.gitempty
+
+# Compile Scripts
+shared.psm1
+shared.sh
+
+compile-altera.ps1
+compile-altera.sh
+compile-lattice.ps1
+compile-lattice.sh
+compile-osvvm.ps1
+compile-osvvm.sh
+compile-xilinx-ise.ps1
+compile-xilinx-ise.sh
+compile-xilinx-vivado.ps1
+compile-xilinx-vivado.sh
+
+# Generic Colourizer rules
+ghdl.grcrules
+ghdl.skipwarning.grcrules
+

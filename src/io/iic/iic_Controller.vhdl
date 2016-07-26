@@ -1,120 +1,119 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
--- Module:					I2C Controller
--- 
+-- =============================================================================
 -- Authors:					Patrick Lehmann
 --
+-- Entity:					I2C Controller
+--
 -- Description:
--- ------------------------------------
---		The IICController transmitts words over the I2C bus (SerialClock - SCL,
---		SerialData - SDA) and also receives them. This controller utilizes the
---		IICBusController to send/receive bits over the I2C bus. This controller
---		is compatible to the System Management Bus (SMBus).
+-- -------------------------------------
+-- The I2C Controller transmitts words over the I2C bus (SerialClock - SCL,
+-- SerialData - SDA) and also receives them. This controller utilizes the
+-- I2C BusController to send/receive bits over the I2C bus. This controller
+-- is compatible to the System Management Bus (SMBus).
 --
 -- License:
--- ============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- =============================================================================
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.physical.ALL;
-USE			PoC.components.ALL;
-USE			PoC.io.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
+use			PoC.components.all;
+use			PoC.iic.all;
 
 
-ENTITY iic_IICController IS
-	GENERIC (
-		DEBUG													: BOOLEAN												:= FALSE;
+entity iic_Controller is
+	generic (
+		DEBUG													: boolean												:= FALSE;
 		CLOCK_FREQ										: FREQ													:= 100 MHz;
 		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;
-		IIC_ADDRESS										: STD_LOGIC_VECTOR							:= (7 DOWNTO 1 => '0') & '-';
-		ADDRESS_BITS									: POSITIVE											:= 7;
-		DATA_BITS											: POSITIVE											:= 8;
-		ALLOW_MEALY_TRANSITION				: BOOLEAN												:= TRUE
+		IIC_ADDRESS										: std_logic_vector							:= (7 downto 1 => '0') & '-';
+		ADDRESS_BITS									: positive											:= 7;
+		DATA_BITS											: positive											:= 8;
+		ALLOW_MEALY_TRANSITION				: boolean												:= TRUE
 	);
-	PORT (
-		Clock													: IN	STD_LOGIC;
-		Reset													: IN	STD_LOGIC;
-		
+	port (
+		Clock													: in	std_logic;
+		Reset													: in	std_logic;
+
 		-- IICController master interface
-		Master_Request								: IN	STD_LOGIC;
-		Master_Grant									: OUT	STD_LOGIC;
-		Master_Command								: IN	T_IO_IIC_COMMAND;
-		Master_Status									: OUT	T_IO_IIC_STATUS;
-		Master_Error									: OUT	T_IO_IIC_ERROR;
-		
-		Master_Address								: IN	STD_LOGIC_VECTOR(ADDRESS_BITS - 1 DOWNTO 0);
+		Master_Request								: in	std_logic;
+		Master_Grant									: out	std_logic;
+		Master_Command								: in	T_IO_IIC_COMMAND;
+		Master_Status									: out	T_IO_IIC_STATUS;
+		Master_Error									: out	T_IO_IIC_ERROR;
 
-		Master_WP_Valid								: IN	STD_LOGIC;
-		Master_WP_Data								: IN	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		Master_WP_Last								: IN	STD_LOGIC;
-		Master_WP_Ack									: OUT	STD_LOGIC;
-		Master_RP_Valid								: OUT	STD_LOGIC;
-		Master_RP_Data								: OUT	STD_LOGIC_VECTOR(DATA_BITS - 1 DOWNTO 0);
-		Master_RP_Last								: OUT	STD_LOGIC;
-		Master_RP_Ack									: IN	STD_LOGIC;
-		
+		Master_Address								: in	std_logic_vector(ADDRESS_BITS - 1 downto 0);
+
+		Master_WP_Valid								: in	std_logic;
+		Master_WP_Data								: in	std_logic_vector(DATA_BITS - 1 downto 0);
+		Master_WP_Last								: in	std_logic;
+		Master_WP_Ack									: out	std_logic;
+		Master_RP_Valid								: out	std_logic;
+		Master_RP_Data								: out	std_logic_vector(DATA_BITS - 1 downto 0);
+		Master_RP_Last								: out	std_logic;
+		Master_RP_Ack									: in	std_logic;
+
 		-- tristate interface
-		SerialClock_i									: IN	STD_LOGIC;
-		SerialClock_o									: OUT	STD_LOGIC;
-		SerialClock_t									: OUT	STD_LOGIC;
-		SerialData_i									: IN	STD_LOGIC;
-		SerialData_o									: OUT	STD_LOGIC;
-		SerialData_t									: OUT	STD_LOGIC
+		SerialClock_i									: in	std_logic;
+		SerialClock_o									: out	std_logic;
+		SerialClock_t									: out	std_logic;
+		SerialData_i									: in	std_logic;
+		SerialData_o									: out	std_logic;
+		SerialData_t									: out	std_logic
 	);
-END ENTITY;
+end entity;
 
 
-ARCHITECTURE rtl OF iic_IICController IS
-	ATTRIBUTE KEEP									: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING					: STRING;
-	ATTRIBUTE ENUM_ENCODING					: STRING;
-	
-	CONSTANT SMBUS_COMPLIANCE				: BOOLEAN				:= (IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS);
-	
+architecture rtl of iic_Controller is
+	attribute KEEP									: boolean;
+	attribute FSM_ENCODING					: string;
+	attribute ENUM_ENCODING					: string;
+
+	constant SMBUS_COMPLIANCE				: boolean				:= (IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS);
+
 	-- if-then-else (ite)
-	FUNCTION ite(cond : BOOLEAN; value1 : T_IO_IIC_STATUS; value2 : T_IO_IIC_STATUS) RETURN T_IO_IIC_STATUS IS
-	BEGIN
-		IF (cond = TRUE) THEN
-			RETURN value1;
-		ELSE
-			RETURN value2;
-		END IF;
-	END;
-	
-	FUNCTION to_IICBus_Command(value : STD_LOGIC) RETURN T_IO_IICBUS_COMMAND IS
-	BEGIN
-		CASE value IS
-			WHEN '0' =>			RETURN IO_IICBUS_CMD_SEND_LOW;
-			WHEN '1' =>			RETURN IO_IICBUS_CMD_SEND_HIGH;
-			WHEN OTHERS =>	RETURN IO_IICBUS_CMD_NONE;
-		END CASE;
-	END;
-	
-	TYPE T_STATE IS (
+	function ite(cond : boolean; value1 : T_IO_IIC_STATUS; value2 : T_IO_IIC_STATUS) return T_IO_IIC_STATUS is
+	begin
+		if (cond = TRUE) then
+			return value1;
+		else
+			return value2;
+		end if;
+	end;
+
+	function to_IICBus_Command(value : std_logic) return T_IO_IICBUS_COMMAND is
+	begin
+		case value is
+			when '0' =>			return IO_IICBUS_CMD_SEND_LOW;
+			when '1' =>			return IO_IICBUS_CMD_SEND_HIGH;
+			when others =>	return IO_IICBUS_CMD_NONE;
+		end case;
+	end;
+
+	type T_STATE is (
 		ST_IDLE,
 		ST_REQUEST,
 		ST_SAVE_ADDRESS,
@@ -145,68 +144,68 @@ ARCHITECTURE rtl OF iic_IICController IS
 			ST_ACK_ERROR,
 			ST_BUS_ERROR
 	);
-	
-	SIGNAL State												: T_STATE													:= ST_IDLE;
-	SIGNAL NextState										: T_STATE;
-	ATTRIBUTE FSM_ENCODING OF State			: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
-	
-	SIGNAL Status_i											: T_IO_IIC_STATUS;
-	SIGNAL Error_i											: T_IO_IIC_ERROR;
-	
-	SIGNAL Command_en										: STD_LOGIC;
-	SIGNAL Command_d										: T_IO_IIC_COMMAND								:= IO_IIC_CMD_NONE;
-	
-	SIGNAL IICBC_Request								: STD_LOGIC;
-	SIGNAL IICBC_Grant									: STD_LOGIC;
-	SIGNAL IICBC_Command								: T_IO_IICBUS_COMMAND;
-	SIGNAL IICBC_Status									: T_IO_IICBUS_STATUS;
-	
-	SIGNAL BitCounter_rst								: STD_LOGIC;
-	SIGNAL BitCounter_en								: STD_LOGIC;
-	SIGNAL BitCounter_us								: UNSIGNED(3 DOWNTO 0)						:= (OTHERS => '0');
-	
-	SIGNAL RegOperation_en							: STD_LOGIC;
-	SIGNAL RegOperation_d								: STD_LOGIC												:= '0';
-	
-	SIGNAL Device_Address_en						: STD_LOGIC;
-	SIGNAL Device_Address_sh						: STD_LOGIC;
-	SIGNAL Device_Address_d							: STD_LOGIC_VECTOR(6 DOWNTO 0)		:= (OTHERS => '0');
-	
-	SIGNAL DataRegister_en							: STD_LOGIC;
-	SIGNAL DataRegister_sh							: STD_LOGIC;
-	SIGNAL DataRegister_d								: T_SLV_8													:= (OTHERS => '0');
-	
-	SIGNAL LastRegister_en							: STD_LOGIC;
-	SIGNAL LastRegister_d								: STD_LOGIC												:= '0';
 
-	SIGNAL SerialClock_t_i							: STD_LOGIC;
-	SIGNAL SerialData_t_i								: STD_LOGIC;
+	signal State												: T_STATE													:= ST_IDLE;
+	signal NextState										: T_STATE;
+	attribute FSM_ENCODING of State			: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-BEGIN
+	signal Status_i											: T_IO_IIC_STATUS;
+	signal Error_i											: T_IO_IIC_ERROR;
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	signal Command_en										: std_logic;
+	signal Command_d										: T_IO_IIC_COMMAND								:= IO_IIC_CMD_NONE;
+
+	signal IICBC_Request								: std_logic;
+	signal IICBC_Grant									: std_logic;
+	signal IICBC_Command								: T_IO_IICBUS_COMMAND;
+	signal IICBC_Status									: T_IO_IICBUS_STATUS;
+
+	signal BitCounter_rst								: std_logic;
+	signal BitCounter_en								: std_logic;
+	signal BitCounter_us								: unsigned(3 downto 0)						:= (others => '0');
+
+	signal RegOperation_en							: std_logic;
+	signal RegOperation_d								: std_logic												:= '0';
+
+	signal Device_Address_en						: std_logic;
+	signal Device_Address_sh						: std_logic;
+	signal Device_Address_d							: std_logic_vector(6 downto 0)		:= (others => '0');
+
+	signal DataRegister_en							: std_logic;
+	signal DataRegister_sh							: std_logic;
+	signal DataRegister_d								: T_SLV_8													:= (others => '0');
+
+	signal LastRegister_en							: std_logic;
+	signal LastRegister_d								: std_logic												:= '0';
+
+	signal SerialClock_t_i							: std_logic;
+	signal SerialData_t_i								: std_logic;
+
+begin
+
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				State			<= ST_IDLE;
-			ELSE
+			else
 				State			<= NextState;
-			END IF;
-		END IF;
-	END PROCESS;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(State, Master_Request, Master_Command, Command_d, IICBC_Grant, IICBC_Status, BitCounter_us, Device_Address_d, DataRegister_d, LastRegister_d)
-		TYPE T_CMDCAT IS (NONE, SENDING, RECEIVING, EXECUTING, CALLING);
-		VARIABLE CommandCategory	: T_CMDCAT;
-	
-	BEGIN
+	process(State, Master_Request, Master_Command, Command_d, IICBC_Grant, IICBC_Status, BitCounter_us, Device_Address_d, DataRegister_d, LastRegister_d)
+		type T_CMDCAT is (NONE, SENDING, RECEIVING, EXECUTING, CALLING);
+		variable CommandCategory	: T_CMDCAT;
+
+	begin
 		NextState									<= State;
 
 		Status_i									<= IO_IIC_STATUS_IDLE;
 		Error_i										<= IO_IIC_ERROR_NONE;
-		
+
 		Master_Grant							<= '0';
-		
+
 		Master_WP_Ack							<= '0';
 		Master_RP_Valid						<= '0';
 		Master_RP_Last						<= '0';
@@ -218,7 +217,7 @@ BEGIN
 
 		Device_Address_sh					<= '0';
 		DataRegister_sh						<= '0';
-		
+
 		BitCounter_rst						<= '0';
 		BitCounter_en							<= '0';
 
@@ -226,848 +225,847 @@ BEGIN
 		IICBC_Command							<= IO_IICBUS_CMD_NONE;
 
 		-- precalculated command categories
-		CASE Command_d IS
-			WHEN IO_IIC_CMD_NONE =>									CommandCategory := NONE;
-			WHEN IO_IIC_CMD_QUICKCOMMAND_READ =>		CommandCategory := EXECUTING;
-			WHEN IO_IIC_CMD_QUICKCOMMAND_WRITE =>		CommandCategory := EXECUTING;
-			WHEN IO_IIC_CMD_SEND_BYTES =>						CommandCategory := SENDING;
-			WHEN IO_IIC_CMD_RECEIVE_BYTES =>				CommandCategory := RECEIVING;
-			WHEN IO_IIC_CMD_PROCESS_CALL =>					CommandCategory := CALLING;
-			WHEN OTHERS =>													CommandCategory := NONE;
-		END CASE;
+		case Command_d is
+			when IO_IIC_CMD_NONE =>									CommandCategory := NONE;
+			when IO_IIC_CMD_QUICKCOMMAND_READ =>		CommandCategory := EXECUTING;
+			when IO_IIC_CMD_QUICKCOMMAND_WRITE =>		CommandCategory := EXECUTING;
+			when IO_IIC_CMD_SEND_BYTES =>						CommandCategory := SENDING;
+			when IO_IIC_CMD_RECEIVE_BYTES =>				CommandCategory := RECEIVING;
+			when IO_IIC_CMD_PROCESS_CALL =>					CommandCategory := CALLING;
+			when others =>													CommandCategory := NONE;
+		end case;
 
-		CASE State IS
-			WHEN ST_IDLE =>
+		case State is
+			when ST_IDLE =>
 				Status_i												<= IO_IIC_STATUS_IDLE;
-				
-				IF (Master_Request = '1') THEN
+
+				if (Master_Request = '1') then
 					NextState											<= ST_REQUEST;
-					
-					IF ALLOW_MEALY_TRANSITION THEN
+
+					if ALLOW_MEALY_TRANSITION then
 						IICBC_Request								<= '1';
-						
-						IF (IICBC_Grant = '1') THEN
+
+						if (IICBC_Grant = '1') then
 							Master_Grant							<= '1';
 							NextState									<= ST_SAVE_ADDRESS;
-						END IF;
-					END IF;
-				END IF;
-			
-			WHEN ST_REQUEST =>
+						end if;
+					end if;
+				end if;
+
+			when ST_REQUEST =>
 				IICBC_Request										<= '1';
-			
-				IF (IICBC_Grant = '1') THEN
+
+				if (IICBC_Grant = '1') then
 					Master_Grant									<= '1';
 					NextState											<= ST_SAVE_ADDRESS;
-				END IF;
-			
-			WHEN ST_SAVE_ADDRESS =>
+				end if;
+
+			when ST_SAVE_ADDRESS =>
 				Master_Grant										<= IICBC_Grant;
 				Status_i												<= IO_IIC_STATUS_IDLE;
 				IICBC_Request										<= '1';
-							
-				CASE Master_Command IS
-					WHEN IO_IIC_CMD_NONE =>
-						NULL;
-					
-					WHEN IO_IIC_CMD_QUICKCOMMAND_READ =>
+
+				case Master_Command is
+					when IO_IIC_CMD_NONE =>
+						null;
+
+					when IO_IIC_CMD_QUICKCOMMAND_READ =>
 						Command_en									<= '1';
 						Device_Address_en						<= '1';
-						
+
 						NextState										<= ST_SEND_START;
-					
-					WHEN IO_IIC_CMD_QUICKCOMMAND_WRITE =>
+
+					when IO_IIC_CMD_QUICKCOMMAND_WRITE =>
 						Command_en									<= '1';
 						Device_Address_en						<= '1';
-						
+
 						NextState										<= ST_SEND_START;
-				
-					WHEN IO_IIC_CMD_SEND_BYTES =>
-						Command_en									<= '1';
-						Device_Address_en						<= '1';
-						DataRegister_en							<= '1';
-						LastRegister_en							<= '1';
-						Master_WP_Ack								<= '1';
-						
-						NextState										<= ST_SEND_START;
-						
-					WHEN IO_IIC_CMD_RECEIVE_BYTES =>
-						Command_en									<= '1';
-						Device_Address_en						<= '1';
-						
-						NextState										<= ST_SEND_START;
-											
-					WHEN IO_IIC_CMD_PROCESS_CALL =>
+
+					when IO_IIC_CMD_SEND_BYTES =>
 						Command_en									<= '1';
 						Device_Address_en						<= '1';
 						DataRegister_en							<= '1';
 						LastRegister_en							<= '1';
 						Master_WP_Ack								<= '1';
-						
+
 						NextState										<= ST_SEND_START;
-					
-					WHEN OTHERS =>
+
+					when IO_IIC_CMD_RECEIVE_BYTES =>
+						Command_en									<= '1';
+						Device_Address_en						<= '1';
+
+						NextState										<= ST_SEND_START;
+
+					when IO_IIC_CMD_PROCESS_CALL =>
+						Command_en									<= '1';
+						Device_Address_en						<= '1';
+						DataRegister_en							<= '1';
+						LastRegister_en							<= '1';
+						Master_WP_Ack								<= '1';
+
+						NextState										<= ST_SEND_START;
+
+					when others =>
 						NextState										<= ST_ERROR;
-						
-				END CASE;
-			
-			WHEN ST_SEND_START =>
+
+				end case;
+
+			when ST_SEND_START =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_START_CONDITION;
-					
+
 				NextState												<= ST_SEND_START_WAIT;
-				
-			WHEN ST_SEND_START_WAIT =>
+
+			when ST_SEND_START_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_DEVICE_ADDRESS0;
-					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>														NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_SEND_DEVICE_ADDRESS0 =>
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_DEVICE_ADDRESS0;
+					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
+					when others =>														NextState			<= ST_ERROR;
+				end case;
+
+			when ST_SEND_DEVICE_ADDRESS0 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
 				IICBC_Command										<= to_IICBus_Command(Device_Address_d(Device_Address_d'high));
 				Device_Address_sh								<= '1';
-				
+
 				NextState												<= ST_SEND_DEVICE_ADDRESS0_WAIT;
-				
-			WHEN ST_SEND_DEVICE_ADDRESS0_WAIT =>
+
+			when ST_SEND_DEVICE_ADDRESS0_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>
 						BitCounter_en								<= '1';
-			
-						IF (BitCounter_us = (Device_Address_d'length - 1)) THEN
+
+						if (BitCounter_us = (Device_Address_d'length - 1)) then
 							NextState									<= ST_SEND_READWRITE0;
-						ELSE
+						else
 							NextState									<= ST_SEND_DEVICE_ADDRESS0;
-						END IF;
-					WHEN IO_IICBUS_STATUS_ERROR =>		NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>										NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_SEND_READWRITE0 =>
+						end if;
+					when IO_IICBUS_STATUS_ERROR =>		NextState			<= ST_BUS_ERROR;
+					when others =>										NextState			<= ST_ERROR;
+				end case;
+
+			when ST_SEND_READWRITE0 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE Command_d IS														-- write = 0; read = 1
-					WHEN IO_IIC_CMD_QUICKCOMMAND_READ =>	IICBC_Command		<= IO_IICBUS_CMD_SEND_HIGH;
-					WHEN IO_IIC_CMD_QUICKCOMMAND_WRITE =>	IICBC_Command		<= IO_IICBUS_CMD_SEND_LOW;
-					WHEN IO_IIC_CMD_SEND_BYTES =>					IICBC_Command		<= IO_IICBUS_CMD_SEND_LOW;
-					WHEN IO_IIC_CMD_RECEIVE_BYTES =>			IICBC_Command		<= IO_IICBUS_CMD_SEND_HIGH;
-					WHEN IO_IIC_CMD_PROCESS_CALL =>				IICBC_Command		<= IO_IICBUS_CMD_SEND_LOW;
-					WHEN OTHERS  =>												IICBC_Command		<= IO_IICBUS_CMD_NONE;
-				END CASE;
-				
+
+				case Command_d is														-- write = 0; read = 1
+					when IO_IIC_CMD_QUICKCOMMAND_READ =>	IICBC_Command		<= IO_IICBUS_CMD_SEND_HIGH;
+					when IO_IIC_CMD_QUICKCOMMAND_WRITE =>	IICBC_Command		<= IO_IICBUS_CMD_SEND_LOW;
+					when IO_IIC_CMD_SEND_BYTES =>					IICBC_Command		<= IO_IICBUS_CMD_SEND_LOW;
+					when IO_IIC_CMD_RECEIVE_BYTES =>			IICBC_Command		<= IO_IICBUS_CMD_SEND_HIGH;
+					when IO_IIC_CMD_PROCESS_CALL =>				IICBC_Command		<= IO_IICBUS_CMD_SEND_LOW;
+					when others  =>												IICBC_Command		<= IO_IICBUS_CMD_NONE;
+				end case;
+
 				NextState												<= ST_SEND_READWRITE0_WAIT;
-				
-			WHEN ST_SEND_READWRITE0_WAIT =>
+
+			when ST_SEND_READWRITE0_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_ACK0;
-					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>														NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_RECEIVE_ACK0 =>
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_ACK0;
+					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
+					when others =>														NextState			<= ST_ERROR;
+				end case;
+
+			when ST_RECEIVE_ACK0 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				BitCounter_rst									<= '1';
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_RECEIVE;
-				
+
 				NextState												<= ST_RECEIVE_ACK0_WAIT;
-				
-			WHEN ST_RECEIVE_ACK0_WAIT =>
+
+			when ST_RECEIVE_ACK0_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-			
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_RECEIVING =>									NULL;
-					WHEN IO_IICBUS_STATUS_RECEIVED_LOW =>								-- ACK
-						CASE Command_d IS
-							WHEN IO_IIC_CMD_QUICKCOMMAND_WRITE =>						NextState			<= ST_SEND_STOP;
-							WHEN IO_IIC_CMD_QUICKCOMMAND_READ =>						NextState			<= ST_SEND_STOP;
-							WHEN IO_IIC_CMD_SEND_BYTES =>										NextState			<= ST_SEND_DATA1;
-							WHEN IO_IIC_CMD_RECEIVE_BYTES =>								NextState			<= ST_RECEIVE_DATA2;
-							WHEN IO_IIC_CMD_PROCESS_CALL =>									NextState			<= ST_SEND_DATA1;
-							WHEN OTHERS =>																	NextState			<= ST_ERROR;
-						END CASE;
-					WHEN IO_IICBUS_STATUS_RECEIVED_HIGH =>							-- NACK
-						IF (SMBUS_COMPLIANCE = TRUE) THEN
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_RECEIVING =>									null;
+					when IO_IICBUS_STATUS_RECEIVED_LOW =>								-- ACK
+						case Command_d is
+							when IO_IIC_CMD_QUICKCOMMAND_WRITE =>						NextState			<= ST_SEND_STOP;
+							when IO_IIC_CMD_QUICKCOMMAND_READ =>						NextState			<= ST_SEND_STOP;
+							when IO_IIC_CMD_SEND_BYTES =>										NextState			<= ST_SEND_DATA1;
+							when IO_IIC_CMD_RECEIVE_BYTES =>								NextState			<= ST_RECEIVE_DATA2;
+							when IO_IIC_CMD_PROCESS_CALL =>									NextState			<= ST_SEND_DATA1;
+							when others =>																	NextState			<= ST_ERROR;
+						end case;
+					when IO_IICBUS_STATUS_RECEIVED_HIGH =>							-- NACK
+						if (SMBUS_COMPLIANCE = TRUE) then
 																															NextState			<= ST_ACK_ERROR;			-- TODO: send stop
-						ELSE
-							CASE Command_d IS
-								WHEN IO_IIC_CMD_QUICKCOMMAND_WRITE =>					NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
-								WHEN IO_IIC_CMD_QUICKCOMMAND_READ =>					NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
-								WHEN IO_IIC_CMD_SEND_BYTES =>									NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
-								WHEN IO_IIC_CMD_RECEIVE_BYTES =>							NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
-								WHEN IO_IIC_CMD_PROCESS_CALL =>								NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
-								WHEN OTHERS =>																NextState			<= ST_ERROR;
-							END CASE;
-						END IF;
-					WHEN IO_IICBUS_STATUS_ERROR =>											NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>																			NextState			<= ST_ERROR;
-				END CASE;
+						else
+							case Command_d is
+								when IO_IIC_CMD_QUICKCOMMAND_WRITE =>					NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
+								when IO_IIC_CMD_QUICKCOMMAND_READ =>					NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
+								when IO_IIC_CMD_SEND_BYTES =>									NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
+								when IO_IIC_CMD_RECEIVE_BYTES =>							NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
+								when IO_IIC_CMD_PROCESS_CALL =>								NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
+								when others =>																NextState			<= ST_ERROR;
+							end case;
+						end if;
+					when IO_IICBUS_STATUS_ERROR =>											NextState			<= ST_BUS_ERROR;
+					when others =>																			NextState			<= ST_ERROR;
+				end case;
 
 			-- write operation => continue writing
 			-- ======================================================================
-			WHEN ST_SEND_DATA1 =>
+			when ST_SEND_DATA1 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
 				IICBC_Command										<= to_IICBus_Command(DataRegister_d(DataRegister_d'high));
 				DataRegister_sh									<= '1';
-				
+
 				NextState												<= ST_SEND_DATA1_WAIT;
-				
-			WHEN ST_SEND_DATA1_WAIT =>
+
+			when ST_SEND_DATA1_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
 
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>
 						BitCounter_en								<= '1';
-			
-						IF (BitCounter_us = (DataRegister_d'length - 1)) THEN
-							NextState									<= ST_SEND_DATA1;
-						ELSE
+
+						if (BitCounter_us = (DataRegister_d'length - 1)) then
 							NextState									<= ST_RECEIVE_ACK1;
-						END IF;
-					WHEN IO_IICBUS_STATUS_ERROR =>		NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>										NextState			<= ST_ERROR;
-				END CASE;
-				
-			WHEN ST_RECEIVE_ACK1 =>
+						else
+							NextState									<= ST_SEND_DATA1;
+						end if;
+					when IO_IICBUS_STATUS_ERROR =>		NextState			<= ST_BUS_ERROR;
+					when others =>										NextState			<= ST_ERROR;
+				end case;
+
+			when ST_RECEIVE_ACK1 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				BitCounter_rst									<= '1';
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_RECEIVE;
-				
+
 				NextState												<= ST_RECEIVE_ACK1_WAIT;
-				
-			WHEN ST_RECEIVE_ACK1_WAIT =>
+
+			when ST_RECEIVE_ACK1_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-			
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_RECEIVING =>									NULL;
-					WHEN IO_IICBUS_STATUS_RECEIVED_LOW =>								-- ACK
-						IF (LastRegister_d = '1') THEN										-- no more byte to be send?
-							CASE Command_d IS
-								WHEN IO_IIC_CMD_SEND_BYTES =>		NextState	<= ST_SEND_STOP;			-- command complete, free bus
-								WHEN IO_IIC_CMD_PROCESS_CALL =>	NextState	<= ST_SEND_RESTART3;	-- bus turnaround
-								WHEN OTHERS =>									NextState	<= ST_ERROR;
-							END CASE;
-						ELSE																							-- register next byte
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_RECEIVING =>									null;
+					when IO_IICBUS_STATUS_RECEIVED_LOW =>								-- ACK
+						if (LastRegister_d = '1') then										-- no more byte to be send?
+							case Command_d is
+								when IO_IIC_CMD_SEND_BYTES =>		NextState	<= ST_SEND_STOP;			-- command complete, free bus
+								when IO_IIC_CMD_PROCESS_CALL =>	NextState	<= ST_SEND_RESTART3;	-- bus turnaround
+								when others =>									NextState	<= ST_ERROR;
+							end case;
+						else																							-- register next byte
 							DataRegister_en		<= '1';
 							LastRegister_en		<= '1';
-								
+							Master_WP_Ack			<= '1';
+
 							NextState					<= ST_SEND_DATA1;
-						END IF;
-					WHEN IO_IICBUS_STATUS_RECEIVED_HIGH =>							-- NACK
-						CASE Command_d IS
-							WHEN IO_IIC_CMD_SEND_BYTES =>										NextState			<= ST_ACK_ERROR;				-- TODO: send stop
-							WHEN IO_IIC_CMD_PROCESS_CALL =>									NextState			<= ST_ACK_ERROR;				-- TODO: send stop
-							WHEN OTHERS =>																	NextState			<= ST_ERROR;
-						END CASE;
-					WHEN IO_IICBUS_STATUS_ERROR =>											NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>																			NextState			<= ST_ERROR;
-				END CASE;
+						end if;
+					when IO_IICBUS_STATUS_RECEIVED_HIGH =>							-- NACK
+						case Command_d is
+							when IO_IIC_CMD_SEND_BYTES =>										NextState			<= ST_ACK_ERROR;				-- TODO: send stop
+							when IO_IIC_CMD_PROCESS_CALL =>									NextState			<= ST_ACK_ERROR;				-- TODO: send stop
+							when others =>																	NextState			<= ST_ERROR;
+						end case;
+					when IO_IICBUS_STATUS_ERROR =>											NextState			<= ST_BUS_ERROR;
+					when others =>																			NextState			<= ST_ERROR;
+				end case;
 
 
 			-- read operation => continue with reading without restart
 			-- ======================================================================
-			WHEN ST_RECEIVE_DATA2 =>
+			when ST_RECEIVE_DATA2 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_RECEIVE;
-				
+
 				NextState												<= ST_RECEIVE_DATA2_WAIT;
-				
-			WHEN ST_RECEIVE_DATA2_WAIT =>
+
+			when ST_RECEIVE_DATA2_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-			
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_RECEIVING =>									NULL;
-					WHEN IO_IICBUS_STATUS_RECEIVED_LOW | IO_IICBUS_STATUS_RECEIVED_HIGH =>		-- LOW or HIGH
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_RECEIVING =>									null;
+					when IO_IICBUS_STATUS_RECEIVED_LOW | IO_IICBUS_STATUS_RECEIVED_HIGH =>		-- LOW or HIGH
 						BitCounter_en								<= '1';
 						DataRegister_sh							<= '1';
-					
-						IF (BitCounter_us = (DataRegister_d'length - 1)) THEN										-- current byte is full
+
+						if (BitCounter_us = (DataRegister_d'length - 1)) then										-- current byte is full
 
 -- FIXME: if receive abort is wished => send NACK
 --
---							IF ((Out_LastByte = '1') OR (Command_d = IO_IIC_CMD_READ_BYTE)) THEN
+--							if ((Out_LastByte = '1') OR (Command_d = IO_IIC_CMD_READ_BYTE)) then
 --								NextState								<= ST_SEND_NACK2;
---							ELSE
+--							else
 								NextState								<= ST_SEND_ACK2;
---							END IF;
-						ELSE
+--							end if;
+						else
 							NextState									<= ST_RECEIVE_DATA2;
-						END IF;
-					WHEN IO_IICBUS_STATUS_ERROR =>											NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>																			NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_SEND_ACK2 =>
+						end if;
+					when IO_IICBUS_STATUS_ERROR =>											NextState			<= ST_BUS_ERROR;
+					when others =>																			NextState			<= ST_ERROR;
+				end case;
+
+			when ST_SEND_ACK2 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				BitCounter_rst									<= '1';
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_LOW;			-- ACK
-				
+
 				NextState												<= ST_SEND_ACK2_WAIT;
-				
-			WHEN ST_SEND_ACK2_WAIT =>
+
+			when ST_SEND_ACK2_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_DATA2;			-- receive more bytes
-					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>														NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_SEND_NACK2 =>
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_DATA2;			-- receive more bytes
+					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
+					when others =>														NextState			<= ST_ERROR;
+				end case;
+
+			when ST_SEND_NACK2 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				BitCounter_rst									<= '1';
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_HIGH;			-- NACK
-				
+
 				NextState												<= ST_SEND_NACK2_WAIT;
-				
-			WHEN ST_SEND_NACK2_WAIT =>
+
+			when ST_SEND_NACK2_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_STOP;			-- receiving complete, free bus
-					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>														NextState			<= ST_ERROR;
-				END CASE;
-	
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_STOP;			-- receiving complete, free bus
+					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
+					when others =>														NextState			<= ST_ERROR;
+				end case;
+
 
 			-- read operation after restart => continue with reading
 			-- ======================================================================
-			WHEN ST_SEND_RESTART3 =>
+			when ST_SEND_RESTART3 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_RESTART_CONDITION;
-					
+
 				NextState												<= ST_SEND_RESTART3_WAIT;
-				
-			WHEN ST_SEND_RESTART3_WAIT =>
+
+			when ST_SEND_RESTART3_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_DEVICE_ADDRESS3;
-					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>														NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_SEND_DEVICE_ADDRESS3 =>
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_DEVICE_ADDRESS3;
+					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
+					when others =>														NextState			<= ST_ERROR;
+				end case;
+
+			when ST_SEND_DEVICE_ADDRESS3 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
 				IICBC_Command										<= to_IICBus_Command(Device_Address_d(Device_Address_d'high));
 				Device_Address_sh								<= '1';
-				
+
 				NextState												<= ST_SEND_DEVICE_ADDRESS3_WAIT;
-				
-			WHEN ST_SEND_DEVICE_ADDRESS3_WAIT =>
+
+			when ST_SEND_DEVICE_ADDRESS3_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>
 						BitCounter_en								<= '1';
-			
-						IF (BitCounter_us = (Device_Address_d'length - 1)) THEN
+
+						if (BitCounter_us = (Device_Address_d'length - 1)) then
 							NextState									<= ST_SEND_READWRITE3;
-						ELSE
+						else
 							NextState									<= ST_SEND_DEVICE_ADDRESS3;
-						END IF;
-					WHEN IO_IICBUS_STATUS_ERROR =>		NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>										NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_SEND_READWRITE3 =>
+						end if;
+					when IO_IICBUS_STATUS_ERROR =>		NextState			<= ST_BUS_ERROR;
+					when others =>										NextState			<= ST_ERROR;
+				end case;
+
+			when ST_SEND_READWRITE3 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_HIGH;			-- 1 = read
-				
+
 				NextState												<= ST_SEND_READWRITE3_WAIT;
-				
-			WHEN ST_SEND_READWRITE3_WAIT =>
+
+			when ST_SEND_READWRITE3_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_ACK3;
-					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>														NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_RECEIVE_ACK3 =>
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_ACK3;
+					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
+					when others =>														NextState			<= ST_ERROR;
+				end case;
+
+			when ST_RECEIVE_ACK3 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				BitCounter_rst									<= '1';
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_RECEIVE;
-				
+
 				NextState												<= ST_RECEIVE_ACK3_WAIT;
-				
-			WHEN ST_RECEIVE_ACK3_WAIT =>
+
+			when ST_RECEIVE_ACK3_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-			
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_RECEIVING =>									NULL;
-					WHEN IO_IICBUS_STATUS_RECEIVED_LOW =>								-- ACK
-						CASE Command_d IS
-							WHEN IO_IIC_CMD_PROCESS_CALL =>									NextState			<= ST_RECEIVE_DATA3;
-							WHEN OTHERS =>																	NextState			<= ST_ERROR;
-						END CASE;
-					WHEN IO_IICBUS_STATUS_RECEIVED_HIGH =>							-- NACK
-						IF (SMBUS_COMPLIANCE = TRUE) THEN
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_RECEIVING =>									null;
+					when IO_IICBUS_STATUS_RECEIVED_LOW =>								-- ACK
+						case Command_d is
+							when IO_IIC_CMD_PROCESS_CALL =>									NextState			<= ST_RECEIVE_DATA3;
+							when others =>																	NextState			<= ST_ERROR;
+						end case;
+					when IO_IICBUS_STATUS_RECEIVED_HIGH =>							-- NACK
+						if (SMBUS_COMPLIANCE = TRUE) then
 																															NextState			<= ST_ACK_ERROR;			-- TODO: send stop
-						ELSE
-							CASE Command_d IS
-								WHEN IO_IIC_CMD_PROCESS_CALL =>								NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
-								WHEN OTHERS =>																NextState			<= ST_ERROR;
-							END CASE;
-						END IF;
-					WHEN IO_IICBUS_STATUS_ERROR =>											NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>																			NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_RECEIVE_DATA3 =>
+						else
+							case Command_d is
+								when IO_IIC_CMD_PROCESS_CALL =>								NextState			<= ST_ADDRESS_ERROR;	-- TODO: send stop
+								when others =>																NextState			<= ST_ERROR;
+							end case;
+						end if;
+					when IO_IICBUS_STATUS_ERROR =>											NextState			<= ST_BUS_ERROR;
+					when others =>																			NextState			<= ST_ERROR;
+				end case;
+
+			when ST_RECEIVE_DATA3 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_RECEIVE;
-				
+
 				NextState												<= ST_RECEIVE_DATA3_WAIT;
-				
-			WHEN ST_RECEIVE_DATA3_WAIT =>
+
+			when ST_RECEIVE_DATA3_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-			
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_RECEIVING =>									NULL;
-					WHEN IO_IICBUS_STATUS_RECEIVED_LOW | IO_IICBUS_STATUS_RECEIVED_HIGH =>		-- LOW or HIGH
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_RECEIVING =>									null;
+					when IO_IICBUS_STATUS_RECEIVED_LOW | IO_IICBUS_STATUS_RECEIVED_HIGH =>		-- LOW or HIGH
 						BitCounter_en								<= '1';
 						DataRegister_sh							<= '1';
-					
-						IF (BitCounter_us = (DataRegister_d'length - 1)) THEN										-- current byte is full
+
+						if (BitCounter_us = (DataRegister_d'length - 1)) then										-- current byte is full
 
 -- FIXME: if receive abort is wished => send NACK
 --
---							IF ((Out_LastByte = '1') OR (Command_d = IO_IIC_CMD_READ_BYTE)) THEN
+--							if ((Out_LastByte = '1') OR (Command_d = IO_IIC_CMD_READ_BYTE)) then
 --								NextState								<= ST_SEND_NACK3;
---							ELSE
+--							else
 								NextState								<= ST_SEND_ACK3;
---							END IF;
-						ELSE
+--							end if;
+						else
 							NextState									<= ST_RECEIVE_DATA3;
-						END IF;
-					WHEN IO_IICBUS_STATUS_ERROR =>											NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>																			NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_SEND_ACK3 =>
+						end if;
+					when IO_IICBUS_STATUS_ERROR =>											NextState			<= ST_BUS_ERROR;
+					when others =>																			NextState			<= ST_ERROR;
+				end case;
+
+			when ST_SEND_ACK3 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				BitCounter_rst									<= '1';
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_LOW;			-- ACK
-				
+
 				NextState												<= ST_SEND_ACK3_WAIT;
-				
-			WHEN ST_SEND_ACK3_WAIT =>
+
+			when ST_SEND_ACK3_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_DATA3;			-- receive more bytes
-					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>														NextState			<= ST_ERROR;
-				END CASE;
-			
-			WHEN ST_SEND_NACK3 =>
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_RECEIVE_DATA3;			-- receive more bytes
+					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
+					when others =>														NextState			<= ST_ERROR;
+				end case;
+
+			when ST_SEND_NACK3 =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				BitCounter_rst									<= '1';
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_HIGH;			-- NACK
-				
-				NextState												<= ST_SEND_NACK3_WAIT;
-				
-			WHEN ST_SEND_NACK3_WAIT =>
-				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
-				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_STOP;			-- receiving complete, free bus
-					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>														NextState			<= ST_ERROR;
-				END CASE;
 
-			WHEN ST_SEND_STOP =>
+				NextState												<= ST_SEND_NACK3_WAIT;
+
+			when ST_SEND_NACK3_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
+				IICBC_Request										<= '1';
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_SEND_STOP;			-- receiving complete, free bus
+					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
+					when others =>														NextState			<= ST_ERROR;
+				end case;
+
+			when ST_SEND_STOP =>
+				Master_Grant										<= IICBC_Grant;
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
 				IICBC_Command										<= IO_IICBUS_CMD_SEND_STOP_CONDITION;
-					
+
 				NextState												<= ST_SEND_STOP_WAIT;
-				
-			WHEN ST_SEND_STOP_WAIT =>
+
+			when ST_SEND_STOP_WAIT =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
-				
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTING;
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SENDING;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVING;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALLING;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
+
 				IICBC_Request										<= '1';
-				
-				CASE IICBC_Status IS
-					WHEN IO_IICBUS_STATUS_SENDING =>					NULL;
-					WHEN IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_COMPLETE;
-					WHEN IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
-					WHEN OTHERS =>														NextState			<= ST_ERROR;
-				END CASE;
+
+				case IICBC_Status is
+					when IO_IICBUS_STATUS_SENDING =>					null;
+					when IO_IICBUS_STATUS_SEND_COMPLETE =>		NextState			<= ST_COMPLETE;
+					when IO_IICBUS_STATUS_ERROR =>						NextState			<= ST_BUS_ERROR;
+					when others =>														NextState			<= ST_ERROR;
+				end case;
 
 -- ======================================================================
 
-			WHEN ST_COMPLETE =>
+			when ST_COMPLETE =>
 				Master_Grant										<= IICBC_Grant;
-				CASE CommandCategory IS
-					WHEN EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTE_OK;		-- TODO: IO_IIC_STATUS_EXECUTE_ERROR
-					WHEN SENDING =>			Status_i	<= IO_IIC_STATUS_SEND_COMPLETE;
-					WHEN RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVE_COMPLETE;
-					WHEN CALLING =>			Status_i	<= IO_IIC_STATUS_CALL_COMPLETE;
-					WHEN OTHERS =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
-				END CASE;
+				case CommandCategory is
+					when EXECUTING =>		Status_i	<= IO_IIC_STATUS_EXECUTE_OK;		-- TODO: IO_IIC_STATUS_EXECUTE_ERROR
+					when SENDING =>			Status_i	<= IO_IIC_STATUS_SEND_COMPLETE;
+					when RECEIVING =>		Status_i	<= IO_IIC_STATUS_RECEIVE_COMPLETE;
+					when CALLING =>			Status_i	<= IO_IIC_STATUS_CALL_COMPLETE;
+					when others =>			Status_i	<= ite(SIMULATION, IO_IIC_STATUS_ERROR, IO_IIC_STATUS_IDLE);
+				end case;
 
 				IICBC_Request										<= '1';
 
 				NextState												<= ST_IDLE;
-			
-			WHEN ST_BUS_ERROR =>
+
+			when ST_BUS_ERROR =>
 				Status_i												<= IO_IIC_STATUS_ERROR;
 				Error_i													<= IO_IIC_ERROR_BUS_ERROR;
-				
+
 				-- FIXME: free bus ???
-				
-				NextState												<= ST_IDLE;
-			
-			WHEN ST_ACK_ERROR =>
-				Status_i												<= IO_IIC_STATUS_ERROR;
-				Error_i													<= IO_IIC_ERROR_ACK_ERROR;
-				
-				-- FIXME: free bus !
-				
+
 				NextState												<= ST_IDLE;
 
-			WHEN ST_ADDRESS_ERROR =>
+			when ST_ACK_ERROR =>
+				Status_i												<= IO_IIC_STATUS_ERROR;
+				Error_i													<= IO_IIC_ERROR_ACK_ERROR;
+
+				-- FIXME: free bus !
+
+				NextState												<= ST_IDLE;
+
+			when ST_ADDRESS_ERROR =>
 				Status_i												<= IO_IIC_STATUS_ERROR;
 				Error_i													<= IO_IIC_ERROR_ADDRESS_ERROR;
-				
+
 				-- FIXME: free bus !
-				
+
 				NextState												<= ST_IDLE;
-			
-			WHEN ST_ERROR =>
+
+			when ST_ERROR =>
 				Status_i												<= IO_IIC_STATUS_ERROR;
 				Error_i													<= IO_IIC_ERROR_FSM;
 				NextState												<= ST_IDLE;
-			
-		END CASE;
-	END PROCESS;
+
+		end case;
+	end process;
 
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF ((Reset OR BitCounter_rst) = '1') THEN
-				BitCounter_us						<= (OTHERS => '0');
-			ELSE
-				IF (BitCounter_en	= '1') THEN
-					BitCounter_us					<= BitCounter_us + 1;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or BitCounter_rst) = '1') then
+				BitCounter_us						<= (others => '0');
+			elsif (BitCounter_en	= '1') then
+				BitCounter_us					<= BitCounter_us + 1;
+			end if;
+		end if;
+	end process;
 
-	PROCESS(Clock, IICBC_Status)
-		VARIABLE DataRegister_si		: STD_LOGIC;
-	BEGIN
-		CASE IICBC_Status IS
-			WHEN IO_IICBUS_STATUS_RECEIVED_LOW =>			DataRegister_si	:= '0';
-			WHEN IO_IICBUS_STATUS_RECEIVED_HIGH =>		DataRegister_si	:= '1';
-			WHEN OTHERS =>														DataRegister_si	:= 'X';
-		END CASE;
-	
-		IF rising_edge(Clock) THEN
-			IF (Reset = '1') THEN
+	process(Clock, IICBC_Status)
+		variable DataRegister_si		: std_logic;
+	begin
+		case IICBC_Status is
+			when IO_IICBUS_STATUS_RECEIVED_LOW =>			DataRegister_si	:= '0';
+			when IO_IICBUS_STATUS_RECEIVED_HIGH =>		DataRegister_si	:= '1';
+			when others =>														DataRegister_si	:= 'X';
+		end case;
+
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				Command_d							<= IO_IIC_CMD_NONE;
-				Device_Address_d			<= (OTHERS => '0');
-				DataRegister_d				<= (OTHERS => '0');
-			ELSE
-				IF (Command_en	= '1') THEN
+				Device_Address_d			<= (others => '0');
+				DataRegister_d				<= (others => '0');
+			else
+				if (Command_en	= '1') then
 					Command_d						<= Master_Command;
-				END IF;
-			
-				IF (Device_Address_en	= '1') THEN
+				end if;
+
+				if (Device_Address_en	= '1') then
 					Device_Address_d		<= Master_Address;
-				ELSIF (Device_Address_sh = '1') THEN
-					Device_Address_d		<= Device_Address_d(Device_Address_d'high - 1 DOWNTO 0) & Device_Address_d(Device_Address_d'high);
-				END IF;
-				
-				IF (DataRegister_en	= '1') THEN
+				elsif (Device_Address_sh = '1') then
+					Device_Address_d		<= Device_Address_d(Device_Address_d'high - 1 downto 0) & Device_Address_d(Device_Address_d'high);
+				end if;
+
+				if (DataRegister_en	= '1') then
 					DataRegister_d			<= Master_WP_Data;
-				ELSIF (DataRegister_sh = '1') THEN
-					DataRegister_d			<= DataRegister_d(DataRegister_d'high - 1 DOWNTO 0) & DataRegister_si;
-				END IF;
-				
-				IF (LastRegister_en	= '1') THEN
+				elsif (DataRegister_sh = '1') then
+					DataRegister_d			<= DataRegister_d(DataRegister_d'high - 1 downto 0) & DataRegister_si;
+				end if;
+
+				if (LastRegister_en	= '1') then
 					LastRegister_d			<= Master_WP_Last;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	Master_Status		<= Status_i;
 	Master_Error		<= Error_i;
-	
+
 	Master_RP_Data	<= DataRegister_d;
 
-	IICBC : ENTITY PoC.iic_IICBusController
-		GENERIC MAP (
+	IICBC : entity PoC.iic_BusController
+		generic map (
 			CLOCK_FREQ										=> CLOCK_FREQ,
 			IIC_BUSMODE										=> IIC_BUSMODE,
 			ALLOW_MEALY_TRANSITION				=> ALLOW_MEALY_TRANSITION
 		)
-		PORT MAP (
+		port map (
 			Clock													=> Clock,
 			Reset													=> Reset,
-			
+
 			Request												=> IICBC_Request,
 			Grant													=> IICBC_Grant,
-			
+
 			Command												=> IICBC_Command,
 			Status												=> IICBC_Status,
 
@@ -1082,85 +1080,85 @@ BEGIN
 	SerialClock_t		<= SerialClock_t_i;
 	SerialData_t		<= SerialData_t_i;
 
-	genDBG : IF (DEBUG = TRUE) GENERATE
+	genDBG : if (DEBUG = TRUE) generate
 		-- Configuration
-		CONSTANT DBG_TRIGGER_DELAY		: POSITIVE		:= 4;
-		CONSTANT DBG_TRIGGER_WINDOWS	: POSITIVE		:= 6;
+		constant DBG_TRIGGER_DELAY		: positive		:= 4;
+		constant DBG_TRIGGER_WINDOWS	: positive		:= 6;
 
---		CONSTANT STATES		: POSITIVE		:= T_STATE'pos(ST_ERROR) + 1;
---		CONSTANT BITS			: POSITIVE		:= log2ceilnz(STATES);
-		CONSTANT BITS			: POSITIVE		:= log2ceil(T_STATE'pos(T_STATE'high));
-	
-		FUNCTION to_slv(State : T_STATE) RETURN STD_LOGIC_VECTOR IS
-		BEGIN
-			RETURN to_slv(T_STATE'pos(State), BITS);
-		END FUNCTION;
-	
+--		constant STATES		: POSITIVE		:= T_STATE'pos(ST_ERROR) + 1;
+--		constant BITS			: POSITIVE		:= log2ceilnz(STATES);
+		constant BITS			: positive		:= log2ceil(T_STATE'pos(T_STATE'high));
+
+		function to_slv(State : T_STATE) return std_logic_vector is
+		begin
+			return to_slv(T_STATE'pos(State), BITS);
+		end function;
+
 		-- debugging signals
-		TYPE T_DBG_CHIPSCOPE IS RECORD
+		type T_DBG_CHIPSCOPE is record
 			Command						: T_IO_IIC_COMMAND;
 			Status						: T_IO_IIC_STATUS;
-			Device_Address		: STD_LOGIC_VECTOR(6 DOWNTO 0);
+			Device_Address		: std_logic_vector(6 downto 0);
 			DataIn						: T_SLV_8;
 			DataOut						: T_SLV_8;
-			State							: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
+			State							: std_logic_vector(BITS - 1 downto 0);
 			IICBC_Command			: T_IO_IICBUS_COMMAND;
 			IICBC_Status			: T_IO_IICBUS_STATUS;
-			Clock_i						: STD_LOGIC;
-			Clock_t						: STD_LOGIC;
-			Data_i						: STD_LOGIC;
-			Data_t						: STD_LOGIC;
-		END RECORD;
-		
-		TYPE T_DBG_CHIPSCOPE_VECTOR	IS ARRAY(NATURAL RANGE <>) OF T_DBG_CHIPSCOPE;
-		
-		SIGNAL DBG_DebugVector_d		: T_DBG_CHIPSCOPE_VECTOR(DBG_TRIGGER_DELAY DOWNTO 0);
-		
+			Clock_i						: std_logic;
+			Clock_t						: std_logic;
+			Data_i						: std_logic;
+			Data_t						: std_logic;
+		end record;
+
+		type T_DBG_CHIPSCOPE_VECTOR	is array(natural range <>) of T_DBG_CHIPSCOPE;
+
+		signal DBG_DebugVector_d		: T_DBG_CHIPSCOPE_VECTOR(DBG_TRIGGER_DELAY downto 0);
+
 		-- edge detection FFs
-		SIGNAL SerialClock_t_d			: STD_LOGIC																					:= '0';
-		SIGNAL SerialData_t_d				: STD_LOGIC																					:= '0';
-		
+		signal SerialClock_t_d			: std_logic																					:= '0';
+		signal SerialData_t_d				: std_logic																					:= '0';
+
 		-- trigger delay FFs / trigger valid-window FF
-		SIGNAL Trigger_d						: STD_LOGIC_VECTOR(DBG_TRIGGER_WINDOWS DOWNTO 0)		:= (OTHERS => '0');
-		SIGNAL Valid_r							: STD_LOGIC																					:= '0';
-		
+		signal Trigger_d						: std_logic_vector(DBG_TRIGGER_WINDOWS downto 0)		:= (others => '0');
+		signal Valid_r							: std_logic																					:= '0';
+
 		-- ChipScope trigger signals
-		SIGNAL DBG_Trigger					: STD_LOGIC;
-		SIGNAL DBG_Valid						: STD_LOGIC;
+		signal DBG_Trigger					: std_logic;
+		signal DBG_Valid						: std_logic;
 
 		-- ChipScope data signals
-		SIGNAL DBG_Command					: T_IO_IIC_COMMAND;
-		SIGNAL DBG_Status						: T_IO_IIC_STATUS;
-		SIGNAL DBG_Device_Address		: STD_LOGIC_VECTOR(ADDRESS_BITS - 1 DOWNTO 0);
-		SIGNAL DBG_DataIn						: T_SLV_8;
-		SIGNAL DBG_DataOut					: T_SLV_8;
-		SIGNAL DBG_State						: STD_LOGIC_VECTOR(BITS - 1 DOWNTO 0);
-		SIGNAL DBG_IICBC_Command		: T_IO_IICBUS_COMMAND;
-		SIGNAL DBG_IICBC_Status			: T_IO_IICBUS_STATUS;
-		SIGNAL DBG_Clock_i					: STD_LOGIC;
-		SIGNAL DBG_Clock_t					: STD_LOGIC;
-		SIGNAL DBG_Data_i						: STD_LOGIC;
-		SIGNAL DBG_Data_t						: STD_LOGIC;
-		
---		CONSTANT DBG_temp						: STD_LOGIC_VECTOR		:= to_slv(ST_SEND_REGISTER_ADDRESS_WAIT);
-		
-		ATTRIBUTE KEEP OF DBG_Command					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_Status					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_Device_Address	: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_DataIn					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_DataOut					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_State						: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_IICBC_Command		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_IICBC_Status		: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_Clock_i					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_Clock_t					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_Data_i					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_Data_t					: SIGNAL IS TRUE;
-		
-		ATTRIBUTE KEEP OF DBG_Trigger					: SIGNAL IS TRUE;
-		ATTRIBUTE KEEP OF DBG_Valid						: SIGNAL IS TRUE;
-		
-	BEGIN
+		signal DBG_Command					: T_IO_IIC_COMMAND;
+		signal DBG_Status						: T_IO_IIC_STATUS;
+		signal DBG_Device_Address		: std_logic_vector(ADDRESS_BITS - 1 downto 0);
+		signal DBG_DataIn						: T_SLV_8;
+		signal DBG_DataOut					: T_SLV_8;
+		signal DBG_State						: std_logic_vector(BITS - 1 downto 0);
+		signal DBG_IICBC_Command		: T_IO_IICBUS_COMMAND;
+		signal DBG_IICBC_Status			: T_IO_IICBUS_STATUS;
+		signal DBG_Clock_i					: std_logic;
+		signal DBG_Clock_t					: std_logic;
+		signal DBG_Data_i						: std_logic;
+		signal DBG_Data_t						: std_logic;
+
+--		constant DBG_temp						: STD_LOGIC_VECTOR		:= to_slv(ST_SEND_REGisTER_ADDRESS_WAIT);
+
+		attribute KEEP of DBG_Command					: signal is TRUE;
+		attribute KEEP of DBG_Status					: signal is TRUE;
+		attribute KEEP of DBG_Device_Address	: signal is TRUE;
+		attribute KEEP of DBG_DataIn					: signal is TRUE;
+		attribute KEEP of DBG_DataOut					: signal is TRUE;
+		attribute KEEP of DBG_State						: signal is TRUE;
+		attribute KEEP of DBG_IICBC_Command		: signal is TRUE;
+		attribute KEEP of DBG_IICBC_Status		: signal is TRUE;
+		attribute KEEP of DBG_Clock_i					: signal is TRUE;
+		attribute KEEP of DBG_Clock_t					: signal is TRUE;
+		attribute KEEP of DBG_Data_i					: signal is TRUE;
+		attribute KEEP of DBG_Data_t					: signal is TRUE;
+
+		attribute KEEP of DBG_Trigger					: signal is TRUE;
+		attribute KEEP of DBG_Valid						: signal is TRUE;
+
+	begin
 		DBG_DebugVector_d(0).Command					<= Master_Command;
 		DBG_DebugVector_d(0).Status						<= Status_i;
 		DBG_DebugVector_d(0).Device_Address		<= Master_Address;
@@ -1173,11 +1171,11 @@ BEGIN
 		DBG_DebugVector_d(0).Clock_t					<= SerialClock_t_i;
 		DBG_DebugVector_d(0).Data_i						<= SerialData_i;
 		DBG_DebugVector_d(0).Data_t						<= SerialData_t_i;
-	
-		genDataDelay : FOR I IN 0 TO DBG_DebugVector_d'high - 1 GENERATE
-			DBG_DebugVector_d(I + 1)	<= DBG_DebugVector_d(I) WHEN rising_edge(Clock);
-		END GENERATE;
-		
+
+		genDataDelay : for i in 0 to DBG_DebugVector_d'high - 1 generate
+			DBG_DebugVector_d(i + 1)	<= DBG_DebugVector_d(i) when rising_edge(Clock);
+		end generate;
+
 		DBG_Command						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Command;
 		DBG_Status						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Status;
 		DBG_Device_Address		<= DBG_DebugVector_d(DBG_DebugVector_d'high).Device_Address;
@@ -1190,22 +1188,22 @@ BEGIN
 		DBG_Clock_t						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Clock_t;
 		DBG_Data_i						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Data_i;
 		DBG_Data_t						<= DBG_DebugVector_d(DBG_DebugVector_d'high).Data_t;
-		
-		SerialClock_t_d				<= SerialClock_t_i		WHEN rising_edge(Clock);
-		SerialData_t_d				<= SerialData_t_i			WHEN rising_edge(Clock);
-		
+
+		SerialClock_t_d				<= SerialClock_t_i		when rising_edge(Clock);
+		SerialData_t_d				<= SerialData_t_i			when rising_edge(Clock);
+
 		-- trigger on all edges and on all signal lines
-		Trigger_d(0)					<= (SerialClock_t_i XOR SerialClock_t_d) OR
-														 (SerialData_t_i	XOR SerialData_t_d);
-		
-		genTriggerDelay : FOR I IN 0 TO Trigger_d'high - 1 GENERATE
-			Trigger_d(I + 1)		<= Trigger_d(I) WHEN rising_edge(Clock);
-		END GENERATE;
-		
+		Trigger_d(0)					<= (SerialClock_t_i xor SerialClock_t_d) or
+														 (SerialData_t_i	xor SerialData_t_d);
+
+		genTriggerDelay : for i in 0 to Trigger_d'high - 1 generate
+			Trigger_d(i + 1)		<= Trigger_d(i) when rising_edge(Clock);
+		end generate;
+
 		DBG_Trigger						<= Trigger_d(DBG_TRIGGER_DELAY);
-		DBG_Valid							<= Trigger_d(0) OR Valid_r;
-		
+		DBG_Valid							<= Trigger_d(0) or Valid_r;
+
 		--											RS-FF:	Q					RST						SET								CLOCK
-		Valid_r								<= ffrs(Valid_r, DBG_Trigger, Trigger_d(0)) WHEN rising_edge(Clock);
-	END GENERATE;
-END;
+		Valid_r								<= ffrs(Valid_r, DBG_Trigger, Trigger_d(0)) when rising_edge(Clock);
+	end generate;
+end architecture;

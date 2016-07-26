@@ -1,40 +1,43 @@
 [*]
-[*] GTKWave Analyzer v3.3.66 (w)1999-2015 BSI
-[*] Sun Nov 15 23:19:31 2015
+[*] GTKWave Analyzer v3.3.61 (w)1999-2014 BSI
+[*] Mon Feb 08 22:04:01 2016
 [*]
-[dumpfile] "D:\git\PoC\temp\ghdl\ddrio_inout_tb.vcd"
-[dumpfile_mtime] "Sun Nov 15 23:16:54 2015"
-[dumpfile_size] 21512
-[savefile] "D:\git\PoC\sim\io\ddrio\ddrio_inout_tb.gtkw"
+[dumpfile_mtime] "Mon Feb 08 22:02:12 2016"
+[dumpfile_size] 8194
 [timestart] 0
-[size] 1000 600
-[pos] -1 -1
-*-28.117842 80000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 1680 997
+[pos] -35 -35
+*-26.984749 80000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.ddrio_inout_tb.
 [sst_width] 197
 [signals_width] 166
 [sst_expanded] 1
-[sst_vpaned_height] 153
+[sst_vpaned_height] 293
 @200
 -Input side
 @28
-clockin
-clockinenable
-datain_high[1:0]
-datain_low[1:0]
+top.ddrio_inout_tb.clockin
+top.ddrio_inout_tb.clockinenable
+#{top.ddrio_inout_tb.datain_low[1:0]} top.ddrio_inout_tb.datain_low[1] top.ddrio_inout_tb.datain_low[0]
+@c00029
+#{top.ddrio_inout_tb.datain_high[1:0]} top.ddrio_inout_tb.datain_high[1] top.ddrio_inout_tb.datain_high[0]
+@28
+top.ddrio_inout_tb.datain_high[1]
+top.ddrio_inout_tb.datain_high[0]
+@1401201
+-group_end
 @200
 -Pad
 @28
-pad[1:0]
+#{top.ddrio_inout_tb.pad[1:0]} top.ddrio_inout_tb.pad[1] top.ddrio_inout_tb.pad[0]
 @200
 -output side
 @28
-clockout
-clockoutenable
-@29
-outputenable
-@28
-dataout_high[1:0]
-dataout_low[1:0]
-stopped
+top.ddrio_inout_tb.clockout
+top.ddrio_inout_tb.clockoutenable
+top.ddrio_inout_tb.outputenable
+#{top.ddrio_inout_tb.dataout_low[1:0]} top.ddrio_inout_tb.dataout_low[1] top.ddrio_inout_tb.dataout_low[0]
+#{top.ddrio_inout_tb.dataout_high[1:0]} top.ddrio_inout_tb.dataout_high[1] top.ddrio_inout_tb.dataout_high[0]
 [pattern_trace] 1
 [pattern_trace] 0

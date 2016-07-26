@@ -4,21 +4,38 @@
 # Documentation
 README.md
 
+# Xilinx Memory Interface Generator (MIG)
+mig/
+
+# reconfig
+reconfig/
+
 # Package
 xil.pkg.vhdl
 
 # ChipScope
+xil_ChipScopeICON.files
 xil_ChipScopeICON.vhdl
 xil_ChipScopeICON_*.xco
 
 # JTAG / Boundary Scan
+xil_BSCAN.files
 xil_BSCAN.vhdl
 
 # Reconfiguration / Dynamic Reconfiguration Port
-#xil_DRP_BusMux.vhdl
-#xil_DRP_BusSync.vhdl
+# xil_DRP_BusMux.files
+# xil_DRP_BusMux.vhdl
+# xil_DRP_BusSync.files
+# xil_DRP_BusSync.vhdl
+xil_Reconfigurator.files
 xil_Reconfigurator.vhdl
 
+# ICAP
+xil_ICAP.vhdl
+xil_ICAP.files
+
 # SystemMonitor
+# xil_SystemMonitor.files
+# xil_SystemMonitor.vhdl
 xil_SystemMonitor_Series7.vhdl
 xil_SystemMonitor_Virtex6.vhdl

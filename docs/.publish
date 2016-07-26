@@ -1,0 +1,21 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Contributor License Agreements
+ICLA.md
+CCLA.md
+
+# Sphinx documentation
+conf.py
+_static/
+_templates/
+_themes/
+*/
+*.rst
+
+poc.py
+# make.bat
+# Makefile

@@ -1,0 +1,43 @@
+[*]
+[*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
+[*] Wed Feb 10 11:48:44 2016
+[*]
+[dumpfile] "H:\Austausch\PoC\temp\ghdl\sata_TransceiverLayer_tb.ghw"
+[dumpfile_mtime] "Wed Feb 10 11:43:46 2016"
+[dumpfile_size] 44839
+[savefile] "H:\Austausch\PoC\sim\sata\sata_TransceiverLayer_tb.gtkw"
+[timestart] 0
+[size] 1680 997
+[pos] -87 -87
+*-28.005386 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.sata_transceiverlayer_tb.
+[treeopen] top.sata_transceiverlayer_tb.uut.
+[treeopen] top.sata_transceiverlayer_tb.uut.[0].
+[treeopen] top.sata_transceiverlayer_tb.uut.error.
+[sst_width] 292
+[signals_width] 230
+[sst_expanded] 1
+[sst_vpaned_height] 293
+@28
+top.sata_transceiverlayer_tb.powerdown
+top.sata_transceiverlayer_tb.sata_refclock
+top.sata_transceiverlayer_tb.uut.powerdown[0]
+top.sata_transceiverlayer_tb.uut.clocknetwork_reset[0]
+top.sata_transceiverlayer_tb.uut.clocknetwork_resetdone[0]
+top.sata_transceiverlayer_tb.uut.sata_clock_stable[0]
+top.sata_transceiverlayer_tb.uut.sata_clock[0]
+top.sata_transceiverlayer_tb.uut.reset[0]
+top.sata_transceiverlayer_tb.uut.resetdone[0]
+top.sata_transceiverlayer_tb.uut.command[0]
+top.sata_transceiverlayer_tb.uut.status[0]
+top.sata_transceiverlayer_tb.uut.error[0].common
+top.sata_transceiverlayer_tb.uut.error[0].tx
+top.sata_transceiverlayer_tb.uut.error[0].rx
+@29
+top.sata_transceiverlayer_tb.uut[0].state
+@28
+top.sata_transceiverlayer_tb.sata_private_out.tx_p
+top.sata_transceiverlayer_tb.sata_private_in.rx_p
+[pattern_trace] 1
+[pattern_trace] 0

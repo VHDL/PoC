@@ -1,12 +1,12 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Patrick Lehmann
--- 
+--
 -- Testbench:				Pseudo-Random Number Generator (PRNG).
--- 
+--
 -- Description:
 -- ------------------------------------
 --		Automated testbench for PoC.arith_prng
@@ -17,13 +17,13 @@
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,16 +41,16 @@ use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
 -- simulation only packages
-use			PoC.sim_global.all;
 use			PoC.sim_types.all;
 use			PoC.simulation.all;
+use			PoC.waveform.all;
 
 
 entity arith_prng_tb is
 end entity;
 
 
-architecture test of arith_prng_tb is
+architecture tb of arith_prng_tb is
 	constant CLOCK_FREQ							: FREQ					:= 100 MHz;
 
 	constant COMPARE_LIST_8_BITS		: T_SLVV_8			:= (
@@ -72,64 +72,58 @@ architecture test of arith_prng_tb is
 		x"9A", x"34", x"69", x"D3", x"A7", x"4F", x"9E", x"3C", x"78", x"F0", x"E0", x"C1", x"82", x"04", x"09", x"12"
 	);
 
-	constant BITS				: POSITIVE				:= 8;
-	
-	constant simTestID	: T_SIM_TEST_ID		:= simCreateTest("Test setup for BITS=" & INTEGER'image(BITS));
-	
-	signal Clock				: STD_LOGIC;
-	signal Reset				: STD_LOGIC;
-	signal Test_got			: STD_LOGIC;
-	signal PRNG_Value		: STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	
+	constant BITS				: positive					:= 8;
+	constant SEED				: std_logic_vector	:= x"12";
+	constant simTestID	: T_SIM_TEST_ID			:= simCreateTest("Test setup for BITS=" & integer'image(BITS) & "; SEED=0x" & raw_format_slv_hex(SEED));
+
+	signal Clock				: std_logic;
+	signal Reset				: std_logic;
+	signal Test_got			: std_logic;
+	signal PRNG_Value		: std_logic_vector(BITS - 1 downto 0);
+
 begin
 	-- initialize global simulation status
 	simInitialize;
-	
-	-- generate global testbench clock
-	simGenerateClock(Clock, CLOCK_FREQ);
-	simGenerateWaveform(Reset, simGenerateWaveform_Reset(Pause => 15 ns, ResetPulse => 10 ns));
+	-- generate global testbench clock and reset
+	simGenerateClock(simTestID,			Clock, CLOCK_FREQ);
+	simGenerateWaveform(simTestID,	Reset, simGenerateWaveform_Reset(Pause => 10 ns, ResetPulse => 10 ns));
 
-	prng : entity PoC.arith_prng
+	UUT : entity PoC.arith_prng
 		generic map (
 			BITS		=> 8,
-			SEED		=> x"12"
+			SEED		=> SEED
 		)
 		port map (
-			clk			=> Clock,						
+			clk			=> Clock,
 			rst			=> Reset,						-- reset value to initial seed
 			got			=> Test_got,				-- the current value has been got, and a new value should be calculated
 			val			=> PRNG_Value				-- the pseudo-random number
 		);
 
 	procChecker : process
-		-- from Simulation
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker for " & INTEGER'image(BITS) & " bits");	--, "aaa/bbb/ccc");	--globalSimulationStatus'instance_name);
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Checker for " & integer'image(BITS) & " bits");
 	begin
 		Test_got						<= '0';
-		
+
 		wait until falling_edge(Reset);
 		wait until rising_edge(Clock);
 
 		for i in COMPARE_LIST_8_BITS'range loop
 			Test_got			<= '1';
-			
+
 			wait until rising_edge(Clock);
-			simAssertion((PRNG_Value = COMPARE_LIST_8_BITS(I)),
-				str_ralign(INTEGER'image(I), log10ceil(COMPARE_LIST_8_BITS'high)) &
+			simAssertion((PRNG_Value = COMPARE_LIST_8_BITS(i)),
+				str_ralign(integer'image(i), log10ceil(COMPARE_LIST_8_BITS'high)) &
 				": Value=" &		raw_format_slv_hex(PRNG_Value) &
-				" Expected=" &	raw_format_slv_hex(COMPARE_LIST_8_BITS(I))
+				" Expected=" &	raw_format_slv_hex(COMPARE_LIST_8_BITS(i))
 			);
 		end loop;
-		
+
 		Test_got				<= '0';
-		for i in 0 to 3 loop
-			wait until rising_edge(Clock);
-		end loop;
-		
+		simWaitUntilRisingEdge(Clock, 4);
+
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
-		-- Report overall result
-		simFinalize;
 		wait;  -- forever
 	end process;
 end architecture;

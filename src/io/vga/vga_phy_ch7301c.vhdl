@@ -1,29 +1,28 @@
 -- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
--- ============================================================================
+-- =============================================================================
 -- Authors:					Martin Zabel
--- 
--- Module:					PhysicalLayer controller for external CH7301C DVI Transmitter.
+--
+-- Entity:					PhysicalLayer controller for external CH7301C DVI Transmitter.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --	The clock frequency must be the same as used for the timing module,
 --	e.g., 25 MHZ for VGA 640x480. A phase-shifted clock must be provided:
 --	- clk0	:		0 degrees
 --	- clk90	:	90 degrees
---	
+--
 --	pixel_data(23 downto 16) : red
 --	pixel_data(15 downto	8) : green
 --	pixel_data( 7 downto	0) : blue
---	
+--
 --	The "reset_b"-pin must be driven by other logic (such as the reset button).
---	
+--
 --	The IIC_interface is not part of this modules, as an IIC-master controls
 --	several slaves. The following registers must be set, see
 --	tests/ml505/vga_test_ml505.vhdl for an example.
---	
+--
 --	Register			Value				Description
 --	-----------------------------------
 --	0x49 PM				0xC0				Enable DVI, RGB bypass off
@@ -34,27 +33,27 @@
 --	0x1F IDF			0x80				when using SMT (VS0, HS0)
 --						 or 0x90				when using CVT (VS1, HS0)
 --	0x21 DC				0x09				Enable DAC if RGB bypass is on
---	
+--
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --											Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.ALL;
+use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
 library	PoC;
@@ -88,12 +87,12 @@ architecture rtl of vga_phy_ch7301c is
 	attribute iob of dvi_h_r	: signal is "TRUE";
 	attribute iob of dvi_v_r	: signal is "TRUE";
 	attribute iob of dvi_de_r	: signal is "TRUE";
-	
+
 begin
 	-- CH7301C Input Data Format "RGB" (IDF 0)
 	-- Blank on beam return.
 	data <= pixel_data and (pixel_data'range => phy_ctrl.beam_on);
-	
+
 	-- Timing: Data changes with 0 / 180 degrees.
 	-- Clock changes with 90 degrees.
 
@@ -112,7 +111,7 @@ begin
 			Pad(0)				=> dvi_xclk_p,
 			Pad(1)				=> dvi_xclk_n
 		);
-	
+
 	-- Output control signals (single data rate)
 	-- Registers must be placed into IOBs.
 	process (clk0)
@@ -127,7 +126,7 @@ begin
 	dvi_v		<= dvi_v_r;
 	dvi_h		<= dvi_h_r;
 	dvi_de	<= dvi_de_r;
-	
+
 	-- Output data signals (dual data rate)
 	data_out : entity PoC.ddrio_out
 		generic map (

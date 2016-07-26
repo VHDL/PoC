@@ -1,0 +1,22 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Scripts for the Travis-CI flow
+ghdl.setup.sh
+grc.setup.sh
+poc.setup.sh
+poc.run.sh
+poc.run.grcrules
+
+# Python 3 - package requirements
+requirements.txt
+
+# PoC configuration files
+config.private.ini
+my_project.vhdl
+
+# WORKAROUND: needed until GHDL ships vendor compile scripts in the monthly build
+ghdl/

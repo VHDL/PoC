@@ -1,28 +1,27 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Steffen Koehler
 --
--- Module: 					Old Device Detector for Transceivers
+-- Entity: 					Old Device Detector for Transceivers
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- TO BE REMOVED.
--- 
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,116 +29,116 @@
 -- limitations under the License.
 -- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.physical.ALL;
---USE			PoC.sata.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.physical.all;
+--use			PoC.sata.all;
 
 
-ENTITY sata_DeviceDetector IS
-	GENERIC (
-		DEBUG								: BOOLEAN	:= FALSE;
+entity sata_DeviceDetector is
+	generic (
+		DEBUG								: boolean	:= FALSE;
 		CLOCK_FREQ					: FREQ		:= 150 MHz;
 		NO_DEVICE_TIMEOUT		: T_TIME	:= 50.0e-3;
 		NEW_DEVICE_TIMEOUT	: T_TIME	:= 1.0e-3
 	);
-	PORT (
-		Clock						: IN STD_LOGIC;
-		ElectricalIDLE	: IN STD_LOGIC;
-		RxComReset			: IN STD_LOGIC;
-		NoDevice				: OUT STD_LOGIC;
-		NewDevice				: OUT STD_LOGIC
+	port (
+		Clock						: in std_logic;
+		ElectricalIDLE	: in std_logic;
+		RxComReset			: in std_logic;
+		NoDevice				: out std_logic;
+		NewDevice				: out std_logic
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF sata_DeviceDetector IS
-	ATTRIBUTE KEEP					: BOOLEAN;
-	ATTRIBUTE FSM_ENCODING	: STRING;
+architecture rtl of sata_DeviceDetector is
+	attribute KEEP					: boolean;
+	attribute FSM_ENCODING	: string;
 
 	-- Statemachine
-	TYPE T_State IS (ST_NORMAL_MODE, ST_NO_DEVICE, ST_OOB_RESET, ST_NEW_DEVICE);
+	type T_State is (ST_NORMAL_MODE, ST_NO_DEVICE, ST_OOB_RESET, ST_NEW_DEVICE);
 
-	SIGNAL State										: T_State	:= ST_NORMAL_MODE;
-	SIGNAL NextState								: T_State;
-	ATTRIBUTE FSM_ENCODING OF State	: SIGNAL IS ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
+	signal State										: T_State	:= ST_NORMAL_MODE;
+	signal NextState								: T_State;
+	attribute FSM_ENCODING of State	: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 
-	SIGNAL ElectricalIDLE_sync	: STD_LOGIC;
-	SIGNAL ElectricalIDLE_i			: STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
-	SIGNAL RxComReset_i					: STD_LOGIC_VECTOR(1 DOWNTO 0);
+	signal ElectricalIDLE_sync	: std_logic;
+	signal ElectricalIDLE_i			: std_logic_vector(1 downto 0) := "00";
+	signal RxComReset_i					: std_logic_vector(1 downto 0);
 
-	SIGNAL TC_load				: STD_LOGIC;
-	SIGNAL TC_en					: STD_LOGIC;
-	SIGNAL TC_timeout			: STD_LOGIC;
-	SIGNAL TD_load				: STD_LOGIC;
-	SIGNAL TD_timeout			: STD_LOGIC;
+	signal TC_load				: std_logic;
+	signal TC_en					: std_logic;
+	signal TC_timeout			: std_logic;
+	signal TD_load				: std_logic;
+	signal TD_timeout			: std_logic;
 
-BEGIN
+begin
 
 	-- synchronize ElectricalIDLE to working clock domain
-	sync1_DDClock : ENTITY PoC.sync_Flag
-	PORT MAP (
+	sync1_DDClock : entity PoC.sync_Bits
+	port map (
 		Clock		=> Clock,		-- Clock to be synchronized to
 		Input(0)	=> ElectricalIDLE,	-- Data to be synchronized
 		Output(0)	=> ElectricalIDLE_sync	-- synchronised data
 	);
 
-	ElectricalIDLE_i <= ElectricalIDLE_i(0) & ElectricalIDLE_sync WHEN rising_edge(Clock);
-	RxComReset_i <= RxComReset_i(0) & RxComReset WHEN rising_edge(Clock);
+	ElectricalIDLE_i <= ElectricalIDLE_i(0) & ElectricalIDLE_sync when rising_edge(Clock);
+	RxComReset_i <= RxComReset_i(0) & RxComReset when rising_edge(Clock);
 
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
 			State <= NextState;
-		END IF;
-	END PROCESS;
+		end if;
+	end process;
 
-	PROCESS(State, ElectricalIDLE_i, TC_timeout, TD_timeout)
-	BEGIN
+	process(State, ElectricalIDLE_i, TC_timeout, TD_timeout)
+	begin
 		NextState			<= State;
 
 		NoDevice			<= '0';
 		NewDevice			<= '0';
 		TD_load				<= '0';
 
-		CASE State IS
-			WHEN ST_NORMAL_MODE =>
-				IF (TC_timeout = '1') THEN
+		case State is
+			when ST_NORMAL_MODE =>
+				if (TC_timeout = '1') then
 					NextState	<= ST_NO_DEVICE;
-				END IF;
+				end if;
 
-			WHEN ST_NO_DEVICE =>
+			when ST_NO_DEVICE =>
 				NoDevice		<= '1';
 
-				IF RxComReset_i = "01" THEN
+				if RxComReset_i = "01" then
 					NextState	<= ST_OOB_RESET;
 					TD_load		<= '1';
-				END IF;
-				
-			WHEN ST_OOB_RESET =>
+				end if;
 
-				IF (TD_timeout = '1') THEN
+			when ST_OOB_RESET =>
+
+				if (TD_timeout = '1') then
 					NextState	<= ST_NEW_DEVICE;
-				END IF;
+				end if;
 
-			WHEN ST_NEW_DEVICE =>
+			when ST_NEW_DEVICE =>
 				NewDevice		<= '1';
 				NextState		<= ST_NORMAL_MODE;
 
-		END CASE;
-	END PROCESS;
-	
-	NO_TC : ENTITY PoC.io_TimingCounter
-	GENERIC MAP ( -- timing table
+		end case;
+	end process;
+
+	NO_TC : entity PoC.io_TimingCounter
+	generic map ( -- timing table
 		TIMING_TABLE => T_NATVEC'(0 => TimingToCycles(NO_DEVICE_TIMEOUT, CLOCK_FREQ))
 	)
-	PORT MAP (
+	port map (
 		Clock	=> Clock,
 		Enable	=> TC_en,
 		Load	=> TC_load,
@@ -150,11 +149,11 @@ BEGIN
 	TC_load <= ElectricalIDLE_i(0) and not ElectricalIDLE_i(1);
 	TC_en <= ElectricalIDLE_i(0);
 
-	NEW_TC : ENTITY PoC.io_TimingCounter
-	GENERIC MAP ( -- timing table
+	NEW_TC : entity PoC.io_TimingCounter
+	generic map ( -- timing table
 		TIMING_TABLE => T_NATVEC'(0 => TimingToCycles(NEW_DEVICE_TIMEOUT, CLOCK_FREQ))
 	)
-	PORT MAP (
+	port map (
 		Clock	=> Clock,
 		Enable	=> '1',
 		Load	=> TD_load,
@@ -162,4 +161,4 @@ BEGIN
 		Timeout	=> TD_timeout
 	);
 
-END;
+end;

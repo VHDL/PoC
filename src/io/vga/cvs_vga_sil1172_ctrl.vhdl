@@ -4,7 +4,7 @@
 -- Faculty of Computer Science
 -- Institute for Computer Engineering
 -- Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- For internal educational use only.
 -- The distribution of source code or generated files
 -- is prohibited.
@@ -13,7 +13,7 @@
 --
 -- Entity: vga_sil1172_ctrl
 -- Author(s): Jan Schirok, Martin Zabel
--- 
+--
 -- Physical layer controller for external SIL1172 DVI transmitter.
 -- See also ../README.
 --
@@ -27,7 +27,7 @@
 -- pixel_data( 7 downto  0) : blue
 --
 -- The implementation is taken from CH7301C DVI interface.
--- In comparison to the Chrontel Device, the SIL1172 doesn't need an 
+-- In comparison to the Chrontel Device, the SIL1172 doesn't need an
 -- initialization via I2C, thus all configuration is done via external
 -- signal lines. These are statically driven to low/high in this module.
 --
@@ -36,7 +36,7 @@
 --
 
 library ieee;
-use ieee.std_logic_1164.ALL;
+use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library poc;
@@ -44,7 +44,7 @@ use poc.vga.all;
 use poc.ddrio.all;
 
 entity vga_sil1172_ctrl is
-  
+
   port (
     clk0       : in  std_logic;
     clk90      : in  std_logic;
@@ -70,7 +70,7 @@ end vga_sil1172_ctrl;
 architecture rtl of vga_sil1172_ctrl is
   signal beam_on_vec : std_logic_vector(23 downto 0);
   signal data        : std_logic_vector(23 downto 0);
-  
+
 begin  -- rtl
 
   -- Some tools do not allow this assignment as part of another equation.
@@ -80,7 +80,7 @@ begin  -- rtl
   -- Blank on beam return.
   -- Doesn't hurt for other DVI PHYs.
   data <= pixel_data and beam_on_vec;
-  
+
   -- Timing: Data changes with 0 / 180 degrees.
   -- Clock changes with 90 degrees.
 
@@ -97,7 +97,7 @@ begin  -- rtl
       oe   => '1',
       q(0) => dvi_xclk_p,
       q(1) => dvi_xclk_n);
-  
+
   -- Output control signals (single data rate)
   -- Registers must be placed into IOBs.
   process (clk0)
@@ -121,7 +121,7 @@ begin  -- rtl
       dl  => data(23 downto 12),
       oe  => '1',
       q   => dvi_d);
-      
+
   -- DVI Controller configuration
   -- pin definitions for dvi_rstn='0'
   dvi_rstn <= '0'; -- permanently reset I2C (ISEL=0)
@@ -130,5 +130,5 @@ begin  -- rtl
   dvi_dk0  <= '0'; -- de-skew inputs
   dvi_dk1  <= '0';
   dvi_ctl3 <= '0';
-  
+
 end rtl;
