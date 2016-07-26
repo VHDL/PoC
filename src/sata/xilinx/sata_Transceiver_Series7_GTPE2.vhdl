@@ -297,9 +297,9 @@ begin
 		constant CLOCK_GEN3_FREQ						: FREQ						:= REFCLOCK_FREQ / 1.0;
 		constant CLOCK_DD_FREQ							: FREQ						:= REFCLOCK_FREQ / 1.0;
 
-		constant COMRESET_TIMEOUT						: time						:= 2600 ns;
-		constant COMWAKE_TIMEOUT						: time						:= 1300 ns;
-		constant COMSAS_TIMEOUT							: time						:= 6450 ns;
+		constant COMRESET_TIMEOUT						: T_TIME					:= 2600.0e-9;
+		constant COMWAKE_TIMEOUT						: T_TIME					:= 1300.0e-9;
+		constant COMSAS_TIMEOUT							: T_TIME					:= 6450.0e-9;
 
 		-- Timing table ID
 		constant TTID_COMRESET_TIMEOUT_GEN1	: natural					:= 0;
