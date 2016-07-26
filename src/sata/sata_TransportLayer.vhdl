@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Module: 					SATA Transport Layer
+-- Entity: 					SATA Transport Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Provides transport of frames via SATA links for the Host endpoint.
 --
 -- Automatically awaits a Register Frame after the link has been established.
@@ -93,85 +92,86 @@ entity sata_TransportLayer is
 		NODATA_RETRY_TIMEOUT 						: T_TIME 						:=    1.0e-3;
 		DATA_READ_TIMEOUT 							: T_TIME 						:= 1000.0e-3;
 		DATA_WRITE_TIMEOUT 							: T_TIME 						:= 1000.0e-3;
-		DEBUG														: BOOLEAN						:= FALSE;					-- generate ChipScope DBG_* signals
-		ENABLE_DEBUGPORT								: BOOLEAN						:= FALSE;
-		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: BOOLEAN						:= TRUE						-- required by ATA/SATA standard
+		DEBUG														: boolean						:= FALSE;					-- generate ChipScope DBG_* signals
+		ENABLE_DEBUGPORT								: boolean						:= FALSE;
+		SIM_WAIT_FOR_INITIAL_REGDH_FIS	: boolean						:= TRUE						-- required by ATA/SATA standard
   );
 	port (
-		Clock														: IN	STD_LOGIC;
-		ClockEnable											: in	STD_LOGIC;
-		Reset														: IN	STD_LOGIC;
+		Clock														: in	std_logic;
+		ClockEnable											: in	std_logic;
+		Reset														: in	std_logic;
 
 		-- TransportLayer interface
-		Command													: IN	T_SATA_TRANS_COMMAND;
-		Status													: OUT	T_SATA_TRANS_STATUS;
-		Error														: OUT	T_SATA_TRANS_ERROR;
+		Command													: in	T_SATA_TRANS_COMMAND;
+		Status													: out	T_SATA_TRANS_STATUS;
+		Error														: out	T_SATA_TRANS_ERROR;
 
-		DebugPortOut										: OUT T_SATADBG_TRANS_OUT;
+		DebugPortOut										: out T_SATADBG_TRANS_OUT;
 
 		-- ATA registers
-		ATAHostRegisters								: IN	T_SATA_ATA_HOST_REGISTERS;
-		ATADeviceRegisters							: OUT	T_SATA_ATA_DEVICE_REGISTERS;
+		ATAHostRegisters								: in	T_SATA_ATA_HOST_REGISTERS;
+		ATADeviceRegisters							: out	T_SATA_ATA_DEVICE_REGISTERS;
 
 		-- TX path
-		TX_Ack												: OUT	STD_LOGIC;
-		TX_SOT												: IN	STD_LOGIC;
-		TX_EOT												: IN	STD_LOGIC;
-		TX_Data												: IN	T_SLV_32;
-		TX_Valid											: IN	STD_LOGIC;
+		TX_Ack												: out	std_logic;
+		TX_SOT												: in	std_logic;
+		TX_EOT												: in	std_logic;
+		TX_Data												: in	T_SLV_32;
+		TX_Valid											: in	std_logic;
 
 		-- RX path
-		RX_Ack												: IN	STD_LOGIC;
-		RX_SOT												: OUT STD_LOGIC;
-		RX_EOT												: OUT STD_LOGIC;
-		RX_Data												: OUT	T_SLV_32;
-		RX_Valid											: OUT	STD_LOGIC;
+		RX_Ack												: in	std_logic;
+		RX_SOT												: out std_logic;
+		RX_EOT												: out std_logic;
+		RX_Data												: out	T_SLV_32;
+		RX_Valid											: out	std_logic;
 
 		-- SATAController Status
-		Link_ResetDone 								: in  STD_LOGIC;
+		Link_ResetDone 								: in  std_logic;
 		Link_Command									: out	T_SATA_LINK_COMMAND;
 		Link_Status										: in	T_SATA_LINK_STATUS;
 		SATAGeneration 								: in 	T_SATA_GENERATION;
 
 		-- TX path
-		Link_TX_Ack										: IN	STD_LOGIC;
-		Link_TX_Data									: OUT	T_SLV_32;
-		Link_TX_SOF										: OUT	STD_LOGIC;
-		Link_TX_EOF										: OUT	STD_LOGIC;
-		Link_TX_Valid									: OUT	STD_LOGIC;
-		Link_TX_InsertEOF							: IN	STD_LOGIC;															-- helper signal: insert EOF - max frame size reached
+		Link_TX_Ack										: in	std_logic;
+		Link_TX_Data									: out	T_SLV_32;
+		Link_TX_SOF										: out	std_logic;
+		Link_TX_EOF										: out	std_logic;
+		Link_TX_Valid									: out	std_logic;
+		Link_TX_InsertEOF							: in	std_logic;															-- helper signal: insert EOF - max frame size reached
 
-		Link_TX_FS_Ack								: OUT	STD_LOGIC;
-		Link_TX_FS_SendOK							: IN	STD_LOGIC;
-		Link_TX_FS_SyncEsc 						: IN	STD_LOGIC;
-		Link_TX_FS_Valid							: IN	STD_LOGIC;
+		Link_TX_FS_Ack								: out	std_logic;
+		Link_TX_FS_SendOK							: in	std_logic;
+		Link_TX_FS_SyncEsc 						: in	std_logic;
+		Link_TX_FS_Valid							: in	std_logic;
 
 		-- RX path
-		Link_RX_Ack										: OUT	STD_LOGIC;
-		Link_RX_Data									: IN	T_SLV_32;
-		Link_RX_SOF										: IN	STD_LOGIC;
-		Link_RX_EOF										: IN	STD_LOGIC;
-		Link_RX_Valid									: IN	STD_LOGIC;
+		Link_RX_Ack										: out	std_logic;
+		Link_RX_Data									: in	T_SLV_32;
+		Link_RX_SOF										: in	std_logic;
+		Link_RX_EOF										: in	std_logic;
+		Link_RX_Valid									: in	std_logic;
 
-		Link_RX_FS_Ack								: OUT	STD_LOGIC;
-		Link_RX_FS_CRCOK							: IN	STD_LOGIC;
-		Link_RX_FS_SyncEsc						: IN	STD_LOGIC;
-		Link_RX_FS_Valid							: IN	STD_LOGIC
+		Link_RX_FS_Ack								: out	std_logic;
+		Link_RX_FS_CRCOK							: in	std_logic;
+		Link_RX_FS_SyncEsc						: in	std_logic;
+		Link_RX_FS_Valid							: in	std_logic
 	);
-end;
+end entity;
 
-ARCHITECTURE rtl OF sata_TransportLayer IS
-	ATTRIBUTE KEEP											: BOOLEAN;
+
+architecture rtl of sata_TransportLayer is
+	attribute KEEP											: boolean;
 
 	-- my reset
-	signal MyReset 											: STD_LOGIC;
+	signal MyReset 											: std_logic;
 
 	-- ATA register
 	signal ATAHostRegisters_r						: T_SATA_ATA_HOST_REGISTERS;
 
-	signal UpdateATAHostRegisters				: STD_LOGIC;
-	signal UpdateATADeviceRegisters			: STD_LOGIC;
-	signal CopyATADeviceRegisterStatus	: STD_LOGIC;
+	signal UpdateATAHostRegisters				: std_logic;
+	signal UpdateATADeviceRegisters			: std_logic;
+	signal CopyATADeviceRegisterStatus	: std_logic;
 	signal ATADeviceRegisters_i					: T_SATA_ATA_DEVICE_REGISTERS;
 	signal ATADeviceRegisters_r					: T_SATA_ATA_DEVICE_REGISTERS;
 
@@ -180,47 +180,47 @@ ARCHITECTURE rtl OF sata_TransportLayer IS
 	signal Error_i											: T_SATA_TRANS_ERROR;
 
 	signal TFSM_FISType									: T_SATA_FISTYPE;
-	signal TFSM_TX_en										: STD_LOGIC;
-	signal TFSM_TX_ForceAck							: STD_LOGIC;
-	signal TFSM_RX_LastWord							: STD_LOGIC;
-	signal TFSM_RX_SOT									: STD_LOGIC;
-	signal TFSM_RX_EOT									: STD_LOGIC;
+	signal TFSM_TX_en										: std_logic;
+	signal TFSM_TX_ForceAck							: std_logic;
+	signal TFSM_RX_LastWord							: std_logic;
+	signal TFSM_RX_SOT									: std_logic;
+	signal TFSM_RX_EOT									: std_logic;
 
 	-- TX path (transport cut)
-	signal TC_TX_SOP										: STD_LOGIC;
-	signal TC_TX_EOP										: STD_LOGIC;
+	signal TC_TX_SOP										: std_logic;
+	signal TC_TX_EOP										: std_logic;
 	signal TC_TX_Data										: T_SLV_32;
-	signal TC_TX_Valid									: STD_LOGIC;
-	signal TC_TX_Ack										: STD_LOGIC;
-	signal TC_TX_LastWord								: STD_LOGIC;
+	signal TC_TX_Valid									: std_logic;
+	signal TC_TX_Ack										: std_logic;
+	signal TC_TX_LastWord								: std_logic;
 
 	-- RX_Registers
-	signal RXReg_Ack										: STD_LOGIC;
-	signal RXReg_RX_Valid								: STD_LOGIC;
+	signal RXReg_Ack										: std_logic;
+	signal RXReg_RX_Valid								: std_logic;
 	signal RXReg_RX_Data								: T_SLV_32;
-	signal RXReg_RX_SOT									: STD_LOGIC;
-	signal RXReg_RX_EOT									: STD_LOGIC;
+	signal RXReg_RX_SOT									: std_logic;
+	signal RXReg_RX_EOT									: std_logic;
 
 	-- FISEncoder
 	signal FISE_Status									: T_SATA_FISENCODER_STATUS;
-	signal FISE_TX_Ack									: STD_LOGIC;
-	signal FISE_TX_InsertEOP						: STD_LOGIC;
-	signal FISE_Link_TX_Valid						: STD_LOGIC;
+	signal FISE_TX_Ack									: std_logic;
+	signal FISE_TX_InsertEOP						: std_logic;
+	signal FISE_Link_TX_Valid						: std_logic;
 	signal FISE_Link_TX_Data						: T_SLV_32;
-	signal FISE_Link_TX_SOF							: STD_LOGIC;
-	signal FISE_Link_TX_EOF							: STD_LOGIC;
-	signal FISE_Link_TX_FS_Ack					: STD_LOGIC;
+	signal FISE_Link_TX_SOF							: std_logic;
+	signal FISE_Link_TX_EOF							: std_logic;
+	signal FISE_Link_TX_FS_Ack					: std_logic;
 
 	-- FISDecoder
 	signal FISD_Status									: T_SATA_FISDECODER_STATUS;
 	signal FISD_FISType									: T_SATA_FISTYPE;
 	signal FISD_RX_Data									: T_SLV_32;
-	signal FISD_RX_SOP									: STD_LOGIC;
-	signal FISD_RX_EOP									: STD_LOGIC;
-	signal FISD_RX_Valid								: STD_LOGIC;
+	signal FISD_RX_SOP									: std_logic;
+	signal FISD_RX_EOP									: std_logic;
+	signal FISD_RX_Valid								: std_logic;
 	signal FISD_ATADeviceRegisters			: T_SATA_ATA_DEVICE_REGISTERS;
-	signal FISD_Link_RX_Ack							: STD_LOGIC;
-	signal FISD_Link_RX_FS_Ack					: STD_LOGIC;
+	signal FISD_Link_RX_Ack							: std_logic;
+	signal FISD_Link_RX_FS_Ack					: std_logic;
 
 	signal TFSM_DebugPortOut						: T_SATADBG_TRANS_TFSM_OUT;
 	signal FISE_DebugPortOut						: T_SATADBG_TRANS_FISE_OUT;
@@ -235,15 +235,15 @@ begin
 	-- ================================================================
 	-- TransportLayer FSM
 	-- ================================================================
-	TFSM : ENTITY PoC.sata_TransportFSM
-    GENERIC MAP (
+	TFSM : entity PoC.sata_TransportLayerFSM
+    generic map (
 			DATA_READ_TIMEOUT 								=> DATA_READ_TIMEOUT,
 			DATA_WRITE_TIMEOUT 								=> DATA_WRITE_TIMEOUT,
 			DEBUG															=> DEBUG,
 			ENABLE_DEBUGPORT									=> ENABLE_DEBUGPORT,
       SIM_WAIT_FOR_INITIAL_REGDH_FIS    => SIM_WAIT_FOR_INITIAL_REGDH_FIS
     )
-		PORT MAP (
+		port map (
 			Clock															=> Clock,
 			MyReset														=> MyReset,
 
@@ -296,41 +296,41 @@ begin
 	-- ===========================================================================
 	-- ATA registers
 	-- ===========================================================================
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF (MyReset = '1') THEN
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if (MyReset = '1') then
 				ATAHostRegisters_r.Flag_C								<= '0';												-- set C flag => access Command register on device
-				ATAHostRegisters_r.Command							<= (OTHERS => '0');						-- Command register
-				ATAHostRegisters_r.Control							<= (OTHERS => '0');						-- Control register
-				ATAHostRegisters_r.Feature							<= (OTHERS => '0');						-- Feature register
-				ATAHostRegisters_r.LBlockAddress				<= (OTHERS => '0');						-- logical block address (LBA)
-				ATAHostRegisters_r.SectorCount					<= (OTHERS => '0');						--
+				ATAHostRegisters_r.Command							<= (others => '0');						-- Command register
+				ATAHostRegisters_r.Control							<= (others => '0');						-- Control register
+				ATAHostRegisters_r.Feature							<= (others => '0');						-- Feature register
+				ATAHostRegisters_r.LBlockAddress				<= (others => '0');						-- logical block address (LBA)
+				ATAHostRegisters_r.SectorCount					<= (others => '0');						--
 
---				ATAHostRegisters_r											<= (Flag_C => '0', OTHERS => (OTHERS => '0'));
+--				ATAHostRegisters_r											<= (Flag_C => '0', others => (others => '0'));
 
-				ATADeviceRegisters_r.Flags							<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.Status							<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.EndStatus					<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.Error							<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.LBlockAddress			<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.SectorCount				<= (OTHERS => '0');						--
-				ATADeviceRegisters_r.TransferCount			<= (OTHERS => '0');						--
-			ELSE
-				IF (UpdateATAHostRegisters = '1') THEN
+				ATADeviceRegisters_r.Flags							<= (others => '0');						--
+				ATADeviceRegisters_r.Status							<= (others => '0');						--
+				ATADeviceRegisters_r.EndStatus					<= (others => '0');						--
+				ATADeviceRegisters_r.Error							<= (others => '0');						--
+				ATADeviceRegisters_r.LBlockAddress			<= (others => '0');						--
+				ATADeviceRegisters_r.SectorCount				<= (others => '0');						--
+				ATADeviceRegisters_r.TransferCount			<= (others => '0');						--
+			else
+				if (UpdateATAHostRegisters = '1') then
 					ATAHostRegisters_r										<= ATAHostRegisters;
-				END IF;
+				end if;
 
-				IF (UpdateATADeviceRegisters = '1') THEN
+				if (UpdateATADeviceRegisters = '1') then
 					ATADeviceRegisters_r									<= FISD_ATADeviceRegisters;
-				END IF;
+				end if;
 
-				IF (CopyATADeviceRegisterStatus = '1') THEN
+				if (CopyATADeviceRegisterStatus = '1') then
 					ATADeviceRegisters_r.Status						<= ATADeviceRegisters_r.EndStatus;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- assign internal signals
 	ATADeviceRegisters_i	<= ATADeviceRegisters_r;
@@ -341,101 +341,101 @@ begin
 
 	-- TX FrameCutter logic
 	-- ==========================================================================================================================================================
-	FrameCutter : BLOCK
-		signal TC_TX_DataFlow								: STD_LOGIC;
+	FrameCutter : block
+		signal TC_TX_DataFlow								: std_logic;
 
-		signal InsertEOP_d									: STD_LOGIC						:= '0';
-		signal InsertEOP_re									: STD_LOGIC;
-		signal InsertEOP_re_d								: STD_LOGIC						:= '0';
-		signal InsertEOP_re_d2							: STD_LOGIC						:= '0';
+		signal InsertEOP_d									: std_logic						:= '0';
+		signal InsertEOP_re									: std_logic;
+		signal InsertEOP_re_d								: std_logic						:= '0';
+		signal InsertEOP_re_d2							: std_logic						:= '0';
 
-	BEGIN
+	begin
 		-- enable TX data path
-		TC_TX_Valid					<= TX_Valid				AND TFSM_TX_en;
-		TC_TX_Ack						<= FISE_TX_Ack		AND TFSM_TX_en;
+		TC_TX_Valid					<= TX_Valid				and TFSM_TX_en;
+		TC_TX_Ack						<= FISE_TX_Ack		and TFSM_TX_en;
 
-		TC_TX_DataFlow			<= TC_TX_Valid		AND TC_TX_Ack;
+		TC_TX_DataFlow			<= TC_TX_Valid		and TC_TX_Ack;
 
 		InsertEOP_d					<= ffdre(q => InsertEOP_d,     rst => MyReset, en => TC_TX_DataFlow, d => FISE_TX_InsertEOP) 	when rising_edge(Clock);
-		InsertEOP_re				<= FISE_TX_InsertEOP	AND NOT InsertEOP_d;
+		InsertEOP_re				<= FISE_TX_InsertEOP	and not InsertEOP_d;
 		InsertEOP_re_d			<= ffdre(q => InsertEOP_re_d,  rst => MyReset, en => TC_TX_DataFlow, d => InsertEOP_re  ) 		when rising_edge(Clock);
 		InsertEOP_re_d2			<= ffdre(q => InsertEOP_re_d2, rst => MyReset, en => TC_TX_DataFlow, d => InsertEOP_re_d) 		when rising_edge(Clock);
 
-		TC_TX_SOP						<= TX_SOT OR InsertEOP_re_d2;
-		TC_TX_EOP						<= TX_EOT	OR InsertEOP_re_d;
+		TC_TX_SOP						<= TX_SOT or InsertEOP_re_d2;
+		TC_TX_EOP						<= TX_EOT	or InsertEOP_re_d;
 		TC_TX_Data					<= TX_Data;
-	END BLOCK;	-- TransferCutter
+	end block;	-- TransferCutter
 
 	-- RX registers
 	-- ==========================================================================================================================================================
-	RXReg : BLOCK
-		signal RXReg_mux_set										: STD_LOGIC;
-		signal RXReg_mux_rst										: STD_LOGIC;
-		signal RXReg_mux_r											: STD_LOGIC												:= '0';
-		signal RXReg_mux												: STD_LOGIC;
-		signal RXReg_Data_en										: STD_LOGIC;
-		signal RXReg_Data_d											: T_SLV_32												:= (OTHERS => '0');
-		signal RXReg_EOT_r											: STD_LOGIC												:= '0';
+	RXReg : block
+		signal RXReg_mux_set										: std_logic;
+		signal RXReg_mux_rst										: std_logic;
+		signal RXReg_mux_r											: std_logic												:= '0';
+		signal RXReg_mux												: std_logic;
+		signal RXReg_Data_en										: std_logic;
+		signal RXReg_Data_d											: T_SLV_32												:= (others => '0');
+		signal RXReg_EOT_r											: std_logic												:= '0';
 
-		signal RXReg_LastWord										: STD_LOGIC;
-		signal RXReg_LastWord_r									: STD_LOGIC												:= '0';
-		signal RXReg_LastWordAck								: STD_LOGIC;
+		signal RXReg_LastWord										: std_logic;
+		signal RXReg_LastWord_r									: std_logic												:= '0';
+		signal RXReg_LastWordAck								: std_logic;
 
-		signal RXReg_SOT												: STD_LOGIC;
-		signal RXReg_EOT												: STD_LOGIC;
-	BEGIN
+		signal RXReg_SOT												: std_logic;
+		signal RXReg_EOT												: std_logic;
+	begin
 
-		RXReg_Data_en					<= FISD_RX_Valid AND FISD_RX_EOP;
-		RXReg_mux_set					<= FISD_RX_Valid AND FISD_RX_EOP;
+		RXReg_Data_en					<= FISD_RX_Valid and FISD_RX_EOP;
+		RXReg_mux_set					<= FISD_RX_Valid and FISD_RX_EOP;
 		RXReg_mux_rst					<= RXReg_LastWordAck;
 
-		RXReg_RX_Data					<= FISD_RX_Data WHEN (RXReg_mux = '0') ELSE RXReg_Data_d;
-		RXReg_RX_Valid				<= (FISD_RX_Valid AND NOT RXReg_Data_en) OR RXReg_LastWord;
+		RXReg_RX_Data					<= FISD_RX_Data when (RXReg_mux = '0') else RXReg_Data_d;
+		RXReg_RX_Valid				<= (FISD_RX_Valid and not RXReg_Data_en) or RXReg_LastWord;
 
-		RXReg_Ack							<= (RX_Ack	 OR RXReg_Data_en) AND NOT RXReg_mux;
-		RXReg_LastWordAck			<= RXReg_LastWord AND RX_Ack;
+		RXReg_Ack							<= (RX_Ack	 or RXReg_Data_en) and not RXReg_mux;
+		RXReg_LastWordAck			<= RXReg_LastWord and RX_Ack;
 
 		RXReg_SOT							<= TFSM_RX_SOT;
-		RXReg_EOT							<= RXReg_EOT_r				OR TFSM_RX_EOT;
-		RXReg_LastWord				<= RXReg_LastWord_r 	OR TFSM_RX_LastWord;
+		RXReg_EOT							<= RXReg_EOT_r				or TFSM_RX_EOT;
+		RXReg_LastWord				<= RXReg_LastWord_r 	or TFSM_RX_LastWord;
 		RXReg_mux							<= RXReg_mux_r;
 
-		PROCESS(Clock)
-		BEGIN
-			IF rising_edge(Clock) THEN
-				IF (MyReset = '1') THEN
-					RXReg_Data_d				<= (OTHERS => '0');
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (MyReset = '1') then
+					RXReg_Data_d				<= (others => '0');
 					RXReg_mux_r					<= '0';
 					RXReg_EOT_r					<= '0';
-				ELSE
-					IF (RXReg_Data_en = '1') THEN
+				else
+					if (RXReg_Data_en = '1') then
 						RXReg_Data_d			<= FISD_RX_Data;
-					END IF;
+					end if;
 
-					IF (RXReg_mux_rst = '1') THEN
+					if (RXReg_mux_rst = '1') then
 						RXReg_mux_r				<= '0';
-					ELSIF (RXReg_mux_set = '1') THEN
+					elsif (RXReg_mux_set = '1') then
 						RXReg_mux_r				<= '1';
-					END IF;
+					end if;
 
-					IF (RXReg_mux_rst = '1') THEN
+					if (RXReg_mux_rst = '1') then
 						RXReg_LastWord_r	<= '0';
-					ELSIF (TFSM_RX_LastWord = '1') THEN
+					elsif (TFSM_RX_LastWord = '1') then
 						RXReg_LastWord_r	<= '1';
-					END IF;
+					end if;
 
-					IF (RXReg_mux_rst = '1') THEN
+					if (RXReg_mux_rst = '1') then
 						RXReg_EOT_r		<= '0';
-					ELSIF (TFSM_RX_EOT = '1') THEN
+					elsif (TFSM_RX_EOT = '1') then
 						RXReg_EOT_r		<= '1';
-					END IF;
-				END IF;
-			END IF;
-		END PROCESS;
+					end if;
+				end if;
+			end if;
+		end process;
 
 		RXReg_RX_SOT				<= RXReg_SOT;
 		RXReg_RX_EOT				<= RXReg_EOT;
-	END BLOCK;
+	end block;
 
 	RX_Valid			<= RXReg_RX_Valid;
 	RX_Data				<= RXReg_RX_Data;
@@ -443,12 +443,12 @@ begin
 	RX_EOT				<= RXReg_RX_EOT;
 
 
-	FISE : ENTITY PoC.sata_FISEncoder
-		GENERIC MAP (
+	FISE : entity PoC.sata_FISEncoder
+		generic map (
 			DEBUG												=> DEBUG		,
 			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT
 		)
-		PORT MAP (
+		port map (
 			Clock												=> Clock,
 			Reset												=> MyReset,
 
@@ -490,12 +490,12 @@ begin
 	-- ================================================================
 	-- RX path
 	-- ================================================================
-	FISD : ENTITY PoC.sata_FISDecoder
-		GENERIC MAP (
+	FISD : entity PoC.sata_FISDecoder
+		generic map (
 			DEBUG												=> DEBUG,
 			ENABLE_DEBUGPORT						=> ENABLE_DEBUGPORT
 		)
-		PORT MAP (
+		port map (
 			Clock												=> Clock,
 			Reset												=> MyReset,
 

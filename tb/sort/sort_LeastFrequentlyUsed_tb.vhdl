@@ -24,7 +24,7 @@ end entity;
 architecture tb of sort_LeastFrequentlyUsed_tb is
 	constant CLOCK_FREQ				: FREQ				:= 100 MHz;
 
-	signal Clock							: STD_LOGIC;
+	signal Clock							: std_logic;
 
 begin
 	-- initialize global simulation status
@@ -51,25 +51,25 @@ begin
 			ELEMENTS			=> 16
 			KEY_BITS			=> 4
 			DATA_BITS			=> 8
-			COUNTER_BITS	: POSITIVE		:= 8
+			COUNTER_BITS	: positive		:= 8
 		);
 		port (
-			Clock					: in	STD_LOGIC;
-			Reset					: in	STD_LOGIC;
+			Clock					: in	std_logic;
+			Reset					: in	std_logic;
 
-			Access				: in	STD_LOGIC;
-			Key						: in	STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0);
+			Access				: in	std_logic;
+			Key						: in	std_logic_vector(KEY_BITS - 1 downto 0);
 
-			LFU_Valid			: out	STD_LOGIC;
-			LFU_Key				: out	STD_LOGIC_VECTOR(KEY_BITS - 1 downto 0)
+			LFU_Valid			: out	std_logic;
+			LFU_Key				: out	std_logic_vector(KEY_BITS - 1 downto 0)
 		);
 
 	KeyOutputVector	<= to_kv(DataOutputMatrix);
 
 	process
-		variable	Check		: BOOLEAN;
+		variable	Check		: boolean;
 	begin
-		report "Delay=" & INTEGER'image(DELAY) severity NOTE;
+		report "Delay=" & integer'image(DELAY) severity NOTE;
 
 		for i in 0 to DELAY - 1 loop
 			wait until rising_edge(Clock);

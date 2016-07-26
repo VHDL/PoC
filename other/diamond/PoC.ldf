@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BaliProject version="3.2" title="PoC" device="LFE5U-45F-6BG381C" default_implementation="ocram_esdp">
+    <Options>
+        <Option name="HDL type" value="VHDL"/>
+    </Options>
+    <Implementation title="ocram_esdp" dir="ocram_esdp" description="ocram_esdp" synthesis="lse" default_strategy="Strategy1">
+        <Options def_top="ocram_esdp_lattice" lib="PoC" top="PoC.ocram_esdp_top"/>
+        <Source name="../../src/common/config.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/math.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/physical.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/strings.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/utils.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/vectors.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_config_ECP5Versa.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_project.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_esdp.vhdl" type="VHDL" type_short="VHDL" syn_sim="SimOnly">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/mem.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="ocram_esdp/ocram_esdp_top.vhdl" type="VHDL" type_short="VHDL">
+            <Options top_module="PoC.ocram_esdp_top"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_tdp.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="ocram_esdp_lattice/ocram_esdp_lattice.sbx" type="sbx" type_short="SBX">
+            <Options/>
+        </Source>
+        <Source name="PoC.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Implementation title="ocram_sdp" dir="ocram_sdp" description="ocram_sdp" synthesis="lse" default_strategy="Strategy1">
+        <Options def_top="PoC.ocram_sdp_top" lib="PoC" top="PoC.ocram_sdp_top"/>
+        <Source name="../../src/common/config.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/math.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/physical.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/strings.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/utils.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/vectors.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_config_ECP5Versa.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_project.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_sdp.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/mem.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="ocram_sdp/ocram_sdp_top.vhdl" type="VHDL" type_short="VHDL">
+            <Options top_module="PoC.ocram_sdp_top"/>
+        </Source>
+        <Source name="PoC.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Implementation title="ocram_sp" dir="ocram_sp" description="ocram_sp" synthesis="lse" default_strategy="Strategy1">
+        <Options def_top="PoC.ocram_sp_top" lib="PoC" top="PoC.ocram_sp_top"/>
+        <Source name="../../src/common/config.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/math.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/physical.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/strings.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/utils.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/vectors.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_config_ECP5Versa.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_project.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_sp.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/mem.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="ocram_sp/ocram_sp_top.vhdl" type="VHDL" type_short="VHDL">
+            <Options top_module="PoC.ocram_sp_top"/>
+        </Source>
+        <Source name="PoC.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Implementation title="ocram_tdp" dir="ocram_tdp" description="ocram_tdp" synthesis="lse" default_strategy="Strategy1">
+        <Options def_top="PoC.ocram_tdp_top" lib="PoC" top="PoC.ocram_tdp_top"/>
+        <Source name="../../src/common/config.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/math.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/physical.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/strings.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/utils.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/vectors.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_config_ECP5Versa.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_project.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/mem.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="ocram_tdp/ocram_tdp_top.vhdl" type="VHDL" type_short="VHDL">
+            <Options top_module="PoC.ocram_tdp_top"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram_tdp.vhdl" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="PoC.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Strategy name="Strategy1" file="PoC1.sty"/>
+</BaliProject>

@@ -1,0 +1,13 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# sub-directories
+*/
+
+# image formats
+*.gif
+*.png
+*.svg

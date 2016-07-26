@@ -1,17 +1,16 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Thomas Frank
 --									Steffen Koehler
 --									Martin Zabel
 --
--- Module: 					Wrapper for Device-Specific Transceivers
+-- Entity: 					Wrapper for Device-Specific Transceivers
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Asynchronous signals: PowerDown, ClockNetwork_Reset, ClockNetwork_ResetDone
 -- Transceiver In/Outputs: VSS_*
 --
@@ -69,21 +68,21 @@ use			PoC.sata_TransceiverTypes.all;
 
 entity sata_TransceiverLayer is
 	generic (
-		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
-		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- export internal signals to upper layers for debug purposes
+		DEBUG											: boolean											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: boolean											:= FALSE;																		-- export internal signals to upper layers for debug purposes
 		REFCLOCK_FREQ							: FREQ												:= 150 MHz;																								-- 150 MHz
-		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
+		PORTS											: positive										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
 	);
 	port (
 		-- @async --------------------------------------------------------------------------------
-		PowerDown									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		PowerDown									: in	std_logic_vector(PORTS - 1 downto 0);
+		ClockNetwork_Reset				: in	std_logic_vector(PORTS - 1 downto 0);
+		ClockNetwork_ResetDone		: out	std_logic_vector(PORTS - 1 downto 0);
 
 		-- @SATA_Clock ---------------------------------------------------------------------------
-		Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		ResetDone									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Reset											: in	std_logic_vector(PORTS - 1 downto 0);
+		ResetDone									: out	std_logic_vector(PORTS - 1 downto 0);
 
 		Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
 		Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
@@ -93,39 +92,39 @@ entity sata_TransceiverLayer is
 		DebugPortIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
 		DebugPortOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-		SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		SATA_Clock_Stable					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		SATA_Clock								: out	std_logic_vector(PORTS - 1 downto 0);
+		SATA_Clock_Stable					: out	std_logic_vector(PORTS - 1 downto 0);
 
-		RP_Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_Reconfig								: in	std_logic_vector(PORTS - 1 downto 0);
 		RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
-		RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RP_Lock										:	in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RP_Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_ReconfigComplete				: out	std_logic_vector(PORTS - 1 downto 0);
+		RP_ConfigReloaded					: out	std_logic_vector(PORTS - 1 downto 0);
+		RP_Lock										:	in	std_logic_vector(PORTS - 1 downto 0);
+		RP_Locked									: out	std_logic_vector(PORTS - 1 downto 0);
 
 		OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
-		OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		OOB_TX_Complete						: out	std_logic_vector(PORTS - 1 downto 0);
 		OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
-		OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		OOB_AlignDetected    			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		OOB_HandshakeComplete			: in	std_logic_vector(PORTS - 1 downto 0);
+		OOB_AlignDetected    			: in	std_logic_vector(PORTS - 1 downto 0);
 
 		TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 		TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
 		RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
 		RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
-		RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Valid									: out std_logic_vector(PORTS - 1 downto 0);
 
 		-- vendor specific signals
 		VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 		VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
 		VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_TransceiverLayer is
-	attribute KEEP 								: BOOLEAN;
+	attribute KEEP 								: boolean;
 
 	constant C_DEVICE_INFO				: T_DEVICE_INFO		:= DEVICE_INFO;
 
@@ -135,8 +134,8 @@ architecture rtl of sata_TransceiverLayer is
 
 begin
 	genreport : for i in 0 to PORTS - 1 generate
-		assert FALSE report "port:    " & INTEGER'image(i)																										severity NOTE;
-		assert FALSE report "  Init. SATA Generation: Gen " & INTEGER'image(INITIAL_SATA_GENERATIONS(i) + 1)	severity NOTE;
+		assert FALSE report "port:    " & integer'image(i)																										severity NOTE;
+		assert FALSE report "  Init. SATA Generation: Gen " & integer'image(INITIAL_SATA_GENERATIONS(i) + 1)	severity NOTE;
 	end generate;
 
 -- ==================================================================

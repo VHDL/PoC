@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
 -- Package:					Simulation constants, functions and utilities.
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
 -- =============================================================================
@@ -125,8 +124,8 @@ package body sim_unprotected is
 		variable LineBuffer : LINE;
 	begin
 		write(LineBuffer,		(			STRING'("========================================")));
-		write(LineBuffer,		(CR & STRING'("POC TESTBENCH REPORT")));
-		write(LineBuffer,		(CR & STRING'("========================================")));
+		write(LineBuffer,		(LF & STRING'("POC TESTBENCH REPORT")));
+		write(LineBuffer,		(LF & STRING'("========================================")));
 		writeline(output, LineBuffer);
 	end procedure;
 
@@ -135,12 +134,12 @@ package body sim_unprotected is
 	begin
 		if (globalSim_Tests(C_SIM_DEFAULT_TEST_ID).Status /= SIM_TEST_STATUS_CREATED) then
 			write(LineBuffer,				 Prefix & "Tests          " & INTEGER'image(globalSim_TestCount + 1));
-			write(LineBuffer,		CR & Prefix & " " & str_ralign("-1", log10ceilnz(globalSim_TestCount + 1) + 1) & ": " & C_SIM_DEFAULT_TEST_NAME);
+			write(LineBuffer,		LF & Prefix & " " & str_ralign("-1", log10ceilnz(globalSim_TestCount + 1) + 1) & ": " & C_SIM_DEFAULT_TEST_NAME);
 		else
 			write(LineBuffer,				 Prefix & "Tests          " & INTEGER'image(globalSim_TestCount));
 		end if;
 		for i in 0 to globalSim_TestCount - 1 loop
-			write(LineBuffer,		CR & Prefix & "  " & str_ralign(INTEGER'image(i), log10ceilnz(globalSim_TestCount)) & ": " & str_trim(globalSim_Tests(i).Name));
+			write(LineBuffer,		LF & Prefix & "  " & str_ralign(INTEGER'image(i), log10ceilnz(globalSim_TestCount)) & ": " & str_trim(globalSim_Tests(i).Name));
 		end loop;
 		writeline(output, LineBuffer);
 	end procedure;
@@ -149,7 +148,7 @@ package body sim_unprotected is
 		variable LineBuffer : LINE;
 	begin
 		write(LineBuffer,					 Prefix & "Assertions   " & INTEGER'image(globalSim_AssertCount));
-		write(LineBuffer,			CR & Prefix & "  failed     " & INTEGER'image(globalSim_FailedAssertCount) & ite((globalSim_FailedAssertCount >= globalSim_MaxAssertFailures), " Too many failed asserts!", ""));
+		write(LineBuffer,			LF & Prefix & "  failed     " & INTEGER'image(globalSim_FailedAssertCount) & ite((globalSim_FailedAssertCount >= globalSim_MaxAssertFailures), " Too many failed asserts!", ""));
 		writeline(output, LineBuffer);
 	end procedure;
 
@@ -157,11 +156,11 @@ package body sim_unprotected is
 		variable LineBuffer : LINE;
 	begin
 		write(LineBuffer,					 Prefix & "Processes    " & INTEGER'image(globalSim_ProcessCount));
-		write(LineBuffer,			CR & Prefix & "  active     " & INTEGER'image(globalSim_ActiveProcessCount));
+		write(LineBuffer,			LF & Prefix & "  active     " & INTEGER'image(globalSim_ActiveProcessCount));
 		-- report killed processes
 		for i in 0 to globalSim_ProcessCount - 1 loop
 			if ((globalSim_Processes(i).Status = SIM_PROCESS_STATUS_ACTIVE) and (globalSim_Processes(i).IsLowPriority = FALSE)) then
-				write(LineBuffer,	CR & Prefix & "    " & str_ralign(INTEGER'image(i), log10ceilnz(globalSim_ProcessCount)) & ": " & str_trim(globalSim_Processes(i).Name));
+				write(LineBuffer,	LF & Prefix & "    " & str_ralign(INTEGER'image(i), log10ceilnz(globalSim_ProcessCount)) & ": " & str_trim(globalSim_Processes(i).Name));
 			end if;
 		end loop;
 		writeline(output, LineBuffer);
@@ -178,11 +177,11 @@ package body sim_unprotected is
 		variable LineBuffer : LINE;
 	begin
 		write(LineBuffer,																				(			STRING'("========================================")));
-		if (globalSim_AssertCount = 0) then	  write(LineBuffer, (CR & STRING'("SIMULATION RESULT = NO ASSERTS")));
-		elsif (globalSim_Passed = TRUE) then  write(LineBuffer, (CR & STRING'("SIMULATION RESULT = PASSED")));
-		else										 						 	write(LineBuffer, (CR & STRING'("SIMULATION RESULT = FAILED")));
+		if (globalSim_AssertCount = 0) then	  write(LineBuffer, (LF & STRING'("SIMULATION RESULT = NO ASSERTS")));
+		elsif (globalSim_Passed = TRUE) then  write(LineBuffer, (LF & STRING'("SIMULATION RESULT = PASSED")));
+		else										 						 	write(LineBuffer, (LF & STRING'("SIMULATION RESULT = FAILED")));
 		end if;
-		write(LineBuffer,																				(CR & STRING'("========================================")));
+		write(LineBuffer,																				(LF & STRING'("========================================")));
 		writeline(output, LineBuffer);
 	end procedure;
 
@@ -191,7 +190,7 @@ package body sim_unprotected is
 	begin
 		writeReport_Header;
 		writeReport_TestReport("");
-		write(LineBuffer, CR & "Overall");
+		write(LineBuffer, LF & "Overall");
 		writeline(output, LineBuffer);
 		writeReport_AssertReport("  ");
 		writeReport_ProcessReport("  ");
@@ -347,12 +346,12 @@ package body sim_unprotected is
 			-- add process to list
 			globalSim_Processes(Proc.ID)	:= Proc;
 			globalSim_ProcessCount				:= globalSim_ProcessCount + 1;
-			globalSim_ActiveProcessCount	:= inc(not IsLowPriority, globalSim_ActiveProcessCount);
+			globalSim_ActiveProcessCount	:= inc_if(not IsLowPriority, globalSim_ActiveProcessCount);
 			-- add process to test
 			TestProcID																			:= globalSim_Tests(TestID).ProcessCount;
 			globalSim_Tests(TestID).ProcessIDs(TestProcID)	:= Proc.ID;
 			globalSim_Tests(TestID).ProcessCount						:= TestProcID + 1;
-			globalSim_Tests(TestID).ActiveProcessCount			:= inc(not IsLowPriority, globalSim_Tests(TestID).ActiveProcessCount);
+			globalSim_Tests(TestID).ActiveProcessCount			:= inc_if(not IsLowPriority, globalSim_Tests(TestID).ActiveProcessCount);
 			-- return the process ID
 			return Proc.ID;
 		else
@@ -370,8 +369,8 @@ package body sim_unprotected is
 			if (globalSim_Processes(ProcID).Status = SIM_PROCESS_STATUS_ACTIVE) then
 				if C_SIM_VERBOSE then		report "deactivateProcess(ProcID=" & T_SIM_PROCESS_ID'image(ProcID) & "): TestID=" & T_SIM_TEST_ID'image(TestID) & "  Name=" & str_trim(globalSim_Processes(ProcID).Name) severity NOTE;		end if;
 				globalSim_Processes(ProcID).Status					:= SIM_PROCESS_STATUS_ENDED;
-				globalSim_ActiveProcessCount								:= dec(not globalSim_Processes(ProcID).IsLowPriority, globalSim_ActiveProcessCount);
-				globalSim_Tests(TestID).ActiveProcessCount	:= dec(not globalSim_Processes(ProcID).IsLowPriority, globalSim_Tests(TestID).ActiveProcessCount);
+				globalSim_ActiveProcessCount								:= dec_if(not globalSim_Processes(ProcID).IsLowPriority, globalSim_ActiveProcessCount);
+				globalSim_Tests(TestID).ActiveProcessCount	:= dec_if(not globalSim_Processes(ProcID).IsLowPriority, globalSim_Tests(TestID).ActiveProcessCount);
 				if (globalSim_Tests(TestID).ActiveProcessCount = 0) then
 					finalizeTest(TestID);
 				end if;

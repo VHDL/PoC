@@ -10,21 +10,21 @@ use			PoC.vectors.all;
 
 entity eth_TEMAC_TX_FSM is
 	port (
-		Clock							: in	STD_LOGIC;
-		Reset							: in	STD_LOGIC;
+		Clock							: in	std_logic;
+		Reset							: in	std_logic;
 
-		Valid							: in	STD_LOGIC;
+		Valid							: in	std_logic;
 		Data							: in	T_SLV_8;
-		EOF								: in	STD_LOGIC;
-		Ack								: out	STD_LOGIC;
-		Commit						: out	STD_LOGIC;
-		Rollback					: out	STD_LOGIC;
+		EOF								: in	std_logic;
+		Ack								: out	std_logic;
+		Commit						: out	std_logic;
+		Rollback					: out	std_logic;
 
-		UnderrunDetected	: out	STD_LOGIC;
+		UnderrunDetected	: out	std_logic;
 
-		TEMAC_Valid				: out	STD_LOGIC;
+		TEMAC_Valid				: out	std_logic;
 		TEMAC_Data				: out	T_SLV_8;
-		TEMAC_Ack					: in	STD_LOGIC
+		TEMAC_Ack					: in	std_logic
 	);
 end;
 

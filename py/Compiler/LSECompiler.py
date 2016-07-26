@@ -6,7 +6,7 @@
 # Authors:          Patrick Lehmann
 #                   Martin Zabel
 # 
-# Python Class:      This PoCXCOCompiler compiles xco IPCores to netlists
+# Python Class:     This PoCXCOCompiler compiles xco IPCores to netlists
 # 
 # Description:
 # ------------------------------------
@@ -48,7 +48,7 @@ else:
 from pathlib                      import Path
 
 from Base.Compiler                import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
-from Base.Project                 import ToolChain, Tool
+from Base.Project                 import ToolChain, Tool, VHDLVersion
 from PoC.Entity                   import WildCard
 from ToolChains.Lattice.Diamond   import Diamond, SynthesisArgumentFile
 from ToolChains.Lattice.Lattice import LatticeException
@@ -61,7 +61,8 @@ class Compiler(BaseCompiler):
 	def __init__(self, host, dryRun, noCleanUp):
 		super().__init__(host, dryRun, noCleanUp)
 
-		self._toolChain =      None
+		self._toolChain =       None
+		self._vhdlVersion =     VHDLVersion.VHDL2008
 
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working = host.Directories.Temp / configSection['LatticeSynthesisFiles']
@@ -73,9 +74,9 @@ class Compiler(BaseCompiler):
 		self._LogVerbose("Preparing Lattice Synthesis Engine (LSE).")
 		diamondSection = self.Host.PoCConfig['INSTALL.Lattice.Diamond']
 		if (self.Host.Platform == "Linux"):
-			binaryPath = Path(diamondSection['BinaryDirectory2'])
+			binaryPath = Path(diamondSection['BinaryDirectory2'])		# ispFPGA directory
 		elif (self.Host.Platform == "Windows"):
-			binaryPath = Path(diamondSection['BinaryDirectory'])
+			binaryPath = Path(diamondSection['BinaryDirectory2'])		# ispFPGA directory
 		else:
 			raise PlatformNotSupportedException(self.Host.Platform)
 
@@ -120,6 +121,12 @@ class Compiler(BaseCompiler):
 		argumentFile.Package =      "{0!s}{1!s}".format(device.Package, device.PinCount)
 		argumentFile.TopLevel =     netlist.ModuleName
 		argumentFile.LogFile =      self.Directories.Working / (netlist.ModuleName + ".lse.log")
+		argumentFile.VHDLVersion =  self._vhdlVersion
+
+		vhdlGenerics = self.Host.PoCConfig[netlist.ConfigSectionName]['VHDLGenerics']
+		if (len(vhdlGenerics) > 0):
+			for keyValuePair in vhdlGenerics.split(";"):
+				argumentFile.HDLParams.append(keyValuePair.split("="))
 
 		argumentFile.Write(self.PoCProject)
 		return argumentFile

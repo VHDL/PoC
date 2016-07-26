@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					SATA Streaming Layer
+-- Entity:					SATA Streaming Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Executes ATA commands.
 --
 -- Automatically issues an "identify device" when the SATA Controller is
@@ -61,15 +60,15 @@ use			PoC.satadbg.all;
 
 entity sata_StreamingLayer is
 	generic (
-		ENABLE_DEBUGPORT							: BOOLEAN									:= FALSE;			-- export internal signals to upper layers for debug purposes
-		DEBUG													: BOOLEAN									:= FALSE;
-		SIM_EXECUTE_IDENTIFY_DEVICE		: BOOLEAN									:= TRUE;			-- required by CommandLayer: load device parameters
+		ENABLE_DEBUGPORT							: boolean									:= FALSE;			-- export internal signals to upper layers for debug purposes
+		DEBUG													: boolean									:= FALSE;
+		SIM_EXECUTE_IDENTIFY_DEVICE		: boolean									:= TRUE;			-- required by CommandLayer: load device parameters
 		LOGICAL_BLOCK_SIZE						: MEMORY 									:= 8 KiB			-- accessable logical block size: 8 KiB (independant from device)
 	);																																			-- 8 KiB, maximum supported is 64 KiB, with 512 B device logical blocks
 	port (
-		Clock													: in	STD_LOGIC;
-		ClockEnable										: in	STD_LOGIC;
-		Reset													: in	STD_LOGIC;
+		Clock													: in	std_logic;
+		ClockEnable										: in	std_logic;
+		Reset													: in	std_logic;
 
 		-- CommandLayer interface
 		-- ========================================================================
@@ -91,22 +90,22 @@ entity sata_StreamingLayer is
 		IDF_Bus												: out	T_SATA_IDF_BUS;
 
 		-- TX path
-		TX_Valid											: in	STD_LOGIC;
+		TX_Valid											: in	std_logic;
 		TX_Data												: in	T_SLV_32;
-		TX_SOR												: in	STD_LOGIC;
-		TX_EOR												: in	STD_LOGIC;
-		TX_Ack												: out	STD_LOGIC;
+		TX_SOR												: in	std_logic;
+		TX_EOR												: in	std_logic;
+		TX_Ack												: out	std_logic;
 
 		-- RX path
-		RX_Valid											: out	STD_LOGIC;
+		RX_Valid											: out	std_logic;
 		RX_Data												: out	T_SLV_32;
-		RX_SOR												: out	STD_LOGIC;
-		RX_EOR												: out	STD_LOGIC;
-		RX_Ack												: in	STD_LOGIC;
+		RX_SOR												: out	std_logic;
+		RX_EOR												: out	std_logic;
+		RX_Ack												: in	std_logic;
 
 		-- TransportLayer interface
 		-- ========================================================================
-		Trans_ResetDone 							: in  STD_LOGIC;
+		Trans_ResetDone 							: in  std_logic;
 		Trans_Command									: out	T_SATA_TRANS_COMMAND;
 		Trans_Status									: in	T_SATA_TRANS_STATUS;
 		Trans_Error										: in	T_SATA_TRANS_ERROR;
@@ -116,47 +115,47 @@ entity sata_StreamingLayer is
 		Trans_ATADeviceRegisters			: in	T_SATA_ATA_DEVICE_REGISTERS;
 
 		-- TX path
-		Trans_TX_Valid								: out	STD_LOGIC;
+		Trans_TX_Valid								: out	std_logic;
 		Trans_TX_Data									: out	T_SLV_32;
-		Trans_TX_SOT									: out	STD_LOGIC;
-		Trans_TX_EOT									: out	STD_LOGIC;
-		Trans_TX_Ack									: in	STD_LOGIC;
+		Trans_TX_SOT									: out	std_logic;
+		Trans_TX_EOT									: out	std_logic;
+		Trans_TX_Ack									: in	std_logic;
 
 		-- RX path
-		Trans_RX_Valid								: in	STD_LOGIC;
+		Trans_RX_Valid								: in	std_logic;
 		Trans_RX_Data									: in	T_SLV_32;
-		Trans_RX_SOT									: in	STD_LOGIC;
-		Trans_RX_EOT									: in	STD_LOGIC;
-		Trans_RX_Ack									: out	STD_LOGIC
+		Trans_RX_SOT									: in	std_logic;
+		Trans_RX_EOT									: in	std_logic;
+		Trans_RX_Ack									: out	std_logic
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_StreamingLayer is
-	attribute KEEP													: BOOLEAN;
-	attribute FSM_ENCODING									: STRING;
+	attribute KEEP													: boolean;
+	attribute FSM_ENCODING									: string;
 
 	-- my reset
-	signal MyReset 													: STD_LOGIC;
+	signal MyReset 													: std_logic;
 
 	-- ===========================================================================
 	-- CommandLayer configurations
 	-- ===========================================================================
-	constant SHIFT_WIDTH										: POSITIVE								:= 8;						-- supports logical block sizes from 512 B to 4 KiB
-	constant AHEAD_CYCLES_FOR_INSERT_EOT		: NATURAL									:= 1;
+	constant SHIFT_WIDTH										: positive								:= 8;						-- supports logical block sizes from 512 B to 4 KiB
+	constant AHEAD_CYCLES_FOR_INSERT_EOT		: natural									:= 1;
 
 	-- CommandFSM
 	-- ==========================================================================
 	signal Status_i													: T_SATA_STREAMING_STATUS;
 	signal Error_i													: T_SATA_STREAMING_ERROR;
 
-	signal SFSM_TX_en												: STD_LOGIC;
-	SIGNAL SFSM_TX_ForceEOT									: STD_LOGIC;
-	SIGNAL SFSM_TX_FIFO_ForceGot						: STD_LOGIC;
+	signal SFSM_TX_en												: std_logic;
+	signal SFSM_TX_ForceEOT									: std_logic;
+	signal SFSM_TX_FIFO_ForceGot						: std_logic;
 
-	signal SFSM_RX_SOR											: STD_LOGIC;
-	signal SFSM_RX_EOR											: STD_LOGIC;
-	signal SFSM_RX_ForcePut									: STD_LOGIC;
+	signal SFSM_RX_SOR											: std_logic;
+	signal SFSM_RX_EOR											: std_logic;
+	signal SFSM_RX_ForcePut									: std_logic;
 
 	signal SFSM_DebugPortOut								: T_SATADBG_STREAMING_SFSM_OUT;
 
@@ -169,52 +168,52 @@ architecture rtl of sata_StreamingLayer is
 
 	-- TX_FIFO
 	-- ==========================================================================
-	signal TX_FIFO_Full											: STD_LOGIC;
-	signal TX_FIFO_put											: STD_LOGIC;
-	signal TX_FIFO_got											: STD_LOGIC;
-	signal TX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 downto 0);
-	signal TX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 downto 0);
+	signal TX_FIFO_Full											: std_logic;
+	signal TX_FIFO_put											: std_logic;
+	signal TX_FIFO_got											: std_logic;
+	signal TX_FIFO_DataIn										: std_logic_vector(33 downto 0);
+	signal TX_FIFO_DataOut									: std_logic_vector(33 downto 0);
 
 	-- TX path data interface after TX_FIFO
 	signal TX_FIFO_Data											: T_SLV_32;
-	signal TX_FIFO_SOR											: STD_LOGIC;
-	signal TX_FIFO_EOR											: STD_LOGIC;
-	signal TX_FIFO_Valid										: STD_LOGIC;
+	signal TX_FIFO_SOR											: std_logic;
+	signal TX_FIFO_EOR											: std_logic;
+	signal TX_FIFO_Valid										: std_logic;
 
 	-- TX path
 	-- ==========================================================================
-	signal TC_TX_Ack												: STD_LOGIC;
-	signal TC_TX_Valid											: STD_LOGIC;
+	signal TC_TX_Ack												: std_logic;
+	signal TC_TX_Valid											: std_logic;
 	signal TC_TX_Data												: T_SLV_32;
-	signal TC_TX_SOT												: STD_LOGIC;
-	signal TC_TX_EOT												: STD_LOGIC;
-	signal TC_TX_InsertEOT									: STD_LOGIC;
+	signal TC_TX_SOT												: std_logic;
+	signal TC_TX_EOT												: std_logic;
+	signal TC_TX_InsertEOT									: std_logic;
 
 	-- RX_FIFO
 	-- ==========================================================================
-	signal RX_FIFO_put											: STD_LOGIC;
-	signal RX_FIFO_got											: STD_LOGIC;
-	signal RX_FIFO_DataIn										: STD_LOGIC_VECTOR(33 downto 0);
-	signal RX_FIFO_DataOut									: STD_LOGIC_VECTOR(33 downto 0);
-	signal RX_FIFO_Valid										: STD_LOGIC;
-	signal RX_FIFO_Full											: STD_LOGIC;
+	signal RX_FIFO_put											: std_logic;
+	signal RX_FIFO_got											: std_logic;
+	signal RX_FIFO_DataIn										: std_logic_vector(33 downto 0);
+	signal RX_FIFO_DataOut									: std_logic_vector(33 downto 0);
+	signal RX_FIFO_Valid										: std_logic;
+	signal RX_FIFO_Full											: std_logic;
 
 	-- IdentifyDeviceFilter
 	-- ==========================================================================
-	signal IDF_Reset												: STD_LOGIC;
-	signal IDF_Enable												: STD_LOGIC;
-	signal IDF_Error												: STD_LOGIC;
-	signal IDF_Finished											: STD_LOGIC;
+	signal IDF_Reset												: std_logic;
+	signal IDF_Enable												: std_logic;
+	signal IDF_Error												: std_logic;
+	signal IDF_Finished											: std_logic;
 
-	signal IDF_Valid												: STD_LOGIC;
+	signal IDF_Valid												: std_logic;
 	signal IDF_Data													: T_SLV_32;
-	signal IDF_SOT													: STD_LOGIC;
-	signal IDF_EOT													: STD_LOGIC;
+	signal IDF_SOT													: std_logic;
+	signal IDF_EOT													: std_logic;
 	signal IDF_DriveInformation							: T_SATA_DRIVE_INFORMATION;
 
 	-- Internal version of output signals
 	-- ========================================================================
-	signal Trans_RX_Ack_i										: STD_LOGIC;
+	signal Trans_RX_Ack_i										: std_logic;
 
 begin
 	-- Reset sub-components until initial reset of SATAController has been
@@ -227,8 +226,8 @@ begin
 	-- logical block address calculations
 	-- ================================================================
 	AdrCalc : block
-		signal Shift_us										: UNSIGNED(log2ceilnz(SHIFT_WIDTH) - 1 downto 0);
-		type T_SHIFTED										is array(NATURAL range <>) of T_SLV_48;
+		signal Shift_us										: unsigned(log2ceilnz(SHIFT_WIDTH) - 1 downto 0);
+		type T_SHIFTED										is array(natural range <>) of T_SLV_48;
 		signal Address_AppLB_Shifted			: T_SHIFTED(SHIFT_WIDTH - 1 downto 0);
 		signal BlockCount_AppLB_Shifted		: T_SHIFTED(SHIFT_WIDTH - 1 downto 0);
 	begin
@@ -341,16 +340,16 @@ begin
 	-- TX TransportCutter
 	-- ===========================================================================
 	TransportCutter : block
-		signal TC_TX_DataFlow								: STD_LOGIC;
+		signal TC_TX_DataFlow								: std_logic;
 
-		signal InsertEOT_d									: STD_LOGIC						:= '0';
-		signal InsertEOT_re									: STD_LOGIC;
-		signal InsertEOT_re_d								: STD_LOGIC						:= '0';
-		signal InsertEOT_re_d2							: STD_LOGIC						:= '0';
+		signal InsertEOT_d									: std_logic						:= '0';
+		signal InsertEOT_re									: std_logic;
+		signal InsertEOT_re_d								: std_logic						:= '0';
+		signal InsertEOT_re_d2							: std_logic						:= '0';
 
-		signal IEOTC_Load										: STD_LOGIC;
-		signal IEOTC_inc										: STD_LOGIC;
-		signal IEOTC_uf											: STD_LOGIC;
+		signal IEOTC_Load										: std_logic;
+		signal IEOTC_inc										: std_logic;
+		signal IEOTC_uf											: std_logic;
 	begin
 		-- enable TX data path
 		TC_TX_Valid					<= TX_FIFO_Valid		and SFSM_TX_en;
@@ -371,17 +370,17 @@ begin
 		IEOTC_inc						<= TC_TX_DataFlow		and not IEOTC_uf;
 
 		IEOTC : block	-- InsertEOTCounter
-			constant MIN_TRANSFER_SIZE_ldB  	: POSITIVE															:= log2ceilnz(C_SATA_ATA_MAX_BLOCKCOUNT)+9;
-			constant MIN_TRANSFER_SIZE_B			: POSITIVE															:= 2**MIN_TRANSFER_SIZE_ldB;
-			constant MAX_TRANSFER_SIZE_ldB		: POSITIVE															:= MIN_TRANSFER_SIZE_ldB + (SHIFT_WIDTH - 1);
-			constant IEOT_COUNTER_START				: POSITIVE															:= (MIN_TRANSFER_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOT - 3;		-- FIXME: replace with dynamic calculation
-			constant IEOT_COUNTER_BITS				: POSITIVE															:= MAX_TRANSFER_SIZE_ldB - 2;
+			constant MIN_TRANSFER_SIZE_ldB  	: positive															:= log2ceilnz(C_SATA_ATA_MAX_BLOCKCOUNT)+9;
+			constant MIN_TRANSFER_SIZE_B			: positive															:= 2**MIN_TRANSFER_SIZE_ldB;
+			constant MAX_TRANSFER_SIZE_ldB		: positive															:= MIN_TRANSFER_SIZE_ldB + (SHIFT_WIDTH - 1);
+			constant IEOT_COUNTER_START				: positive															:= (MIN_TRANSFER_SIZE_B / 4) - AHEAD_CYCLES_FOR_INSERT_EOT - 3;		-- FIXME: replace with dynamic calculation
+			constant IEOT_COUNTER_BITS				: positive															:= MAX_TRANSFER_SIZE_ldB - 2;
 
-			signal Counter_s									: SIGNED(IEOT_COUNTER_BITS downto 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);
+			signal Counter_s									: signed(IEOT_COUNTER_BITS downto 0)			:= to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);
 		begin
 			process(Clock)
 			begin
-				IF rising_edge(Clock) then
+				if rising_edge(Clock) then
 					if ((MyReset = '1') or (IEOTC_Load = '1')) then
 						Counter_s				<=  to_signed(IEOT_COUNTER_START, IEOT_COUNTER_BITS + 1);		-- FIXME: replace with dynamic calculation
 					else
@@ -487,7 +486,7 @@ begin
 
   -- debug ports
   -- ===========================================================================
-  genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) generate
+  genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
   begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
 			function dbg_generateCommandEncodings return string is

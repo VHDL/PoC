@@ -197,7 +197,7 @@ begin
     signal valid_out_r               : std_logic := '0';
     signal tracer_data_se_sel        : std_logic;
 
-    signal done_tracer_i : std_Logic;
+    signal done_tracer_i : std_logic;
 
     signal tracer_time_masked : std_logic_vector(TRACER-1 downto 0);
 

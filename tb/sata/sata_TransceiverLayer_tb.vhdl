@@ -58,7 +58,7 @@ architecture tb of sata_TransceiverLayer_tb is
 	constant CLOCK_FREQ							: FREQ					:= 100 MHz;
 
 	-- ===========================================================================
-	signal SATA_RefClock						: STD_LOGIC;
+	signal SATA_RefClock						: std_logic;
 
 	-- unit Under Test (UUT) configuration
 	-- ===========================================================================
@@ -68,7 +68,7 @@ architecture tb of sata_TransceiverLayer_tb is
 	-- ===========================================================================
 	signal DebugPortIn					: T_SATADBG_TRANSCEIVER_IN;
 
-	signal PowerDown						: STD_LOGIC;
+	signal PowerDown						: std_logic;
 	signal TX_Data							: T_SLV_32;
 	signal TX_CharIsK						: T_SLV_4;
 

@@ -54,30 +54,30 @@ architecture tb of pio_fifo_tb is
 	constant CLOCK_2_FREQ				: FREQ						:= 100 MHz;
 
 	constant DATARATE						: T_IO_DATARATE		:= IO_DATARATE_SDR;
-	constant BITS								: POSITIVE				:= 8;
+	constant BITS								: positive				:= 8;
 
-	signal Clock_1							: STD_LOGIC;
-	signal Reset_1							: STD_LOGIC;
+	signal Clock_1							: std_logic;
+	signal Reset_1							: std_logic;
 
-	signal put									: STD_LOGIC;
-	signal DataIn								: STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Full									: STD_LOGIC;
+	signal put									: std_logic;
+	signal DataIn								: std_logic_vector(BITS - 1 downto 0);
+	signal Full									: std_logic;
 
-	signal UUT1_Clock						: STD_LOGIC;
-	signal UUT1_DataOut					: STD_LOGIC_VECTOR(BITS downto 0);
+	signal UUT1_Clock						: std_logic;
+	signal UUT1_DataOut					: std_logic_vector(BITS downto 0);
 
-	signal UUT2_DataOut					: STD_LOGIC_VECTOR(0 downto 0);
+	signal UUT2_DataOut					: std_logic_vector(0 downto 0);
 
-	signal Wire_Clock						: STD_LOGIC;
-	signal Wire_Data12					: STD_LOGIC_VECTOR(UUT1_DataOut'range);
-	signal Wire_Data21					: STD_LOGIC_VECTOR(UUT2_DataOut'range);
+	signal Wire_Clock						: std_logic;
+	signal Wire_Data12					: std_logic_vector(UUT1_DataOut'range);
+	signal Wire_Data21					: std_logic_vector(UUT2_DataOut'range);
 
-	signal Clock_2							: STD_LOGIC;
-	signal Reset_2							: STD_LOGIC;
+	signal Clock_2							: std_logic;
+	signal Reset_2							: std_logic;
 
-	signal got									: STD_LOGIC;
-	signal DataOut							: STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Valid								: STD_LOGIC;
+	signal got									: std_logic;
+	signal DataOut							: std_logic_vector(BITS - 1 downto 0);
+	signal Valid								: std_logic;
 
 begin
 	simGenerateClock(Clock_1, Frequency => CLOCK_1_FREQ, Phase =>  0.0 deg, Wander => 0 permil);

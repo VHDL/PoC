@@ -1,21 +1,20 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					I2C BusController
+-- Entity:					I2C BusController
 --
 -- Description:
--- ------------------------------------
---		The I2C BusController transmitts bits over the I2C bus (SerialClock - SCL,
---		SerialData - SDA) and also receives them.	To send/receive words over the
---		I2C bus, use the I2C Controller, which utilizes this controller. This
---		controller is compatible to the System Management Bus (SMBus).
+-- -------------------------------------
+-- The I2C BusController transmitts bits over the I2C bus (SerialClock - SCL,
+-- SerialData - SDA) and also receives them.	To send/receive words over the
+-- I2C bus, use the I2C Controller, which utilizes this controller. This
+-- controller is compatible to the System Management Bus (SMBus).
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -30,7 +29,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -48,25 +47,25 @@ use			PoC.iic.all;
 entity iic_BusController is
 	generic (
 		CLOCK_FREQ										: FREQ													:= 100 MHz;
-		ADD_INPUT_SYNCHRONIZER				: BOOLEAN												:= FALSE;
+		ADD_INPUT_SYNCHRONIZER				: boolean												:= FALSE;
 		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;			-- 100 kHz
-		ALLOW_MEALY_TRANSITION				: BOOLEAN												:= TRUE
+		ALLOW_MEALY_TRANSITION				: boolean												:= TRUE
 	);
 	port (
-		Clock													: in	STD_LOGIC;
-		Reset													: in	STD_LOGIC;
+		Clock													: in	std_logic;
+		Reset													: in	std_logic;
 
-		Request												: in	STD_LOGIC;
-		Grant													: out	STD_LOGIC;
+		Request												: in	std_logic;
+		Grant													: out	std_logic;
 		Command												: in	T_IO_IICBUS_COMMAND;
 		Status												: out	T_IO_IICBUS_STATUS;
 
-		SerialClock_i									: in	STD_LOGIC;
-		SerialClock_o									: out	STD_LOGIC;
-		SerialClock_t									: out	STD_LOGIC;
-		SerialData_i									: in	STD_LOGIC;
-		SerialData_o									: out	STD_LOGIC;
-		SerialData_t									: out	STD_LOGIC
+		SerialClock_i									: in	std_logic;
+		SerialClock_o									: out	std_logic;
+		SerialClock_t									: out	std_logic;
+		SerialData_i									: in	std_logic;
+		SerialData_o									: out	std_logic;
+		SerialData_t									: out	std_logic
 	);
 end entity;
 
@@ -78,8 +77,8 @@ end entity;
 --	bus-state tracking / request/grant generation
 
 architecture rtl of iic_BusController is
-	attribute KEEP														: BOOLEAN;
-	attribute FSM_ENCODING										: STRING;
+	attribute KEEP														: boolean;
+	attribute FSM_ENCODING										: string;
 
 	FUNCTION getSpikeSupressionTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN T_TIME IS
 	begin
@@ -224,13 +223,13 @@ architecture rtl of iic_BusController is
 	CONSTANT TIME_VALID_DATA									: T_TIME		:= getValidDataTime(IIC_BUSMODE);
 
 	-- Timing table ID
-	constant TTID_BUS_FREE_TIME								: NATURAL		:= 0;
-	constant TTID_HOLD_CLOCK_AFTER_START			: NATURAL		:= 1;
-	constant TTID_CLOCK_LOW										: NATURAL		:= 2;
-	constant TTID_CLOCK_HIGH									: NATURAL		:= 3;
-	constant TTID_SETUP_REPEAT_START					: NATURAL		:= 4;
-	constant TTID_SETUP_STOP									: NATURAL		:= 5;
-	constant TTID_SETUP_DATA									: NATURAL		:= 6;
+	constant TTID_BUS_FREE_TIME								: natural		:= 0;
+	constant TTID_HOLD_CLOCK_AFTER_START			: natural		:= 1;
+	constant TTID_CLOCK_LOW										: natural		:= 2;
+	constant TTID_CLOCK_HIGH									: natural		:= 3;
+	constant TTID_SETUP_REPEAT_START					: natural		:= 4;
+	constant TTID_SETUP_STOP									: natural		:= 5;
+	constant TTID_SETUP_DATA									: natural		:= 6;
 
 	-- Timing table
 	constant TIMING_TABLE											: T_NATVEC	:= (
@@ -243,14 +242,14 @@ architecture rtl of iic_BusController is
 	);
 
 	-- Bus TimingCounter (BusTC)
-	subtype T_BUSTC_SLOT_INDEX								is INTEGER range 0 to TIMING_TABLE'length - 1;
+	subtype T_BUSTC_SLOT_INDEX								is integer range 0 to TIMING_TABLE'length - 1;
 
-	signal BusTC_en														: STD_LOGIC;
-	signal BusTC_Load													: STD_LOGIC;
+	signal BusTC_en														: std_logic;
+	signal BusTC_Load													: std_logic;
 	signal BusTC_Slot													: T_BUSTC_SLOT_INDEX;
-	signal BusTC_Timeout											: STD_LOGIC;
+	signal BusTC_Timeout											: std_logic;
 
-	constant SMBUS_COMPLIANCE									: BOOLEAN				:= (IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS);
+	constant SMBUS_COMPLIANCE									: boolean				:= (IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS);
 
 	type T_BUS_STATE is (
 		ST_BUS_IDLE,				-- allow start condition
@@ -304,26 +303,26 @@ architecture rtl of iic_BusController is
 	signal NextState										: T_STATE;
 	attribute FSM_ENCODING of State			: signal is "gray";
 
-	signal SerialClock_t_r_set					: STD_LOGIC;
-	signal SerialClock_t_r_rst					: STD_LOGIC;
-	signal SerialData_t_r_set						: STD_LOGIC;
-	signal SerialData_t_r_rst						: STD_LOGIC;
+	signal SerialClock_t_r_set					: std_logic;
+	signal SerialClock_t_r_rst					: std_logic;
+	signal SerialData_t_r_set						: std_logic;
+	signal SerialData_t_r_rst						: std_logic;
 
-	signal Status_en										: STD_LOGIC;
+	signal Status_en										: std_logic;
 	signal Status_nxt										: T_IO_IICBUS_STATUS;
 	signal Status_d											: T_IO_IICBUS_STATUS				:= IO_IICBUS_STATUS_ERROR;
 
-	signal SerialClock_raw							: STD_LOGIC;
-	signal SerialClockIn								: STD_LOGIC;
-	signal SerialClock_o_r							: STD_LOGIC									:= '0';
-	signal SerialClock_t_r							: STD_LOGIC									:= '1';
-	signal SerialClock_t_d							: STD_LOGIC									:= '1';
+	signal SerialClock_raw							: std_logic;
+	signal SerialClockIn								: std_logic;
+	signal SerialClock_o_r							: std_logic									:= '0';
+	signal SerialClock_t_r							: std_logic									:= '1';
+	signal SerialClock_t_d							: std_logic									:= '1';
 
-	signal SerialData_raw								: STD_LOGIC;
-	signal SerialDataIn									: STD_LOGIC;
-	signal SerialData_o_r								: STD_LOGIC									:= '0';
-	signal SerialData_t_r								: STD_LOGIC									:= '1';
-	signal SerialData_t_d								: STD_LOGIC									:= '1';
+	signal SerialData_raw								: std_logic;
+	signal SerialDataIn									: std_logic;
+	signal SerialData_o_r								: std_logic									:= '0';
+	signal SerialData_t_r								: std_logic									:= '1';
+	signal SerialData_t_d								: std_logic									:= '1';
 
 	attribute KEEP of SerialClockIn			: signal is TRUE;
 	attribute KEEP of SerialDataIn			: signal is TRUE;
@@ -362,7 +361,7 @@ begin
 		SerialDataIn	<= SerialData_raw;
 	end generate;
 	genSpikeSupp1 : if (TIME_SPIKE_SUPPRESSION > to_time(CLOCK_FREQ)) generate
-		constant SPIKE_SUPPRESSION_CYCLES		: NATURAL := TimingToCycles(TIME_SPIKE_SUPPRESSION, CLOCK_FREQ);
+		constant SPIKE_SUPPRESSION_CYCLES		: natural := TimingToCycles(TIME_SPIKE_SUPPRESSION, CLOCK_FREQ);
 	begin
 		SerialClockGF : entity PoC.io_GlitchFilter
 			generic map (
@@ -803,8 +802,8 @@ begin
 		end case;
 	end process;
 
-	SerialClock_t_r		<= ffrs(q => SerialClock_t_r,	rst => SerialClock_t_r_rst,	set => (Reset OR SerialClock_t_r_set))	when rising_edge(Clock);
-	SerialData_t_r		<= ffrs(q => SerialData_t_r,	rst => SerialData_t_r_rst,	set => (Reset OR SerialData_t_r_set))	when rising_edge(Clock);
+	SerialClock_t_r		<= ffrs(q => SerialClock_t_r,	rst => SerialClock_t_r_rst,	set => (Reset or SerialClock_t_r_set))	when rising_edge(Clock);
+	SerialData_t_r		<= ffrs(q => SerialData_t_r,	rst => SerialData_t_r_rst,	set => (Reset or SerialData_t_r_set))	when rising_edge(Clock);
 
 
 	BusTC : entity PoC.io_TimingCounter

@@ -3,88 +3,88 @@
 -- kate: tab-width=2
 -- vim: set tabstop=2
 
-LIBRARY IEEE;
-USE		IEEE.STD_LOGIC_1164.ALL;
-USE		IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use		IEEE.STD_LOGIC_1164.all;
+use		IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE		PoC.config.ALL;
-USE		PoC.sata.ALL;
-USE		PoC.utils.ALL;
-USE		PoC.vectors.ALL;
-USE		PoC.strings.ALL;
-USE		PoC.physical.ALL;
-USE		PoC.sata_TransceiverTypes.ALL;
+library PoC;
+use		PoC.config.all;
+use		PoC.sata.all;
+use		PoC.utils.all;
+use		PoC.vectors.all;
+use		PoC.strings.all;
+use		PoC.physical.all;
+use		PoC.sata_TransceiverTypes.all;
 
 
 entity sata_Transceiver_Stratix2GX_GXB is
 	generic (
 		CLOCK_IN_FREQ							: FREQ											:= 150 MHz;
-		PORTS											: POSITIVE									:= 2;			-- Number of Ports per Transceiver
+		PORTS											: positive									:= 2;			-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR	:= (0 => C_SATA_GENERATION_MAX, 1 => C_SATA_GENERATION_MAX)	-- intial SATA Generation
 	);
 	port (
-		ClockNetwork_Reset			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ClockNetwork_ResetDone	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		Reset										: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		ResetDone								: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		ClockNetwork_Reset			: in	std_logic_vector(PORTS - 1 downto 0);
+		ClockNetwork_ResetDone	: out	std_logic_vector(PORTS - 1 downto 0);
+		Reset										: in	std_logic_vector(PORTS - 1 downto 0);
+		ResetDone								: out	std_logic_vector(PORTS - 1 downto 0);
 
-		PowerDown		: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		PowerDown		: in	std_logic_vector(PORTS - 1 downto 0);
 		Command			: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
-		Status			: OUT	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 DOWNTO 0);
-		Error				: OUT	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 DOWNTO 0);
+		Status			: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
+		Error				: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
 
 		-- debug ports
---		DebugPortIn		: IN	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 DOWNTO 0);
---		DebugPortOut		: OUT	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 DOWNTO 0);
+--		DebugPortIn		: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+--		DebugPortOut		: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-		SATA_Clock		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		SATA_Clock		: out	std_logic_vector(PORTS - 1 downto 0);
 
-		RP_Reconfig		: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_SATAGeneration	: IN	T_SATA_GENERATION_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_ReconfigComplete	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_ConfigReloaded	: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_Lock			: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		RP_Locked		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RP_Reconfig		: in	std_logic_vector(PORTS - 1 downto 0);
+		RP_SATAGeneration	: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+		RP_ReconfigComplete	: out	std_logic_vector(PORTS - 1 downto 0);
+		RP_ConfigReloaded	: out	std_logic_vector(PORTS - 1 downto 0);
+		RP_Lock			: in	std_logic_vector(PORTS - 1 downto 0);
+		RP_Locked		: out	std_logic_vector(PORTS - 1 downto 0);
 
-		OOB_TX_Command		: IN	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-		OOB_TX_Complete		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
-		OOB_RX_Received		: OUT	T_SATA_OOB_VECTOR(PORTS - 1 DOWNTO 0);
-		OOB_HandshakeComplete	: IN	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		OOB_TX_Command		: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+		OOB_TX_Complete		: out	std_logic_vector(PORTS - 1 downto 0);
+		OOB_RX_Received		: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+		OOB_HandshakeComplete	: in	std_logic_vector(PORTS - 1 downto 0);
 
-		TX_Data			: IN	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		TX_CharIsK		: IN	T_SLVV_4(PORTS - 1 DOWNTO 0);
+		TX_Data			: in	T_SLVV_32(PORTS - 1 downto 0);
+		TX_CharIsK		: in	T_SLVV_4(PORTS - 1 downto 0);
 
-		RX_Data			: OUT	T_SLVV_32(PORTS - 1 DOWNTO 0);
-		RX_CharIsK		: OUT	T_SLVV_4(PORTS - 1 DOWNTO 0);
-		RX_Valid		: OUT	STD_LOGIC_VECTOR(PORTS - 1 DOWNTO 0);
+		RX_Data			: out	T_SLVV_32(PORTS - 1 downto 0);
+		RX_CharIsK		: out	T_SLVV_4(PORTS - 1 downto 0);
+		RX_Valid		: out	std_logic_vector(PORTS - 1 downto 0);
 
 		-- Altera specific GXB ports
 		-- needs to be split in IN and OUT
-		VSS_Common_In		: IN	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
-		VSS_Private_In		: IN	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0);
-		VSS_Private_Out		: OUT	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS - 1 DOWNTO 0)
+		VSS_Common_In		: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+		VSS_Private_In		: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS - 1 downto 0);
+		VSS_Private_Out		: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS - 1 downto 0)
 	);
 end;
 
-ARCHITECTURE rtl OF sata_Transceiver_Stratix2GX_GXB IS
+architecture rtl of sata_Transceiver_Stratix2GX_GXB is
 
 	CONSTANT NO_DEVICE_TIMEOUT	: T_TIME					:= 50.0e-3;			-- simulation: 20 us, synthesis: 50 ms
 	CONSTANT NEW_DEVICE_TIMEOUT	: T_TIME					:= 1000.0e-3;		--
 
-	CONSTANT C_DEVICE_INFO			: T_DEVICE_INFO		:= DEVICE_INFO;
+	constant C_DEVICE_INFO			: T_DEVICE_INFO		:= DEVICE_INFO;
 
 	signal reconf_clk	: std_logic;
 	signal refclk		: std_logic;
 
-BEGIN
+begin
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
-	ASSERT (C_DEVICE_INFO.Vendor = VENDOR_ALTERA)							REPORT "Vendor not yet supported."				SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_STRATIX)	REPORT "Device family not yet supported."	SEVERITY FAILURE;
-	ASSERT (C_DEVICE_INFO.Device = DEVICE_STRATIX2)						REPORT "Device not yet supported."				SEVERITY FAILURE;
-	ASSERT (PORTS <= 2)			REPORT "To many ports per transceiver."		SEVERITY FAILURE;
+	assert (C_DEVICE_INFO.Vendor = VENDOR_ALTERA)							report "Vendor not yet supported."				severity FAILURE;
+	assert (C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_STRATIX)	report "Device family not yet supported."	severity FAILURE;
+	assert (C_DEVICE_INFO.Device = DEVICE_STRATIX2)						report "Device not yet supported."				severity FAILURE;
+	assert (PORTS <= 2)			report "To many ports per transceiver."		severity FAILURE;
 
 -- 	Common modules shared by all ports
 	clk_div : clock_div
@@ -297,4 +297,4 @@ BEGIN
 		);
 
 	end generate;
-END;
+end;
