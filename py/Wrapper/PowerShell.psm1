@@ -29,15 +29,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
 function Open-Environment
-{	[CmdletBinding()]
-	param(
-		[String]		$Py_Interpreter,
-		[String[]]	$Py_Parameters,
-		[String]		$PoC_Query
-	)
-	$Debug = $false
+{	$Debug = $false
 	
 	Write-Host "Loading module PoC..."
 	Import-Module "${env:PoCRootDirectory}\py\Wrapper\PoC.psm1" -Scope Global -ArgumentList @($Py_Interpreter, $Py_Parameters, $PoC_Query)
