@@ -18,7 +18,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -278,6 +278,59 @@ package satacomp is
 			OOB_TX_Complete						: out	std_logic_vector(PORTS - 1 downto 0);
 			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 			OOB_HandshakeComplete			: in	std_logic_vector(PORTS - 1 downto 0);
+
+			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
+			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
+
+			RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
+			RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
+			RX_Valid									: out std_logic_vector(PORTS - 1 downto 0);
+
+			-- vendor specific signals
+			VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
+			VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
+			VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
+		);
+	end component;
+		
+	component sata_Transceiver_Series7_GTPE2 is
+		generic (
+			DEBUG											: boolean											:= FALSE;																	-- generate additional debug signals and preserve them (attribute keep)
+			ENABLE_DEBUGPORT					: boolean											:= FALSE;																	-- enables the assignment of signals to the debugport
+			REFCLOCK_FREQ							: FREQ												:= 150 MHz;																-- 150 MHz
+			PORTS											: positive										:= 2;																			-- Number of PORTS per Transceiver
+			INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)			-- intial SATA Generation
+		);
+		port (
+			Reset											: in	std_logic_vector(PORTS - 1 downto 0);
+			ResetDone									: out	std_logic_vector(PORTS - 1 downto 0);
+			ClockNetwork_Reset				: in	std_logic_vector(PORTS - 1 downto 0);
+			ClockNetwork_ResetDone		: out	std_logic_vector(PORTS - 1 downto 0);
+
+			PowerDown									: in	std_logic_vector(PORTS - 1 downto 0);
+			Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
+			Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
+			Error											: out	T_SATA_TRANSCEIVER_ERROR_VECTOR(PORTS - 1 downto 0);
+
+			-- debug PORTS
+			DebugPortIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
+			DebugPortOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
+
+			SATA_Clock								: out	std_logic_vector(PORTS - 1 downto 0);
+			SATA_Clock_Stable					: out	std_logic_vector(PORTS - 1 downto 0);
+
+			RP_Reconfig								: in	std_logic_vector(PORTS - 1 downto 0);
+			RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
+			RP_ReconfigComplete				: out	std_logic_vector(PORTS - 1 downto 0);
+			RP_ConfigReloaded					: out	std_logic_vector(PORTS - 1 downto 0);
+			RP_Lock										:	in	std_logic_vector(PORTS - 1 downto 0);
+			RP_Locked									: out	std_logic_vector(PORTS - 1 downto 0);
+
+			OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+			OOB_TX_Complete						: out	std_logic_vector(PORTS - 1 downto 0);
+			OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
+			OOB_HandshakeComplete			: in	std_logic_vector(PORTS - 1 downto 0);
+			OOB_AlignDetected    			: in	std_logic_vector(PORTS - 1 downto 0);
 
 			TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 			TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);

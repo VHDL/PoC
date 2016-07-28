@@ -106,7 +106,7 @@ package satadbg is
 		RX_ClockCorrectionStatus	: std_logic_vector(1 downto 0);
 
 		DRP												: T_XIL_DRP_BUS_OUT;
-		DigitalMonitor						: T_SLV_8;
+		DigitalMonitor						: T_SLV_16;
 		RX_Monitor_Data						: T_SLV_8;
 	end record;
 
