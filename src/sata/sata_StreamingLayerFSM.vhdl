@@ -774,7 +774,7 @@ begin
 				return  l.all;
 			end function;
 
-			constant dummy : boolean := dbg_ExportEncoding("Streaming Layer", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_StreamingLayer.tok");
+--			constant dummy : boolean := dbg_ExportEncoding("Streaming Layer", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_StreamingLayer.tok");
 		begin
 		end generate;
 

@@ -601,12 +601,12 @@ begin
 				return  l.all;
 			end function;
 
-			constant dummy : T_BOOLVEC := (
-				0 => dbg_ExportEncoding("Physical Layer - FSM",			dbg_generateStateEncodings,		PROJECT_DIR & "ChipScope/TokenFiles/FSM_PhysicalLayer.tok"),
-				1 => dbg_ExportEncoding("Physical Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Phy_Command.tok"),
-				2 => dbg_ExportEncoding("Physical Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Phy_Status.tok"),
-				3 => dbg_ExportEncoding("Physical Layer - Error Enum",		dbg_generateErrorEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Phy_Error.tok")
-			);
+--			constant dummy : T_BOOLVEC := (
+--				0 => dbg_ExportEncoding("Physical Layer - FSM",			dbg_generateStateEncodings,		PROJECT_DIR & "ChipScope/TokenFiles/FSM_PhysicalLayer.tok"),
+--				1 => dbg_ExportEncoding("Physical Layer - Command Enum",	dbg_generateCommandEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Phy_Command.tok"),
+--				2 => dbg_ExportEncoding("Physical Layer - Status Enum",		dbg_generateStatusEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Phy_Status.tok"),
+--				3 => dbg_ExportEncoding("Physical Layer - Error Enum",		dbg_generateErrorEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Phy_Error.tok")
+--			);
 		begin
 		end generate;
 

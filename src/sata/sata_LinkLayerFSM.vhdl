@@ -1151,10 +1151,10 @@ begin
 				return  l.all;
 			end function;
 
-			constant dummy : T_BOOLVEC := (
-				0 => dbg_ExportEncoding("Link Layer - FSM", 						dbg_GenerateStateEncodings,			PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer.tok"),
-				1 => dbg_ExportEncoding("Link Layer - Primitive Enum",	dbg_GeneratePrimitiveEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Primitive.tok")
-			);
+--			constant dummy : T_BOOLVEC := (
+--				0 => dbg_ExportEncoding("Link Layer - FSM", 						dbg_GenerateStateEncodings,			PROJECT_DIR & "ChipScope/TokenFiles/FSM_LinkLayer.tok"),
+--				1 => dbg_ExportEncoding("Link Layer - Primitive Enum",	dbg_GeneratePrimitiveEncodings,	PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Link_Primitive.tok")
+--			);
 		begin
 		end generate;
 

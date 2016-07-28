@@ -602,10 +602,10 @@ begin
 				return  l.all;
 			end function;
 
-			constant dummy : T_BOOLVEC := (
-				0 => dbg_ExportEncoding("Transport Layer FIS-Decoder - FSM", dbg_GenerateStateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISD.tok"),
-				1 => dbg_ExportEncoding("Transport Layer FIS-Decoder - Status", dbg_GenerateStatusEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_FISD_Status.tok")
-			);
+--			constant dummy : T_BOOLVEC := (
+--				0 => dbg_ExportEncoding("Transport Layer FIS-Decoder - FSM", dbg_GenerateStateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_TransLayer_FISD.tok"),
+--				1 => dbg_ExportEncoding("Transport Layer FIS-Decoder - Status", dbg_GenerateStatusEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/ENUM_Trans_FISD_Status.tok")
+--			);
 		begin
 		end generate;
 

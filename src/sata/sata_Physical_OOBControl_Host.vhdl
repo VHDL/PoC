@@ -475,7 +475,7 @@ begin
 				return  l.all;
 			end function;
 
-			constant dummy : boolean := dbg_ExportEncoding("OOBControl (Host)", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Host.tok");
+--			constant dummy : boolean := dbg_ExportEncoding("OOBControl (Host)", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Host.tok");
 		begin
 		end generate;
 

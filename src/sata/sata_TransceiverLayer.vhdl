@@ -570,13 +570,13 @@ begin
 			return  l.all;
 		end function;
 
-		constant dummy : T_BOOLVEC := (
-			0 => dbg_ExportEncoding("Transceiver Layer - Command Enum",				dbg_generateCommandEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Command.tok"),
-			1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",				dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Status.tok"),
-			2 => dbg_ExportEncoding("Transceiver Layer - Common Error Enum",	dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_Common.tok"),
-			3 => dbg_ExportEncoding("Transceiver Layer - TX Error Enum",			dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_TX.tok"),
-			4 => dbg_ExportEncoding("Transceiver Layer - RX Error Enum",			dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_RX.tok")
-		);
+--		constant dummy : T_BOOLVEC := (
+--			0 => dbg_ExportEncoding("Transceiver Layer - Command Enum",				dbg_generateCommandEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Command.tok"),
+--			1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",				dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Status.tok"),
+--			2 => dbg_ExportEncoding("Transceiver Layer - Common Error Enum",	dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_Common.tok"),
+--			3 => dbg_ExportEncoding("Transceiver Layer - TX Error Enum",			dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_TX.tok"),
+--			4 => dbg_ExportEncoding("Transceiver Layer - RX Error Enum",			dbg_generateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Error_RX.tok")
+--		);
 	begin
 	end generate;
 end;

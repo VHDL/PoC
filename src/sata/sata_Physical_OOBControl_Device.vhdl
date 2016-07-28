@@ -408,7 +408,7 @@ begin
 			return  l.all;
 		end function;
 
-		constant dummy : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");
+--		constant dummy : boolean := dbg_ExportEncoding("OOBControl (Device)", dbg_GenerateEncodings,  PROJECT_DIR & "ChipScope/TokenFiles/FSM_OOBControl_Device.tok");
 	begin
 		DebugPortOut.FSM												<= dbg_EncodeState(State);
 		DebugPortOut.DeviceOrHostDetected				<= HostDetected_i;
