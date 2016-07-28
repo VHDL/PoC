@@ -395,7 +395,7 @@ begin
 		signal GTP_DRP_DataOut							: T_XIL_DRP_DATA;
 		signal GTP_DRP_Ack									: std_logic;
 
-		signal GTP_DigitalMonitor						: T_SLV_8;
+		signal GTP_DigitalMonitor						: T_SLV_16;
 		signal GTP_RX_Monitor_sel						: T_SLV_2;
 		signal GTP_RX_Monitor_Data					: std_logic_vector(6 downto 0);
 
@@ -484,16 +484,11 @@ begin
 		signal GTP_RX_CDR_Hold							: std_logic 				:= '1';
 
 		signal GTP_RX_Data									: T_SLV_32;
-		signal GTP_RX_Data_float						: T_SLV_32;																-- open
 		signal GTP_RX_CommaDetected					: std_logic;															-- unused
 		signal GTP_RX_CharIsComma						: T_SLV_4;																-- unused
-		signal GTP_RX_CharIsComma_float			: T_SLV_4;																-- open
 		signal GTP_RX_CharIsK								: T_SLV_4;
-		signal GTP_RX_CharIsK_float					: T_SLV_4;																-- open
 		signal GTP_RX_DisparityError				: T_SLV_4;																-- unused
-		signal GTP_RX_DisparityError_float	: T_SLV_4;																-- open
 		signal GTP_RX_NotInTableError				: T_SLV_4;																-- unused
-		signal GTP_RX_NotInTableError_float	: T_SLV_4;																-- open
 		signal GTP_RX_ByteIsAligned					: std_logic;
 		signal GTP_RX_ByteRealign						: std_logic;															-- unused
 
@@ -1379,38 +1374,30 @@ begin
 				DRPCLK													=> GTP_DRP_Clock,									-- @DRP_Clock:
 				DRPEN														=> GTP_DRP_Enable,								-- @DRP_Clock:
 				DRPWE														=> GTP_DRP_ReadWrite,							-- @DRP_Clock:
-				DRPADDR													=> GTP_DRP_Address(7 downto 0),		-- @DRP_Clock:
+				DRPADDR													=> GTP_DRP_Address(8 downto 0),		-- @DRP_Clock:
 				DRPDI														=> GTP_DRP_DataIn,								-- @DRP_Clock:
 				DRPDO														=> GTP_DRP_DataOut,								-- @DRP_Clock:
 				DRPRDY													=> GTP_DRP_Ack,										-- @DRP_Clock:
 
 				-- datapath configuration
 				TX8B10BEN												=> '1',														-- @TX_Clock2:	enable 8B/10B encoder
-				TX8B10BBYPASS										=> x"00",													-- @TX_Clock2:	per-byte 8B/10B encoder bypass enables; 0 => use encoder
+				TX8B10BBYPASS										=> x"0",													-- @TX_Clock2:	per-byte 8B/10B encoder bypass enables; 0 => use encoder
 				RX8B10BEN												=> '1',														-- @RX_Clock2:	enable 8B710B decoder
 
 				-- FPGA-Fabric - TX interface ports
 				TXDATA(31 downto 0)							=> GTP_TX_Data,										-- @TX_Clock2:
-				TXDATA(63 downto 32)						=> (63 downto 32 => '0'),					-- @TX_Clock2:
-
 				TXCHARISK(3 downto 0)						=> GTP_TX_CharIsK,								-- @TX_Clock2:
-				TXCHARISK(7 downto 4)						=> (7 downto 4 => '0'),						-- @TX_Clock2:
-				TXCHARDISPMODE									=> x"00",													-- @TX_Clock2:	per-byte set running disparity to TXCHARDISPVAL(i); TXCHARDISPMODE(0) is also called TXCOMPLIANCE in a PIPE interface
-				TXCHARDISPVAL										=> x"00",													-- @TX_Clock2:	per-byte set running disparity
+				TXCHARDISPMODE									=> x"0",													-- @TX_Clock2:	per-byte set running disparity to TXCHARDISPVAL(i); TXCHARDISPMODE(0) is also called TXCOMPLIANCE in a PIPE interface
+				TXCHARDISPVAL										=> x"0",													-- @TX_Clock2:	per-byte set running disparity
 
 				-- FPGA-Fabric - RX interface ports
 				RXDATA(31 downto 0)							=> GTP_RX_Data,										-- @RX_Clock2:
-				RXDATA(63 downto 32)						=> GTP_RX_Data_float,							-- @RX_Clock2:
 				RXVALID													=> open,													-- @RX_Clock2:
 
 				RXCHARISCOMMA(3 downto 0)				=> GTP_RX_CharIsComma,						-- @RX_Clock2:
-				RXCHARISCOMMA(7 downto 4)				=> GTP_RX_CharIsComma_float,			-- @RX_Clock2:
 				RXCHARISK(3 downto 0)						=> GTP_RX_CharIsK,								-- @RX_Clock2:
-				RXCHARISK(7 downto 4)						=> GTP_RX_CharIsK_float,					-- @RX_Clock2:
 				RXDISPERR(3 downto 0)						=> GTP_RX_DisparityError,					-- @RX_Clock2:
-				RXDISPERR(7 downto 4)						=> GTP_RX_DisparityError_float,		-- @RX_Clock2:
 				RXNOTINTABLE(3 downto 0)				=> GTP_RX_NotInTableError,				-- @RX_Clock2:
-				RXNOTINTABLE(7 downto 4)				=> GTP_RX_NotInTableError_float,	-- @RX_Clock2:
 
 				-- RX Byte and Word Alignment
 				RXBYTEISALIGNED									=> GTP_RX_ByteIsAligned,
@@ -1475,7 +1462,7 @@ begin
 				RXCHBONDMASTER									=> '0',														-- @RX_Clock:		Indicates that the transceiver is the master for channel bonding
 				RXCHBONDSLAVE										=> '0',														-- @RX_Clock:		Indicates that this transceiver is a slave for channel bonding
 				RXCHBONDO												=> open,													-- @RX_Clock:		Channel bond control port - data out
-				RXCHBONDI												=> "00000",												-- @RX_Clock:		Channel bond control port - data in
+				RXCHBONDI												=> "0000",												-- @RX_Clock:		Channel bond control port - data in
 				RXCHANBONDSEQ										=> open,													-- @RX_Clock2:	RXDATA contains the start of a channel bonding sequence
 				RXCHANISALIGNED									=> open,													-- @RX_Clock2:	RX elastic buffer is channel aligned
 				RXCHANREALIGN										=> open,													-- @RX_Clock2:	RX elastic buffer changed channel alignment
@@ -1532,7 +1519,7 @@ begin
 				RXPRBSERR												=> open,													-- @RX_Clock2:	PRBS error have occurred; error counter 'RX_PRBS_ERR_CNT' can only be accessed by DRP at address 0x15C
 
 				-- Digital Monitor Ports
-				DMONITOROUT											=> GTP_DigitalMonitor,
+				DMONITOROUT											=> GTP_DigitalMonitor(14 downto 0),
 				DMONFIFORESET										=> '0',	-- GTPE2
 				DMONITORCLK											=> '0',	-- GTPE2
 
@@ -1607,7 +1594,7 @@ begin
 				RXSYNCMODE											=> '0',
 				RXSYNCOUT												=> open,
 				------------ Receive Ports - RX Decision Feedback Equalizer(DFE) -----------
-				RXADAPTSELTEST									=> "0000000000000",
+				RXADAPTSELTEST									=> "00000000000000",
 				RXOSINTEN												=> '1',
 				RXOSINTID0											=> "0000",
 				RXOSINTNTRLEN										=> '0',
@@ -1640,6 +1627,8 @@ begin
 		GTP_RX_p									<= VSS_Private_In(i).RX_p;
 		VSS_Private_Out(i).TX_n		<= GTP_TX_n;
 		VSS_Private_Out(i).TX_p		<= GTP_TX_p;
+
+		GTP_DigitalMonitor(15 downto 15)	<= "0";
 
 		genCSP0 : if (ENABLE_DEBUGPORT = FALSE) generate
 			GTP_DRP_Clock									<= '0';

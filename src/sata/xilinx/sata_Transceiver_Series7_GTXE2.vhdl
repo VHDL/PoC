@@ -1391,7 +1391,7 @@ begin
 				RXPRBSERR												=> open,													-- @RX_Clock2:	PRBS error have occurred; error counter 'RX_PRBS_ERR_CNT' can only be accessed by DRP at address 0x15C
 
 				-- Digital Monitor Ports
-				DMONITOROUT											=> GTX_DigitalMonitor,
+				DMONITOROUT											=> GTX_DigitalMonitor(7 downto 0),
 
 				EYESCANMODE											=> '0',														-- @async:
 				EYESCANTRIGGER									=> '0',														-- @async:
@@ -1458,6 +1458,8 @@ begin
 		VSS_Private_Out(i).TX_n		<= GTX_TX_n;
 		VSS_Private_Out(i).TX_p		<= GTX_TX_p;
 
+		GTX_DigitalMonitor(15 downto 8)	<= x"00";
+		
 		genCSP0 : if (ENABLE_DEBUGPORT = FALSE) generate
 			GTX_DRP_Clock									<= '0';
 			GTX_DRP_Enable								<= '0';
