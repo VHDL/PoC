@@ -256,7 +256,7 @@ begin
 		signal GTX_DRP_DataOut							: T_XIL_DRP_DATA;
 		signal GTX_DRP_Ack									: std_logic;
 
-		signal GTX_DigitalMonitor						: T_SLV_8;
+		signal GTX_DigitalMonitor						: T_SLV_16;
 		signal GTX_RX_Monitor_sel						: T_SLV_2;
 		signal GTX_RX_Monitor_Data					: std_logic_vector(6 downto 0);
 
