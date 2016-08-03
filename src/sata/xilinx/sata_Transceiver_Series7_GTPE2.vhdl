@@ -537,7 +537,7 @@ begin
 		
 				SATAGeneration						=> RP_SATAGeneration(i),
 		
-				GTP_Clock_1X							=> GTP_UserClock,
+				GTP_Clock_2X							=> GTP_UserClock,
 				GTP_Clock_4X							=> GTP_UserClock2
 			);
 
