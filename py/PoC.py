@@ -3,10 +3,10 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-# Authors:               Patrick Lehmann
+# Authors:              Patrick Lehmann
 #												Martin Zabel
 #
-# Python Main Module:    Entry point to the testbench tools in PoC repository.
+# Python Main Module:   Entry point to the testbench tools in PoC repository.
 #
 # Description:
 # ------------------------------------
