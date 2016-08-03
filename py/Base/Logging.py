@@ -1,7 +1,7 @@
 # EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 # Authors:          Patrick Lehmann
 #                   Thomas B. Preusser
@@ -11,20 +11,20 @@
 # Description:
 # ------------------------------------
 #		TODO:
-#		- 
-#		- 
+#		-
+#		-
 #
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #                     Chair for VLSI-Design, Diagnostics and Architecture
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -122,7 +122,7 @@ class Logger:
 		self._logLevel =      logLevel
 		self._printToStdOut = printToStdOut
 		self._entries =       []
-	
+
 	@property
 	def LogLevel(self):
 		return self._logLevel
@@ -152,32 +152,32 @@ class Logger:
 
 	def TryWrite(self, entry):
 		return (entry.Severity >= self._logLevel)
-	
+
 	def WriteFatal(self, message):
 		return self.Write(LogEntry(message, Severity.Fatal))
-	
+
 	def WriteError(self, message):
 		return self.Write(LogEntry(message, Severity.Error))
-	
+
 	def WriteWarning(self, message):
 		return self.Write(LogEntry(message, Severity.Warning))
-	
+
 	def WriteInfo(self, message):
 		return self.Write(LogEntry(message, Severity.Info))
-	
+
 	def WriteQuiet(self, message):
 		return self.Write(LogEntry(message, Severity.Quiet))
-	
+
 	def WriteNormal(self, message, indent=0):
 		return self.Write(LogEntry(message, Severity.Normal, indent))
-	
+
 	def WriteVerbose(self, message, indent=1):
 		return self.Write(LogEntry(message, Severity.Verbose, indent))
-	
+
 	def WriteDebug(self, message, indent=2):
 		return self.Write(LogEntry(message, Severity.Debug, indent))
-	
-		
+
+
 class ILogable:
 	def __init__(self, logger=None):
 		self.__logger = logger
@@ -205,32 +205,32 @@ class ILogable:
 		if self.__logger is not None:
 			return self.__logger.WriteError(*args, **kwargs)
 		return False
-	
+
 	def _LogWarning(self, *args, **kwargs):
 		if self.__logger is not None:
 			return self.__logger.WriteWarning(*args, **kwargs)
 		return False
-	
+
 	def _LogInfo(self, *args, **kwargs):
 		if self.__logger is not None:
 			return self.__logger.WriteInfo(*args, **kwargs)
 		return False
-	
+
 	def _LogQuiet(self, *args, **kwargs):
 		if self.__logger is not None:
 			return self.__logger.WriteQuiet(*args, **kwargs)
 		return False
-	
+
 	def _LogNormal(self, *args, **kwargs):
 		if self.__logger is not None:
 			return self.__logger.WriteNormal(*args, **kwargs)
 		return False
-	
+
 	def _LogVerbose(self, *args, **kwargs):
 		if self.__logger is not None:
 			return self.__logger.WriteVerbose(*args, **kwargs)
 		return False
-	
+
 	def _LogDebug(self, *args, **kwargs):
 		if self.__logger is not None:
 			return self.__logger.WriteDebug(*args, **kwargs)

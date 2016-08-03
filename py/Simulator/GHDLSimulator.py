@@ -1,30 +1,30 @@
 # EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 # Authors:          Patrick Lehmann
 #                   Martin Zabel
-# 
+#
 # Python Class:      TODO
-# 
+#
 # Description:
 # ------------------------------------
 #		TODO:
-#		- 
-#		- 
+#		-
+#		-
 #
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #                     Chair for VLSI-Design, Diagnostics and Architecture
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -104,7 +104,7 @@ class Simulator(BaseSimulator):
 
 		self._SetVHDLVersionAndIEEEFlavor(ghdl)
 		self._SetExternalLibraryReferences(ghdl)
-		
+
 		# run GHDL analysis for each VHDL file
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):                  raise SkipableSimulatorException("Cannot analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
@@ -153,7 +153,7 @@ class Simulator(BaseSimulator):
 
 		self._SetVHDLVersionAndIEEEFlavor(ghdl)
 		self._SetExternalLibraryReferences(ghdl)
-		
+
 		try:
 			ghdl.Elaborate()
 		except GHDLException as ex:
@@ -196,7 +196,7 @@ class Simulator(BaseSimulator):
 				waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".ghw")
 				ghdl.RunOptions[ghdl.SwitchGHDLWaveform] =  waveformFilePath
 			else:                                            raise SimulatorException("Unknown waveform file format for GHDL.")
-		
+
 		testbench.Result = ghdl.Run()
 
 	def _RunView(self, testbench):
@@ -211,11 +211,11 @@ class Simulator(BaseSimulator):
 		elif (waveformFileFormat == "ghw"):
 			waveformFilePath = self.Directories.Working / (testbench.ModuleName + ".ghw")
 		else:                                            raise SimulatorException("Unknown waveform file format for GHDL.")
-		
+
 		if (not waveformFilePath.exists()):
 			raise SkipableSimulatorException("Waveform file '{0!s}' not found.".format(waveformFilePath)) \
 				from FileNotFoundError(str(waveformFilePath))
-		
+
 		gtkwBinaryPath =    self.Directories.GTKWBinary
 		gtkwVersion =       self.Host.PoCConfig['INSTALL.GTKWave']['Version']
 		gtkw = GTKWave(self.Host.Platform, gtkwBinaryPath, gtkwVersion)
@@ -228,10 +228,10 @@ class Simulator(BaseSimulator):
 			gtkw.Parameters[gtkw.SwitchSaveFile] = str(gtkwSaveFilePath)
 		else:
 			self._LogDebug("Didn't find waveform save file: '{0!s}'".format(gtkwSaveFilePath))
-		
+
 		# run GTKWave GUI
 		gtkw.View()
-		
+
 		# clean-up *.gtkw files
 		if gtkwSaveFilePath.exists():
 			self._LogNormal("  Cleaning up GTKWave save file...")

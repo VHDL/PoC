@@ -125,7 +125,7 @@ class Configuration(BaseConfiguration):
 		"""Updates section with value from _template and returns directory as Path object."""
 		self._ConfigureScriptDirectory()
 		return super()._ConfigureBinaryDirectory()
-		
+
 	def _ConfigureScriptDirectory(self):
 		"""Updates section with value from _template and returns directory as Path object."""
 		unresolved = self._template[self._host.Platform][self._section]['ScriptDirectory']
@@ -164,10 +164,10 @@ class Configuration(BaseConfiguration):
 				match = backendRegExp.match(line)
 				if match is not None:
 					backend = match.group(1).lower()
-		
+
 		if ((version is None) or (backend is None)):
 			raise ConfigurationException("Version number or back-end name not found in '{0!s} -v' output.".format(ghdlPath))
-		
+
 		self._host.PoCConfig[self._section]['Version'] = version
 		self._host.PoCConfig[self._section]['Backend'] = backend
 
