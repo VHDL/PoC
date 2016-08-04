@@ -43,6 +43,8 @@ arith_prefix_or.vhdl
 # Arithmetic
 arith_addw.files
 arith_addw.vhdl
+arith_cca.files
+arith_cca.vhdl
 arith_div.files
 arith_div.vhdl
 # arith_muls_wide.files
