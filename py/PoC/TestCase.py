@@ -54,6 +54,8 @@ class Status(Enum):
 	SimulationFailed =    10
 	SimulationNoAsserts = 15
 	SimulationSuccess =   20
+	CompileError =        50
+	CompileSuccess =      60
 
 
 class TestElement:

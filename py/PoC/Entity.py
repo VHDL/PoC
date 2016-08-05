@@ -293,7 +293,7 @@ class WildCard(PathElement):
 
 	def GetNetlists(self, kind=NetlistKind.All):
 		for entity in self.GetEntities():
-			for nl in entity.GetNetlists():
+			for nl in entity.GetNetlists(kind):
 				if (nl.Kind in kind):
 					yield nl
 
@@ -425,7 +425,6 @@ class IPCore(PathElement):
 			for nl in self._coreGenNetlist:
 				if nl.IsVisible:
 					yield nl
-				yield nl
 		if (NetlistKind.VivadoNetlist in kind):
 			for nl in self._vivadoNetlist:
 				if nl.IsVisible:
@@ -832,7 +831,7 @@ class FQN:
 
 	def Root(self):
 		return self.__host.Root
-	
+
 	@property
 	def Entity(self):
 		return self.__parts[-1]

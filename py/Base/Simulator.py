@@ -49,9 +49,9 @@ from lib.Functions      import Init
 from Base.Exceptions    import ExceptionBase, SkipableException
 from Base.Logging       import LogEntry
 from Base.Project       import Environment, VHDLVersion
-from Base.Shared        import Shared
+from Base.Shared        import Shared, to_time
 from PoC.Entity         import WildCard
-from PoC.TestCase       import TestSuite, TestCase, Status
+from PoC.TestCase       import TestCase, Status
 
 
 VHDL_TESTBENCH_LIBRARY_NAME = "test"
@@ -81,13 +81,6 @@ class SimulationResult(Enum):
 	NoAsserts =   3
 	Passed =      4
 
-# local helper function
-def to_time(seconds):
-	"""Convert n seconds to a str with pattern {min}:{sec:02}."""
-	minutes = int(seconds / 60)
-	seconds = seconds - (minutes * 60)
-	return "{min}:{sec:02}".format(min=minutes, sec=seconds)
-
 
 class Simulator(Shared):
 	_ENVIRONMENT = Environment.Simulation
@@ -99,7 +92,6 @@ class Simulator(Shared):
 		super().__init__(host, dryRun)
 
 		self._vhdlVersion = VHDLVersion.VHDL2008
-		self._testSuite =   TestSuite()			# TODO: This includes not the read ini files phases ...
 
 		self._state =           SimulationState.Prepare
 		self._startAt =         datetime.now()

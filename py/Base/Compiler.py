@@ -50,9 +50,10 @@ from lib.Functions      import Init
 from lib.Parser         import ParserException
 from Base.Exceptions    import ExceptionBase, SkipableException
 from Base.Project       import VHDLVersion, Environment, FileTypes
-from Base.Shared        import Shared
+from Base.Shared        import Shared, to_time
 from Parser.RulesParser import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn, AppendLineRuleMixIn
 from PoC.Solution       import RulesFile
+from PoC.TestCase       import Status
 
 
 class CompilerException(ExceptionBase):
@@ -386,3 +387,56 @@ class Compiler(Shared):
 			# open file to write the replaced data
 			with task.FilePath.open('w') as fileHandle:
 				fileHandle.write(NewContent)
+
+	def PrintOverallCompileReport(self):
+		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
+		self._LogQuiet("{HEADLINE}{headline: ^80s}{NOCOLOR}".format(headline="Overall Compile Report", **Init.Foreground))
+		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
+		# table header
+		self._LogQuiet("{Name: <24} | {Duration: >5} | {Status: ^11}".format(Name="Name", Duration="Time", Status="Status"))
+		self._LogQuiet("-" * 80)
+		self.PrintCompileReportLine(self._testSuite, 0, 24)
+
+		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
+		self._LogQuiet("Time: {time: >5}  Count: {count: <3}  Passed: {passed: <3}  No Asserts: {noassert: <2}  Failed: {failed: <2}  Errors: {error: <2}".format(
+			time=to_time(self._testSuite.OverallRunTime),
+			count=self._testSuite.Count,
+			passed=self._testSuite.PassedCount,
+			noassert=self._testSuite.NoAssertsCount,
+			failed=self._testSuite.FailedCount,
+			error=self._testSuite.ErrorCount
+		))
+		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
+
+	__COMPILE_REPORT_COLOR_TABLE__ = {
+		Status.Unknown:             "RED",
+		Status.InternalError:				"DARK_RED",
+		Status.SystemError:         "DARK_RED",
+		Status.AnalyzeError:        "DARK_RED",
+		Status.ElaborationError:    "DARK_RED",
+		Status.CompileError:        "RED",
+		Status.CompileSuccess:      "GREEN"
+	}
+
+	__COMPILE_REPORT_STATUS_TEXT_TABLE__ = {
+		Status.Unknown:             "-- ?? --",
+		Status.InternalError:				"INT. ERROR",
+		Status.SystemError:         "SYS. ERROR",
+		Status.AnalyzeError:        "ANA. ERROR",
+		Status.ElaborationError:    "ELAB. ERROR",
+		Status.CompileError:        "COMP. ERROR",
+		Status.CompileSuccess:      "PASSED"
+	}
+
+	def PrintCompileReportLine(self, testObject, indent, nameColumnWidth):
+		_indent = "  " * indent
+		for group in testObject.TestGroups.values():
+			pattern = "{indent}{{groupName: <{nameColumnWidth}}} |       | ".format(indent=_indent, nameColumnWidth=nameColumnWidth)
+			self._LogQuiet(pattern.format(groupName=group.Name))
+			self.PrintCompileReportLine(group, indent + 1, nameColumnWidth - 2)
+		for testCase in testObject.TestCases.values():
+			pattern = "{indent}{{testcaseName: <{nameColumnWidth}}} | {{duration: >5}} | {{{color}}}{{status: ^11}}{{NOCOLOR}}".format(
+				indent=_indent, nameColumnWidth=nameColumnWidth, color=self.__COMPILE_REPORT_COLOR_TABLE__[testCase.Status])
+			self._LogQuiet(pattern.format(testcaseName=testCase.Name, duration=to_time(testCase.OverallRunTime),
+																		status=self.__COMPILE_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground))
+
