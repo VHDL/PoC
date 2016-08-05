@@ -76,14 +76,25 @@ class Compiler(BaseCompiler):
 		self._toolChain = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
-		for fqn in fqnList:
-			entity = fqn.Entity
-			if (isinstance(entity, WildCard)):
-				for netlist in entity.GetCoreGenNetlists():
+		"""Run a list of testbenches. Expand wildcards to all selected testbenches."""
+		self._testSuite.StartTimer()
+		try:
+			for fqn in fqnList:
+				entity = fqn.Entity
+				if (isinstance(entity, WildCard)):
+					for netlist in entity.GetCoreGenNetlists():
+						self.TryRun(netlist, *args, **kwargs)
+				else:
+					netlist = entity.CGNetlist
 					self.TryRun(netlist, *args, **kwargs)
-			else:
-				netlist = entity.CGNetlist
-				self.TryRun(netlist, *args, **kwargs)
+		except KeyboardInterrupt:
+			self._LogError("Received a keyboard interrupt.")
+		finally:
+			self._testSuite.StopTimer()
+
+		# self.PrintOverallCompileReport()
+
+		return self._testSuite.IsAllPassed
 
 	def Run(self, netlist, board):
 		super().Run(netlist, board)

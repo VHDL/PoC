@@ -49,6 +49,15 @@ from Base.Exceptions    import CommonException, SkipableCommonException
 from Base.Logging       import ILogable
 from Base.Project       import ToolChain, Tool, VHDLVersion, Environment
 from PoC.Solution       import VirtualProject, FileListFile
+from PoC.TestCase				import TestSuite
+
+
+# local helper function
+def to_time(seconds):
+	"""Convert n seconds to a str with pattern {min}:{sec:02}."""
+	minutes = int(seconds / 60)
+	seconds = seconds - (minutes * 60)
+	return "{min}:{sec:02}".format(min=minutes, sec=seconds)
 
 
 class Shared(ILogable):
@@ -69,6 +78,7 @@ class Shared(ILogable):
 		self._host =        host
 		self._dryRun =      dryRun
 		self._vhdlVersion = VHDLVersion.VHDL2008
+		self._testSuite =   TestSuite()			# TODO: This includes not the read ini files phases ...
 
 		self._pocProject =  None
 		self._directories = self.__Directories__()
