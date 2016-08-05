@@ -854,13 +854,27 @@ begin
 		-- Data path / status / error detection
 		-- ==================================================================
 		-- TX path
-		GTP_TX_Data							<= TX_Data(i)			when rising_edge(SATA_Clock_i);
-		GTP_TX_CharIsK					<= TX_CharIsK(i)	when rising_edge(SATA_Clock_i);
+		GTP_TX_Data							<= TX_Data(i)			;--when rising_edge(SATA_Clock_i);
+		GTP_TX_CharIsK					<= TX_CharIsK(i)	;--when rising_edge(SATA_Clock_i);
 
 		-- RX path
-		RX_Data(i)							<= GTP_RX_Data		when rising_edge(SATA_Clock_i);
-		RX_CharIsK(i)						<= GTP_RX_CharIsK	when rising_edge(SATA_Clock_i);
+--		RX_Data(i)							<= GTP_RX_Data		;--when rising_edge(SATA_Clock_i);
+		RX_CharIsK(i)						<= GTP_RX_CharIsK	;--when rising_edge(SATA_Clock_i);
 		RX_Valid(i)							<= '1'; -- do not use undocumented RXVALID output of transceiver
+
+		RX_Align : entity PoC.misc_ByteAligner
+			generic map (
+				REGISTERED	=> FALSE,
+				WORD_BITS		=> 32, 
+				BYTE_BITS		=> 8
+			)
+			port map (
+				Clock				=> SATA_Clock_i,
+				In_Align		=> GTP_RX_CharIsK,
+				In_Data			=> GTP_RX_Data,
+--				Out_Align		=> RX_CharIsK(i),
+				Out_Data		=> RX_Data(i)
+			);
 
 --		GTP_PhyStatus
 --		GTP_TX_BufferStatus
