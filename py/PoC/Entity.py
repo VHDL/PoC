@@ -102,18 +102,18 @@ class NamespaceRoot:
 	__POCRoot_SectionName =     "PoC"
 
 	def __init__(self, host):
-		self._host =        host
+		self._host =              host
 
-		self.__libraries =  OrderedDict()
+		self.__libraries =        OrderedDict()
 		self.__libraries[self.__POCRoot_Name.lower()] = (Library(host, self.__POCRoot_Name, self.__POCRoot_SectionName, self))
 
 	@property
-	def Libraries(self):          return [lib for lib in self.__libraries.values()]
+	def Libraries(self):        return [lib for lib in self.__libraries.values()]
 	@property
-	def LibraryNames(self):       return [libName for libName in self.__libraries.keys()]
+	def LibraryNames(self):     return [libName for libName in self.__libraries.keys()]
 
-	def GetLibraries(self):       return self.__libraries.values()
-	def GetLibraryNames(self):    return self.__libraries.keys()
+	def GetLibraries(self):     return self.__libraries.values()
+	def GetLibraryNames(self):  return self.__libraries.keys()
 
 	def __contains__(self, item):
 		return item.lower() in self.__libraries
@@ -269,6 +269,7 @@ class Namespace(PathElement):
 			buffer += ns.pprint(indent + 1)
 		return buffer
 
+
 class Library(Namespace):
 	@property
 	def Level(self):
@@ -344,6 +345,7 @@ class AskWildCard(WildCard):
 
 class IPCore(PathElement):
 	def __init__(self, host, name, configSectionName, parent):
+		self._dependencies =    []
 		# Testbenches
 		self._vhdltb =          []		# OrderedDict()
 		self._cocotb =          []		# OrderedDict()
@@ -355,6 +357,9 @@ class IPCore(PathElement):
 		self._vivadoNetlist =   []		# OrderedDict()
 
 		super().__init__(host, name, configSectionName, parent)
+
+	@property
+	def Dependencies(self):	  return self._dependencies
 
 	@property
 	def VHDLTestbench(self):
@@ -433,6 +438,10 @@ class IPCore(PathElement):
 	def _Load(self):
 		super()._Load()
 		section = self.ConfigSection
+		# load dependencies (as names)
+		self._dependencies =  section['Dependencies'].split()
+
+		# load testbenches and netlists
 		for optionName in section:
 			kind = section[optionName].lower()
 			if (kind == "vhdltestbench"):
@@ -451,7 +460,7 @@ class IPCore(PathElement):
 				self._latticeNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
 			elif (kind == "quartusnetlist"):
-				sectionName = self._configSectionName.replace("IP", "QII") + "." + optionName
+				sectionName = self._configSectionName.replace("IP", "QMAP") + "." + optionName
 				nl = QuartusNetlist(host=self._host, name=optionName, configSectionName=sectionName, parent=self)
 				self._quartusNetlist.append(nl)
 				# self._xstNetlist[optionName] = nl
@@ -576,26 +585,25 @@ class CocoTestbench(Testbench):
 
 class Netlist(LazyPathElement):
 	def __init__(self, host, name, configSectionName, parent):
-		self._kind =        NetlistKind.Unknown
-		self._moduleName =  ""
-		self._rulesFile =   None
+		self._kind =            NetlistKind.Unknown
+		self._moduleName =      ""
+		self._rulesFile =       None
 		super().__init__(host, name, configSectionName, parent)
 
 	@property
 	@LazyLoadTrigger
-	def ModuleName(self):   return self._moduleName
+	def ModuleName(self):     return self._moduleName
 	@property
 	@LazyLoadTrigger
-	def RulesFile(self):    return self._rulesFile
+	def RulesFile(self):      return self._rulesFile
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._moduleName =  self.ConfigSection["TopLevel"]
-		value = self.ConfigSection["RulesFile"]
-		if (value != ""):
-			self._rulesFile =    Path(value)
-		else:
-			self._rulesFile =    None
+
+		self._moduleName =      self.ConfigSection["TopLevel"]
+		self._dependencies =    self.ConfigSection['Dependencies'].split()
+		value =                 self.ConfigSection["RulesFile"]
+		self._rulesFile =       Path(value) if (value != "") else None
 
 
 class XstNetlist(Netlist):
@@ -666,10 +674,10 @@ class QuartusNetlist(Netlist):
 
 	@property
 	@LazyLoadTrigger
-	def FilesFile(self):        return self._filesFile
+	def FilesFile(self):      return self._filesFile
 
 	@property
-	def QsfFile(self):          return self._qsfFile
+	def QsfFile(self):        return self._qsfFile
 	@QsfFile.setter
 	def QsfFile(self, value):
 		if isinstance(value, str):
@@ -727,18 +735,18 @@ class LatticeNetlist(Netlist):
 
 class CoreGeneratorNetlist(Netlist):
 	def __init__(self, host, name, configSectionName, parent):
-		self._xcoFile =    None
+		self._xcoFile =         None
 		super().__init__(host, name, configSectionName, parent)
-		self._kind =      NetlistKind.CoreGeneratorNetlist
+		self._kind =            NetlistKind.CoreGeneratorNetlist
 
 	def __str__(self):
 		return super().__str__() + " (Core Generator netlist)"
 
 	@property
-	def FilesFile(self): return None
+	def FilesFile(self):      return None
 
 	@property
-	def XcoFile(self):          return self._xcoFile
+	def XcoFile(self):        return self._xcoFile
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
@@ -753,17 +761,17 @@ class CoreGeneratorNetlist(Netlist):
 
 class VivadoNetlist(Netlist):
 	def __init__(self, host, name, configSectionName, parent):
-		self._filesFile =        None
-		self._tclFile =          None
+		self._filesFile =       None
+		self._tclFile =         None
 		super().__init__(host, name, configSectionName, parent)
 		self._kind =            NetlistKind.VivadoNetlist
 
 	@property
 	@LazyLoadTrigger
-	def FilesFile(self):        return self._filesFile
+	def FilesFile(self):      return self._filesFile
 
 	@property
-	def TclFile(self):          return self._tclFile
+	def TclFile(self):        return self._tclFile
 	@TclFile.setter
 	def TclFile(self, value):
 		if isinstance(value, str):
@@ -772,7 +780,7 @@ class VivadoNetlist(Netlist):
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()
-		self._filesFile =        Path(self.ConfigSection["FilesFile"])
+		self._filesFile =       Path(self.ConfigSection["FilesFile"])
 
 	def __str__(self):
 		return super().__str__() + " (Vivado netlist)"
@@ -837,4 +845,4 @@ class FQN:
 		return self.__parts[-1]
 
 	def __str__(self):
-		return ".".join([p.Name for p in self.__parts])
+		return str(self.Entity)

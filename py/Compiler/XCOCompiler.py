@@ -6,7 +6,7 @@
 # Authors:          Patrick Lehmann
 #                   Martin Zabel
 # 
-# Python Class:      This XCOCompiler compiles xco IPCores to netlists
+# Python Class:     This XCOCompiler compiles xco IPCores to netlists
 # 
 # Description:
 # ------------------------------------
@@ -54,8 +54,8 @@ from ToolChains.Xilinx.ISE  import ISE, ISEException
 
 
 class Compiler(BaseCompiler):
-	_TOOL_CHAIN =  ToolChain.Xilinx_ISE
-	_TOOL =        Tool.Xilinx_CoreGen
+	_TOOL_CHAIN =     ToolChain.Xilinx_ISE
+	_TOOL =           Tool.Xilinx_CoreGen
 
 	def __init__(self, host, dryRun, noCleanUp):
 		super().__init__(host, dryRun, noCleanUp)
@@ -69,7 +69,8 @@ class Compiler(BaseCompiler):
 		self._PrepareCompiler()
 
 	def _PrepareCompiler(self):
-		self._LogVerbose("Preparing Xilinx Core Generator Tool (CoreGen).")
+		super()._PrepareCompiler()
+
 		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.ISE']
 		binaryPath = Path(iseSection['BinaryDirectory'])
 		version = iseSection['Version']

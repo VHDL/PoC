@@ -33,6 +33,11 @@
 # ==============================================================================
 #
 # entry point
+from enum import Enum, unique
+
+from PoC.TestCase import TestSuite
+
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -75,8 +80,29 @@ class AppendLineTask(AppendLineRuleMixIn):
 	pass
 
 
+@unique
+class CompileState(Enum):
+	Prepare =     0
+	Analyze =     1
+	Elaborate =   2
+	Optimize =    3
+	Translate =   4
+	Map =         5
+	Place =       6
+	Route =       7
+	CleanUp =     20
+
+@unique
+class CompileResult(Enum):
+	NotRun =      0
+	Error =       1
+	Failed =      2
+	Passed =      3
+
+
 class Compiler(Shared):
-	_ENVIRONMENT = Environment.Synthesis
+	_ENVIRONMENT =    Environment.Synthesis
+	_vhdlVersion =    VHDLVersion.VHDL93
 
 	class __Directories__(Shared.__Directories__):
 		Netlist =     None
@@ -86,8 +112,19 @@ class Compiler(Shared):
 	def __init__(self, host, dryRun, noCleanUp):
 		super().__init__(host, dryRun)
 
-		self._noCleanUp =    noCleanUp
-		self._vhdlVersion =  VHDLVersion.VHDL93
+		self._noCleanUp =       noCleanUp
+
+		self._testSuite =       TestSuite()  # TODO: This includes not the read ini files phases ...
+		self._state =           CompileState.Prepare
+		# self._analyzeTime =     None
+		# self._elaborationTime = None
+		# self._simulationTime =  None
+
+	@property
+	def NoCleanUp(self):      return self._noCleanUp
+
+	def _PrepareCompiler(self):
+		self._Prepare()
 
 	def TryRun(self, netlist, *args, **kwargs):
 		try:
@@ -104,6 +141,10 @@ class Compiler(Shared):
 
 	def Run(self, netlist, board):
 		self._LogQuiet("{CYAN}IP core:{NOCOLOR} {0!s}".format(netlist.Parent, **Init.Foreground))
+		# # TODO: refactor
+		# self._LogNormal("Checking for dependencies:")
+		# for dependency in netlist.Dependencies:
+		# 	print("  " + str(dependency))
 
 		# setup all needed paths to execute fuse
 		self._PrepareCompilerEnvironment(board.Device)

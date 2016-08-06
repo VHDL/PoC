@@ -72,7 +72,8 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		self._PrepareCompiler()
 
 	def _PrepareCompiler(self):
-		self._LogVerbose("Preparing Xilinx Synthesis Tool (XST).")
+		super()._PrepareCompiler()
+
 		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.ISE']
 		binaryPath = Path(iseSection['BinaryDirectory'])
 		version = iseSection['Version']

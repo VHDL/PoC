@@ -51,6 +51,7 @@ from Base.Simulator                 import SimulatorException
 from Base.ToolChain                 import ToolChainException
 from Compiler.LSECompiler           import Compiler as LSECompiler
 from Compiler.QuartusCompiler       import Compiler as MapCompiler
+from Compiler.ISECompiler           import Compiler as ISECompiler
 from Compiler.XCOCompiler           import Compiler as XCOCompiler
 from Compiler.XSTCompiler           import Compiler as XSTCompiler
 from Compiler.VivadoCompiler        import Compiler as VivadoCompiler
@@ -933,6 +934,27 @@ class PoC(ILogable, ArgParseMixin):
 		Exit.exit()
 
 	# ----------------------------------------------------------------------------
+	# create the sub-parser for the "ise" command
+	# ----------------------------------------------------------------------------
+	@CommandGroupAttribute("Synthesis commands")
+	@CommandAttribute("ise", help="Generate any IP core for the Xilinx ISE tool chain")
+	@PoCEntityAttribute()
+	@BoardDeviceAttributeGroup()
+	@NoCleanUpAttribute()
+	def HandleISECompilation(self, args):
+		self.PrintHeadline()
+		self.__PrepareForSynthesis()
+		self._CheckISEEnvironment()
+		
+		fqnList =  self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
+		board =    self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
+
+		compiler = ISECompiler(self, self.DryRun, args.NoCleanUp)
+		compiler.RunAll(fqnList, board)
+
+		Exit.exit()
+
+	# ----------------------------------------------------------------------------
 	# create the sub-parser for the "coregen" command
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Synthesis commands")
@@ -944,7 +966,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
 		self._CheckISEEnvironment()
-		
+
 		fqnList =  self._ExtractFQNs(args.FQN, defaultType=EntityTypes.NetList)
 		board =    self._ExtractBoard(args.BoardName, args.DeviceName, force=True)
 

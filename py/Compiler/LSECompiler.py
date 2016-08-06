@@ -71,7 +71,8 @@ class Compiler(BaseCompiler):
 		self._PrepareCompiler()
 
 	def _PrepareCompiler(self):
-		self._LogVerbose("Preparing Lattice Synthesis Engine (LSE).")
+		super()._PrepareCompiler()
+
 		diamondSection = self.Host.PoCConfig['INSTALL.Lattice.Diamond']
 		if (self.Host.Platform == "Linux"):
 			binaryPath = Path(diamondSection['BinaryDirectory2'])		# ispFPGA directory

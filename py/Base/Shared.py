@@ -32,6 +32,11 @@
 # ==============================================================================
 #
 # entry point
+from datetime import datetime
+
+from PoC.TestCase import TestSuite
+
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -61,9 +66,10 @@ def to_time(seconds):
 
 
 class Shared(ILogable):
-	_ENVIRONMENT = Environment.Any
-	_TOOL_CHAIN =  ToolChain.Any
-	_TOOL =        Tool.Any
+	_ENVIRONMENT =    Environment.Any
+	_TOOL_CHAIN =     ToolChain.Any
+	_TOOL =           Tool.Any
+	_vhdlVersion =    VHDLVersion.VHDL2008
 
 	class __Directories__:
 		Working = None
@@ -75,19 +81,29 @@ class Shared(ILogable):
 		else:
 			ILogable.__init__(self, None)
 
-		self._host =        host
-		self._dryRun =      dryRun
-		self._vhdlVersion = VHDLVersion.VHDL2008
-		self._testSuite =   TestSuite()			# TODO: This includes not the read ini files phases ...
+		self._host =            host
+		self._dryRun =          dryRun
 
-		self._pocProject =  None
-		self._directories = self.__Directories__()
+		self._pocProject =      None
+		self._directories =     self.__Directories__()
 
+		self._testSuite =       TestSuite()			# TODO: This includes not the read ini files phases ...
+		self._startAt =         datetime.now()
+		self._endAt =           None
+		self._lastEvent =       self._startAt
+		self._prepareTime =     None
+
+	def _Prepare(self):
+		self._LogNormal("Preparing {0}.".format(self._TOOL.LongName))
 
 	# class properties
 	# ============================================================================
 	@property
 	def Host(self):         return self._host
+	@property
+	def DryRun(self):       return self._dryRun
+	@property
+	def VHDLVersion(self):  return self.__vhdlVersion
 	@property
 	def PoCProject(self):   return self._pocProject
 	@property

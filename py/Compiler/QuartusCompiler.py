@@ -66,7 +66,8 @@ class Compiler(BaseCompiler):
 		self._PrepareCompiler()
 
 	def _PrepareCompiler(self):
-		self._LogVerbose("Preparing Quartus-II Map (quartus_map).")
+		super()._PrepareCompiler()
+
 		quartusSection = self.Host.PoCConfig['INSTALL.Altera.Quartus']
 		binaryPath = Path(quartusSection['BinaryDirectory'])
 		version =  quartusSection['Version']

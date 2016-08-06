@@ -67,10 +67,11 @@ class Compiler(BaseCompiler):
 		self._PrepareCompiler()
 
 	def _PrepareCompiler(self):
-		self._LogVerbose("Preparing Xilinx Vivado Synthesis.")
-		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.Vivado']
-		binaryPath = Path(iseSection['BinaryDirectory'])
-		version = iseSection['Version']
+		super()._PrepareCompiler()
+
+		vivadoSection =   self.Host.PoCConfig['INSTALL.Xilinx.Vivado']
+		binaryPath =      Path(vivadoSection['BinaryDirectory'])
+		version =         vivadoSection['Version']
 		self._toolChain = Vivado(self.Host.Platform, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):

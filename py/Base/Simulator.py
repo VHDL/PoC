@@ -83,7 +83,8 @@ class SimulationResult(Enum):
 
 
 class Simulator(Shared):
-	_ENVIRONMENT = Environment.Simulation
+	_ENVIRONMENT =    Environment.Simulation
+	_vhdlVersion =    VHDLVersion.VHDL2008
 
 	class __Directories__(Shared.__Directories__):
 		PreCompiled = None
@@ -91,13 +92,8 @@ class Simulator(Shared):
 	def __init__(self, host, dryRun):
 		super().__init__(host, dryRun)
 
-		self._vhdlVersion = VHDLVersion.VHDL2008
 
 		self._state =           SimulationState.Prepare
-		self._startAt =         datetime.now()
-		self._endAt =           None
-		self._lastEvent =       self._startAt
-		self._prepareTime =     None
 		self._analyzeTime =     None
 		self._elaborationTime = None
 		self._simulationTime =  None
@@ -107,6 +103,9 @@ class Simulator(Shared):
 	# ============================================================================
 	@property
 	def TestSuite(self):      return self._testSuite
+
+	def _PrepareSimulator(self):
+		self._Prepare()
 
 	def _GetTimeDeltaSinceLastEvent(self):
 		now = datetime.now()
