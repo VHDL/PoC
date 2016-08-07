@@ -136,28 +136,30 @@ class Configuration(BaseConfiguration):
 
 
 class DiamondMixIn:
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		self._platform = platform
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		self._platform =            platform
+		self._dryrun =              dryrun
 		self._binaryDirectoryPath = binaryDirectoryPath
-		self._version = version
-		self._logger = logger
+		self._version =             version
+		self._logger =              logger
 
 
 class Diamond(DiamondMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		DiamondMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		DiamondMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
 	def GetSynthesizer(self):
-		return Synth(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return Synth(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
+
 
 class Synth(Executable, DiamondMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		DiamondMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		DiamondMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
 		if (platform == "Windows"):    executablePath = binaryDirectoryPath / "synthesis.exe"
 		elif (platform == "Linux"):    executablePath = binaryDirectoryPath / "synthesis"
 		else:                          raise PlatformNotSupportedException(platform)
-		Executable.__init__(self, platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 

@@ -72,17 +72,30 @@ class Compiler(BaseCompiler):
 		vivadoSection =   self.Host.PoCConfig['INSTALL.Xilinx.Vivado']
 		binaryPath =      Path(vivadoSection['BinaryDirectory'])
 		version =         vivadoSection['Version']
-		self._toolChain = Vivado(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain = Vivado(self.Host.Platform, self.DryRun, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
-		for fqn in fqnList:
-			entity = fqn.Entity
-			if (isinstance(entity, WildCard)):
-				for netlist in entity.GetVivadoNetlists():
+		"""Run a list of netlist compilations. Expand wildcards to all selected netlists."""
+		self._testSuite.StartTimer()
+		self.Logger.BaseIndent = int(len(fqnList) > 1)
+		try:
+			for fqn in fqnList:
+				entity = fqn.Entity
+				if (isinstance(entity, WildCard)):
+					self.Logger.BaseIndent = 1
+					for netlist in entity.GetVivadoNetlists():
+						self.TryRun(netlist, *args, **kwargs)
+				else:
+					netlist = entity.VivadoNetlist
 					self.TryRun(netlist, *args, **kwargs)
-			else:
-				netlist = entity.VivadoNetlist
-				self.TryRun(netlist, *args, **kwargs)
+		except KeyboardInterrupt:
+			self._LogError("Received a keyboard interrupt.")
+		finally:
+			self._testSuite.StopTimer()
+
+		self.PrintOverallCompileReport()
+
+		return self._testSuite.IsAllPassed
 
 	def Run(self, netlist, board):
 		super().Run(netlist, board)

@@ -74,15 +74,17 @@ class Compiler(BaseCompiler):
 		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.ISE']
 		binaryPath = Path(iseSection['BinaryDirectory'])
 		version = iseSection['Version']
-		self._toolChain = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain = ISE(self.Host.Platform, self.DryRun, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
-		"""Run a list of testbenches. Expand wildcards to all selected testbenches."""
+		"""Run a list of netlist compilations. Expand wildcards to all selected netlists."""
 		self._testSuite.StartTimer()
+		self.Logger.BaseIndent = int(len(fqnList) > 1)
 		try:
 			for fqn in fqnList:
 				entity = fqn.Entity
 				if (isinstance(entity, WildCard)):
+					self.Logger.BaseIndent = 1
 					for netlist in entity.GetCoreGenNetlists():
 						self.TryRun(netlist, *args, **kwargs)
 				else:
@@ -93,7 +95,7 @@ class Compiler(BaseCompiler):
 		finally:
 			self._testSuite.StopTimer()
 
-		# self.PrintOverallCompileReport()
+		self.PrintOverallCompileReport()
 
 		return self._testSuite.IsAllPassed
 
@@ -117,7 +119,7 @@ class Compiler(BaseCompiler):
 		self.Host.PoCConfig['SPECIAL'] = {}
 		self.Host.PoCConfig['SPECIAL']['Device'] =        device.FullName
 		self.Host.PoCConfig['SPECIAL']['DeviceSeries'] =  device.Series
-		self.Host.PoCConfig['SPECIAL']['OutputDir']	=      self.Directories.Working.as_posix()
+		self.Host.PoCConfig['SPECIAL']['OutputDir']	=     self.Directories.Working.as_posix()
 
 	def _RunCompile(self, netlist, device):
 		self._LogVerbose("Patching coregen.cgp and .cgc files...")

@@ -111,34 +111,35 @@ class Configuration(BaseConfiguration):
 
 
 class VivadoMixIn:
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
 		self._platform =            platform
-		self._binaryDirectoryPath =  binaryDirectoryPath
-		self._version =              version
+		self._dryrun =              dryrun
+		self._binaryDirectoryPath = binaryDirectoryPath
+		self._version =             version
 		self._logger =              logger
 
 
 class Vivado(VivadoMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		VivadoMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
 	def GetElaborator(self):
-		return XElab(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return XElab(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 	def GetSimulator(self):
-		return XSim(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return XSim(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 	def GetSynthesizer(self):
-		return Synth(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return Synth(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 
 class XElab(Executable, VivadoMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		VivadoMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "xelab.bat"
 		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "xelab"
 		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -256,12 +257,12 @@ class XElab(Executable, VivadoMixIn):
 
 
 class XSim(Executable, VivadoMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		VivadoMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "xsim.bat"
 		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "xsim"
 		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -347,12 +348,12 @@ class XSim(Executable, VivadoMixIn):
 
 
 class Synth(Executable, VivadoMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		VivadoMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		VivadoMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vivado.bat"
 		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vivado"
 		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 

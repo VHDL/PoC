@@ -131,35 +131,38 @@ class Configuration(BaseConfiguration):
 								""")
 				fileHandle.write(fileContent)
 
+
 class QuestaSimMixIn:
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
 		self._platform =            platform
+		self._dryrun =              dryrun
 		self._binaryDirectoryPath = binaryDirectoryPath
 		self._version =             version
 		self._logger =              logger
 
+
 class QuestaSim(QuestaSimMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		QuestaSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		QuestaSimMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
 	def GetVHDLCompiler(self):
-		return QuestaVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return QuestaVHDLCompiler(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 	def GetSimulator(self):
-		return QuestaSimulator(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return QuestaSimulator(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 	def GetVHDLLibraryTool(self):
-		return QuestaVHDLLibraryTool(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return QuestaVHDLLibraryTool(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 
 class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		QuestaSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		QuestaSimMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
 		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vcom.exe"
 		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vcom"
 		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -263,13 +266,13 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 				self._LogNormal("    " + ("-" * 76))
 
 class QuestaSimulator(Executable, QuestaSimMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		QuestaSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		QuestaSimMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
 		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vsim.exe"
 		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vsim"
 		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -396,13 +399,13 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 		return simulationResult.value
 
 class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		QuestaSimMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		QuestaSimMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
 		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vlib.exe"
 		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vlib"
 		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 

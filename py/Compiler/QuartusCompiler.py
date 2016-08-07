@@ -71,17 +71,30 @@ class Compiler(BaseCompiler):
 		quartusSection = self.Host.PoCConfig['INSTALL.Altera.Quartus']
 		binaryPath = Path(quartusSection['BinaryDirectory'])
 		version =  quartusSection['Version']
-		self._toolChain =    Quartus(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain =    Quartus(self.Host.Platform, self.DryRun, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
-		for fqn in fqnList:
-			entity = fqn.Entity
-			if (isinstance(entity, WildCard)):
-				for netlist in entity.GetQuartusNetlists():
+		"""Run a list of netlist compilations. Expand wildcards to all selected netlists."""
+		self._testSuite.StartTimer()
+		self.Logger.BaseIndent = int(len(fqnList) > 1)
+		try:
+			for fqn in fqnList:
+				entity = fqn.Entity
+				if (isinstance(entity, WildCard)):
+					self.Logger.BaseIndent = 1
+					for netlist in entity.GetQuartusNetlists():
+						self.TryRun(netlist, *args, **kwargs)
+				else:
+					netlist = entity.QuartusNetlist
 					self.TryRun(netlist, *args, **kwargs)
-			else:
-				netlist = entity.QuartusNetlist
-				self.TryRun(netlist, *args, **kwargs)
+		except KeyboardInterrupt:
+			self._LogError("Received a keyboard interrupt.")
+		finally:
+			self._testSuite.StopTimer()
+
+		self.PrintOverallCompileReport()
+
+		return self._testSuite.IsAllPassed
 
 	def Run(self, netlist, board):
 		super().Run(netlist, board)

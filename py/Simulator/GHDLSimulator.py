@@ -88,7 +88,7 @@ class Simulator(BaseSimulator):
 		binaryPath = Path(ghdlSection['BinaryDirectory'])
 		version = ghdlSection['Version']
 		backend = ghdlSection['Backend']
-		self._toolChain =      GHDL(self.Host.Platform, binaryPath, version, backend, logger=self.Logger)
+		self._toolChain =      GHDL(self.Host.Platform, self.DryRun, binaryPath, version, backend, logger=self.Logger)
 
 	def _RunAnalysis(self, testbench):
 		# create a GHDLAnalyzer instance

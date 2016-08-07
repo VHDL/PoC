@@ -47,7 +47,7 @@ from Base.Configuration             import ConfigurationException, SkipConfigura
 from Base.Exceptions                import ExceptionBase, CommonException, PlatformNotSupportedException, EnvironmentException, NotConfiguredException
 from Base.Logging                   import ILogable, Logger, Severity
 from Base.Project                   import VHDLVersion
-from Base.Simulator                 import SimulatorException
+from Base.Simulator                 import SimulatorException, Simulator as BaseSimulator
 from Base.ToolChain                 import ToolChainException
 from Compiler.LSECompiler           import Compiler as LSECompiler
 from Compiler.QuartusCompiler       import Compiler as MapCompiler
@@ -175,7 +175,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__repo =         None
 		self.__directories =  {}
 
-		self.__SimulationDefaultVHDLVersion = VHDLVersion.VHDL2008
+		self.__SimulationDefaultVHDLVersion = BaseSimulator.VHDLVersion
 		self.__SimulationDefaultBoard =       None
 
 		self._directories =             self.__Directories__()

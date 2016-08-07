@@ -120,10 +120,12 @@ class Simulator(Shared):
 	def RunAll(self, fqnList, *args, **kwargs):
 		"""Run a list of testbenches. Expand wildcards to all selected testbenches."""
 		self._testSuite.StartTimer()
+		self.Logger.BaseIndent = int(len(fqnList) > 1)
 		try:
 			for fqn in fqnList:
 				entity = fqn.Entity
 				if (isinstance(entity, WildCard)):
+					self.Logger.BaseIndent = 1
 					for testbench in entity.GetVHDLTestbenches():
 						self.TryRun(testbench, *args, **kwargs)
 				else:

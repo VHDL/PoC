@@ -111,32 +111,33 @@ class Configuration(BaseConfiguration):
 
 
 class QuartusMixIn:
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
 		self._platform =            platform
-		self._binaryDirectoryPath =  binaryDirectoryPath
-		self._version =              version
+		self._dryrun =              dryrun
+		self._binaryDirectoryPath = binaryDirectoryPath
+		self._version =             version
 		self._logger =              logger
 
 
 class Quartus(QuartusMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		QuartusMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		QuartusMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
 	def GetMap(self):
-		return Map(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return Map(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 	def GetTclShell(self):
-		return TclShell(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return TclShell(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 
 class Map(Executable, QuartusMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		QuartusMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		QuartusMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
 		if (platform == "Windows") :      executablePath = binaryDirectoryPath / "quartus_map.exe"
 		elif (platform == "Linux") :      executablePath = binaryDirectoryPath / "quartus_map"
 		else :                            raise PlatformNotSupportedException(platform)
-		Executable.__init__(self, platform, executablePath, logger=logger)
+		Executable.__init__(self, platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -207,13 +208,13 @@ class Map(Executable, QuartusMixIn):
 				self._LogNormal("    " + ("-" * 76))
 
 class TclShell(Executable, QuartusMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		QuartusMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		QuartusMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
 		if (platform == "Windows") :      executablePath = binaryDirectoryPath / "quartus_sh.exe"
 		elif (platform == "Linux") :      executablePath = binaryDirectoryPath / "quartus_sh"
 		else :                            raise PlatformNotSupportedException(platform)
-		Executable.__init__(self, platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 

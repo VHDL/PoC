@@ -139,7 +139,7 @@ class Shared(ILogable):
 
 	def _CreatePoCProject(self, projectName, board):
 		# create a PoCProject and read all needed files
-		self._LogVerbose("Creating a PoC project '{0}'".format(projectName))
+		self._LogVerbose("Creating PoC project '{0}'".format(projectName))
 		pocProject = VirtualProject(projectName)
 
 		# configure the project

@@ -38,7 +38,6 @@ if __name__ != "__main__":
 	pass
 else:
 	from lib.Functions import Exit
-
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GNU")
 
 # load dependencies
@@ -67,10 +66,10 @@ class Configuration(BaseConfiguration):
 
 
 class Make(Executable):
-	def __init__(self, platform, logger=None):
+	def __init__(self, platform, dryrun, logger=None):
 		if (platform == "Linux"):      executablePath = "/usr/bin/make"
 		else:                          raise PlatformNotSupportedException(platform)
-		super().__init__(platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 

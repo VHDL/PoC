@@ -112,38 +112,39 @@ class Configuration(BaseConfiguration):
 
 
 class ISEMixIn:
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
 		self._platform =            platform
-		self._binaryDirectoryPath =  binaryDirectoryPath
-		self._version =              version
+		self._dryrun =              dryrun
+		self._binaryDirectoryPath = binaryDirectoryPath
+		self._version =             version
 		self._logger =              logger
 
 
 class ISE(ISEMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		ISEMixIn.__init__(self, platform, binaryDirectoryPath, version, logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		ISEMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 		
 	def GetVHDLCompiler(self):
 		raise NotImplementedError("ISE.GetVHDLCompiler")
-		# return ISEVHDLCompiler(self._platform, self._binaryDirectoryPath, self._version, logger=self.__logger)
+		# return ISEVHDLCompiler(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self.__logger)
 
 	def GetFuse(self):
-		return Fuse(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return Fuse(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 	def GetXst(self):
-		return Xst(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return Xst(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 	def GetCoreGenerator(self):
-		return CoreGenerator(self._platform, self._binaryDirectoryPath, self._version, logger=self._logger)
+		return CoreGenerator(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 # class ISEVHDLCompiler(Executable, ISESimulatorExecutable):
-# 	def __init__(self, platform, binaryDirectoryPath, version, defaultParameters=[], logger=None):
+# 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, defaultParameters=[], logger=None):
 # 		ISESimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
 #
 # 		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vhcomp.exe"
 # 		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vhcomp"
 # 		else:                                            raise PlatformNotSupportedException(self._platform)
-# 		super().__init__(platform, executablePath, defaultParameters, logger=logger)
+# 		super().__init__(platform, dryrun, executablePath, defaultParameters, logger=logger)
 #
 # 	def Compile(self, vhdlFile):
 # 		parameterList = self.Parameters.ToArgumentList()
@@ -162,12 +163,12 @@ class ISE(ISEMixIn):
 		# print(_indent + "-" * 80)
 
 class Fuse(Executable, ISEMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		ISEMixIn.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		ISEMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger=logger)
 		if (platform == "Windows"):    executablePath = binaryDirectoryPath / "fuse.exe"
 		elif (platform == "Linux"):    executablePath = binaryDirectoryPath / "fuse"
 		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -332,12 +333,12 @@ class ISESimulator(Executable):
 
 
 class Xst(Executable, ISEMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		ISEMixIn.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		ISEMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger=logger)
 		if (platform == "Windows"):      executablePath = binaryDirectoryPath / "xst.exe"
 		elif (platform == "Linux"):      executablePath = binaryDirectoryPath / "xst"
 		else:                            raise PlatformNotSupportedException(platform)
-		Executable.__init__(self, platform, executablePath, logger=logger)
+		Executable.__init__(self, platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -408,12 +409,12 @@ class Xst(Executable, ISEMixIn):
 
 
 class CoreGenerator(Executable, ISEMixIn):
-	def __init__(self, platform, binaryDirectoryPath, version, logger=None):
-		ISEMixIn.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		ISEMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger=logger)
 		if (platform == "Windows"):      executablePath = binaryDirectoryPath / "coregen.exe"
 		elif (platform == "Linux"):      executablePath = binaryDirectoryPath / "coregen"
 		else:                            raise PlatformNotSupportedException(platform)
-		Executable.__init__(self, platform, executablePath, logger=logger)
+		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -451,6 +452,10 @@ class CoreGenerator(Executable, ISEMixIn):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -468,8 +473,8 @@ class CoreGenerator(Executable, ISEMixIn):
 			self._LogNormal("    " + ("-" * 76))
 
 			while True:
-				self._hasWarnings |= (line.Severity is Severity.Warning)
-				self._hasErrors |= (line.Severity is Severity.Error)
+				self._hasWarnings |=  (line.Severity is Severity.Warning)
+				self._hasErrors |=    (line.Severity is Severity.Error)
 
 				line.IndentBy(2)
 				self._Log(line)
