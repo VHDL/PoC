@@ -138,20 +138,20 @@ class Configuration(BaseConfiguration):
 
 class GTKWave(Executable):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		if (platform == "Windows"):      executablePath = binaryDirectoryPath/ "gtkwave.exe"
-		elif (platform == "Linux"):      executablePath = binaryDirectoryPath/ "gtkwave"
+		if (platform == "Windows"):     executablePath = binaryDirectoryPath/ "gtkwave.exe"
+		elif (platform == "Linux"):     executablePath = binaryDirectoryPath/ "gtkwave"
 		elif (platform == "Darwin"):    executablePath = binaryDirectoryPath/ "gtkwave"
 		else:                                            raise PlatformNotSupportedException(self._platform)
 		super().__init__(platform, dryrun, executablePath, logger=logger)
 
 		self.Parameters[self.Executable] = executablePath
 
-		self._binaryDirectoryPath =  binaryDirectoryPath
-		self._version =      version
+		self._binaryDirectoryPath = binaryDirectoryPath
+		self._version =             version
 
-		self._hasOutput = False
+		self._hasOutput =   False
 		self._hasWarnings = False
-		self._hasErrors = False
+		self._hasErrors =   False
 
 	@property
 	def BinaryDirectoryPath(self):

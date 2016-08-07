@@ -512,21 +512,24 @@ class Testbench(LazyPathElement):
 	def __init__(self, host, name, configSectionName, parent):
 		self._kind =        TestbenchKind.Unknown
 		self._moduleName =  ""
-		self._filesFile =    None
+		self._filesFile =   None
 		self._result =      None
 		super().__init__(host, name, configSectionName, parent)
 
 	@property
 	@LazyLoadTrigger
-	def ModuleName(self):      return self._moduleName
+	def ModuleName(self):     return self._moduleName
 	@property
 	@LazyLoadTrigger
 	def FilesFile(self):      return self._filesFile
 
 	@property
-	def Result(self):          return self._result
+	def Result(self):         return self._result
 	@Result.setter
 	def Result(self, value):  self._result = value
+
+	# def __setattr__(self, key, value):
+	# 	super().__setattr__(key, value)
 
 	def _LazyLoadable_Load(self):
 		super()._LazyLoadable_Load()

@@ -48,7 +48,7 @@ from subprocess             import check_output, CalledProcessError
 
 from Base.Configuration     import Configuration as BaseConfiguration, ConfigurationException
 from Base.Exceptions        import PlatformNotSupportedException
-from Base.Executable        import Executable
+from Base.Executable        import Executable, LongValuedFlagArgument
 from Base.Executable        import ExecutableArgument, PathArgument, StringArgument, ValuedFlagListArgument
 from Base.Executable        import ShortFlagArgument, LongFlagArgument, ShortValuedFlagArgument, CommandLineArgumentList
 from Base.Logging           import LogEntry, Severity
@@ -254,21 +254,18 @@ class GHDL(Executable):
 	class FlagPSL(metaclass=ShortFlagArgument):
 		_name =    "fpsl"
 
-	class SwitchIEEEFlavor(metaclass=ShortValuedFlagArgument):
-		_pattern =  "--{0}={1}"
-		_name =      "ieee"
+	class SwitchIEEEFlavor(metaclass=LongValuedFlagArgument):
+		_name =     "ieee"
 
-	class SwitchVHDLVersion(metaclass=ShortValuedFlagArgument):
-		_pattern =  "--{0}={1}"
-		_name =      "std"
+	class SwitchVHDLVersion(metaclass=LongValuedFlagArgument):
+		_name =     "std"
 
-	class SwitchVHDLLibrary(metaclass=ShortValuedFlagArgument):
-		_pattern =  "--{0}={1}"
-		_name =      "work"
+	class SwitchVHDLLibrary(metaclass=LongValuedFlagArgument):
+		_name =     "work"
 
 	class ArgListLibraryReferences(metaclass=ValuedFlagListArgument):
 		_pattern =  "-{0}{1}"
-		_name =      "P"
+		_name =     "P"
 
 	class ArgSourceFile(metaclass=PathArgument):
 		pass
@@ -297,32 +294,31 @@ class GHDL(Executable):
 		ArgTopLevel
 	)
 
-	class SwitchIEEEAsserts(metaclass=ShortValuedFlagArgument):
-		_pattern =  "--{0}={1}"
-		_name =      "ieee-asserts"
+	class SwitchIEEEAsserts(metaclass=LongValuedFlagArgument):
+		_name =     "ieee-asserts"
 
-	class SwitchVCDWaveform(metaclass=ShortValuedFlagArgument):
-		_pattern =  "--{0}={1}"
-		_name =      "vcd"
+	class SwitchVCDWaveform(metaclass=LongValuedFlagArgument):
+		_name =     "vcd"
 
-	class SwitchVCDGZWaveform(metaclass=ShortValuedFlagArgument):
-		_pattern =  "--{0}={1}"
-		_name =      "vcdgz"
+	class SwitchVCDGZWaveform(metaclass=LongValuedFlagArgument):
+		_name =     "vcdgz"
 
-	class SwitchFastWaveform(metaclass=ShortValuedFlagArgument):
-		_pattern =  "--{0}={1}"
-		_name =      "fst"
+	class SwitchFastWaveform(metaclass=LongValuedFlagArgument):
+		_name =     "fst"
 
-	class SwitchGHDLWaveform(metaclass=ShortValuedFlagArgument):
-		_pattern =  "--{0}={1}"
-		_name =      "wave"
+	class SwitchGHDLWaveform(metaclass=LongValuedFlagArgument):
+		_name =     "wave"
+
+	class SwitchWaveformSelect(metaclass=LongValuedFlagArgument):
+		_name =     "dump"
 
 	RunOptions = CommandLineArgumentList(
 		SwitchIEEEAsserts,
 		SwitchVCDWaveform,
 		SwitchVCDGZWaveform,
 		SwitchFastWaveform,
-		SwitchGHDLWaveform
+		SwitchGHDLWaveform,
+		SwitchWaveformSelect
 	)
 
 	def GetGHDLAnalyze(self):
