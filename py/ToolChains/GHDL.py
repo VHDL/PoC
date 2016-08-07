@@ -352,12 +352,16 @@ class GHDL(Executable):
 
 class GHDLAnalyze(GHDL):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, backend, logger=None):
-		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
+		super().__init__(platform, dryrun, binaryDirectoryPath, version, backend, logger=logger)
 
 	def Analyze(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
+
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
 
 		try:
 			self.StartProcess(parameterList)
@@ -372,14 +376,14 @@ class GHDLAnalyze(GHDL):
 
 			line = next(iterator)
 			self._hasOutput =    True
-			self._LogNormal("    ghdl analyze messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  ghdl analyze messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |=  (line.Severity is Severity.Warning)
 				self._hasErrors |=    (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -387,16 +391,20 @@ class GHDLAnalyze(GHDL):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 class GHDLElaborate(GHDL):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, backend, logger=None):
-		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
+		super().__init__(platform, dryrun, binaryDirectoryPath, version, backend, logger=logger)
 
 	def Elaborate(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList.insert(0, self.Executable)
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
+
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
 
 		try:
 			self.StartProcess(parameterList)
@@ -410,12 +418,12 @@ class GHDLElaborate(GHDL):
 			iterator = iter(GHDLElaborateFilter(self.GetReader()))
 
 			line = next(iterator)
-			line.IndentBy(2)
+			line.IndentBy(self.Logger.BaseIndent + 1)
 			self._hasOutput = True
 			vhdlLibraryName = self.Parameters[self.SwitchVHDLLibrary]
 			topLevel = self.Parameters[self.ArgTopLevel]
-			self._LogNormal("    ghdl elaborate messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  ghdl elaborate messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 			self._Log(line)
 
 			while True:
@@ -423,25 +431,28 @@ class GHDLElaborate(GHDL):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 
 		except StopIteration:
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 class GHDLRun(GHDL):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, backend, logger=None):
-		super().__init__(platform, binaryDirectoryPath, version, backend, logger=logger)
+		super().__init__(platform, dryrun, binaryDirectoryPath, version, backend, logger=logger)
 
 	def Run(self):
 		parameterList = self.Parameters.ToArgumentList()
 		parameterList += self.RunOptions.ToArgumentList()
 		parameterList.insert(0, self.Executable)
-
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
+
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
 
 		try:
 			self.StartProcess(parameterList)
@@ -456,12 +467,12 @@ class GHDLRun(GHDL):
 			iterator = iter(PoCSimulationResultFilter(GHDLRunFilter(self.GetReader()), simulationResult))
 
 			line = next(iterator)
-			line.IndentBy(2)
+			line.IndentBy(self.Logger.BaseIndent + 1)
 			self._hasOutput = True
 			vhdlLibraryName =  self.Parameters[self.SwitchVHDLLibrary]
 			topLevel =        self.Parameters[self.ArgTopLevel]
-			self._LogNormal("    ghdl run messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  ghdl run messages for '{0}.{1}'".format(vhdlLibraryName, topLevel))
+			self._LogNormal("  " + ("-" * 76))
 			self._Log(line)
 
 			while True:
@@ -469,14 +480,14 @@ class GHDLRun(GHDL):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 
 		except StopIteration:
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * 76))
 
 		return simulationResult.value
 

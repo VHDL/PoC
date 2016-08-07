@@ -233,6 +233,10 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -245,10 +249,10 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 			iterator = iter(QuestaVComFilter(self.GetReader()))
 
 			line = next(iterator)
-			line.IndentBy(2)
+			line.IndentBy(self.Logger.BaseIndent + 1)
 			self._hasOutput = True
-			self._LogNormal("    vcom messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  vcom messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 			self._Log(line)
 
 			while True:
@@ -256,14 +260,14 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 
 		except StopIteration:
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 class QuestaSimulator(Executable, QuestaSimMixIn):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
@@ -376,10 +380,10 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 			iterator = iter(PoCSimulationResultFilter(QuestaVSimFilter(self.GetReader()), simulationResult))
 
 			line = next(iterator)
-			line.IndentBy(2)
+			line.IndentBy(self.Logger.BaseIndent + 1)
 			self._hasOutput = True
-			self._LogNormal("    vsim messages for '{0}'".format(self.Parameters[self.SwitchTopLevel]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  vsim messages for '{0}'".format(self.Parameters[self.SwitchTopLevel]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 			self._Log(line)
 
 			while True:
@@ -387,14 +391,14 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 
 		except StopIteration:
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 		return simulationResult.value
 
@@ -445,10 +449,10 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 			iterator = iter(QuestaVLibFilter(self.GetReader()))
 
 			line = next(iterator)
-			line.IndentBy(2)
+			line.IndentBy(self.Logger.BaseIndent + 1)
 			self._hasOutput = True
-			self._LogNormal("    vlib messages for '{0}'".format(self.Parameters[self.SwitchLibraryName]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  vlib messages for '{0}'".format(self.Parameters[self.SwitchLibraryName]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 			self._Log(line)
 
 			while True:
@@ -456,14 +460,14 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 
 		except StopIteration:
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
 def QuestaVComFilter(gen):

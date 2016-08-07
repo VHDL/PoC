@@ -197,6 +197,10 @@ class Synth(Executable, DiamondMixIn):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -210,14 +214,14 @@ class Synth(Executable, DiamondMixIn):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    LSE messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  LSE messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -225,7 +229,7 @@ class Synth(Executable, DiamondMixIn):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
 def MapFilter(gen):

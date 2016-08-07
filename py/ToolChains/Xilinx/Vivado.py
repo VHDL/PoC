@@ -221,6 +221,10 @@ class XElab(Executable, VivadoMixIn):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -234,14 +238,14 @@ class XElab(Executable, VivadoMixIn):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    xelab messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  xelab messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -253,7 +257,7 @@ class XElab(Executable, VivadoMixIn):
 		#	raise GHDLException("Error while executing GHDL.") from ex
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
 class XSim(Executable, VivadoMixIn):
@@ -313,6 +317,10 @@ class XSim(Executable, VivadoMixIn):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -327,14 +335,14 @@ class XSim(Executable, VivadoMixIn):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    xsim messages for '{0}'".format(self.Parameters[self.SwitchSnapshot]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  xsim messages for '{0}'".format(self.Parameters[self.SwitchSnapshot]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -342,7 +350,7 @@ class XSim(Executable, VivadoMixIn):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 		return simulationResult.value
 
@@ -396,6 +404,10 @@ class Synth(Executable, VivadoMixIn):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -409,14 +421,14 @@ class Synth(Executable, VivadoMixIn):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    vivado messages for '{0}'".format(self.Parameters[self.SwitchSourceFile]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  vivado messages for '{0}'".format(self.Parameters[self.SwitchSourceFile]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -424,7 +436,7 @@ class Synth(Executable, VivadoMixIn):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
 

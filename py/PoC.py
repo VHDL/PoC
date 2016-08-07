@@ -175,7 +175,7 @@ class PoC(ILogable, ArgParseMixin):
 		self.__repo =         None
 		self.__directories =  {}
 
-		self.__SimulationDefaultVHDLVersion = BaseSimulator.VHDLVersion
+		self.__SimulationDefaultVHDLVersion = BaseSimulator._vhdlVersion
 		self.__SimulationDefaultBoard =       None
 
 		self._directories =             self.__Directories__()
@@ -639,19 +639,19 @@ class PoC(ILogable, ArgParseMixin):
 	# 		self.Directories["XilinxPrimitiveSource"] = Path(self.PoCConfig['INSTALL.Xilinx.Vivado']['InstallationDirectory']) / "data/vhdl/src"
 
 	def _ExtractBoard(self, BoardName, DeviceName, force=False):
-		if (BoardName is not None):      return Board(self, BoardName)
+		if (BoardName is not None):     return Board(self, BoardName)
 		elif (DeviceName is not None):  return Board(self, "Custom", DeviceName)
-		elif (force is True):            raise CommonException("Either a board name or a device name is required.")
-		else:                            return self.__SimulationDefaultBoard
+		elif (force is True):           raise CommonException("Either a board name or a device name is required.")
+		else:                           return self.__SimulationDefaultBoard
 
 	def _ExtractFQNs(self, fqns, defaultLibrary="PoC", defaultType=EntityTypes.Testbench):
-		if (len(fqns) == 0):             raise CommonException("No FQN given.")
+		if (len(fqns) == 0):            raise CommonException("No FQN given.")
 		return [FQN(self, fqn, defaultLibrary=defaultLibrary, defaultType=defaultType) for fqn in fqns]
 
 	def _ExtractVHDLVersion(self, vhdlVersion, defaultVersion=None):
 		if (defaultVersion is None):    defaultVersion = self.__SimulationDefaultVHDLVersion
-		if (vhdlVersion is None):        return defaultVersion
-		else:                            return VHDLVersion.Parse(vhdlVersion)
+		if (vhdlVersion is None):       return defaultVersion
+		else:                           return VHDLVersion.Parse(vhdlVersion)
 
 	# TODO: move to Configuration class in ToolChains.Xilinx.Vivado
 	def _CheckVivadoEnvironment(self):

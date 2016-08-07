@@ -92,6 +92,10 @@ class Make(Executable):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -105,10 +109,10 @@ class Make(Executable):
 			iterator = iter(CocotbSimulationResultFilter(GNUMakeQuestaSimFilter(self.GetReader()), simulationResult))
 
 			line = next(iterator)
-			line.IndentBy(2)
+			line.IndentBy(self.Logger.BaseIndent + 1)
 			self._hasOutput = True
-			self._LogNormal("    Make messages")
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  Make messages")
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 			self._Log(line)
 
 			while True:
@@ -116,14 +120,14 @@ class Make(Executable):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 
 		except StopIteration:
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 		return simulationResult.value
 

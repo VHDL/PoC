@@ -196,6 +196,10 @@ class VHDLCompiler(Executable, ActiveHDLMixIn):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -210,14 +214,14 @@ class VHDLCompiler(Executable, ActiveHDLMixIn):
 
 
 			self._hasOutput = True
-			self._LogNormal("    acom messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  acom messages for '{0}'".format(self.Parameters[self.ArgSourceFile]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -225,7 +229,7 @@ class VHDLCompiler(Executable, ActiveHDLMixIn):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
 class StandaloneSimulator(Executable, ActiveHDLMixIn):
@@ -281,14 +285,14 @@ class StandaloneSimulator(Executable, ActiveHDLMixIn):
 			line = next(iterator)
 
 			self._hasOutput = True
-			self._LogNormal("    vsimsa messages for '{0}.{1}'".format("?????", "?????"))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  vsimsa messages for '{0}.{1}'".format("?????", "?????"))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |=  (line.Severity is Severity.Warning)
 				self._hasErrors |=    (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -296,7 +300,7 @@ class StandaloneSimulator(Executable, ActiveHDLMixIn):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 		return simulationResult.value
 
@@ -422,14 +426,14 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLMixIn):
 			line = next(iterator)
 
 			self._hasOutput = True
-			self._LogNormal("    alib messages for '{0}'".format(self.Parameters[self.SwitchLibraryName]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  alib messages for '{0}'".format(self.Parameters[self.SwitchLibraryName]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |=  (line.Severity is Severity.Warning)
 				self._hasErrors |=    (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -437,7 +441,7 @@ class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLMixIn):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
 		# 			# assemble acom command as list of parameters

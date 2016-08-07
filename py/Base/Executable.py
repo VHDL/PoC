@@ -316,9 +316,8 @@ class Executable(ILogable):
 		if isinstance(executablePath, str):             executablePath = Path(executablePath)
 		elif (not isinstance(executablePath, Path)):    raise ValueError("Parameter 'executablePath' is not of type str or Path.")
 		if (not executablePath.exists()):
-			message = "Executable '{0!s}' not found.".format(executablePath)
-			if (dryrun == False):                         raise CommonException(message) from FileNotFoundError(str(executablePath))
-			else:                                         self._LogDryRun(message)
+			if dryrun:  self._LogDryRun("File check for '{0!s}' failed. [SKIPPING]".format(executablePath))
+			else:       raise CommonException("Executable '{0!s}' not found.".format(executablePath)) from FileNotFoundError(str(executablePath))
 
 		# prepend the executable
 		self._executablePath =    executablePath

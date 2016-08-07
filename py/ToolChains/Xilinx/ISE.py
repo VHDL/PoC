@@ -137,30 +137,6 @@ class ISE(ISEMixIn):
 	def GetCoreGenerator(self):
 		return CoreGenerator(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
-# class ISEVHDLCompiler(Executable, ISESimulatorExecutable):
-# 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, defaultParameters=[], logger=None):
-# 		ISESimulatorExecutable.__init__(self, platform, binaryDirectoryPath, version, logger=logger)
-#
-# 		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vhcomp.exe"
-# 		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vhcomp"
-# 		else:                                            raise PlatformNotSupportedException(self._platform)
-# 		super().__init__(platform, dryrun, executablePath, defaultParameters, logger=logger)
-#
-# 	def Compile(self, vhdlFile):
-# 		parameterList = self.Parameters.ToArgumentList()
-#
-# 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
-#
-		# _indent = "    "
-		# print(_indent + "vhcomp messages for '{0}.{1}'".format("??????"))  # self.VHDLLibrary, topLevel))
-		# print(_indent + "-" * 80)
-		# try:
-		# 	self.StartProcess(parameterList)
-		# 	for line in self.GetReader():
-		# 		print(_indent + line)
-		# except Exception as ex:
-		# 	raise ex  # SimulatorException() from ex
-		# print(_indent + "-" * 80)
 
 class Fuse(Executable, ISEMixIn):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
@@ -223,6 +199,10 @@ class Fuse(Executable, ISEMixIn):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -236,14 +216,14 @@ class Fuse(Executable, ISEMixIn):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    fuse messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  fuse messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -251,7 +231,7 @@ class Fuse(Executable, ISEMixIn):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
 class ISESimulator(Executable):
@@ -298,6 +278,10 @@ class ISESimulator(Executable):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -312,14 +296,14 @@ class ISESimulator(Executable):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    isim messages for '{0}'".format(self.Parameters[self.Executable]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  isim messages for '{0}'".format(self.Parameters[self.Executable]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -327,7 +311,7 @@ class ISESimulator(Executable):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 		return simulationResult.value
 
@@ -377,6 +361,10 @@ class Xst(Executable, ISEMixIn):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -390,14 +378,14 @@ class Xst(Executable, ISEMixIn):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    xst messages for '{0}'".format(self.Parameters[self.SwitchXstFile]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  xst messages for '{0}'".format(self.Parameters[self.SwitchXstFile]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |= (line.Severity is Severity.Warning)
 				self._hasErrors |= (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -405,7 +393,7 @@ class Xst(Executable, ISEMixIn):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
 class CoreGenerator(Executable, ISEMixIn):
@@ -469,14 +457,14 @@ class CoreGenerator(Executable, ISEMixIn):
 
 			line = next(iterator)
 			self._hasOutput = True
-			self._LogNormal("    coregen messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  coregen messages for '{0}'".format(self.Parameters[self.SwitchProjectFile]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 			while True:
 				self._hasWarnings |=  (line.Severity is Severity.Warning)
 				self._hasErrors |=    (line.Severity is Severity.Error)
 
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 				line = next(iterator)
 
@@ -484,7 +472,7 @@ class CoreGenerator(Executable, ISEMixIn):
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
 def VhCompFilter(gen):

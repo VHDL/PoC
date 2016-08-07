@@ -92,7 +92,6 @@ class Simulator(Shared):
 	def __init__(self, host, dryRun):
 		super().__init__(host, dryRun)
 
-
 		self._state =           SimulationState.Prepare
 		self._analyzeTime =     None
 		self._elaborationTime = None
@@ -178,7 +177,7 @@ class Simulator(Shared):
 
 	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None, guiMode=False):
 		"""Write the Testbench message line, create a PoCProject and add the first *.files file to it."""
-		self._LogQuiet("{CYAN}Testbench:{NOCOLOR} {0!s}".format(testbench.Parent, **Init.Foreground))
+		self._LogQuiet("{CYAN}Testbench: {0!s}{NOCOLOR}".format(testbench.Parent, **Init.Foreground))
 
 		self._vhdlVersion =  vhdlVersion
 		self._vhdlGenerics = vhdlGenerics

@@ -103,7 +103,7 @@ class Shared(ILogable):
 	@property
 	def DryRun(self):       return self._dryRun
 	@property
-	def VHDLVersion(self):  return self.__vhdlVersion
+	def VHDLVersion(self):  return self._vhdlVersion
 	@property
 	def PoCProject(self):   return self._pocProject
 	@property

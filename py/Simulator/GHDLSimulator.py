@@ -84,11 +84,11 @@ class Simulator(BaseSimulator):
 	def _PrepareSimulator(self):
 		# create the GHDL executable factory
 		self._LogVerbose("Preparing GHDL simulator.")
-		ghdlSection = self.Host.PoCConfig['INSTALL.GHDL']
-		binaryPath = Path(ghdlSection['BinaryDirectory'])
-		version = ghdlSection['Version']
-		backend = ghdlSection['Backend']
-		self._toolChain =      GHDL(self.Host.Platform, self.DryRun, binaryPath, version, backend, logger=self.Logger)
+		ghdlSection =     self.Host.PoCConfig['INSTALL.GHDL']
+		binaryPath =      Path(ghdlSection['BinaryDirectory'])
+		version =         ghdlSection['Version']
+		backend =         ghdlSection['Backend']
+		self._toolChain = GHDL(self.Host.Platform, self.DryRun, binaryPath, version, backend, logger=self.Logger)
 
 	def _RunAnalysis(self, testbench):
 		# create a GHDLAnalyzer instance

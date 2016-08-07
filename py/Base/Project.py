@@ -155,6 +155,7 @@ class Tool(Enum):      # ID     Short Name       Long Name
 	def __str__(self):        return self.ShortName
 	def __repr__(self):       return self.ID
 
+
 class VHDLVersion(Enum):
 	Any =                 0
 	VHDL87 =             87
@@ -252,7 +253,7 @@ class Project:
 		if isinstance(value, str):
 			value = Board(value)
 		elif (not isinstance(value, Board)):            raise ValueError("Parameter 'board' is not of type Board.")
-		self._board =    value
+		self._board =   value
 		self._device =  value.Device
 	
 	@property
@@ -264,7 +265,7 @@ class Project:
 		if isinstance(value, (str, Device)):
 			board = Board("custom", value)
 		else:                                            raise ValueError("Parameter 'device' is not of type str or Device.")
-		self._board =    board
+		self._board =   board
 		self._device =  board.Device
 	
 	@property

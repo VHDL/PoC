@@ -180,6 +180,10 @@ class GTKWave(Executable):
 		parameterList = self.Parameters.ToArgumentList()
 		self._LogVerbose("command: {0}".format(" ".join(parameterList)))
 
+		if (self._dryrun):
+			self._LogDryRun("Start process: {0}".format(" ".join(parameterList)))
+			return
+
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
@@ -192,10 +196,10 @@ class GTKWave(Executable):
 			iterator = iter(GTKWaveFilter(self.GetReader()))
 
 			line = next(iterator)
-			line.IndentBy(2)
+			line.IndentBy(self.Logger.BaseIndent + 1)
 			self._hasOutput = True
-			self._LogNormal("    GTKWave messages for '{0}'".format(self.Parameters[self.SwitchDumpFile]))
-			self._LogNormal("    " + ("-" * 76))
+			self._LogNormal("  GTKWave messages for '{0}'".format(self.Parameters[self.SwitchDumpFile]))
+			self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 			self._Log(line)
 
 			while True:
@@ -203,14 +207,14 @@ class GTKWave(Executable):
 				self._hasErrors |= (line.Severity is Severity.Error)
 
 				line = next(iterator)
-				line.IndentBy(2)
+				line.IndentBy(self.Logger.BaseIndent + 1)
 				self._Log(line)
 
 		except StopIteration:
 			pass
 		finally:
 			if self._hasOutput:
-				self._LogNormal("    " + ("-" * 76))
+				self._LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 def GTKWaveFilter(gen):
 	for line in gen:
