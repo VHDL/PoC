@@ -101,7 +101,7 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 
 		self.PrintOverallCompileReport()
 
-		return self._testSuite.IsAllPassed
+		return self._testSuite.IsAllSuccess
 
 	def Run(self, netlist, board):
 		super().Run(netlist, board)

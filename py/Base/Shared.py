@@ -87,7 +87,7 @@ class Shared(ILogable):
 		self._pocProject =      None
 		self._directories =     self.__Directories__()
 
-		self._testSuite =       TestSuite()			# TODO: This includes not the read ini files phases ...
+		self._testSuite =       None
 		self._startAt =         datetime.now()
 		self._endAt =           None
 		self._lastEvent =       self._startAt

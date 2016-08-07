@@ -54,7 +54,7 @@ from Base.Project       import VHDLVersion, Environment, FileTypes
 from Base.Shared        import Shared, to_time
 from Parser.RulesParser import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn, AppendLineRuleMixIn
 from PoC.Solution       import RulesFile
-from PoC.TestCase       import Status, TestCase
+from PoC.TestCase       import SynthesisSuite, Synthesis, CompileStatus
 
 
 class CompilerException(ExceptionBase):
@@ -118,6 +118,7 @@ class Compiler(Shared):
 
 		self._noCleanUp =       noCleanUp
 
+		self._testSuite =       SynthesisSuite()  # TODO: This includes not the read ini files phases ...
 		self._state =           CompileState.Prepare
 		self._preTasksTime =    None
 		self._compileTime =     None
@@ -131,25 +132,25 @@ class Compiler(Shared):
 
 	def TryRun(self, netlist, *args, **kwargs):
 		"""Try to run a testbench. Skip skipable exceptions by printing the error and its cause."""
-		__COMPILE_STATE_TO_TESTCASE_STATUS__ = {
-			CompileState.Prepare:     Status.InternalError,
-			CompileState.PreCopy:     Status.SystemError,
-			CompileState.PrePatch:    Status.SystemError,
-			CompileState.Compile:     Status.CompileError,
-			CompileState.PostCopy:    Status.SystemError,
-			CompileState.PostPatch:   Status.SystemError,
-			CompileState.PostDelete:  Status.SystemError
+		__COMPILE_STATE_TO_SYNTHESIS_STATUS__ = {
+			CompileState.Prepare:    CompileStatus.InternalError,
+			CompileState.PreCopy:    CompileStatus.SystemError,
+			CompileState.PrePatch:   CompileStatus.SystemError,
+			CompileState.Compile:    CompileStatus.CompileError,
+			CompileState.PostCopy:   CompileStatus.SystemError,
+			CompileState.PostPatch:  CompileStatus.SystemError,
+			CompileState.PostDelete: CompileStatus.SystemError
 		}
 
-		testCase = TestCase(netlist)
-		self._testSuite.AddTestCase(testCase)
-		testCase.StartTimer()
+		synthesis = Synthesis(netlist)
+		self._testSuite.AddSynthesis(synthesis)
+		synthesis.StartTimer()
 		try:
 			self.Run(netlist, *args, **kwargs)
-			# testCase.UpdateStatus(netlist.Result)
-			testCase.Status = Status.CompileSuccess
+			# synthesis.UpdateStatus(netlist.Result)
+			synthesis.Status = CompileStatus.CompileSuccess
 		except SkipableCompilerException as ex:
-			testCase.Status = __COMPILE_STATE_TO_TESTCASE_STATUS__[self._state]
+			synthesis.Status = __COMPILE_STATE_TO_SYNTHESIS_STATUS__[self._state]
 
 			self._LogQuiet("  {RED}ERROR:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
 			cause = ex.__cause__
@@ -160,13 +161,13 @@ class Compiler(Shared):
 					self._LogQuiet("      {YELLOW}{ExType}:{NOCOLOR} {ExMsg!s}".format(ExType=cause.__class__.__name__, ExMsg=cause, **Init.Foreground))
 			self._LogQuiet("  {RED}[SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
 		except CompilerException:
-			testCase.Status = __COMPILE_STATE_TO_TESTCASE_STATUS__[self._state]
+			synthesis.Status = __COMPILE_STATE_TO_SYNTHESIS_STATUS__[self._state]
 			raise
 		except ExceptionBase:
-			testCase.Status = Status.SystemError
+			synthesis.Status = CompileStatus.SystemError
 			raise
 		finally:
-			testCase.StopTimer()
+			synthesis.StopTimer()
 
 	def Run(self, netlist, board):
 		self._LogQuiet("{CYAN}IP core: {0!s}{NOCOLOR}".format(netlist.Parent, **Init.Foreground))
@@ -497,44 +498,39 @@ class Compiler(Shared):
 		self._LogQuiet("Time: {time: >5}  Count: {count: <3}  Success: {success: <3}  Failed: {failed: <2}  Errors: {error: <2}".format(
 			time=to_time(self._testSuite.OverallRunTime),
 			count=self._testSuite.Count,
-			success=self._testSuite.PassedCount,
-			# noassert=self._testSuite.NoAssertsCount,
+			success=self._testSuite.SuccessCount,
 			failed=self._testSuite.FailedCount,
 			error=self._testSuite.ErrorCount
 		))
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
 
 	__COMPILE_REPORT_COLOR_TABLE__ = {
-		Status.Unknown:             "RED",
-		Status.InternalError:				"DARK_RED",
-		Status.SystemError:         "DARK_RED",
-		# Status.AnalyzeError:        "DARK_RED",
-		# Status.ElaborationError:    "DARK_RED",
-		Status.CompileError:        "RED",
-		Status.CompileSuccess:      "GREEN"
+		CompileStatus.Unknown:        "RED",
+		CompileStatus.InternalError:  "DARK_RED",
+		CompileStatus.SystemError:    "DARK_RED",
+		CompileStatus.CompileError:   "RED",
+		CompileStatus.CompileSuccess: "GREEN"
 	}
 
 	__COMPILE_REPORT_STATUS_TEXT_TABLE__ = {
-		Status.Unknown:             "-- ?? --",
-		Status.InternalError:				"INT. ERROR",
-		Status.SystemError:         "SYS. ERROR",
-		# Status.AnalyzeError:        "ANA. ERROR",
-		# Status.ElaborationError:    "ELAB. ERROR",
-		Status.CompileError:        "COMP. ERROR",
-		Status.CompileSuccess:      "SUCCESS"
+		CompileStatus.Unknown:        "-- ?? --",
+		CompileStatus.InternalError:  "INT. ERROR",
+		CompileStatus.SystemError:    "SYS. ERROR",
+		CompileStatus.CompileError:   "COMP. ERROR",
+		CompileStatus.CompileSuccess: "SUCCESS"
 	}
 
 	def PrintCompileReportLine(self, testObject, indent, nameColumnWidth):
 		_indent = "  " * indent
-		for group in testObject.TestGroups.values():
+		for group in testObject.Groups.values():
 			pattern = "{indent}{{groupName: <{nameColumnWidth}}} |       | ".format(indent=_indent, nameColumnWidth=nameColumnWidth)
 			self._LogQuiet(pattern.format(groupName=group.Name))
 			self.PrintCompileReportLine(group, indent + 1, nameColumnWidth - 2)
-		for testCase in testObject.TestCases.values():
-			pattern = "{indent}{{testcaseName: <{nameColumnWidth}}} | {{duration: >5}} | {{{color}}}{{status: ^11}}{{NOCOLOR}}".format(
-				indent=_indent, nameColumnWidth=nameColumnWidth, color=self.__COMPILE_REPORT_COLOR_TABLE__[testCase.Status])
+		for synthesis in testObject.Synthesises.values():
+			pattern = "{indent}{{netlistName: <{nameColumnWidth}}} | {{duration: >5}} | {{{color}}}{{status: ^11}}{{NOCOLOR}}".format(
+				indent=_indent, nameColumnWidth=nameColumnWidth, color=self.__COMPILE_REPORT_COLOR_TABLE__[synthesis.Status])
 			self._LogQuiet(pattern.format(
-				testcaseName=testCase.Name,
-				duration=to_time(testCase.OverallRunTime),
-				status=self.__COMPILE_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground
+				netlistName=synthesis.Name,
+				duration=to_time(synthesis.OverallRunTime),
+				status=self.__COMPILE_REPORT_STATUS_TEXT_TABLE__[synthesis.Status], **Init.Foreground
 			))
