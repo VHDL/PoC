@@ -33,11 +33,6 @@
 # ==============================================================================
 #
 # entry point
-from enum import Enum, unique
-
-from PoC.TestCase import TestSuite
-
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -49,6 +44,7 @@ else:
 # load dependencies
 import re
 import shutil
+from enum               import Enum, unique
 from pathlib            import Path
 
 from lib.Functions      import Init
@@ -58,7 +54,7 @@ from Base.Project       import VHDLVersion, Environment, FileTypes
 from Base.Shared        import Shared, to_time
 from Parser.RulesParser import CopyRuleMixIn, ReplaceRuleMixIn, DeleteRuleMixIn, AppendLineRuleMixIn
 from PoC.Solution       import RulesFile
-from PoC.TestCase       import Status
+from PoC.TestCase       import Status, TestCase
 
 
 class CompilerException(ExceptionBase):
@@ -83,21 +79,29 @@ class AppendLineTask(AppendLineRuleMixIn):
 @unique
 class CompileState(Enum):
 	Prepare =     0
-	Analyze =     1
-	Elaborate =   2
-	Optimize =    3
-	Translate =   4
-	Map =         5
-	Place =       6
-	Route =       7
-	CleanUp =     20
+	PreCopy =    10
+	PrePatch =   11
+
+	Compile =    50
+	# Analyze =    61
+	# Elaborate =  62
+	# Optimize =   63
+	# Translate =  64
+	# Map =        65
+	# Place =      66
+	# Route =      67
+
+	PostCopy =   90
+	PostPatch =  91
+	PostDelete = 92
+	CleanUp =    99
 
 @unique
 class CompileResult(Enum):
 	NotRun =      0
 	Error =       1
 	Failed =      2
-	Passed =      3
+	Success =     3
 
 
 class Compiler(Shared):
@@ -114,11 +118,10 @@ class Compiler(Shared):
 
 		self._noCleanUp =       noCleanUp
 
-		self._testSuite =       TestSuite()  # TODO: This includes not the read ini files phases ...
 		self._state =           CompileState.Prepare
-		# self._analyzeTime =     None
-		# self._elaborationTime = None
-		# self._simulationTime =  None
+		self._preTasksTime =    None
+		self._compileTime =     None
+		self._postTasksTime =   None
 
 	@property
 	def NoCleanUp(self):      return self._noCleanUp
@@ -127,9 +130,27 @@ class Compiler(Shared):
 		self._Prepare()
 
 	def TryRun(self, netlist, *args, **kwargs):
+		"""Try to run a testbench. Skip skipable exceptions by printing the error and its cause."""
+		__COMPILE_STATE_TO_TESTCASE_STATUS__ = {
+			CompileState.Prepare:     Status.InternalError,
+			CompileState.PreCopy:     Status.SystemError,
+			CompileState.PrePatch:    Status.SystemError,
+			CompileState.Compile:     Status.CompileError,
+			CompileState.PostCopy:    Status.SystemError,
+			CompileState.PostPatch:   Status.SystemError,
+			CompileState.PostDelete:  Status.SystemError
+		}
+
+		testCase = TestCase(netlist)
+		self._testSuite.AddTestCase(testCase)
+		testCase.StartTimer()
 		try:
 			self.Run(netlist, *args, **kwargs)
+			# testCase.UpdateStatus(netlist.Result)
+			testCase.Status = Status.CompileSuccess
 		except SkipableCompilerException as ex:
+			testCase.Status = __COMPILE_STATE_TO_TESTCASE_STATUS__[self._state]
+
 			self._LogQuiet("  {RED}ERROR:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
 			cause = ex.__cause__
 			if (cause is not None):
@@ -138,6 +159,14 @@ class Compiler(Shared):
 				if (cause is not None):
 					self._LogQuiet("      {YELLOW}{ExType}:{NOCOLOR} {ExMsg!s}".format(ExType=cause.__class__.__name__, ExMsg=cause, **Init.Foreground))
 			self._LogQuiet("  {RED}[SKIPPED DUE TO ERRORS]{NOCOLOR}".format(**Init.Foreground))
+		except CompilerException:
+			testCase.Status = __COMPILE_STATE_TO_TESTCASE_STATUS__[self._state]
+			raise
+		except ExceptionBase:
+			testCase.Status = Status.SystemError
+			raise
+		finally:
+			testCase.StopTimer()
 
 	def Run(self, netlist, board):
 		self._LogQuiet("{CYAN}IP core: {0!s}{NOCOLOR}".format(netlist.Parent, **Init.Foreground))
@@ -151,9 +180,8 @@ class Compiler(Shared):
 		self._WriteSpecialSectionIntoConfig(board.Device)
 
 		self._CreatePoCProject(netlist.ModuleName, board)
-		if netlist.FilesFile is not None: self._AddFileListFile(netlist.FilesFile)
-		if (netlist.RulesFile is not None):
-			self._AddRulesFiles(netlist.RulesFile)
+		if netlist.FilesFile is not None:   self._AddFileListFile(netlist.FilesFile)
+		if (netlist.RulesFile is not None): self._AddRulesFiles(netlist.RulesFile)
 
 	def _PrepareCompilerEnvironment(self, device):
 		self._LogNormal("Preparing synthesis environment...")
@@ -257,7 +285,6 @@ class Compiler(Shared):
 				self._LogDebug("  {0!s}".format(task))
 		else:
 			self._LogDebug("No {0}-copy tasks specified in config file.".format(text))
-
 
 	def _ExecuteCopyTasks(self, tasks, text):
 		for task in tasks:
@@ -464,14 +491,14 @@ class Compiler(Shared):
 		# table header
 		self._LogQuiet("{Name: <24} | {Duration: >5} | {Status: ^11}".format(Name="Name", Duration="Time", Status="Status"))
 		self._LogQuiet("-" * 80)
-		# self.PrintCompileReportLine(self._testSuite, 0, 24)
+		self.PrintCompileReportLine(self._testSuite, 0, 24)
 
 		self._LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
-		self._LogQuiet("Time: {time: >5}  Count: {count: <3}  Passed: {passed: <3}  No Asserts: {noassert: <2}  Failed: {failed: <2}  Errors: {error: <2}".format(
+		self._LogQuiet("Time: {time: >5}  Count: {count: <3}  Success: {success: <3}  Failed: {failed: <2}  Errors: {error: <2}".format(
 			time=to_time(self._testSuite.OverallRunTime),
 			count=self._testSuite.Count,
-			passed=self._testSuite.PassedCount,
-			noassert=self._testSuite.NoAssertsCount,
+			success=self._testSuite.PassedCount,
+			# noassert=self._testSuite.NoAssertsCount,
 			failed=self._testSuite.FailedCount,
 			error=self._testSuite.ErrorCount
 		))
@@ -481,8 +508,8 @@ class Compiler(Shared):
 		Status.Unknown:             "RED",
 		Status.InternalError:				"DARK_RED",
 		Status.SystemError:         "DARK_RED",
-		Status.AnalyzeError:        "DARK_RED",
-		Status.ElaborationError:    "DARK_RED",
+		# Status.AnalyzeError:        "DARK_RED",
+		# Status.ElaborationError:    "DARK_RED",
 		Status.CompileError:        "RED",
 		Status.CompileSuccess:      "GREEN"
 	}
@@ -491,10 +518,10 @@ class Compiler(Shared):
 		Status.Unknown:             "-- ?? --",
 		Status.InternalError:				"INT. ERROR",
 		Status.SystemError:         "SYS. ERROR",
-		Status.AnalyzeError:        "ANA. ERROR",
-		Status.ElaborationError:    "ELAB. ERROR",
+		# Status.AnalyzeError:        "ANA. ERROR",
+		# Status.ElaborationError:    "ELAB. ERROR",
 		Status.CompileError:        "COMP. ERROR",
-		Status.CompileSuccess:      "PASSED"
+		Status.CompileSuccess:      "SUCCESS"
 	}
 
 	def PrintCompileReportLine(self, testObject, indent, nameColumnWidth):
@@ -506,6 +533,8 @@ class Compiler(Shared):
 		for testCase in testObject.TestCases.values():
 			pattern = "{indent}{{testcaseName: <{nameColumnWidth}}} | {{duration: >5}} | {{{color}}}{{status: ^11}}{{NOCOLOR}}".format(
 				indent=_indent, nameColumnWidth=nameColumnWidth, color=self.__COMPILE_REPORT_COLOR_TABLE__[testCase.Status])
-			self._LogQuiet(pattern.format(testcaseName=testCase.Name, duration=to_time(testCase.OverallRunTime),
-																		status=self.__COMPILE_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground))
-
+			self._LogQuiet(pattern.format(
+				testcaseName=testCase.Name,
+				duration=to_time(testCase.OverallRunTime),
+				status=self.__COMPILE_REPORT_STATUS_TEXT_TABLE__[testCase.Status], **Init.Foreground
+			))

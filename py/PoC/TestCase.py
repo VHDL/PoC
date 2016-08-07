@@ -38,9 +38,12 @@ else:
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module PoC.Query")
 
 
-from collections  import OrderedDict
-from datetime     import datetime
-from enum         import Enum, unique
+from collections      import OrderedDict
+from datetime         import datetime
+from enum             import Enum, unique
+
+# from Base.Compiler    import CompileResult
+# from Base.Simulator   import SimulationResult
 
 
 @unique
@@ -70,6 +73,7 @@ class TestElement:
 
 	def __str__(self):
 		return "{0!s}.{1}".format(self._parent, self._name)
+
 
 class TestGroup(TestElement):
 	def __init__(self, name, parent):
@@ -126,6 +130,11 @@ class TestGroup(TestElement):
 						+ sum([1 for tc in self._testCases.values() if tc.Status
 										in (Status.SystemError, Status.AnalyzeError, Status.ElaborationError, Status.SimulationError)])
 
+	@property
+	def SuccessCount(self):
+		return sum([tg.SuccessCount for tg in self._testGroups.values()]) \
+						+ sum([1 for tc in self._testCases.values() if tc.Status is Status.CompileSuccess])
+
 
 class TestSuite(TestGroup):
 	def __init__(self):
@@ -179,14 +188,14 @@ class TestSuite(TestGroup):
 class TestCase(TestElement):
 	def __init__(self, testbench):
 		super().__init__(testbench.Parent.Name, None)
-		self._testbench =        testbench
-		self._testGroup =        None
+		self._testbench =       testbench
+		self._testGroup =       None
 		self._status =          Status.Unknown
 		self._warnings =        []
 		self._errors =          []
 
-		self._startedAt =        None
-		self._endedAt =          None
+		self._startedAt =       None
+		self._endedAt =         None
 		self._overallRuntime =  None
 
 	@property
@@ -207,25 +216,32 @@ class TestCase(TestElement):
 	@Status.setter
 	def Status(self, value):    self._status = value
 
-	def UpdateStatus(self, testbenchResult):
-		if (testbenchResult is testbenchResult.NotRun):
+	def UpdateStatus(self, testResult):
+		if (testResult is testResult.NotRun):
 			self._status = Status.Unknown
-		elif (testbenchResult is testbenchResult.Error):
+		elif (testResult is testResult.Error):
 			self._status = Status.SimulationError
-		elif (testbenchResult is testbenchResult.Failed):
+		elif (testResult is testResult.Failed):
 			self._status = Status.SimulationFailed
-		elif (testbenchResult is testbenchResult.NoAsserts):
+		elif (testResult is testResult.NoAsserts):
 			self._status = Status.SimulationNoAsserts
-		elif (testbenchResult is testbenchResult.Passed):
+		elif (testResult is testResult.Passed):
 			self._status = Status.SimulationSuccess
+		# TODO: refactor -> split simulation and synthesis test cases
+		elif (testResult is testResult.NotRun):
+			self._status = Status.Unknown
+		elif (testResult is testResult.Error):
+			self._status = Status.CompileError
+		elif (testResult is testResult.Success):
+			self._status = Status.CompileSuccess
 		else:
 			raise IndentationError("Wuhu")
 
 	def StartTimer(self):
-		self._startedAt =        datetime.now()
+		self._startedAt =       datetime.now()
 
 	def StopTimer(self):
-		self._endedAt =          datetime.now()
+		self._endedAt =         datetime.now()
 		self._overallRuntime =  self._endedAt - self._startedAt
 
 	@property

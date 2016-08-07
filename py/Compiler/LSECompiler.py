@@ -33,9 +33,6 @@
 # ==============================================================================
 #
 # entry point
-from Base.Exceptions import PlatformNotSupportedException
-
-
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -45,13 +42,15 @@ else:
 
 
 # load dependencies
-from pathlib                      import Path
+from datetime                   import datetime
+from pathlib                    import Path
 
-from Base.Compiler                import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
-from Base.Project                 import ToolChain, Tool, VHDLVersion
-from PoC.Entity                   import WildCard
-from ToolChains.Lattice.Diamond   import Diamond, SynthesisArgumentFile
+from Base.Exceptions            import PlatformNotSupportedException
+from Base.Compiler              import Compiler as BaseCompiler, CompilerException, SkipableCompilerException, CompileState
+from Base.Project               import ToolChain, Tool, VHDLVersion
+from PoC.Entity                 import WildCard
 from ToolChains.Lattice.Lattice import LatticeException
+from ToolChains.Lattice.Diamond import Diamond, SynthesisArgumentFile
 
 
 class Compiler(BaseCompiler):
@@ -74,12 +73,9 @@ class Compiler(BaseCompiler):
 		super()._PrepareCompiler()
 
 		diamondSection = self.Host.PoCConfig['INSTALL.Lattice.Diamond']
-		if (self.Host.Platform == "Linux"):
-			binaryPath = Path(diamondSection['BinaryDirectory2'])		# ispFPGA directory
-		elif (self.Host.Platform == "Windows"):
-			binaryPath = Path(diamondSection['BinaryDirectory2'])		# ispFPGA directory
-		else:
-			raise PlatformNotSupportedException(self.Host.Platform)
+		if (self.Host.Platform == "Linux"):     binaryPath = Path(diamondSection['BinaryDirectory2'])		# ispFPGA directory
+		elif (self.Host.Platform == "Windows"): binaryPath = Path(diamondSection['BinaryDirectory2'])		# ispFPGA directory
+		else:                                   raise PlatformNotSupportedException(self.Host.Platform)
 
 		version = diamondSection['Version']
 		self._toolChain =    Diamond(self.Host.Platform, self.DryRun, binaryPath, version, logger=self.Logger)
@@ -113,18 +109,30 @@ class Compiler(BaseCompiler):
 		netlist.PrjFile = self.Directories.Working / (netlist.ModuleName + ".prj")
 
 		lseArgumentFile = self._WriteLSEProjectFile(netlist, board)
+		self._prepareTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Executing pre-processing tasks...")
+		self._state = CompileState.PreCopy
 		self._RunPreCopy(netlist)
+		self._state = CompileState.PrePatch
 		self._RunPreReplace(netlist)
+		self._preTasksTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Running Lattice Diamond LSE...")
+		self._state = CompileState.Compile
 		self._RunCompile(netlist, lseArgumentFile)			# attach to netlist
+		self._compileTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Executing post-processing tasks...")
+		self._state = CompileState.PostCopy
 		self._RunPostCopy(netlist)
+		self._state = CompileState.PostPatch
 		self._RunPostReplace(netlist)
+		self._state = CompileState.PostDelete
 		self._RunPostDelete(netlist)
+		self._postTasksTime = self._GetTimeDeltaSinceLastEvent()
+
+		self._endAt = datetime.now()
 
 	def _WriteLSEProjectFile(self, netlist, board):
 		device = board.Device
@@ -154,4 +162,4 @@ class Compiler(BaseCompiler):
 		except LatticeException as ex:
 			raise CompilerException("Error while compiling '{0!s}'.".format(netlist)) from ex
 		if synth.HasErrors:
-			raise 		SkipableCompilerException("Error while compiling '{0!s}'.".format(netlist))
+			raise SkipableCompilerException("Error while compiling '{0!s}'.".format(netlist))

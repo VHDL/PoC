@@ -106,12 +106,6 @@ class Simulator(Shared):
 	def _PrepareSimulator(self):
 		self._Prepare()
 
-	def _GetTimeDeltaSinceLastEvent(self):
-		now = datetime.now()
-		result = now - self._lastEvent
-		self._lastEvent = now
-		return result
-
 	def _PrepareSimulationEnvironment(self):
 		self._LogNormal("Preparing simulation environment...")
 		self._PrepareEnvironment()
@@ -142,11 +136,11 @@ class Simulator(Shared):
 	def TryRun(self, testbench, *args, **kwargs):
 		"""Try to run a testbench. Skip skipable exceptions by printing the error and its cause."""
 		__SIMULATION_STATE_TO_TESTCASE_STATUS__ = {
-			SimulationState.Prepare: Status.InternalError,
-			SimulationState.Analyze: Status.AnalyzeError,
-			SimulationState.Elaborate: Status.ElaborationError,
-			SimulationState.Optimize: Status.ElaborationError,
-			SimulationState.Simulate: Status.SimulationError
+			SimulationState.Prepare:    Status.InternalError,
+			SimulationState.Analyze:    Status.AnalyzeError,
+			SimulationState.Elaborate:  Status.ElaborationError,
+			SimulationState.Optimize:   Status.ElaborationError,
+			SimulationState.Simulate:   Status.SimulationError
 		}
 
 		testCase = TestCase(testbench)

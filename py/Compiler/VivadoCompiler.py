@@ -32,6 +32,8 @@
 # ==============================================================================
 #
 # entry point
+
+
 if __name__ != "__main__":
 	# place library initialization code here
 	pass
@@ -41,12 +43,13 @@ else:
 
 
 # load dependencies
+from datetime                 import datetime
 from pathlib                  import Path
 
-from Base.Project              import ToolChain, Tool, FileTypes
-from Base.Compiler            import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
-from PoC.Entity                import WildCard
-from ToolChains.Xilinx.Vivado  import Vivado, VivadoException
+from Base.Project             import ToolChain, Tool, FileTypes
+from Base.Compiler            import Compiler as BaseCompiler, CompilerException, SkipableCompilerException, CompileState
+from PoC.Entity               import WildCard
+from ToolChains.Xilinx.Vivado import Vivado, VivadoException
 
 
 class Compiler(BaseCompiler):
@@ -102,18 +105,30 @@ class Compiler(BaseCompiler):
 
 		netlist.TclFile = self.Directories.Working / (netlist.ModuleName + ".tcl")
 		self._WriteTclFile(netlist,board.Device)
+		self._prepareTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Executing pre-processing tasks...")
+		self._state = CompileState.PreCopy
 		self._RunPreCopy(netlist)
+		self._state = CompileState.PrePatch
 		self._RunPreReplace(netlist)
+		self._preTasksTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Running Xilinx Vivado Synthesis...")
+		self._state = CompileState.Compile
 		self._RunCompile(netlist)
+		self._compileTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Executing post-processing tasks...")
+		self._state = CompileState.PostCopy
 		self._RunPostCopy(netlist)
+		self._state = CompileState.PostPatch
 		self._RunPostReplace(netlist)
+		self._state = CompileState.PostDelete
 		self._RunPostDelete(netlist)
+		self._postTasksTime = self._GetTimeDeltaSinceLastEvent()
+
+		self._endAt = datetime.now()
 		
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results

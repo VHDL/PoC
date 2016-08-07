@@ -93,9 +93,6 @@ class Shared(ILogable):
 		self._lastEvent =       self._startAt
 		self._prepareTime =     None
 
-	def _Prepare(self):
-		self._LogNormal("Preparing {0}.".format(self._TOOL.LongName))
-
 	# class properties
 	# ============================================================================
 	@property
@@ -108,6 +105,15 @@ class Shared(ILogable):
 	def PoCProject(self):   return self._pocProject
 	@property
 	def Directories(self):  return self._directories
+
+	def _GetTimeDeltaSinceLastEvent(self):
+		now = datetime.now()
+		result = now - self._lastEvent
+		self._lastEvent = now
+		return result
+
+	def _Prepare(self):
+		self._LogNormal("Preparing {0}.".format(self._TOOL.LongName))
 
 	def _PrepareEnvironment(self):
 		# create fresh temporary directory

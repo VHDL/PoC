@@ -42,12 +42,13 @@ else:
 
 
 # load dependencies
+from datetime                 import datetime
 from pathlib                  import Path
 
-from Base.Project              import ToolChain, Tool
-from Base.Compiler            import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
-from PoC.Entity                import WildCard
-from ToolChains.Xilinx.Xilinx  import XilinxProjectExportMixIn
+from Base.Project             import ToolChain, Tool
+from Base.Compiler            import Compiler as BaseCompiler, CompilerException, SkipableCompilerException, CompileState
+from PoC.Entity               import WildCard
+from ToolChains.Xilinx.Xilinx import XilinxProjectExportMixIn
 from ToolChains.Xilinx.ISE    import ISE, ISEException
 
 
@@ -110,18 +111,30 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 
 		self._WriteXilinxProjectFile(netlist.PrjFile, "XST")
 		self._WriteXstOptionsFile(netlist, board.Device)
+		self._prepareTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Executing pre-processing tasks...")
+		self._state = CompileState.PreCopy
 		self._RunPreCopy(netlist)
+		self._state = CompileState.PrePatch
 		self._RunPreReplace(netlist)
+		self._preTasksTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Running Xilinx Synthesis Tool...")
+		self._state = CompileState.Compile
 		self._RunCompile(netlist)
+		self._compileTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Executing post-processing tasks...")
+		self._state = CompileState.PostCopy
 		self._RunPostCopy(netlist)
+		self._state = CompileState.PostPatch
 		self._RunPostReplace(netlist)
+		self._state = CompileState.PostDelete
 		self._RunPostDelete(netlist)
+		self._postTasksTime = self._GetTimeDeltaSinceLastEvent()
+
+		self._endAt = datetime.now()
 
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results

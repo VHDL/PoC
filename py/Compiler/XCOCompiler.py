@@ -40,15 +40,16 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XCOCompiler")
 
-	
+
 # load dependencies
 import shutil
+from datetime               import datetime
 from os                     import chdir
 from pathlib                import Path
 from textwrap               import dedent
 
 from Base.Project           import ToolChain, Tool
-from Base.Compiler          import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
+from Base.Compiler          import Compiler as BaseCompiler, CompilerException, SkipableCompilerException, CompileState
 from PoC.Entity             import WildCard
 from ToolChains.Xilinx.ISE  import ISE, ISEException
 
@@ -101,18 +102,30 @@ class Compiler(BaseCompiler):
 
 	def Run(self, netlist, board):
 		super().Run(netlist, board)
+		self._prepareTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Executing pre-processing tasks...")
+		self._state = CompileState.PreCopy
 		self._RunPreCopy(netlist)
+		self._state = CompileState.PrePatch
 		self._RunPreReplace(netlist)
+		self._preTasksTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Running Xilinx Core Generator...")
+		self._state = CompileState.Compile
 		self._RunCompile(netlist, board.Device)
+		self._compileTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Executing post-processing tasks...")
+		self._state = CompileState.PostCopy
 		self._RunPostCopy(netlist)
+		self._state = CompileState.PostPatch
 		self._RunPostReplace(netlist)
+		self._state = CompileState.PostDelete
 		self._RunPostDelete(netlist)
+		self._postTasksTime = self._GetTimeDeltaSinceLastEvent()
+
+		self._endAt = datetime.now()
 
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results
