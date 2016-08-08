@@ -55,7 +55,7 @@ entity sata_Physical_OOBControl_Host is
 		DEBUG											: boolean														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: boolean														:= FALSE;												-- enables the assignment of signals to the debugport
 		ALLOW_STANDARD_VIOLATION	: boolean														:= FALSE;
-		OOB_TIMEOUT								: time															:= time'low
+		OOB_TIMEOUT								: T_TIME														:= T_TIME'low
 	);
 	port (
 		Clock											: in	std_logic;
@@ -93,7 +93,7 @@ architecture rtl of sata_Physical_OOBControl_Host is
 	constant DEFAULT_OOB_TIMEOUT					: time				:= 880 us;
 	constant CONSECUTIVE_ALIGN_MIN				: positive		:= 63;
 
-	constant OOB_TIMEOUT_I								: time				:= ite((OOB_TIMEOUT = time'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
+	constant OOB_TIMEOUT_I								: T_TIME			:= ite((OOB_TIMEOUT = T_TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
 	constant COMRESET_TIMEOUT							: time				:= 450 ns;
 	constant COMWAKE_TIMEOUT							: time				:= 250 ns;
 

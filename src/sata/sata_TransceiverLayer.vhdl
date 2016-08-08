@@ -32,7 +32,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -147,6 +147,7 @@ begin
 		severity FAILURE;
 
 	assert ((C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_ZYNQ) or
+					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_ARTIX) or
 					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_KINTEX) or
 					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_VIRTEX) or
 					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_STRATIX))
@@ -155,6 +156,7 @@ begin
 
 	assert ((C_DEVICE_INFO.Device = DEVICE_VIRTEX5) or
 					(C_DEVICE_INFO.Device = DEVICE_ZYNQ7) or
+					(C_DEVICE_INFO.DEVICE = DEVICE_ARTIX7) or
 					(C_DEVICE_INFO.Device = DEVICE_KINTEX7) or
 					(C_DEVICE_INFO.Device = DEVICE_VIRTEX7) or
 					(C_DEVICE_INFO.Device = DEVICE_STRATIX2) or
@@ -163,6 +165,7 @@ begin
 		severity FAILURE;
 
 	assert ((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTP_DUAL) or
+					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTPE2) or
 					(C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2) or
 					(C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB))
 		report "Transceiver not yet supported."
@@ -170,6 +173,7 @@ begin
 
 	assert (((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTP_DUAL)	and (PORTS <= 2)) or
 					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE1)		and (PORTS <= 4)) or
+					((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTPE2)		and (PORTS <= 4)) or
 					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2)		and (PORTS <= 4)) or
 					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB)			and (PORTS <= 2)))
 		report "To many ports per transceiver."
@@ -303,7 +307,60 @@ begin
 					VSS_Private_Out						=> VSS_Private_Out
 				);
 		end generate;	-- Xilinx.Virtex6.GTXE1
-		genGTXE2 : if (C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2) generate
+		genGTPE2 : if (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTPE2) generate
+			Trans : sata_Transceiver_Series7_GTPE2
+				generic map (
+					DEBUG											=> DEBUG,
+					ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
+					REFCLOCK_FREQ							=> REFCLOCK_FREQ,
+					PORTS											=> PORTS,													-- Number of Ports per Transceiver
+					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
+				)
+				port map (
+					Reset											=> Reset,
+					ResetDone									=> ResetDone,
+					ClockNetwork_Reset				=> ClockNetwork_Reset,
+					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
+
+					PowerDown									=> PowerDown,
+					Command										=> Command,
+					Status										=> Status,
+					Error											=> Error,
+
+					-- debug ports
+					DebugPortIn								=> DebugPortIn,
+					DebugPortOut							=> DebugPortOut,
+
+					SATA_Clock								=> SATA_Clock,
+					SATA_Clock_Stable					=> SATA_Clock_Stable,
+
+					RP_Reconfig								=> RP_Reconfig,
+					RP_SATAGeneration					=> RP_SATAGeneration,
+					RP_ReconfigComplete				=> RP_ReconfigComplete,
+					RP_ConfigReloaded					=> RP_ConfigReloaded,
+					RP_Lock										=> RP_Lock,
+					RP_Locked									=> RP_Locked,
+
+					OOB_TX_Command						=> OOB_TX_Command,
+					OOB_TX_Complete						=> OOB_TX_Complete,
+					OOB_RX_Received						=> OOB_RX_Received,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
+					OOB_AlignDetected 				=> OOB_AlignDetected,
+
+					TX_Data										=> TX_Data_i,
+					TX_CharIsK								=> TX_CharIsK,
+					
+					RX_Data										=> RX_Data_i,
+					RX_CharIsK								=> RX_CharIsK_i,
+					RX_Valid									=> RX_Valid,
+					
+					-- vendor specific signals
+					VSS_Common_In							=> VSS_Common_In,
+					VSS_Private_In						=> VSS_Private_In,
+					VSS_Private_Out						=> VSS_Private_Out
+				);
+		end generate;	-- Xilinx.Series7.GTPE2
+		genGTXE2 : if (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2) generate
 			Trans : sata_Transceiver_Series7_GTXE2
 				generic map (
 					DEBUG											=> DEBUG,

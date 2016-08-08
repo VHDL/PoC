@@ -174,6 +174,7 @@ package utils is
 	function to_BCD_Vector(Value : string; Size : natural := 0; Fill : T_BCD := x"0") return T_BCD_VECTOR;
 
 	-- TODO: comment
+	function bound(index : integer; minimum : integer; maximum : integer) return integer;
 	function to_index(slv : unsigned; max : natural := 0) return integer;
 	function to_index(slv : std_logic_vector; max : natural := 0) return integer;
 
@@ -782,6 +783,17 @@ package body utils is
 	end function;
 
 	-- bound array indices for simulation, to prevent out of range errors
+	function bound(index : integer; minimum : integer; maximum : integer) return integer is
+	begin
+		if (index < minimum) then
+			return minimum;
+		elsif (maximum < index) then
+			return maximum;
+		else
+			return index;
+		end if;
+	end function;
+
 	function to_index(slv : unsigned; max : natural := 0) return integer is
 		variable res : integer;
 	begin
