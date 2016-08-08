@@ -75,7 +75,7 @@ class Configuration(BaseConfiguration):
 				"Version":                "0.34dev",
 				"InstallationDirectory":  "C:/Tools/GHDL/0.34dev",
 				"BinaryDirectory":        "${InstallationDirectory}/bin",
-				"ScriptDirectory":        "${InstallationDirectory}/scripts",
+				"ScriptDirectory":        "${InstallationDirectory}/lib/vendors",
 				"Backend":                "mcode"
 			}
 		},
@@ -310,7 +310,8 @@ class GHDL(Executable):
 		_name =     "wave"
 
 	class SwitchWaveformSelect(metaclass=LongValuedFlagArgument):
-		_name =     "wave-opt-file"
+		# _name =     "wave-opt-file"		# requires GHDL update
+		_name =     "wave-option-file"
 
 	RunOptions = CommandLineArgumentList(
 		SwitchIEEEAsserts,
