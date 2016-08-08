@@ -129,7 +129,7 @@ if($pass = shift) {
 # Apply Filter Chain
 while(<>) {
   chomp;
-  $line = $_;
+  my $line = $_;
   $line = $_->($line) for @chain;
   print "$line\n";
 }
