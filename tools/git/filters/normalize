@@ -38,9 +38,13 @@
 #   clean  - remove trailing whitespace, and
 #   smudge - replace empty lines with the most recent indentation.
 #
-# Currently, only 'vhdl' is understood as a language. When specified on a
-# 'clean' pass, all VHDL reserved words and standard types will be put into
-# lower case.
+#
+# Currently, only the 'clean' pass expands extra processing steps for
+# the following language specifiers:
+#
+#   vhdl - VHDL reserved words and standard types are put into lower case, and
+#   rest - headline markers 7x'=' are expanded to 8x'=' so as to avoid
+#          the misinterpretation as a conflict marker by git.
 #
 # ==============================================================================
 
@@ -95,27 +99,31 @@ sub vhdlcap {
     bit bit_vector boolean character integer natural positive signed
     std_logic std_logic_vector string time unsigned
   /;
-  $_[0] =~ s/($reserved)/lc $1/gier;
+  $_[0] =~ s/\b($reserved)\b/lc $1/gier;
+}
+
+# Fix headline markers in reST, which would coincide with git conflict markers.
+sub restfix {
+	$_[0] =~ s/(^={7}$)/=$1/r;
 }
 
 ##############################################################################
 # Main: Select Filters and apply them from stdin to stdout.
 
 # Build Filter Chain
+my $pass;
 my @chain = ();
-if(@ARGV) {
-  if($ARGV[0] eq 'clean') {
-    shift;
-    push @chain, \&rtrim;
-    if(@ARGV and $ARGV[0] eq 'vhdl') {
-      shift;
-      push @chain, \&vhdlcap;
-    }
-  }
-  elsif($ARGV[0] eq 'smudge') {
-    shift;
-    push @chain, \&whiteindent;
-  }
+
+if($pass = shift) {
+	my $lang = @ARGV? lc(shift) : '';
+	if($pass eq 'clean') {
+		push @chain, \&rtrim;
+		push @chain, \&vhdlcap if $lang eq 'vhdl';
+		push @chain, \&restfix if $lang eq 'rest';
+	}
+	elsif($pass eq 'smudge') {
+		push @chain, \&whiteindent;
+	}
 }
 
 # Apply Filter Chain
