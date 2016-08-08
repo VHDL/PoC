@@ -109,8 +109,8 @@ class Simulator(BaseSimulator):
 		for file in self._pocProject.Files(fileType=FileTypes.VHDLSourceFile):
 			if (not file.Path.exists()):                  raise SkipableSimulatorException("Cannot analyse '{0!s}'.".format(file.Path)) from FileNotFoundError(str(file.Path))
 
-			ghdl.Parameters[ghdl.SwitchVHDLLibrary] =      file.LibraryName
-			ghdl.Parameters[ghdl.ArgSourceFile] =          file.Path
+			ghdl.Parameters[ghdl.SwitchVHDLLibrary] =     file.LibraryName
+			ghdl.Parameters[ghdl.ArgSourceFile] =         file.Path
 			try:
 				ghdl.Analyze()
 			except GHDLReanalyzeException as ex:
@@ -183,7 +183,7 @@ class Simulator(BaseSimulator):
 		# set dump format to save simulation results to *.vcd file
 		if (self._guiMode):
 			configSection = self.Host.PoCConfig[testbench.ConfigSectionName]
-			testbench.WaveformSelectFile = Path(configSection['ghdlWaveformSelectFile'])
+			testbench.WaveformOptionFile = Path(configSection['ghdlWaveformOptionFile'])
 			testbench.WaveformFileFormat = configSection['ghdlWaveformFileFormat']
 
 			if (testbench.WaveformFileFormat == "vcd"):
@@ -201,8 +201,8 @@ class Simulator(BaseSimulator):
 			else:                                           raise SimulatorException("Unknown waveform file format for GHDL.")
 
 			testbench.WaveformFile = waveformFilePath
-			if testbench.WaveformSelectFile.exists():
-				ghdl.RunOptions[ghdl.SwitchWaveformSelect] =  testbench.WaveformSelectFile
+			if testbench.WaveformOptionFile.exists():
+				ghdl.RunOptions[ghdl.SwitchWaveformSelect] =  testbench.WaveformOptionFile
 
 		testbench.Result = ghdl.Run()
 
