@@ -77,7 +77,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		vivadoSection = self.Host.PoCConfig['INSTALL.Xilinx.Vivado']
 		version =  vivadoSection['Version']
 		binaryPath = Path(vivadoSection['BinaryDirectory'])
-		self._toolChain = Vivado(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain = Vivado(self.Host.Platform, self.DryRun, binaryPath, version, logger=self.Logger)
 
 	def _RunElaboration(self, testbench):
 		xelabLogFilePath =  self.Directories.Working / (testbench.ModuleName + ".xelab.log")

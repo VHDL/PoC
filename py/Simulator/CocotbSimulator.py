@@ -180,6 +180,6 @@ class Simulator(BaseSimulator):
 			fileHandle.write(cocotbMakefileContent)
 
 		# execute make
-		make = Make(self.Host.Platform, logger=self.Host.Logger)
+		make = Make(self.Host.Platform, self.DryRun, logger=self.Logger)
 		if self._guiMode: make.Parameters[Make.SwitchGui] = 1
 		testbench.Result = make.RunCocotb()

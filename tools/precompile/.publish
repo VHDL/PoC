@@ -2,7 +2,7 @@
 .gitempty
 
 # Compile Scripts
-shared.psm1
+precompile.psm1
 shared.sh
 
 compile-altera.ps1
