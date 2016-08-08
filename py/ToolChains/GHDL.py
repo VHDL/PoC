@@ -310,8 +310,7 @@ class GHDL(Executable):
 		_name =     "wave"
 
 	class SwitchWaveformSelect(metaclass=LongValuedFlagArgument):
-		# _name =     "wave-opt-file"		# requires GHDL update
-		_name =     "wave-option-file"
+		_name =     "wave-opt-file"		# requires GHDL update
 
 	RunOptions = CommandLineArgumentList(
 		SwitchIEEEAsserts,
