@@ -42,11 +42,12 @@ else:
 
 
 # load dependencies
+from datetime                   import datetime
 from pathlib                    import Path
 
-from Base.Project                import ToolChain, Tool
-from Base.Compiler              import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
-from PoC.Entity                  import WildCard
+from Base.Project               import ToolChain, Tool
+from Base.Compiler              import Compiler as BaseCompiler, CompilerException, SkipableCompilerException, CompileState
+from PoC.Entity                 import WildCard
 from ToolChains.Altera.Quartus  import QuartusException, Quartus, QuartusSettingsFile, QuartusProjectFile
 
 
@@ -66,21 +67,35 @@ class Compiler(BaseCompiler):
 		self._PrepareCompiler()
 
 	def _PrepareCompiler(self):
-		self._LogVerbose("Preparing Quartus-II Map (quartus_map).")
+		super()._PrepareCompiler()
+
 		quartusSection = self.Host.PoCConfig['INSTALL.Altera.Quartus']
 		binaryPath = Path(quartusSection['BinaryDirectory'])
 		version =  quartusSection['Version']
-		self._toolChain =    Quartus(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain =    Quartus(self.Host.Platform, self.DryRun, binaryPath, version, logger=self.Logger)
 
 	def RunAll(self, fqnList, *args, **kwargs):
-		for fqn in fqnList:
-			entity = fqn.Entity
-			if (isinstance(entity, WildCard)):
-				for netlist in entity.GetQuartusNetlists():
+		"""Run a list of netlist compilations. Expand wildcards to all selected netlists."""
+		self._testSuite.StartTimer()
+		self.Logger.BaseIndent = int(len(fqnList) > 1)
+		try:
+			for fqn in fqnList:
+				entity = fqn.Entity
+				if (isinstance(entity, WildCard)):
+					self.Logger.BaseIndent = 1
+					for netlist in entity.GetQuartusNetlists():
+						self.TryRun(netlist, *args, **kwargs)
+				else:
+					netlist = entity.QuartusNetlist
 					self.TryRun(netlist, *args, **kwargs)
-			else:
-				netlist = entity.QuartusNetlist
-				self.TryRun(netlist, *args, **kwargs)
+		except KeyboardInterrupt:
+			self._LogError("Received a keyboard interrupt.")
+		finally:
+			self._testSuite.StopTimer()
+
+		self.PrintOverallCompileReport()
+
+		return self._testSuite.IsAllSuccess
 
 	def Run(self, netlist, board):
 		super().Run(netlist, board)
@@ -89,18 +104,30 @@ class Compiler(BaseCompiler):
 		netlist.QsfFile = self.Directories.Working / (netlist.ModuleName + ".qsf")
 
 		self._WriteQuartusProjectFile(netlist, board.Device)
+		self._prepareTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Executing pre-processing tasks...")
+		self._state = CompileState.PreCopy
 		self._RunPreCopy(netlist)
+		self._state = CompileState.PrePatch
 		self._RunPreReplace(netlist)
+		self._preTasksTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Running Altera Quartus Map...")
+		self._state = CompileState.Compile
 		self._RunCompile(netlist)
+		self._compileTime = self._GetTimeDeltaSinceLastEvent()
 
 		self._LogNormal("Executing post-processing tasks...")
+		self._state = CompileState.PostCopy
 		self._RunPostCopy(netlist)
+		self._state = CompileState.PostPatch
 		self._RunPostReplace(netlist)
+		self._state = CompileState.PostDelete
 		self._RunPostDelete(netlist)
+		self._postTasksTime = self._GetTimeDeltaSinceLastEvent()
+
+		self._endAt = datetime.now()
 
 	def _WriteSpecialSectionIntoConfig(self, device):
 		# add the key Device to section SPECIAL at runtime to change interpolation results

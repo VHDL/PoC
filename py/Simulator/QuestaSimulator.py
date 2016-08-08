@@ -81,7 +81,7 @@ class Simulator(BaseSimulator):
 		questaSection = self.Host.PoCConfig[sectionName]
 		binaryPath = Path(questaSection['BinaryDirectory'])
 		version = questaSection['Version']
-		self._toolChain = QuestaSim(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain = QuestaSim(self.Host.Platform, self.DryRun, binaryPath, version, logger=self.Logger)
 
 	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None, guiMode=False):
 		# TODO: refactor into a ModelSim module, shared by QuestaSim and Cocotb (-> MixIn class)?
