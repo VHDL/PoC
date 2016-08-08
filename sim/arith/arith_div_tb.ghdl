@@ -1,0 +1,14 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/arith_div_tb/clk
+/arith_div_tb/rst
+/arith_div_tb/start
+/arith_div_tb/ready
+/arith_div_tb/a
+/arith_div_tb/d
+/arith_div_tb/q
+/arith_div_tb/r
+/arith_div_tb/z
