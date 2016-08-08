@@ -50,7 +50,7 @@ begin
       --q1   => reg1,
       --q2   => reg2
 		--);
-	
+
 	 ram0 : entity PoC.ocram_tdp
     generic map (
       A_BITS => A_BITS,
