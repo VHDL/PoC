@@ -91,7 +91,7 @@ entity sata_Transceiver_Series7_GTPE2 is
 		OOB_TX_Complete						: out	std_logic_vector(PORTS - 1 downto 0);
 		OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
 		OOB_HandshakeComplete			: in	std_logic_vector(PORTS - 1 downto 0);
-		OOB_AlignDetected    			: in	std_logic_vector(PORTS - 1 downto 0);
+		OOB_AlignDetected					: in	std_logic_vector(PORTS - 1 downto 0);
 
 		TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 		TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
@@ -134,34 +134,182 @@ architecture rtl of sata_Transceiver_Series7_GTPE2 is
 		end case;
 	end function;
 
+	function get_FeedbackClockDivider(RefClock_Freq : FREQ) return positive is
+	begin
+		if		(RefClock_Freq = 100 MHz) then	return 3;
+		elsif (RefClock_Freq = 150 MHz) then	return 4;
+		elsif (RefClock_Freq = 200 MHz) then	return 3;
+		else																	return 0;
+		end if;
+	end function;
+
+	function get_ReferenceClockDivider(RefClock_Freq : FREQ) return positive is
+	begin
+		if		(RefClock_Freq = 100 MHz) then	return 1;
+		elsif (RefClock_Freq = 150 MHz) then	return 1;
+		elsif (RefClock_Freq = 200 MHz) then	return 2;
+		else																	return 0;
+		end if;
+	end function;
+
+	constant PLL0_FEEDBACK_CLOCK_DIVIDER	: positive := get_FeedbackClockDivider(REFCLOCK_FREQ);
+	constant PLL0_REFERENCE_CLOCK_DIVIDER	: positive := get_ReferenceClockDivider(REFCLOCK_FREQ);
+
+	signal QuadPLL_PowerDown			: std_logic_vector(0 downto 0);
+	signal QuadPLL_Reset					: std_logic_vector(0 downto 0);
+	signal QuadPLL_Locked_async		: std_logic_vector(0 downto 0);
+	signal QuadPLL_HFClock				: std_logic_vector(0 downto 0);
+	signal QuadPLL_RefClock				: std_logic_vector(0 downto 0);
+
+	signal QuadPLL_DRP_Clock			: std_logic;
+	signal QuadPLL_DRP_Enable			: std_logic;
+	signal QuadPLL_DRP_ReadWrite	: std_logic;
+	signal QuadPLL_DRP_Address		: T_XIL_DRP_ADDRESS;
+	signal QuadPLL_DRP_DataIn			: T_XIL_DRP_DATA;
+	signal QuadPLL_DRP_DataOut		: T_XIL_DRP_DATA;
+	signal QuadPLL_DRP_Ack				: std_logic;
+
 begin
 
 -- ==================================================================
 -- Assert statements
 -- ==================================================================
---	assert (C_DEVICE_INFO.VendOR = VendOR_XILINX)								report "This is a vendor dependent component. Vendor must be Xilinx!"						severity FAILURE;
+--	assert (C_DEVICE_INFO.Vendor = Vendor_XILINX)								report "This is a vendor dependent component. Vendor must be Xilinx!"						severity FAILURE;
 --	assert (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTPE2)	report "This is a GTPE2 wrapper component."																			severity FAILURE;
 --	assert (C_DEVICE_INFO.DEVICE = DEVICE_KINTEX7)							report "Device " & T_DEVICE'image(C_DEVICE_INFO.DEVICE) & " not yet supported."	severity FAILURE;
 	assert (PORTS <= 4)																					report "To many ports per transceiver."																					severity FAILURE;
 
---	==================================================================
--- data path buffers
---	==================================================================
+	-- =========================================================================
+	-- GTP Power and Clock control
+	-- =========================================================================
+	QuadPLL_PowerDown(0)		<= slv_and(PowerDown);
+	QuadPLL_Reset(0)				<= QuadPLL_PowerDown(0) or slv_and(ClockNetwork_Reset);
+
+	QuadPLL_DRP_Clock				<= '0';
+	QuadPLL_DRP_Enable			<= '0';
+	QuadPLL_DRP_ReadWrite		<= '0';
+	QuadPLL_DRP_Address			<= x"0000";
+	QuadPLL_DRP_DataIn			<= x"0000";
+	--	<float>							<= QuadPLL_DRP_DataOut;
+	--	<float>							<= QuadPLL_DRP_Ack;
+
+	QuadPLL : GTPE2_COMMON
+		generic map (
+			-- Simulation attributes
+			SIM_RESET_SPEEDUP		=> "TRUE",
+			SIM_PLL0REFCLK_SEL	=> "111",									-- select GTGREFCLK0 (from fabric)
+			SIM_PLL1REFCLK_SEL	=> "001",									-- select GTREFCLK0 (from IBUFDS_GTE2)
+			SIM_VERSION					=> ("2.0"),
+
+			PLL0_FBDIV					=> PLL0_FEEDBACK_CLOCK_DIVIDER,
+			PLL0_FBDIV_45				=> 5,
+			PLL0_REFCLK_DIV			=> PLL0_REFERENCE_CLOCK_DIVIDER,
+			PLL1_FBDIV					=> 4,
+			PLL1_FBDIV_45				=> 5,
+			PLL1_REFCLK_DIV			=> 1,
+
+			-- COMMON BLOCK Attributes
+			BIAS_CFG						=> x"0000000000050001",
+			COMMON_CFG					=> x"00000000",
+			PLL_CLKOUT_CFG			=> x"00",
+			-- Reserved Attributes
+			RSVD_ATTR0					=> x"0000",
+			RSVD_ATTR1					=> x"0000",
+			-- PLL Attributes
+			PLL0_CFG						=> x"01F03DC",
+			PLL0_DMON_CFG				=> '0',
+			PLL0_INIT_CFG				=> x"00001E",
+			PLL0_LOCK_CFG				=> x"1E8",
+			PLL1_CFG						=> x"01F03DC",
+			PLL1_DMON_CFG				=> '0',
+			PLL1_INIT_CFG				=> x"00001E",
+			PLL1_LOCK_CFG				=> x"1E8"
+		)
+		port map (
+			-- Clock inputs
+			GTGREFCLK0					=> VSS_Common_In.RefClockIn_150_MHz,	-- from fabric
+			GTGREFCLK1					=> VSS_Common_In.RefClockIn_150_MHz,	-- from fabric
+			GTREFCLK0						=> '0',																-- from IBUFDS_GTE2
+			GTREFCLK1						=> '0',																-- from IBUFDS_GTE2
+			GTEASTREFCLK0				=> '0',																-- from previous GTPE2
+			GTEASTREFCLK1				=> '0',																-- from previous GTPE2
+			GTWESTREFCLK0				=> '0',																-- from next GTPE2
+			GTWESTREFCLK1				=> '0',																-- from next GTPE2
+
+			-- PLL 0 - power-down and resets
+			PLL0PD							=> QuadPLL_PowerDown(0),
+			PLL0RESET						=> QuadPLL_Reset(0),
+			-- PLL 0 -
+			PLL0REFCLKSEL				=> "111",									-- select GTGREFCLK0 (from fabric)
+			PLL0REFCLKLOST			=> open,
+			PLL0FBCLKLOST				=> open,
+			PLL0LOCKDETCLK			=> '0',
+			PLL0LOCKEN					=> '1',
+			PLL0LOCK						=> QuadPLL_Locked_async(0),
+			-- PLL 0 - clock output
+			PLL0OUTCLK					=> QuadPLL_HFClock(0),
+			PLL0OUTREFCLK				=> QuadPLL_RefClock(0),
+			REFCLKOUTMONITOR0		=> open,
+
+			-- PLL 1 - power-down and resets
+			PLL1PD							=> '1',
+			PLL1RESET						=> '0',
+			-- PLL 0 -
+			PLL1REFCLKSEL				=> "001",									-- select GTREFCLK0 (from IBUFDS_GTE2)
+			PLL1REFCLKLOST			=> open,
+			PLL1FBCLKLOST				=> open,
+			PLL1LOCKDETCLK			=> '0',
+			PLL1LOCKEN					=> '1',
+			PLL1LOCK						=> open,
+			-- PLL 0 - clock output
+			PLL1OUTCLK					=> open,
+			PLL1OUTREFCLK				=> open,
+			REFCLKOUTMONITOR1		=> open,
+
+			-- unknown ports
+			BGRCALOVRDENB				=> '1',
+			PLLRSVD1						=> "0000000000000000",
+			PLLRSVD2						=> "00000",
+			-- RX AFE Ports
+			PMARSVDOUT					=> open,
+			BGBYPASSB						=> '1',
+			BGMONITORENB				=> '1',
+			BGPDB								=> '1',
+			BGRCALOVRD					=> "11111",
+			PMARSVD							=> "00000000",
+			RCALENB							=> '1',
+			-- Digital monitor output
+			DMONITOROUT					=> open,
+			-- Dynamic Reconfiguration Port (DRP)
+			DRPCLK							=> QuadPLL_DRP_Clock,									-- @DRP_Clock:
+			DRPEN								=> QuadPLL_DRP_Enable,								-- @DRP_Clock:
+			DRPWE								=> QuadPLL_DRP_ReadWrite,							-- @DRP_Clock:
+			DRPADDR							=> QuadPLL_DRP_Address(7 downto 0),		-- @DRP_Clock:
+			DRPDI								=> QuadPLL_DRP_DataIn,								-- @DRP_Clock:
+			DRPDO								=> QuadPLL_DRP_DataOut,								-- @DRP_Clock:
+			DRPRDY							=> QuadPLL_DRP_Ack										-- @DRP_Clock:
+		);
+
+	-- ===========================================================================
+	-- Port instance
+	-- ===========================================================================
 	genGTPE2 : for i in 0 to (PORTS	- 1) generate
 		constant CLOCK_DIVIDER_SELECTION		:	std_logic_vector(2 downto 0)	:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(i));
 
-		constant GTP_PCS_RSVD_ATTR					: bit_vector(47 downto 0)				:= (
-			3 =>			'0',							-- select alternative OOB circuit clock source; 0 => sysclk; 1 => CLKRSVD(0)
-			6 =>			'1',							-- reserved; set to '1'
-			8 =>			'1',							-- power up OOB circuit
-			others =>	'0'								-- not documented; set to "0..0" ?
-		);
+		constant QUADPLL_PORTID							: natural	:= 0;
 
-		constant GTP_RXCDR_CFG							: bit_vector(71 downto 0)				:=
-			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_1), x"0380008BFF40100008",					-- 1.5 GHz line rate		- Xilinx AR# 53364 - CDR settings for SSC (spread spectrum clocking)
-			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_2), x"0388008BFF40200008",					-- 3.0 GHz line rate
-			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_3), x"0380008BFF10200010",					-- 6.0 GHz line rate
-																															 x"03000023ff20400020")));			-- default value from wizard
+		constant GTP_PCS_RSVD_ATTR					: bit_vector(47 downto 0)				:= x"000000000100";	-- GTXE2 (
+-- GTXE2 			3 =>			'0',							-- select alternative OOB circuit clock source; 0 => sysclk; 1 => CLKRSVD(0)
+-- GTXE2 			6 =>			'1',							-- reserved; set to '1'
+-- GTXE2 			8 =>			'1',							-- power up OOB circuit
+-- GTXE2 			others =>	'0'								-- not documented; set to "0..0" ?
+-- GTXE2 		);
+
+		constant GTP_RXCDR_CFG							: bit_vector(83 downto 0)				:=
+			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_1), x"0000047FE106024481010",				-- 1.5 GHz line rate		- from wizard generated code
+			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_2), x"0000047FE206024481010",				-- 3.0 GHz line rate
+			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_3), x"0000087FE206024441010",				-- 6.0 GHz line rate
+																															 x"0000087FE206024441010")));			-- default value from wizard
 
 
 		-- Control FSM @SATA_Clock
@@ -180,34 +328,23 @@ begin
 
 		attribute MAXSKEW of ClkNet_Reset : signal is "1 ns"; -- required by sata_Transceiver_ClockStable
 
+		signal QuadPLL_Locked								: std_logic;
+
 		-- internal version of output signals
 		signal ResetDone_i									: std_logic							:= '0';
 		signal ClockNetwork_ResetDone_i 		: std_logic;
-		signal SATA_Clock_i 				     		: std_logic;
-		signal SATA_Clock_Stable_i      		: std_logic 						:= '0';
+		signal GTP_UserClock 						 		: std_logic;
+		signal GTP_UserClock2 					 		: std_logic;
+		signal SATA_Clock_i 						 		: std_logic;
+		signal SATA_Clock_Stable_i					: std_logic 						:= '0';
 
-		-- Clock signals
-		signal GTP_RefClockGlobal						: std_logic;
-		signal GTP_RefClockNorth						: T_SLV_2;
-		signal GTP_RefClock									: T_SLV_2;
-		signal GTP_RefClockSouth						: T_SLV_2;
-		signal GTP_QPLLClock								: std_logic;
-		signal GTP_QPLLRefClock							: std_logic;
-
-		signal GTP_CPLL_Locked_async				: std_logic;
-		signal GTP_CPLL_Locked							: std_logic;
 		signal GTP_TX_RefClockOut						: std_logic;
 		signal GTP_RX_RefClockOut_float			: std_logic;
 
-
 		-- PowerDown signals
 		signal Trans_PowerDown							: std_logic;
-		signal GTP_CPLL_PowerDown						: std_logic;
 		signal GTP_TX_PowerDown							: T_SLV_2;
 		signal GTP_RX_PowerDown							: T_SLV_2;
-
-		-- CPLL reset
-		signal GTP_CPLL_Reset								: std_logic;
 
 		-- Reset both TX & RX
 		signal GTP_Reset										: std_logic;
@@ -216,10 +353,12 @@ begin
 		signal GTP_TX_Reset									: std_logic;
 		signal GTP_TX_PCSReset							: std_logic;
 		signal GTP_TX_PMAReset							: std_logic;
+		signal GTP_TX_PMAResetDone					: std_logic;
 		-- RX resets
 		signal GTP_RX_Reset									: std_logic;
 		signal GTP_RX_PCSReset							: std_logic;
 		signal GTP_RX_PMAReset							: std_logic;
+		signal GTP_RX_PMAResetDone					: std_logic;
 		signal GTP_RX_BufferReset						: std_logic;
 
 		signal GTP_TX_ResetDone							: std_logic;
@@ -256,7 +395,7 @@ begin
 		signal GTP_DRP_DataOut							: T_XIL_DRP_DATA;
 		signal GTP_DRP_Ack									: std_logic;
 
-		signal GTP_DigitalMonitor						: T_SLV_8;
+		signal GTP_DigitalMonitor						: T_SLV_16;
 		signal GTP_RX_Monitor_sel						: T_SLV_2;
 		signal GTP_RX_Monitor_Data					: std_logic_vector(6 downto 0);
 
@@ -345,16 +484,11 @@ begin
 		signal GTP_RX_CDR_Hold							: std_logic 				:= '1';
 
 		signal GTP_RX_Data									: T_SLV_32;
-		signal GTP_RX_Data_float						: T_SLV_32;																-- open
 		signal GTP_RX_CommaDetected					: std_logic;															-- unused
 		signal GTP_RX_CharIsComma						: T_SLV_4;																-- unused
-		signal GTP_RX_CharIsComma_float			: T_SLV_4;																-- open
 		signal GTP_RX_CharIsK								: T_SLV_4;
-		signal GTP_RX_CharIsK_float					: T_SLV_4;																-- open
 		signal GTP_RX_DisparityError				: T_SLV_4;																-- unused
-		signal GTP_RX_DisparityError_float	: T_SLV_4;																-- open
 		signal GTP_RX_NotInTableError				: T_SLV_4;																-- unused
-		signal GTP_RX_NotInTableError_float	: T_SLV_4;																-- open
 		signal GTP_RX_ByteIsAligned					: std_logic;
 		signal GTP_RX_ByteRealign						: std_logic;															-- unused
 
@@ -369,21 +503,12 @@ begin
 		-- keep internal clock nets, so timing constrains from UCF can find them
 		attribute KEEP of GTP_TX_RefClockOut	: signal is TRUE;
 
-
 	begin
-		assert FALSE report "Port:    " & integer'image(i)																											severity NOTE;
-		assert FALSE report "  Init. SATA Generation:  Gen" & integer'image(INITIAL_SATA_GENERATIONS_I(i) + 1)	severity NOTE;
+		assert FALSE report "Port: " & integer'image(i)																											severity NOTE;
+--		assert FALSE report "	Init. SATA Generation:	Gen" & integer'image(INITIAL_SATA_GENERATIONS_I(i) + 1)	severity NOTE;
 		assert ((RP_SATAGeneration(i) = SATA_GENERATION_1) or
 						(RP_SATAGeneration(i) = SATA_GENERATION_2) or
 						(RP_SATAGeneration(i) = SATA_GENERATION_3))		report "Unsupported SATA generation."							severity FAILURE;
-
-		-- clock signals
-		GTP_QPLLRefClock							<= '0';
-		GTP_QPLLClock									<= '0';
-		GTP_RefClockGlobal						<= VSS_Common_In.RefClockIn_150_MHz;
-		GTP_RefClockNorth							<= "00";
-		GTP_RefClockSouth							<= "00";
-		GTP_RefClock									<= "00";
 
 		-- ======================================================================
 		-- ClockNetwork
@@ -396,19 +521,28 @@ begin
 		-- The ClockNetwork is reset (signal ClkNet_Reset) when PowerDown = '1' or
 		-- ClockNetwork_Reset = '1'.
 		-- ======================================================================
+		ClkNet_Reset <= PowerDown(i) or ClockNetwork_Reset(i);
 
-		-- ClkNet_Reset, ClkNet_Reset_Done and SATA_Clock_i will be connected to
-		-- the appropiate ports of the ClockNetwork module.
-		BUFG_RefClockOut : BUFG
+		ClkNet : entity PoC.sata_Transceiver_Series7_GTPE2_ClockNetwork
+			generic map (
+				DEBUG											=> DEBUG,
+				CLOCK_IN_FREQ							=> REFCLOCK_FREQ,										-- 150 MHz
+				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(i)			-- intial SATA Generation
+			)
 			port map (
-				I						=> GTP_TX_RefClockOut,
-				O						=> SATA_Clock_i
+				ClockIn_150MHz						=> VSS_Common_In.RefClockIn_150_MHz,
+
+				ClockNetwork_Reset				=> ClkNet_Reset,
+				ClockNetwork_ResetDone		=> ClkNet_ResetDone,
+
+				SATAGeneration						=> RP_SATAGeneration(i),
+
+				GTP_Clock_2X							=> GTP_UserClock,
+				GTP_Clock_4X							=> GTP_UserClock2
 			);
 
-		ClkNet_Reset        	<= PowerDown(i) or ClockNetwork_Reset(i);
-		ClkNet_ResetDone 			<= not ClkNet_Reset;
-
-		SATA_Clock(i)					<= SATA_Clock_i;
+		SATA_Clock_i			<= GTP_UserClock2;
+		SATA_Clock(i)			<= SATA_Clock_i;
 
 		-- ======================================================================
 		-- Use generic module to generate SATA_Clock_Stable and ResetDone
@@ -421,7 +555,8 @@ begin
 				SATA_Clock				=> SATA_Clock_i,
 				Kill_Stable				=> Kill_SATA_Clock_Stable,
 				ResetDone					=> ResetDone_i,
-				SATA_Clock_Stable => SATA_Clock_Stable_i);
+				SATA_Clock_Stable => SATA_Clock_Stable_i
+			);
 
 		SATA_Clock_Stable(i) 	<= SATA_Clock_Stable_i;
 		ResetDone(i)					<= ResetDone_i;
@@ -429,7 +564,6 @@ begin
 		-- =========================================================================
 		-- Control FSM for Transceiver Status
 		-- =========================================================================
-
 		process(SATA_Clock_i)
 		begin
 			if rising_edge(SATA_Clock_i) then
@@ -455,7 +589,7 @@ begin
 			Error_i.Common	<= SATA_TRANSCEIVER_ERROR_NONE;
 
 			Kill_SATA_Clock_Stable <= '0';
-			GTP_Reset_by_FSM  <= '0'; -- if asserted, then NextState must be ST_RESET_BY_FSM
+			GTP_Reset_by_FSM	<= '0'; -- if asserted, then NextState must be ST_RESET_BY_FSM
 			case State is
 				when ST_RESET =>
 					Status_i			<= SATA_TRANSCEIVER_STATUS_INIT;
@@ -470,7 +604,7 @@ begin
 						if (GTP_TX_ResetDone = '0') then
 							-- TX seems not to get ready. Try Again.
 							GTP_Reset_by_FSM <= '1';
-							NextState   <= ST_RESET_BY_FSM;
+							NextState	 <= ST_RESET_BY_FSM;
 						else
 							NextState			<= ST_READY;
 						end if;
@@ -576,22 +710,20 @@ begin
 		-- =========================================================================
 		-- GTP Power and Clock control
 		-- =========================================================================
-		GTP_CPLL_PowerDown				<= PowerDown(i);
-		GTP_TX_PowerDown					<= PowerDown(i) & PowerDown(i);
-		GTP_RX_PowerDown					<= PowerDown(i) & PowerDown(i);
+		GTP_TX_PowerDown									<= PowerDown(i) & PowerDown(i);
+		GTP_RX_PowerDown									<= PowerDown(i) & PowerDown(i);
 
-		GTP_CPLL_Reset						<= PowerDown(i) or ClockNetwork_Reset(i);
-		ClockNetwork_ResetDone_i	<= GTP_CPLL_Locked_async and ClkNet_ResetDone;	-- @async
-		ClockNetwork_ResetDone(i) <= ClockNetwork_ResetDone_i;
+		ClockNetwork_ResetDone_i					<= QuadPLL_Locked_async(QUADPLL_PORTID) and ClkNet_ResetDone;	-- @async
+		ClockNetwork_ResetDone(i)					<= ClockNetwork_ResetDone_i;
 
 
 		-- =========================================================================
 		-- Reset control
 		-- =========================================================================
 		-- Transceiver resets
-		--   GTP_CPLL_Locked will be asserted some clock cycles after GTP_CPLL_Locked_async
-		--   Thus GTP_Reset will be deasserted some time after the CPLL gets locked.
-		GTP_Reset											<= (not GTP_CPLL_Locked_async) or (not GTP_CPLL_Locked) or GTP_Reset_by_FSM_d; -- or GTP_ReloadConfig;
+		--	 QuadPLL_Locked will be asserted some clock cycles after QuadPLL_Locked_async
+		--	 Thus GTP_Reset will be deasserted some time after the QuadPLL gets locked.
+		GTP_Reset											<= (not QuadPLL_Locked_async(QUADPLL_PORTID)) or (not QuadPLL_Locked) or GTP_Reset_by_FSM_d; -- or GTP_ReloadConfig;
 		-- TX resets
 		GTP_TX_Reset									<= GTP_Reset;
 		GTP_TX_PMAReset								<= '0';
@@ -605,8 +737,8 @@ begin
 		-- =========================================================================
 		-- LineRate control / linerate clock divider selection / reconfiguration port
 		-- =========================================================================
---		GTP_DRP_Enable										<= '0';
---		GTP_DRP_ReadWrite										<= '0';
+--		GTP_DRP_Enable								<= '0';
+--		GTP_DRP_ReadWrite							<= '0';
 --		GTP_DRP_Address								<= "000000000";
 --		GTP_DRP_DataIn								<= x"0000";
 		--	<float>										<= GTP_DRP_DataOut;
@@ -722,13 +854,27 @@ begin
 		-- Data path / status / error detection
 		-- ==================================================================
 		-- TX path
-		GTP_TX_Data							<= TX_Data(i)			when rising_edge(SATA_Clock_i);
-		GTP_TX_CharIsK					<= TX_CharIsK(i)	when rising_edge(SATA_Clock_i);
+		GTP_TX_Data							<= TX_Data(i)			;--when rising_edge(SATA_Clock_i);
+		GTP_TX_CharIsK					<= TX_CharIsK(i)	;--when rising_edge(SATA_Clock_i);
 
 		-- RX path
-		RX_Data(i)							<= GTP_RX_Data		when rising_edge(SATA_Clock_i);
-		RX_CharIsK(i)						<= GTP_RX_CharIsK	when rising_edge(SATA_Clock_i);
+--		RX_Data(i)							<= GTP_RX_Data		;--when rising_edge(SATA_Clock_i);
+		RX_CharIsK(i)						<= GTP_RX_CharIsK	;--when rising_edge(SATA_Clock_i);
 		RX_Valid(i)							<= '1'; -- do not use undocumented RXVALID output of transceiver
+
+		RX_Align : entity PoC.misc_ByteAligner
+			generic map (
+				REGISTERED	=> FALSE,
+				WORD_BITS		=> 32,
+				BYTE_BITS		=> 8
+			)
+			port map (
+				Clock				=> SATA_Clock_i,
+				In_Align		=> GTP_RX_CharIsK,
+				In_Data			=> GTP_RX_Data,
+--				Out_Align		=> RX_CharIsK(i),
+				Out_Data		=> RX_Data(i)
+			);
 
 --		GTP_PhyStatus
 --		GTP_TX_BufferStatus
@@ -738,14 +884,14 @@ begin
 
 		sync1_RXUserClock : entity PoC.sync_Bits_Xilinx
 			generic map (
-				BITS			=> 2															-- number of BITS to synchronize
+				BITS			=> 2																			-- number of BITS to synchronize
 			)
 			port map (
-				Clock			=> SATA_Clock_i,									-- Clock to be synchronized to
-				Input(0)	=> GTP_CPLL_Locked_async,					-- Data to be synchronized
-				Input(1)	=> GTP_RX_ElectricalIDLE_async,		--
-				Output(0)	=> GTP_CPLL_Locked,								-- synchronised data
-				Output(1)	=> GTP_RX_ElectricalIDLE					--
+				Clock			=> SATA_Clock_i,													-- Clock to be synchronized to
+				Input(0)	=> QuadPLL_Locked_async(QUADPLL_PORTID),	-- Data to be synchronized
+				Input(1)	=> GTP_RX_ElectricalIDLE_async,						--
+				Output(0)	=> QuadPLL_Locked,												-- synchronised data
+				Output(1)	=> GTP_RX_ElectricalIDLE									--
 			);
 
 		filter1 : entity PoC.filter_and
@@ -873,30 +1019,21 @@ begin
 				SIM_RECEIVER_DETECT_PASS								=> "TRUE",
 				SIM_RESET_SPEEDUP												=> "TRUE",										-- set to "TRUE" to speed up simulation reset
 				SIM_TX_EIDLE_DRIVE_LEVEL								=> "X",
-				SIM_VERSION															=> "4.0",
-				SIM_CPLLREFCLK_SEL											=> "111",											-- GTGREFCLK (GTP_RefClockGlobal) is used
+				SIM_VERSION															=> "2.0",		-- GTXE2 "4.0"
 
-				-- Channel PLL clock attributes																				-- A reference input clock of 150 MHz,
-				CPLL_REFCLK_DIV													=> 1,													--	divided by 1,
-				CPLL_FBDIV															=> 4,													--	multiplied by 20
-				CPLL_FBDIV_45														=> 5,													--	=> f_VCO = 3,000 MHz, which is in range of 1,600..3,300 MHz
-				CPLL_CFG																=> x"BC07DC",									--
-				CPLL_INIT_CFG														=> x"00001E",									-- reserved; CPLLRESET_TIME: 0x01E; Represents the time duration to apply internal CPLL reset.
-				CPLL_LOCK_CFG														=> x"01E8",										--
-				SATA_CPLL_CFG														=> "VCO_3000MHZ",							--
+				-- PLL clock attributes																								-- A reference input clock of 150 MHz,
+ 				SATA_PLL_CFG														=> "VCO_3000MHZ",							--
 				RXOUT_DIV																=> 4,													--
 				TXOUT_DIV																=> 4,													--
 
 				TX_XCLK_SEL															=> "TXOUT",
 				RX_XCLK_SEL															=> "RXREC",
 
-				TX_CLK25_DIV														=> 6,													-- Clock divider for TX internal working clock?
-				RX_CLK25_DIV														=> 6,													-- Clock divider for RX internal working clock?
+				TX_CLK25_DIV														=> 8,	-- GTXE2 6,													-- Clock divider for TX internal working clock?
+				RX_CLK25_DIV														=> 8,	-- GTXE2 6,													-- Clock divider for RX internal working clock?
 				OUTREFCLK_SEL_INV												=> "11",											-- Select signal for GTREFCLKMONITOR output. 0 => Non-inverted GTREFCLKMONITOR output; 1 => Inverted GTREFCLKMONITOR output
 
 				-- Power-Down attributes
-				RX_CLKMUX_PD														=> '1',												-- TODO: is this low-active?
-				TX_CLKMUX_PD														=> '1',												-- TODO: is this low-active?
 				PD_TRANS_TIME_FROM_P2										=> x"03c",
 				PD_TRANS_TIME_NONE_P2										=> x"3c",
 				PD_TRANS_TIME_TO_P2											=> x"64",
@@ -910,12 +1047,10 @@ begin
 				RXISCANRESET_TIME												=> "00001",										-- reserved; represents the time duration to apply the RX EYESCAN reset
 				RXPMARESET_TIME													=> "00011",										-- reserved; represents the time duration to apply a RX PMA reset
 				RXPCSRESET_TIME													=> "00001",										-- reserved; represents the time duration to apply a RX PCS reset
-				RXDFELPMRESET_TIME											=> "0001111",									-- reserved; represents the time duration to apply the RX DFE reset
 				RXBUFRESET_TIME													=> "00001",										-- reserved; represents the time duration to apply the RX BUFFER reset
 
 				-- TX buffer attributes
 				TX_DATA_WIDTH														=> 40,
-				TX_INT_DATAWIDTH												=> 1,
 				TXBUF_EN																=> "TRUE",
 				TXBUF_RESET_ON_RATE_CHANGE							=> "TRUE",
 				TXPH_CFG																=> x"0780",
@@ -926,7 +1061,6 @@ begin
 				TXDLY_TAP_CFG														=> x"0000",
 
 				RX_DATA_WIDTH														=> 40,
-				RX_INT_DATAWIDTH												=> 1,
 				RXBUF_EN																=> "TRUE",
 				RX_BUFFER_CFG														=> "000000",
 				RXBUF_RESET_ON_CB_CHANGE								=> "TRUE",
@@ -951,7 +1085,7 @@ begin
 				-- RX byte and word alignment attributes
 				ALIGN_COMMA_DOUBLE											=> "FALSE",
 				ALIGN_COMMA_ENABLE											=> "1111111111",
-				ALIGN_COMMA_WORD												=> 4,													-- Align comma-byte => [byte3][byte2][byte1][comma0]
+				ALIGN_COMMA_WORD												=> 1,-- GTXE2 4,													-- Align comma-byte => [byte3][byte2][byte1][comma0]
 				ALIGN_MCOMMA_DET												=> "TRUE",
 				ALIGN_MCOMMA_VALUE											=> "1010000011",
 				ALIGN_PCOMMA_DET												=> "TRUE",
@@ -971,8 +1105,8 @@ begin
 				CLK_CORRECT_USE													=> "TRUE",
 				CBCC_DATA_SOURCE_SEL										=> "DECODED",									-- search clock correction sequence in decoded data stream (data + k-indicator, independent of disparity)
 				CLK_COR_KEEP_IDLE												=> "FALSE",										-- see UG476, p. 261
-				CLK_COR_MIN_LAT													=> 24,												-- 3..60, divisible by 4
-				CLK_COR_MAX_LAT													=> 31,												-- 3..60
+				CLK_COR_MIN_LAT													=> 12,	-- GTPE2	11	-- GTXE2 24,												-- GTXE2 3..60, divisible by 4
+				CLK_COR_MAX_LAT													=> 19,	-- GTPE2	16	-- GTXE2 31,												-- GTXE2 3..60
 				CLK_COR_PRECEDENCE											=> "TRUE",
 				CLK_COR_REPEAT_WAIT											=> 0,													-- 0 => ClockCorrection can occur at any time (see UG476, p. 261)
 				CLK_COR_SEQ_LEN													=> 4,
@@ -1008,7 +1142,7 @@ begin
 				FTS_LANE_DESKEW_EN											=> "FALSE",
 
 				-- RX margin analysis attributes
-				ES_EYE_SCAN_EN													=> "TRUE",
+				ES_EYE_SCAN_EN													=> "FALSE",	-- GTXE2 "TRUE",
 				ES_ERRDET_EN														=> "FALSE",
 				ES_CONTROL															=> "000000",
 				ES_HORZ_OFFSET													=> x"000",
@@ -1031,25 +1165,27 @@ begin
 				SATA_MAX_INIT														=> 22,
 				SATA_MIN_WAKE														=> 4,
 				SATA_MAX_WAKE														=> 7,
-				SAS_MAX_COM															=> 64,
 				SAS_MIN_COM															=> 36,
+				SAS_MAX_COM															=> 64,
 
 				-- PMA attributes
-				PMA_RSV																	=> x"00018480",						-- reserved; These bits relate to RXPI and are line rate dependent:
-																																					--	0x00018480 => Lower line rates: CPLL full range and 6 GHz = QPLL VCO rate < 6.6 GHz
-																																					--	0x001E7080 => Higher line rates: QPLL > 6.6 GHz
-				PMA_RSV2																=> x"2070",								-- PMA_RSV2(5) = 0; set to '1' if eye-scan circuit should be powered-up
+				PMA_RSV																	=> x"00000333",	-- GTXE2	x"00018480",						-- GTXE2: reserved; These bits relate to RXPI and are line rate dependent:
+																																					-- GTXE2: 	0x00018480 => Lower line rates: CPLL full range and 6 GHz = QPLL VCO rate < 6.6 GHz
+																																					-- GTXE2: 	0x001E7080 => Higher line rates: QPLL > 6.6 GHz
+				PMA_RSV2																=> x"00002040",						-- GTXE2: PMA_RSV2(5) = 0; set to '1' if eye-scan circuit should be powered-up
 				PMA_RSV3																=> "00",
 				PMA_RSV4																=> x"00000000",
-				RX_BIAS_CFG															=> "000000000100",
---				DMONITOR_CFG														=> x"000A00",
-				DMONITOR_CFG														=> x"000A01",							-- DMONITOR_CFG(0) enable digital monitor
+				PMA_RSV5																=> '0',	-- GTPE2
+				PMA_RSV6																=> '0',	-- GTPE2
+				PMA_RSV7																=> '0',	-- GTPE2
+				RX_BIAS_CFG															=> "0000111100110011",	-- GTXE2	"000000000100",
+				DMONITOR_CFG														=> x"000A00",	-- GTXE2	x"000A01",							-- GTXE2: DMONITOR_CFG(0) enable digital monitor
 				RX_CM_SEL																=> "11",									-- RX termination voltage: 00 => AVTT; 01 => GND; 10 => Floating; 11 => programmable (PMA_RSV(4) & RX_CM_TRIM)
-				RX_CM_TRIM															=> "011",									-- RX termination voltage: 1010 => 800 mV; 1011 => 850 mV; bit 3 is encoded in PMA_RSV2(4)
+				RX_CM_TRIM															=> "1010",-- GTXE2	"1011",										-- RX termination voltage: 1010 => 800 mV; 1011 => 850 mV
 				RX_DEBUG_CFG														=> "000000001000",				-- connect LPM HF to DMONITOROUT [6:0]
 				RX_OS_CFG																=> "0000010000000",
-				TERM_RCAL_CFG														=> "10000",								-- Controls the internal termination calibration circuit. This feature is intended for internal testing purposes only.
-				TERM_RCAL_OVRD													=> '0',										-- Selects whether the external 100?? precision resistor is connected to the MGTRREF pin or a value defined by TERM_RCAL_CFG [4:0]. This feature is intended for internal testing purposes only.
+				TERM_RCAL_CFG														=> "100001000010000",	-- GTXE2	"10000",								-- Controls the internal termination calibration circuit. This feature is intended for internal testing purposes only.
+				TERM_RCAL_OVRD													=> "000",	--GTXE2	'0',										-- Selects whether the external 100?? precision resistor is connected to the MGTRREF pin or a value defined by TERM_RCAL_CFG [4:0]. This feature is intended for internal testing purposes only.
 				TST_RSV																	=> x"00000000",
 				UCODEER_CLR															=> '0',
 
@@ -1064,7 +1200,7 @@ begin
 				RXCDR_FR_RESET_ON_EIDLE									=> '0',										-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_HOLD_DURING_EIDLE									=> '0',										-- feature not used due to spurious RX_ElectricalIdle
 				RXCDR_PH_RESET_ON_EIDLE									=> '0',										-- feature not used due to spurious RX_ElectricalIdle
-				RXCDR_LOCK_CFG													=> "010101",							-- [5:3] Window Size, [2:1] Delta Code, [0] Enable Detection (https://github.com/ShepardSiegel/ocpi/blob/master/coregen/pcie_4243_axi_k7_x4_125/source/pcie_7x_v1_3_gt_wrapper.v)
+				RXCDR_LOCK_CFG													=> "001001",	-- GTXE2	"010101",							-- [5:3] Window Size, [2:1] Delta Code, [0] Enable Detection (https://github.com/ShepardSiegel/ocpi/blob/master/coregen/pcie_4243_axi_k7_x4_125/source/pcie_7x_v1_3_gt_wrapper.v)
 
 				-- gearbox attributes
 				TXGEARBOX_EN														=> "FALSE",
@@ -1101,67 +1237,103 @@ begin
 				TX_RXDETECT_REF													=> "100",
 
 				-- RX equalizer attributes
---				RXLPM_HF_CFG														=> "00000011110000",			-- long channel; >2.5 dB loss
-				RXLPM_HF_CFG														=> "00000000000000",				-- short channel; <2.5 dB loss
---				RXLPM_LF_CFG														=> "00000011110000",			-- long channel; >2.5 dB loss
-				RXLPM_LF_CFG														=> "00000000000000",				-- short channel; <2.5 dB loss
-				RX_DFE_GAIN_CFG													=> x"020FEA",
-				RX_DFE_H2_CFG														=> "000000000000",
-				RX_DFE_H3_CFG														=> "000001000000",
-				RX_DFE_H4_CFG														=> "00011110000",
-				RX_DFE_H5_CFG														=> "00011100000",
-				RX_DFE_KL_CFG														=> "0000011111110",
-				RX_DFE_KL_CFG2													=> x"3010D90C",					-- ISE wizard
---				RX_DFE_KL_CFG2													=> x"301148AC",						-- Vivado wizard
-				RX_DFE_XYD_CFG													=> "0000000000000",
---				RX_DFE_LPM_CFG													=> x"0954",							-- ISE wizard
-				RX_DFE_LPM_CFG													=> x"0904",								-- AR# 45360
-				RX_DFE_LPM_HOLD_DURING_EIDLE						=> '0',
-				RX_DFE_UT_CFG														=> "10001111000000000",
-				RX_DFE_VP_CFG														=> "00011111100000011",		--03f03
+				RXLPM_HF_CFG														=> "00000011110000",			-- GTXE2: long channel; >2.5 dB loss
+-- GTXE2				RXLPM_HF_CFG														=> "00000000000000",				-- GTXE2: short channel; <2.5 dB loss
+				RXLPM_LF_CFG														=> "000000001111110000",			-- GTXE2: long channel; >2.5 dB loss
+-- GTXE2				RXLPM_LF_CFG														=> "00000000000000",				-- GTXE2: short channel; <2.5 dB loss
 
 				-- TX configurable driver attributes
-				TX_QPI_STATUS_EN												=> '0',
+				TX_PREDRIVER_MODE												=> '0',
 
-				-- TX configurable driver attributes
-				TX_PREDRIVER_MODE												=> '0'
+				-- new attributes for the GTPE2 transceiver compared to GTXE2
+				------------------ JTAG Attributes ---------------
+				ACJTAG_DEBUG_MODE												=> '0',
+				ACJTAG_MODE															=> '0',
+				ACJTAG_RESET														=> '0',
+				------------------ CDR Attributes ---------------
+				CFOK_CFG																=> x"49000040E80",
+				CFOK_CFG2																=> "0100000",
+				CFOK_CFG3																=> "0100000",
+				CFOK_CFG4																=> '0',
+				CFOK_CFG5																=> x"0",
+				CFOK_CFG6																=> "0000",
+				RXOSCALRESET_TIME												=> "00011",
+				RXOSCALRESET_TIMEOUT										=> "00000",
+				------------------ PMA Attributes ---------------
+				CLK_COMMON_SWING												=> '0',
+				RX_CLKMUX_EN														=> '1',
+				TX_CLKMUX_EN														=> '1',
+				ES_CLK_PHASE_SEL												=> '0',
+				USE_PCS_CLK_PHASE_SEL										=> '0',
+				------------------ RX Phase Interpolator Attributes---------------
+				RXPI_CFG0																=> "000",
+				RXPI_CFG1																=> '1',
+				RXPI_CFG2																=> '1',
+				--------------RX Equalizer Attributes-------------
+				ADAPT_CFG0															=> x"00000",
+				RXLPMRESET_TIME													=> "0001111",
+				RXLPM_BIAS_STARTUP_DISABLE							=> '0',
+				RXLPM_CFG																=> "0110",
+				RXLPM_CFG1															=> '0',
+				RXLPM_CM_CFG														=> '0',
+				RXLPM_GC_CFG														=> "111100010",
+				RXLPM_GC_CFG2														=> "001",
+				RXLPM_HF_CFG2														=> "01010",
+				RXLPM_HF_CFG3														=> "0000",
+				RXLPM_HOLD_DURING_EIDLE									=> '0',
+				RXLPM_INCM_CFG													=> '1',
+				RXLPM_IPCM_CFG													=> '0',
+				RXLPM_LF_CFG2														=> "01010",
+				RXLPM_OSINT_CFG													=> "100",
+				------------------ TX Phase Interpolator PPM Controller Attributes---------------
+				TXPI_CFG0																=> "00",
+				TXPI_CFG1																=> "00",
+				TXPI_CFG2																=> "00",
+				TXPI_CFG3																=> '0',
+				TXPI_CFG4																=> '0',
+				TXPI_CFG5																=> "000",
+				TXPI_GREY_SEL														=> '0',
+				TXPI_INVSTROBE_SEL											=> '0',
+				TXPI_PPMCLK_SEL													=> "TXUSRCLK2",
+				TXPI_PPM_CFG														=> x"00",
+				TXPI_SYNFREQ_PPM												=> "001",
+				------------------ LOOPBACK Attributes---------------
+				LOOPBACK_CFG														=> '0',
+				PMA_LOOPBACK_CFG												=> '0',
+				------------------RX OOB Signalling Attributes---------------
+				RXOOB_CLK_CFG														=> "PMA",
+				------------------TX OOB Signalling Attributes---------------
+				TXOOB_CFG																=> '0',
+				------------------RX Buffer Attributes---------------
+				RXSYNC_MULTILANE												=> '0',
+				RXSYNC_OVRD															=> '0',
+				RXSYNC_SKIP_DA													=> '0',
+				------------------TX Buffer Attributes---------------
+				TXSYNC_MULTILANE												=> '0',
+				TXSYNC_OVRD															=> '1',
+				TXSYNC_SKIP_DA													=> '0'
 			)
 			port map (
 				-- clock selects and clock inputs
-				CPLLREFCLKSEL										=> "111",													-- @async:		111 => use GTGREFCLK
-
-				GTREFCLK0												=> GTP_RefClock(0),								-- @clock:		selectable by CPLLREFCLKSEL = 001
-				GTREFCLK1												=> GTP_RefClock(1),								-- @clock:		selectable by CPLLREFCLKSEL = 010
-				GTNORTHREFCLK0									=> GTP_RefClockNorth(0),					-- @clock:		selectable by CPLLREFCLKSEL = 011
-				GTNORTHREFCLK1									=> GTP_RefClockNorth(1),					-- @clock:		selectable by CPLLREFCLKSEL = 100
-				GTSOUTHREFCLK0									=> GTP_RefClockSouth(0),					-- @clock:		selectable by CPLLREFCLKSEL = 101
-				GTSOUTHREFCLK1									=> GTP_RefClockSouth(1),					-- @clock:		selectable by CPLLREFCLKSEL = 110
-				GTGREFCLK												=> GTP_RefClockGlobal,						-- @clock:		selectable by CPLLREFCLKSEL = 111
-				QPLLCLK													=> GTP_QPLLClock,									-- @clock:		high-performance clock from QPLL (GHz)
-				QPLLREFCLK											=> GTP_QPLLRefClock,							-- @clock:		reference clock for QPLL bypassed (MHz)
-				GTREFCLKMONITOR									=> open,													-- @clock:		CPLL refclock-mux output
-
-				CPLLLOCKDETCLK									=> '0',														-- @clock:		CPLL LockDetector clock (@LockDetClock)- only required if RefClock_Lost and FBClock_Lost are used
-				CPLLLOCKEN											=> '1',														-- @async:		CPLL enable LockDetector
-				CPLLLOCK												=> GTP_CPLL_Locked_async,					-- @async:		CPLL locked
-				CPLLFBCLKLOST										=> open,													-- @LockDetClock:
-				CPLLREFCLKLOST									=> open,													-- @LockDetClock:
+				PLL0CLK													=> QuadPLL_HFClock(0),
+				PLL0REFCLK											=> QuadPLL_RefClock(0),
+				PLL1CLK													=> '0',
+				PLL1REFCLK											=> '0',
 
 				-- internal clock selects and clock outputs
-				TXSYSCLKSEL											=> "00",													-- @async:		00 => use CPLL und GTPe2_channel refclock; 11 => use QPLL and GTPe2_common refclock
+				TXSYSCLKSEL											=> "00",													-- @async:		00 => use QuadPLL PLL0 for HF clock and GTPE2_CHANNEL refclock; 11 => use QuadPLL PLL1
 				TXOUTCLKSEL											=> "011",													-- @async:		011 => select TXPLLREFCLK_DIV1
 				TXOUTCLKFABRIC									=> open,													-- @clock:		internal clock after TXSYSCLKSEL-mux
 				TXOUTCLKPCS											=> open,													-- @clock:		internal clock from PCS sublayer
 				TXOUTCLK												=> GTP_TX_RefClockOut,						-- @clock:		TX output clock
 
-				RXSYSCLKSEL											=> "00",													-- @async:		00 => use CPLL und GTPe2_channel refclock; 11 => use QPLL and GTPe2_common refclock
+				RXSYSCLKSEL											=> "00",													-- @async:		00 => use QuadPLL PLL0 for HF clock and GTPE2_CHANNEL refclock; 11 => use QuadPLL PLL1
 				RXOUTCLKSEL											=> "010",													-- @async:		010 => select RXOUTCLKPMA
 				RXOUTCLKFABRIC									=> open,													-- @clock:		internal clock after RXSYSCLKSEL-mux
 				RXOUTCLKPCS											=> open,													-- @clock:		internal clock from PCS sublayer
 				RXOUTCLK												=> GTP_RX_RefClockOut_float,			-- @clock:		RX output clock; phase aligned
 
 				-- Power-Down ports
-				CPLLPD													=> GTP_CPLL_PowerDown,						-- @async:			powers ChannelPLL down
 				TXPD														=> GTP_TX_PowerDown,							-- @TX_Clock2:	powers TX side down (S0, S0s, S1, S2)
 				RXPD														=> GTP_RX_PowerDown,							-- @async:			powers RX side down (S0, S0s, S1, S2)
 
@@ -1171,16 +1343,16 @@ begin
 				CFGRESET												=> '0',														-- @async:			reserved;
 				GTRESETSEL											=> '0',														-- @async:			0 => sequential mode (recommended)
 				RESETOVRD												=> '0',														-- @async:			reserved; tie to ground
-				-- CPLL resets
-				CPLLRESET												=> GTP_CPLL_Reset,
 				-- TX resets
 				GTTXRESET												=> GTP_TX_Reset,
 				TXPCSRESET											=> GTP_TX_PCSReset,
 				TXPMARESET											=> GTP_TX_PMAReset,
+				TXPMARESETDONE									=> GTP_TX_PMAResetDone,		-- GTPE2
 				-- RX resets
 				GTRXRESET												=> GTP_RX_Reset,
 				RXPCSRESET											=> GTP_RX_PCSReset,
 				RXPMARESET											=> GTP_RX_PMAReset,
+				RXPMARESETDONE									=> GTP_RX_PMAResetDone,	-- GTPE2
 				RXBUFRESET											=> GTP_RX_BufferReset,						-- @async:
 				RXOOBRESET											=> '0',														-- @async:			reserved; tie to ground
 				EYESCANRESET										=> '0',
@@ -1194,13 +1366,13 @@ begin
 				-- FPGA-Fabric interface clocks
 				-- =====================================================================
 				-- TX
-				TXUSERRDY												=> SATA_Clock_Stable_i,					-- @async:			@TX_Clock2 is stable/locked
-				TXUSRCLK												=> SATA_Clock_i,									-- @clock:
-				TXUSRCLK2												=> SATA_Clock_i,									-- @clock:
+				TXUSERRDY												=> SATA_Clock_Stable_i,						-- @async:			@TX_Clock2 is stable/locked
+				TXUSRCLK												=> GTP_UserClock,									-- @clock:
+				TXUSRCLK2												=> GTP_UserClock2,								-- @clock:
 				-- RX
-				RXUSERRDY												=> SATA_Clock_Stable_i,					-- @async:			@TX_Clock2 is stable/locked
-				RXUSRCLK												=> SATA_Clock_i,									-- @clock:
-				RXUSRCLK2												=> SATA_Clock_i,									-- @clock:
+				RXUSERRDY												=> SATA_Clock_Stable_i,						-- @async:			@TX_Clock2 is stable/locked
+				RXUSRCLK												=> GTP_UserClock,									-- @clock:
+				RXUSRCLK2												=> GTP_UserClock2,								-- @clock:
 
 				-- linerate clock divider selection
 				-- =====================================================================
@@ -1223,31 +1395,23 @@ begin
 
 				-- datapath configuration
 				TX8B10BEN												=> '1',														-- @TX_Clock2:	enable 8B/10B encoder
-				TX8B10BBYPASS										=> x"00",													-- @TX_Clock2:	per-byte 8B/10B encoder bypass enables; 0 => use encoder
+				TX8B10BBYPASS										=> x"0",													-- @TX_Clock2:	per-byte 8B/10B encoder bypass enables; 0 => use encoder
 				RX8B10BEN												=> '1',														-- @RX_Clock2:	enable 8B710B decoder
 
 				-- FPGA-Fabric - TX interface ports
 				TXDATA(31 downto 0)							=> GTP_TX_Data,										-- @TX_Clock2:
-				TXDATA(63 downto 32)						=> (63 downto 32 => '0'),					-- @TX_Clock2:
-
 				TXCHARISK(3 downto 0)						=> GTP_TX_CharIsK,								-- @TX_Clock2:
-				TXCHARISK(7 downto 4)						=> (7 downto 4 => '0'),						-- @TX_Clock2:
-				TXCHARDISPMODE									=> x"00",													-- @TX_Clock2:	per-byte set running disparity to TXCHARDISPVAL(i); TXCHARDISPMODE(0) is also called TXCOMPLIANCE in a PIPE interface
-				TXCHARDISPVAL										=> x"00",													-- @TX_Clock2:	per-byte set running disparity
+				TXCHARDISPMODE									=> x"0",													-- @TX_Clock2:	per-byte set running disparity to TXCHARDISPVAL(i); TXCHARDISPMODE(0) is also called TXCOMPLIANCE in a PIPE interface
+				TXCHARDISPVAL										=> x"0",													-- @TX_Clock2:	per-byte set running disparity
 
 				-- FPGA-Fabric - RX interface ports
 				RXDATA(31 downto 0)							=> GTP_RX_Data,										-- @RX_Clock2:
-				RXDATA(63 downto 32)						=> GTP_RX_Data_float,							-- @RX_Clock2:
 				RXVALID													=> open,													-- @RX_Clock2:
 
 				RXCHARISCOMMA(3 downto 0)				=> GTP_RX_CharIsComma,						-- @RX_Clock2:
-				RXCHARISCOMMA(7 downto 4)				=> GTP_RX_CharIsComma_float,			-- @RX_Clock2:
 				RXCHARISK(3 downto 0)						=> GTP_RX_CharIsK,								-- @RX_Clock2:
-				RXCHARISK(7 downto 4)						=> GTP_RX_CharIsK_float,					-- @RX_Clock2:
 				RXDISPERR(3 downto 0)						=> GTP_RX_DisparityError,					-- @RX_Clock2:
-				RXDISPERR(7 downto 4)						=> GTP_RX_DisparityError_float,		-- @RX_Clock2:
 				RXNOTINTABLE(3 downto 0)				=> GTP_RX_NotInTableError,				-- @RX_Clock2:
-				RXNOTINTABLE(7 downto 4)				=> GTP_RX_NotInTableError_float,	-- @RX_Clock2:
 
 				-- RX Byte and Word Alignment
 				RXBYTEISALIGNED									=> GTP_RX_ByteIsAligned,
@@ -1273,42 +1437,20 @@ begin
 				RXCOMSASDET											=> GTP_RX_ComSASDetected,					-- @RX_Clock2:
 
 				-- RX	LPM equalizer ports (LPM - low-power mode)
---				RXLPMEN													=> '0',														-- @RX_Clock2:	0 => use DFE; 1 => use LPM
-				RXLPMEN													=> '1',														-- @RX_Clock2:	0 => use DFE; 1 => use LPM
+				RXLPMRESET											=> '0',
 				RXLPMLFHOLD											=> '0',														-- @RX_Clock2:
-				RXLPMLFKLOVRDEN									=> '1',														-- @RX_Clock2:
+				RXLPMLFOVRDEN										=> '0',	-- GTXE2: '1' (RXLPMLFKLOVRDEN ??)
 				RXLPMHFHOLD											=> '0',														-- @RX_Clock2:
 				RXLPMHFOVRDEN										=> '1',														-- @RX_Clock2:
+				RXLPMOSINTNTRLEN								=> '0',
 
 				-- RX	DFE equalizer ports (discrete-time filter equalizer)
-				RXDFEAGCHOLD										=> '0',														-- @RX_Clock2:	DFE Automatic Gain Control - don't care if RXDFEAGCOVRDEN is '1'
-				RXDFEAGCOVRDEN									=> '1',														-- @RX_Clock2:	DFE Automatic Gain Control
-				RXDFECM1EN											=> '0',
-				RXDFELFHOLD											=> '0',														-- @RX_Clock2:	DFE KL Low Frequency - don't care if RXDFELFOVRDEN is '1'
-				RXDFELFOVRDEN										=> '1',														-- @RX_Clock2:	DFE KL Low Frequency - Override KL value according to attribute RX_DFE_KL_CFG
---				RXDFELFOVRDEN										=> '0',														-- @RX_Clock2:	DFE KL Low Frequency - Override KL value according to attribute RX_DFE_KL_CFG
-				RXDFELPMRESET										=> '0',
-				RXDFETAP2HOLD										=> '0',
-				RXDFETAP2OVRDEN									=> '1',
-				RXDFETAP3HOLD										=> '0',
-				RXDFETAP3OVRDEN									=> '1',
-				RXDFETAP4HOLD										=> '0',
-				RXDFETAP4OVRDEN									=> '1',
-				RXDFETAP5HOLD										=> '0',
-				RXDFETAP5OVRDEN									=> '1',
-				RXDFEUTHOLD											=> '0',
-				RXDFEUTOVRDEN										=> '1',
-				RXDFEVPHOLD											=> '0',
-				RXDFEVPOVRDEN										=> '1',
-				RXDFEVSEN												=> '0',
-				RXDFEXYDEN											=> '1',														-- @RX_Clock2:	reserved; tie to vcc
-				RXDFEXYDHOLD										=> '0',														-- @RX_Clock2:	reserved;
-				RXDFEXYDOVRDEN									=> '1',														-- @RX_Clock2:	reserved;
+				RXDFEXYDEN											=> '0',	-- GTXE2	'1',														-- @RX_Clock2:	reserved; tie to vcc
 
-				RXMONITORSEL										=> GTP_RX_Monitor_sel,
-				RXMONITOROUT										=> GTP_RX_Monitor_Data,
+-- GTXE2				RXMONITORSEL										=> GTP_RX_Monitor_sel,
+-- GTXE2				RXMONITOROUT										=> GTP_RX_Monitor_Data,
 				RXOSHOLD												=> '0',
-				RXOSOVRDEN											=> '1',
+				RXOSOVRDEN											=> '0',	-- GTXE2	'1',
 
 				-- Clock Data Recovery (CDR)
 				RXCDRHOLD												=> GTP_RX_CDR_Hold,								-- @async:			hold the CDR control loop frozen
@@ -1334,14 +1476,14 @@ begin
 				RXCHBONDMASTER									=> '0',														-- @RX_Clock:		Indicates that the transceiver is the master for channel bonding
 				RXCHBONDSLAVE										=> '0',														-- @RX_Clock:		Indicates that this transceiver is a slave for channel bonding
 				RXCHBONDO												=> open,													-- @RX_Clock:		Channel bond control port - data out
-				RXCHBONDI												=> "00000",												-- @RX_Clock:		Channel bond control port - data in
+				RXCHBONDI												=> "0000",												-- @RX_Clock:		Channel bond control port - data in
 				RXCHANBONDSEQ										=> open,													-- @RX_Clock2:	RXDATA contains the start of a channel bonding sequence
 				RXCHANISALIGNED									=> open,													-- @RX_Clock2:	RX elastic buffer is channel aligned
 				RXCHANREALIGN										=> open,													-- @RX_Clock2:	RX elastic buffer changed channel alignment
 
 				-- TX buffer bypass ports
 				TXPHDLYTSTCLK										=> '0',														-- @clock:			TX phase and delay alignment test clock; used with TXDLYHOLD and TXDLYUPDOWN
-				TXPHDLYPD												=> '1',														-- @async:
+				TXPHDLYPD												=> '0',	-- GTPE2	'1',														-- @async:
 				TXPHDLYRESET										=> '0',														-- @async:
 				TXPHALIGNEN											=> '0',														-- @async:
 				TXPHALIGN												=> '0',														-- @async:
@@ -1391,7 +1533,9 @@ begin
 				RXPRBSERR												=> open,													-- @RX_Clock2:	PRBS error have occurred; error counter 'RX_PRBS_ERR_CNT' can only be accessed by DRP at address 0x15C
 
 				-- Digital Monitor Ports
-				DMONITOROUT											=> GTP_DigitalMonitor,
+				DMONITOROUT											=> GTP_DigitalMonitor(14 downto 0),
+				DMONFIFORESET										=> '0',	-- GTPE2
+				DMONITORCLK											=> '0',	-- GTPE2
 
 				EYESCANMODE											=> '0',														-- @async:
 				EYESCANTRIGGER									=> '0',														-- @async:
@@ -1400,13 +1544,19 @@ begin
 				-- reserved ports
 				GTRSVD													=> "0000000000000000",						-- @async:
 				PCSRSVDIN												=> "0000000000000000",						-- @async:
-				PCSRSVDIN2											=> "00000",												-- @async:
-				PMARSVDIN												=> "00000",												-- @async:
-				PMARSVDIN2											=> "00000",												-- @async:
+-- GTXE2				PCSRSVDIN2											=> "00000",												-- @async:
+-- GTXE2				PMARSVDIN												=> "00000",												-- @async:
+				PMARSVDIN0											=> '0',														-- @async:
+				PMARSVDIN1											=> '0',														-- @async:
+				PMARSVDIN2											=> '0',	--GTXE2	"00000",												-- @async:
+				PMARSVDIN3											=> '0',														-- @async:
+				PMARSVDIN4											=> '0',														-- @async:
 				TSTIN														=> "11111111111111111111",				-- @async:
-				TSTOUT													=> open,													-- @async:
-				CLKRSVD(0)											=> '0',														-- @clock:			alternative OOB clock; selectable by PCS_RSVD_ATTR(3) = '1'
-				CLKRSVD(3 downto 1)							=> "000",
+-- GTXE2				TSTOUT													=> open,													-- @async:
+-- GTXE2				CLKRSVD(0)											=> '0',														-- @clock:			alternative OOB clock; selectable by PCS_RSVD_ATTR(3) = '1'
+-- GTXE2				CLKRSVD(3 downto 1)							=> "000",
+				CLKRSVD0												=> '0',	-- GTPE2
+				CLKRSVD1												=> '0',	-- GTPE2
 				SETERRSTATUS										=> '0',														-- @async:			reserved; RX 8B/10B decoder port
 				RXCDROVRDEN											=> '0',														-- @async:			reserved; CDR port
 				RXCDRRESETRSV										=> '0',														-- @async:			reserved; CDR port
@@ -1419,9 +1569,9 @@ begin
 				-- TX configurable driver ports
 				TXPISOPD												=> '0',														-- @async:			reserved; ParallelIn/SerialOut (PISO) power-down
 				TXINHIBIT												=> '0',														-- @TX_Clock2:	forces GTPTXP to 0 and GTPTXN to 1
-				TXDifFPD												=> '0',														-- @async:			reserved; TX driver power-down
-				TXDifFCTRL											=> "0101",												-- @TX_Clock2:	TX driver swing control [mV_PPD]; 0101 => 609 mV peak-peak-differential voltage
-				TXBUFDifFCTRL										=> "100",													-- @TX_Clock2:	TX pre-driver swing control; default is 100; do not modify
+				TXDIFFPD												=> '0',														-- @async:			reserved; TX driver power-down
+				TXDIFFCTRL											=> "1000",	-- GTPE2	"0101",												-- GTXE2: @TX_Clock2:	TX driver swing control [mV_PPD]; 0101 => 609 mV peak-peak-differential voltage
+				TXBUFDIFFCTRL										=> "100",													-- @TX_Clock2:	TX pre-driver swing control; default is 100; do not modify
 				TXDEEMPH												=> '0',														-- @TX_Clock2:	TX de-emphasis control
 				TXMARGIN												=> "000",													-- @async:			TX margin control
 				TXSWING													=> '0',														-- @async:			TX swing control; 0 => full swing; 1 => half-swing
@@ -1431,20 +1581,54 @@ begin
 				TXPOSTCURSOR										=> "00000",												-- @async:			TX post-cursor pre-emphasis control
 				TXPOSTCURSORINV									=> '0',
 
-				-- TX driver ports for QuickPathInterconnect (QPI)
-				TXQPIBIASEN											=> '0',														-- @async:			enables the GND bias on TX output as required by the QPI specification
-				TXQPISTRONGPDOWN								=> '0',														-- @async:			pulls the TX output strongly to GND to enable handshaking as required by the QPI protocol
-				TXQPIWEAKPUP										=> '0',														-- @async:			pulls the TX output weakly to MGTAVTT to enable handshaking as required by the QPI protocol
-				TXQPISENN												=> open,													-- @async:			sense output for GTPTXN
-				TXQPISENP												=> open,													-- @async:			sense output for GTPTXP
-
-				-- RX Analog Frontend (AFE) ports
-				RXQPIEN													=> '0',														-- @async:			disables RX termination for the QPI protocol
-				RXQPISENN												=> open,													-- @async:			Sense output on GTPRXN
-				RXQPISENP												=> open,													-- @async:			Sense output on GTPRXP
-
 				-- TX receiver detection ports
 				TXDETECTRX											=> '0',														-- @TX_Clock2:	begin a receiver detection operation; 0 => normal operation; 1 => receiver detection
+
+				-- new ports for the GTPE2 transceiver compared to GTXE2
+				------------------------------- Receive Ports ------------------------------
+				SIGVALIDCLK											=> '0',
+				------------------------- Receive Ports - CDR Ports ------------------------
+				RXOSCALRESET										=> '0',
+				RXOSINTCFG											=> "0010",
+				RXOSINTDONE											=> open,
+				RXOSINTHOLD											=> '0',
+				RXOSINTOVRDEN										=> '0',
+				RXOSINTPD												=> '0',
+				RXOSINTSTARTED									=> open,
+				RXOSINTSTROBE										=> '0',
+				RXOSINTSTROBESTARTED						=> open,
+				RXOSINTTESTOVRDEN								=> '0',
+				------------------------ Receive Ports - RX AFE Ports ----------------------
+				PMARSVDOUT0											=> open,
+				PMARSVDOUT1											=> open,
+				------------------- Receive Ports - RX Buffer Bypass Ports -----------------
+				RXSYNCALLIN											=> '0',
+				RXSYNCDONE											=> open,
+				RXSYNCIN												=> '0',
+				RXSYNCMODE											=> '0',
+				RXSYNCOUT												=> open,
+				------------ Receive Ports - RX Decision Feedback Equalizer(DFE) -----------
+				RXADAPTSELTEST									=> "00000000000000",
+				RXOSINTEN												=> '1',
+				RXOSINTID0											=> "0000",
+				RXOSINTNTRLEN										=> '0',
+				RXOSINTSTROBEDONE								=> open,
+				----------- Receive Ports - RX Fabric Clock Output Control Ports	----------
+				RXRATEMODE											=> '0',
+				-------------------- TX Fabric Clock Output Control Ports ------------------
+				TXRATEMODE											=> '0',
+				----------------- TX Phase Interpolator PPM Controller Ports ---------------
+				TXPIPPMEN												=> '0',
+				TXPIPPMOVRDEN										=> '0',
+				TXPIPPMPD												=> '0',
+				TXPIPPMSEL											=> '1',
+				TXPIPPMSTEPSIZE									=> "00000",
+				------------ Transmit Ports - TX Buffer and Phase Alignment Ports ----------
+				TXSYNCALLIN											=> '0',
+				TXSYNCDONE											=> open,
+				TXSYNCIN												=> '0',
+				TXSYNCMODE											=> '0',
+				TXSYNCOUT												=> open,
 
 				-- Tranceiver physical ports
 				GTPTXN													=> GTP_TX_n,											-- @analog:
@@ -1457,6 +1641,8 @@ begin
 		GTP_RX_p									<= VSS_Private_In(i).RX_p;
 		VSS_Private_Out(i).TX_n		<= GTP_TX_n;
 		VSS_Private_Out(i).TX_p		<= GTP_TX_p;
+
+		GTP_DigitalMonitor(15 downto 15)	<= "0";
 
 		genCSP0 : if (ENABLE_DEBUGPORT = FALSE) generate
 			GTP_DRP_Clock									<= '0';
@@ -1479,29 +1665,29 @@ begin
 			end function;
 
 			function dbg_GenerateStateEncodings return string is
-				variable  l : STD.TextIO.line;
+				variable	l : STD.TextIO.line;
 			begin
 				for i in T_STATE loop
 					STD.TextIO.write(l, str_replace(T_STATE'image(i), "st_", ""));
 					STD.TextIO.write(l, ';');
 				end loop;
-				return  l.all;
+				return	l.all;
 			end function;
 
 			function dbg_GenerateStatusEncodings return string is
-				variable  l : STD.TextIO.line;
+				variable	l : STD.TextIO.line;
 			begin
 				for i in T_SATA_TRANSCEIVER_STATUS loop
 					STD.TextIO.write(l, str_replace(T_SATA_TRANSCEIVER_STATUS'image(i), "sata_transceiver_status_", ""));
 					STD.TextIO.write(l, ';');
 				end loop;
-				return  l.all;
+				return	l.all;
 			end function;
 
-			constant dummy : T_BOOLVEC := (
-				0 => dbg_ExportEncoding("Transceiver (7-Series, GTPE2)",		dbg_GenerateStateEncodings,		ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "FSM_Transceiver_Series7_GTPE2.tok"),
-				1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",	dbg_GenerateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Status.tok")
-			);
+--			constant dummy : T_BOOLVEC := (
+--				0 => dbg_ExportEncoding("Transceiver (7-Series, GTPE2)",		dbg_GenerateStateEncodings,		ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "FSM_Transceiver_Series7_GTPE2.tok"),
+--				1 => dbg_ExportEncoding("Transceiver Layer - Status Enum",	dbg_GenerateStatusEncodings,	ite(SIMULATION, "", (PROJECT_DIR & "ChipScope/TokenFiles/")) & "ENUM_Transceiver_Status.tok")
+--			);
 
 		begin
 			GTP_DRP_Clock			<= DebugPortIn(i).DRP.Clock;
@@ -1519,17 +1705,17 @@ begin
 			DebugPortOut(i).UserClock									<= SATA_Clock_i;
 			DebugPortOut(i).UserClock_Stable					<= SATA_Clock_Stable_i;
 
-			DebugPortOut(i).GTP_CPLL_PowerDown				<= GTP_CPLL_PowerDown;
-			DebugPortOut(i).GTP_TX_PowerDown					<= GTP_TX_PowerDown(0);
-			DebugPortOut(i).GTP_RX_PowerDown					<= GTP_RX_PowerDown(0);
+			DebugPortOut(i).GTX_CPLL_PowerDown				<= QuadPLL_PowerDown(QUADPLL_PORTID);
+			DebugPortOut(i).GTX_TX_PowerDown					<= GTP_TX_PowerDown(0);
+			DebugPortOut(i).GTX_RX_PowerDown					<= GTP_RX_PowerDown(0);
 
-			DebugPortOut(i).GTP_CPLL_Reset						<= GTP_CPLL_Reset;
-			DebugPortOut(i).GTP_CPLL_Locked						<= GTP_CPLL_Locked_async;
+			DebugPortOut(i).GTX_CPLL_Reset						<= QuadPLL_Reset(QUADPLL_PORTID);
+			DebugPortOut(i).GTX_CPLL_Locked						<= QuadPLL_Locked_async(QUADPLL_PORTID);
 
-			DebugPortOut(i).GTP_TX_Reset							<= GTP_TX_Reset;
-			DebugPortOut(i).GTP_RX_Reset							<= GTP_RX_Reset;
-			DebugPortOut(i).GTP_TX_ResetDone					<= GTP_TX_ResetDone;
-			DebugPortOut(i).GTP_RX_ResetDone					<= GTP_RX_ResetDone;
+			DebugPortOut(i).GTX_TX_Reset							<= GTP_TX_Reset;
+			DebugPortOut(i).GTX_RX_Reset							<= GTP_RX_Reset;
+			DebugPortOut(i).GTX_TX_ResetDone					<= GTP_TX_ResetDone;
+			DebugPortOut(i).GTX_RX_ResetDone					<= GTP_RX_ResetDone;
 			DebugPortOut(i).FSM												<= '0' & to_slv(State);
 
 			DebugPortOut(i).OOB_Clock									<= '0';
