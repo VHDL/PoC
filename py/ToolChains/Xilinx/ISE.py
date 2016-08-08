@@ -61,7 +61,7 @@ class ISEException(XilinxException):
 class Configuration(BaseConfiguration):
 	_vendor =    "Xilinx"
 	_toolName =  "Xilinx ISE"
-	_section =  "INSTALL.Xilinx.ISE" 
+	_section =  "INSTALL.Xilinx.ISE"
 	_template = {
 		"Windows": {
 			_section: {
@@ -123,7 +123,7 @@ class ISEMixIn:
 class ISE(ISEMixIn):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
 		ISEMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
-		
+
 	def GetVHDLCompiler(self):
 		raise NotImplementedError("ISE.GetVHDLCompiler")
 		# return ISEVHDLCompiler(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self.__logger)

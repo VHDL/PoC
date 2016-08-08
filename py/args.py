@@ -4,7 +4,7 @@ from pathlib  import Path
 
 class CommandLineArgument(type):
 	_value = None
-	
+
 	# def __new__(mcls, name, bases, nmspc):
 		# print("CommandLineArgument.new: %s - %s" % (name, nmspc))
 		# return super(CommandLineArgument, mcls).__new__(mcls, name, bases, nmspc)
@@ -208,7 +208,7 @@ class CommandLineArgumentList(list):
 	def __delitem__(self, key):
 		i = self.index(key)
 		super().__getitem__(i).Value = None
-	
+
 	def ToArgumentList(self):
 		result = []
 		for item in self:
@@ -223,14 +223,14 @@ class CommandLineArgumentList(list):
 class Class0:
 	def __init__(self, exe=None):
 		self.Parameters[self.Executable] = exe
-	
+
 	class Executable(metaclass=ExecutableArgument):    pass
 	class Flag1(metaclass=ShortFlagArgument):          _name = "flag1"
 	class Flag2(metaclass=ShortFlagArgument):          _name = "flag2"
 	class Flag3(metaclass=ShortFlagArgument):          _name = "flag3"
-	
+
 	Flag4 = ShortFlagArgument("Flag4", (), {"_name" : "flag4"})
-	
+
 	Parameters = CommandLineArgumentList(
 		Executable,
 		Flag1,
@@ -255,7 +255,7 @@ class Meta(type):
 
 	# def __init__(mcls, name, bases, members):
 		# print("init: \n  " + "\n  ".join([(key + " -> " + str(members[key])) for key in members]))
-	
+
 class Class1(Class0, metaclass=Meta):
 	def __init__(self, exe=None):
 		# print(type(self.Parameters))
@@ -263,7 +263,7 @@ class Class1(Class0, metaclass=Meta):
 
 	class Flag5(metaclass=ShortFlagArgument):          _name = "verbose"
 	class Flag6(metaclass=ShortFlagArgument):          _name = "foo"
-	
+
 	Parameters = CommandLineArgumentList(
 		Flag5,
 		Flag6
@@ -272,10 +272,10 @@ class Class1(Class0, metaclass=Meta):
 class Class2(Class0, metaclass=Meta):
 	def __init__(self, exe=None):
 		self.Parameters[self.Executable] = exe
-	
+
 	class Flag5(metaclass=ShortFlagArgument):          _name = "debug"
 	class Flag6(metaclass=ShortFlagArgument):          _name = "bar"
-	
+
 	Parameters = CommandLineArgumentList(
 		Flag5,
 		Flag6

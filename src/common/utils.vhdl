@@ -5,7 +5,7 @@
 -- Authors:					Thomas B. Preusser
 --									Martin Zabel
 --									Patrick Lehmann
---									Paul Genssler										
+--									Paul Genssler
 --
 -- Package:					Common functions and types
 --
@@ -254,7 +254,7 @@ package utils is
 	function swap(slv : std_logic_vector; Size : positive) return std_logic_vector;
 
 	-- Swap the bits in a chunk
-	function bit_swap(slv : STD_LOGIC_VECTOR; Chunksize : POSITIVE) return STD_LOGIC_VECTOR;
+	function bit_swap(slv : std_logic_vector; Chunksize : positive) return std_logic_vector;
 
 	-- generate bit masks
 	function genmask_high(Bits : natural; MaskLength : positive) return std_logic_vector;
@@ -857,11 +857,11 @@ package body utils is
 
 	-- Swap the bits in a chunk
 	-- ==========================================================================
-	function bit_swap(slv : STD_LOGIC_VECTOR; Chunksize : POSITIVE) return STD_LOGIC_VECTOR is
-		constant SegmentCount	: NATURAL	:= slv'length / Chunksize;
-		variable FromH				: NATURAL;
-		variable FromL				: NATURAL;
-		variable Result			: STD_LOGIC_VECTOR(slv'length - 1 downto 0);
+	function bit_swap(slv : std_logic_vector; Chunksize : positive) return std_logic_vector is
+		constant SegmentCount	: natural	:= slv'length / Chunksize;
+		variable FromH				: natural;
+		variable FromL				: natural;
+		variable Result			: std_logic_vector(slv'length - 1 downto 0);
 	begin
 		for i in 0 to SegmentCount - 1 loop
 			FromH		:= ((i + 1) * Chunksize) - 1;

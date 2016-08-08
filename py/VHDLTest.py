@@ -1,4 +1,4 @@
- 
+
 from enum      import Enum, unique		# EnumMeta
 from time      import time
 from colorama  import init, Fore

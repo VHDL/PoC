@@ -30,3 +30,5 @@ check_call(['git', 'config', 'filter.normalize.clean',  'tools/git/filters/norma
 check_call(['git', 'config', 'filter.normalize.smudge', 'tools/git/filters/normalize smudge'])
 check_call(['git', 'config', 'filter.normalize_vhdl.clean',  'tools/git/filters/normalize clean vhdl'])
 check_call(['git', 'config', 'filter.normalize_vhdl.smudge', 'tools/git/filters/normalize smudge vhdl'])
+check_call(['git', 'config', 'filter.normalize_rest.clean',  'tools/git/filters/normalize clean rest'])
+check_call(['git', 'config', 'filter.normalize_rest.smudge', 'tools/git/filters/normalize smudge rest'])
