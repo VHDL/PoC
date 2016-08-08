@@ -38,7 +38,7 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.physical.all;
 use			PoC.io.all;
-use			PoC.net.all;
+--USE			PoC.net.ALL;
 
 
 entity mdio_Controller is

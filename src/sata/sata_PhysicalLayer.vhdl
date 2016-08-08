@@ -86,7 +86,7 @@ entity sata_PhysicalLayer is
 		ALLOW_SPEED_NEGOTIATION					: boolean													:= TRUE;
 		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
 		ALLOW_STANDARD_VIOLATION				: boolean													:= FALSE;
-		OOB_TIMEOUT											: time														:= time'low;
+		OOB_TIMEOUT											: T_TIME													:= T_TIME'low;
 		GENERATION_CHANGE_COUNT					: integer													:= 8;
 		ATTEMPTS_PER_GENERATION					: integer													:= 4
 	);
