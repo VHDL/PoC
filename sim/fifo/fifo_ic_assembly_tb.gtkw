@@ -2,10 +2,8 @@
 [*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
 [*] Sun Mar 20 12:09:23 2016
 [*]
-[dumpfile] "G:\git\PoC\temp\ghdl\fifo_ic_assembly_tb.ghw"
 [dumpfile_mtime] "Sun Mar 20 12:07:31 2016"
 [dumpfile_size] 24161
-[savefile] "G:\git\PoC\sim\fifo\fifo_ic_assembly_tb.gtkw"
 [timestart] 0
 [size] 1680 997
 [pos] -61 -61

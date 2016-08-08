@@ -1,0 +1,27 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/sort_lru_cache_tb/clock
+/sort_lru_cache_tb/insert
+/sort_lru_cache_tb/free
+/sort_lru_cache_tb/keyin
+/sort_lru_cache_tb/keyout
+/sort_lru_cache_tb/stopsimulation
+/sort_lru_cache_tb/sort/clock
+/sort_lru_cache_tb/sort/reset
+/sort_lru_cache_tb/sort/insert
+/sort_lru_cache_tb/sort/free
+/sort_lru_cache_tb/sort/keyin
+/sort_lru_cache_tb/sort/keyout
+/sort_lru_cache_tb/sort/newelement
+/sort_lru_cache_tb/sort/elementsup
+/sort_lru_cache_tb/sort/elementsdown
+/sort_lru_cache_tb/sort/movesdown
+/sort_lru_cache_tb/sort/movesup
+/sort_lru_cache_tb/sort/unequal
+/sort_lru_cache_tb/sort/movesupcond
+/sort_lru_cache_tb/sort/movesdowncond
+/sort_lru_cache_tb/sort/movesdowncondrev
+/sort_lru_cache_tb/sort/movesdownrev
