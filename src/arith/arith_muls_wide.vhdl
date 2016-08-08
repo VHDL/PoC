@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:					Martin Zabel
--- 
+--
 -- Entity:					Signed wide multiplication spanning multiple DSP or MULT blocks.
--- 
+--
 -- Description:
 -- -------------------------------------
 -- Signed wide multiplication spanning multiple DSP or MULT blocks.
