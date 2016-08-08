@@ -292,7 +292,7 @@ package satacomp is
 			VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 		);
 	end component;
-		
+
 	component sata_Transceiver_Series7_GTPE2 is
 		generic (
 			DEBUG											: boolean											:= FALSE;																	-- generate additional debug signals and preserve them (attribute keep)

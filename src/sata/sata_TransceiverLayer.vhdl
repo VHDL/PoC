@@ -349,11 +349,11 @@ begin
 
 					TX_Data										=> TX_Data_i,
 					TX_CharIsK								=> TX_CharIsK,
-					
+
 					RX_Data										=> RX_Data_i,
 					RX_CharIsK								=> RX_CharIsK_i,
 					RX_Valid									=> RX_Valid,
-					
+
 					-- vendor specific signals
 					VSS_Common_In							=> VSS_Common_In,
 					VSS_Private_In						=> VSS_Private_In,

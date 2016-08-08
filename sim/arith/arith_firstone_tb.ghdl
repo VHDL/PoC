@@ -1,0 +1,11 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/arith_firstone_tb/clock
+/arith_firstone_tb/tin
+/arith_firstone_tb/rqst
+/arith_firstone_tb/grnt
+/arith_firstone_tb/tout
+/arith_firstone_tb/bin
