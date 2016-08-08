@@ -296,7 +296,7 @@ begin
 	genGTPE2 : for i in 0 to (PORTS	- 1) generate
 		constant CLOCK_DIVIDER_SELECTION		:	std_logic_vector(2 downto 0)	:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(i));
 
-		constant QUADPLL_PORTID							: positive	:= 0;
+		constant QUADPLL_PORTID							: natural	:= 0;
 		
 		constant GTP_PCS_RSVD_ATTR					: bit_vector(47 downto 0)				:= x"000000000100";	-- GTXE2 (
 -- GTXE2 			3 =>			'0',							-- select alternative OOB circuit clock source; 0 => sysclk; 1 => CLKRSVD(0)
@@ -540,7 +540,7 @@ begin
 				GTP_Clock_2X							=> GTP_UserClock,
 				GTP_Clock_4X							=> GTP_UserClock2
 			);
-
+		
 		SATA_Clock_i			<= GTP_UserClock2;
 		SATA_Clock(i)			<= SATA_Clock_i;
 

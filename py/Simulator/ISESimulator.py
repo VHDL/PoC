@@ -75,7 +75,7 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 		iseSection = self.Host.PoCConfig['INSTALL.Xilinx.ISE']
 		version = iseSection['Version']
 		binaryPath = Path(iseSection['BinaryDirectory'])
-		self._toolChain = ISE(self.Host.Platform, binaryPath, version, logger=self.Logger)
+		self._toolChain = ISE(self.Host.Platform, self.DryRun, binaryPath, version, logger=self.Logger)
 
 	def _RunElaboration(self, testbench):
 		exeFilePath =  self.Directories.Working / (testbench.ModuleName + ".exe")
