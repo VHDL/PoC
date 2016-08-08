@@ -30,7 +30,7 @@
 # ==============================================================================
 #
 from lib.Parser           import ParserException
-from Parser.RulesCodeDOM  import Document, PreProcessRulesStatement, PostProcessStatement, CopyStatement, ReplaceStatement, FileStatement, DeleteStatement, \
+from Parser.RulesCodeDOM  import Document, PreProcessRulesStatement, PostProcessRulesStatement, CopyStatement, ReplaceStatement, FileStatement, DeleteStatement, \
 	AppendLineStatement
 
 
@@ -126,7 +126,7 @@ class RulesParserMixIn:
 			if isinstance(stmt, PreProcessRulesStatement):
 				for ruleStatement in stmt.Statements:
 					self._ResolveRule(ruleStatement, self._preProcessRules)
-			elif isinstance(stmt, PostProcessStatement):
+			elif isinstance(stmt, PostProcessRulesStatement):
 				for ruleStatement in stmt.Statements:
 					self._ResolveRule(ruleStatement, self._postProcessRules)
 			else:
