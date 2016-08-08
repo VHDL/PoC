@@ -174,6 +174,7 @@ class DeleteStatement(Statement):
 			file = ex.value.Value
 
 		# match for optional whitespace
+		token = yield
 		if isinstance(token, SpaceToken):           token = yield
 		# match for delimiter sign: \n
 		commentText = ""
@@ -333,7 +334,6 @@ class AppendLineStatement(Statement):
 
 	@property
 	def AppendPattern(self):   return self._appendPattern
-	@property
 
 	@classmethod
 	def GetParser(cls):
@@ -589,9 +589,9 @@ class PreProcessRulesStatement(ProcessRulesBlockStatement):
 	__PARSER_STATEMENTS__ = PreProcessStatements
 
 
-class PostProcessStatement(ProcessRulesBlockStatement):
-	__PARSER_NAME__ =       "PreProcessRulesParser"
-	__PARSER_BLOCK_NAME__ = "preprocessrules"
+class PostProcessRulesStatement(ProcessRulesBlockStatement):
+	__PARSER_NAME__ =       "PostProcessRulesParser"
+	__PARSER_BLOCK_NAME__ = "postprocessrules"
 	__PARSER_STATEMENTS__ = PostProcessStatements
 
 
@@ -637,6 +637,6 @@ PostProcessStatements.AddChoice(CommentLine)
 PostProcessStatements.AddChoice(EmptyLine)
 
 DocumentStatements.AddChoice(PreProcessRulesStatement)
-DocumentStatements.AddChoice(PostProcessStatement)
+DocumentStatements.AddChoice(PostProcessRulesStatement)
 DocumentStatements.AddChoice(CommentLine)
 DocumentStatements.AddChoice(EmptyLine)

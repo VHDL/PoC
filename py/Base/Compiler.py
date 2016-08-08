@@ -323,7 +323,7 @@ class Compiler(Shared):
 					appendPattern =   self.Host.PoCConfig.Interpolation.interpolate(self.Host.PoCConfig, netlist.ConfigSectionName, "RulesFile", rule.AppendPattern, {})
 					task = AppendLineTask(Path(filePath), appendPattern)
 					postReplaceTasks.append(task)
-				elif isinstance(rule, CopyRuleMixIn):
+				elif isinstance(rule, (CopyRuleMixIn, DeleteRuleMixIn)):
 					pass
 				else:
 					raise CompilerException("Unknown post-process rule '{0!s}'.".format(rule))
