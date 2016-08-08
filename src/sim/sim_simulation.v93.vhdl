@@ -41,7 +41,7 @@ use			PoC.sim_unprotected.all;
 
 package simulation is
 	-- mimic definition of VHDL-2008
-	type TIME_VECTOR is array(natural range<>) of TIME;
+	type TIME_VECTOR is array(natural range<>) of time;
 
 	-- Testbench Status Management
 	-- ===========================================================================

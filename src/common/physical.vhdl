@@ -66,8 +66,8 @@ package physical is
 	-- Vivado maps 1 us to 1 fs, 1 ms to 1 ps and so on (factor 10e9).
 	-- Thus, define a new type based to be used for PoC functions.
 	subtype T_TIME is real range real'low to real'high;
-	
-	type FREQ is range 0 to INTEGER'high units
+
+	type FREQ is range 0 to integer'high units
 		Hz;
 		kHz = 1000 Hz;
 		MHz = 1000 kHz;
@@ -89,7 +89,7 @@ package physical is
 	end units;
 
 	-- vector data types
-	type		T_TIMEVEC						is array(NATURAL range <>) of T_TIME;
+	type		T_TIMEVEC						is array(natural range <>) of T_TIME;
 	type		T_FREQVEC						is array(natural range <>) of FREQ;
 	type		T_BAUDVEC						is array(natural range <>) of BAUD;
 	type		T_MEMVEC						is array(natural range <>) of MEMORY;
@@ -98,7 +98,7 @@ package physical is
 	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: boolean		:= TRUE;
 
 	-- conversion functions
-	function to_time(f : FREQ)	return TIME; -- can be used by testbenches without restrictions
+	function to_time(f : FREQ)	return time; -- can be used by testbenches without restrictions
 	function to_time(f : FREQ)	return T_TIME;
 	function to_freq(p : T_TIME)	return FREQ;
 	function to_freq(br : BAUD)	return FREQ;
@@ -144,12 +144,12 @@ package physical is
 	function msum(vec : T_MEMVEC)	return MEMORY;									-- Calculates: sum(vec) for a memory vector
 
 	-- convert standard types (NATURAL, REAL) to time (T_TIME)
-	function fs2Time(t_fs : INTEGER)		return T_TIME;
-	function ps2Time(t_ps : INTEGER)		return T_TIME;
-	function ns2Time(t_ns : INTEGER)		return T_TIME;
-	function us2Time(t_us : INTEGER)		return T_TIME;
-	function ms2Time(t_ms : INTEGER)		return T_TIME;
-	function sec2Time(t_sec : INTEGER)	return T_TIME;
+	function fs2Time(t_fs : integer)		return T_TIME;
+	function ps2Time(t_ps : integer)		return T_TIME;
+	function ns2Time(t_ns : integer)		return T_TIME;
+	function us2Time(t_us : integer)		return T_TIME;
+	function ms2Time(t_ms : integer)		return T_TIME;
+	function sec2Time(t_sec : integer)	return T_TIME;
 
 	function fs2Time(t_fs : REAL)				return T_TIME;
 	function ps2Time(t_ps : REAL)				return T_TIME;
@@ -159,10 +159,10 @@ package physical is
 	function sec2Time(t_sec : REAL)			return T_TIME;
 
 	-- convert standard types (NATURAL, REAL) to period (T_TIME)
-	function Hz2Time(f_Hz : NATURAL)		return T_TIME;
-	function kHz2Time(f_kHz : NATURAL)	return T_TIME;
-	function MHz2Time(f_MHz : NATURAL)	return T_TIME;
-	function GHz2Time(f_GHz : NATURAL)	return T_TIME;
+	function Hz2Time(f_Hz : natural)		return T_TIME;
+	function kHz2Time(f_kHz : natural)	return T_TIME;
+	function MHz2Time(f_MHz : natural)	return T_TIME;
+	function GHz2Time(f_GHz : natural)	return T_TIME;
 
 	function Hz2Time(f_Hz : REAL)				return T_TIME;
 	function kHz2Time(f_kHz : REAL) 		return T_TIME;
@@ -188,24 +188,24 @@ package physical is
 	function to_real(mem : MEMORY;	scale : MEMORY)	return REAL;
 
 	-- convert physical types to standard type (INTEGER)
-	function to_int(t : T_TIME;		scale : T_TIME;	RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST)	return INTEGER;
+	function to_int(t : T_TIME;		scale : T_TIME;	RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST)	return integer;
 	function to_int(f : FREQ;			scale : FREQ;		RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST)	return integer;
 	function to_int(br : BAUD;		scale : BAUD;		RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST)	return integer;
 	function to_int(mem : MEMORY;	scale : MEMORY;	RoundingStyle : T_ROUNDING_STYLE := ROUND_UP)					return integer;
 
 	-- calculate needed counter cycles to achieve a given 1. timing/delay and 2. frequency/period
-	function TimingToCycles(Timing : T_TIME; Clock_Period			: T_TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return NATURAL;
-	function TimingToCycles(Timing : T_TIME; Clock_Frequency	: FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return NATURAL;
+	function TimingToCycles(Timing : T_TIME; Clock_Period			: T_TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return natural;
+	function TimingToCycles(Timing : T_TIME; Clock_Frequency	: FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return natural;
 
-	function CyclesToDelay(Cycles : NATURAL; Clock_Period			: T_TIME) return T_TIME;
-	function CyclesToDelay(Cycles : NATURAL; Clock_Frequency	: FREQ) return T_TIME;
+	function CyclesToDelay(Cycles : natural; Clock_Period			: T_TIME) return T_TIME;
+	function CyclesToDelay(Cycles : natural; Clock_Frequency	: FREQ) return T_TIME;
 
 	-- convert and format physical types to STRING
 	function to_string(t : time; precision : natural)			return string;
-	function to_string(t : T_TIME; precision : NATURAL)		return STRING;
-	function to_string(f : FREQ; precision : NATURAL)			return STRING;
-	function to_string(br : BAUD; precision : NATURAL)		return STRING;
-	function to_string(mem : MEMORY; precision : NATURAL)	return STRING;
+	function to_string(t : T_TIME; precision : natural)		return string;
+	function to_string(f : FREQ; precision : natural)			return string;
+	function to_string(br : BAUD; precision : natural)		return string;
+	function to_string(mem : MEMORY; precision : natural)	return string;
 end package;
 
 
@@ -274,7 +274,7 @@ package body physical is
 
 		return a_real / b_real;
 	end function;
-	
+
 	function div(a : T_TIME; b : T_TIME) return REAL is
 	begin
 		return a / b;
@@ -297,7 +297,7 @@ package body physical is
 
 	-- conversion functions
 	-- ===========================================================================
-	function to_time(f : FREQ) return TIME is -- can be used by testbenches without restrictions
+	function to_time(f : FREQ) return time is -- can be used by testbenches without restrictions
 		variable res : time;
 	begin
 		res := div(1000 MHz, f) * 1 ns;
@@ -667,32 +667,32 @@ package body physical is
 
 	-- convert standard types (NATURAL, REAL) to time (T_TIME)
 	-- ===========================================================================
-	function fs2Time(t_fs : INTEGER) return T_TIME is
+	function fs2Time(t_fs : integer) return T_TIME is
 	begin
 		return real(t_fs) * 1.0e-15;
 	end function;
 
-	function ps2Time(t_ps : INTEGER) return T_TIME is
+	function ps2Time(t_ps : integer) return T_TIME is
 	begin
 		return real(t_ps) * 1.0e-12;
 	end function;
 
-	function ns2Time(t_ns : INTEGER) return T_TIME is
+	function ns2Time(t_ns : integer) return T_TIME is
 	begin
 		return real(t_ns) * 1.0e-9;
 	end function;
 
-	function us2Time(t_us : INTEGER) return T_TIME is
+	function us2Time(t_us : integer) return T_TIME is
 	begin
 		return real(t_us) * 1.0e-6;
 	end function;
 
-	function ms2Time(t_ms : INTEGER) return T_TIME is
+	function ms2Time(t_ms : integer) return T_TIME is
 	begin
 		return real(t_ms) * 1.0e-3;
 	end function;
 
-	function sec2Time(t_sec : INTEGER) return T_TIME is
+	function sec2Time(t_sec : integer) return T_TIME is
 	begin
 		return real(t_sec);
 	end function;
@@ -729,23 +729,23 @@ package body physical is
 
 	-- convert standard types (NATURAL, REAL) to period (T_TIME)
 	-- ===========================================================================
-	function Hz2Time(f_Hz : NATURAL) return T_TIME is
+	function Hz2Time(f_Hz : natural) return T_TIME is
 	begin
 		return to_time(Hz2Freq(f_Hz));
 	end function;
 
-	function kHz2Time(f_kHz : NATURAL) return T_TIME is
+	function kHz2Time(f_kHz : natural) return T_TIME is
 	begin
 		return to_time(kHz2Freq(f_kHz));
 	end function;
 
-	function MHz2Time(f_MHz : NATURAL) return T_TIME
+	function MHz2Time(f_MHz : natural) return T_TIME
 	 is
 	begin
 		return to_time(MHz2Freq(f_MHz));
 	end function;
 
-	function GHz2Time(f_GHz : NATURAL) return T_TIME is
+	function GHz2Time(f_GHz : natural) return T_TIME is
 	begin
 		return to_time(GHz2Freq(f_GHz));
 	end function;
@@ -870,7 +870,7 @@ package body physical is
 
 	-- convert physical types to standard type (INTEGER)
 	-- ===========================================================================
-	function to_int(t : T_TIME; scale : T_TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return INTEGER is
+	function to_int(t : T_TIME; scale : T_TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return integer is
 	begin
 		case RoundingStyle is
 			when ROUND_UP =>					return integer(ceil(to_real(t, scale)));
@@ -919,7 +919,7 @@ package body physical is
 	--	@param Timing					A given timing or delay, which should be achived
 	--	@param Clock_Period		The period of the circuits clock
 	--	@RoundingStyle				Default = ROUND_UP; other choises: ROUND_UP, ROUND_DOWN, ROUND_TO_NEAREST
-	function TimingToCycles(Timing : T_TIME; Clock_Period : T_TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return NATURAL is
+	function TimingToCycles(Timing : T_TIME; Clock_Period : T_TIME; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return natural is
 		variable res_real	: REAL;
 		variable res_nat	: natural;
 		variable res_time	: T_TIME;
@@ -963,17 +963,17 @@ package body physical is
 		return res_nat;
 	end;
 
-	function TimingToCycles(Timing : T_TIME; Clock_Frequency	: FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return NATURAL is
+	function TimingToCycles(Timing : T_TIME; Clock_Frequency	: FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return natural is
 	begin
 		return TimingToCycles(Timing, to_time(Clock_Frequency), RoundingStyle);
 	end function;
 
-	function CyclesToDelay(Cycles : NATURAL; Clock_Period : T_TIME) return T_TIME is
+	function CyclesToDelay(Cycles : natural; Clock_Period : T_TIME) return T_TIME is
 	begin
 		return Clock_Period * real(Cycles);
 	end function;
 
-	function CyclesToDelay(Cycles : NATURAL; Clock_Frequency : FREQ) return T_TIME is
+	function CyclesToDelay(Cycles : natural; Clock_Frequency : FREQ) return T_TIME is
 	begin
 		return CyclesToDelay(Cycles, to_time(Clock_Frequency));
 	end function;
@@ -1008,10 +1008,10 @@ package body physical is
 		return ite(t >= 0 fs, str_format(value, precision) & " " & str_trim(unit),
 							      '-' & str_format(value, precision) & " " & str_trim(unit));
 	end function;
-		
-	function to_string(t : T_TIME; precision : NATURAL) return STRING is
+
+	function to_string(t : T_TIME; precision : natural) return string is
 		variable tt     : T_TIME;
-		variable unit		: STRING(1 to 3)	:= (others => C_POC_NUL);
+		variable unit		: string(1 to 3)	:= (others => C_POC_NUL);
 		variable value	: REAL;
 	begin
 		tt := abs t;
@@ -1039,8 +1039,8 @@ package body physical is
 							     '-' & str_format(value, precision) & " " & str_trim(unit));
 	end function;
 
-	function to_string(f : FREQ; precision : NATURAL) return STRING is
-		variable unit		: STRING(1 to 3)	:= (others => C_POC_NUL);
+	function to_string(f : FREQ; precision : natural) return string is
+		variable unit		: string(1 to 3)	:= (others => C_POC_NUL);
 		variable value	: REAL;
 	begin
 		if (f < 1 kHz) then

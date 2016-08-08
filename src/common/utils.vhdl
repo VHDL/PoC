@@ -791,9 +791,9 @@ package body utils is
 			return maximum;
 		else
 			return index;
-		end if; 
+		end if;
 	end function;
-	
+
 	function to_index(slv : unsigned; max : natural := 0) return integer is
 		variable res : integer;
 	begin

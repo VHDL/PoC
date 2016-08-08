@@ -1,0 +1,30 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/stat_average_tb/clock
+/stat_average_tb/reset
+/stat_average_tb/enable
+/stat_average_tb/datain
+/stat_average_tb/count
+/stat_average_tb/sum
+/stat_average_tb/average
+/stat_average_tb/valid
+/stat_average_tb/uut/clock
+/stat_average_tb/uut/reset
+/stat_average_tb/uut/enable
+/stat_average_tb/uut/datain
+/stat_average_tb/uut/count
+/stat_average_tb/uut/sum
+/stat_average_tb/uut/average
+/stat_average_tb/uut/valid
+/stat_average_tb/uut/datain_us
+/stat_average_tb/uut/counter_i
+/stat_average_tb/uut/counter_us
+/stat_average_tb/uut/sum_i
+/stat_average_tb/uut/sum_us
+/stat_average_tb/uut/quotient
+/stat_average_tb/uut/valid_i
+/stat_average_tb/uut/count_d
+/stat_average_tb/uut/sum_d

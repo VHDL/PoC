@@ -1,0 +1,17 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/stat_histogram_tb/clock
+/stat_histogram_tb/reset
+/stat_histogram_tb/enable
+/stat_histogram_tb/datain
+/stat_histogram_tb/histogram
+/stat_histogram_tb/histogram_slvv
+/stat_histogram_tb/uut/clock
+/stat_histogram_tb/uut/reset
+/stat_histogram_tb/uut/enable
+/stat_histogram_tb/uut/datain
+/stat_histogram_tb/uut/histogram
+/stat_histogram_tb/uut/histogrammemory

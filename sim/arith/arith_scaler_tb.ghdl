@@ -1,0 +1,13 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/arith_scaler_tb/clk
+/arith_scaler_tb/rst
+/arith_scaler_tb/start
+/arith_scaler_tb/arg
+/arith_scaler_tb/msel
+/arith_scaler_tb/dsel
+/arith_scaler_tb/done
+/arith_scaler_tb/res

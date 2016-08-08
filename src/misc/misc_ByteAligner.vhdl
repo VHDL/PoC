@@ -40,8 +40,8 @@ use			PoC.components.all;
 entity misc_ByteAligner is
   generic (
 	  REGISTERED	: boolean			:= FALSE;																				-- add output register @Clock
-		WORD_BITS		: positive		:= 32;																					-- 
-		BYTE_BITS		: positive		:= 8																						-- 
+		WORD_BITS		: positive		:= 32;																					--
+		BYTE_BITS		: positive		:= 8																						--
 	);
   port (
 		Clock				: in	std_logic;																							-- clock
@@ -63,7 +63,7 @@ architecture rtl of misc_ByteAligner is
 	signal Data				: T_DATA(SEGMENTS - 1 downto 0);
 	signal Data_d			: T_DATA(SEGMENTS - 1 downto 1)						:= (others => (others => '0'));
 	signal Align_bin	: unsigned(log2ceilnz(SEGMENTS) - 1 downto 0);
-	
+
 	signal MuxOut			: T_DATA(SEGMENTS - 1 downto 0);
 	signal Out_Data_i	: std_logic_vector(In_Data'range);
 
@@ -73,7 +73,7 @@ begin
 	Align_d			<= ffdre(q => Align_d, d => In_Align, en => Changed)	when rising_edge(Clock);
 	Changed			<= to_sl(In_Align /= Align_d);
 	Align_bin		<= onehot2bin(Align_d);
-	
+
 	genData : for i in 1 to SEGMENTS - 1 generate
 		Data_d(i)	<= In_Data((BYTE_BITS * i) + BYTE_BITS - 1 downto (BYTE_BITS * i))	when rising_edge(Clock);
 	end generate;
@@ -81,18 +81,18 @@ begin
 		signal MuxIn				: T_DATA(SEGMENTS - 1 downto 0);
 	begin
 		Data(i)		<= In_Data((BYTE_BITS * i) + BYTE_BITS - 1 downto (BYTE_BITS * i));
-		
+
 		genMux : for j in 0 to SEGMENTS - 1 generate
 			constant k	: integer := i - j;
 		begin
 			MuxIn(j)	<= ite((k >= 0), Data(bound(k, Data'low, Data'high)), Data_d(bound((SEGMENTS + k), Data_d'low, Data_d'high)));
 		end generate;
-		
+
 		MuxOut(i)	<= MuxIn(to_integer(Align_bin));
-		
+
 		Out_Data_i((BYTE_BITS * i) + BYTE_BITS - 1 downto (BYTE_BITS * i))	<= MuxOut(i);
 	end generate;
-	
+
 	-- optional output registers
 	genOutReg0 : if (REGISTERED = FALSE) generate
 --		Out_Align	<= (0 => '1', others => '0');

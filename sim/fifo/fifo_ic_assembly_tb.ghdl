@@ -1,0 +1,14 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/fifo_ic_assembly_tb/clk
+/fifo_ic_assembly_tb/rst
+/fifo_ic_assembly_tb/base
+/fifo_ic_assembly_tb/addr
+/fifo_ic_assembly_tb/din
+/fifo_ic_assembly_tb/put
+/fifo_ic_assembly_tb/dout
+/fifo_ic_assembly_tb/vld
+/fifo_ic_assembly_tb/got

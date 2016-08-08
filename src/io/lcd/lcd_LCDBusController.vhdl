@@ -68,19 +68,15 @@ end entity;
 
 
 architecture rtl of lcd_LCDBusController is
-	CONSTANT TIME_BUSENABLE_HIGH							: T_TIME			:= 250.0e-9;		--Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * 			CLOCK_DUTY_CYCLE);
-	CONSTANT TIME_BUSENABLE_LOW								: T_TIME			:= 250.0e-9;		--Freq_kHz2Real_ns(LCD_BUS_FREQ_KHZ * (1 - CLOCK_DUTY_CYCLE));
+	attribute KEEP														: boolean;
+	attribute FSM_ENCODING										: string;
 
-	CONSTANT TIME_SETUP_REGSEL								: T_TIME			:= 40.0e-9;
-	CONSTANT TIME_SETUP_DATA									: T_TIME			:= 80.0e-9;
-	CONSTANT TIME_HOLD_REGSEL									: T_TIME			:= 10.0e-9;
-	CONSTANT TIME_HOLD_DATA										: T_TIME			:= 10.0e-9;
-	CONSTANT TIME_VALID_DATA									: T_TIME			:= 5.0e-9;
-	CONSTANT TIME_DELAY_DATA									: T_TIME			:= 120.0e-9;
-	constant TIME_HOLD_REGSEL									: time			:= 10 ns;
-	constant TIME_HOLD_DATA										: time			:= 10 ns;
-	constant TIME_VALID_DATA									: time			:= 5 ns;
-	constant TIME_DELAY_DATA									: time			:= 120 ns;
+	constant TIME_SETUP_REGSEL								: T_TIME			:= 40.0e-9;
+	constant TIME_SETUP_DATA									: T_TIME			:= 80.0e-9;
+	constant TIME_HOLD_REGSEL									: T_TIME			:= 10.0e-9;
+	constant TIME_HOLD_DATA										: T_TIME			:= 10.0e-9;
+	constant TIME_VALID_DATA									: T_TIME			:= 5.0e-9;
+	constant TIME_DELAY_DATA									: T_TIME			:= 120.0e-9;
 
 	-- Timing table ID
 	constant TTID_BUSENABLE_LOW								: natural		:= 0;

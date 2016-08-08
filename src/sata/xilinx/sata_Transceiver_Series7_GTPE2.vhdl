@@ -142,7 +142,7 @@ architecture rtl of sata_Transceiver_Series7_GTPE2 is
 		else																	return 0;
 		end if;
 	end function;
-	
+
 	function get_ReferenceClockDivider(RefClock_Freq : FREQ) return positive is
 	begin
 		if		(RefClock_Freq = 100 MHz) then	return 1;
@@ -151,16 +151,16 @@ architecture rtl of sata_Transceiver_Series7_GTPE2 is
 		else																	return 0;
 		end if;
 	end function;
-	
+
 	constant PLL0_FEEDBACK_CLOCK_DIVIDER	: positive := get_FeedbackClockDivider(REFCLOCK_FREQ);
 	constant PLL0_REFERENCE_CLOCK_DIVIDER	: positive := get_ReferenceClockDivider(REFCLOCK_FREQ);
-	
+
 	signal QuadPLL_PowerDown			: std_logic_vector(0 downto 0);
 	signal QuadPLL_Reset					: std_logic_vector(0 downto 0);
 	signal QuadPLL_Locked_async		: std_logic_vector(0 downto 0);
 	signal QuadPLL_HFClock				: std_logic_vector(0 downto 0);
 	signal QuadPLL_RefClock				: std_logic_vector(0 downto 0);
-	
+
 	signal QuadPLL_DRP_Clock			: std_logic;
 	signal QuadPLL_DRP_Enable			: std_logic;
 	signal QuadPLL_DRP_ReadWrite	: std_logic;
@@ -168,7 +168,7 @@ architecture rtl of sata_Transceiver_Series7_GTPE2 is
 	signal QuadPLL_DRP_DataIn			: T_XIL_DRP_DATA;
 	signal QuadPLL_DRP_DataOut		: T_XIL_DRP_DATA;
 	signal QuadPLL_DRP_Ack				: std_logic;
-	
+
 begin
 
 -- ==================================================================
@@ -184,7 +184,7 @@ begin
 	-- =========================================================================
 	QuadPLL_PowerDown(0)		<= slv_and(PowerDown);
 	QuadPLL_Reset(0)				<= QuadPLL_PowerDown(0) or slv_and(ClockNetwork_Reset);
-	
+
 	QuadPLL_DRP_Clock				<= '0';
 	QuadPLL_DRP_Enable			<= '0';
 	QuadPLL_DRP_ReadWrite		<= '0';
@@ -192,7 +192,7 @@ begin
 	QuadPLL_DRP_DataIn			<= x"0000";
 	--	<float>							<= QuadPLL_DRP_DataOut;
 	--	<float>							<= QuadPLL_DRP_Ack;
-	
+
 	QuadPLL : GTPE2_COMMON
 		generic map (
 			-- Simulation attributes
@@ -239,7 +239,7 @@ begin
 			-- PLL 0 - power-down and resets
 			PLL0PD							=> QuadPLL_PowerDown(0),
 			PLL0RESET						=> QuadPLL_Reset(0),
-			-- PLL 0 - 
+			-- PLL 0 -
 			PLL0REFCLKSEL				=> "111",									-- select GTGREFCLK0 (from fabric)
 			PLL0REFCLKLOST			=> open,
 			PLL0FBCLKLOST				=> open,
@@ -250,11 +250,11 @@ begin
 			PLL0OUTCLK					=> QuadPLL_HFClock(0),
 			PLL0OUTREFCLK				=> QuadPLL_RefClock(0),
 			REFCLKOUTMONITOR0		=> open,
-			
+
 			-- PLL 1 - power-down and resets
 			PLL1PD							=> '1',
 			PLL1RESET						=> '0',
-			-- PLL 0 - 
+			-- PLL 0 -
 			PLL1REFCLKSEL				=> "001",									-- select GTREFCLK0 (from IBUFDS_GTE2)
 			PLL1REFCLKLOST			=> open,
 			PLL1FBCLKLOST				=> open,
@@ -265,7 +265,7 @@ begin
 			PLL1OUTCLK					=> open,
 			PLL1OUTREFCLK				=> open,
 			REFCLKOUTMONITOR1		=> open,
-			
+
 			-- unknown ports
 			BGRCALOVRDENB				=> '1',
 			PLLRSVD1						=> "0000000000000000",
@@ -279,7 +279,7 @@ begin
 			PMARSVD							=> "00000000",
 			RCALENB							=> '1',
 			-- Digital monitor output
-			DMONITOROUT					=> open,	
+			DMONITOROUT					=> open,
 			-- Dynamic Reconfiguration Port (DRP)
 			DRPCLK							=> QuadPLL_DRP_Clock,									-- @DRP_Clock:
 			DRPEN								=> QuadPLL_DRP_Enable,								-- @DRP_Clock:
@@ -289,7 +289,7 @@ begin
 			DRPDO								=> QuadPLL_DRP_DataOut,								-- @DRP_Clock:
 			DRPRDY							=> QuadPLL_DRP_Ack										-- @DRP_Clock:
 		);
-	
+
 	-- ===========================================================================
 	-- Port instance
 	-- ===========================================================================
@@ -297,7 +297,7 @@ begin
 		constant CLOCK_DIVIDER_SELECTION		:	std_logic_vector(2 downto 0)	:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(i));
 
 		constant QUADPLL_PORTID							: natural	:= 0;
-		
+
 		constant GTP_PCS_RSVD_ATTR					: bit_vector(47 downto 0)				:= x"000000000100";	-- GTXE2 (
 -- GTXE2 			3 =>			'0',							-- select alternative OOB circuit clock source; 0 => sysclk; 1 => CLKRSVD(0)
 -- GTXE2 			6 =>			'1',							-- reserved; set to '1'
@@ -329,7 +329,7 @@ begin
 		attribute MAXSKEW of ClkNet_Reset : signal is "1 ns"; -- required by sata_Transceiver_ClockStable
 
 		signal QuadPLL_Locked								: std_logic;
-		
+
 		-- internal version of output signals
 		signal ResetDone_i									: std_logic							:= '0';
 		signal ClockNetwork_ResetDone_i 		: std_logic;
@@ -522,7 +522,7 @@ begin
 		-- ClockNetwork_Reset = '1'.
 		-- ======================================================================
 		ClkNet_Reset <= PowerDown(i) or ClockNetwork_Reset(i);
-		
+
 		ClkNet : entity PoC.sata_Transceiver_Series7_GTPE2_ClockNetwork
 			generic map (
 				DEBUG											=> DEBUG,
@@ -531,16 +531,16 @@ begin
 			)
 			port map (
 				ClockIn_150MHz						=> VSS_Common_In.RefClockIn_150_MHz,
-		
+
 				ClockNetwork_Reset				=> ClkNet_Reset,
 				ClockNetwork_ResetDone		=> ClkNet_ResetDone,
-		
+
 				SATAGeneration						=> RP_SATAGeneration(i),
-		
+
 				GTP_Clock_2X							=> GTP_UserClock,
 				GTP_Clock_4X							=> GTP_UserClock2
 			);
-		
+
 		SATA_Clock_i			<= GTP_UserClock2;
 		SATA_Clock(i)			<= SATA_Clock_i;
 
@@ -865,7 +865,7 @@ begin
 		RX_Align : entity PoC.misc_ByteAligner
 			generic map (
 				REGISTERED	=> FALSE,
-				WORD_BITS		=> 32, 
+				WORD_BITS		=> 32,
 				BYTE_BITS		=> 8
 			)
 			port map (
@@ -1244,7 +1244,7 @@ begin
 
 				-- TX configurable driver attributes
 				TX_PREDRIVER_MODE												=> '0',
-				
+
 				-- new attributes for the GTPE2 transceiver compared to GTXE2
 				------------------ JTAG Attributes ---------------
 				ACJTAG_DEBUG_MODE												=> '0',

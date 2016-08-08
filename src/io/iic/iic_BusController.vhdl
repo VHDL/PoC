@@ -80,16 +80,16 @@ architecture rtl of iic_BusController is
 	attribute KEEP														: boolean;
 	attribute FSM_ENCODING										: string;
 
-	FUNCTION getSpikeSupressionTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN T_TIME IS
+	function getSpikeSupressionTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return T_TIME is
 	begin
-		IF SIMULATION THEN											RETURN 50.0e-9;	END IF;
+		if SIMULATION then											return 50.0e-9;	end if;
 		case IIC_BUSMODE is
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 50.0e-9;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 50.0e-9;		-- Changed to 50 ns; original value from NXP UM 10204: 0 ns
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 50.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 50.0e-9;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 50.0e-9;
-			WHEN OTHERS =>												RETURN 50.0e-9;
+			when IO_IIC_BUSMODE_SMBUS =>					return 50.0e-9;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 50.0e-9;		-- Changed to 50 ns; original value from NXP UM 10204: 0 ns
+			when IO_IIC_BUSMODE_FASTMODE =>				return 50.0e-9;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 50.0e-9;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 50.0e-9;
+			when others =>												return 50.0e-9;
 		end case;
 	end function;
 
@@ -106,121 +106,121 @@ architecture rtl of iic_BusController is
 		end case;
 	end function;
 
-	FUNCTION getClockHighTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN T_TIME IS
+	function getClockHighTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return T_TIME is
 	begin
-		IF SIMULATION THEN											RETURN 260.0e-9;	END IF;
+		if SIMULATION then											return 260.0e-9;	end if;
 		case IIC_BUSMODE is
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4000.0e-9;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4000.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0e-9;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0e-9;
-			WHEN OTHERS =>												RETURN 0.0e-9;
+			when IO_IIC_BUSMODE_SMBUS =>					return 4000.0e-9;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 4000.0e-9;
+			when IO_IIC_BUSMODE_FASTMODE =>				return 600.0e-9;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 260.0e-9;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 0.0e-9;
+			when others =>												return 0.0e-9;
 		end case;
 	end function;
 
-	FUNCTION getClockLowTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN T_TIME IS
+	function getClockLowTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return T_TIME is
 	begin
-		IF SIMULATION THEN											RETURN 500.0e-9;	END IF;
+		if SIMULATION then											return 500.0e-9;	end if;
 		case IIC_BUSMODE is
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4700.0e-9;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4700.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 1300.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 500.0e-9;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0e-9;
-			WHEN OTHERS =>												RETURN 0.0e-9;
+			when IO_IIC_BUSMODE_SMBUS =>					return 4700.0e-9;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 4700.0e-9;
+			when IO_IIC_BUSMODE_FASTMODE =>				return 1300.0e-9;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 500.0e-9;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 0.0e-9;
+			when others =>												return 0.0e-9;
 		end case;
 	end function;
 
-	FUNCTION getSetupRepeatedStartTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN T_TIME IS
+	function getSetupRepeatedStartTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return T_TIME is
 	begin
-		IF SIMULATION THEN											RETURN 260.0e-9;	END IF;
+		if SIMULATION then											return 260.0e-9;	end if;
 		case IIC_BUSMODE is
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4700.0e-9;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4700.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0e-9;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0e-9;
-			WHEN OTHERS =>												RETURN 0.0e-9;
+			when IO_IIC_BUSMODE_SMBUS =>					return 4700.0e-9;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 4700.0e-9;
+			when IO_IIC_BUSMODE_FASTMODE =>				return 600.0e-9;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 260.0e-9;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 0.0e-9;
+			when others =>												return 0.0e-9;
 		end case;
 	end function;
 
-	FUNCTION getSetupStopTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN T_TIME IS
+	function getSetupStopTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return T_TIME is
 	begin
-		IF SIMULATION THEN											RETURN 260.0e-9;	END IF;
+		if SIMULATION then											return 260.0e-9;	end if;
 		case IIC_BUSMODE is
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4000.0e-9;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4000.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0e-9;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0e-9;
-			WHEN OTHERS =>												RETURN 0.0e-9;
+			when IO_IIC_BUSMODE_SMBUS =>					return 4000.0e-9;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 4000.0e-9;
+			when IO_IIC_BUSMODE_FASTMODE =>				return 600.0e-9;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 260.0e-9;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 0.0e-9;
+			when others =>												return 0.0e-9;
 		end case;
 	end function;
 
-	FUNCTION getSetupDataTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN T_TIME IS
+	function getSetupDataTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return T_TIME is
 	begin
-		IF SIMULATION THEN											RETURN 50.0e-9;	END IF;
+		if SIMULATION then											return 50.0e-9;	end if;
 		case IIC_BUSMODE is
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 250.0e-9;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 250.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 100.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 50.0e-9;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0e-9;
-			WHEN OTHERS =>												RETURN 0.0e-9;
+			when IO_IIC_BUSMODE_SMBUS =>					return 250.0e-9;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 250.0e-9;
+			when IO_IIC_BUSMODE_FASTMODE =>				return 100.0e-9;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 50.0e-9;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 0.0e-9;
+			when others =>												return 0.0e-9;
 		end case;
 	end function;
 
-	FUNCTION getHoldDataTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN T_TIME IS
+	function getHoldDataTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return T_TIME is
 	begin
-		IF SIMULATION THEN											RETURN 0.0e-9;	END IF;
+		if SIMULATION then											return 0.0e-9;	end if;
 		case IIC_BUSMODE is
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 300.0e-9;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 0.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 0.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 0.0e-9;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0e-9;
-			WHEN OTHERS =>												RETURN 0.0e-9;
+			when IO_IIC_BUSMODE_SMBUS =>					return 300.0e-9;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 0.0e-9;
+			when IO_IIC_BUSMODE_FASTMODE =>				return 0.0e-9;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 0.0e-9;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 0.0e-9;
+			when others =>												return 0.0e-9;
 		end case;
 	end function;
 
-	FUNCTION getValidDataTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN T_TIME IS
+	function getValidDataTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return T_TIME is
 	begin
-		IF SIMULATION THEN											RETURN 450.0e-9;	END IF;
+		if SIMULATION then											return 450.0e-9;	end if;
 		case IIC_BUSMODE is
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 0.0e-9;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 3450.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 900.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 450.0e-9;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0e-9;
-			WHEN OTHERS =>												RETURN 0.0e-9;
+			when IO_IIC_BUSMODE_SMBUS =>					return 0.0e-9;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 3450.0e-9;
+			when IO_IIC_BUSMODE_FASTMODE =>				return 900.0e-9;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 450.0e-9;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 0.0e-9;
+			when others =>												return 0.0e-9;
 		end case;
 	end function;
 
-	FUNCTION getHoldClockAfterStartTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) RETURN T_TIME IS
+	function getHoldClockAfterStartTime(IIC_BUSMODE : T_IO_IIC_BUSMODE) return T_TIME is
 	begin
-		IF SIMULATION THEN											RETURN 260.0e-9;	END IF;
+		if SIMULATION then											return 260.0e-9;	end if;
 		case IIC_BUSMODE is
-			WHEN IO_IIC_BUSMODE_SMBUS =>					RETURN 4000.0e-9;
-			WHEN IO_IIC_BUSMODE_STANDARDMODE =>		RETURN 4000.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODE =>				RETURN 600.0e-9;
-			WHEN IO_IIC_BUSMODE_FASTMODEPLUS =>		RETURN 260.0e-9;
-			WHEN IO_IIC_BUSMODE_HIGHSPEEDMODE =>	RETURN 0.0e-9;
-			WHEN OTHERS =>												RETURN 0.0e-9;
+			when IO_IIC_BUSMODE_SMBUS =>					return 4000.0e-9;
+			when IO_IIC_BUSMODE_STANDARDMODE =>		return 4000.0e-9;
+			when IO_IIC_BUSMODE_FASTMODE =>				return 600.0e-9;
+			when IO_IIC_BUSMODE_FASTMODEPLUS =>		return 260.0e-9;
+			when IO_IIC_BUSMODE_HIGHSPEEDMODE =>	return 0.0e-9;
+			when others =>												return 0.0e-9;
 		end case;
 	end function;
 
 	-- Timing definitions
-	CONSTANT TIME_SPIKE_SUPPRESSION						: T_TIME		:= getSpikeSupressionTime(IIC_BUSMODE);
-	CONSTANT TIME_BUS_FREE										: T_TIME		:= getBusFreeTime(IIC_BUSMODE);
-	CONSTANT TIME_CLOCK_HIGH									: T_TIME		:= getClockHighTime(IIC_BUSMODE);
-	CONSTANT TIME_CLOCK_LOW										: T_TIME		:= getClockLowTime(IIC_BUSMODE);
-	CONSTANT TIME_SETUP_REPEAT_START					: T_TIME		:= getSetupRepeatedStartTime(IIC_BUSMODE);
-	CONSTANT TIME_SETUP_STOP									: T_TIME		:= getSetupStopTime(IIC_BUSMODE);
-	CONSTANT TIME_SETUP_DATA									: T_TIME		:= getSetupDataTime(IIC_BUSMODE);
-	CONSTANT TIME_HOLD_CLOCK_AFTER_START			: T_TIME		:= getHoldClockAfterStartTime(IIC_BUSMODE);
-	CONSTANT TIME_HOLD_DATA										: T_TIME		:= getHoldDataTime(IIC_BUSMODE);
-	CONSTANT TIME_VALID_DATA									: T_TIME		:= getValidDataTime(IIC_BUSMODE);
+	constant TIME_SPIKE_SUPPRESSION						: T_TIME		:= getSpikeSupressionTime(IIC_BUSMODE);
+	constant TIME_BUS_FREE										: T_TIME		:= getBusFreeTime(IIC_BUSMODE);
+	constant TIME_CLOCK_HIGH									: T_TIME		:= getClockHighTime(IIC_BUSMODE);
+	constant TIME_CLOCK_LOW										: T_TIME		:= getClockLowTime(IIC_BUSMODE);
+	constant TIME_SETUP_REPEAT_START					: T_TIME		:= getSetupRepeatedStartTime(IIC_BUSMODE);
+	constant TIME_SETUP_STOP									: T_TIME		:= getSetupStopTime(IIC_BUSMODE);
+	constant TIME_SETUP_DATA									: T_TIME		:= getSetupDataTime(IIC_BUSMODE);
+	constant TIME_HOLD_CLOCK_AFTER_START			: T_TIME		:= getHoldClockAfterStartTime(IIC_BUSMODE);
+	constant TIME_HOLD_DATA										: T_TIME		:= getHoldDataTime(IIC_BUSMODE);
+	constant TIME_VALID_DATA									: T_TIME		:= getValidDataTime(IIC_BUSMODE);
 
 	-- Timing table ID
 	constant TTID_BUS_FREE_TIME								: natural		:= 0;

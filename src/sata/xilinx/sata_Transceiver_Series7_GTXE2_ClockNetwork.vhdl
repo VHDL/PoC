@@ -64,45 +64,45 @@ end entity;
 
 
 architecture rtl of sata_Transceiver_Series7_GTXE2_ClockNetwork is
-	attribute KEEP											: BOOLEAN;
-	
+	attribute KEEP											: boolean;
+
 		-- delay CMB resets until the slowed syncBlock has noticed that LockedState is low
 		--	control clock:				200 MHz
 		--	slowest output clock:	10 Mhz
 		--	worst case delay:			(Control_Clock freq / slowest clock in MHz) * register stages		+ safety
 		--		=> 44								(200 MHz						/ 10 MHz)								* 2 register stages	+ 4
-	constant CMB_DELAY_CYCLES						: POSITIVE		:= integer(real(CLOCK_IN_FREQ / 10 MHz) * 2.0 + 4.0);
+	constant CMB_DELAY_CYCLES						: positive		:= integer(real(CLOCK_IN_FREQ / 10 MHz) * 2.0 + 4.0);
 
-	signal ClkNet_Reset									: STD_LOGIC;
-	
-	signal MMCM_Reset										: STD_LOGIC;
-	signal MMCM_Reset_clr								: STD_LOGIC;
-	signal MMCM_ResetState							: STD_LOGIC		:= '0';
-	signal MMCM_Reset_delayed						: STD_LOGIC_VECTOR(CMB_DELAY_CYCLES - 1 downto 0) := (others => '0');
-	signal MMCM_Locked_async						: STD_LOGIC;
-	signal MMCM_Locked									: STD_LOGIC;
-	signal MMCM_Locked_d								: STD_LOGIC		:= '0';
-	signal MMCM_Locked_re								: STD_LOGIC;
-	signal MMCM_LockedState							: STD_LOGIC		:= '0';
+	signal ClkNet_Reset									: std_logic;
 
-	signal Locked												: STD_LOGIC;
-	signal Reset												: STD_LOGIC;
-	
-	signal Control_Clock								: STD_LOGIC;
-	signal Control_Clock_BUFR						: STD_LOGIC;
-	
-	signal MMCM_Clock_200MHz						: STD_LOGIC;
-	signal MMCM_Clock_300MHz						: STD_LOGIC;
-	signal MMCM_Clock_150MHz						: STD_LOGIC;
+	signal MMCM_Reset										: std_logic;
+	signal MMCM_Reset_clr								: std_logic;
+	signal MMCM_ResetState							: std_logic		:= '0';
+	signal MMCM_Reset_delayed						: std_logic_vector(CMB_DELAY_CYCLES - 1 downto 0) := (others => '0');
+	signal MMCM_Locked_async						: std_logic;
+	signal MMCM_Locked									: std_logic;
+	signal MMCM_Locked_d								: std_logic		:= '0';
+	signal MMCM_Locked_re								: std_logic;
+	signal MMCM_LockedState							: std_logic		:= '0';
 
-	signal MMCM_Clock_200MHz_BUFG				: STD_LOGIC;
-	signal MMCM_Clock_300MHz_BUFG				: STD_LOGIC;
-	signal MMCM_Clock_150MHz_BUFG				: STD_LOGIC;
+	signal Locked												: std_logic;
+	signal Reset												: std_logic;
+
+	signal Control_Clock								: std_logic;
+	signal Control_Clock_BUFR						: std_logic;
+
+	signal MMCM_Clock_200MHz						: std_logic;
+	signal MMCM_Clock_300MHz						: std_logic;
+	signal MMCM_Clock_150MHz						: std_logic;
+
+	signal MMCM_Clock_200MHz_BUFG				: std_logic;
+	signal MMCM_Clock_300MHz_BUFG				: std_logic;
+	signal MMCM_Clock_150MHz_BUFG				: std_logic;
 
 	attribute KEEP of MMCM_Clock_200MHz_BUFG		: signal is DEBUG;
 	attribute KEEP of MMCM_Clock_300MHz_BUFG		: signal is DEBUG;
 	attribute KEEP of MMCM_Clock_150MHz_BUFG		: signal is DEBUG;
-	
+
 begin
 	-- ==================================================================
 	-- ResetControl
@@ -115,9 +115,9 @@ begin
 		port map (
 			Clock					=> Control_Clock,				-- Clock to be synchronized to
 			Input(0)			=> ClockNetwork_Reset,	-- Data to be synchronized
-			Input(1)			=> MMCM_Locked_async,		-- 
+			Input(1)			=> MMCM_Locked_async,		--
 			Output(0)			=> ClkNet_Reset,				-- synchronised data
-			Output(1)			=> MMCM_Locked					-- 
+			Output(1)			=> MMCM_Locked					--
 		);
 	-- clear reset signals, if external Reset is low and CMB (clock modifying block) noticed reset -> locked = low
 	MMCM_Reset_clr					<= ClkNet_Reset nor MMCM_Locked;
@@ -125,17 +125,17 @@ begin
 	-- detect rising edge on CMB locked signals
 	MMCM_Locked_d						<= MMCM_Locked	when rising_edge(Control_Clock);
 	MMCM_Locked_re					<= not MMCM_Locked_d	and MMCM_Locked;
-	
+
 	--												RS-FF					Q										RST										SET														CLK
 	-- hold reset until external reset goes low and CMB noticed reset
 	MMCM_ResetState					<= ffrs(q => MMCM_ResetState,	 rst => MMCM_Reset_clr,	set => ClkNet_Reset)	 when rising_edge(Control_Clock);
 	-- deassert *_LockedState, if CMBs are going to be reseted; assert it if *_Locked is high again
 	MMCM_LockedState				<= ffrs(q => MMCM_LockedState, rst => ClkNet_Reset,		set => MMCM_Locked_re) when rising_edge(Control_Clock);
-	
+
 	-- delay CMB resets until the slowed syncBlock has noticed that LockedState is low
 	MMCM_Reset_delayed			<= shreg_left(MMCM_Reset_delayed, MMCM_ResetState)	when rising_edge(Control_Clock);
 	MMCM_Reset							<= MMCM_Reset_delayed(MMCM_Reset_delayed'high);
-	
+
 	Locked									<= MMCM_LockedState;
 	ClockNetwork_ResetDone	<= Locked;
 
@@ -153,9 +153,9 @@ begin
 			I		=> ClockIn_150MHz,
 			O		=> Control_Clock_BUFR
 		);
-	
+
 	Control_Clock						<= Control_Clock_BUFR;
-	
+
 	-- 200 MHz BUFG
 	BUFG_MMCM_Clock_200MHz : BUFG
 		port map (
@@ -176,7 +176,7 @@ begin
 			I		=> MMCM_Clock_150MHz,
 			O		=> MMCM_Clock_150MHz_BUFG
 		);
-		
+
 	-- ==================================================================
 	-- Mixed-Mode Clock Manager (MMCM)
 	-- ==================================================================
@@ -194,29 +194,29 @@ begin
 			CLKFBOUT_MULT_F					=> 4.5,
 			CLKFBOUT_PHASE					=> 0.0,
 			CLKFBOUT_USE_FINE_PS		=> false,
-			
+
 			DIVCLK_DIVIDE						=> 1,
-			
+
 			CLKOUT0_DIVIDE_F				=> 4.5,
 			CLKOUT0_PHASE						=> 0.0,
 			CLKOUT0_DUTY_CYCLE			=> 0.500,
 			CLKOUT0_USE_FINE_PS			=> false,
-			
+
 			CLKOUT1_DIVIDE					=> 3,
 			CLKOUT1_PHASE						=> 0.0,
 			CLKOUT1_DUTY_CYCLE			=> 0.500,
 			CLKOUT1_USE_FINE_PS			=> false,
-			
+
 			CLKOUT2_DIVIDE					=> 6,
 			CLKOUT2_PHASE						=> 0.0,
 			CLKOUT2_DUTY_CYCLE			=> 0.500,
 			CLKOUT2_USE_FINE_PS			=> false,
-			
+
 			CLKOUT3_DIVIDE					=> 4,
 			CLKOUT3_PHASE						=> 0.0,
 			CLKOUT3_DUTY_CYCLE			=> 0.500,
 			CLKOUT3_USE_FINE_PS			=> false,
-			
+
 			CLKOUT4_CASCADE					=> false,
 			CLKOUT4_DIVIDE					=> 100,
 			CLKOUT4_PHASE						=> 0.0,
@@ -230,12 +230,12 @@ begin
 			CLKIN2							=> ClockIn_150MHz,
 			CLKINSEL						=> '1',
 			CLKINSTOPPED				=> open,
-			
+
 			CLKFBOUT						=> open,
 			CLKFBOUTB						=> open,
 			CLKFBIN							=> MMCM_Clock_200MHz_BUFG,
 			CLKFBSTOPPED				=> open,
-			
+
 			CLKOUT0							=> MMCM_Clock_200MHz,
 			CLKOUT0B						=> open,
 			CLKOUT1							=> MMCM_Clock_300MHz,
@@ -257,20 +257,20 @@ begin
 			DI									=>	x"0000",
 			DWE									=>	'0',
 
-			PWRDWN							=>	'0',			
+			PWRDWN							=>	'0',
 			LOCKED							=>	MMCM_Locked_async,
-			
+
 			PSCLK								=>	'0',
 			PSEN								=>	'0',
-			PSINCDEC						=>	'0', 
-			PSDONE							=>	open				 
+			PSINCDEC						=>	'0',
+			PSDONE							=>	open
 		);
-		
+
 	--Control_Clock_150MHz	<= Control_Clock_BUFR;
 	--Clock_200MHz					<= MMCM_Clock_200MHz_BUFG;
 	GTP_Clock_2X					<= MMCM_Clock_300MHz_BUFG;
 	GTP_Clock_4X					<= MMCM_Clock_150MHz_BUFG;
-	
+
 	-- synchronize internal Locked signal to ouput clock domains
 --	syncLocked200MHz : entity PoC.sync_Bits_Xilinx
 --		port map (
@@ -293,7 +293,7 @@ begin
 --			Output(0)			=> Clock_Stable_150MHz				-- synchronised data
 --		);
 
-		
+
 	-- ==================================================================
 	-- ClockMultiplexers
 	-- ==================================================================

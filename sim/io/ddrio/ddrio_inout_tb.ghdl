@@ -1,0 +1,25 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/ddrio_inout_tb/clockout
+/ddrio_inout_tb/clockoutenable
+/ddrio_inout_tb/outputenable
+/ddrio_inout_tb/dataout_high
+/ddrio_inout_tb/dataout_low
+/ddrio_inout_tb/clockin
+/ddrio_inout_tb/clockinenable
+/ddrio_inout_tb/datain_high
+/ddrio_inout_tb/datain_low
+/ddrio_inout_tb/pad
+/ddrio_inout_tb/dut/clockout
+/ddrio_inout_tb/dut/clockoutenable
+/ddrio_inout_tb/dut/outputenable
+/ddrio_inout_tb/dut/dataout_high
+/ddrio_inout_tb/dut/dataout_low
+/ddrio_inout_tb/dut/clockin
+/ddrio_inout_tb/dut/clockinenable
+/ddrio_inout_tb/dut/datain_high
+/ddrio_inout_tb/dut/datain_low
+/ddrio_inout_tb/dut/pad

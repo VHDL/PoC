@@ -76,8 +76,8 @@ architecture rtl of sata_Transceiver_Virtex5_GTP is
 -- ==================================================================
 -- SATATransceiver configuration
 -- ==================================================================
-	CONSTANT NO_DEVICE_TIMEOUT								: T_TIME					:= ite(SIMULATION, 20.0e-6, 50.0e-3);	-- simulation: 20 us, synthesis: 50 ms
-	CONSTANT NEW_DEVICE_TIMEOUT								: T_TIME					:= ite(SIMULATION, 50.0e-6, 1.0);
+	constant NO_DEVICE_TIMEOUT								: T_TIME					:= ite(SIMULATION, 20.0e-6, 50.0e-3);	-- simulation: 20 us, synthesis: 50 ms
+	constant NEW_DEVICE_TIMEOUT								: T_TIME					:= ite(SIMULATION, 50.0e-6, 1.0);
 
 	constant C_DEVICE_INFO										: T_DEVICE_INFO		:= DEVICE_INFO;
 

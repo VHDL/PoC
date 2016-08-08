@@ -86,11 +86,11 @@ architecture rtl of sata_Physical_OOBControl_Device is
 	constant CLOCK_GEN2_FREQ							: FREQ				:= 75 MHz;			-- SATAClock frequency for SATA generation 2
 	constant CLOCK_GEN3_FREQ							: FREQ				:= 150 MHz;			-- SATAClock frequency for SATA generation 3
 
-	CONSTANT DEFAULT_OOB_TIMEOUT					: T_TIME			:= 880.0e-6;
+	constant DEFAULT_OOB_TIMEOUT					: T_TIME			:= 880.0e-6;
 
-	CONSTANT OOB_TIMEOUT_I								: T_TIME			:= ite((OOB_TIMEOUT = T_TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
-	CONSTANT COMRESET_TIMEOUT							: T_TIME			:= 450.0e-9;
-	CONSTANT COMWAKE_TIMEOUT							: T_TIME			:= 250.0e-9;
+	constant OOB_TIMEOUT_I								: T_TIME			:= ite((OOB_TIMEOUT = T_TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
+	constant COMRESET_TIMEOUT							: T_TIME			:= 450.0e-9;
+	constant COMWAKE_TIMEOUT							: T_TIME			:= 250.0e-9;
 
 	constant TTID1_OOB_TIMEOUT_GEN1				: natural			:= 0;
 	constant TTID1_OOB_TIMEOUT_GEN2				: natural			:= 1;

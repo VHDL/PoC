@@ -1459,7 +1459,7 @@ begin
 		VSS_Private_Out(i).TX_p		<= GTX_TX_p;
 
 		GTX_DigitalMonitor(15 downto 8)	<= x"00";
-		
+
 		genCSP0 : if (ENABLE_DEBUGPORT = FALSE) generate
 			GTX_DRP_Clock									<= '0';
 			GTX_DRP_Enable								<= '0';
