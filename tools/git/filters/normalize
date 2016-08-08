@@ -99,7 +99,7 @@ sub vhdlcap {
     bit bit_vector boolean character integer natural positive signed
     std_logic std_logic_vector string time unsigned
   /;
-  $_[0] =~ s/\b($reserved)\b/lc $1/gier;
+  $_[0] =~ s/(--.*$|(['"\\]).*?\2|\b($reserved)\b)/$3? lc $3 : $1/gier;
 }
 
 # Fix headline markers in reST, which would coincide with git conflict markers.
