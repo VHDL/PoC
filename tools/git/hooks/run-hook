@@ -23,8 +23,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
-if ! git diff --cached --check; then
-  echo 1>&2 '! Commit would introduce whitespace errors. Please fix and try again.'
-  exit 1
-fi
+hook=$(basename $0)
+for i in tools/git/hooks/$hook.d/*; do
+	echo " executing '$(basename $i)'"
+	if ! "$i"; then
+		echo FAIL
+		exit 1
+	fi
+done
+echo PASS
