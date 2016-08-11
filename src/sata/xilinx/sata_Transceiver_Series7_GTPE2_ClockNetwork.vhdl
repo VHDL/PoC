@@ -180,7 +180,7 @@ begin
 	-- ==================================================================
 	-- Mixed-Mode Clock Manager (MMCM)
 	-- ==================================================================
-	System_MMCM : MMCME2_ADV
+	SATA_MMCM : MMCME2_ADV
 		generic map (
 			STARTUP_WAIT						=> false,
 			BANDWIDTH								=> "LOW",																			-- LOW = Jitter Filter
