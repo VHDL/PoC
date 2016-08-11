@@ -3,7 +3,6 @@ arith_sqrt
 ##########
 
 Iterative Square Root Extractor.
-
 Its computation requires (N+1)/2 steps for an argument bit width of N.
 
 

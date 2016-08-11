@@ -7,9 +7,7 @@ especially useful for smaller FIFO sizes, which can be implemented in LUT
 storage on some devices (e.g. Xilinx' SRLs). Only a single read pointer is
 maintained, which determines the number of valid entries within the
 underlying shift register.
-
 The specified depth (``MIN_DEPTH``) is rounded up to the next suitable value.
-
 
 
 .. rubric:: Entity Declaration:
