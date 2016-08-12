@@ -7,6 +7,7 @@ acting entities to queue data elements for the consumption by the other while
 still being able to unqueue untaken ones in LIFO fashion.
 
 
+
 .. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../src/dstruct/dstruct_deque.vhdl

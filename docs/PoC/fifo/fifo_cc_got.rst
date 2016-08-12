@@ -27,7 +27,7 @@ comparator (subtractor) in their path.
 .. rubric:: Examples:
 
 * FSTATE_RD_BITS = 1:
-  
+
   +-----------+----------------------+
   | fstate_rd | filled (at least)    |
   +===========+======================+
@@ -49,6 +49,7 @@ comparator (subtractor) in their path.
   +-----------+----------------------+
   |    3      | 3/4 full             |
   +-----------+----------------------+
+
 
 
 .. rubric:: Entity Declaration:
