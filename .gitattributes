@@ -8,3 +8,7 @@
 *.sh	filter=normalize
 *.rst	filter=normailze_rest
 *.vhdl	filter=normalize_vhdl
+*.ucf		filter=normalize
+*.ldc		filter=normalize
+*.sdc		filter=normalize
+*.xdc		filter=normalize
