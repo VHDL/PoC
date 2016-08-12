@@ -3,6 +3,7 @@ sata_FISEncoder
 ###############
 
 See notes on module 'sata_TransportLayer'.
+
 Status:
 -------
 *_RESET: 								Link_Status is not yet IDLE.
@@ -11,6 +12,7 @@ Status:
 *_SEND_OK:								FIS transmitted and acknowledged with R_OK  by other end.
 *_SEND_ERROR:						FIS transmitted and acknowledged with R_ERR by other end.
 *_SYNC_ESC:							Sending aborted by SYNC.
+
 
 
 .. rubric:: Entity Declaration:

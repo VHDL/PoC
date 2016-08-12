@@ -10,6 +10,7 @@ module. Supported devices are:
 * Series-7 (Artix-7, Kintex-7, Virtex-7, Zynq-7000)
 
 
+
 .. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../src/xil/xil_BSCAN.vhdl

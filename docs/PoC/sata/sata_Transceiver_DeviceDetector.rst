@@ -5,6 +5,7 @@ sata_DeviceDetector
 TO BE REMOVED.
 
 
+
 .. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../src/sata/sata_Transceiver_DeviceDetector.vhdl

@@ -29,6 +29,7 @@ DataIn_high     ... >< 1      >< 3      ><
 IOBs.
 
 
+
 .. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../../src/io/ddrio/ddrio_inout.vhdl

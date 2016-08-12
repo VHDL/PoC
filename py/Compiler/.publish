@@ -9,6 +9,7 @@ __init__.py
 
 # Modules
 LSECompiler.py
+ISECompiler.py
 QuartusCompiler.py
 VivadoCompiler.py
 XCOCompiler.py

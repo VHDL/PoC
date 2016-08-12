@@ -2,6 +2,9 @@
 *.md		-whitespace
 *.rst		-whitespace
 *.pl	filter=normalize
+*.ps1	filter=normalize
+*.psm1	filter=normalize
 *.py	filter=normalize
+*.sh	filter=normalize
 *.rst	filter=normailze_rest
 *.vhdl	filter=normalize_vhdl

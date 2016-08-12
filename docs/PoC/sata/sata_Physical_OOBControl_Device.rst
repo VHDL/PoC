@@ -3,8 +3,10 @@ sata_Physical_OOBControl_Device
 ###############################
 
 Executes the COMRESET / COMINIT procedure.
+
 If the clock is unstable, than Reset must be asserted.
 Automatically tries to establish a communication when Reset is deasserted.
+
 
 
 .. rubric:: Entity Declaration:
