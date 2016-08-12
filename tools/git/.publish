@@ -5,7 +5,7 @@
 README.md
 
 # manual tools
-build_md
+build_md.py
 
 # scripts to customize git
 git-alias.setup.sh
