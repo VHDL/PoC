@@ -9,7 +9,7 @@ monitors (normal, user temperature, over temperature).
 For example the Xilinx System Monitors are configured as follows:
 
 .. code-block:: None
-   
+
                    |                      /-----\
    Temp_ov   on=80 | - - - - - - /-------/       \
                    |            /        |        \
@@ -21,6 +21,7 @@ For example the Xilinx System Monitors are configured as follows:
                    |  /     |            |              |           \
    ----------------|--------|------------|--------------|-----------|--------
    pwm =           |   min  |  medium    |   max        |   medium  |  min
+
 
 
 .. rubric:: Entity Declaration:

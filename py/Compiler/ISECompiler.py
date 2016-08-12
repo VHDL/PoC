@@ -1,29 +1,29 @@
 # EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 # Authors:          Patrick Lehmann
 #
 # Python Class:     This ISECompiler compiles any IPCores for the ISE tool chain
-# 
+#
 # Description:
 # ------------------------------------
 #		TODO:
-#		- 
-#		- 
+#		-
+#		-
 #
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #                     Chair for VLSI-Design, Diagnostics and Architecture
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,15 +39,10 @@ else:
 	from lib.Functions import Exit
 	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XCOCompiler")
 
-	
-# load dependencies
-import shutil
-from os                     import chdir
-from pathlib                import Path
-from textwrap               import dedent
 
+# load dependencies
 from Base.Project           import ToolChain, Tool
-from Base.Compiler          import Compiler as BaseCompiler, CompilerException, SkipableCompilerException
+from Base.Compiler          import Compiler as BaseCompiler
 from PoC.Entity             import WildCard, FQN, EntityTypes
 from Compiler.XCOCompiler   import Compiler as XCOCompiler
 from Compiler.XSTCompiler   import Compiler as XSTCompiler

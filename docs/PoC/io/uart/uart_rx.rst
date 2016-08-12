@@ -5,6 +5,7 @@ uart_rx
 UART (RS232) Receiver: 1 Start + 8 Data + 1 Stop
 
 
+
 .. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../../src/io/uart/uart_rx.vhdl

@@ -1,28 +1,28 @@
 # EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 #	Authors:						Patrick Lehmann
-# 
-#	PowerShell Script:	Wrapper Script to execute 
-# 
+#
+#	PowerShell Script:	Wrapper Script to execute
+#
 # Description:
 # ------------------------------------
 #	This is a PowerShell wrapper script (executable) which:
-#		- 
+#		-
 #
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #		http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -217,7 +217,7 @@ function Get-PoCEnvironmentArray
 	param(
 		[Parameter(Mandatory=$true)]	$Values
 	)
-	
+
 	# set default values
 	$Debug =		$false
 	$PoCEnv =		$PoC_Environments
@@ -227,7 +227,7 @@ function Get-PoCEnvironmentArray
 	foreach ($param in $Values)
 	{	if (-not $Debug -and ($param -cmatch "^-\w*D\w*"))
 		{	$Debug = $true; continue	}
-		
+
 		$breakIt = $false
 		foreach ($VendorName in $PoCEnv.Keys)
 		{	foreach ($ToolName in $PoCEnv[$VendorName]['Tools'].Keys)
@@ -278,27 +278,27 @@ function Invoke-OpenEnvironment
 		[Parameter(Mandatory=$true)]	$LoadEnv
 	)
 	$Debug = $false	# $true
-	
+
 	# execute vendor and tool pre-hook files if present
 	foreach ($VendorName in $LoadEnv.Keys)
 	{	foreach ($ToolName in $LoadEnv[$VendorName]['Tools'].Keys)
 		{	if ($LoadEnv[$VendorName]['Tools'][$ToolName]['Load'])
 			{	if ($Debug -eq $true) {	Write-Host "Loading $VendorName.$ToolName environment..." -ForegroundColor Yellow		}
-			
+
 				# if exists, source the vendor pre-hook file
 				$VendorPreHookFile = "$PoC_HookDir\$($LoadEnv[$VendorName]['PreHookFile'])"
 				if (Test-Path $VendorPreHookFile -PathType Leaf)
 				{	if ($Debug -eq $true) {	Write-Host "  Loading Vendor pre-hook file: $VendorPreHookFile" -ForegroundColor Yellow	}
 					. ($VendorPreHookFile)
 				}
-				
+
 				# if exists, source the tool pre-hook file
 				$ToolPreHookFile = "$PoC_HookDir\$($LoadEnv[$VendorName]['Tools'][$ToolName]['PreHookFile'])"
 				if (Test-Path $ToolPreHookFile -PathType Leaf)
 				{	if ($Debug -eq $true) {	Write-Host "  Loading Tool pre-hook file: $ToolPreHookFile" -ForegroundColor Yellow	}
 					. ($ToolPreHookFile)
 				}
-				
+
 				$ModuleFile = "$PoC_ModuleDir\$($LoadEnv[$VendorName]['Tools'][$ToolName]['PSModule'])"
 				if (Test-Path $ModuleFile -PathType Leaf)
 				{	$ModuleName = (Get-Item $ModuleFile).BaseName
@@ -307,7 +307,7 @@ function Invoke-OpenEnvironment
 					{ if ($Debug -eq $true) {	Write-Host "  Unloading module: $ModuleName" -ForegroundColor Yellow	}
 						Remove-Module $ModuleName
 					}
-					
+
 					# load module
 					if ($Debug -eq $true) {	Write-Host "  Loading module: $ModuleFile" -ForegroundColor Yellow	}
 					Import-Module $ModuleFile -ArgumentList @($Python_Interpreter, $Python_Parameters, $PoC_FrontEndPy)
@@ -336,7 +336,7 @@ function Invoke-CloseEnvironment
 		[Parameter(Mandatory=$true)]	$LoadEnv
 	)
 	$Debug = $false	# $true
-	
+
 	# execute vendor and tool post-hook files if present
 	foreach ($VendorName in $LoadEnv.Keys)
 	{	foreach ($ToolName in $LoadEnv[$VendorName]['Tools'].Keys)
@@ -345,12 +345,12 @@ function Invoke-CloseEnvironment
 				$ToolPostHookFile = "$PoC_RootDir\$PoC_HookDirectory\$($LoadEnv[$VendorName]['Tools'][$ToolName]['PostHookFile'])"
 				if (Test-Path $ToolPostHookFile -PathType Leaf)
 				{	. ($ToolPostHookFile)		}
-				
+
 				# if exists, source the vendor pre-hook file
 				$VendorPostHookFile = "$PoC_RootDir\$PoC_HookDirectory\$($LoadEnv[$VendorName]['PostHookFile'])"
 				if (Test-Path $VendorPostHookFile -PathType Leaf)
 				{	. ($VendorPostHookFile)	}
-				
+
 				$ModuleFile = "$PoC_RootDir\$PoC_WrapperDirectory\$($LoadEnv[$VendorName]['Tools'][$ToolName]['PSModule'])"
 				if (Test-Path $ModuleFile -PathType Leaf)
 				{	$ModuleName = (Get-Item $ModuleFile).BaseName
@@ -391,7 +391,7 @@ function poc
 		undocumented
 	#>
 	# $env:PoCRootDirectory =			$PoC_RootDir
-	
+
 	$Expr = "$Python_Interpreter $Python_Parameters $PoC_FrontEndPy $args"
 	Invoke-Expression $Expr
 	return $LastExitCode
