@@ -1,5 +1,5 @@
 # Generic hook executor
-run-hook.py
+run-hook
 
 # Hook subtasks
 pre-commit.d/

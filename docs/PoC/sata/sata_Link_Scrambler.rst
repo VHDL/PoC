@@ -5,6 +5,7 @@ sata_Scrambler
 Scrambles or unscrambles transmitted data over the physical link.
 
 
+
 .. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../src/sata/sata_Link_Scrambler.vhdl

@@ -2,12 +2,12 @@
 # EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 #	Authors:					Patrick Lehmann
-# 
+#
 #	Bash Script:			Compile Cocotb simulation libraries
-# 
+#
 # Description:
 # ------------------------------------
 #	This bash script compiles Cocotb simulation libraries into a local directory.
@@ -16,13 +16,13 @@
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #		http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -169,7 +169,7 @@ fi
 
 # Get Cocotb installation directory
 CocotbInstallDir=$PoCRootDir/$CocotbLibDir
-	
+
 COCOTB_IncludeDir=$CocotbInstallDir/include
 COCOTB_SourceDir=$CocotbInstallDir/lib
 
@@ -187,24 +187,24 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	# Create and change to destination directory
 	# -> $DestinationDirectory
 	CreateDestinationDirectory $DestDir
-	
+
 	# clean cocotb directory
 	if [ -d $DestDir/cocotb ]; then
 		echo -e "${ANSI_YELLOW}Cleaning library 'cocotb' ...${ANSI_NOCOLOR}"
 		rm -rf cocotb
 	fi
-	
+
 	# Cocotb paths and settings
 	COCOTB_BuildDir=$DestDir/cocotb
 	COCOTB_ObjDir=$COCOTB_BuildDir
 	COCOTB_SharedDir=$COCOTB_BuildDir
-	
+
 	mkdir -p $COCOTB_ObjDir
 	mkdir -p $COCOTB_SharedDir
-	
+
 	COCOTB_INCLUDE_SEARCH_DIR="-I$COCOTB_IncludeDir"
 	COCOTB_LIBRARY_SEARCH_DIR="-L$COCOTB_SharedDir"
-	
+
 	# System and Linux paths and settings
 	System_IncludeDir="/usr/include"
 	System_IncludeDir2="/c/msys64/$MinGW/include"
@@ -213,10 +213,10 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	System_Executables2="/c/msys64/$MinGW/bin"
 	System_Libraries="/usr/lib"
 	System_Libraries2="/c/msys64/$MinGW/lib"
-	
+
 	LINUX_INCLUDE_SEARCH_DIR="-I$System_IncludeDir2 -I$System_IncludeDir"
 	LINUX_LIBRARY_SEARCH_DIR="-L$System_Libraries2 -L$System_Libraries"
-	
+
 	# Python paths and settings
 	PY_LIBRARY="python$PY_VERSION"
 	PYTHON_DEFINES="-DPYTHON_SO_LIB=lib$PY_LIBRARY$LIBEXT"
@@ -226,7 +226,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 
 	GHDL_LIBRARY_SEARCH_DIR="-L/c/Tools/GHDL/0.34dev-mingw32-llvm/lib/ghdl"
 	GHDL_LIBRARY="-lgrt"
-	
+
 	# Common CC and LD variables
 	CC_WARNINGS="-Wcast-qual -Wcast-align -Wwrite-strings -Wall -Wno-unused-parameter"  # -Werror
 	LD_WARNINGS="-Wstrict-prototypes -Waggregate-return"
@@ -258,7 +258,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	$CMD
 	if [ $? -ne 0 ]; then	echo 1>&2 -e "${ANSI_RED}[ERROR]: While linking.${ANSI_NOCOLOR}";	exit -1;	fi
 
-	
+
 	echo -e "${ANSI_YELLOW}Compiling 'libgpilog$LIBEXT'...${ANSI_NOCOLOR}"
 	CC_DEFINES="$CC_DEFINES -DFILTER"
 	CC_WARNINGS="$CC_WARNINGS $LD_WARNINGS"
@@ -331,7 +331,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 
 	echo -e "${ANSI_YELLOW}Copying 'libghdlvpi$LIBEXT'...${ANSI_NOCOLOR}"
 	cp $COCOTB_SharedDir/../libghdlvpi.dll $COCOTB_SharedDir
-	
+
 	# echo -e "${ANSI_YELLOW}Compiling 'libghdl$LIBEXT'...${ANSI_NOCOLOR}"
 	# GCC_DEFINES=
 	# GCC_WARNINGS=
@@ -379,21 +379,21 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 
 
 	cd $COCOTB_SharedDir
-	
+
 	echo -e "${ANSI_YELLOW}Removing object files...${ANSI_NOCOLOR}"
 	rm *.o
-	
+
 	export PYTHONHOME=/c/Tools/Python2.7.12
 	export PYTHONPATH=$PYTHONHOME/lib:/d/git/PoC/lib/cocotb/cocotb:/d/git/PoC/temp/precompiled/ghdl/cocotb
-	
+
 	/c/Tools/GHDL/0.34dev-mingw32-mcode/bin/ghdl.exe -a ../test.vhdl
 	/c/Tools/GHDL/0.34dev-mingw32-mcode/bin/ghdl.exe -e test
 	/c/Tools/GHDL/0.34dev-mingw32-mcode/bin/ghdl.exe -r test --vpi=libvpi.dll
-	
+
 	export PYTHONHOME=
 	export PYTHONPATH=
-	
-	
+
+
 	cd $WorkingDir
 fi
 
@@ -410,24 +410,24 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	# Create and change to destination directory
 	# -> $DestinationDirectory
 	CreateDestinationDirectory $DestDir
-	
+
 	# clean cocotb directory
 	if [ -d $DestDir/cocotb ]; then
 		echo -e "${YELLOW}Cleaning library 'osvvm' ...${ANSI_NOCOLOR}"
 		rm -rf cocotb
 	fi
-	
+
 	# Cocotb paths and settings
 	COCOTB_BuildDir=$DestDir/cocotb
 	COCOTB_ObjDir=$COCOTB_BuildDir
 	COCOTB_SharedDir=$COCOTB_BuildDir
-	
+
 	mkdir -p $COCOTB_ObjDir
 	mkdir -p $COCOTB_SharedDir
-	
+
 	COCOTB_INCLUDE_SEARCH_DIR="-I$COCOTB_IncludeDir"
 	COCOTB_LIBRARY_SEARCH_DIR="-L$COCOTB_SharedDir"
-	
+
 	# System and Linux paths and settings
 	System_IncludeDir="/usr/include"
 	System_Executables="/usr/bin"
@@ -436,7 +436,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 
 	LINUX_INCLUDE_SEARCH_DIR="-I$System_IncludeDir -I$Linux_IncludeDir"
 	LINUX_LIBRARY_SEARCH_DIR="-L$System_Libraries"
-	
+
 	# Python paths and settings
 	PY_VERSION="2.7"
 	PY_LIBRARY="python$PY_VERSION"
@@ -449,7 +449,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	VSIM_IncludeDir="$VSimBinDir/../include"
 
 	VSIM_INCLUDE_SEARCH_DIR="-I$VSIM_IncludeDir"
-	
+
 	# Common CC and LD variables
 	CC_WARNINGS="-Werror -Wcast-qual -Wcast-align -Wwrite-strings -Wall -Wno-unused-parameter"
 	LD_WARNINGS="-Wstrict-prototypes -Waggregate-return"
@@ -549,7 +549,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 
 	echo -e "${ANSI_YELLOW}Removing object files...${ANSI_NOCOLOR}"
 	rm cocotb/*.o
-	
+
 	cd $WorkingDir
 fi
 
