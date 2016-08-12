@@ -9,7 +9,7 @@
 ##		Placement:
 ##			SFP:				Quad117.Channel2 (GTXE2_CHANNEL_X0Y10)
 ##		Location:			P5
-#$	##		I²C-Address:	0xA0 (1010 000xb)
+#$	##		I2C-Address:	0xA0 (1010 000xb)
 ## -----------------------------------------------------------------------------
 ## #$	; low-active; external 4k7 pullup resistor; level shifted by Q4 (NDS331N)
 set_property PACKAGE_PIN		Y20				[get_ports KC705_SFP_TX_Disable_n]
@@ -22,13 +22,13 @@ set_property IOSTANDARD		LVCMOS25		[get_ports KC705_SFP_LossOfSignal]
 ## --------------------------
 ## SFP+ LVDS signal-pairs
 ## {OUT}	
-set_property PACKAGE_PIN		H1				[get_ports KC705_SFP_TX_n]
-## {OUT}	
 set_property PACKAGE_PIN		H2				[get_ports KC705_SFP_TX_p]
-## {IN}		
-set_property PACKAGE_PIN		G3				[get_ports KC705_SFP_RX_n]
+## {OUT}	
+set_property PACKAGE_PIN		H1				[get_ports KC705_SFP_TX_n]
 ## {IN}		
 set_property PACKAGE_PIN		G4				[get_ports KC705_SFP_RX_p]
+## {IN}		
+set_property PACKAGE_PIN		G3				[get_ports KC705_SFP_RX_n]
 
 # Ignore timings on async I/O pins
 set_false_path								-to		[get_ports KC705_SFP_TX_Disable_n]

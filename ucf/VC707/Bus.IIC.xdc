@@ -38,10 +38,15 @@
 ##			Vendor:				Silicon Labs
 ##			Device:				SI5324 - Any-Frequency Precision Clock Multiplier/Jitter Attenuator
 ##			Address:			0xA0 (1010 000xb)
-NET "VC707_IIC_SerialClock"						LOC = "AT35";			## U52 - Pin 19 - SerialClock
-NET "VC707_IIC_SerialData"						LOC = "AU32";			## U52 - Pin 20 - SerialData
-NET "VC707_IIC_Switch_Reset_n"				LOC = "AY42";			## U52 - Pin 24 - Reset (low-active); level shifted by U70 (TXS0108E)
-NET "VC707_IIC_*"											IOSTANDARD = LVCMOS18;
+## U52 - Pin 19 - SerialClock
+set_property PACKAGE_PIN		AT35			[get_ports VC707_IIC_SerialClock]
+## U52 - Pin 20 - SerialData
+set_property PACKAGE_PIN		AU32			[get_ports VC707_IIC_SerialData]
+## U52 - Pin 24 - Reset (low-active); level shifted by U70 (TXS0108E)
+set_property PACKAGE_PIN		AY42			[get_ports VC707_IIC_Switch_Reset_n]
+# set I/O standard
+set_property IOSTANDARD			LVCMOS18	[get_ports -regexp {VC707_IIC_.*}]
 
-## Ignore timings on async I/O pins
-NET "VC707_IIC_*"											TIG;
+# Ignore timings on async I/O pins
+set_false_path								-to			[get_ports -regexp {VC707_IIC_.*}]
+set_false_path								-from		[get_ports -regexp {vC707_IIC_Serial.*}]
