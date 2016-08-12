@@ -9,6 +9,7 @@ returns to '1'. A division by zero is identified by output Z. The Q and R
 outputs are undefined in this case.
 
 
+
 .. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../src/arith/arith_div.vhdl

@@ -1,7 +1,7 @@
 
 from enum           import Enum
 from pathlib        import Path
-from re             import compile as re_compile
+from re             import compile as re_compile, sub as re_sub
 from textwrap       import dedent
 
 def setup(app):
@@ -170,7 +170,7 @@ class Extract:
 					elif line.startswith("-- License:"):
 						state = State.License
 					else:
-						descriptionContent += line[3:]
+						descriptionContent += re_sub('^-- ?', '', line)
 
 				elif (state is State.SeeAlso):
 					if line.startswith("-- License:"):

@@ -7,6 +7,7 @@ It is generic in DATA_BITS and in META_BITS as well as in FIFO depths for
 data and meta information.
 
 
+
 .. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../../src/bus/stream/stream_Mux.vhdl

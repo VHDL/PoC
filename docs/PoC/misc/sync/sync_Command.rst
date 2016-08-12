@@ -2,17 +2,19 @@
 sync_Command
 ############
 
-	This module synchronizes a vector of bits from clock-domain 'Clock1' to
-	clock-domain 'Clock2'. The clock-domain boundary crossing is done by a
-	change comparator, a T-FF, two synchronizer D-FFs and a reconstructive
-	XOR indicating a value change on the input. This changed signal is used
-	to capture the input for the new output. A busy flag is additionally
-	calculated for the input clock-domain. The output has strobe character
-	and is reset to it's INIT value after one clock cycle.
-	CONSTRAINTS:
-		General:
-			This module uses sub modules which need to be constrained. Please
-			attend to the notes of the instantiated sub modules.
+		This module synchronizes a vector of bits from clock-domain 'Clock1' to
+		clock-domain 'Clock2'. The clock-domain boundary crossing is done by a
+		change comparator, a T-FF, two synchronizer D-FFs and a reconstructive
+		XOR indicating a value change on the input. This changed signal is used
+		to capture the input for the new output. A busy flag is additionally
+		calculated for the input clock-domain. The output has strobe character
+		and is reset to it's INIT value after one clock cycle.
+
+		CONSTRAINTS:
+			General:
+				This module uses sub modules which need to be constrained. Please
+				attend to the notes of the instantiated sub modules.
+
 
 
 .. rubric:: Entity Declaration:

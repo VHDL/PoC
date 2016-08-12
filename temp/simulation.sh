@@ -167,10 +167,10 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	# Create and change to destination directory
 	# -> $DestinationDirectory
 	CreateDestinationDirectory $DestDir
-	
+
 	GHDL_OPTIONS=("-fexplicit" "--work=$VHDL_Library" "--std=08" "-P../precompiled/ghdl/xilinx/")
 	# GHDL_OPTIONS=("-fexplicit" "--work=$VHDL_Library" "--std=93c" "-P../precompiled/ghdl/xilinx/")
-	
+
 	echo -e "${YELLOW}Analyzing library '$VHDL_Library' with ghdl...${ANSI_NOCOLOR}"
 	ERRORCOUNT=0
 	for File in ${SourceFiles[@]}; do
@@ -180,7 +180,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 			let ERRORCOUNT++
 		fi
 	done
-	
+
 	echo "  Elaborating '$VHDL_Library.$VHDL_TopLevel'..."
 	$GHDLBinDir/ghdl -e ${GHDL_OPTIONS[@]} $VHDL_TopLevel
 	if [ $? -ne 0 ]; then
@@ -207,7 +207,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	if [ $? -ne 0 ]; then
 		let ERRORCOUNT++
 	fi
-	
+
 	# print overall result
 	echo -n "Simulation "
 	if [ $ERRORCOUNT -gt 0 ]; then
@@ -215,7 +215,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	else
 		echo -e $COLORED_SUCCESSFUL
 	fi
-	
+
 	cd $WorkingDir
 fi
 
@@ -272,7 +272,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	else
 		echo -e $COLORED_SUCCESSFUL
 	fi
-	
+
 	cd $WorkingDir
 fi
 

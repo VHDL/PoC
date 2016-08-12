@@ -6,9 +6,11 @@ Implements a free-running counter that generates a strobe signal every
 DIVIDER-th cycle the increment input was asserted. There is deliberately no
 output or specification of the counter value so as to allow an implementation
 to optimize as much as possible.
+
 The implementation guarantees a strobe output directly from a register. It is
 asserted exactly for one clock after DIVIDER cycles of an asserted increment
 input have been observed.
+
 
 
 .. rubric:: Entity Declaration:

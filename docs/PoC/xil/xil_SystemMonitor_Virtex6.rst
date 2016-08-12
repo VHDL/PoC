@@ -4,8 +4,11 @@ xil_SystemMonitor_Virtex6
 
 This module wraps a Virtex-6 System Monitor primitive to report if preconfigured
 temperature values are overrun.
+
 .. rubric:: Temperature Curve
+
 .. code-block:: None
+
                    |                      /-----\
    Temp_ov   on=80 | - - - - - - /-------/       \
                    |            /        |        \
@@ -17,6 +20,7 @@ temperature values are overrun.
                    |  /     |            |              |           \
    ----------------|--------|------------|--------------|-----------|--------
    pwm =           |   min  |  medium    |   max        |   medium  |  min
+
 
 
 .. rubric:: Entity Declaration:

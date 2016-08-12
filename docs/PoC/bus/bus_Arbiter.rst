@@ -4,7 +4,9 @@ bus_Arbiter
 
 This module implements a generic arbiter. It currently supports the
 following arbitration strategies:
+
 * Round Robin (RR)
+
 
 
 .. rubric:: Entity Declaration:
