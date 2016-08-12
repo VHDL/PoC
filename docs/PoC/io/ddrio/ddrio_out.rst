@@ -20,6 +20,7 @@ If NO_OUTPUT_ENABLE = true then output after power-up equals INIT_VALUE.
 IOBs.
 
 
+
 .. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../../src/io/ddrio/ddrio_out.vhdl

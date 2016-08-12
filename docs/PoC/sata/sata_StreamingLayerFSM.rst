@@ -5,6 +5,7 @@ sata_StreamingLayerFSM
 See notes on module 'sata_StreamingLayer'.
 
 
+
 .. rubric:: Entity Declaration:
 
 .. literalinclude:: ../../../src/sata/sata_StreamingLayerFSM.vhdl

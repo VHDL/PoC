@@ -2,9 +2,10 @@
 pmod_USBUART
 ############
 
-	This module abstracts a FTDI FT232R USB-UART bridge. The FT232R supports
-	up to 3 MBaud. A synchronous FIFO interface (32x words) is provided.
-	Hardware flow control (RTS_CTS) is enabled.
+		This module abstracts a FTDI FT232R USB-UART bridge. The FT232R supports
+		up to 3 MBaud. A synchronous FIFO interface (32x words) is provided.
+		Hardware flow control (RTS_CTS) is enabled.
+
 
 
 .. rubric:: Entity Declaration:
