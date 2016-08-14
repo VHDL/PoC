@@ -57,10 +57,10 @@ Please see the Linux instructions.
                             The PoC-Library - Service Tool
    ================================================================================
    Explanation of abbreviations:
-     y - yes
-     n - no
-     p - pass (jump to next question)
-   Upper case means default value
+     Y - yes      P        - pass (jump to next question)
+     N - no       Ctrl + C - abort (no changes are saved)
+   Upper case or value in '[...]' means default value
+   --------------------------------------------------------------------------------
    
    Configuring PoC
      PoC version: v1.0.1 (found in git)

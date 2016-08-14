@@ -19,6 +19,7 @@ This namespace is for Xilinx specific modules.
    xil_ChipScopeICON
    xil_DRP_BusMux
    xil_DRP_BusSync
+   xil_ICAP
    xil_Reconfigurator
    xil_SystemMonitor
    xil_SystemMonitor_Virtex6
