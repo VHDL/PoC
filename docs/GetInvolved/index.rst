@@ -2,9 +2,6 @@
 Get Involved
 ############
 
-.. 
-   PoC is open for contributions of any kind.
-
 A first step might be to use and explore PoC and it's infrastructure in an own
 project. Moreover, we encurage to read our `online help <https://poc-library.readthedocs.org/>`_
 which covers all aspects from quickstart example up to detailed IP core
@@ -31,11 +28,16 @@ as a third-party components, please contact us.
 Report a Bug
 ************
 
+.. image:: https://img.shields.io/github/issues/VLSI-EDA/PoC.svg
+   :target: https://github.com/VLSI-EDA/PoC/issues
+.. image:: https://img.shields.io/github/issues-closed/VLSI-EDA/PoC.svg
+   :target: https://github.com/VLSI-EDA/PoC/issues
+
 Please report issues of any kind in our Git provider's issue tracker. This allows
 us to categorize issues into groups and assign developers to them. You can track
 the issue's state and see how it's getting closed. All enhancements and feature
-requests are tracked on GitHub at
-`https://github.com/VLSI-EDA/PoC/issues <https://github.com/VLSI-EDA/PoC/issues>`_.
+requests are tracked on GitHub at 
+`GitHub Issues <https://github.com/VLSI-EDA/PoC/issues>`_.
 
 
 Feature Request
@@ -45,7 +47,7 @@ Please report missing features of any kind. We are allways looking forward to
 provide a full feature set. Please use our Git provider's issue tracker to report
 enhancements and feature requests, so you can track the request's status and
 implementation. All enhancements and feature requests are tracked on GitHub at
-`https://github.com/VLSI-EDA/PoC/issues <https://github.com/VLSI-EDA/PoC/issues>`_.
+`GitHub Issues <https://github.com/VLSI-EDA/PoC/issues>`_.
 
 
 Talk to us on Gitter
@@ -76,15 +78,22 @@ account.
 Contribute to PoC
 *****************
 
+.. image:: https://img.shields.io/github/contributors/VLSI-EDA/PoC.svg
+
 Contibuting source code via Git is very easy. We don't provide direct write
 access to our repositories. Git offers the fork and pull-request philosophy,
 which means: You clone a repository, provide you changes in your own repository
 and notify us about outstanding changes via pull-requests.
 
+
 The steps 1 to 5 are done only once for setting up a forked repository.
 
 1. Fork our Repository
 ======================
+
+.. image:: https://img.shields.io/github/forks/VLSI-EDA/PoC.svg
+   :target: https://github.com/VLSI-EDA/PoC/network/members
+
 Git repositories can be cloned on a Git provider's server. This procedure is
 called *forking*. This allows Git providers to track the repositories network
 and if repositories are related to each other and if pull-requests are possible.
@@ -196,12 +205,17 @@ Commit your porposed changes to your feature branch and push all changes to GitH
 
 8. Create a Pull-Request
 ========================
+
+.. image:: https://img.shields.io/github/issues-pr/VLSI-EDA/PoC.svg
+   :target: https://github.com/VLSI-EDA/PoC/pulls
+.. image:: https://img.shields.io/github/issues-pr-closed/VLSI-EDA/PoC.svg
+   :target: https://github.com/VLSI-EDA/PoC/pulls
+
 Go to your forked repository and klick on "Compare and Pull-Request" or go to
 our PoC repository and create a new `pull request <https://github.com/VLSI-EDA/PoC/pullrequest>`_.
 
 If this is your first Pull-Request, you need to sign our Contributers License
 Agreement (CLA).
-
 
 9. Keep your ``master`` up-to-date
 ===================================
