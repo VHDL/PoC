@@ -6,5 +6,5 @@ These are reconfig entities....
 
 .. toctree::
    
-   reconfig_FSM
-   reconfig_Wrapper
+   reconfig_icap_fsm
+   reconfig_icap_wrapper
