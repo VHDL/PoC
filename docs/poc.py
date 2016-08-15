@@ -111,7 +111,7 @@ class Extract:
 		 - The contained information is added to the currently active section.
 		 - A specific section is opened by a line matching /^--\s*(?P<Section>\w+):/ with
 		   <Section> as one of Authors|Entity|Description|SeeAlso|License.
-		 - DEPRECATED LEGACY: A separator line matching /^-- -{20,}$/ opens the Description section.
+		 - An underline /^-- -+$/ immediately following a section opening is ignored.
 		 - After the documentation header, the entity name is extracted from the entity declaration.
 		 """
 		class State(Enum):
@@ -125,7 +125,7 @@ class Extract:
 			'Authors':     True,
 			'Entity':      True,
 			'Description': False,
-			'SeeAlso':     True,
+			'SeeAlso':     False,
 			'License':     False
 		}
 		sections = {
@@ -136,13 +136,13 @@ class Extract:
 			'License':     ''
 		}
 
-		headerStartRE      = re_compile(r'^--\s*={16,}$')
-		sectionStartRE     = re_compile(r'^--\s*(?P<Section>'+('|'.join(sections.keys()))+r'):\s*(?P<Content>.*)$')
-		descriptionStartRE = re_compile(r'^-- -{20,}$')
-		commentStripRE     = re_compile(r'^-- ?')
+		headerStartRE  = re_compile(r'^--\s*={16,}$')
+		sectionStartRE = re_compile(r'^--\s*(?P<Section>'+('|'.join(sections.keys()))+r'):\s*(?P<Content>.*)$')
+		underlineRE    = re_compile(r'^-- -+$')
+		commentStripRE = re_compile(r'^-- ?')
 
 		entityStartRE = re_compile(r"(?i)entity\s+(?P<EntityName>\w+)\s+is")
-		entityEndRE   = re_compile(r"(?i)end(\s+entity)?(\s+(?P<EntityName>\w+))?\s*;")
+		entityEndRE   = re_compile(r"(?i)end\s+(?P<EntityName>\w+)(\s+\w+)?\s*;")
 
 		entityName =          ""
 		entityStartLine =     0
@@ -170,16 +170,9 @@ class Extract:
 						if m:
 							section = m.group('Section')
 							sections[section] += m.group('Content')
-						else:
-							# DEPRECATED LEGACY start of Description -> eliminate in sources
-							m = descriptionStartRE.match(line)
-							if m:
-								section = 'Description'
-							elif section:
-								line = commentStripRE.sub('', line)
-								if sectionStrip[section]:
-									line = line.lstrip()
-								sections[section] += line
+						elif sections[section] != '' or not underlineRE.match(line):
+							line = commentStripRE.sub('', line)
+							sections[section] += line.lstrip() if sectionStrip[section] else line
 
 				# Parse Entity Declaration
 				if state is State.BeforeDocHeader or state is State.BeforeEntityDecl:
@@ -192,9 +185,11 @@ class Extract:
 				elif state is State.InEntityDecl:
 					m = entityEndRE.match(line)
 					if m:
-						entityEndLine = lineNumber
-						state         = State.Done
-						break
+						name = m.group('EntityName')
+						if name == 'entity' or name == entityName:
+							entityEndLine = lineNumber
+							state         = State.Done
+							break
 
 		if state is not State.Done:
 			raise Exception("No entity found. LastState = {0}".format(state.name))

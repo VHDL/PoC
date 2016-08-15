@@ -2,7 +2,6 @@
 lcd_dotmatrix
 #############
 
-------------
 .. TODO:: No documentation available.
 
 

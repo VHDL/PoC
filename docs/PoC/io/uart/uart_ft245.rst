@@ -2,7 +2,6 @@
 uart_ft245
 ##########
 
-------------
 .. TODO:: No documentation available.
 
 
