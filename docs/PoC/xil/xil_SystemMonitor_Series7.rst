@@ -7,7 +7,7 @@ are overrun. The XADC was formerly known as "System Monitor".
 
 .. rubric:: Temperature Curve
 
-.. code-block:: None
+.. code-block:: none
 
                    |                      /-----\
    Temp_ov   on=80 | - - - - - - /-------/       \
