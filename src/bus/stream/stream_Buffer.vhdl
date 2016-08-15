@@ -8,9 +8,10 @@
 --
 -- Description:
 -- -------------------------------------
--- This module implements a generic buffer (FIFO) for the PoC.Stream protocol.
--- It is generic in ``DATA_BITS`` and in ``META_BITS`` as well as in FIFO depths
--- for data and meta information.
+-- This module implements a generic buffer (FIFO) for the
+-- :doc:`PoC.Stream </References/Interfaces/Stream>` protocol. It is generic in
+-- ``DATA_BITS`` and in ``META_BITS`` as well as in FIFO depths for data and
+-- meta information.
 --
 -- License:
 -- =============================================================================
