@@ -88,7 +88,7 @@ entity cache_replacement_policy is
 		Invalidate : in std_logic;
 		HitWay		 : in std_logic_vector(log2ceilnz(CACHE_WAYS) - 1 downto 0)
 	);
-end;
+end entity;
 
 
 architecture rtl of cache_replacement_policy is

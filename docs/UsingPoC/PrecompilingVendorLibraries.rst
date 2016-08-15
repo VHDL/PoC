@@ -119,7 +119,7 @@ On Windows
 
 
 Lattice
-=======
+========
 
 .. note::
    The Lattice Diamond tool chain needs to be configured in PoC. |br|
