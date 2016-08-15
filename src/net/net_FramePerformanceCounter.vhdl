@@ -32,7 +32,7 @@ entity LocalLink_PerformanceCounter is
 		PacketsPerSecond					: out	T_SLV_32;
 		BytesPerSecond						: out	T_SLV_32
 	);
-end;
+end entity;
 
 architecture rtl of LocalLink_PerformanceCounter is
 	attribute KEEP										: boolean;
