@@ -34,6 +34,6 @@ Source file: `xil/xil_ChipScopeICON.vhdl <https://github.com/VLSI-EDA/PoC/blob/m
 .. seealso::
    
    :doc:`Using PoC -> Synthesis </UsingPoC/Synthesis>`
-     For how to run synthesis with PoC and CoreGenerator.
+   For how to run synthesis with PoC and CoreGenerator.
 
 	 
