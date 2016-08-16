@@ -117,6 +117,3 @@ and interest in and to Your Contributions.
     is required to the list of designated employees authorized to submit
     Contributions on behalf of the Corporation, or to the Corporation's
     Point of Contact with the Chair.
-
-Download `Individual Contributor License Agreement <ICLA.pdf>`_ |br|
-Download `Corporate Contributor License Agreement <CCLA.pdf>`_

@@ -2,6 +2,8 @@
 io_FanControl
 #############
 
+.. code-block:: none
+
 		This module generates a PWM signal for a 3-pin (transistor controlled) or
 		4-pin fan header. The FPGAs temperature is read from device specific system
 		monitors (normal, user temperature, over temperature).
@@ -29,7 +31,7 @@ io_FanControl
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 61-79
+   :lines: 63-81
 
 Source file: `io/io_FanControl.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/io_FanControl.vhdl>`_
 
