@@ -17,13 +17,13 @@ set_property IOSTANDARD			LVCMOS18	[get_ports VC707_SFP_LossOfSignal]
 ##	Bank:						113
 ##	ReferenceClock
 ##		Location:			P3
-## {OUT}	
+## {OUT}
 set_property PACKAGE_PIN		AM4				[get_ports VC707_SFP_TX_p]
-## {OUT}	
+## {OUT}
 set_property PACKAGE_PIN		AM3				[get_ports VC707_SFP_TX_n]
-## {IN}		
+## {IN}
 set_property PACKAGE_PIN		AL6				[get_ports VC707_SFP_RX_p]
-## {IN}		
+## {IN}
 set_property PACKAGE_PIN		AL5				[get_ports VC707_SFP_RX_n]
 
 # Ignore timings on async I/O pins
