@@ -77,10 +77,10 @@ class SkipConfigurationException(ExceptionBase):
 # 		return self._subclasses
 
 class Configuration:    #(ISubClassRegistration):
-	_vendor =      "Unknown"
-	_toolName =    "Unknown"
-	_section =    "ERROR"
-	_template =    {}
+	_vendor =       "Unknown"
+	_toolName =     "Unknown"
+	_section =      "ERROR"
+	_template =     {}
 
 	def __init__(self, host):
 		self._host =  host
