@@ -74,8 +74,8 @@ class Configuration(BaseConfiguration):
 		"Linux": {
 			_section: {
 				"Version":                "2.8.1",
-				"InstallationDirectory":  "/usr",
-				"BinaryDirectory":        "${InstallationDirectory}/bin"
+				"InstallationDirectory":  "/usr/bin",
+				"BinaryDirectory":        "${InstallationDirectory}"
 			}
 		}
 	}
