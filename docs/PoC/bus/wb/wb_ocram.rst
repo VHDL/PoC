@@ -14,11 +14,13 @@ single cyle read latency is supported.)
 
 Configuration:
 --------------
-PIPE_STAGES = 1: The RAM output is directly connected to the bus. Thus, the
+PIPE_STAGES = 1
+  The RAM output is directly connected to the bus. Thus, the
   read access latency (one cycle) is short. But, the RAM's read timing delay
   must be respected.
 
-PIPE_STAGES = 2: The RAM output is registered again. Thus, the read access
+PIPE_STAGES = 2
+  The RAM output is registered again. Thus, the read access
   latency is two cycles.
 
 
@@ -29,7 +31,7 @@ PIPE_STAGES = 2: The RAM output is registered again. Thus, the read access
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 52-78
+   :lines: 54-80
 
 Source file: `bus/wb/wb_ocram.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/bus/wb/wb_ocram.vhdl>`_
 
