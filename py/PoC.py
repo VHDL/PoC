@@ -384,7 +384,7 @@ class PoC(ILogable, ArgParseMixin):
 			nxt = False
 			while (nxt is False):
 				try:
-					if   (self.Platform == "Darwin"):    configurator.ConfigureForDarwin()
+					if   (self.Platform == "Darwin"):   configurator.ConfigureForDarwin()
 					elif (self.Platform == "Linux"):    configurator.ConfigureForLinux()
 					elif (self.Platform == "Windows"):  configurator.ConfigureForWindows()
 
