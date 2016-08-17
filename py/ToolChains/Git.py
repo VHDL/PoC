@@ -211,9 +211,6 @@ class Configuration(BaseConfiguration):
 			raise ConfigurationException("Normalize script '{0!s}' not found.".format(normalizeScriptPath)) from FileNotFoundError(str(normalizeScriptPath))
 
 		try:
-			gitConfig = self._git.GetGitConfig()
-			gitConfig.Clear()
-
 			commonCleanParameters =   normalizeScript + " clean"
 			commonSmudgeParameters =  normalizeScript + " smudge"
 
@@ -227,15 +224,15 @@ class Configuration(BaseConfiguration):
 					cleanParameters +=  " " + fileFormat
 					smudgeParameters += " " + fileFormat
 
-				gitConfig.ConfigParameters[gitConfig.ValueFilterClean] =      filterName
-				gitConfig.ConfigParameters[gitConfig.ValueFilterSmudge] =     None
-				gitConfig.ConfigParameters[gitConfig.ValueFilterParameters] = cleanParameters
-				gitConfig.Execute()
+				git = self._git.GetGitConfig()
+				git.ConfigParameters[git.ValueFilterClean] =      filterName
+				git.ConfigParameters[git.ValueFilterParameters] = cleanParameters
+				git.Execute()
 
-				gitConfig.ConfigParameters[gitConfig.ValueFilterClean] =      None
-				gitConfig.ConfigParameters[gitConfig.ValueFilterSmudge] =     filterName
-				gitConfig.ConfigParameters[gitConfig.ValueFilterParameters] = smudgeParameters
-				gitConfig.Execute()
+				git = self._git.GetGitConfig()
+				git.ConfigParameters[git.ValueFilterSmudge] =     filterName
+				git.ConfigParameters[git.ValueFilterParameters] = smudgeParameters
+				git.Execute()
 		except CommonException:
 			return False
 
