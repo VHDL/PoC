@@ -12,9 +12,9 @@
 -- 4-pin fan header. The FPGAs temperature is read from device specific system
 -- monitors (normal, user temperature, over temperature).
 --
--- For example the Xilinx System Monitors are configured as follows:
+-- **For example the Xilinx System Monitors are configured as follows:**
 --
--- .. code-block:: None
+-- .. code-block:: none
 --
 --                    |                      /-----\
 --    Temp_ov   on=80 | - - - - - - /-------/       \

@@ -1,1 +1,7 @@
-normalize
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+normalize.pl

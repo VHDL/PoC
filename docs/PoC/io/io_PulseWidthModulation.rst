@@ -2,8 +2,8 @@
 io_PulseWidthModulation
 #######################
 
-		This module generates a pulse width modulated signal, that can be configured
-		in frequency (PWM_FREQ) and modulation granularity (PWM_RESOLUTION).
+This module generates a pulse width modulated signal, that can be configured
+in frequency (``PWM_FREQ``) and modulation granularity (``PWM_RESOLUTION``).
 
 
 

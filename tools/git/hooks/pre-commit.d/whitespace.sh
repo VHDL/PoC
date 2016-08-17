@@ -25,6 +25,6 @@
 # ==============================================================================
 
 if ! git diff --cached --check; then
-  echo 1>&2 '! Commit would introduce whitespace errors. Please fix and try again.'
+  echo 1>&2 'ERROR: Commit would introduce whitespace errors. Please fix and try again.'
   exit 1
 fi
