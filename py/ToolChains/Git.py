@@ -186,25 +186,19 @@ class Configuration(BaseConfiguration):
 	# FIXME: unused method -> call when Developer tools get disabled
 	def __UninstallGitFilters(self):
 		self._host._LogNormal("  Uninstalling Git filters...")
-		try:
-			gitConfig = self._git.GetGitConfig()
-			gitConfig.Clear()
-			gitConfig.ConfigParameters[gitConfig.SwitchUnset] =       True
 
-			for fileFormat in [None, "rest", "vhdl"]:
-				filterName = "normalize"
-				if (fileFormat is not None):
-					filterName += "_" + fileFormat
+		for fileFormat in [None, "rest", "vhdl"]:
+			filterName = "filter.normalize"
+			if (fileFormat is not None):
+				filterName += "_" + fileFormat
 
-				gitConfig.ConfigParameters[gitConfig.ValueFilterClean] =  filterName
-				gitConfig.ConfigParameters[gitConfig.ValueFilterSmudge] = None
-				gitConfig.Execute()
-
-				gitConfig.ConfigParameters[gitConfig.ValueFilterClean] =  None
-				gitConfig.ConfigParameters[gitConfig.ValueFilterSmudge] = filterName
-				gitConfig.Execute()
-		except CommonException:
-			return False
+			try:
+				git = self._git.GetGitConfig()
+				git.ConfigParameters[git.SwitchRemoveSection] =   True
+				git.ConfigParameters[git.ValueFilterParameters] = filterName
+				git.Execute()
+			except CommonException:
+				self._host._LogWarning("    Error while removing section {0}.".format(filterName))
 
 	def __InstallGitFilters(self):
 		self._host._LogNormal("  Installing Git filters...")
@@ -248,20 +242,35 @@ class Configuration(BaseConfiguration):
 	# FIXME: unused method -> call when Developer tools get disabled
 	def __UninstallGitHooks(self):
 		self._host._LogNormal("  Uninstalling Git hooks...")
-		raise NotImplementedError()
+		pocInstallationPath =   Path(self._host.PoCConfig['INSTALL.PoC']['InstallationDirectory'])
+		hookRunnerPath =        pocInstallationPath / "tools/git/hooks/run-hook.sh"
+
+		gitDirectoryPath =      self.__GetGitDirectory()
+		gitHookDirectoryPath =  gitDirectoryPath / "hooks"
+
+		for hookName in ["pre-commit"]:
+			gitHookPath = gitHookDirectoryPath / hookName
+			if gitHookPath.exists():
+				if (gitHookPath.is_symlink() and (gitHookPath.resolve() == hookRunnerPath)):
+					self._host._LogNormal("  '{0}' hook is configured for PoC. Deleting.".format(hookName))
+					try:
+						gitHookPath.unlink()
+					except OSError as ex:
+						raise ConfigurationException("Cannot remove '{0!s}'.".format(gitHookPath)) from ex
+				else:
+					# TODO: check if file was copied -> Hash compare?
+					self._host._LogWarning("  '{0}' hook is in use by another script. Skipping.".format(hookName))
 
 	def __InstallGitHooks(self):
 		self._host._LogNormal("  Installing Git hooks...")
-		pocInstallationPath = Path(self._host.PoCConfig['INSTALL.PoC']['InstallationDirectory'])
-		hookDirectoryPath =   pocInstallationPath / "tools/git/hooks"
-		hookRunnerPath =      hookDirectoryPath / "run-hook.sh"
+		pocInstallationPath =   Path(self._host.PoCConfig['INSTALL.PoC']['InstallationDirectory'])
+		hookRunnerPath =        pocInstallationPath / "tools/git/hooks/run-hook.sh"
 
 		if (not hookRunnerPath.exists()):
 			raise ConfigurationException("Runner script '{0!s}' not found.".format(hookRunnerPath)) from FileNotFoundError(str(hookRunnerPath))
 
-		gitDirectoryPath = self.__GetGitDirectory(pocInstallationPath)
-
-		gitHookDirectoryPath = gitDirectoryPath / "hooks"
+		gitDirectoryPath =      self.__GetGitDirectory()
+		gitHookDirectoryPath =  gitDirectoryPath / "hooks"
 
 		for hookName in ["pre-commit"]:
 			gitHookPath = gitHookDirectoryPath / hookName
@@ -284,12 +293,12 @@ class Configuration(BaseConfiguration):
 						except OSError as ex2:
 							raise ConfigurationException() from ex2
 
-	def __GetGitDirectory(self, pocInstallationPath):
+	def __GetGitDirectory(self):
 		try:
 			gitRevParse = self._git.GetGitRevParse()
 			gitRevParse.RevParseParameters[gitRevParse.SwitchGitDir] = True
-			gitDirectory = gitRevParse.Execute()
-			gitDirectoryPath = Path(gitDirectory)
+			gitDirectory =      gitRevParse.Execute()
+			gitDirectoryPath =  Path(gitDirectory)
 		except CommonException as ex:
 			raise ConfigurationException() from ex
 
@@ -298,7 +307,9 @@ class Configuration(BaseConfiguration):
 		# directory is the Git top-level directory, then 'rev-parse' returns a
 		# relative path, otherwise the path is already absolute.
 		if (not gitDirectoryPath.is_absolute()):
-			gitDirectoryPath = pocInstallationPath / gitDirectoryPath
+			pocInstallationPath = Path(self._host.PoCConfig['INSTALL.PoC']['InstallationDirectory'])
+			gitDirectoryPath =    pocInstallationPath / gitDirectoryPath
+
 		return gitDirectoryPath
 
 
@@ -421,10 +432,13 @@ class GitConfig(GitSCM):
 				self.ConfigParameters[param] = None
 
 	class Command(metaclass=CommandArgument):
-		_name = "config"
+		_name =     "config"
 
 	class SwitchUnset(metaclass=LongFlagArgument):
-		_name = "unset"
+		_name =     "unset"
+
+	class SwitchRemoveSection(metaclass=LongFlagArgument):
+		_name =     "remove-section"
 
 	class ValueFilterClean(metaclass=ValuedFlagArgument):
 		_name =     "clean"
@@ -440,6 +454,7 @@ class GitConfig(GitSCM):
 	ConfigParameters = CommandLineArgumentList(
 		Command,
 		SwitchUnset,
+		SwitchRemoveSection,
 		ValueFilterClean,
 		ValueFilterSmudge,
 		ValueFilterParameters
