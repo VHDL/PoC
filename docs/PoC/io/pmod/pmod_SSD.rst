@@ -2,9 +2,11 @@
 pmod_SSD
 ########
 
-		This module drives a dual-digit 7-segment display (Pmod_SSD). The module
-		expects two binary encoded 4-bit 'Digit<i>' signals and drives a 2x6 bit
-		Pmod connector (7 anode bits, 1 cathode bit).
+This module drives a dual-digit 7-segment display (Pmod_SSD). The module
+expects two binary encoded 4-bit ``Digit<i>`` signals and drives a 2x6 bit
+Pmod connector (7 anode bits, 1 cathode bit).
+
+-- code-block:. none
 
 		Segment Pos./ Index
 			 AAA      |   000
@@ -23,7 +25,7 @@ pmod_SSD
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 54-67
+   :lines: 56-69
 
 Source file: `io/pmod/pmod_SSD.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/pmod/pmod_SSD.vhdl>`_
 

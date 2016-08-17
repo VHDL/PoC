@@ -52,7 +52,7 @@
 --
 --   - *_TRANS_STATUS_TRANSFER_ERROR if the device reports an error via the ATA
 --   		register block. New commands can be applied directly.
-
+--
 --   - *_TRANS_STATUS_ERROR if a fatal error occurs. In this case at least a
 --   		synchronous reset must be applied.
 --

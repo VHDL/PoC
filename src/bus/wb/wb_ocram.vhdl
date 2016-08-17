@@ -20,11 +20,13 @@
 --
 -- Configuration:
 -- --------------
--- PIPE_STAGES = 1: The RAM output is directly connected to the bus. Thus, the
+-- PIPE_STAGES = 1
+--   The RAM output is directly connected to the bus. Thus, the
 --   read access latency (one cycle) is short. But, the RAM's read timing delay
 --   must be respected.
 --
--- PIPE_STAGES = 2: The RAM output is registered again. Thus, the read access
+-- PIPE_STAGES = 2
+--   The RAM output is registered again. Thus, the read access
 --   latency is two cycles.
 --
 -- License:

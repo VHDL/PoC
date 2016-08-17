@@ -7,7 +7,7 @@ temperature values are overrun.
 
 .. rubric:: Temperature Curve
 
-.. code-block:: None
+.. code-block:: none
 
                    |                      /-----\
    Temp_ov   on=80 | - - - - - - /-------/       \

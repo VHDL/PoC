@@ -2,8 +2,8 @@
 io_GlitchFilter
 ###############
 
-		This module filters glitches on a wire. The high and low spike suppression
-		cycle counts can be configured.
+This module filters glitches on a wire. The high and low spike suppression
+cycle counts can be configured.
 
 
 
