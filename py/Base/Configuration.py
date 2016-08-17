@@ -85,6 +85,10 @@ class Configuration:    #(ISubClassRegistration):
 	def __init__(self, host):
 		self._host =  host
 
+	@property
+	def Host(self):
+		return self._host
+
 	def IsSupportedPlatform(self):
 		if (self._host.Platform not in self._template):
 			return ("ALL" in self._template)
