@@ -4,6 +4,10 @@
 # Documentation
 README.md
 
+# subdirectories
+hooks/
+filters/
+
 # manual tools
 build_md.py
 
@@ -12,7 +16,3 @@ git-alias.setup.sh
 git-alias.setup.ps1
 git-hooks.setup.py
 git-filters.setup.py
-
-# subdirectories
-hooks/
-filters/

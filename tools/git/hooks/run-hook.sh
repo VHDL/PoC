@@ -24,11 +24,13 @@
 # limitations under the License.
 # ==============================================================================
 hook=$(basename $0)
+echo "POC: Executing $hook hooks..."
 for i in tools/git/hooks/$hook.d/*; do
-	echo " executing '$(basename $i)'"
+	file=$(basename $i)
+	echo "POC:   Executing '$file'"
 	if ! "$i"; then
-		echo FAIL
+		echo "ERROR: $file FAILED"
 		exit 1
 	fi
 done
-echo PASS
+echo "PASSED"

@@ -116,6 +116,3 @@ and interest in and to Your Contributions.
  8. You agree to notify the Chair of any facts or circumstances of
     which you become aware that would make these representations
     inaccurate in any respect.
-
-Download `Individual Contributor License Agreement <ICLA.pdf>`_ |br|
-Download `Corporate Contributor License Agreement <CCLA.pdf>`_

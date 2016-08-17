@@ -79,12 +79,12 @@ class Extract:
 		for item in sourceDirectory.iterdir():
 			if item.is_dir():
 				stem = item.stem
-				if (stem not in ["Altera", "altera", "Lattice", "lattice", "Xilinx", "xilinx"]):
+				if ((stem not in ["Altera", "altera", "Lattice", "lattice", "Xilinx", "xilinx"]) and not stem.startswith(("cvs_", "old_"))):
 					print("cd {0}".format(stem))
 					result[stem] = self.recursion(item)
 			elif item.is_file():
 				if (item.suffix == ".vhdl"):
-					if (not item.stem.endswith(("Altera", "altera", "Lattice", "lattice", "Xilinx", "xilinx"))):
+					if (not item.stem.endswith(("Altera", "altera", "Lattice", "lattice", "Xilinx", "xilinx")) and not item.stem.startswith(("cvs_", "old_"))):
 						try:
 							result[item.stem] = self.ExtractComments(item)
 						except Exception as ex:
