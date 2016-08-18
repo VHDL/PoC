@@ -117,7 +117,7 @@ class ISEMixIn:
 		self._dryrun =              dryrun
 		self._binaryDirectoryPath = binaryDirectoryPath
 		self._version =             version
-		self.Logger =              logger
+		self._Logger =              logger
 
 
 class ISE(ISEMixIn):
@@ -129,13 +129,13 @@ class ISE(ISEMixIn):
 		# return ISEVHDLCompiler(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
 
 	def GetFuse(self):
-		return Fuse(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self.Logger)
+		return Fuse(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
 
 	def GetXst(self):
-		return Xst(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self.Logger)
+		return Xst(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
 
 	def GetCoreGenerator(self):
-		return CoreGenerator(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self.Logger)
+		return CoreGenerator(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
 
 
 class Fuse(Executable, ISEMixIn):
