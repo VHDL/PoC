@@ -1,0 +1,17 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+Sphinx documentation
+Altera/
+Lattice/
+Xilinx/
+
+fifo/
+misc/
+net/
+# sata/ DON'T PUBLISH SATA
+
+*.rst

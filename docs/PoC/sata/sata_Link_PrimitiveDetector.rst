@@ -19,4 +19,4 @@ this unit outputs X continously until a new primitve (except ALIGN) arrives.
 Source file: `sata/sata_Link_PrimitiveDetector.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sata/sata_Link_PrimitiveDetector.vhdl>`_
 
 
-	 
+
