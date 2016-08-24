@@ -15,4 +15,4 @@ remote_terminal_control
 Source file: `comm/remote/remote_terminal_control.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/comm/remote/remote_terminal_control.vhdl>`_
 
 
-	 
+

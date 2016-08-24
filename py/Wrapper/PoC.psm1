@@ -351,7 +351,7 @@ function Invoke-CloseEnvironment
 				if (Test-Path $VendorPostHookFile -PathType Leaf)
 				{	. ($VendorPostHookFile)	}
 
-				$ModuleFile = "$PoC_RootDir\$PoC_WrapperDirectory\$($LoadEnv[$VendorName]['Tools'][$ToolName]['PSModule'])"
+				$ModuleFile = "$PoC_ModuleDir\$($LoadEnv[$VendorName]['Tools'][$ToolName]['PSModule'])"
 				if (Test-Path $ModuleFile -PathType Leaf)
 				{	$ModuleName = (Get-Item $ModuleFile).BaseName
 					if (Get-Module $ModuleName)

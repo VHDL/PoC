@@ -42,12 +42,13 @@ accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea taki
 
 .. toctree::
    :hidden:
-    
+
    WhatIsPoC/index
    QuickStart
    UsingPoC/index
    PoC/index
    Miscelaneous/ThirdParty
+   ConstraintFiles/index
    References/index
    GetInvolved/index
    Miscelaneous/ChangeLog

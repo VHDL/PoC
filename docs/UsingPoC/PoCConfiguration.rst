@@ -19,13 +19,17 @@ The setup process is started by invoking PoC's frontend script with the command
 buttons: :kbd:`Y` to accept, :kbd:`N` to decline, :kbd:`P` to skip/pass a step
 and :kbd:`Return` to accept a default value displayed in brackets.
 
+Optionally, a vendor or tool chain name can be passed to the configuration
+process to launch only its configuration routines.
+
 **On Linux:**
 
 .. code-block:: Bash
-   
+
    cd ProjectRoot
    ./lib/PoC/poc.sh configure
-
+   # with tool chain name
+   ./lib/PoC/poc.sh configure Xilinx.Vivado
 
 **On OS X**
 
@@ -35,7 +39,7 @@ Please see the Linux instructions.
 **On Windows**
 
 .. NOTE::
-   
+
    All Windows command line instructions are intended for :program:`Windows PowerShell`,
    if not marked otherwise. So executing the following instructions in Windows
    Command Prompt (:program:`cmd.exe`) won't function or result in errors! See
@@ -43,15 +47,17 @@ Please see the Linux instructions.
    download or update PowerShell.
 
 .. code-block:: PowerShell
-   
+
    cd ProjectRoot
    .\lib\PoC\poc.ps1 configure
+   # with tool chain name
+   .\lib\PoC\poc.ps1 configure Xilinx.Vivado
 
 
 **Introduction screen:**
 
 .. code-block:: none
-   
+
    PS D:\git\PoC> .\poc.ps1 configure
    ================================================================================
                             The PoC-Library - Service Tool
@@ -61,7 +67,7 @@ Please see the Linux instructions.
      N - no       Ctrl + C - abort (no changes are saved)
    Upper case or value in '[...]' means default value
    --------------------------------------------------------------------------------
-   
+
    Configuring PoC
      PoC version: v1.0.1 (found in git)
      Installation directory: D:\git\PoC (found in environment variable)
@@ -69,12 +75,38 @@ Please see the Linux instructions.
 
 The PoC-Library
 ===============
+PoC itself has a fully automated configuration routine. It detects if PoC is
+under Git control. If so, it extracts the current version number from the latest
+Git tag. The installation directory is infered from ``$PoCRootDirectory`` setup
+by ``PoC.ps1`` or ``poc.sh``.
 
-The PoC-Library configuration is automatic. The current version is read from
-Git and the installation directory is taken from the frontend scripts location.
+.. code-block:: none
+
+   Configuring PoC
+     PoC version: v1.0.1 (found in git)
+     Installation directory: D:\git\PoC (found in environment variable)
+
+Git
+===
+.. NOTE::
+   Setting up Git and Git developer settings, is an advanced feature recommended
+   for all developers interrested in providing Git pull requests or patches.
+
+.. code-block:: none
+
+   Configuring Git
+     Git installation directory [C:\Program Files\Git]:
+     Install Git mechanisms for PoC developers? [y/N/p]: y
+     Install Git filters? [Y/n/p]:
+     Installing Git filters...
+     Install Git hooks? [Y/n/p]:
+     Installing Git hooks...
+     Setting 'pre-commit' hook for PoC...
 
 Aldec
 =====
+Configure the installation directory for all Aldec tools.
+
 .. code-block:: none
 
    Configuring Aldec
@@ -92,12 +124,14 @@ Active-HDL
 
 Altera
 ======
+Configure the installation directory for all Altera tools.
+
 .. code-block:: none
-   
+
 	 Configuring Altera
      Are Altera products installed on your system? [Y/n/p]: Y
      Altera installation directory [C:\Altera]:
-	
+
 Quartus
 -------
 .. code-block:: none
@@ -116,7 +150,9 @@ ModelSim Altera Edition
      ModelSim Altera Edition installation directory [C:\Altera\15.0\modelsim_ae]: C:\Altera\16.0\modelsim_ase
 
 Lattice
-=======
+========
+Configure the installation directory for all Lattice Semiconductor tools.
+
 .. code-block:: none
 
    Configuring Lattice
@@ -143,6 +179,8 @@ Active-HDL Lattice Edition
 
 Mentor Graphics
 ===============
+Configure the installation directory for all mentor Graphics tools.
+
 .. code-block:: none
 
    Configuring Mentor
@@ -160,8 +198,11 @@ QuestaSim
 
 Xilinx
 ======
-If Xilinx products are available and they shall be configured in PoC, then
-answer the following questions:
+Configure the installation directory for all Xilinx tools.
+
+..
+   If Xilinx products are available and they shall be configured in PoC, then
+   answer the following questions:
 
 .. code-block:: none
 
@@ -201,7 +242,7 @@ GHDL
      GHDL installation directory [C:\Tools\GHDL\0.34dev]:
 
 GTKWave
-=======
+========
 .. code-block:: none
 
    Configuring GTKWave
