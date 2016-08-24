@@ -3,7 +3,7 @@
 ## -----------------------------------------------------------------------------
 ##	Bank:						12, 15, 213
 ##		VCCO:					2.5V, 2.5V (VADJ_FPGA, VADJ_FPGA)
-##		Quad117:		 
+##		Quad117:
 ##			RefClock0		from U3 (SY89544UMG)
 ##			RefClock1		from U4 (SY89544UMG)
 ##		Placement:
@@ -19,13 +19,13 @@ set_property IOSTANDARD			LVCMOS33	[get_ports AC701_SFP_LossOfSignal]
 ##
 ## --------------------------
 ## SFP+ LVDS signal-pairs
-## {OUT}	
+## {OUT}
 set_property PACKAGE_PIN		AC10			[get_ports AC701_SFP_TX_p]
-## {OUT}	
+## {OUT}
 set_property PACKAGE_PIN		AD10			[get_ports AC701_SFP_TX_n]
-## {IN}		
+## {IN}
 set_property PACKAGE_PIN		AC12			[get_ports AC701_SFP_RX_p]
-## {IN}		
+## {IN}
 set_property PACKAGE_PIN		AD12			[get_ports AC701_SFP_RX_n]
 
 # Ignore timings on async I/O pins

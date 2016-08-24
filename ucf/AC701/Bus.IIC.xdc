@@ -15,23 +15,23 @@
 ##			Device:				Si570
 ##			Address:			0xBA (1011 101xb)
 ##		Channel 1:		FMC Connector 1 (HPC)
-##			Location:			
+##			Location:
 ##		Channel 2:		unused
 ##		Channel 3:		EEPROM
 ##			Location:			U6
-##			Vendor:				
+##			Vendor:
 ##			Device:				M24C08
 ##			Address:			0xA8 (1010 100xb)
 ##		Channel 4:		SFP cage
 ##			Location:			P3
 ##			Address:			0xA0 (1010 000xb)
 ##		Channel 5:		HDMI
-##			Location:			
-##			Vendor:				
-##			Device:				
+##			Location:
+##			Vendor:
+##			Device:
 ##			Address:			0x72 (0111 001xb)
 ##		Channel 6:		DDR3
-##			Location:			
+##			Location:
 ##			Address:			0xA0, 0x30 (1010 000xb, 0011 000xb)
 ##		Channel 7:		SI5324
 ##			Location:			U?? (SI5324-C-GM)

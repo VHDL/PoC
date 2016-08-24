@@ -6,7 +6,7 @@
 ##		Device:				XC7A200T
 ##		Package:			FBG676
 ##		Speedgrade:		-2
-##	
+##
 ##	Notes:
 ##		AC701: Power Rail 4 driving VADJ_FPGA is defaulted to 2.5V (choices: 1.8V, 2.5V, 3.3V)
 ##
