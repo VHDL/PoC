@@ -8,7 +8,7 @@
 ##		Speedgrade:		-2
 ##
 ##	Notes:
-##		AC701: Power Rail 4 driving VADJ_FPGA is defaulted to 2.5V (choices: 1.8V, 2.5V, 3.3V)
+##		AC701: VCCO_VADJ is defaulted to 2.5V (choices: 1.8V, 2.5V, 3.3V)
 ##
 ## =============================================================================================================================================================
 ## Clock Sources
@@ -28,4 +28,3 @@ set_property PACKAGE_PIN	M21			[get_ports AC701_ProgUserClock_p]
 set_property PACKAGE_PIN	M22			[get_ports AC701_ProgUserClock_n]
 # set I/O standard
 set_property IOSTANDARD		LVDS_25	[get_ports -regexp {AC701_ProgUserClock_[p|n]}]
-#$ NET "AC701_ProgUserClock_p"				TNM_NET = "NET_ProgUserClock";

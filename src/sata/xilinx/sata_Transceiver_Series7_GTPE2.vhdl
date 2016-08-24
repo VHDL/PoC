@@ -136,8 +136,7 @@ architecture rtl of sata_Transceiver_Series7_GTPE2 is
 
 	function get_FeedbackClockDivider(RefClock_Freq : FREQ) return positive is
 	begin
-		if		(RefClock_Freq = 100 MHz) then	return 3;
-		elsif (RefClock_Freq = 150 MHz) then	return 4;
+		if    (RefClock_Freq = 150 MHz) then	return 4;
 		elsif (RefClock_Freq = 200 MHz) then	return 3;
 		else																	return 0;
 		end if;
@@ -145,9 +144,8 @@ architecture rtl of sata_Transceiver_Series7_GTPE2 is
 
 	function get_ReferenceClockDivider(RefClock_Freq : FREQ) return positive is
 	begin
-		if		(RefClock_Freq = 100 MHz) then	return 1;
-		elsif (RefClock_Freq = 150 MHz) then	return 1;
-		elsif (RefClock_Freq = 200 MHz) then	return 2;
+		if    (RefClock_Freq = 150 MHz) then	return 1;
+		elsif (RefClock_Freq = 200 MHz) then	return 1;
 		else																	return 0;
 		end if;
 	end function;
@@ -1182,7 +1180,7 @@ begin
 				DMONITOR_CFG														=> x"000A00",	-- GTXE2	x"000A01",							-- GTXE2: DMONITOR_CFG(0) enable digital monitor
 				RX_CM_SEL																=> "11",									-- RX termination voltage: 00 => AVTT; 01 => GND; 10 => Floating; 11 => programmable (PMA_RSV(4) & RX_CM_TRIM)
 				RX_CM_TRIM															=> "1010",-- GTXE2	"1011",										-- RX termination voltage: 1010 => 800 mV; 1011 => 850 mV
-				RX_DEBUG_CFG														=> "000000001000",				-- connect LPM HF to DMONITOROUT [6:0]
+				RX_DEBUG_CFG														=> "00000011000011",				-- connect LPM HF to DMONITOROUT [6:0]
 				RX_OS_CFG																=> "0000010000000",
 				TERM_RCAL_CFG														=> "100001000010000",	-- GTXE2	"10000",								-- Controls the internal termination calibration circuit. This feature is intended for internal testing purposes only.
 				TERM_RCAL_OVRD													=> "000",	--GTXE2	'0',										-- Selects whether the external 100?? precision resistor is connected to the MGTRREF pin or a value defined by TERM_RCAL_CFG [4:0]. This feature is intended for internal testing purposes only.
@@ -1214,8 +1212,8 @@ begin
 				TRANS_TIME_RATE													=> x"0E",
 
 				-- TX configurable driver attributes
-				TX_DEEMPH0															=> "00000",
-				TX_DEEMPH1															=> "00000",
+				TX_DEEMPH0															=> "000000",
+				TX_DEEMPH1															=> "000000",
 				TX_EIDLE_ASSERT_DELAY										=> "110",							-- Programmable delay between TXELECIDLE assertion to TXP/N exiting electrical idle.
 				TX_EIDLE_DEASSERT_DELAY									=> "100",							-- Programmable delay between TXELECIDLE de-assertion to TXP/N exiting electrical idle.
 				TX_LOOPBACK_DRIVE_HIZ										=> "FALSE",

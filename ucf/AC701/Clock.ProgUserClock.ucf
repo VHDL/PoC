@@ -1,30 +1,30 @@
 ## =============================================================================================================================================================
 ## Xilinx User Constraint File (UCF)
 ## =============================================================================================================================================================
-##	Board:					Xilinx - Kintex 7 KC705
-##	FPGA:						Xilinx Kintex 7
-##		Device:				XC7K325T
-##		Package:			FFG900
+##	Board:					Xilinx - Artix-7 AC701
+##	FPGA:						Xilinx Artix-7
+##		Device:				XC7A200T
+##		Package:			FBG676
 ##		Speedgrade:		-2
 ##
 ##	Notes:
-##		Power Rail 4 driving VADJ_FPGA is defaulted to 2.5V (choices: 1.8V, 2.5V, 3.3V)
+##		AC701: VCCO_VADJ is defaulted to 2.5V (choices: 1.8V, 2.5V, 3.3V)
 ##
 ## =============================================================================================================================================================
 ## Clock Sources
 ## =============================================================================================================================================================
 ##
-## System Clock
+## User Clock
 ## -----------------------------------------------------------------------------
-##		Bank:						33
-##			VCCO:					1.5V (VCC1V5_FPGA)
-##		Location:				U6 (SIT9102)
-##			Vendor:				SiTime
-##			Device:				SIT9102AI-243N25E200.0000 - 1 to 220 MHz High Performance Oscillator
-##			Frequency:		200 MHz, 50ppm
-NET "KC705_SystemClock_200MHz_p"				LOC = "AD12";						## {IN}		U6.4
-NET "KC705_SystemClock_200MHz_n"				LOC = "AD11";						## {IN}		U6.5
-NET "KC705_SystemClock_200MHz_?"				IOSTANDARD = LVDS;
-NET "KC705_SystemClock_200MHz_p"				TNM_NET = "PIN_SystemClock_200MHz";
-
-TIMESPEC "TS_SystemClock"	= PERIOD "PIN_SystemClock_200MHz"		200 MHz	HIGH 50 %;
+##		Bank:						14
+##			VCCO:					3.3V (FPGA_3V3)
+##		Location:				U34 (SI570)
+##			Vendor:				Silicon Labs
+##			Device:				SI570BAB0000544DG
+##			Frequency:		10 - 810 MHz, 50ppm
+##			Default Freq:	156.250 MHz
+##			I²C-Address:	0x5D #$ (0111 010xb)
+NET "AC701_ProgUserClock_p"				LOC = "M21";				## {IN}		U45.4
+NET "AC701_ProgUserClock_n"				LOC = "M22";				## {IN}		U45.5
+NET "AC701_ProgUserClock_?"				IOSTANDARD = LVDS_25;
+NET "AC701_ProgUserClock_p"				TNM_NET = "PIN_ProgUserClock";

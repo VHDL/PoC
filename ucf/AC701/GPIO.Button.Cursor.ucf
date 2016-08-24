@@ -1,0 +1,18 @@
+## =============================================================================================================================================================
+## General Purpose I/O
+## =============================================================================================================================================================
+##
+## Cursor Buttons
+## -----------------------------------------------------------------------------
+##	Bank:						34
+##		VCCO:					1.5V (FPGA_1V5)
+##	Location:				SW3, SW4, SW5, SW6, SW7
+## -----------------------------------------------------------------------------
+NET "AC701_GPIO_Button_North"						LOC = "P6"	| IOSTANDARD = LVCMOS15;			## {IN}		SW3; high-active; external 4k7 pulldown resistor
+NET "AC701_GPIO_Button_West"						LOC = "R5"	| IOSTANDARD = LVCMOS15;			## {IN}		SW7; high-active; external 4k7 pulldown resistor
+NET "AC701_GPIO_Button_Center"					LOC = "U6"	| IOSTANDARD = LVCMOS15;			## {IN}		SW6; high-active; external 4k7 pulldown resistor
+NET "AC701_GPIO_Button_East"						LOC = "U5"	| IOSTANDARD = LVCMOS15;			## {IN}		SW4; high-active; external 4k7 pulldown resistor
+NET "AC701_GPIO_Button_South"						LOC = "T5"	| IOSTANDARD = LVCMOS15;			## {IN}		SW5; high-active; external 4k7 pulldown resistor
+
+## Ignore timings on async I/O pins
+NET "AC701_GPIO_Button_*"								TIG;

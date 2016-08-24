@@ -1,0 +1,25 @@
+##
+## Transceiver - SFP interface
+## -----------------------------------------------------------------------------
+##	Bank:						12, 15, 213
+##		VCCO:					2.5V, 2.5V (VADJ_FPGA, VADJ_FPGA)
+##		Quad117:
+##			RefClock0		from U3 (SY89544UMG)
+##			RefClock1		from U4 (SY89544UMG)
+##		Placement:
+##			SFP:				Quad213.Channel0 (GTPE2_CHANNEL_X0Y0)
+##		Location:			P3
+#$	##		I²C-Address:	0xA0 (1010 000xb)
+NET "AC701_SFP_TX_Disable"			LOC = "R18" | IOSTANDARD = LVCMOS33; ##
+NET "AC701_SFP_LossOfSignal"		LOC = "R23" | IOSTANDARD = LVCMOS33; ##
+##
+## --------------------------
+## SFP+ LVDS signal-pairs
+NET "AC701_SFP_TX_p"						LOC = "AC10";													## {OUT}
+NET "AC701_SFP_TX_n"						LOC = "AD10";													## {OUT}
+NET "AC701_SFP_RX_p"						LOC = "AC12";													## {IN}
+NET "AC701_SFP_RX_n"						LOC = "AD12";													## {IN}
+
+## Ignore timings on async I/O pins
+NET "AC701_SFP_TX_Disable"			TIG;
+NET "AC701_SFP_LossOfSignal"		TIG;
