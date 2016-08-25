@@ -152,8 +152,8 @@ begin
 			BANDWIDTH								=> "LOW",																			-- LOW = Jitter Filter
 			COMPENSATION						=> "BUF_IN",	--"ZHOLD",
 
-			CLKIN1_PERIOD						=> to_real(to_time(CLOCK_IN_FREQ), 1.0e-9),
-			CLKIN2_PERIOD						=> to_real(to_time(CLOCK_IN_FREQ), 1.0e-9),		-- Not used
+			CLKIN1_PERIOD						=> to_real(to_time(CLOCK_IN_FREQ), 1 ns),
+			CLKIN2_PERIOD						=> to_real(to_time(CLOCK_IN_FREQ), 1 ns),		-- Not used
 			REF_JITTER1							=> 0.00048,
 			REF_JITTER2							=> 0.00048,																		-- Not used
 
