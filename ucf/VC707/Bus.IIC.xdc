@@ -49,4 +49,4 @@ set_property IOSTANDARD			LVCMOS18	[get_ports -regexp {VC707_IIC_.*}]
 
 # Ignore timings on async I/O pins
 set_false_path								-to			[get_ports -regexp {VC707_IIC_.*}]
-set_false_path								-from		[get_ports -regexp {vC707_IIC_Serial.*}]
+set_false_path								-from		[get_ports -regexp {VC707_IIC_Serial.*}]
