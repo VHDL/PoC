@@ -92,10 +92,10 @@ class CommandLineArgumentList(list):
 		result = []
 		for item in self:
 			arg = item.AsArgument()
-			if (arg is None):            pass
+			if (arg is None):           pass
 			elif isinstance(arg, str):  result.append(arg)
-			elif isinstance(arg, list):  result += arg
-			else:                        raise TypeError()
+			elif isinstance(arg, list): result += arg
+			else:                       raise TypeError()
 		return result
 
 class VerboseFlag(metaclass=FlagArgument):

@@ -134,6 +134,22 @@ architecture rtl of sata_Transceiver_Series7_GTXE2 is
 		end case;
 	end function;
 
+	function get_FeedbackClockDivider(RefClock_Freq : FREQ) return positive is
+	begin
+		if    (RefClock_Freq = 150 MHz) then	return 4;
+		elsif (RefClock_Freq = 200 MHz) then	return 3;
+		else																	return 0;
+		end if;
+	end function;
+
+	function get_ReferenceClockDivider(RefClock_Freq : FREQ) return positive is
+	begin
+		if    (RefClock_Freq = 150 MHz) then	return 1;
+		elsif (RefClock_Freq = 200 MHz) then	return 1;
+		else																	return 0;
+		end if;
+	end function;
+
 begin
 
 -- ==================================================================
@@ -149,6 +165,8 @@ begin
 --	==================================================================
 	genGTXE2 : for i in 0 to (PORTS	- 1) generate
 		constant CLOCK_DIVIDER_SELECTION		:	std_logic_vector(2 downto 0)	:= to_ClockDividerSelection(INITIAL_SATA_GENERATIONS_I(i));
+		constant CPLL_FEEDBACK_CLOCK_DIVIDER	: positive := get_FeedbackClockDivider(REFCLOCK_FREQ);
+		constant CPLL_REFERENCE_CLOCK_DIVIDER	: positive := get_ReferenceClockDivider(REFCLOCK_FREQ);
 
 		constant GTX_PCS_RSVD_ATTR					: bit_vector(47 downto 0)				:= (
 			3 =>			'0',							-- select alternative OOB circuit clock source; 0 => sysclk; 1 => CLKRSVD(0)
@@ -196,7 +214,7 @@ begin
 
 		signal GTX_CPLL_Locked_async				: std_logic;
 		signal GTX_CPLL_Locked							: std_logic;
-		signal GTX_TX_RefClockOut						: std_logic;
+		signal GTX_TX_RefClockOut_float			: std_logic;
 		signal GTX_RX_RefClockOut_float			: std_logic;
 
 
@@ -366,10 +384,6 @@ begin
 		signal Status_i											: T_SATA_TRANSCEIVER_STATUS;
 		signal Error_i											: T_SATA_TRANSCEIVER_ERROR;
 
-		-- keep internal clock nets, so timing constrains from UCF can find them
-		attribute KEEP of GTX_TX_RefClockOut	: signal is TRUE;
-
-
 	begin
 		assert FALSE report "Port:    " & integer'image(i)																											severity NOTE;
 		assert FALSE report "  Init. SATA Generation:  Gen" & integer'image(INITIAL_SATA_GENERATIONS_I(i) + 1)	severity NOTE;
@@ -396,19 +410,27 @@ begin
 		-- The ClockNetwork is reset (signal ClkNet_Reset) when PowerDown = '1' or
 		-- ClockNetwork_Reset = '1'.
 		-- ======================================================================
+		ClkNet_Reset <= PowerDown(i) or ClockNetwork_Reset(i);
 
-		-- ClkNet_Reset, ClkNet_Reset_Done and SATA_Clock_i will be connected to
-		-- the appropiate ports of the ClockNetwork module.
-		BUFG_RefClockOut : BUFG
+		ClkNet : entity PoC.sata_Transceiver_Series7_GTXE2_ClockNetwork
+			generic map (
+				DEBUG											=> DEBUG,
+				CLOCK_IN_FREQ							=> REFCLOCK_FREQ,										-- 150 MHz
+				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(i)			-- intial SATA Generation
+			)
 			port map (
-				I						=> GTX_TX_RefClockOut,
-				O						=> SATA_Clock_i
+				ClockIn_150MHz						=> VSS_Common_In.RefClockIn_150_MHz,
+
+				ClockNetwork_Reset				=> ClkNet_Reset,
+				ClockNetwork_ResetDone		=> ClkNet_ResetDone,
+
+				SATAGeneration						=> RP_SATAGeneration(i),
+
+				GTP_Clock_4X							=> SATA_Clock_i
 			);
 
-		ClkNet_Reset        	<= PowerDown(i) or ClockNetwork_Reset(i);
-		ClkNet_ResetDone 			<= not ClkNet_Reset;
+		SATA_Clock(i)			<= SATA_Clock_i;
 
-		SATA_Clock(i)					<= SATA_Clock_i;
 
 		-- ======================================================================
 		-- Use generic module to generate SATA_Clock_Stable and ResetDone
@@ -722,12 +744,12 @@ begin
 		-- Data path / status / error detection
 		-- ==================================================================
 		-- TX path
-		GTX_TX_Data							<= TX_Data(i)			when rising_edge(SATA_Clock_i);
-		GTX_TX_CharIsK					<= TX_CharIsK(i)	when rising_edge(SATA_Clock_i);
+		GTX_TX_Data							<= TX_Data(i);
+		GTX_TX_CharIsK					<= TX_CharIsK(i);
 
 		-- RX path
-		RX_Data(i)							<= GTX_RX_Data		when rising_edge(SATA_Clock_i);
-		RX_CharIsK(i)						<= GTX_RX_CharIsK	when rising_edge(SATA_Clock_i);
+		RX_Data(i)							<= GTX_RX_Data;
+		RX_CharIsK(i)						<= GTX_RX_CharIsK;
 		RX_Valid(i)							<= '1'; -- do not use undocumented RXVALID output of transceiver
 
 --		GTX_PhyStatus
@@ -761,16 +783,15 @@ begin
 		--	==================================================================
 		-- OOB signaling
 		--	==================================================================
-		OOB_TX_Command_d						<= OOB_TX_Command(i) when DebugPortIn(i).ForceOOBCommand = SATA_OOB_NONE else DebugPortIn(i).ForceOOBCommand;	-- when rising_edge(GTX_ClockTX_2X(i));
+		OOB_TX_Command_d				<= OOB_TX_Command(i) when DebugPortIn(i).ForceOOBCommand = SATA_OOB_NONE else DebugPortIn(i).ForceOOBCommand;
+		GTX_TX_ElectricalIDLE		<= '0';
 
 		-- TX OOB signals (generate GTX specific OOB signals)
-		process(OOB_TX_Command_d, PowerDown(i), RP_SATAGeneration(i), GTX_TX_ComInit_r, GTX_TX_ComWake_r, GTX_TX_ComSAS_r)
+		process(OOB_TX_Command_d, RP_SATAGeneration(i), GTX_TX_ComInit_r, GTX_TX_ComWake_r, GTX_TX_ComSAS_r)
 		begin
 			OOBTO_Load						<= '0';
 			OOBTO_Slot						<= 0;
 			OOBTO_en							<= GTX_TX_ComInit_r or GTX_TX_ComWake_r or GTX_TX_ComSAS_r;
-
-			GTX_TX_ElectricalIDLE	<= PowerDown(i);
 
 			GTX_TX_ComInit_set		<= '0';
 			GTX_TX_ComWake_set		<= '0';
@@ -877,9 +898,9 @@ begin
 				SIM_CPLLREFCLK_SEL											=> "111",											-- GTGREFCLK (GTX_RefClockGlobal) is used
 
 				-- Channel PLL clock attributes																				-- A reference input clock of 150 MHz,
-				CPLL_REFCLK_DIV													=> 1,													--	divided by 1,
-				CPLL_FBDIV															=> 4,													--	multiplied by 20
-				CPLL_FBDIV_45														=> 5,													--	=> f_VCO = 3,000 MHz, which is in range of 1,600..3,300 MHz
+				CPLL_REFCLK_DIV													=> CPLL_REFERENCE_CLOCK_DIVIDER,
+				CPLL_FBDIV															=> CPLL_FEEDBACK_CLOCK_DIVIDER,
+				CPLL_FBDIV_45														=> 5,
 				CPLL_CFG																=> x"BC07DC",									--
 				CPLL_INIT_CFG														=> x"00001E",									-- reserved; CPLLRESET_TIME: 0x01E; Represents the time duration to apply internal CPLL reset.
 				CPLL_LOCK_CFG														=> x"01E8",										--
@@ -1152,7 +1173,7 @@ begin
 				TXOUTCLKSEL											=> "011",													-- @async:		011 => select TXPLLREFCLK_DIV1
 				TXOUTCLKFABRIC									=> open,													-- @clock:		internal clock after TXSYSCLKSEL-mux
 				TXOUTCLKPCS											=> open,													-- @clock:		internal clock from PCS sublayer
-				TXOUTCLK												=> GTX_TX_RefClockOut,						-- @clock:		TX output clock
+				TXOUTCLK												=> GTX_TX_RefClockOut_float,			-- @clock:		TX output clock
 
 				RXSYSCLKSEL											=> "00",													-- @async:		00 => use CPLL und gtxe2_channel refclock; 11 => use QPLL and gtxe2_common refclock
 				RXOUTCLKSEL											=> "010",													-- @async:		010 => select RXOUTCLKPMA
