@@ -8,7 +8,7 @@
 ##		VCCO:					1.5V (FPGA_1V5)
 ##	Location:				SW8
 ## -----------------------------------------------------------------------------
-NET "AC701_GPIO_Button_CPU_Reset"				LOC =  "U4"	| IOSTANDARD = LVCMOS15;			## {IN}		SW8; high-active; external 4k7 pulldown resistor
+NET "AC701_GPIO_Button_CPU_Reset"				LOC =  "U4"	| IOSTANDARD = LVCMOS25;			## {IN}		SW8; high-active; external 4k7 pulldown resistor
 
 ## Ignore timings on async I/O pins
 NET "AC701_GPIO_Button_CPU_Reset"				TIG;

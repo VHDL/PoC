@@ -24,7 +24,7 @@
 ##			Frequency:		200 MHz, 50ppm
 NET "AC701_SystemClock_200MHz_p"				LOC = "R3";						## {IN}		U6.4
 NET "AC701_SystemClock_200MHz_n"				LOC = "P3";						## {IN}		U6.5
-NET "AC701_SystemClock_200MHz_?"				IOSTANDARD = LVDS;
+NET "AC701_SystemClock_200MHz_?"				IOSTANDARD = LVDS_25;
 NET "AC701_SystemClock_200MHz_p"				TNM_NET = "PIN_SystemClock_200MHz";
 
 TIMESPEC "TS_SystemClock"	= PERIOD "PIN_SystemClock_200MHz"		200 MHz	HIGH 50 %;
