@@ -336,7 +336,7 @@ begin
 		signal SATA_Clock_i 						 		: std_logic;
 		signal SATA_Clock_Stable_i					: std_logic 						:= '0';
 
-		signal GTP_TX_RefClockOut						: std_logic;
+		signal GTP_TX_RefClockOut_float			: std_logic;
 		signal GTP_RX_RefClockOut_float			: std_logic;
 
 		-- PowerDown signals
@@ -497,9 +497,6 @@ begin
 
 		signal Status_i											: T_SATA_TRANSCEIVER_STATUS;
 		signal Error_i											: T_SATA_TRANSCEIVER_ERROR;
-
-		-- keep internal clock nets, so timing constrains from UCF can find them
-		attribute KEEP of GTP_TX_RefClockOut	: signal is TRUE;
 
 	begin
 		assert FALSE report "Port: " & integer'image(i)																											severity NOTE;
@@ -856,23 +853,59 @@ begin
 		GTP_TX_CharIsK					<= TX_CharIsK(i)	;--when rising_edge(SATA_Clock_i);
 
 		-- RX path
---		RX_Data(i)							<= GTP_RX_Data		;--when rising_edge(SATA_Clock_i);
-		RX_CharIsK(i)						<= GTP_RX_CharIsK	;--when rising_edge(SATA_Clock_i);
 		RX_Valid(i)							<= '1'; -- do not use undocumented RXVALID output of transceiver
 
-		RX_Align : entity PoC.misc_ByteAligner
-			generic map (
-				REGISTERED	=> FALSE,
-				WORD_BITS		=> 32,
-				BYTE_BITS		=> 8
-			)
-			port map (
-				Clock				=> SATA_Clock_i,
-				In_Align		=> GTP_RX_CharIsK,
-				In_Data			=> GTP_RX_Data,
---				Out_Align		=> RX_CharIsK(i),
-				Out_Data		=> RX_Data(i)
-			);
+		RX_Align: block is
+			-- the current alignment
+			signal align_r : std_logic_vector(3 downto 0);
+
+			-- delay register for data & charIsK
+			signal data_r		 : std_logic_vector(31 downto 0);
+			signal charIsK_r : std_logic_vector(3 downto 0);
+
+		begin  -- block RX_Align
+
+			process (SATA_Clock_i) is
+			begin	 -- process
+				if rising_edge(SATA_Clock_i) then
+					if SATA_Clock_Stable_i = '1' then
+						-- update current alignment when a K char has been received,
+						-- K chars have to be placed always on the lowest byte
+						if GTP_RX_CharIsK /= "0000" then
+							align_r <= GTP_RX_CharIsK;
+						end if;
+
+						data_r			 <= GTP_RX_Data(31 downto 0);
+						charIsK_r		 <= GTP_RX_CharIsK(3 downto 0);
+					end if;
+
+					-- select aligned data
+					RX_Data(i) <= data_r when align_r(0) = '1' else
+												GTP_RX_Data( 7 downto 0) & data_r(31 downto  8) when align_r(1) = '1' else
+												GTP_RX_Data(15 downto 0) & data_r(31 downto 16) when align_r(2) = '1' else
+												GTP_RX_Data(23 downto 0) & data_r(31 downto 24);
+
+					RX_CharIsK(i) <= charIsK_r when align_r(0) = '1' else
+													 GTP_RX_CharIsK(0 downto 0) & charIsK_r(3 downto 1) when align_r(1) = '1' else
+													 GTP_RX_CharIsK(1 downto 0) & charIsK_r(3 downto 2) when align_r(2) = '1' else
+													 GTP_RX_CharIsK(2 downto 0) & charIsK_r(3 downto 3);
+				end if;
+			end process;
+		end block RX_Align;
+
+--		RX_Align : entity PoC.misc_ByteAligner
+--			generic map (
+--				REGISTERED	=> FALSE,
+--				WORD_BITS		=> 32,
+--				BYTE_BITS		=> 8
+--			)
+--			port map (
+--				Clock				=> SATA_Clock_i,
+--				In_Align		=> GTP_RX_CharIsK,
+--				In_Data			=> GTP_RX_Data,
+----				Out_Align		=> RX_CharIsK(i),
+--				Out_Data		=> RX_Data(i)
+--			);
 
 --		GTP_PhyStatus
 --		GTP_TX_BufferStatus
@@ -905,7 +938,8 @@ begin
 		--	==================================================================
 		-- OOB signaling
 		--	==================================================================
-		OOB_TX_Command_d						<= OOB_TX_Command(i) when DebugPortIn(i).ForceOOBCommand = SATA_OOB_NONE else DebugPortIn(i).ForceOOBCommand;	-- when rising_edge(GTP_ClockTX_2X(i));
+		OOB_TX_Command_d				<= OOB_TX_Command(i) when DebugPortIn(i).ForceOOBCommand = SATA_OOB_NONE else DebugPortIn(i).ForceOOBCommand;
+		GTP_TX_ElectricalIDLE		<= '0';
 
 		-- TX OOB signals (generate GTP specific OOB signals)
 		process(OOB_TX_Command_d, PowerDown(i), RP_SATAGeneration(i), GTP_TX_ComInit_r, GTP_TX_ComWake_r, GTP_TX_ComSAS_r)
@@ -913,8 +947,6 @@ begin
 			OOBTO_Load						<= '0';
 			OOBTO_Slot						<= 0;
 			OOBTO_en							<= GTP_TX_ComInit_r or GTP_TX_ComWake_r or GTP_TX_ComSAS_r;
-
-			GTP_TX_ElectricalIDLE	<= PowerDown(i);
 
 			GTP_TX_ComInit_set		<= '0';
 			GTP_TX_ComWake_set		<= '0';
@@ -1323,7 +1355,7 @@ begin
 				TXOUTCLKSEL											=> "011",													-- @async:		011 => select TXPLLREFCLK_DIV1
 				TXOUTCLKFABRIC									=> open,													-- @clock:		internal clock after TXSYSCLKSEL-mux
 				TXOUTCLKPCS											=> open,													-- @clock:		internal clock from PCS sublayer
-				TXOUTCLK												=> GTP_TX_RefClockOut,						-- @clock:		TX output clock
+				TXOUTCLK												=> GTP_TX_RefClockOut_float,			-- @clock:		TX output clock
 
 				RXSYSCLKSEL											=> "00",													-- @async:		00 => use QuadPLL PLL0 for HF clock and GTPE2_CHANNEL refclock; 11 => use QuadPLL PLL1
 				RXOUTCLKSEL											=> "010",													-- @async:		010 => select RXOUTCLKPMA
