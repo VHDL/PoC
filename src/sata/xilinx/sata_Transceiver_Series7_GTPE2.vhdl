@@ -880,15 +880,19 @@ begin
 					end if;
 
 					-- select aligned data
-					RX_Data(i) <= data_r when align_r(0) = '1' else
-												GTP_RX_Data( 7 downto 0) & data_r(31 downto  8) when align_r(1) = '1' else
-												GTP_RX_Data(15 downto 0) & data_r(31 downto 16) when align_r(2) = '1' else
-												GTP_RX_Data(23 downto 0) & data_r(31 downto 24);
-
-					RX_CharIsK(i) <= charIsK_r when align_r(0) = '1' else
-													 GTP_RX_CharIsK(0 downto 0) & charIsK_r(3 downto 1) when align_r(1) = '1' else
-													 GTP_RX_CharIsK(1 downto 0) & charIsK_r(3 downto 2) when align_r(2) = '1' else
-													 GTP_RX_CharIsK(2 downto 0) & charIsK_r(3 downto 3);
+					if align_r(0) = '1' then
+						RX_Data(i)		<= data_r;
+						RX_CharIsK(i) <= charIsK_r;
+					elsif align_r(1) = '1' then
+						RX_Data(i)		<= GTP_RX_Data(7 downto 0) & data_r(31 downto 8);
+						RX_CharIsK(i) <= GTP_RX_CharIsK(0 downto 0) & charIsK_r(3 downto 1);
+					elsif align_r(2) = '1' then
+						RX_Data(i)		<= GTP_RX_Data(15 downto 0) & data_r(31 downto 16);
+						RX_CharIsK(i) <= GTP_RX_CharIsK(1 downto 0) & charIsK_r(3 downto 2);
+					else
+						RX_Data(i)		<= GTP_RX_Data(23 downto 0) & data_r(31 downto 24);
+						RX_CharIsK(i) <= GTP_RX_CharIsK(2 downto 0) & charIsK_r(3 downto 3);
+					end if;
 				end if;
 			end process;
 		end block RX_Align;
