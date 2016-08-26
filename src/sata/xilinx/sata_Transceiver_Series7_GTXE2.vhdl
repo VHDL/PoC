@@ -748,8 +748,8 @@ begin
 		GTX_TX_CharIsK					<= TX_CharIsK(i);
 
 		-- RX path
-		RX_Data(i)							<= GTX_RX_Data;
-		RX_CharIsK(i)						<= GTX_RX_CharIsK;
+		RX_Data(i)							<= GTX_RX_Data when rising_edge(SATA_Clock_i);
+		RX_CharIsK(i)						<= GTX_RX_CharIsK when rising_edge(SATA_Clock_i);
 		RX_Valid(i)							<= '1'; -- do not use undocumented RXVALID output of transceiver
 
 --		GTX_PhyStatus
