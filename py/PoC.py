@@ -1080,10 +1080,10 @@ class PoC(ILogable, ArgParseMixin):
 
 # main program
 def main(): # mccabe:disable=MC0001
-	dryRun =  "-D" in sys_argv
-	debug =   "-d" in sys_argv
-	verbose = "-v" in sys_argv
-	quiet =   "-q" in sys_argv
+	dryRun =  "--dryrun"  in sys_argv
+	debug =   "-d"        in sys_argv
+	verbose = "-v"        in sys_argv
+	quiet =   "-q"        in sys_argv
 
 	# configure Exit class
 	Exit.quiet = quiet
