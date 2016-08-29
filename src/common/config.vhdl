@@ -351,6 +351,7 @@ use			PoC.utils.all;
 package config is
 	constant PROJECT_DIR			: string	:= MY_PROJECT_DIR;
 	constant OPERATING_SYSTEM	: string	:= MY_OPERATING_SYSTEM;
+	constant POC_VERBOSE			: boolean := MY_VERBOSE;
 
 	-- List of known FPGA / Chip vendors
 	-- ---------------------------------------------------------------------------

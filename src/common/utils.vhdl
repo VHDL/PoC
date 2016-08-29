@@ -32,19 +32,11 @@
 -- =============================================================================
 
 library	IEEE;
-
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
-use			IEEE.math_real.all;
-
-library	PoC;
-use			PoC.my_config.all;
-
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+use IEEE.math_real.all;
 
 package utils is
-	-- PoC settings
-	-- ==========================================================================
-	constant POC_VERBOSE				: boolean			:= MY_VERBOSE;
 
   -- Environment
 	-- ==========================================================================
