@@ -1,2 +1,7 @@
-build_md
-whitespace
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+whitespace.sh

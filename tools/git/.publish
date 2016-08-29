@@ -14,5 +14,3 @@ build_md.py
 # scripts to customize git
 git-alias.setup.sh
 git-alias.setup.ps1
-git-hooks.setup.py
-git-filters.setup.py
