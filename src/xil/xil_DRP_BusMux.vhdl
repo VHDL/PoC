@@ -163,9 +163,9 @@ begin
 			when ST_BUS_LOCKED =>
 				LockCounter_rst			<= '0';
 
-				if ((Reg_Request and Arb_Grant) = Arb_Grant) then
+				if (Reg_Request and Arb_Grant) = Arb_Grant then
 					NextState					<= ST_BUS_TRANSACTION_START;
-				elsif (LockCounter_us = LOCKCOUNTER_MAX) then
+				elsif LockCounter_us = LOCKCOUNTER_MAX then
 					NextState					<= ST_IDLE;
 				end if;
 

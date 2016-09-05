@@ -248,9 +248,9 @@ begin
 				LCD_Data_t					<= (LCD_Data_t'range => '0');
 
 				if (BusTC_Timeout = '1') then
-					if (LCD_BUS_BITS = 4) then
+					if LCD_BUS_BITS = 4 then
 						NextState				<= ST_WRITE_LOWER_NIBBLE_SETUP_REGSEL;
-					elsif (LCD_BUS_BITS = 8) then
+					elsif LCD_BUS_BITS = 8 then
 						Status					<= IO_LCDBUS_STATUS_WRITE_COMPLETE;
 
 						NextState				<= ST_IDLE;
@@ -350,9 +350,9 @@ begin
 				LCD_Data_t					<= (LCD_Data_t'range => '1');
 
 				if (BusTC_Timeout = '1') then
-					if (LCD_BUS_BITS = 4) then
+					if LCD_BUS_BITS = 4 then
 						NextState				<= ST_READ_LOWER_NIBBLE_SETUP_REGSEL;
-					elsif (LCD_BUS_BITS = 8) then
+					elsif LCD_BUS_BITS = 8 then
 						Status					<= IO_LCDBUS_STATUS_READ_COMPLETE;
 
 						NextState				<= ST_IDLE;

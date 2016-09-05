@@ -200,12 +200,12 @@ begin
   -----------------------------------------------------------------------------
   -- Outputs
   -----------------------------------------------------------------------------
-  gNoSdinReg : if SDIN_REG = false generate
+  gNoSdinReg : if not SDIN_REG generate
     rdata <= sram_data;
     rstb  <= reading_p2;
   end generate gNoSdinReg;
 
-  gSdinReg : if SDIN_REG = true generate
+  gSdinReg : if SDIN_REG generate
     process (clk)
     begin  -- process
       if rising_edge(clk) then

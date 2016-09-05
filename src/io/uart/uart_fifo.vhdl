@@ -170,7 +170,7 @@ begin
 			fstate_rd				=> RX_FullState
 		);
 
-	genNOFC : if (FLOWCONTROL = UART_FLOWCONTROL_NONE) generate
+	genNOFC : if FLOWCONTROL = UART_FLOWCONTROL_NONE generate
 		signal Overflow_r					: std_logic					:= '0';
 	begin
 
@@ -188,7 +188,7 @@ begin
 	-- ===========================================================================
 	-- Software Flow Control
 	-- ===========================================================================
-	genSWFC : if (FLOWCONTROL = UART_FLOWCONTROL_XON_XOFF) generate
+	genSWFC : if FLOWCONTROL = UART_FLOWCONTROL_XON_XOFF generate
 		constant XON				: std_logic_vector(7 downto 0)	:= x"11";	-- ^Q
 		constant XOFF				: std_logic_vector(7 downto 0)	:= x"13";	-- ^S
 
@@ -256,7 +256,7 @@ begin
 	-- ===========================================================================
 	-- Hardware Flow Control
 	-- ===========================================================================
-	genHWFC1 : if (FLOWCONTROL = UART_FLOWCONTROL_RTS_CTS) generate
+	genHWFC1 : if FLOWCONTROL = UART_FLOWCONTROL_RTS_CTS generate
 
 	begin
 
@@ -264,7 +264,7 @@ begin
 	-- ===========================================================================
 	-- Hardware Flow Control
 	-- ===========================================================================
-	genHWFC2 : if (FLOWCONTROL = UART_FLOWCONTROL_RTR_CTS) generate
+	genHWFC2 : if FLOWCONTROL = UART_FLOWCONTROL_RTR_CTS generate
 
 	begin
 
@@ -273,10 +273,10 @@ begin
 	-- ===========================================================================
 	-- BitClock, Transmitter, Receiver
 	-- ===========================================================================
-	genNoSync : if (ADD_INPUT_SYNCHRONIZERS = FALSE) generate
+	genNoSync : if not ADD_INPUT_SYNCHRONIZERS generate
 		UART_RX_sync <= UART_RX;
 	end generate;
-	genSync : if (ADD_INPUT_SYNCHRONIZERS = TRUE) generate
+	genSync : if ADD_INPUT_SYNCHRONIZERS generate
 		sync_i : entity PoC.sync_Bits
 			port map (
 				Clock			=> Clock,					-- Clock to be synchronized to

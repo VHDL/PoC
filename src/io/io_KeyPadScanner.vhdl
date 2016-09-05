@@ -88,7 +88,7 @@ begin
 	ColumnVector		<= ColumnSelect_d;
 
 	-- synchronize input signals
-	genSync : if (ADD_INPUT_SYNCHRONIZERS = TRUE) generate
+	genSync : if ADD_INPUT_SYNCHRONIZERS generate
 		sync : entity PoC.sync_Bits
 			generic map (
 				BITS	=> ROWS
@@ -99,7 +99,7 @@ begin
 				Output	=> Rows_sync
 			);
 	end generate;
-	genNoSync : if (ADD_INPUT_SYNCHRONIZERS = FALSE) generate
+	genNoSync : if not ADD_INPUT_SYNCHRONIZERS generate
 		Rows_sync	<= RowVector;
 	end generate;
 

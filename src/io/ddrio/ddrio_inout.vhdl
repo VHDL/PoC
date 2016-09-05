@@ -95,7 +95,7 @@ begin
 		report "PoC.io.ddrio.inout is not implemented for given DEVICE."
 		severity FAILURE;
 
-	genXilinx : if (VENDOR = VENDOR_XILINX) generate
+	genXilinx : if VENDOR = VENDOR_XILINX generate
 		inst : ddrio_inout_xilinx
 			generic map (
 				BITS						=> BITS
@@ -114,7 +114,7 @@ begin
 			);
 	end generate;
 
-	genAltera : if (VENDOR = VENDOR_ALTERA) generate
+	genAltera : if VENDOR = VENDOR_ALTERA generate
 		inst : ddrio_inout_altera
 			generic map (
 				BITS						=> BITS
@@ -133,7 +133,7 @@ begin
 			);
 	end generate;
 
-	genGeneric : if ((SIMULATION = TRUE) and (VENDOR = VENDOR_GENERIC)) generate
+	genGeneric : if SIMULATION  and (VENDOR = VENDOR_GENERIC) generate
 		signal DataOut_high_d	: std_logic_vector(BITS - 1 downto 0);
 		signal DataOut_low_d	: std_logic_vector(BITS - 1 downto 0);
 		signal OutputEnable_d	: std_logic;

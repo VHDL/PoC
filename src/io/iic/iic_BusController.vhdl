@@ -249,7 +249,7 @@ architecture rtl of iic_BusController is
 	signal BusTC_Slot													: T_BUSTC_SLOT_INDEX;
 	signal BusTC_Timeout											: std_logic;
 
-	constant SMBUS_COMPLIANCE									: boolean				:= (IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS);
+	constant SMBUS_COMPLIANCE									: boolean				:= IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS;
 
 	type T_BUS_STATE is (
 		ST_BUS_IDLE,				-- allow start condition
@@ -329,11 +329,11 @@ architecture rtl of iic_BusController is
 
 begin
 
-	genSync0 : if (ADD_INPUT_SYNCHRONIZER = FALSE) generate
+	genSync0 : if not ADD_INPUT_SYNCHRONIZER generate
 		SerialClock_raw		<= SerialClock_i;
 		SerialData_raw		<= SerialData_i;
 	end generate;
-	genSync1 : if (ADD_INPUT_SYNCHRONIZER = TRUE) generate
+	genSync1 : if ADD_INPUT_SYNCHRONIZER generate
 		sync : entity PoC.sync_Bits
 			generic map (
 				BITS			=> 2
@@ -360,7 +360,7 @@ begin
 		SerialClockIn	<= SerialClock_raw;
 		SerialDataIn	<= SerialData_raw;
 	end generate;
-	genSpikeSupp1 : if (TIME_SPIKE_SUPPRESSION > to_time(CLOCK_FREQ)) generate
+	genSpikeSupp1 : if TIME_SPIKE_SUPPRESSION > to_time(CLOCK_FREQ) generate
 		constant SPIKE_SUPPRESSION_CYCLES		: natural := TimingToCycles(TIME_SPIKE_SUPPRESSION, CLOCK_FREQ);
 	begin
 		SerialClockGF : entity PoC.io_GlitchFilter

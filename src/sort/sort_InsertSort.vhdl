@@ -105,7 +105,7 @@ begin
 		-- local movements
 		Unequal				<= to_sl(Key_d /= NewKeysUp(I));
 
-		genXilinx : if (VENDOR = VENDOR_XILINX) generate
+		genXilinx : if VENDOR = VENDOR_XILINX generate
 			component MUXCY
 				port (
 					O			: out	STD_ULOGIC;

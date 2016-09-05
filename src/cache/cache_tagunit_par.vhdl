@@ -107,7 +107,7 @@ begin
 	-- ===========================================================================
 	-- Full-Associative Cache
 	-- ===========================================================================
-	genFA : if (CACHE_LINES = ASSOCIATIVITY) generate
+	genFA : if CACHE_LINES = ASSOCIATIVITY generate
 		constant TAG_BITS		: positive := ADDRESS_BITS;
 		constant WAY_BITS 	: positive := log2ceilnz(ASSOCIATIVITY);
 
@@ -163,7 +163,7 @@ begin
 
 		-- hit/miss calculation
 		TagHit_i	<= slv_or(TagHits) and Request;
-		TagMiss_i <= not (slv_or(TagHits)) and Request;
+		TagMiss_i <= not slv_or(TagHits) and Request;
 
 		-- outputs
 		LineIndex <= std_logic_vector(HitWay);
@@ -197,7 +197,7 @@ begin
   -- ===========================================================================
   -- Direct-Mapped Cache
   -- ===========================================================================
-  genDM : if (ASSOCIATIVITY = 1) generate
+  genDM : if ASSOCIATIVITY = 1 generate
     -- Addresses are splitted into a tag part and an index part.
     constant INDEX_BITS : positive := log2ceilnz(CACHE_LINES);
     constant TAG_BITS   : positive := ADDRESS_BITS - INDEX_BITS;
@@ -254,7 +254,7 @@ begin
 
 		-- hit/miss calculation
 		TagHit_i	<= DM_TagHit and Request;
-		TagMiss_i <= not (DM_TagHit) and Request;
+		TagMiss_i <= not DM_TagHit and Request;
 
 		-- outputs
 		LineIndex <= std_logic_vector(Address_Index);
@@ -268,7 +268,7 @@ begin
 	-- ===========================================================================
 	-- Set-Assoziative Cache
 	-- ===========================================================================
-	genSA : if ((ASSOCIATIVITY > 1) and (SETS > 1)) generate
+	genSA : if (ASSOCIATIVITY > 1) and (SETS > 1) generate
     -- Addresses are splitted into a tag part and an index part.
 		constant CACHE_SETS : positive := CACHE_LINES / ASSOCIATIVITY;
     constant INDEX_BITS : positive := log2ceilnz(CACHE_SETS);
@@ -356,7 +356,7 @@ begin
 		-- Global hit / miss calculation and output
 		----------------------------------------------------------------------------
 		TagHit_i	<= slv_or(TagHits) and Request;
-		TagMiss_i <= not (slv_or(TagHits)) and Request;
+		TagMiss_i <= not slv_or(TagHits) and Request;
 
 		LineIndex <= std_logic_vector(HitWay) & std_logic_vector(Address_Index);
 		TagHit		<= TagHit_i;
