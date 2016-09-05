@@ -59,8 +59,8 @@ architecture rtl of misc_StrobeLimiter is
 
 	function InitialState(InitialLocked : boolean; InitialStrobe : boolean) return T_STATE is
 	begin
-		if (InitialLocked = TRUE) then
-			if (InitialStrobe = TRUE) then
+		if InitialLocked then
+			if InitialStrobe then
 				return ST_LOCKED2;
 			else
 				return ST_LOCKED;

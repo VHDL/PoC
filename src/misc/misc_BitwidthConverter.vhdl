@@ -55,7 +55,7 @@ architecture rtl of misc_BitwidthConverter is
 
 begin
 	-- word to byte splitter
-	gen1 : if (SMALLER = TRUE) generate
+	gen1 : if SMALLER generate
 		type SLV_mux is array (natural range <>) of std_logic_vector(BITS2 - 1 downto 0);
 
 		signal WordBoundary			: std_logic;
@@ -107,7 +107,7 @@ begin
 		MuxSelect_us <= (others => '0') when (Align_i = '1') else MuxCounter_us;
 
 		-- add output register @Clock2
-		gen121 : if (REGISTERED = TRUE) generate
+		gen121 : if REGISTERED generate
 			process(Clock2)
 			begin
 				if rising_edge(Clock2) then
@@ -115,14 +115,14 @@ begin
 				end if;
 			end process;
 		end generate;
-		gen122 : if (REGISTERED = FALSE) generate
+		gen122 : if not REGISTERED generate
 			O <= MuxOutput;
 		end generate;
 	end generate;
 
 
 	-- byte to word collection
-	gen2 : if (SMALLER = FALSE) generate
+	gen2 : if not SMALLER generate
 		signal I_Counter_us					: unsigned(COUNTER_BITS - 1 downto 0)						:= (others => '0');
 		signal I_Select_us					: unsigned(COUNTER_BITS - 1 downto 0);
 		signal I_d									:	std_logic_vector(BITS2 - BITS1 - 1 downto 0);
@@ -165,14 +165,14 @@ begin
 		process(Clock1)
 		begin
 			if rising_edge(Clock1) then
-				if (to_integer(I_Select_us) = (2**COUNTER_BITS - 1)) then
+				if to_integer(I_Select_us) = (2**COUNTER_BITS - 1) then
 					Collected_d <= Collected;
 				end if;
 			end if;
 		end process;
 
 		-- add output register @Clock2
-		gen211 : if (REGISTERED = TRUE) generate
+		gen211 : if REGISTERED generate
 			process(Clock2)
 			begin
 				if rising_edge(Clock2) then
@@ -180,7 +180,7 @@ begin
 				end if;
 			end process;
 		end generate;
-		gen212 : if (REGISTERED = FALSE) generate
+		gen212 : if not REGISTERED generate
 			O <= Collected_d;
 		end generate;
 	end generate;

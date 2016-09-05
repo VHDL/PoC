@@ -80,7 +80,7 @@ architecture rtl of xil_SystemMonitor is
 begin
 	-- System Monitor
 	-- ==========================================================================================================================================================
-	genVirtex6 : if (DEVICE = DEVICE_VIRTEX6) generate
+	genVirtex6 : if DEVICE = DEVICE_VIRTEX6 generate
 		SystemMonitor : xil_SystemMonitor_Virtex6
 			port map (
 				Reset								=> Reset,										-- Reset signal for the System Monitor control logic
@@ -92,7 +92,7 @@ begin
 				VN									=> '0'
 			);
 	end generate;
-	genSeries7 : if (DEVICE_SERIES = DEVICE_SERIES7) generate
+	genSeries7 : if DEVICE_SERIES = DEVICE_SERIES7 generate
 		SystemMonitor : xil_SystemMonitor_Series7
 			port map (
 				Reset								=> Reset,										-- Reset signal for the System Monitor control logic

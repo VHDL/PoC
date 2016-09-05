@@ -83,7 +83,7 @@ begin
 		report "PoC.io.ddrio.in is not implemented for given DEVICE."
 		severity FAILURE;
 
-	genXilinx : if (VENDOR = VENDOR_XILINX) generate
+	genXilinx : if VENDOR = VENDOR_XILINX generate
 		i : ddrio_in_xilinx
 			generic map (
 				BITS				=> BITS,
@@ -98,7 +98,7 @@ begin
 			);
 	end generate;
 
-	genAltera : if (VENDOR = VENDOR_ALTERA) generate
+	genAltera : if VENDOR = VENDOR_ALTERA generate
 		i : ddrio_in_altera
 			generic map (
 				BITS				=> BITS,
@@ -113,7 +113,7 @@ begin
 			);
 	end generate;
 
-	genGeneric : if ((SIMULATION = TRUE) and (VENDOR = VENDOR_GENERIC)) generate
+	genGeneric : if SIMULATION  and (VENDOR = VENDOR_GENERIC) generate
 		signal Pad_d_fe				: std_logic_vector(BITS - 1 downto 0) := to_stdlogicvector(INIT_VALUE);
 		signal DataIn_high_d	: std_logic_vector(BITS - 1 downto 0) := to_stdlogicvector(INIT_VALUE);
 		signal DataIn_low_d		: std_logic_vector(BITS - 1 downto 0) := to_stdlogicvector(INIT_VALUE);

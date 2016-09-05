@@ -59,7 +59,7 @@ architecture rtl of IICController_SFF8431 is
 	-- if-then-else (ite)
 	function ite(cond : boolean; value1 : T_IO_IIC_SFF8431_STATUS; value2 : T_IO_IIC_SFF8431_STATUS) return T_IO_IIC_SFF8431_STATUS is
 	begin
-		if (cond = TRUE) then
+		if cond then
 			return value1;
 		else
 			return value2;
@@ -283,9 +283,9 @@ begin
 				BusMaster										<= '1';
 				BusMode											<= '1';
 
-				if (IICBC_Status = IO_IICBUS_STATUS_SENDING) then
+				if IICBC_Status = IO_IICBUS_STATUS_SENDING then
 					null;
-				elsif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
+				elsif IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE then
 					BitCounter_en							<= '1';
 
 					if (BitCounter_us = (PhysicalAddress_d'length - 1)) then
@@ -293,7 +293,7 @@ begin
 					else
 						NextState								<= ST_SEND_PHYSICAL_ADDRESS0;
 					end if;
-				elsif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
+				elsif IICBC_Status = IO_IICBUS_STATUS_ERROR then
 					NextState									<= ST_BUS_ERROR;
 				else
 					NextState									<= ST_ERROR;
@@ -390,9 +390,9 @@ begin
 				BusMaster										<= '1';
 				BusMode											<= '1';
 
-				if (IICBC_Status = IO_IICBUS_STATUS_SENDING) then
+				if IICBC_Status = IO_IICBUS_STATUS_SENDING then
 					null;
-				elsif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
+				elsif IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE then
 					BitCounter_en							<= '1';
 
 					if (BitCounter_us = (RegisterAddress_d'length - 1)) then
@@ -400,7 +400,7 @@ begin
 					else
 						NextState								<= ST_SEND_REGISTER_ADDRESS;
 					end if;
-				elsif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
+				elsif IICBC_Status = IO_IICBUS_STATUS_ERROR then
 					NextState									<= ST_BUS_ERROR;
 				else
 					NextState									<= ST_ERROR;
@@ -460,17 +460,17 @@ begin
 				BusMaster										<= '1';
 				BusMode											<= '1';
 
-				if (IICBC_Status = IO_IICBUS_STATUS_SENDING) then
+				if IICBC_Status = IO_IICBUS_STATUS_SENDING then
 					null;
-				elsif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
+				elsif IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 7) then
+					if BitCounter_us = 7 then
 						NextState								<= ST_RECEIVE_ACK2;
 					else
 						NextState								<= ST_SEND_DATA;
 					end if;
-				elsif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
+				elsif IICBC_Status = IO_IICBUS_STATUS_ERROR then
 					NextState									<= ST_BUS_ERROR;
 				else
 					NextState									<= ST_ERROR;
@@ -556,9 +556,9 @@ begin
 				BusMaster										<= '1';
 				BusMode											<= '1';
 
-				if (IICBC_Status = IO_IICBUS_STATUS_SENDING) then
+				if IICBC_Status = IO_IICBUS_STATUS_SENDING then
 					null;
-				elsif (IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE) then
+				elsif IICBC_Status = IO_IICBUS_STATUS_SEND_COMPLETE then
 					BitCounter_en							<= '1';
 
 					if (BitCounter_us = (PhysicalAddress_d'length - 1)) then
@@ -566,7 +566,7 @@ begin
 					else
 						NextState								<= ST_SEND_PHYSICAL_ADDRESS1;
 					end if;
-				elsif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
+				elsif IICBC_Status = IO_IICBUS_STATUS_ERROR then
 					NextState									<= ST_BUS_ERROR;
 				else
 					NextState									<= ST_ERROR;
@@ -640,13 +640,13 @@ begin
 				BusMaster										<= '1';
 				BusMode											<= '0';
 
-				if (IICBC_Status = IO_IICBUS_STATUS_RECEIVING) then
+				if IICBC_Status = IO_IICBUS_STATUS_RECEIVING then
 					null;
-				elsif ((IICBC_Status = IO_IICBUS_STATUS_RECEIVED_LOW) or (IICBC_Status = IO_IICBUS_STATUS_RECEIVED_HIGH)) then
+				elsif (IICBC_Status = IO_IICBUS_STATUS_RECEIVED_LOW) or (IICBC_Status = IO_IICBUS_STATUS_RECEIVED_HIGH) then
 					BitCounter_en							<= '1';
 					DataRegister_sh						<= '1';
 
-					if (BitCounter_us = 7) then
+					if BitCounter_us = 7 then
 						if ((Out_LastByte = '1') or (Command_d = IO_IIC_SFF8431_CMD_READ_BYTE)) then
 							NextState							<= ST_SEND_NACK;
 						else
@@ -655,7 +655,7 @@ begin
 					else
 						NextState								<= ST_RECEIVE_DATA;
 					end if;
-				elsif (IICBC_Status = IO_IICBUS_STATUS_ERROR) then
+				elsif IICBC_Status = IO_IICBUS_STATUS_ERROR then
 					NextState									<= ST_BUS_ERROR;
 				else
 					NextState									<= ST_ERROR;
@@ -837,7 +837,7 @@ begin
 	SerialClock_t		<= SerialClock_t_i;
 	SerialData_t		<= SerialData_t_i;
 
-	genCSP : if (DEBUG = TRUE) generate
+	genCSP : if DEBUG generate
 --		constant STATES		: POSITIVE		:= T_STATE'pos(ST_ERROR) + 1;
 --		constant BITS			: POSITIVE		:= log2ceilnz(STATES);
 --

@@ -92,12 +92,12 @@ architecture rtl of iic_Controller is
 	attribute FSM_ENCODING					: string;
 	attribute ENUM_ENCODING					: string;
 
-	constant SMBUS_COMPLIANCE				: boolean				:= (IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS);
+	constant SMBUS_COMPLIANCE				: boolean				:= IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS;
 
 	-- if-then-else (ite)
 	function ite(cond : boolean; value1 : T_IO_IIC_STATUS; value2 : T_IO_IIC_STATUS) return T_IO_IIC_STATUS is
 	begin
-		if (cond = TRUE) then
+		if cond then
 			return value1;
 		else
 			return value2;
@@ -468,7 +468,7 @@ begin
 							when others =>																	NextState			<= ST_ERROR;
 						end case;
 					when IO_IICBUS_STATUS_RECEIVED_HIGH =>							-- NACK
-						if (SMBUS_COMPLIANCE = TRUE) then
+						if SMBUS_COMPLIANCE then
 																															NextState			<= ST_ACK_ERROR;			-- TODO: send stop
 						else
 							case Command_d is
@@ -803,7 +803,7 @@ begin
 							when others =>																	NextState			<= ST_ERROR;
 						end case;
 					when IO_IICBUS_STATUS_RECEIVED_HIGH =>							-- NACK
-						if (SMBUS_COMPLIANCE = TRUE) then
+						if SMBUS_COMPLIANCE then
 																															NextState			<= ST_ACK_ERROR;			-- TODO: send stop
 						else
 							case Command_d is
@@ -1080,7 +1080,7 @@ begin
 	SerialClock_t		<= SerialClock_t_i;
 	SerialData_t		<= SerialData_t_i;
 
-	genDBG : if (DEBUG = TRUE) generate
+	genDBG : if DEBUG generate
 		-- Configuration
 		constant DBG_TRIGGER_DELAY		: positive		:= 4;
 		constant DBG_TRIGGER_WINDOWS	: positive		:= 6;

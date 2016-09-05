@@ -105,7 +105,7 @@ package body sim_value_change_dump is
 		if (to_digit(str(str'low)) /= -1) then
 			for i in str'range loop
 				Digit	:= to_digit(str(I));
-				if (Digit /= -1) then
+				if Digit /= -1 then
 					Result	:= Result * 10 + Digit;
 				else
 					exit;
@@ -120,7 +120,7 @@ package body sim_value_change_dump is
 
 	function to_sl(Value : boolean) return std_logic is
 	begin
-		if (Value = TRUE) then
+		if Value then
 			return '1';
 		else
 			return '0';
@@ -163,7 +163,7 @@ package body sim_value_change_dump is
 		variable l	: natural		:= 0;
 	begin
 		for i in str'range loop
-			if (str(I) = NUL) then
+			if str(I) = NUL then
 				return l;
 			else
 				l := l + 1;
@@ -195,7 +195,7 @@ package body sim_value_change_dump is
 
 	procedure VCD_ReadHeader(file VCDFile : TEXT; VCDLine : inout T_VCDLINE) is
 	begin
-		while (not endfile(VCDFile)) loop
+		while not endfile(VCDFile) loop
 			VCD_ReadLine(VCDFile, VCDLine);
 
 			if (VCDLine(1) = '#') then
@@ -240,7 +240,7 @@ package body sim_value_change_dump is
 		variable k			: natural													:= 0;
 	begin
 		for i in VCDLine'range loop
-			if (is_sl(VCDLine(I)) = FALSE) then
+			if not is_sl(VCDLine(I)) then
 				k				:= I;
 				exit;
 			else

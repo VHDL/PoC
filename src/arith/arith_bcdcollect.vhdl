@@ -89,7 +89,7 @@ begin
   genDigits: for i in 0 to N-1 generate
     signal bcd_r : t_bcd := (others => '0');
   begin
-    c(i+1) <= bcd_r(0) when FRACTION            else
+    c(i+1) <= bcd_r(0) when FRACTION else
               '1'      when unsigned(bcd_r) > 4 else
               '0';
 
