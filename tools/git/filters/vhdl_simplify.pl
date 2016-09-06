@@ -65,8 +65,7 @@ sub del_range {
 }
 
 sub and_close {
-  my $e = splice(@_, 1, 1);
-  $e = $e->(@_);
+  my $e = &{splice(@_,1,1)};
   (substr($e, 0, $_[1]) =~ s/\s*$//r).')'.substr($e, $_[1])
 }
 
