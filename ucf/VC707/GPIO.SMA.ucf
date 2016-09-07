@@ -9,4 +9,4 @@
 ##	Location:				J33, J34
 NET "VC707_GPIO_SMA_p"									LOC =  "AN31";				## {INOUT}	J33
 NET "VC707_GPIO_SMA_n"									LOC =  "AP31";				## {INOUT}	J34
-NET "VC707_GPIO_SMA_?"									IOSTANDARD = LVDS_18;
+NET "VC707_GPIO_SMA_?"									IOSTANDARD = LVDS;

@@ -10,4 +10,4 @@
 set_property PACKAGE_PIN		AN31				[get_ports VC707_GPIO_SMA_p]
 set_property PACKAGE_PIN		AP31				[get_ports VC707_GPIO_SMA_n]
 # set I/O standard
-set_property IOSTANDARD			LVDS_18			[get_ports -regexp {VC707_GPIO_SMA_.}]
+set_property IOSTANDARD			LVDS				[get_ports -regexp {VC707_GPIO_SMA_.}]
