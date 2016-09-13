@@ -170,7 +170,7 @@ if ($Questa)
 	New-ModelSim_ini
 
 	$Simulator =	"questa"
-	$Language =		"vhdl"
+	$Language =		"all"
 	$Library =		"all"
 	$Family =			"all"
 
