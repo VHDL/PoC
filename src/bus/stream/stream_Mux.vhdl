@@ -175,10 +175,10 @@ begin
 
 	In_Ack							<= (In_Ack	'range => (Out_Ack	 and FSM_Dataflow_en)) and ChannelPointer;
 
-	genMetaReverse_0 : if (META_REV_BITS = 0) generate
+	genMetaReverse_0 : if META_REV_BITS = 0 generate
 		In_Meta_rev		<= (others => (others => '0'));
 	end generate;
-	genMetaReverse_1 : if (META_REV_BITS > 0) generate
+	genMetaReverse_1 : if META_REV_BITS > 0 generate
 		signal Temp_Meta_rev : T_SLM(PORTS - 1 downto 0, META_REV_BITS - 1 downto 0)		:= (others => (others => 'Z'));
 	begin
 		genAssign : for i in 0 to PORTS - 1 generate

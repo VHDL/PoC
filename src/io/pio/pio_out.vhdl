@@ -70,7 +70,7 @@ begin
 			Pad(0)						=> Pad_Clock
 		);
 
-	genSDR : if (DATARATE = IO_DATARATE_SDR) generate
+	genSDR : if DATARATE = IO_DATARATE_SDR generate
 		signal DataOut_iob		: std_logic_vector(DATA_BITS - 1 downto 0)	:= (others => '0');
 		signal DataIn_iob			: std_logic_vector(REV_BITS - 1 downto 0)		:= (others => '0');
 	begin
@@ -79,7 +79,7 @@ begin
 		DataIn_iob		<= Pad_DataIn when rising_edge(Clock);
 		DataOut				<= DataIn_iob;
 	end generate;
-	genDDR : if (DATARATE = IO_DATARATE_DDR) generate
+	genDDR : if DATARATE = IO_DATARATE_DDR generate
 		DataOutFF : entity PoC.ddrio_out
 			generic map (
 				NO_OUTPUT_ENABLE	=> TRUE,

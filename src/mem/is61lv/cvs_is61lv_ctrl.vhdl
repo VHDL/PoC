@@ -308,13 +308,13 @@ begin
       -------------------------------------------------------------------------
       rdy <= rdy_r;
 
-      gNoSdinReg: if SDIN_REG = false generate
+      gNoSdinReg: if not SDIN_REG generate
         -- direct output, register elsewhere
         rdata <= sram_data;
         rstb  <= reading_r;
       end generate gNoSdinReg;
 
-      gSdinReg: if SDIN_REG = true generate
+      gSdinReg: if SDIN_REG generate
         process (clk)
         begin  -- process
           if rising_edge(clk) then

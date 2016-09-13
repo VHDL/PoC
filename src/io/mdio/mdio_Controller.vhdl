@@ -223,7 +223,7 @@ begin
 				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 31) then
+					if BitCounter_us = 31 then
 						NextState								<= ST_CHECK_ADR_SEND_START_0;
 					end if;
 				end if;
@@ -288,7 +288,7 @@ begin
 				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 4) then
+					if BitCounter_us = 4 then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_CHECK_ADR_SEND_RegisterAddress;
 					end if;
@@ -306,7 +306,7 @@ begin
 				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 4) then
+					if BitCounter_us = 4 then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_CHECK_ADR_TURNAROUND_CYCLE_0;
 					end if;
@@ -380,7 +380,7 @@ begin
 				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 31) then
+					if BitCounter_us = 31 then
 						NextState								<= ST_READ_SEND_START_0;
 					end if;
 				end if;
@@ -445,7 +445,7 @@ begin
 				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 4) then
+					if BitCounter_us = 4 then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_READ_SEND_RegisterAddress;
 					end if;
@@ -463,7 +463,7 @@ begin
 				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 4) then
+					if BitCounter_us = 4 then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_READ_TURNAROUND_CYCLE_0;
 					end if;
@@ -506,7 +506,7 @@ begin
 					RegRegisterData_shi				<= '1';
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 15) then
+					if BitCounter_us = 15 then
 						RegRegisterData_Valid_set		<= '1';
 						NextState										<= ST_READ_COMPLETE;
 					end if;
@@ -542,7 +542,7 @@ begin
 				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 31) then
+					if BitCounter_us = 31 then
 						NextState								<= ST_WRITE_SEND_START_0;
 					end if;
 				end if;
@@ -607,7 +607,7 @@ begin
 				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 4) then
+					if BitCounter_us = 4 then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_WRITE_SEND_RegisterAddress;
 					end if;
@@ -625,7 +625,7 @@ begin
 				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 4) then
+					if BitCounter_us = 4 then
 						BitCounter_rst					<= '1';
 						NextState								<= ST_WRITE_TURNAROUND_CYCLE_0;
 					end if;
@@ -667,7 +667,7 @@ begin
 				if (MD_Clock_re = '1') then
 					BitCounter_en							<= '1';
 
-					if (BitCounter_us = 15) then
+					if BitCounter_us = 15 then
 						NextState								<= ST_WRITE_COMPLETE;
 					end if;
 				end if;
@@ -805,7 +805,7 @@ begin
 		MD_Clock_o		<= MD_Clock_r;
 		MD_Clock_t		<= '0';
 
-		genCSP : if (DEBUG = TRUE) generate
+		genCSP : if DEBUG generate
 			constant OFFSET											: positive						:= 1;
 			signal CSP_RisingEdge								: std_logic;
 			signal CSP_FallingEdge							: std_logic;

@@ -77,7 +77,7 @@ begin
 			if ((Access = '1') and (List_d(i).Data(KEY_BITS - 1 downto 0) = Data(KEY_BITS - 1 downto 0)) and (List_d(i).Counter_us /= (others => '1')) then
 				List_AddSub(i).Counter_us		:= List_d(i).Counter_us + 1;
 			elsif (new = '1') then		-- ((New = '1') and (List_d(i).Counter_us /= (others => '0')) then
-				if (i = 0) then
+				if i = 0 then
 					List_AddSub(i).Data					:= Data;
 					List_AddSub(i).Counter_us		:= (others => '0');
 					List_AddSub(i).Valid				:= '1';
