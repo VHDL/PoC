@@ -183,7 +183,7 @@ begin
 					FrameLengthCounter_en				<= '1';
 					ContentCounter_en						<= '1';
 
-					if (FrameLengthCounter_us = (unsigned(FrameLength) - 2)) then
+					if FrameLengthCounter_us = (unsigned(FrameLength) - 2) then
 						NextState									<= ST_SEQUENCE_EOF;
 					end if;
 				end if;
@@ -199,7 +199,7 @@ begin
 					SequencesCounter_en					<= '1';
 
 --					if (Pause = (Pause'range => '0')) then
-					if (SequencesCounter_us = (unsigned(Sequences) - 1)) then
+					if SequencesCounter_us = (unsigned(Sequences) - 1) then
 						Status										<= FRAMEGEN_STATUS_COMPLETE;
 						NextState									<= ST_IDLE;
 					else
@@ -229,7 +229,7 @@ begin
 					FrameLengthCounter_en		<= '1';
 					PRNG_got								<= '1';
 
-					if (FrameLengthCounter_us = (unsigned(FrameLength) - 2)) then
+					if FrameLengthCounter_us = (unsigned(FrameLength) - 2) then
 						NextState							<= ST_RANDOM_EOF;
 					end if;
 				end if;

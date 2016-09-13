@@ -109,7 +109,7 @@ begin
 
 		case State is
 			when ST_RESET =>
-				if (LCDBC_Status = IO_LCDBUS_STATUS_IDLE) then
+				if LCDBC_Status = IO_LCDBUS_STATUS_IDLE then
 					NextState									<= ST_INIT_SET_FUNCTION;
 				end if;
 
@@ -123,9 +123,9 @@ begin
 				NextState										<= ST_INIT_SET_FUNCTION_WAIT;
 
 			when ST_INIT_SET_FUNCTION_WAIT =>
-				if (LCDBC_Status = IO_LCDBUS_STATUS_WRITING) then
+				if LCDBC_Status = IO_LCDBUS_STATUS_WRITING then
 					null;
-				elsif (LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE) then
+				elsif LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE then
 					NextState									<= ST_INIT_SET_FUNCTION_POLL_LCDBUS;
 				else
 					NextState									<= ST_ERROR;
@@ -138,9 +138,9 @@ begin
 				NextState										<= ST_INIT_SET_FUNCTION_POLL_LCDBUS_WAIT;
 
 			when ST_INIT_SET_FUNCTION_POLL_LCDBUS_WAIT =>
-				if (LCDBC_Status = IO_LCDBUS_STATUS_READING) then
+				if LCDBC_Status = IO_LCDBUS_STATUS_READING then
 					null;
-				elsif (LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE) then
+				elsif LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE then
 					if (LCDBC_Data(7) = '0') then
 						NextState								<= ST_INIT_SET_FUNCTION_POLL_LCDBUS;
 					else
@@ -160,9 +160,9 @@ begin
 				NextState										<= ST_INIT_DISPLAY_ON_WAIT;
 
 			when ST_INIT_DISPLAY_ON_WAIT =>
-				if (LCDBC_Status = IO_LCDBUS_STATUS_WRITING) then
+				if LCDBC_Status = IO_LCDBUS_STATUS_WRITING then
 					null;
-				elsif (LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE) then
+				elsif LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE then
 					NextState									<= ST_INIT_DISPLAY_ON_POLL_LCDBUS;
 				else
 					NextState									<= ST_ERROR;
@@ -175,9 +175,9 @@ begin
 				NextState										<= ST_INIT_DISPLAY_ON_POLL_LCDBUS_WAIT;
 
 			when ST_INIT_DISPLAY_ON_POLL_LCDBUS_WAIT =>
-				if (LCDBC_Status = IO_LCDBUS_STATUS_READING) then
+				if LCDBC_Status = IO_LCDBUS_STATUS_READING then
 					null;
-				elsif (LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE) then
+				elsif LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE then
 					if (LCDBC_Data(7) = '0') then
 						NextState								<= ST_INIT_DISPLAY_ON_POLL_LCDBUS;
 					else
@@ -197,9 +197,9 @@ begin
 				NextState										<= ST_INIT_CLEAR_DISPLAY_WAIT;
 
 			when ST_INIT_CLEAR_DISPLAY_WAIT =>
-				if (LCDBC_Status = IO_LCDBUS_STATUS_WRITING) then
+				if LCDBC_Status = IO_LCDBUS_STATUS_WRITING then
 					null;
-				elsif (LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE) then
+				elsif LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE then
 					NextState									<= ST_INIT_CLEAR_DISPLAY_POLL_LCDBUS;
 				else
 					NextState									<= ST_ERROR;
@@ -212,9 +212,9 @@ begin
 				NextState										<= ST_INIT_CLEAR_DISPLAY_POLL_LCDBUS_WAIT;
 
 			when ST_INIT_CLEAR_DISPLAY_POLL_LCDBUS_WAIT =>
-				if (LCDBC_Status = IO_LCDBUS_STATUS_READING) then
+				if LCDBC_Status = IO_LCDBUS_STATUS_READING then
 					null;
-				elsif (LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE) then
+				elsif LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE then
 					if (LCDBC_Data(7) = '0') then
 						NextState								<= ST_INIT_CLEAR_DISPLAY_POLL_LCDBUS;
 					else
@@ -234,9 +234,9 @@ begin
 				NextState										<= ST_INIT_SET_ENTRY_MODE_WAIT;
 
 			when ST_INIT_SET_ENTRY_MODE_WAIT =>
-				if (LCDBC_Status = IO_LCDBUS_STATUS_WRITING) then
+				if LCDBC_Status = IO_LCDBUS_STATUS_WRITING then
 					null;
-				elsif (LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE) then
+				elsif LCDBC_Status = IO_LCDBUS_STATUS_WRITE_COMPLETE then
 					NextState									<= ST_INIT_SET_ENTRY_MODE_POLL_LCDBUS;
 				else
 					NextState									<= ST_ERROR;
@@ -249,9 +249,9 @@ begin
 				NextState										<= ST_INIT_SET_ENTRY_MODE_POLL_LCDBUS_WAIT;
 
 			when ST_INIT_SET_ENTRY_MODE_POLL_LCDBUS_WAIT =>
-				if (LCDBC_Status = IO_LCDBUS_STATUS_READING) then
+				if LCDBC_Status = IO_LCDBUS_STATUS_READING then
 					null;
-				elsif (LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE) then
+				elsif LCDBC_Status = IO_LCDBUS_STATUS_READ_COMPLETE then
 					if (LCDBC_Data(7) = '0') then
 						NextState								<= ST_INIT_SET_ENTRY_MODE_POLL_LCDBUS;
 					else

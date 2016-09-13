@@ -569,10 +569,10 @@ package body lcd is
 		Result(3)		:= '1';
 		Result(2)		:= '1';			-- display on/off bit
 
-		if (ShowCursor = TRUE) then
+		if ShowCursor then
 			Result(1)	:= '1';			-- show cursor on/off bit
 		end if;
-		if (Blink = TRUE) then
+		if Blink then
 			Result(0)	:= '1';			-- blinking on/off bit
 		end if;
 
@@ -581,7 +581,7 @@ package body lcd is
 
 	function ite(cond : boolean; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) return T_LCD_CHAR is
 	begin
-		if (cond = TRUE) then
+		if cond then
 			return value1;
 		else
 			return value2;
@@ -590,7 +590,7 @@ package body lcd is
 
 	function ite(cond : boolean; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) return T_LCD_CHAR_VECTOR is
 	begin
-		if (cond = TRUE) then
+		if cond then
 			return value1;
 		else
 			return value2;

@@ -153,7 +153,7 @@ NET "sd_udm" LOC = "J1" | IOSTANDARD = SSTL2_I ;
 NET "sd_udqs" LOC = "G3" | IOSTANDARD = SSTL2_I ;
 NET "sd_we" LOC = "D1" | IOSTANDARD = SSTL2_I ;
 # Path to allow connection to top DCM connection
-NET "sd_ck_fb" LOC = "B9" | IOSTANDARD = LVCMOS33 ;	
+NET "sd_ck_fb" LOC = "B9" | IOSTANDARD = LVCMOS33 ;
 # Prohibit VREF pins
 CONFIG PROHIBIT = D2;
 CONFIG PROHIBIT = G4;
@@ -181,7 +181,7 @@ NET "sd_cas"   TNM = "TGRP_sd_cmd";
 NET "sd_we"    TNM = "TGRP_sd_cmd";
 
 # Timing constraints such that FFs must be placed in IOBs.
-TIMEGRP "TGRP_sd_cmd" OFFSET = OUT 4.2 ns AFTER clk_in; 
+TIMEGRP "TGRP_sd_cmd" OFFSET = OUT 4.2 ns AFTER clk_in;
 
 NET "sd_dq[*]" TNM = "TGRP_sd_dq";
 NET "sd_dq[*]" IFD_DELAY_VALUE = 0;

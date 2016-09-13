@@ -62,7 +62,7 @@ begin
 	Clock_i		<= Pad_Clock;
 	Clock			<= Clock_i;
 
-	genSDR : if (DATARATE = IO_DATARATE_SDR) generate
+	genSDR : if DATARATE = IO_DATARATE_SDR generate
 		signal DataIn_iob			: std_logic_vector(DATA_BITS - 1 downto 0)		:= (others => '0');
 		signal DataOut_iob		: std_logic_vector(REV_BITS - 1 downto 0)	:= (others => '0');
 	begin
@@ -72,7 +72,7 @@ begin
 		DataOut_iob		<= DataIn			when rising_edge(Clock_i);
 		Pad_DataOut		<= DataOut_iob;
 	end generate;
-	genDDR : if (DATARATE = IO_DATARATE_DDR) generate
+	genDDR : if DATARATE = IO_DATARATE_DDR generate
 		signal Clock_i		: std_logic;
 	begin
 		DataInFF : entity PoC.ddrio_in

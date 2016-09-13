@@ -120,7 +120,7 @@ begin
 	-- ===========================================================================
 	-- policy: RR - round robin
 	-- ===========================================================================
-	genRR : if (str_equal(REPLACEMENT_POLICY, "RR") = true) generate
+	genRR : if str_equal(REPLACEMENT_POLICY, "RR") generate
 		constant VALID_BIT : natural := 0;
 
 		subtype T_OPTION_LINE is std_logic_vector(0 downto 0);
@@ -176,7 +176,7 @@ begin
 	-- ===========================================================================
 	-- policy: LRU - least recently used
 	-- ===========================================================================
-	genLRU : if (str_equal(REPLACEMENT_POLICY, "LRU") = true) generate
+	genLRU : if str_equal(REPLACEMENT_POLICY, "LRU") generate
 		signal LRU_Insert			: std_logic;
 		signal LRU_Invalidate : std_logic;
 		signal KeyIn					: std_logic_vector(log2ceilnz(CACHE_WAYS) - 1 downto 0);

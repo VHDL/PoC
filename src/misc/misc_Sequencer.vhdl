@@ -74,7 +74,7 @@ begin
 		Mux_Data(I)		<= Input(((I + 1) * OUTPUT_BITS) - 1 downto I * OUTPUT_BITS);
 	end generate;
 
-	genRegistered0 : if (REGISTERED = TRUE) generate
+	genRegistered0 : if REGISTERED generate
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
@@ -86,7 +86,7 @@ begin
 			end if;
 		end process;
 	end generate;
-	genRegistered1 : if (REGISTERED = FALSE) generate
+	genRegistered1 : if not REGISTERED generate
 		Mux_Data_d		<= Mux_Data;
 	end generate;
 
@@ -113,5 +113,5 @@ begin
 		end if;
 	end process;
 
-	Output		<= Mux_Data_d(ite((SIMULATION = TRUE), imin(to_integer(Mux_sel_us), CHUNKS - 1), to_integer(Mux_sel_us)));
+	Output		<= Mux_Data_d(ite(SIMULATION , imin(to_integer(Mux_sel_us), CHUNKS - 1), to_integer(Mux_sel_us)));
 end;

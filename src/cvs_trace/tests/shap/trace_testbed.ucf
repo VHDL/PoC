@@ -40,8 +40,8 @@ NET  led[*]		SLEW=SLOW;
 #########
 
 
-NET  CLK_FPGA_N           LOC="K19";   # Bank 3, Vcco=2.5V, No DCI      
-NET  CLK_FPGA_P           LOC="L19";   # Bank 3, Vcco=2.5V, No DCI      
+NET  CLK_FPGA_N           LOC="K19";   # Bank 3, Vcco=2.5V, No DCI
+NET  CLK_FPGA_P           LOC="L19";   # Bank 3, Vcco=2.5V, No DCI
 NET "CLK_FPGA_*" 	  IOSTANDARD = "LVDS_25";
 NET  CLK_FPGA_P   	  TNM_NET    = "clk_fpga";
 
@@ -60,17 +60,17 @@ TIMESPEC "TS_cross2" = FROM "clk_trc" TO "ethclockgen_clk_125mhz" 10 ns;
 #
 # Set Jumper J20 to 3-5 & 4-6 to select 2.5 V for VCCO_EXP (Bank 11 and 13)
 #
-NET  PHY_COL              LOC="B32";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20      
-NET  PHY_CRS              LOC="E34";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20      
-NET  PHY_INT              LOC="H20";   # Bank 3, Vcco=2.5V, No DCI      
-NET  PHY_MDC              LOC="H19";   # Bank 3, Vcco=2.5V, No DCI      
-NET  PHY_MDIO             LOC="H13";   # Bank 3, Vcco=2.5V, No DCI      
-NET  PHY_RESET            LOC="J14";   # Bank 3, Vcco=2.5V, No DCI      
-NET  PHY_RXCLK            LOC="H17";   # Bank 3, Vcco=2.5V, No DCI      
-NET  PHY_RXCTL_RXDV       LOC="E32";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20      
-NET  PHY_RXD<0>           LOC="A33";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20      
-NET  PHY_RXD<1>           LOC="B33";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20      
-NET  PHY_RXD<2>           LOC="C33";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20      
+NET  PHY_COL              LOC="B32";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
+NET  PHY_CRS              LOC="E34";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
+NET  PHY_INT              LOC="H20";   # Bank 3, Vcco=2.5V, No DCI
+NET  PHY_MDC              LOC="H19";   # Bank 3, Vcco=2.5V, No DCI
+NET  PHY_MDIO             LOC="H13";   # Bank 3, Vcco=2.5V, No DCI
+NET  PHY_RESET            LOC="J14";   # Bank 3, Vcco=2.5V, No DCI
+NET  PHY_RXCLK            LOC="H17";   # Bank 3, Vcco=2.5V, No DCI
+NET  PHY_RXCTL_RXDV       LOC="E32";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
+NET  PHY_RXD<0>           LOC="A33";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
+NET  PHY_RXD<1>           LOC="B33";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
+NET  PHY_RXD<2>           LOC="C33";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
 NET  PHY_RXD<3>           LOC="C32";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
 NET  PHY_RXD<4>           LOC="D32";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
 NET  PHY_RXD<5>           LOC="C34";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
@@ -87,8 +87,8 @@ NET  PHY_TXD<3>           LOC="AH10";  # Bank 22, Vcco=3.3V, DCI using 49.9 ohm 
 NET  PHY_TXD<4>           LOC="AG8";   # Bank 22, Vcco=3.3V, DCI using 49.9 ohm resistors
 NET  PHY_TXD<5>           LOC="AH8";   # Bank 22, Vcco=3.3V, DCI using 49.9 ohm resistors
 NET  PHY_TXD<6>           LOC="AG10";  # Bank 22, Vcco=3.3V, DCI using 49.9 ohm resistors
-NET  PHY_TXD<7>           LOC="AG11";  # Bank 22, Vcco=3.3V, DCI using 49.9 ohm resistors      
-NET  PHY_TXER             LOC="AJ9";   # Bank 22, Vcco=3.3V, DCI using 49.9 ohm resistors      
+NET  PHY_TXD<7>           LOC="AG11";  # Bank 22, Vcco=3.3V, DCI using 49.9 ohm resistors
+NET  PHY_TXER             LOC="AJ9";   # Bank 22, Vcco=3.3V, DCI using 49.9 ohm resistors
 
 NET "PHY_*"		  IOSTANDARD = "LVCMOS25" | SLEW = FAST;
 

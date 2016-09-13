@@ -9,11 +9,11 @@
 ## -----------------------------------------------------------------------------
 ##	Bank:						16, 115, 116
 ##		VCCO:					2.5V (VADJ_FPGA)
-##		Quad115:		 
+##		Quad115:
 ##			RefClock0		N.C.
 ##			RefClock1		PCIe_RefClock from edge connector;100 MHz from mainboard (KC705_PCIe_RefClock)
 #$	##			VCCO:					2,5V (VCC2V5_FPGA)
-##		Quad116:		 
+##		Quad116:
 ##			RefClock0		Si5324 (Jitter attenuator)
 ##			RefClock1		FMC_LPC RefClock 0
 #$	##			VCCO:					2,5V (VCC2V5_FPGA)
@@ -62,7 +62,7 @@ NET "KC705_PCIe_TX_p<3>"				LOC = "P2";				## {OUT}	P1.A29
 NET "KC705_PCIe_RX_n<3>"				LOC = "T5";				## {IN}		P1.B28
 NET "KC705_PCIe_RX_p<3>"				LOC = "T6";				## {IN}		P1.B27
 #%	END-IF %#
-#%	BEGIN-IF PCIExpress_x8 %#    
+#%	BEGIN-IF PCIExpress_x8 %#
 NET "KC705_PCIe_TX_n<4>"				LOC = "T1";				## {OUT}	P1.A36
 NET "KC705_PCIe_TX_p<4>"				LOC = "T2";				## {OUT}	P1.A35
 NET "KC705_PCIe_RX_n<4>"				LOC = "V5";				## {IN}		P1.B34

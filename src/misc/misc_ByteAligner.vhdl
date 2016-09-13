@@ -94,11 +94,11 @@ begin
 	end generate;
 
 	-- optional output registers
-	genOutReg0 : if (REGISTERED = FALSE) generate
+	genOutReg0 : if not REGISTERED generate
 --		Out_Align	<= (0 => '1', others => '0');
 		Out_Data	<= Out_Data_i;
 	end generate;
-	genOutReg1 : if (REGISTERED = TRUE) generate
+	genOutReg1 : if REGISTERED generate
 		Out_Data	<= Out_Data_i	when rising_edge(Clock);
 	end generate;
 end architecture;
