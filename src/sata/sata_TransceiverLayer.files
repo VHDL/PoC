@@ -8,19 +8,19 @@
 include				"src/common/common.files"										# load common packages
 
 # PoC.sata
-vhdl		poc		"src/sata/sata.pkg.vhdl"										# 
-vhdl		poc		"src/sata/sata.comp.vhdl"										# 
-vhdl		poc		"src/sata/sata.dbg.vhdl"										# 
+vhdl		poc		"src/sata/sata.pkg.vhdl"
+vhdl		poc		"src/sata/sata.comp.vhdl"
+vhdl		poc		"src/sata/sata.dbg.vhdl"
 if (DeviceVendor = "Altera") then
 	include			"lib/Altera.files"													# load Altera primitives
-	vhdl	poc		"src/sata/altera/sata_Transceiver_ClockStable.vhdl"									# 
+	#	vhdl	poc		"src/sata/altera/sata_Transceiver_ClockStable.vhdl"
 	if (DeviceFamily = "Stratix2") then
-		vhdl	poc	"src/sata/altera/sata_Transceiver_Stratix2GX.pkg.vhdl"								# 
-		vhdl	poc	"src/sata/altera/sata_Transceiver_Stratix2GX_GXB.vhdl"								# 
+		vhdl	poc	"src/sata/altera/sata_Transceiver_Stratix2GX.pkg.vhdl"
+		vhdl	poc	"src/sata/altera/sata_Transceiver_Stratix2GX_GXB.vhdl"
 		report "The Stratix II design is not up-to-date."
 	elseif (DeviceFamily = "Stratix4") then
-		vhdl	poc	"src/sata/altera/sata_Transceiver_Stratix4GX.pkg.vhdl"								# 
-		vhdl	poc	"src/sata/altera/sata_Transceiver_Stratix4GX_GXB.vhdl"								# 
+		vhdl	poc	"src/sata/altera/sata_Transceiver_Stratix4GX.pkg.vhdl"
+		vhdl	poc	"src/sata/altera/sata_Transceiver_Stratix4GX_GXB.vhdl"
 		report "The Stratix II design is not up-to-date."
 	else
 		report "Only Altera Stratix II/IV devices are supported."
@@ -28,32 +28,32 @@ if (DeviceVendor = "Altera") then
 elseif (DeviceVendor = "Xilinx") then
 	include			"lib/Xilinx.files"													# load Xilinx primitives
 	# PoC.xil
-	vhdl		PoC	"src/xil/xil.pkg.vhdl"											# 
-	vhdl	poc		"src/sata/xilinx/sata_Transceiver_ClockStable.vhdl"									# 
+	vhdl		PoC	"src/xil/xil.pkg.vhdl"
+	vhdl	poc		"src/sata/xilinx/sata_Transceiver_ClockStable.vhdl"
 	if (DeviceFamily = "Virtex5") then
-		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex5.pkg.vhdl"									# 
-		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex5_ClockNetwork.vhdl"				# 
-		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex5_GTP_Configurator.vhdl"		# 
-		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex5_GTP.vhdl"									# 
+		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex5.pkg.vhdl"
+		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex5_ClockNetwork.vhdl"
+		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex5_GTP_Configurator.vhdl"
+		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex5_GTP.vhdl"
 		report "The Virtex-5 design is not up-to-date."
 	elseif (DeviceFamily = "Virtex6") then
-		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex6.pkg.vhdl"									# 
-		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex6_ClockNetwork.vhdl"				# 
-		# vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex6_GTXE1_Configurator.vhdl"	# 
-		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex6_GTXE1.vhdl"								# 
+		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex6.pkg.vhdl"
+		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex6_ClockNetwork.vhdl"
+		# vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex6_GTXE1_Configurator.vhdl"
+		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Virtex6_GTXE1.vhdl"
 		report "The Virtex-6 design is not working."
 	elseif (DeviceSeries = "Series-7") then
 		# PoC.io
-		include		"src/io/io_TimingCounter.files"							# 
-		include		"src/io/io_GlitchFilter.files"							# 
+		include		"src/io/io_TimingCounter.files"
+		include		"src/io/io_GlitchFilter.files"
 		# PoC.misc.*
-		include		"src/misc/filter/filter_and.files"					# 
-		include		"src/misc/sync/sync_Bits.files"							# 
+		include		"src/misc/filter/filter_and.files"
+		include		"src/misc/sync/sync_Bits.files"
 		# PoC.sata
-		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Series7.pkg.vhdl"									# 
-		# vhdl	poc	"src/sata/xilinx/sata_Transceiver_Series7_ClockNetwork.vhdl"				# 
-		# vhdl	poc	"src/sata/xilinx/sata_Transceiver_Series7_GTXE2_Configurator.vhdl"	# 
-		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Series7_GTXE2.vhdl"								# 
+		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Series7.pkg.vhdl"
+		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Series7_GTXE2_ClockNetwork.vhdl"
+		# vhdl	poc	"src/sata/xilinx/sata_Transceiver_Series7_GTXE2_Configurator.vhdl"
+		vhdl	poc	"src/sata/xilinx/sata_Transceiver_Series7_GTXE2.vhdl"
 	else
 		report "Only Xilinx Virtex-5/6 and Series-7 devices are supported."
 	end if
@@ -61,5 +61,4 @@ else
 	report "Only Altera and Xilinx devices are supported yet."
 end if
 
-vhdl		poc		"src/sata/sata_TransceiverLayerFSM.vhdl"									# 
 vhdl		poc		"src/sata/sata_TransceiverLayer.vhdl"											# Top-Level
