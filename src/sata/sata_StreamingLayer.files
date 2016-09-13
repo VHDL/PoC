@@ -8,10 +8,9 @@
 include				"src/common/common.files"										# load common packages
 
 # PoC.sata
-vhdl		poc		"src/sata/sata.pkg.vhdl"																# 
-vhdl		poc		"src/sata/sata.comp.vhdl"																# 
-vhdl		poc		"src/sata/sata.dbg.vhdl"																# 
-vhdl		poc		"src/sata/sata_Streaming_ATA_IdentifyDeviceFilter.vhdl"	# 
-vhdl		poc		"src/sata/sata_StreamingLayerFSM.vhdl"									# 
+vhdl		poc		"src/sata/sata.pkg.vhdl"
+vhdl		poc		"src/sata/sata.comp.vhdl"
+vhdl		poc		"src/sata/sata.dbg.vhdl"
+vhdl		poc		"src/sata/sata_ATA_IdentifyDeviceFilter.vhdl"
+vhdl		poc		"src/sata/sata_StreamingLayerFSM.vhdl"
 vhdl		poc		"src/sata/sata_StreamingLayer.vhdl"											# Top-Level
-
