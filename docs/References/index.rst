@@ -6,6 +6,7 @@ References
    :maxdepth: 1
 
    CommandReference
+   WrapperScriptHookFiles
    FileFormats/index
    Interfaces/index
    NamingConventions

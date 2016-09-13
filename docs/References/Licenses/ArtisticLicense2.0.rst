@@ -110,8 +110,8 @@ executables, or modules, and provided that you do at least ONE of the following:
    freely available in that license fees are prohibited but Distributor Fees
    are allowed.
 
-Distribution of Compiled Forms of the Standard Version or Modified Versions
-without the Source
+Distribution of Compiled Forms of the Standard Version or Modified Versions without the Source
+==============================================================================================
 
 (5) You may Distribute Compiled forms of the Standard Version without the
 Source, provided that you include complete instructions on how to get the

@@ -1,0 +1,18 @@
+## =============================================================================================================================================================
+## General Purpose I/O
+## =============================================================================================================================================================
+##
+## DIP-Switches
+## -----------------------------------------------------------------------------
+##	Bank:						34
+##		VCCO:					1.5V (FPGA_1V5)
+##	Location:				SW2
+## -----------------------------------------------------------------------------
+NET "AC701_GPIO_Switches<0>"						LOC = "R8";								## {IN}		SW2.4; high-active; external 4k7 pulldown resistor
+NET "AC701_GPIO_Switches<1>"						LOC = "P8";								## {IN}		SW2.3; high-active; external 4k7 pulldown resistor
+NET "AC701_GPIO_Switches<2>"						LOC = "R7";								## {IN}		SW2.2; high-active; external 4k7 pulldown resistor
+NET "AC701_GPIO_Switches<3>"						LOC = "R6";								## {IN}		SW2.1; high-active; external 4k7 pulldown resistor
+NET "AC701_GPIO_Switches<?>"						IOSTANDARD = LVCMOS15;		##
+
+## Ignore timings on async I/O pins
+NET "AC701_GPIO_Switches<?>"						TIG;

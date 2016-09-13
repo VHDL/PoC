@@ -10,4 +10,4 @@
 ##			I²C-Address:
 NET "ZC706_ProgUserClock_p"				LOC = "AF14" | IOSTANDARD = LVDS_25;				## {IN}		U37.4
 NET "ZC706_ProgUserClock_n"				LOC = "AG14" | IOSTANDARD = LVDS_25;				## {IN}		U37.5
-NET "ZC706_ProgUserClock_p"				TNM_NET = "NET_ProgUserClock";
+NET "ZC706_ProgUserClock_p"				TNM_NET = "PIN_ProgUserClock";

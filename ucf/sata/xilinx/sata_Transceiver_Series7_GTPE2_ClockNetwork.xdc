@@ -3,6 +3,6 @@
 # Load XDC file defining the clocks before this XDC file by using the property PROCESSING_ORDER.
 
 # create_generated_clock -name CLK_SATA_ControlClock [get_pins {ClockIn_150MHz}]
-create_generated_clock -name CLK_SATA_FeedThrough  [get_pins SATA_MMCM/CLKOUT0]
+create_generated_clock -name CLK_SATA_Feedback     [get_pins SATA_MMCM/CLKFBOUT]
+create_generated_clock -name CLK_SATAClock_4X      [get_pins SATA_MMCM/CLKOUT0]
 create_generated_clock -name CLK_SATAClock_2X      [get_pins SATA_MMCM/CLKOUT1]
-create_generated_clock -name CLK_SATAClock_4X      [get_pins SATA_MMCM/CLKOUT2]

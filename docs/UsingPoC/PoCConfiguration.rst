@@ -248,3 +248,11 @@ GTKWave
    Configuring GTKWave
      Is GTKWave installed on your system? [Y/n/p]: Y
      GTKWave installation directory [C:\Tools\GTKWave\3.3.71]:
+
+Hook Files
+==========
+
+PoC's wrapper scripts can be customized through pre- and post-hook file. See
+:doc:`Wrapper Script Hook Files </References/WrapperScriptHookFiles>` for
+more details.
+

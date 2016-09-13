@@ -12,4 +12,3 @@ set_property PACKAGE_PIN	AF14			[get_ports ZC706_ProgUserClock_p]
 set_property PACKAGE_PIN	AG14			[get_ports ZC706_ProgUserClock_n]
 # set I/O standard
 set_property IOSTANDARD		LVDS_25	[get_ports -regexp {ZC706_ProgUserClock_[p|n]}]
-#$ NET "ZC706_ProgUserClock_p"				TNM_NET = "NET_ProgUserClock";
