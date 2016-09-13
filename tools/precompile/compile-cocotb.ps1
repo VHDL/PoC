@@ -1,12 +1,12 @@
 # EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
-# 
+#
 # ==============================================================================
 #	Authors:            Patrick Lehmann
-# 
+#
 #	PowerShell Script:  Compile Cocotb's simulation libraries
-# 
+#
 # Description:
 # ------------------------------------
 #	This PowerShell script compiles Cocotb simulation libraries into a local
@@ -16,13 +16,13 @@
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
 #											Chair for VLSI-Design, Diagnostics and Architecture
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #		http:\\www.apache.org\licenses\LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,31 +32,31 @@
 
 # .SYNOPSIS
 # This CmdLet pre-compiles the simulation libraries from Cocotb.
-# 
+#
 # .DESCRIPTION
 # This CmdLet:
 #   (1) Creates a sub-directory 'cocotb' in the current working directory
 #   (2) Compiles all Cocotb simulation libraries for
 #       o GHDL
 #       o QuestaSim
-# 
+#
 [CmdletBinding()]
 param(
 	# Pre-compile all libraries and packages for all simulators
 	[switch]$All =				$false,
-	
+
 	# Pre-compile the Altera Quartus libraries for GHDL
 	[switch]$GHDL =				$false,
-	
+
 	# Pre-compile the Altera Quartus libraries for QuestaSim
 	[switch]$Questa =			$false,
-	
+
 	# Set Python version
 	[string]$Python =			"2.7",
-	
+
 	# Clean up directory before analyzing.
 	[switch]$Clean =			$false,
-	
+
 	# Show the embedded help page(s)
 	[switch]$Help =				$false
 )
@@ -92,7 +92,7 @@ $PreCompiledDir =			Get-PrecompiledDirectoryName $PoCPS1
 
 # Get Cocotb installation directory
 $CocotbInstallDir =		"$PoCRootDir\$CocotbLibDir"
-	
+
 $COCOTB_IncludeDir =	"$CocotbInstallDir\include"
 $COCOTB_SourceDir =		"$CocotbInstallDir\lib"
 
@@ -116,18 +116,18 @@ if ($GHDL)
 		# Write-Host "Cleaning library 'cocotb' ..."
 		# rm -rf cocotb
 	# fi
-	
+
 	# Cocotb paths and settings
 	$COCOTB_BuildDir =	"$DestDir\cocotb"
 	$COCOTB_ObjDir =		$COCOTB_BuildDir
 	$COCOTB_SharedDir =	$COCOTB_BuildDir
-	
+
 	mkdir $COCOTB_ObjDir -ErrorAction SilentlyContinue | Out-Null
 	mkdir $COCOTB_SharedDir -ErrorAction SilentlyContinue | Out-Null
-	
+
 	$COCOTB_INCLUDE_SEARCH_DIR =	"-I$COCOTB_IncludeDir"
 	$COCOTB_LIBRARY_SEARCH_DIR =	"-L$COCOTB_SharedDir"
-	
+
 	# System and Linux paths and settings
 	$System_IncludeDir =	"\usr\include"
 	$System_Executables =	"\usr\bin"
@@ -136,7 +136,7 @@ if ($GHDL)
 
 	$LINUX_INCLUDE_SEARCH_DIR =		"-I$System_IncludeDir -I$Linux_IncludeDir"
 	$LINUX_LIBRARY_SEARCH_DIR =		"-L$System_Libraries"
-	
+
 	# Python paths and settings
 	$PY_LIBRARY =									"python$PY_VERSION"
 	$PYTHON_DEFINES =							"-DPYTHON_SO_LIB =	lib$PY_LIBRARY.so"
@@ -190,7 +190,7 @@ if ($GHDL)
 	Invoke-Expression $Command
 	$Command = "$LD  -shared $CC_DEBUG $CC_WARNINGS $CC_FLAGS $CC_LIBRARY_SEARCH_DIR $CC_LIBRARIES -o $COCOTB_SharedDir\libgpilog.so $COCOTB_ObjDir\gpi_logging.o"
 	Invoke-Expression $Command
-	
+
 
 	Write-Host "Compiling 'libcocotb.so'..." -ForegroundColor Yellow
 	$CC_DEFINES =	"$CC_DEFINES $PYTHON_DEFINES"
@@ -275,24 +275,24 @@ if ($Questa)
 #	# Create and change to destination directory
 #	# -> $DestinationDirectory
 #	CreateDestinationDirectory $DestDir
-#	
+#
 #	# clean cocotb directory
 #	if [ -d $DestDir\cocotb ]; then
 #		Write-Host "${YELLOW}Cleaning library 'osvvm' ..."
 #		rm -rf cocotb
 #	fi
-#	
+#
 #	# Cocotb paths and settings
 #	COCOTB_BuildDir=$DestDir\cocotb
 #	COCOTB_ObjDir=$COCOTB_BuildDir
 #	COCOTB_SharedDir=$COCOTB_BuildDir
-#	
+#
 #	mkdir -p $COCOTB_ObjDir
 #	mkdir -p $COCOTB_SharedDir
-#	
+#
 #	COCOTB_INCLUDE_SEARCH_DIR="-I$COCOTB_IncludeDir"
 #	COCOTB_LIBRARY_SEARCH_DIR="-L$COCOTB_SharedDir"
-#	
+#
 #	# System and Linux paths and settings
 #	System_IncludeDir="\usr\include"
 #	System_Executables="\usr\bin"
@@ -301,7 +301,7 @@ if ($Questa)
 #
 #	LINUX_INCLUDE_SEARCH_DIR="-I$System_IncludeDir -I$Linux_IncludeDir"
 #	LINUX_LIBRARY_SEARCH_DIR="-L$System_Libraries"
-#	
+#
 #	# Python paths and settings
 #	PY_VERSION="2.7"
 #	PY_LIBRARY="python$PY_VERSION"
@@ -314,7 +314,7 @@ if ($Questa)
 #	VSIM_IncludeDir="$VSimBinDir\..\include"
 #
 #	VSIM_INCLUDE_SEARCH_DIR="-I$VSIM_IncludeDir"
-#	
+#
 #	# Common CC and LD variables
 #	CC_WARNINGS="-Werror -Wcast-qual -Wcast-align -Wwrite-strings -Wall -Wno-unused-parameter"
 #	LD_WARNINGS="-Wstrict-prototypes -Waggregate-return"
@@ -414,7 +414,7 @@ if ($Questa)
 #
 #	Write-Host "Removing object files..."
 #	rm cocotb\*.o
-	
+
 # restore working directory
 	cd $WorkingDir
 	Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Cyan

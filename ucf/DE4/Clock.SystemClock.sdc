@@ -4,11 +4,11 @@
 ##
 ## System Clock
 ## =============================================================================
-##		Bank:						
-##			VCCO:					
-##		Location:				
-##			Vendor:				
-##			Device:				
+##		Bank:
+##			VCCO:
+##		Location:
+##			Vendor:
+##			Device:
 ##			Frequency:		100 MHz
 if {$TimingConstraints == 0} then {
 	# is it possible to define pin and I/O standard constraints here?
