@@ -1,13 +1,13 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
--- 
+--
 -- =============================================================================
 -- Authors:					Martin Zabel
 --
 -- Module:					Adapter between PoC's "mem" interface and the application
--- 									interface ("app") of the Xilinx MIG IP core for 7-Series 
--- 									FPGAs. 
+-- 									interface ("app") of the Xilinx MIG IP core for 7-Series
+-- 									FPGAs.
 --
 -- Description:
 -- ------------------------------------
@@ -17,7 +17,7 @@
 -- written to the memory.
 --
 -- Generic parameters:
--- 
+--
 -- * D_BITS: Data bus width of the "mem" and "app" interface. Also size of one
 --   word in bits.
 --
@@ -34,13 +34,13 @@
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
--- 
+--
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
--- 
+--
 --		http://www.apache.org/licenses/LICENSE-2.0
--- 
+--
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,7 +56,7 @@ library poc;
 use poc.utils.all;
 
 entity ddr3_mem2mig_adapter_Series7 is
-	
+
 	generic (
 		D_BITS		 : positive;
 		DQ_BITS		 : positive;
@@ -87,7 +87,7 @@ entity ddr3_mem2mig_adapter_Series7 is
 		app_wdf_mask				: out std_logic_vector((D_BITS)/8-1 downto 0);
 		app_wdf_wren				: out std_logic
 	);
-	
+
 end entity ddr3_mem2mig_adapter_Series7;
 
 architecture rtl of ddr3_mem2mig_adapter_Series7 is
@@ -98,7 +98,7 @@ architecture rtl of ddr3_mem2mig_adapter_Series7 is
 	constant BL_BITS : natural  := log2ceil(BL);
 
 	signal mem_rdy_i : std_logic;
-	
+
 begin  -- architecture rtl
 
 	-- command & FIFO control
@@ -116,11 +116,11 @@ begin  -- architecture rtl
 		app_addr <= (others => '0');
 		app_addr(MEM_A_BITS+BL_BITS-1 downto BL_BITS) <= std_logic_vector(mem_addr);
 	end process;
-	
+
 	-- write data & mask
 	app_wdf_data <= mem_wdata;
 	app_wdf_mask <= (others => '0'); -- all bytes
-	
+
 	-- read reply
 	mem_rstb	<= app_rd_data_valid;
 	mem_rdata <= app_rd_data;

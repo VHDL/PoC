@@ -68,7 +68,7 @@ architecture tb of ocram_esdp_tb is
 
 	signal rd_dat : std_logic_vector(D_BITS-1 downto 0);
 	signal exp_q2 : std_logic_vector(D_BITS-1 downto 0);
-	
+
 begin
 	-- initialize global simulation status
 	simInitialize;
@@ -103,10 +103,10 @@ begin
     a1  <= (others => '-');
     ce2 <= '0';
     a2  <= (others => '-');
-		
+
 		-------------------------------------------------------------------------
 		-- Write in 8 consecutive clock cycles, read one cycle later
-		
+
 		for i in 0 to 7 loop
 			simWaitUntilRisingEdge(clk, 1);
 			ce1 <= '1';
@@ -124,7 +124,7 @@ begin
 		ce1 <= '0';
 		we1 <= '0';
     a1  <= (others => '-');
-		
+
 		-- last read is delayed by one clock cycle
 		ce2		 <= ce1;
 		a2		 <= a1;
@@ -149,7 +149,7 @@ begin
 		ce1 <= '0';
 		we1 <= '0';
     a1  <= (others => '-');
-		
+
 		-- last read is delayed by one clock cycle
 		ce2		 <= ce1;
 		a2		 <= a1;
@@ -157,11 +157,11 @@ begin
 
 		-------------------------------------------------------------------------
 		-- Finish
-		
+
 		simWaitUntilRisingEdge(clk, 1);
 		ce2 <= '0';
     a2  <= (others => '-');
-		
+
     -- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever
@@ -169,7 +169,7 @@ begin
 
 	-- Also checks if old value is kept if ce2 = '0'
 	exp_q2 <= rd_dat when rising_edge(clk) and ce2 = '1';
-	
+
   Checker: process
 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker process");
 		variable i : integer;
@@ -178,7 +178,7 @@ begin
 			simWaitUntilRisingEdge(clk, 1);
 			simAssertion(Is_X(exp_q2) or q2 = exp_q2);
 		end loop;
-			
+
     -- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever
