@@ -1,44 +1,44 @@
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VcomponentS.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY eth_RSLayer_GMII_SGMII_Virtex6_GTXE1 IS
-	GENERIC (
+entity eth_RSLayer_GMII_SGMII_Virtex6_GTXE1 is
+	generic (
 		CLOCK_IN_FREQ_MHZ					: REAL													:= 125.0					-- 125 MHz
 	);
-	PORT (
-		Clock											: IN	STD_LOGIC;
-		Reset											: IN	STD_LOGIC;
+	port (
+		Clock											: in	std_logic;
+		Reset											: in	std_logic;
 
 		-- GEMAC-GMII interface
-		RS_TX_Clock								: IN	STD_LOGIC;
-		RS_TX_Valid								: IN	STD_LOGIC;
-		RS_TX_Data								: IN	T_SLV_8;
-		RS_TX_Error								: IN	STD_LOGIC;
+		RS_TX_Clock								: in	std_logic;
+		RS_TX_Valid								: in	std_logic;
+		RS_TX_Data								: in	T_SLV_8;
+		RS_TX_Error								: in	std_logic;
 
-		RS_RX_Clock								: OUT	STD_LOGIC;
-		RS_RX_Valid								: OUT	STD_LOGIC;
-		RS_RX_Data								: OUT	T_SLV_8;
-		RS_RX_Error								: OUT	STD_LOGIC
+		RS_RX_Clock								: out	std_logic;
+		RS_RX_Valid								: out	std_logic;
+		RS_RX_Data								: out	T_SLV_8;
+		RS_RX_Error								: out	std_logic
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF eth_RSLayer_GMII_SGMII_Virtex6_GTXE1 IS
+architecture rtl of eth_RSLayer_GMII_SGMII_Virtex6_GTXE1 is
 
 
-BEGIN
---	SGMII : ENTITY work.Ethernet_Virtex6_SGMII_example_design
---		PORT MAP (
+begin
+--	SGMII : entity work.Ethernet_Virtex6_SGMII_example_design
+--		port map (
 --			-- MAC-GMII interface
 --			sgmii_clk						=> GMII_ClockOut,										-- Clock for client MAC (125Mhz, 12.5MHz or 1.25MHz).
 --
@@ -77,4 +77,4 @@ BEGIN
 ----			signal_detect				: in std_logic											-- Input from PMD to indicate presence of optical input.
 --			);
 
-END;
+end;

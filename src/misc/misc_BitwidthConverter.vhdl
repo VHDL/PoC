@@ -21,167 +21,167 @@
 --	- Clock1 and Clock2 MUST be phase aligned (related) to each other.
 
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.utils.all;
 
 
-ENTITY misc_BitwidthConverter IS
-  GENERIC (
-	  REGISTERED					: BOOLEAN			:= FALSE;												-- add output register @Clock2
-		BITS1								: POSITIVE		:= 32;													-- input bit width
-		BITS2								: POSITIVE		:= 16														-- output bit width
+entity misc_BitwidthConverter is
+  generic (
+	  REGISTERED					: boolean			:= FALSE;												-- add output register @Clock2
+		BITS1								: positive		:= 32;													-- input bit width
+		BITS2								: positive		:= 16														-- output bit width
 	);
-  PORT (
-	  Clock1							: IN	STD_LOGIC;															-- input clock domain
-		Clock2							: IN	STD_LOGIC;															-- output clock domain
-		Align								: IN	STD_LOGIC;															-- align word (one cycle high impulse)
-		I										: IN	STD_LOGIC_VECTOR(BITS1 - 1 DOWNTO 0);			-- input word
-		O										: OUT STD_LOGIC_VECTOR(BITS2 - 1 DOWNTO 0)			-- output word
+  port (
+	  Clock1							: in	std_logic;															-- input clock domain
+		Clock2							: in	std_logic;															-- output clock domain
+		Align								: in	std_logic;															-- align word (one cycle high impulse)
+		I										: in	std_logic_vector(BITS1 - 1 downto 0);			-- input word
+		O										: out std_logic_vector(BITS2 - 1 downto 0)			-- output word
 	);
-END;
+end entity;
 
-ARCHITECTURE rtl OF misc_BitwidthConverter IS
-	CONSTANT BITS_1				: POSITIVE	:= BITS1;
-	CONSTANT BITS_2				: POSITIVE	:= BITS2;
+architecture rtl of misc_BitwidthConverter is
+	constant BITS_1				: positive	:= BITS1;
+	constant BITS_2				: positive	:= BITS2;
 
-	CONSTANT BITS_RATIO		: REAL			:= real(BITS1) / real(BITS2);
-	CONSTANT SMALLER			: BOOLEAN		:= BITS_RATIO > 1.0;
+	constant BITS_RATIO		: REAL			:= real(BITS1) / real(BITS2);
+	constant SMALLER			: boolean		:= BITS_RATIO > 1.0;
 
-	CONSTANT COUNTER_BITS : POSITIVE	:= log2ceil(integer(ite(SMALLER, BITS_RATIO, (1.0 / BITS_RATIO))));
+	constant COUNTER_BITS : positive	:= log2ceil(integer(ite(SMALLER, BITS_RATIO, (1.0 / BITS_RATIO))));
 
-BEGIN
+begin
 	-- word to byte splitter
-	gen1 : IF (SMALLER = TRUE) GENERATE
-		TYPE SLV_mux IS ARRAY (NATURAL RANGE <>) OF STD_LOGIC_VECTOR(BITS2 - 1 DOWNTO 0);
+	gen1 : if SMALLER generate
+		type SLV_mux is array (natural range <>) of std_logic_vector(BITS2 - 1 downto 0);
 
-		SIGNAL WordBoundary			: STD_LOGIC;
-		SIGNAL WordBoundary_d		: STD_LOGIC;
-		SIGNAL Align_i					: STD_LOGIC;
+		signal WordBoundary			: std_logic;
+		signal WordBoundary_d		: std_logic;
+		signal Align_i					: std_logic;
 
-		SIGNAL I_d							: STD_LOGIC_VECTOR(BITS1 - 1 DOWNTO 0);
-		SIGNAL MuxInput					: SLV_mux(2**COUNTER_BITS - 1 DOWNTO 0);
-		SIGNAL MuxOutput				: STD_LOGIC_VECTOR(BITS2 - 1 DOWNTO 0);
-		SIGNAL MuxCounter_us		: UNSIGNED(COUNTER_BITS - 1 DOWNTO 0)					:= (OTHERS => '0');
-		SIGNAL MuxSelect_us			: UNSIGNED(COUNTER_BITS - 1 DOWNTO 0);
+		signal I_d							: std_logic_vector(BITS1 - 1 downto 0);
+		signal MuxInput					: SLV_mux(2**COUNTER_BITS - 1 downto 0);
+		signal MuxOutput				: std_logic_vector(BITS2 - 1 downto 0);
+		signal MuxCounter_us		: unsigned(COUNTER_BITS - 1 downto 0)					:= (others => '0');
+		signal MuxSelect_us			: unsigned(COUNTER_BITS - 1 downto 0);
 
-	BEGIN
+	begin
 		-- input register @Clock1
-		PROCESS(Clock1)
-		BEGIN
-			IF rising_edge(Clock1) THEN
+		process(Clock1)
+		begin
+			if rising_edge(Clock1) then
 				I_d	<= I;
-			END IF;
-		END PROCESS;
+			end if;
+		end process;
 
 		-- selection multiplexer
-		gen11 : FOR J IN 2**COUNTER_BITS - 1 DOWNTO 0 GENERATE
-			MuxInput(J)	<= I_d(((J + 1) * BITS_2) - 1 DOWNTO (J * BITS_2));
-		END GENERATE;
+		gen11 : for j in 2**COUNTER_BITS - 1 downto 0 generate
+			MuxInput(J)	<= I_d(((J + 1) * BITS_2) - 1 downto (J * BITS_2));
+		end generate;
 
 		-- multiplexer
 		MuxOutput <= MuxInput(to_integer(MuxSelect_us));
 
 		-- word boundary T-FF @Clock1 and D-FF @Clock2
-		WordBoundary		<= NOT WordBoundary WHEN rising_edge(Clock1) ELSE WordBoundary;
-		WordBoundary_d	<= WordBoundary			WHEN rising_edge(Clock2) ELSE WordBoundary_d;
+		WordBoundary		<= not WordBoundary when rising_edge(Clock1) else WordBoundary;
+		WordBoundary_d	<= WordBoundary			when rising_edge(Clock2) else WordBoundary_d;
 
 		-- generate Align_i signal
-		Align_i <= WordBoundary XOR WordBoundary_d;
+		Align_i <= WordBoundary xor WordBoundary_d;
 
 		-- multiplexer control @Clock2
-		PROCESS(Clock2)
-		BEGIN
-			IF rising_edge(Clock2) THEN
-				IF (Align_i = '1') THEN
+		process(Clock2)
+		begin
+			if rising_edge(Clock2) then
+				if (Align_i = '1') then
 					MuxCounter_us		<= to_unsigned(1, MuxCounter_us'length);
-				ELSE
+				else
 					MuxCounter_us		<= MuxCounter_us + 1;
-				END IF;
-			END IF;
-		END PROCESS;
+				end if;
+			end if;
+		end process;
 
-		MuxSelect_us <= (OTHERS => '0') WHEN (Align_i = '1') ELSE MuxCounter_us;
+		MuxSelect_us <= (others => '0') when (Align_i = '1') else MuxCounter_us;
 
 		-- add output register @Clock2
-		gen121 : IF (REGISTERED = TRUE) GENERATE
-			PROCESS(Clock2)
-			BEGIN
-				IF rising_edge(Clock2) THEN
+		gen121 : if REGISTERED generate
+			process(Clock2)
+			begin
+				if rising_edge(Clock2) then
 					O <= MuxOutput;
-				END IF;
-			END PROCESS;
-		END GENERATE;
-		gen122 : IF (REGISTERED = FALSE) GENERATE
+				end if;
+			end process;
+		end generate;
+		gen122 : if not REGISTERED generate
 			O <= MuxOutput;
-		END GENERATE;
-	END GENERATE;
+		end generate;
+	end generate;
 
 
 	-- byte to word collection
-	gen2 : IF (SMALLER = FALSE) GENERATE
-		SIGNAL I_Counter_us					: UNSIGNED(COUNTER_BITS - 1 DOWNTO 0)						:= (OTHERS => '0');
-		SIGNAL I_Select_us					: UNSIGNED(COUNTER_BITS - 1 DOWNTO 0);
-		SIGNAL I_d									:	STD_LOGIC_VECTOR(BITS2 - BITS1 - 1 DOWNTO 0);
-		SIGNAL Collected						: STD_LOGIC_VECTOR(BITS2 - 1 DOWNTO 0);
-		SIGNAL Collected_d					: STD_LOGIC_VECTOR(BITS2 - 1 DOWNTO 0);
+	gen2 : if not SMALLER generate
+		signal I_Counter_us					: unsigned(COUNTER_BITS - 1 downto 0)						:= (others => '0');
+		signal I_Select_us					: unsigned(COUNTER_BITS - 1 downto 0);
+		signal I_d									:	std_logic_vector(BITS2 - BITS1 - 1 downto 0);
+		signal Collected						: std_logic_vector(BITS2 - 1 downto 0);
+		signal Collected_d					: std_logic_vector(BITS2 - 1 downto 0);
 
-	BEGIN
+	begin
 		-- byte alignment counter @Clock1
-		PROCESS(Clock1)
-		BEGIN
-			IF rising_edge(Clock1) THEN
-				IF (Align = '1') THEN
+		process(Clock1)
+		begin
+			if rising_edge(Clock1) then
+				if (Align = '1') then
 					I_Counter_us		<= to_unsigned(1, I_Counter_us'length);
-				ELSE
+				else
 					I_Counter_us		<= I_Counter_us + 1;
-				END IF;
-			END IF;
-		END PROCESS;
+				end if;
+			end if;
+		end process;
 
-		I_Select_us <= (OTHERS => '0') WHEN (Align = '1') ELSE I_Counter_us;
+		I_Select_us <= (others => '0') when (Align = '1') else I_Counter_us;
 
 		-- delay registers @Clock1
-		PROCESS(Clock1)
-		BEGIN
-			IF rising_edge(Clock1) THEN
-				FOR J IN 2**COUNTER_BITS - 2 DOWNTO 0 LOOP
-					IF J = to_integer(I_Select_us) THEN					-- d-FF enable
-						FOR K IN BITS1 - 1 DOWNTO 0 LOOP
+		process(Clock1)
+		begin
+			if rising_edge(Clock1) then
+				for j in 2**COUNTER_BITS - 2 downto 0 loop
+					if J = to_integer(I_Select_us) then					-- d-FF enable
+						for k in BITS1 - 1 downto 0 loop
 							I_d((J * BITS1) + K) <= I(K);
-						END LOOP;
-					END IF;
-				END LOOP;
-			END IF;
-		END PROCESS;
+						end loop;
+					end if;
+				end loop;
+			end if;
+		end process;
 
 		-- collect signals
 		Collected <= I & I_d;
 
 		-- register collected signals again @Clock1
-		PROCESS(Clock1)
-		BEGIN
-			IF rising_edge(Clock1) THEN
-				IF (to_integer(I_Select_us) = (2**COUNTER_BITS - 1)) THEN
+		process(Clock1)
+		begin
+			if rising_edge(Clock1) then
+				if to_integer(I_Select_us) = (2**COUNTER_BITS - 1) then
 					Collected_d <= Collected;
-				END IF;
-			END IF;
-		END PROCESS;
+				end if;
+			end if;
+		end process;
 
 		-- add output register @Clock2
-		gen211 : IF (REGISTERED = TRUE) GENERATE
-			PROCESS(Clock2)
-			BEGIN
-				IF rising_edge(Clock2) THEN
+		gen211 : if REGISTERED generate
+			process(Clock2)
+			begin
+				if rising_edge(Clock2) then
 					O <= Collected_d;
-				END IF;
-			END PROCESS;
-		END GENERATE;
-		gen212 : IF (REGISTERED = FALSE) GENERATE
+				end if;
+			end process;
+		end generate;
+		gen212 : if not REGISTERED generate
 			O <= Collected_d;
-		END GENERATE;
-	END GENERATE;
-END;
+		end generate;
+	end generate;
+end;

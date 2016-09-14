@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
--- Module:				 	TODO
---
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
+-- Package:				 	TODO
+--
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,7 +26,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 
 
@@ -58,199 +57,199 @@
 --
 
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.STD_LOGIC_TEXTIO.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
-USE			STD.TEXTIO.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.STD_LOGIC_TEXTIO.all;
+use			IEEE.NUMERIC_STD.all;
+use			STD.TEXTIO.all;
 
-LIBRARY PoC;
-USE			PoC.utils.ALL;
+library PoC;
+use			PoC.utils.all;
 
-PACKAGE sim_value_change_dump IS
-	SUBTYPE T_VCDLINE		IS		STRING(1 TO 80);
+package sim_value_change_dump is
+	subtype T_VCDLINE		is		string(1 to 80);
 
-	FUNCTION to_nat(str : STRING) RETURN INTEGER;
-	FUNCTION resize(str : STRING; size : POSITIVE) RETURN STRING;
+	function to_nat(str : string) return integer;
+	function resize(str : string; size : positive) return string;
 
-	PROCEDURE VCD_ReadHeader(FILE VCDFile : TEXT; VCDLine : INOUT T_VCDLINE);
-	PROCEDURE VCD_ReadLine(FILE VCDFile : TEXT; VCDLine : OUT STRING);
+	procedure VCD_ReadHeader(file VCDFile : TEXT; VCDLine : inout T_VCDLINE);
+	procedure VCD_ReadLine(file VCDFile : TEXT; VCDLine : out string);
 
-	PROCEDURE VCD_Read_StdLogic(VCDLine : STRING; SIGNAL sl : OUT STD_LOGIC; WaveName : STRING);
-	PROCEDURE VCD_Read_StdLogicVector(VCDLine : STRING; SIGNAL slv : OUT STD_LOGIC_VECTOR; WaveName : STRING; def : STD_LOGIC := '0');
+	procedure VCD_Read_StdLogic(VCDLine : string; signal sl : out std_logic; WaveName : string);
+	procedure VCD_Read_StdLogicVector(VCDLine : string; signal slv : out std_logic_vector; WaveName : string; def : std_logic := '0');
 
-END sim_value_change_dump;
+end sim_value_change_dump;
 
-PACKAGE BODY sim_value_change_dump IS
-	FUNCTION to_digit(chr : CHARACTER) RETURN INTEGER IS
-	BEGIN
-		CASE (chr) IS
-			WHEN '0' =>			RETURN 0;
-			WHEN '1' =>			RETURN 1;
-			WHEN '2' =>			RETURN 2;
-			WHEN '3' =>			RETURN 3;
-			WHEN '4' =>			RETURN 4;
-			WHEN '5' =>			RETURN 5;
-			WHEN '6' =>			RETURN 6;
-			WHEN '7' =>			RETURN 7;
-			WHEN '8' =>			RETURN 8;
-			WHEN '9' =>			RETURN 9;
-			WHEN OTHERS =>	RETURN -1;
-		END CASE;
-	END;
+package body sim_value_change_dump is
+	function to_digit(chr : character) return integer is
+	begin
+		case (chr) is
+			when '0' =>			return 0;
+			when '1' =>			return 1;
+			when '2' =>			return 2;
+			when '3' =>			return 3;
+			when '4' =>			return 4;
+			when '5' =>			return 5;
+			when '6' =>			return 6;
+			when '7' =>			return 7;
+			when '8' =>			return 8;
+			when '9' =>			return 9;
+			when others =>	return -1;
+		end case;
+	end;
 
-	FUNCTION to_nat(str : STRING) RETURN INTEGER IS
-		VARIABLE Result			: NATURAL		:= 0;
-		VARIABLE Digit			: INTEGER;
-	BEGIN
-		IF (to_digit(str(str'low)) /= -1) THEN
-			FOR I IN str'range LOOP
+	function to_nat(str : string) return integer is
+		variable Result			: natural		:= 0;
+		variable Digit			: integer;
+	begin
+		if (to_digit(str(str'low)) /= -1) then
+			for i in str'range loop
 				Digit	:= to_digit(str(I));
-				IF (Digit /= -1) THEN
+				if Digit /= -1 then
 					Result	:= Result * 10 + Digit;
-				ELSE
-					EXIT;
-				END IF;
-			END LOOP;
+				else
+					exit;
+				end if;
+			end loop;
 
-			RETURN Result;
-		ELSE
-			RETURN -1;
-		END IF;
-	END;
+			return Result;
+		else
+			return -1;
+		end if;
+	end;
 
-	FUNCTION to_sl(Value : BOOLEAN) RETURN STD_LOGIC IS
-	BEGIN
-		IF (Value = TRUE) THEN
-			RETURN '1';
-		ELSE
-			RETURN '0';
-		END IF;
-	END;
+	function to_sl(Value : boolean) return std_logic is
+	begin
+		if Value then
+			return '1';
+		else
+			return '0';
+		end if;
+	end;
 
-	FUNCTION to_sl(Value : CHARACTER) RETURN STD_LOGIC IS
-	BEGIN
-		CASE Value IS
-			WHEN 'U' =>			RETURN 'U';
-			WHEN 'X' =>			RETURN 'X';
-			WHEN '0' =>			RETURN '0';
-			WHEN '1' =>			RETURN '1';
-			WHEN 'Z' =>			RETURN 'Z';
-			WHEN 'W' =>			RETURN 'W';
-			WHEN 'L' =>			RETURN 'L';
-			WHEN 'H' =>			RETURN 'H';
-			WHEN '-' =>			RETURN '-';
-			WHEN OTHERS =>	RETURN 'X';
-		END CASE;
-	END;
+	function to_sl(Value : character) return std_logic is
+	begin
+		case Value is
+			when 'U' =>			return 'U';
+			when 'X' =>			return 'X';
+			when '0' =>			return '0';
+			when '1' =>			return '1';
+			when 'Z' =>			return 'Z';
+			when 'W' =>			return 'W';
+			when 'L' =>			return 'L';
+			when 'H' =>			return 'H';
+			when '-' =>			return '-';
+			when others =>	return 'X';
+		end case;
+	end;
 
-	FUNCTION is_sl(char : CHARACTER) RETURN BOOLEAN IS
-	BEGIN
-		CASE char IS
-			WHEN 'U' =>			RETURN TRUE;
-			WHEN 'X' =>			RETURN TRUE;
-			WHEN '0' =>			RETURN TRUE;
-			WHEN '1' =>			RETURN TRUE;
-			WHEN 'Z' =>			RETURN TRUE;
-			WHEN 'W' =>			RETURN TRUE;
-			WHEN 'L' =>			RETURN TRUE;
-			WHEN 'H' =>			RETURN TRUE;
-			WHEN '-' =>			RETURN TRUE;
-			WHEN OTHERS =>	RETURN FALSE;
-		END CASE;
-	END;
+	function is_sl(char : character) return boolean is
+	begin
+		case char is
+			when 'U' =>			return TRUE;
+			when 'X' =>			return TRUE;
+			when '0' =>			return TRUE;
+			when '1' =>			return TRUE;
+			when 'Z' =>			return TRUE;
+			when 'W' =>			return TRUE;
+			when 'L' =>			return TRUE;
+			when 'H' =>			return TRUE;
+			when '-' =>			return TRUE;
+			when others =>	return FALSE;
+		end case;
+	end;
 
-	FUNCTION str_length(str : STRING) RETURN NATURAL IS
-		VARIABLE l	: NATURAL		:= 0;
-	BEGIN
-		FOR I IN str'range LOOP
-			IF (str(I) = NUL) THEN
-				RETURN l;
-			ELSE
+	function str_length(str : string) return natural is
+		variable l	: natural		:= 0;
+	begin
+		for i in str'range loop
+			if str(I) = NUL then
+				return l;
+			else
 				l := l + 1;
-			END IF;
-		END LOOP;
+			end if;
+		end loop;
 
-		RETURN str'length;
-	END;
+		return str'length;
+	end;
 
-	FUNCTION str_equal(str1 : STRING; str2 : STRING) RETURN BOOLEAN IS
-		VARIABLE L				: POSITIVE	:= imin(str_length(str1), str_length(str2));
-	BEGIN
-		FOR I IN 0 TO L - 1 LOOP
-			IF (str1(str1'low + I) /= str2(str2'low + I)) THEN
-				RETURN FALSE;
-			END IF;
-		END LOOP;
+	function str_equal(str1 : string; str2 : string) return boolean is
+		variable L				: positive	:= imin(str_length(str1), str_length(str2));
+	begin
+		for i in 0 to L - 1 loop
+			if (str1(str1'low + I) /= str2(str2'low + I)) then
+				return FALSE;
+			end if;
+		end loop;
 
-		RETURN TRUE;
-	END;
+		return TRUE;
+	end;
 
-	FUNCTION resize(str : STRING; size : POSITIVE) RETURN STRING IS
-		CONSTANT MaxLength	: POSITIVE							:= imin(size, str'length);
-		VARIABLE Result			: STRING(1 TO size)			:= (OTHERS => nul);
-	BEGIN
-		Result(1 TO MaxLength) := str(1 TO MaxLength);
-		RETURN Result;
-	END;
+	function resize(str : string; size : positive) return string is
+		constant MaxLength	: positive							:= imin(size, str'length);
+		variable Result			: string(1 to size)			:= (others => nul);
+	begin
+		Result(1 to MaxLength) := str(1 to MaxLength);
+		return Result;
+	end;
 
-	PROCEDURE VCD_ReadHeader(FILE VCDFile : TEXT; VCDLine : INOUT T_VCDLINE) IS
-	BEGIN
-		WHILE (NOT endfile(VCDFile)) LOOP
+	procedure VCD_ReadHeader(file VCDFile : TEXT; VCDLine : inout T_VCDLINE) is
+	begin
+		while not endfile(VCDFile) loop
 			VCD_ReadLine(VCDFile, VCDLine);
 
-			IF (VCDLine(1) = '#') THEN
-				ASSERT (FALSE) REPORT "Header passed" SEVERITY NOTE;
-				EXIT;
-			END IF;
-		END LOOP;
-	END;
+			if (VCDLine(1) = '#') then
+				assert (FALSE) report "Header passed" severity NOTE;
+				exit;
+			end if;
+		end loop;
+	end;
 
-	PROCEDURE VCD_ReadLine(FILE VCDFile : TEXT; VCDLine : OUT STRING) IS
-		VARIABLE l					: LINE;
-		VARIABLE c					: CHARACTER;
-		VARIABLE is_string	: BOOLEAN;
-	BEGIN
+	procedure VCD_ReadLine(file VCDFile : TEXT; VCDLine : out string) is
+		variable l					: LINE;
+		variable c					: character;
+		variable is_string	: boolean;
+	begin
 		readline(VCDFile, l);
 
 		-- clear VCDLine
-		FOR I in VCDLine'range LOOP
+		for I in VCDLine'range loop
 			VCDLine(I)		:= NUL;
-		END LOOP;
+		end loop;
 
 		-- TODO: use imin of ranges, not 'range
-		FOR I IN VCDLine'range LOOP
+		for i in VCDLine'range loop
 			read(l, c, is_string);
-			IF NOT is_string THEN
-				EXIT;
-			END IF;
+			if not is_string then
+				exit;
+			end if;
 
 			VCDLine(I)	:= c;
-		END LOOP;
-	END;
+		end loop;
+	end;
 
-	PROCEDURE VCD_Read_StdLogic(VCDLine : STRING; SIGNAL sl : OUT STD_LOGIC; WaveName : STRING) IS
-	BEGIN
-		IF (str_equal(VCDLine(2 TO VCDLine'high), WaveName)) THEN
+	procedure VCD_Read_StdLogic(VCDLine : string; signal sl : out std_logic; WaveName : string) is
+	begin
+		if (str_equal(VCDLine(2 to VCDLine'high), WaveName)) then
 			sl	<= to_sl(VCDLine(1));
-		END IF;
-	END;
+		end if;
+	end;
 
-	PROCEDURE VCD_Read_StdLogicVector(VCDLine : STRING; SIGNAL slv : OUT STD_LOGIC_VECTOR; WaveName : STRING; def : STD_LOGIC := '0') IS
-		VARIABLE Result	: STD_LOGIC_VECTOR(slv'range)			:= (OTHERS => def);
-		VARIABLE k			: NATURAL													:= 0;
-	BEGIN
-		FOR I IN VCDLine'range LOOP
-			IF (is_sl(VCDLine(I)) = FALSE) THEN
+	procedure VCD_Read_StdLogicVector(VCDLine : string; signal slv : out std_logic_vector; WaveName : string; def : std_logic := '0') is
+		variable Result	: std_logic_vector(slv'range)			:= (others => def);
+		variable k			: natural													:= 0;
+	begin
+		for i in VCDLine'range loop
+			if not is_sl(VCDLine(I)) then
 				k				:= I;
-				EXIT;
-			ELSE
-				Result := Result(Result'high - 1 DOWNTO Result'low) & to_sl(VCDLine(I));
-			END IF;
-		END LOOP;
+				exit;
+			else
+				Result := Result(Result'high - 1 downto Result'low) & to_sl(VCDLine(I));
+			end if;
+		end loop;
 
-		IF (str_equal(VCDLine(k + 1 TO VCDLine'high), WaveName)) THEN
+		if (str_equal(VCDLine(k + 1 to VCDLine'high), WaveName)) then
 			slv				<= Result;
-		END IF;
-	END;
-END PACKAGE BODY;
+		end if;
+	end;
+end package body;

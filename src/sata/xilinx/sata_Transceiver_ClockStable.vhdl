@@ -2,21 +2,14 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
---            ____        ____    _     _ _
---           |  _ \ ___  / ___|  | |   (_) |__  _ __ __ _ _ __ _   _
---           | |_) / _ \| |      | |   | | '_ \| '__/ _` | '__| | | |
---           |  __/ (_) | |___   | |___| | |_) | | | (_| | |  | |_| |
---           |_|   \___/ \____|  |_____|_|_.__/|_|  \__,_|_|   \__, |
---                                                             |___/
--- =============================================================================
--- Module:					sata_Transceiver_ClockStable
---
 -- Authors:					Martin Zabel
+--
+-- Entity:					sata_Transceiver_ClockStable
 --
 -- Package:					PoC.sata
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Generic reset handling for Xilinx FPGAs to be embedded into the SATA
 -- transceiver layer.
 --
@@ -76,31 +69,31 @@ library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 
 library UNISIM;
-use			UNISIM.VCOMPONENTS.all;
+use			UNISIM.VcomponentS.all;
 
 library PoC;
 
 entity sata_Transceiver_ClockStable is
 	port (
 		-- @async
-		Async_Reset						: in	STD_LOGIC := '0';
-		PLL_Locked            : in  STD_LOGIC;
+		Async_Reset						: in	std_logic := '0';
+		PLL_Locked            : in  std_logic;
 
 		-- the clock of the SATA controller
-		SATA_Clock						: in	STD_LOGIC;
+		SATA_Clock						: in	std_logic;
 
 		-- @sync SATA_Clock, see exception in documentation
-		Kill_Stable						: in 	STD_LOGIC;
-		ResetDone							: out	STD_LOGIC;
-		SATA_Clock_Stable			: out	STD_LOGIC
+		Kill_Stable						: in 	std_logic;
+		ResetDone							: out	std_logic;
+		SATA_Clock_Stable			: out	std_logic
 	);
 end;
 
 
 architecture rtl of sata_Transceiver_ClockStable is
-	attribute ASYNC_REG				: STRING;
-	attribute SHREG_EXTRACT		: STRING;
-	attribute RLOC						: STRING;
+	attribute ASYNC_REG				: string;
+	attribute SHREG_EXTRACT		: string;
+	attribute RLOC						: string;
 
 	signal Locked_meta 			: std_logic;
 	signal Locked_sync1 		: std_logic;

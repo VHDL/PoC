@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
--- Module:				 	TODO
---
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
+-- Entity:				 	TODO
+--
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,55 +26,55 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY UNISIM;
-USE			UNISIM.VCOMPONENTS.ALL;
+library UNISIM;
+use			UNISIM.VcomponentS.all;
 
-LIBRARY PoC;
-USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
---USE			PoC.strings.ALL;
-USE			PoC.net.ALL;
+library PoC;
+use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+--use			PoC.strings.all;
+use			PoC.net.all;
 
 
-ENTITY eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1 IS
-	PORT (
-		Reset_async								: IN	STD_LOGIC;																	-- @async:
+entity eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1 is
+	port (
+		Reset_async								: in	std_logic;																	-- @async:
 
 		-- RS-GMII interface
-		RS_TX_Clock								: IN	STD_LOGIC;
-		RS_TX_Valid								: IN	STD_LOGIC;
-		RS_TX_Data								: IN	T_SLV_8;
-		RS_TX_Error								: IN	STD_LOGIC;
+		RS_TX_Clock								: in	std_logic;
+		RS_TX_Valid								: in	std_logic;
+		RS_TX_Data								: in	T_SLV_8;
+		RS_TX_Error								: in	std_logic;
 
-		RS_RX_Clock								: IN	STD_LOGIC;
-		RS_RX_Valid								: OUT	STD_LOGIC;
-		RS_RX_Data								: OUT	T_SLV_8;
-		RS_RX_Error								: OUT	STD_LOGIC;
+		RS_RX_Clock								: in	std_logic;
+		RS_RX_Valid								: out	std_logic;
+		RS_RX_Data								: out	T_SLV_8;
+		RS_RX_Error								: out	std_logic;
 
 		-- PHY-GMII interface
-		PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_GMII
+		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
 	);
-END;
+end;
 
 -- Note:
--- ============================================================================================================================================================
+-- =============================================================================
 -- use IDELAY instances on GMII_RX_Clock to move the clock into alignment with the data (GMII_RX_Data[7:0])
 
-ARCHITECTURE rtl OF eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1 IS
-	SIGNAL IODelay_RX_Clock	: STD_LOGIC;
+architecture rtl of eth_RSLayer_TRANS_SGMII_Virtex6_GTXE1 is
+	signal IODelay_RX_Clock	: std_logic;
 
-	SIGNAL IDelay_Data			: T_SLV_8;
-	SIGNAL IDelay_Valid			: STD_LOGIC;
-	SIGNAL IDelay_Error			: STD_LOGIC;
-BEGIN
+	signal IDelay_Data			: T_SLV_8;
+	signal IDelay_Valid			: std_logic;
+	signal IDelay_Error			: std_logic;
+begin
 
 
 
-END;
+end;

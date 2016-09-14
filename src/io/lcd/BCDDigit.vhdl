@@ -7,50 +7,50 @@ use			PoC.utils.all;
 --use			PoC.lcd.all;
 
 
-ENTITY BCDDigit IS
-	GENERIC (
-		RADIX				: POSITIVE					:= 4
+entity BCDDigit is
+	generic (
+		RADIX				: positive					:= 4
 	);
-	PORT (
-		Clock				: IN	STD_LOGIC;
-		Reset				: IN	STD_LOGIC;
-		Strobe			: IN	STD_LOGIC;
-		C_In				: IN	STD_LOGIC_VECTOR(RADIX - 1 DOWNTO 0);
-		C_Out				: OUT	STD_LOGIC_VECTOR(RADIX - 1 DOWNTO 0);
-		BCD					: OUT T_BCD_VECTOR(RADIX - 1 DOWNTO 0)
+	port (
+		Clock				: in	std_logic;
+		Reset				: in	std_logic;
+		Strobe			: in	std_logic;
+		C_In				: in	std_logic_vector(RADIX - 1 downto 0);
+		C_Out				: out	std_logic_vector(RADIX - 1 downto 0);
+		BCD					: out T_BCD_VECTOR(RADIX - 1 downto 0)
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF BCDDigit IS
-	TYPE T_BCDSUM		IS ARRAY (NATURAL RANGE <>)		OF UNSIGNED(3 DOWNTO 0);
+architecture rtl of BCDDigit is
+	type T_BCDSUM		is array (natural range <>)		of unsigned(3 downto 0);
 
-BEGIN
-	PROCESS(Clock)
-		VARIABLE BCDSum			: T_BCDSUM(RADIX - 1 DOWNTO 0)				:= (OTHERS => (OTHERS => '0'));
-		VARIABLE Carray			: STD_LOGIC_VECTOR(RADIX DOWNTO 0);
+begin
+	process(Clock)
+		variable BCDSum			: T_BCDSUM(RADIX - 1 downto 0)				:= (others => (others => '0'));
+		variable Carray			: std_logic_vector(RADIX downto 0);
 
-	BEGIN
-		IF rising_edge(Clock) THEN
-			IF Reset = '1' THEN
-			 BCDSum								:= (OTHERS => (OTHERS => '0'));
-			ELSE
-				IF Strobe = '1' THEN
-					FOR I IN RADIX - 1 DOWNTO 0 LOOP
+	begin
+		if rising_edge(Clock) then
+			if Reset = '1' then
+			 BCDSum								:= (others => (others => '0'));
+			else
+				if Strobe = '1' then
+					for i in RADIX - 1 downto 0 loop
 
 						Carray(0)				:= C_In(I);
-						FOR J IN 0 TO RADIX - 1 LOOP
+						for j in 0 to RADIX - 1 loop
 							BCDSum(J)			:= Bin2BCD(Carray(J), BCDSum(J));
 							Carray(J + 1) := ite((BCDSum(J) > 4), '1', '0');
-						END LOOP;
+						end loop;
 
 						C_Out(I)				<= Carray(RADIX);
-					END LOOP;
+					end loop;
 
-					FOR I IN 0 TO RADIX - 1 LOOP
+					for i in 0 to RADIX - 1 loop
 						BCD(I)					<= T_BCD'(BCDSum(I));
-					END LOOP;
-				END IF;
-			END IF;
-		END IF;
-	END PROCESS;
-END;
+					end loop;
+				end if;
+			end if;
+		end if;
+	end process;
+end;

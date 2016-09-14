@@ -3,11 +3,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library PoC;
-USE		PoC.config.ALL;
-USE		PoC.sata.ALL;
-USE		PoC.utils.ALL;
-USE		PoC.vectors.ALL;
-USE		PoC.strings.ALL;
+use		PoC.config.all;
+use		PoC.sata.all;
+use		PoC.utils.all;
+use		PoC.vectors.all;
+use		PoC.strings.all;
 
 entity sata_oob_tx is port (
 		clk			: in std_logic;

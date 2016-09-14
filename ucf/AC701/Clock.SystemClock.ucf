@@ -1,0 +1,30 @@
+## =============================================================================================================================================================
+## Xilinx User Constraint File (UCF)
+## =============================================================================================================================================================
+##	Board:					Xilinx - Artix-7 AC701
+##	FPGA:						Xilinx Artix-7
+##		Device:				XC7A200T
+##		Package:			FBG676
+##		Speedgrade:		-2
+##
+##	Notes:
+##		AC701: VCCO_VADJ is defaulted to 2.5V (choices: 1.8V, 2.5V, 3.3V)
+##
+## =============================================================================================================================================================
+## Clock Sources
+## =============================================================================================================================================================
+##
+## System Clock
+## -----------------------------------------------------------------------------
+##		Bank:						34
+##			VCCO:					2.5V (FPGA_2V5)
+##		Location:				U51 (SIT9102)
+##			Vendor:				SiTime
+##			Device:				SIT9102AI-243N25E200.0000 - 1 to 220 MHz High Performance Oscillator
+##			Frequency:		200 MHz, 50ppm
+NET "AC701_SystemClock_200MHz_p"				LOC = "R3";						## {IN}		U6.4
+NET "AC701_SystemClock_200MHz_n"				LOC = "P3";						## {IN}		U6.5
+NET "AC701_SystemClock_200MHz_?"				IOSTANDARD = LVDS_25;
+NET "AC701_SystemClock_200MHz_p"				TNM_NET = "PIN_SystemClock_200MHz";
+
+TIMESPEC "TS_SystemClock"	= PERIOD "PIN_SystemClock_200MHz"		200 MHz	HIGH 50 %;

@@ -1,14 +1,13 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					IDENTIFY DEVICE Response Handler
+-- Entity:					IDENTIFY DEVICE Response Handler
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Extracts drive configuration from repsonse to ATA IDENTIFY command. For
 -- example, delivers information about drive size and capability flags.
 --
@@ -45,30 +44,31 @@ use			PoC.sata.all;
 
 entity sata_ATA_IdentifyDeviceFilter is
 	generic (
-		DEBUG												: BOOLEAN						:= FALSE
+		DEBUG												: boolean						:= FALSE
 	);
 	port (
-		Clock												: in	STD_LOGIC;
-		Reset												: in	STD_LOGIC;
+		Clock												: in	std_logic;
+		Reset												: in	std_logic;
 
-		Enable											: in	STD_LOGIC;
-		Error												: out	STD_LOGIC;
-		Finished										: out	STD_LOGIC;
+		Enable											: in	std_logic;
+		Error												: out	std_logic;
+		Finished										: out	std_logic;
 
-		Valid												: in	STD_LOGIC;
+		Valid												: in	std_logic;
 		Data												: in	T_SLV_32;
-		SOT													: in	STD_LOGIC;
-		EOT													: in	STD_LOGIC;
+		SOT													: in	std_logic;
+		EOT													: in	std_logic;
 
 		DriveInformation						: out	T_SATA_DRIVE_INFORMATION;
 
 		IDF_Bus											: out	T_SATA_IDF_BUS
 	);
-end;
+end entity;
+
 
 architecture rtl of sata_ATA_IdentifyDeviceFilter is
-	attribute KEEP									: BOOLEAN;
-	attribute FSM_ENCODING					: STRING;
+	attribute KEEP									: boolean;
+	attribute FSM_ENCODING					: string;
 
 	type T_STATE is (
 		ST_IDLE,
@@ -78,7 +78,7 @@ architecture rtl of sata_ATA_IdentifyDeviceFilter is
 		ST_ERROR
 	);
 
-	function calcSATAGenerationMin(SpeedBits : STD_LOGIC_VECTOR(6 downto 0)) return T_SATA_GENERATION is
+	function calcSATAGenerationMin(SpeedBits : std_logic_vector(6 downto 0)) return T_SATA_GENERATION is
 	begin
 		if (SpeedBits(0) = '1') then			return SATA_GENERATION_1;
 		elsif (SpeedBits(1) = '1') then		return SATA_GENERATION_2;
@@ -87,7 +87,7 @@ architecture rtl of sata_ATA_IdentifyDeviceFilter is
 		end if;
 	end;
 
-	function calcSATAGenerationMax(SpeedBits : STD_LOGIC_VECTOR(6 downto 0)) return T_SATA_GENERATION is
+	function calcSATAGenerationMax(SpeedBits : std_logic_vector(6 downto 0)) return T_SATA_GENERATION is
 	begin
 		if (SpeedBits(2) = '1') then			return SATA_GENERATION_3;
 		elsif (SpeedBits(1) = '1') then		return SATA_GENERATION_2;
@@ -96,56 +96,56 @@ architecture rtl of sata_ATA_IdentifyDeviceFilter is
 		end if;
 	end;
 
-	constant WORDAC_BITS															: POSITIVE								:= log2ceilnz(128);			-- 512 Byte legacy block size => 128 * 32-bit words
+	constant WORDAC_BITS															: positive								:= log2ceilnz(128);			-- 512 Byte legacy block size => 128 * 32-bit words
 
 	signal State																			: T_STATE									:= ST_IDLE;
 	signal NextState																	: T_STATE;
-	attribute FSM_ENCODING	OF State									: signal is getFSMEncoding_gray(DEBUG);
+	attribute FSM_ENCODING	of State									: signal is getFSMEncoding_gray(DEBUG);
 
-	signal WordAC_inc																	: STD_LOGIC;
-	signal WordAC_rst																: STD_LOGIC;
-	signal WordAC_Address_us													: UNSIGNED(WORDAC_BITS - 1 downto 0);
-	signal WordAC_Finished														: STD_LOGIC;
+	signal WordAC_inc																	: std_logic;
+	signal WordAC_rst																: std_logic;
+	signal WordAC_Address_us													: unsigned(WORDAC_BITS - 1 downto 0);
+	signal WordAC_Finished														: std_logic;
 
-	signal ATAWord_117_IsValid_r											: STD_LOGIC								:= '0';
+	signal ATAWord_117_IsValid_r											: std_logic								:= '0';
 
-	signal ATACapability_SupportsDMA									: STD_LOGIC								:= '0';
-	signal ATACapability_SupportsLBA									: STD_LOGIC								:= '0';
-	signal ATACapability_Supports48BitLBA							: STD_LOGIC								:= '0';
-	signal ATACapability_SupportsSMART								: STD_LOGIC								:= '0';
-	signal ATACapability_SupportsFLUSH_CACHE					: STD_LOGIC								:= '0';
-	signal ATACapability_SupportsFLUSH_CACHE_EXT			: STD_LOGIC								:= '0';
+	signal ATACapability_SupportsDMA									: std_logic								:= '0';
+	signal ATACapability_SupportsLBA									: std_logic								:= '0';
+	signal ATACapability_Supports48BitLBA							: std_logic								:= '0';
+	signal ATACapability_SupportsSMART								: std_logic								:= '0';
+	signal ATACapability_SupportsFLUSH_CACHE					: std_logic								:= '0';
+	signal ATACapability_SupportsFLUSH_CACHE_EXT			: std_logic								:= '0';
 
-	signal SATACapability_SupportsNCQ									: STD_LOGIC								:= '0';
+	signal SATACapability_SupportsNCQ									: std_logic								:= '0';
 	signal SATAGenerationMin													: T_SATA_GENERATION				:= SATA_GENERATION_1;
 	signal SATAGenerationMax													: T_SATA_GENERATION				:= SATA_GENERATION_1;
 
-	signal DriveName																	: T_RAWSTRING(0 TO 39)		:= (others => x"00");
-	signal DriveSize_LB																: UNSIGNED(63 downto 0)		:= (others => '0');
-	signal PhysicalBlockSize_ldB											: UNSIGNED(7 downto 0)		:= (others => '0');
-	signal LogicalBlockSize_ldB												: UNSIGNED(7 downto 0)		:= (others => '0');
+	signal DriveName																	: T_RAWSTRING(0 to 39)		:= (others => x"00");
+	signal DriveSize_LB																: unsigned(63 downto 0)		:= (others => '0');
+	signal PhysicalBlockSize_ldB											: unsigned(7 downto 0)		:= (others => '0');
+	signal LogicalBlockSize_ldB												: unsigned(7 downto 0)		:= (others => '0');
 
-	signal MultipleLogicalBlocksPerPhysicalBlock			: STD_LOGIC								:= '0';
-	signal LogicalBlocksPerPhysicalBlock_us						: UNSIGNED(3 downto 0)		:= (others => '0');
+	signal MultipleLogicalBlocksPerPhysicalBlock			: std_logic								:= '0';
+	signal LogicalBlocksPerPhysicalBlock_us						: unsigned(3 downto 0)		:= (others => '0');
 
 	signal ATACapabilities_i													: T_SATA_ATA_CAPABILITY;
 	signal SATACapabilities_i													: T_SATA_SATA_CAPABILITY;
 	signal DriveInformation_i													: T_SATA_DRIVE_INFORMATION;
 
-	signal DriveName_en																: STD_LOGIC;
+	signal DriveName_en																: std_logic;
 	signal DriveName_d																: T_SLV_16								:= (others => '0');
-	signal IDF_Valid_r																: STD_LOGIC								:= '0';
-	signal IDF_Address																: STD_LOGIC_VECTOR(IDF_Bus.Address'range);
-	signal IDF_WriteEnable														: STD_LOGIC;
+	signal IDF_Valid_r																: std_logic								:= '0';
+	signal IDF_Address																: std_logic_vector(IDF_Bus.Address'range);
+	signal IDF_WriteEnable														: std_logic;
 	signal IDF_Data																		: T_SLV_32;
 
-	signal Commit																			: STD_LOGIC;
-	signal ChecksumOK																	: STD_LOGIC;
+	signal Commit																			: std_logic;
+	signal ChecksumOK																	: std_logic;
 
 begin
 	process(Clock)
 	begin
-		IF rising_edge(Clock) then
+		if rising_edge(Clock) then
 			if (Reset = '1') then
 				State			<= ST_IDLE;
 			else
@@ -218,7 +218,7 @@ begin
 	end process;
 
 	blkWordAC : block
-		signal Counter_us	: UNSIGNED(WORDAC_BITS - 1 downto 0)					:= (others => '0');
+		signal Counter_us	: unsigned(WORDAC_BITS - 1 downto 0)					:= (others => '0');
 	begin
 		Counter_us				<= upcounter_next(cnt => Counter_us, rst => WordAC_rst, en => WordAC_inc) when rising_edge(Clock);
 		WordAC_Address_us	<= Counter_us;
@@ -228,14 +228,14 @@ begin
 
 	-- checksum calculation
 	cs : block
-		signal byte0_us			: UNSIGNED(7 downto 0);
-		signal byte1_us			: UNSIGNED(15 downto 8);
-		signal byte2_us			: UNSIGNED(23 downto 16);
-		signal byte3_us			: UNSIGNED(31 downto 24);
+		signal byte0_us			: unsigned(7 downto 0);
+		signal byte1_us			: unsigned(15 downto 8);
+		signal byte2_us			: unsigned(23 downto 16);
+		signal byte3_us			: unsigned(31 downto 24);
 
-		signal Checksum_nx1	: UNSIGNED(7 downto 0);
-		signal Checksum_nx2	: UNSIGNED(7 downto 0);
-		signal Checksum_us	: UNSIGNED(7 downto 0)					:= (others => '0');
+		signal Checksum_nx1	: unsigned(7 downto 0);
+		signal Checksum_nx2	: unsigned(7 downto 0);
+		signal Checksum_us	: unsigned(7 downto 0)					:= (others => '0');
 	begin
 		byte0_us		<= unsigned(Data(byte0_us'range));
 		byte1_us		<= unsigned(Data(byte1_us'range));
@@ -247,7 +247,7 @@ begin
 
 		process(Clock)
 		begin
-			IF rising_edge(Clock) then
+			if rising_edge(Clock) then
 				if (SOT = '1') then
 					Checksum_us		<= Checksum_nx1;
 				elsif (Valid = '1') then
@@ -265,7 +265,7 @@ begin
 	-- one ATA word has 16 Bits
 	process(Clock)
 	begin
-		IF rising_edge(Clock) then
+		if rising_edge(Clock) then
 			if (Reset = '1') then
 				ATAWord_117_IsValid_r							<= '0';
 			elsif (Valid = '1') then

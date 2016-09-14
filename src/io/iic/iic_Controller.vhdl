@@ -1,21 +1,20 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:					Patrick Lehmann
 --
--- Module:					I2C Controller
+-- Entity:					I2C Controller
 --
 -- Description:
--- ------------------------------------
---		The I2C Controller transmitts words over the I2C bus (SerialClock - SCL,
---		SerialData - SDA) and also receives them. This controller utilizes the
---		I2C BusController to send/receive bits over the I2C bus. This controller
---		is compatible to the System Management Bus (SMBus).
+-- -------------------------------------
+-- The I2C Controller transmitts words over the I2C bus (SerialClock - SCL,
+-- SerialData - SDA) and also receives them. This controller utilizes the
+-- I2C BusController to send/receive bits over the I2C bus. This controller
+-- is compatible to the System Management Bus (SMBus).
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -30,7 +29,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -47,65 +46,65 @@ use			PoC.iic.all;
 
 entity iic_Controller is
 	generic (
-		DEBUG													: BOOLEAN												:= FALSE;
+		DEBUG													: boolean												:= FALSE;
 		CLOCK_FREQ										: FREQ													:= 100 MHz;
 		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;
-		IIC_ADDRESS										: STD_LOGIC_VECTOR							:= (7 downto 1 => '0') & '-';
-		ADDRESS_BITS									: POSITIVE											:= 7;
-		DATA_BITS											: POSITIVE											:= 8;
-		ALLOW_MEALY_TRANSITION				: BOOLEAN												:= TRUE
+		IIC_ADDRESS										: std_logic_vector							:= (7 downto 1 => '0') & '-';
+		ADDRESS_BITS									: positive											:= 7;
+		DATA_BITS											: positive											:= 8;
+		ALLOW_MEALY_TRANSITION				: boolean												:= TRUE
 	);
 	port (
-		Clock													: in	STD_LOGIC;
-		Reset													: in	STD_LOGIC;
+		Clock													: in	std_logic;
+		Reset													: in	std_logic;
 
 		-- IICController master interface
-		Master_Request								: in	STD_LOGIC;
-		Master_Grant									: out	STD_LOGIC;
+		Master_Request								: in	std_logic;
+		Master_Grant									: out	std_logic;
 		Master_Command								: in	T_IO_IIC_COMMAND;
 		Master_Status									: out	T_IO_IIC_STATUS;
 		Master_Error									: out	T_IO_IIC_ERROR;
 
-		Master_Address								: in	STD_LOGIC_VECTOR(ADDRESS_BITS - 1 downto 0);
+		Master_Address								: in	std_logic_vector(ADDRESS_BITS - 1 downto 0);
 
-		Master_WP_Valid								: in	STD_LOGIC;
-		Master_WP_Data								: in	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
-		Master_WP_Last								: in	STD_LOGIC;
-		Master_WP_Ack									: out	STD_LOGIC;
-		Master_RP_Valid								: out	STD_LOGIC;
-		Master_RP_Data								: out	STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
-		Master_RP_Last								: out	STD_LOGIC;
-		Master_RP_Ack									: in	STD_LOGIC;
+		Master_WP_Valid								: in	std_logic;
+		Master_WP_Data								: in	std_logic_vector(DATA_BITS - 1 downto 0);
+		Master_WP_Last								: in	std_logic;
+		Master_WP_Ack									: out	std_logic;
+		Master_RP_Valid								: out	std_logic;
+		Master_RP_Data								: out	std_logic_vector(DATA_BITS - 1 downto 0);
+		Master_RP_Last								: out	std_logic;
+		Master_RP_Ack									: in	std_logic;
 
 		-- tristate interface
-		SerialClock_i									: in	STD_LOGIC;
-		SerialClock_o									: out	STD_LOGIC;
-		SerialClock_t									: out	STD_LOGIC;
-		SerialData_i									: in	STD_LOGIC;
-		SerialData_o									: out	STD_LOGIC;
-		SerialData_t									: out	STD_LOGIC
+		SerialClock_i									: in	std_logic;
+		SerialClock_o									: out	std_logic;
+		SerialClock_t									: out	std_logic;
+		SerialData_i									: in	std_logic;
+		SerialData_o									: out	std_logic;
+		SerialData_t									: out	std_logic
 	);
 end entity;
 
 
 architecture rtl of iic_Controller is
-	attribute KEEP									: BOOLEAN;
-	attribute FSM_ENCODING					: STRING;
-	attribute ENUM_ENCODING					: STRING;
+	attribute KEEP									: boolean;
+	attribute FSM_ENCODING					: string;
+	attribute ENUM_ENCODING					: string;
 
-	constant SMBUS_COMPLIANCE				: BOOLEAN				:= (IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS);
+	constant SMBUS_COMPLIANCE				: boolean				:= IIC_BUSMODE = IO_IIC_BUSMODE_SMBUS;
 
 	-- if-then-else (ite)
-	function ite(cond : BOOLEAN; value1 : T_IO_IIC_STATUS; value2 : T_IO_IIC_STATUS) return T_IO_IIC_STATUS is
+	function ite(cond : boolean; value1 : T_IO_IIC_STATUS; value2 : T_IO_IIC_STATUS) return T_IO_IIC_STATUS is
 	begin
-		if (cond = TRUE) then
+		if cond then
 			return value1;
 		else
 			return value2;
 		end if;
 	end;
 
-	function to_IICBus_Command(value : STD_LOGIC) return T_IO_IICBUS_COMMAND is
+	function to_IICBus_Command(value : std_logic) return T_IO_IICBUS_COMMAND is
 	begin
 		case value is
 			when '0' =>			return IO_IICBUS_CMD_SEND_LOW;
@@ -153,34 +152,34 @@ architecture rtl of iic_Controller is
 	signal Status_i											: T_IO_IIC_STATUS;
 	signal Error_i											: T_IO_IIC_ERROR;
 
-	signal Command_en										: STD_LOGIC;
+	signal Command_en										: std_logic;
 	signal Command_d										: T_IO_IIC_COMMAND								:= IO_IIC_CMD_NONE;
 
-	signal IICBC_Request								: STD_LOGIC;
-	signal IICBC_Grant									: STD_LOGIC;
+	signal IICBC_Request								: std_logic;
+	signal IICBC_Grant									: std_logic;
 	signal IICBC_Command								: T_IO_IICBUS_COMMAND;
 	signal IICBC_Status									: T_IO_IICBUS_STATUS;
 
-	signal BitCounter_rst								: STD_LOGIC;
-	signal BitCounter_en								: STD_LOGIC;
-	signal BitCounter_us								: UNSIGNED(3 downto 0)						:= (others => '0');
+	signal BitCounter_rst								: std_logic;
+	signal BitCounter_en								: std_logic;
+	signal BitCounter_us								: unsigned(3 downto 0)						:= (others => '0');
 
-	signal RegOperation_en							: STD_LOGIC;
-	signal RegOperation_d								: STD_LOGIC												:= '0';
+	signal RegOperation_en							: std_logic;
+	signal RegOperation_d								: std_logic												:= '0';
 
-	signal Device_Address_en						: STD_LOGIC;
-	signal Device_Address_sh						: STD_LOGIC;
-	signal Device_Address_d							: STD_LOGIC_VECTOR(6 downto 0)		:= (others => '0');
+	signal Device_Address_en						: std_logic;
+	signal Device_Address_sh						: std_logic;
+	signal Device_Address_d							: std_logic_vector(6 downto 0)		:= (others => '0');
 
-	signal DataRegister_en							: STD_LOGIC;
-	signal DataRegister_sh							: STD_LOGIC;
+	signal DataRegister_en							: std_logic;
+	signal DataRegister_sh							: std_logic;
 	signal DataRegister_d								: T_SLV_8													:= (others => '0');
 
-	signal LastRegister_en							: STD_LOGIC;
-	signal LastRegister_d								: STD_LOGIC												:= '0';
+	signal LastRegister_en							: std_logic;
+	signal LastRegister_d								: std_logic												:= '0';
 
-	signal SerialClock_t_i							: STD_LOGIC;
-	signal SerialData_t_i								: STD_LOGIC;
+	signal SerialClock_t_i							: std_logic;
+	signal SerialData_t_i								: std_logic;
 
 begin
 
@@ -469,7 +468,7 @@ begin
 							when others =>																	NextState			<= ST_ERROR;
 						end case;
 					when IO_IICBUS_STATUS_RECEIVED_HIGH =>							-- NACK
-						if (SMBUS_COMPLIANCE = TRUE) then
+						if SMBUS_COMPLIANCE then
 																															NextState			<= ST_ACK_ERROR;			-- TODO: send stop
 						else
 							case Command_d is
@@ -804,7 +803,7 @@ begin
 							when others =>																	NextState			<= ST_ERROR;
 						end case;
 					when IO_IICBUS_STATUS_RECEIVED_HIGH =>							-- NACK
-						if (SMBUS_COMPLIANCE = TRUE) then
+						if SMBUS_COMPLIANCE then
 																															NextState			<= ST_ACK_ERROR;			-- TODO: send stop
 						else
 							case Command_d is
@@ -1003,7 +1002,7 @@ begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Reset OR BitCounter_rst) = '1') then
+			if ((Reset or BitCounter_rst) = '1') then
 				BitCounter_us						<= (others => '0');
 			elsif (BitCounter_en	= '1') then
 				BitCounter_us					<= BitCounter_us + 1;
@@ -1012,7 +1011,7 @@ begin
 	end process;
 
 	process(Clock, IICBC_Status)
-		variable DataRegister_si		: STD_LOGIC;
+		variable DataRegister_si		: std_logic;
 	begin
 		case IICBC_Status is
 			when IO_IICBUS_STATUS_RECEIVED_LOW =>			DataRegister_si	:= '0';
@@ -1047,7 +1046,7 @@ begin
 				end if;
 			end if;
 		end if;
-	end PROCESS;
+	end process;
 
 	Master_Status		<= Status_i;
 	Master_Error		<= Error_i;
@@ -1081,16 +1080,16 @@ begin
 	SerialClock_t		<= SerialClock_t_i;
 	SerialData_t		<= SerialData_t_i;
 
-	genDBG : if (DEBUG = TRUE) generate
+	genDBG : if DEBUG generate
 		-- Configuration
-		constant DBG_TRIGGER_DELAY		: POSITIVE		:= 4;
-		constant DBG_TRIGGER_WINDOWS	: POSITIVE		:= 6;
+		constant DBG_TRIGGER_DELAY		: positive		:= 4;
+		constant DBG_TRIGGER_WINDOWS	: positive		:= 6;
 
 --		constant STATES		: POSITIVE		:= T_STATE'pos(ST_ERROR) + 1;
 --		constant BITS			: POSITIVE		:= log2ceilnz(STATES);
-		constant BITS			: POSITIVE		:= log2ceil(T_STATE'pos(T_STATE'high));
+		constant BITS			: positive		:= log2ceil(T_STATE'pos(T_STATE'high));
 
-		function to_slv(State : T_STATE) return STD_LOGIC_VECTOR is
+		function to_slv(State : T_STATE) return std_logic_vector is
 		begin
 			return to_slv(T_STATE'pos(State), BITS);
 		end function;
@@ -1099,16 +1098,16 @@ begin
 		type T_DBG_CHIPSCOPE is record
 			Command						: T_IO_IIC_COMMAND;
 			Status						: T_IO_IIC_STATUS;
-			Device_Address		: STD_LOGIC_VECTOR(6 downto 0);
+			Device_Address		: std_logic_vector(6 downto 0);
 			DataIn						: T_SLV_8;
 			DataOut						: T_SLV_8;
-			State							: STD_LOGIC_VECTOR(BITS - 1 downto 0);
+			State							: std_logic_vector(BITS - 1 downto 0);
 			IICBC_Command			: T_IO_IICBUS_COMMAND;
 			IICBC_Status			: T_IO_IICBUS_STATUS;
-			Clock_i						: STD_LOGIC;
-			Clock_t						: STD_LOGIC;
-			Data_i						: STD_LOGIC;
-			Data_t						: STD_LOGIC;
+			Clock_i						: std_logic;
+			Clock_t						: std_logic;
+			Data_i						: std_logic;
+			Data_t						: std_logic;
 		end record;
 
 		type T_DBG_CHIPSCOPE_VECTOR	is array(natural range <>) of T_DBG_CHIPSCOPE;
@@ -1116,30 +1115,30 @@ begin
 		signal DBG_DebugVector_d		: T_DBG_CHIPSCOPE_VECTOR(DBG_TRIGGER_DELAY downto 0);
 
 		-- edge detection FFs
-		signal SerialClock_t_d			: STD_LOGIC																					:= '0';
-		signal SerialData_t_d				: STD_LOGIC																					:= '0';
+		signal SerialClock_t_d			: std_logic																					:= '0';
+		signal SerialData_t_d				: std_logic																					:= '0';
 
 		-- trigger delay FFs / trigger valid-window FF
-		signal Trigger_d						: STD_LOGIC_VECTOR(DBG_TRIGGER_WINDOWS downto 0)		:= (others => '0');
-		signal Valid_r							: STD_LOGIC																					:= '0';
+		signal Trigger_d						: std_logic_vector(DBG_TRIGGER_WINDOWS downto 0)		:= (others => '0');
+		signal Valid_r							: std_logic																					:= '0';
 
 		-- ChipScope trigger signals
-		signal DBG_Trigger					: STD_LOGIC;
-		signal DBG_Valid						: STD_LOGIC;
+		signal DBG_Trigger					: std_logic;
+		signal DBG_Valid						: std_logic;
 
 		-- ChipScope data signals
 		signal DBG_Command					: T_IO_IIC_COMMAND;
 		signal DBG_Status						: T_IO_IIC_STATUS;
-		signal DBG_Device_Address		: STD_LOGIC_VECTOR(ADDRESS_BITS - 1 downto 0);
+		signal DBG_Device_Address		: std_logic_vector(ADDRESS_BITS - 1 downto 0);
 		signal DBG_DataIn						: T_SLV_8;
 		signal DBG_DataOut					: T_SLV_8;
-		signal DBG_State						: STD_LOGIC_VECTOR(BITS - 1 downto 0);
+		signal DBG_State						: std_logic_vector(BITS - 1 downto 0);
 		signal DBG_IICBC_Command		: T_IO_IICBUS_COMMAND;
 		signal DBG_IICBC_Status			: T_IO_IICBUS_STATUS;
-		signal DBG_Clock_i					: STD_LOGIC;
-		signal DBG_Clock_t					: STD_LOGIC;
-		signal DBG_Data_i						: STD_LOGIC;
-		signal DBG_Data_t						: STD_LOGIC;
+		signal DBG_Clock_i					: std_logic;
+		signal DBG_Clock_t					: std_logic;
+		signal DBG_Data_i						: std_logic;
+		signal DBG_Data_t						: std_logic;
 
 --		constant DBG_temp						: STD_LOGIC_VECTOR		:= to_slv(ST_SEND_REGisTER_ADDRESS_WAIT);
 
@@ -1194,15 +1193,15 @@ begin
 		SerialData_t_d				<= SerialData_t_i			when rising_edge(Clock);
 
 		-- trigger on all edges and on all signal lines
-		Trigger_d(0)					<= (SerialClock_t_i XOR SerialClock_t_d) OR
-														 (SerialData_t_i	XOR SerialData_t_d);
+		Trigger_d(0)					<= (SerialClock_t_i xor SerialClock_t_d) or
+														 (SerialData_t_i	xor SerialData_t_d);
 
 		genTriggerDelay : for i in 0 to Trigger_d'high - 1 generate
 			Trigger_d(i + 1)		<= Trigger_d(i) when rising_edge(Clock);
 		end generate;
 
 		DBG_Trigger						<= Trigger_d(DBG_TRIGGER_DELAY);
-		DBG_Valid							<= Trigger_d(0) OR Valid_r;
+		DBG_Valid							<= Trigger_d(0) or Valid_r;
 
 		--											RS-FF:	Q					RST						SET								CLOCK
 		Valid_r								<= ffrs(Valid_r, DBG_Trigger, Trigger_d(0)) when rising_edge(Clock);

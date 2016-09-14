@@ -1,0 +1,11 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Generic hook executor
+run-hook.sh
+
+# Hook subtasks
+pre-commit.d/

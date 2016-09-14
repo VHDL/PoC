@@ -37,24 +37,24 @@ use			PoC.sync.all;
 entity sync_Bits_test is
 
   generic (
-    BITS : POSITIVE	    := 1;
-    INIT : STD_LOGIC_VECTOR := "0");
+    BITS : positive	    := 1;
+    INIT : std_logic_vector := "0");
 
   port (
-    Clock1 : in	 STD_LOGIC;
-    Clock2 : in	 STD_LOGIC;
-    Input  : in	 STD_LOGIC_VECTOR(BITS - 1 downto 0);
-    Output : out STD_LOGIC_VECTOR(BITS - 1 downto 0));
+    Clock1 : in	 std_logic;
+    Clock2 : in	 std_logic;
+    Input  : in	 std_logic_vector(BITS - 1 downto 0);
+    Output : out std_logic_vector(BITS - 1 downto 0));
 
 end entity sync_Bits_test;
 
 architecture rtl of sync_Bits_test is
-	signal Input_r1  : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Input_r2  : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Input_r3  : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Output_r1 : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Output_r2 : STD_LOGIC_VECTOR(BITS - 1 downto 0);
-	signal Output_r3 : STD_LOGIC_VECTOR(BITS - 1 downto 0);
+	signal Input_r1  : std_logic_vector(BITS - 1 downto 0);
+	signal Input_r2  : std_logic_vector(BITS - 1 downto 0);
+	signal Input_r3  : std_logic_vector(BITS - 1 downto 0);
+	signal Output_r1 : std_logic_vector(BITS - 1 downto 0);
+	signal Output_r2 : std_logic_vector(BITS - 1 downto 0);
+	signal Output_r3 : std_logic_vector(BITS - 1 downto 0);
 begin  -- architecture rtl
 
 	Input_r1 <= Input    when rising_edge(Clock1);

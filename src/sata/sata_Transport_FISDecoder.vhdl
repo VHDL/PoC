@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					FIS Decoder for SATA Transport Layer
+-- Entity:					FIS Decoder for SATA Transport Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- See notes on module 'sata_TransportLayer'.
 --
 -- License:
@@ -46,50 +45,50 @@ use			PoC.satadbg.all;
 
 entity sata_FISDecoder is
 	generic (
-		DEBUG													: BOOLEAN						:= FALSE;
-		ENABLE_DEBUGPORT							: BOOLEAN						:= FALSE
+		DEBUG													: boolean						:= FALSE;
+		ENABLE_DEBUGPORT							: boolean						:= FALSE
 	);
 	port (
-		Clock													: in	STD_LOGIC;
-		Reset													: in	STD_LOGIC;
+		Clock													: in	std_logic;
+		Reset													: in	std_logic;
 
 		Status												: out	T_SATA_FISDECODER_STATUS;
 		FISType												: out T_SATA_FISTYPE;
-		UpdateATARegisters						: out	STD_LOGIC;
+		UpdateATARegisters						: out	std_logic;
 		ATADeviceRegisters						: out	T_SATA_ATA_DEVICE_REGISTERS;
 
 		-- debugPort
 		DebugPortOut									: out	T_SATADBG_TRANS_FISD_OUT;
 
 		-- TransportLayer RX_ interface
-		RX_Valid											: out	STD_LOGIC;
+		RX_Valid											: out	std_logic;
 		RX_Data												: out	T_SLV_32;
-		RX_SOP												: out	STD_LOGIC;
-		RX_EOP												: out	STD_LOGIC;
-		RX_Ack												: in	STD_LOGIC;
+		RX_SOP												: out	std_logic;
+		RX_EOP												: out	std_logic;
+		RX_Ack												: in	std_logic;
 
 		-- LinkLayer CSE
 		Link_Status										: in	T_SATA_LINK_STATUS;
 
 		-- LinkLayer FIFO interface
-		Link_RX_Ack										: out	STD_LOGIC;
+		Link_RX_Ack										: out	std_logic;
 		Link_RX_Data									: in	T_SLV_32;
-		Link_RX_SOF										: in	STD_LOGIC;
-		Link_RX_EOF										: in	STD_LOGIC;
-		Link_RX_Valid									: in	STD_LOGIC;
+		Link_RX_SOF										: in	std_logic;
+		Link_RX_EOF										: in	std_logic;
+		Link_RX_Valid									: in	std_logic;
 
 		-- LinkLayer FS-FIFO interface
-		Link_RX_FS_Ack								: out	STD_LOGIC;
-		Link_RX_FS_CRCOK							: in	STD_LOGIC;
-		Link_RX_FS_SyncEsc						: in	STD_LOGIC;
-		Link_RX_FS_Valid							: in	STD_LOGIC
+		Link_RX_FS_Ack								: out	std_logic;
+		Link_RX_FS_CRCOK							: in	std_logic;
+		Link_RX_FS_SyncEsc						: in	std_logic;
+		Link_RX_FS_Valid							: in	std_logic
 	);
 end entity;
 
 
 architecture rtl of sata_FISDecoder is
-	attribute KEEP									: BOOLEAN;
-	attribute FSM_ENCODING					: STRING;
+	attribute KEEP									: boolean;
+	attribute FSM_ENCODING					: string;
 
 	type T_STATE is (
 		ST_RESET, ST_IDLE, ST_CHECK_FISTYPE,
@@ -112,7 +111,7 @@ architecture rtl of sata_FISDecoder is
 	alias Alias_LBA16											: T_SLV_8													is Link_RX_Data(15 downto 8);				-- Cylinder Low
 	alias Alias_LBA32											: T_SLV_8													is Link_RX_Data(23 downto 16);			-- Cylinder High
 	alias Alias_Head											: T_SLV_4													is Link_RX_Data(27 downto 24);			-- Head number
-	alias Alias_Device										: STD_LOGIC_VECTOR(0 downto 0)		is Link_RX_Data(28 downto 28);			-- Device number
+	alias Alias_Device										: std_logic_vector(0 downto 0)		is Link_RX_Data(28 downto 28);			-- Device number
 
 	-- Word 2
 	alias Alias_LBA8											: T_SLV_8													is Link_RX_Data(7 downto 0);				-- Sector Number expanded
@@ -144,21 +143,21 @@ architecture rtl of sata_FISDecoder is
 	signal SectorCountRegister						: T_SLV_16												:= (others => '0');
 	signal TransferCountRegister					: T_SLV_16												:= (others => '0');
 
-	signal FISTypeRegister_rst						: STD_LOGIC;
-	signal FISTypeRegister_en							: STD_LOGIC;
-	signal FlagRegister_en								: STD_LOGIC;
-	signal StatusRegister_en							: STD_LOGIC;
-	signal EndStatusRegister_en						: STD_LOGIC;
-	signal ErrorRegister_en								: STD_LOGIC;
-	signal AddressRegister_en0						: STD_LOGIC;
-	signal AddressRegister_en8						: STD_LOGIC;
-	signal AddressRegister_en16						: STD_LOGIC;
-	signal AddressRegister_en24						: STD_LOGIC;
-	signal AddressRegister_en32						: STD_LOGIC;
-	signal AddressRegister_en40						: STD_LOGIC;
-	signal SectorCountRegister_en0				: STD_LOGIC;
-	signal SectorCountRegister_en8				: STD_LOGIC;
-	signal TransferCountRegister_en				: STD_LOGIC;
+	signal FISTypeRegister_rst						: std_logic;
+	signal FISTypeRegister_en							: std_logic;
+	signal FlagRegister_en								: std_logic;
+	signal StatusRegister_en							: std_logic;
+	signal EndStatusRegister_en						: std_logic;
+	signal ErrorRegister_en								: std_logic;
+	signal AddressRegister_en0						: std_logic;
+	signal AddressRegister_en8						: std_logic;
+	signal AddressRegister_en16						: std_logic;
+	signal AddressRegister_en24						: std_logic;
+	signal AddressRegister_en32						: std_logic;
+	signal AddressRegister_en40						: std_logic;
+	signal SectorCountRegister_en0				: std_logic;
+	signal SectorCountRegister_en8				: std_logic;
+	signal TransferCountRegister_en				: std_logic;
 
 begin
 
@@ -493,9 +492,9 @@ begin
 	-- ================================================================
 	-- ATA registers - temporary saved
 	-- ================================================================
-	PROCESS(Clock)
-	BEGIN
-		IF rising_edge(Clock) then
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
 			if (FISTypeRegister_rst = '1') then
 				FISTypeRegister	<= SATA_FISTYPE_UNKNOWN;
 			elsif (FISTypeRegister_en = '1') then
@@ -571,12 +570,12 @@ begin
 	ATADeviceRegisters.Error						<= to_sata_ata_device_register_error(ErrorRegister);
 	ATADeviceRegisters.LBlockAddress		<= AddressRegister;
 	ATADeviceRegisters.SectorCount			<= SectorCountRegister;
-	ATADeviceRegisters.TransferCount		<= TransferCountRegister WHEN (TransferCountRegister_en = '0') else Alias_TransferCount;
+	ATADeviceRegisters.TransferCount		<= TransferCountRegister when (TransferCountRegister_en = '0') else Alias_TransferCount;
 
 	-- debug ports
 	-- ==========================================================================================================================================================
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
-		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+		function dbg_EncodeState(st : T_STATE) return std_logic_vector is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;

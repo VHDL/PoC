@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	TODO
+-- Entity:				 	TODO
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,14 +26,14 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library UNISIM;
-use			UNISIM.VCOMPONENTS.all;
+use			UNISIM.VcomponentS.all;
 
 library PoC;
 use			PoC.config.all;
@@ -45,18 +44,18 @@ use			PoC.net.all;
 
 entity eth_RSLayer_GMII_GMII_Xilinx is
 	port (
-		Reset_async								: in		STD_LOGIC;			-- @async:
+		Reset_async								: in		std_logic;			-- @async:
 
 		-- RS-GMII interface
-		RS_TX_Clock								: in		STD_LOGIC;
-		RS_TX_Valid								: in		STD_LOGIC;
+		RS_TX_Clock								: in		std_logic;
+		RS_TX_Valid								: in		std_logic;
 		RS_TX_Data								: in		T_SLV_8;
-		RS_TX_Error								: in		STD_LOGIC;
+		RS_TX_Error								: in		std_logic;
 
-		RS_RX_Clock								: in		STD_LOGIC;
-		RS_RX_Valid								: out		STD_LOGIC;
+		RS_RX_Clock								: in		std_logic;
+		RS_RX_Valid								: out		std_logic;
 		RS_RX_Data								: out		T_SLV_8;
-		RS_RX_Error								: out		STD_LOGIC;
+		RS_RX_Error								: out		std_logic;
 
 		-- PHY-GMII interface
 		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
@@ -64,18 +63,18 @@ entity eth_RSLayer_GMII_GMII_Xilinx is
 end;
 
 -- Note:
--- ============================================================================================================================================================
+-- =============================================================================
 -- use IDELAY instances on GMII_RX_Clock to move the clock into alignment with the data (GMII_RX_Data[7:0])
 
 architecture rtl of eth_RSLayer_GMII_GMII_Xilinx is
-	attribute KEEP												: BOOLEAN;
+	attribute KEEP												: boolean;
 
-	signal IODelay_RX_Clock								: STD_LOGIC;
-	attribute KEEP OF IODelay_RX_Clock		: signal is TRUE;
+	signal IODelay_RX_Clock								: std_logic;
+	attribute KEEP of IODelay_RX_Clock		: signal is TRUE;
 
 	signal IDelay_Data										: T_SLV_8;
-	signal IDelay_Valid										: STD_LOGIC;
-	signal IDelay_Error										: STD_LOGIC;
+	signal IDelay_Valid										: std_logic;
+	signal IDelay_Error										: std_logic;
 begin
 	-- Transmitter Clock
 	-- ==========================================================================================================================================================
@@ -126,7 +125,7 @@ begin
 	-- ==========================================================================================================================================================
 	process(RS_TX_Clock, Reset_async)
   begin
-		if (Reset_async = '1') THEN
+		if (Reset_async = '1') then
 			PHY_Interface.TX_Data				<= (others => '0');
 			PHY_Interface.TX_Valid			<= '0';
 			PHY_Interface.TX_Error			<= '0';
@@ -142,11 +141,11 @@ begin
 	-- Input Logic : Receive RX signals through IDELAYs and IOBs from PHY-GMII interface
 	-- ==========================================================================================================================================================
 	blkIDelay : block
-		constant RX_VALID_BIT		: NATURAL													:= 8;
-		constant RX_ERROR_BIT		: NATURAL													:= 9;
+		constant RX_VALID_BIT		: natural													:= 8;
+		constant RX_ERROR_BIT		: natural													:= 9;
 
-		signal IDelay_DataIn		: STD_LOGIC_VECTOR(9 downto 0);
-		signal IDelay_DataOut		: STD_LOGIC_VECTOR(9 downto 0);
+		signal IDelay_DataIn		: std_logic_vector(9 downto 0);
+		signal IDelay_DataOut		: std_logic_vector(9 downto 0);
 	begin
 		IDelay_DataIn(PHY_Interface.RX_Data'range)	<= PHY_Interface.RX_Data;
 		IDelay_DataIn(RX_VALID_BIT)									<= PHY_Interface.RX_Valid;

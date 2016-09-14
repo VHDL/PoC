@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Module:					OOB Sequencer for SATA Physical Layer - Host Side
+-- Entity:					OOB Sequencer for SATA Physical Layer - Host Side
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Executes the COMRESET / COMINIT procedure.
 --
 -- If the clock is unstable, than Reset must be asserted.
@@ -53,60 +52,60 @@ use			PoC.satadbg.all;
 
 entity sata_Physical_OOBControl_Host is
 	generic (
-		DEBUG											: BOOLEAN														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
-		ENABLE_DEBUGPORT					: BOOLEAN														:= FALSE;												-- enables the assignment of signals to the debugport
-		ALLOW_STANDARD_VIOLATION	: BOOLEAN														:= FALSE;
-		OOB_TIMEOUT								: TIME															:= TIME'low
+		DEBUG											: boolean														:= FALSE;												-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: boolean														:= FALSE;												-- enables the assignment of signals to the debugport
+		ALLOW_STANDARD_VIOLATION	: boolean														:= FALSE;
+		OOB_TIMEOUT								: time															:= time'low
 	);
 	port (
-		Clock											: in	STD_LOGIC;
-		Reset											: in	STD_LOGIC;
+		Clock											: in	std_logic;
+		Reset											: in	std_logic;
 		-- debug ports
 		DebugPortOut							: out	T_SATADBG_PHYSICAL_OOBCONTROL_OUT;
 
-		Timeout										: out	STD_LOGIC;
+		Timeout										: out	std_logic;
 		SATAGeneration						: in	T_SATA_GENERATION;
-		DeviceDetected 						: out STD_LOGIC;
-		LinkOK										: out	STD_LOGIC;
-		LinkDead									: out	STD_LOGIC;
+		DeviceDetected 						: out std_logic;
+		LinkOK										: out	std_logic;
+		LinkDead									: out	std_logic;
 
 		OOB_TX_Command						: out	T_SATA_OOB;
-		OOB_TX_Complete						: in	STD_LOGIC;
+		OOB_TX_Complete						: in	std_logic;
 		OOB_RX_Received						: in	T_SATA_OOB;
-		OOB_HandshakeComplete			:	OUT	STD_LOGIC; 	-- MUST BE driven by register
-		OOB_AlignDetected    			:	OUT	STD_LOGIC;
+		OOB_HandshakeComplete			:	out	std_logic; 	-- MUST BE driven by register
+		OOB_AlignDetected    			:	out	std_logic;
 
 		TX_Primitive							: out	T_SATA_PRIMITIVE;
 		RX_Primitive							: in	T_SATA_PRIMITIVE;
-		RX_Valid									: in	STD_LOGIC
+		RX_Valid									: in	std_logic
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_Physical_OOBControl_Host is
-	attribute KEEP												: BOOLEAN;
-	attribute FSM_ENCODING								: STRING;
+	attribute KEEP												: boolean;
+	attribute FSM_ENCODING								: string;
 
 	constant CLOCK_GEN1_FREQ							: FREQ				:= 37500 kHz;		-- SATAClock frequency for SATA generation 1
 	constant CLOCK_GEN2_FREQ							: FREQ				:= 75 MHz;			-- SATAClock frequency for SATA generation 2
 	constant CLOCK_GEN3_FREQ							: FREQ				:= 150 MHz;			-- SATAClock frequency for SATA generation 3
 
-	constant DEFAULT_OOB_TIMEOUT					: TIME				:= 880 us;
-	constant CONSECUTIVE_ALIGN_MIN				: POSITIVE		:= 63;
+	constant DEFAULT_OOB_TIMEOUT					: time				:= 880 us;
+	constant CONSECUTIVE_ALIGN_MIN				: positive		:= 63;
 
-	constant OOB_TIMEOUT_I								: TIME				:= ite((OOB_TIMEOUT = TIME'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
-	constant COMRESET_TIMEOUT							: TIME				:= 450 ns;
-	constant COMWAKE_TIMEOUT							: TIME				:= 250 ns;
+	constant OOB_TIMEOUT_I								: time				:= ite((OOB_TIMEOUT = time'low), DEFAULT_OOB_TIMEOUT, OOB_TIMEOUT);
+	constant COMRESET_TIMEOUT							: time				:= 450 ns;
+	constant COMWAKE_TIMEOUT							: time				:= 250 ns;
 
-	constant TTID1_OOB_TIMEOUT_GEN1				: NATURAL			:= 0;
-	constant TTID1_OOB_TIMEOUT_GEN2				: NATURAL			:= 1;
-	constant TTID1_OOB_TIMEOUT_GEN3				: NATURAL			:= 2;
-	constant TTID2_COMRESET_TIMEOUT_GEN1	: NATURAL			:= 0;
-	constant TTID2_COMRESET_TIMEOUT_GEN2	: NATURAL			:= 1;
-	constant TTID2_COMRESET_TIMEOUT_GEN3	: NATURAL			:= 2;
-	constant TTID2_COMWAKE_TIMEOUT_GEN1		: NATURAL			:= 3;
-	constant TTID2_COMWAKE_TIMEOUT_GEN2		: NATURAL			:= 4;
-	constant TTID2_COMWAKE_TIMEOUT_GEN3		: NATURAL			:= 5;
+	constant TTID1_OOB_TIMEOUT_GEN1				: natural			:= 0;
+	constant TTID1_OOB_TIMEOUT_GEN2				: natural			:= 1;
+	constant TTID1_OOB_TIMEOUT_GEN3				: natural			:= 2;
+	constant TTID2_COMRESET_TIMEOUT_GEN1	: natural			:= 0;
+	constant TTID2_COMRESET_TIMEOUT_GEN2	: natural			:= 1;
+	constant TTID2_COMRESET_TIMEOUT_GEN3	: natural			:= 2;
+	constant TTID2_COMWAKE_TIMEOUT_GEN1		: natural			:= 3;
+	constant TTID2_COMWAKE_TIMEOUT_GEN2		: natural			:= 4;
+	constant TTID2_COMWAKE_TIMEOUT_GEN3		: natural			:= 5;
 
 	constant TC1_TIMING_TABLE					: T_NATVEC				:= (--		 880 us
 		TTID1_OOB_TIMEOUT_GEN1 => TimingToCycles(OOB_TIMEOUT_I,	CLOCK_GEN1_FREQ),							-- slot 0
@@ -147,31 +146,31 @@ architecture rtl of sata_Physical_OOBControl_Host is
 	signal NextState									: T_STATE;
 	attribute FSM_ENCODING of State		: signal is getFSMEncoding_gray(DEBUG);
 
-	signal DeviceDetected_i						: STD_LOGIC;
-	signal LinkOK_i										: STD_LOGIC;
-	signal LinkDead_i									: STD_LOGIC;
-	signal Timeout_i									: STD_LOGIC;
+	signal DeviceDetected_i						: std_logic;
+	signal LinkOK_i										: std_logic;
+	signal LinkDead_i									: std_logic;
+	signal Timeout_i									: std_logic;
 
 	signal OOB_TX_Command_i						: T_SATA_OOB;
-	signal OOB_HandshakeComplete_i		: STD_LOGIC; 	-- MUST BE driven by register
+	signal OOB_HandshakeComplete_i		: std_logic; 	-- MUST BE driven by register
 
-	signal AlignCounter_rst						: STD_LOGIC;
-	signal AlignCounter_en						: STD_LOGIC;
-	signal AlignCounter_us						: UNSIGNED(log2ceilnz(CONSECUTIVE_ALIGN_MIN) - 1 downto 0)						:= (others => '0');
+	signal AlignCounter_rst						: std_logic;
+	signal AlignCounter_en						: std_logic;
+	signal AlignCounter_us						: unsigned(log2ceilnz(CONSECUTIVE_ALIGN_MIN) - 1 downto 0)						:= (others => '0');
 
 	-- Timing-Counter
 	-- ===========================================================================
 	-- general timeouts
-	signal TC1_en										: STD_LOGIC;
-	signal TC1_Load									: STD_LOGIC;
-	signal TC1_Slot									: NATURAL;
-	signal TC1_Timeout							: STD_LOGIC;
+	signal TC1_en										: std_logic;
+	signal TC1_Load									: std_logic;
+	signal TC1_Slot									: natural;
+	signal TC1_Timeout							: std_logic;
 
 	-- OOB state specific timeouts
-	signal TC2_en										: STD_LOGIC;
-	signal TC2_Load									: STD_LOGIC;
-	signal TC2_Slot									: NATURAL;
-	signal TC2_Timeout							: STD_LOGIC;
+	signal TC2_en										: std_logic;
+	signal TC2_Load									: std_logic;
+	signal TC2_Slot									: natural;
+	signal TC2_Timeout							: std_logic;
 
 begin
 	assert ((SATAGeneration = SATA_GENERATION_1) or
@@ -459,8 +458,8 @@ begin
 
 	-- debug port
 	-- ===========================================================================
-	genDebugPort : IF (ENABLE_DEBUGPORT = TRUE) generate
-		function dbg_EncodeState(st : T_STATE) return STD_LOGIC_VECTOR is
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
+		function dbg_EncodeState(st : T_STATE) return std_logic_vector is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));
 		end function;

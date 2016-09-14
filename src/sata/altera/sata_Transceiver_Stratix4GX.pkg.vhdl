@@ -1,7 +1,6 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Steffen Koehler
 --									Patrick Lehmann
@@ -9,8 +8,8 @@
 -- Package:					TODO
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
 -- =============================================================================
@@ -37,20 +36,20 @@ use			IEEE.NUMERIC_STD.all;
 
 package sata_TransceiverTypes is
 	type T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS is record
-		RefClockIn_50_MHz	: STD_LOGIC;
-		RefClockIn_150_MHz	: STD_LOGIC;
+		RefClockIn_50_MHz	: std_logic;
+		RefClockIn_150_MHz	: std_logic;
 	end record;
 
 	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS is record
-		RX	: STD_LOGIC;
+		RX	: std_logic;
 	end record;
 
 	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS is record
-		TX	: STD_LOGIC;
+		TX	: std_logic;
 	end record;
 
-	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR		is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
-	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR	is array(NATURAL range <>) of T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS;
+	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR		is array(natural range <>) of T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
+	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR	is array(natural range <>) of T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS;
 
 	component sata_basic is port (
 		reset							: in std_logic;

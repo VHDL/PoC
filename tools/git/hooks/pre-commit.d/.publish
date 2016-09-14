@@ -1,0 +1,7 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+whitespace.sh

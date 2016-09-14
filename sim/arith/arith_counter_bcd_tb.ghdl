@@ -1,0 +1,12 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/arith_counter_bcd_tb/clock
+/arith_counter_bcd_tb/<for>/reset
+/arith_counter_bcd_tb/<for>/inc
+/arith_counter_bcd_tb/<for>/value
+/arith_counter_bcd_tb/<for>/reset
+/arith_counter_bcd_tb/<for>/inc
+/arith_counter_bcd_tb/<for>/value

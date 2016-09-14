@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 -- 									Martin Zabel
 --
--- Module:					SATA Physical Layer
+-- Entity:					SATA Physical Layer
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Represents the PhysicalLayer of the SATA stack. Detects if a device is
 -- present and establishes a communication, both using OOB.
 --
@@ -81,20 +80,20 @@ use			PoC.satadbg.all;
 
 entity sata_PhysicalLayer is
 	generic (
-		DEBUG														: BOOLEAN													:= FALSE;
-		ENABLE_DEBUGPORT								: BOOLEAN													:= FALSE;
+		DEBUG														: boolean													:= FALSE;
+		ENABLE_DEBUGPORT								: boolean													:= FALSE;
 		CONTROLLER_TYPE									: T_SATA_DEVICE_TYPE							:= SATA_DEVICE_TYPE_HOST;
-		ALLOW_SPEED_NEGOTIATION					: BOOLEAN													:= TRUE;
+		ALLOW_SPEED_NEGOTIATION					: boolean													:= TRUE;
 		INITIAL_SATA_GENERATION					: T_SATA_GENERATION								:= C_SATA_GENERATION_MAX;
-		ALLOW_STANDARD_VIOLATION				: BOOLEAN													:= FALSE;
-		OOB_TIMEOUT											: TIME														:= TIME'low;
-		GENERATION_CHANGE_COUNT					: INTEGER													:= 8;
-		ATTEMPTS_PER_GENERATION					: INTEGER													:= 4
+		ALLOW_STANDARD_VIOLATION				: boolean													:= FALSE;
+		OOB_TIMEOUT											: time													:= time'low;
+		GENERATION_CHANGE_COUNT					: integer													:= 8;
+		ATTEMPTS_PER_GENERATION					: integer													:= 4
 	);
 	port (
-		Clock														: in	STD_LOGIC;
-		ClockEnable											: in	STD_LOGIC;
-		Reset														: in	STD_LOGIC;										-- general logic reset without some counter resets while Clock is unstable
+		Clock														: in	std_logic;
+		ClockEnable											: in	std_logic;
+		Reset														: in	std_logic;										-- general logic reset without some counter resets while Clock is unstable
 																																				--   => preserve SATAGeneration between connection-cycles
 		SATAGenerationMin								: in	T_SATA_GENERATION;						--
 		SATAGenerationMax								: in	T_SATA_GENERATION;						--
@@ -113,38 +112,38 @@ entity sata_PhysicalLayer is
 		Link_TX_CharIsK									: in	T_SLV_4;
 
 		-- TransceiverLayer interface
-		Trans_ResetDone									: in	STD_LOGIC;
+		Trans_ResetDone									: in	std_logic;
 
 		Trans_Command										: out	T_SATA_TRANSCEIVER_COMMAND;
 		Trans_Status										: in	T_SATA_TRANSCEIVER_STATUS;
 		Trans_Error											: in	T_SATA_TRANSCEIVER_ERROR;
 
-		Trans_RP_Reconfig								: out	STD_LOGIC;
+		Trans_RP_Reconfig								: out	std_logic;
 		Trans_RP_SATAGeneration					: out	T_SATA_GENERATION;
-		Trans_RP_ConfigReloaded					: in	STD_LOGIC;
+		Trans_RP_ConfigReloaded					: in	std_logic;
 
 		Trans_OOB_TX_Command						: out	T_SATA_OOB;
-		Trans_OOB_TX_Complete						: in	STD_LOGIC;
+		Trans_OOB_TX_Complete						: in	std_logic;
 		Trans_OOB_RX_Received						: in	T_SATA_OOB;
-		Trans_OOB_HandshakeComplete			: out	STD_LOGIC;
-		Trans_OOB_AlignDetected    			: out	STD_LOGIC;
+		Trans_OOB_HandshakeComplete			: out	std_logic;
+		Trans_OOB_AlignDetected    			: out	std_logic;
 
 		Trans_TX_Data										: out	T_SLV_32;
 		Trans_TX_CharIsK								: out T_SLV_4;
 
 		Trans_RX_Data										: in	T_SLV_32;
 		Trans_RX_CharIsK								: in	T_SLV_4;
-		Trans_RX_Valid									: in	STD_LOGIC
+		Trans_RX_Valid									: in	std_logic
 	);
-END;
+end entity;
 
 
 architecture rtl of sata_PhysicalLayer is
-	signal OOBC_Reset									: STD_LOGIC;
-	signal OOBC_DeviceOrHostDetected	: STD_LOGIC;
-	signal OOBC_LinkOK								: STD_LOGIC;
-	signal OOBC_LinkDead							: STD_LOGIC;
-	signal OOBC_Timeout								: STD_LOGIC;
+	signal OOBC_Reset									: std_logic;
+	signal OOBC_DeviceOrHostDetected	: std_logic;
+	signal OOBC_LinkOK								: std_logic;
+	signal OOBC_LinkDead							: std_logic;
+	signal OOBC_Timeout								: std_logic;
 
 	signal Trans_RP_SATAGeneration_i	: T_SATA_GENERATION;
 
@@ -162,7 +161,7 @@ begin
 	assert FALSE report "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)			severity NOTE;
 	assert FALSE report "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)							severity NOTE;
 	assert FALSE report "  AllowStandardViolation: " & to_string(ALLOW_STANDARD_VIOLATION)						severity NOTE;
-	assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
+	assert FALSE report "  Init. SATA Generation:  Gen" & integer'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
 
 	-- The FSM
 	-- ===========================================================================

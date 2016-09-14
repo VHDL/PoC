@@ -56,7 +56,7 @@ NET  sram_bw_n<0>      	LOC="D10";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_bw_n<1>       LOC="D11";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_bw_n<2>       LOC="J11";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_bw_n<3>       LOC="K11";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
-NET  sram_clkfb         LOC="AG21";  # Bank 4, Vcco=3.3V, No DCI      
+NET  sram_clkfb         LOC="AG21";  # Bank 4, Vcco=3.3V, No DCI
 NET  sram_clk           LOC="G8";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_ce_n          LOC="J10";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_data<0>       LOC="AD19";  # Bank 2, Vcco=3.3V
@@ -80,21 +80,21 @@ NET  sram_data<17>      LOC="E13";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_data<18>      LOC="E12";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_data<19>      LOC="L9";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_data<20>      LOC="M10";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
-NET  sram_data<21>      LOC="E11";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<22>      LOC="F11";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<23>      LOC="L8";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<24>      LOC="M8";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<25>      LOC="G12";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<26>      LOC="G11";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<27>      LOC="C13";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<28>      LOC="B13";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<29>      LOC="K9";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<30>      LOC="K8";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<31>      LOC="J9";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<32>      LOC="D12";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<33>      LOC="C12";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<34>      LOC="H10";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
-NET  sram_data<35>      LOC="H9";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
+NET  sram_data<21>      LOC="E11";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<22>      LOC="F11";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<23>      LOC="L8";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<24>      LOC="M8";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<25>      LOC="G12";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<26>      LOC="G11";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<27>      LOC="C13";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<28>      LOC="B13";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<29>      LOC="K9";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<30>      LOC="K8";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<31>      LOC="J9";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<32>      LOC="D12";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<33>      LOC="C12";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<34>      LOC="H10";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
+NET  sram_data<35>      LOC="H9";    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_addr<0>       LOC="K13";   # Bank 1, Vcco=3.3V
 NET  sram_addr<1>       LOC="H23";   # Bank 1, Vcco=3.3V
 NET  sram_addr<2>       LOC="G23";   # Bank 1, Vcco=3.3V
@@ -118,7 +118,7 @@ NET  sram_addr<17>      LOC="L20";   # Bank 1, Vcco=3.3V
 #? NET  sram_addr<20>      LOC="AE23";  # Bank 2, Vcco=3.3V
 #? NET  sram_addr<21>      LOC="AE22";  # Bank 2, Vcco=3.3V
 NET  sram_we_n          LOC="AF20";  # Bank 2, Vcco=3.3V
-NET  sram_mode        	LOC="A13";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm 
+NET  sram_mode        	LOC="A13";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_oe_n          LOC="B12";   # Bank 20, Vcco=3.3V, DCI using 49.9 ohm
 NET  sram_*		IOSTANDARD="LVCMOS33";
 NET  sram_*		DRIVE=12 | SLEW="FAST";
@@ -134,9 +134,9 @@ NET  sram_we_n		TNM = "TGRP_sram";
 # constraints defines also the time for switching sram_data to 'Z'
 #(switch off) by the FPGA.
 #
-# Data is output t_KO = 3.1 ns after the rising clock edge at the SRAM. 
-# Assuming almost equal PCB net delay, data arrives at the FPGA t_KO after the 
-# rising edge of sram_clkfb (= rising_edge of clk_in). With an uncertainty of 
+# Data is output t_KO = 3.1 ns after the rising clock edge at the SRAM.
+# Assuming almost equal PCB net delay, data arrives at the FPGA t_KO after the
+# rising edge of sram_clkfb (= rising_edge of clk_in). With an uncertainty of
 # 1 ns, we would get an input offset constraint of 4.1 ns. But,
 # because it takes more time to switch the output off by the FPGA, the
 # data cannot be valid before.
@@ -144,6 +144,6 @@ NET  sram_we_n		TNM = "TGRP_sram";
 TIMEGRP TGRP_sram	OFFSET   = OUT 5 ns  AFTER "clk_in";
 TIMEGRP TGRP_sram_data	OFFSET   = IN  5 ns AFTER "clk_in";
 
-# feedback value has effect only, if FPGA FFs are clocked with 
+# feedback value has effect only, if FPGA FFs are clocked with
 # (internal) sram_clk
 NET sram_clkfb		FEEDBACK = 2ns NET "sram_clk"; # correct?

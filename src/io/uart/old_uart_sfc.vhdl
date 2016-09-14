@@ -229,8 +229,8 @@ begin  -- uart_sfc_impl
   set_xoff_transmitted <= tx_rdy      when (rf_fs >= XOFF_TRIG) else '0';
 
   -- send XON only once when receive FIFO is almost empty
-  send_xon <= xoff_transmitted   when (rf_fs = XON_TRIG) else '0';
-  clr_xoff_transmitted <= tx_rdy when (rf_fs = XON_TRIG) else '0';
+  send_xon <= xoff_transmitted   when rf_fs = XON_TRIG else '0';
+  clr_xoff_transmitted <= tx_rdy when rf_fs = XON_TRIG else '0';
 
   -- discard any user supplied XON/XOFF
   discard_user <= '1' when (tf_dout = XON) or (tf_dout = XOFF) else '0';

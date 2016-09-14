@@ -1,15 +1,14 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Martin Zabel
 --									Patrick Lehmann
 --
--- Module:				 	Enhanced simple dual-port memory.
+-- Entity:				 	Enhanced simple dual-port memory.
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Inferring / instantiating enhanced simple dual-port memory, with:
 --
 -- * dual clock, clock enable,
@@ -44,7 +43,7 @@
 -- TODO: implement correct behavior for RT-level simulation
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -59,7 +58,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library STD;
 use			STD.TextIO.all;
@@ -80,7 +79,7 @@ entity ocram_esdp is
 	generic (
 		A_BITS		: positive;
 		D_BITS		: positive;
-		FILENAME	: STRING		:= ""
+		FILENAME	: string		:= ""
 	);
 	port (
 		clk1 : in	std_logic;
@@ -101,7 +100,7 @@ architecture rtl of ocram_esdp is
 	constant DEPTH : positive := 2**A_BITS;
 
 begin
-	gInfer : if ((VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
+	gInfer : if (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX) generate
 		-- RAM can be inferred correctly
 		-- XST Advanced HDL Synthesis generates extended simple dual-port
 		-- memory as expected.
@@ -114,10 +113,10 @@ begin
 			variable Memory		: T_SLM(DEPTH - 1 downto 0, word_t'range);
 			variable res			: ram_t;
 		begin
-			if (str_length(FilePath) = 0) then
+			if str_length(FilePath) = 0 then
         -- shortcut required by Vivado
 				return (others => (others => ite(SIMULATION, 'U', '0')));
-			elsif (mem_FileExtension(FilePath) = "mem") then
+			elsif mem_FileExtension(FilePath) = "mem" then
 				Memory	:= mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
 			else
 				Memory	:= mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
@@ -169,7 +168,7 @@ begin
 			generic (
 				A_BITS		: positive;
 				D_BITS		: positive;
-				FILENAME	: STRING		:= ""
+				FILENAME	: string		:= ""
 			);
 			port (
 				clk1 : in	std_logic;

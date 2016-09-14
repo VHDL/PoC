@@ -1,8 +1,7 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:					Martin Zabel
 --									Patrick Lehmann
 --
@@ -10,11 +9,11 @@
 --									functions associated to the PoC.io.vga namespace
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 --		For detailed documentation see below.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --											Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -29,7 +28,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
@@ -87,7 +86,7 @@ package vga is
 		vs_pol		: std_logic;					-- vsync_polarity
   end record;
 
-	function io_vga_GetParameters(Mode : T_IO_VGA_MODE; CVT : BOOLEAN) return T_VGA_PARAMETERS;
+	function io_vga_GetParameters(Mode : T_IO_VGA_MODE; CVT : boolean) return T_VGA_PARAMETERS;
 
   -- Control signals which must be passed from the timing module through
   -- the data processing pipeline to the physical layer controller.
@@ -149,7 +148,7 @@ end package;
 package body vga is
 
   -- Calculate timing parameters
-  function io_vga_GetParameters(Mode : T_IO_VGA_MODE; CVT : BOOLEAN) return T_VGA_PARAMETERS is
+  function io_vga_GetParameters(Mode : T_IO_VGA_MODE; CVT : boolean) return T_VGA_PARAMETERS is
 		variable res : T_VGA_PARAMETERS;
   begin
 		case Mode is

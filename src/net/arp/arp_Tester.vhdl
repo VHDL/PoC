@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	TODO
+-- Entity:				 	TODO
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,7 +26,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -44,32 +43,32 @@ use			PoC.net.all;
 entity arp_Tester is
 	generic (
 		CLOCK_FREQ									: FREQ																	:= 125 MHz;
-		ARP_LOOKUP_INTERVAL					: TIME																	:= 100 ms
+		ARP_LOOKUP_INTERVAL					: time																	:= 100 ms
 	);
 	port (
-		Clock												: in	STD_LOGIC;																	--
-		Reset												: in	STD_LOGIC;																	--
+		Clock												: in	std_logic;																	--
+		Reset												: in	std_logic;																	--
 
 		Command											: in	T_NET_ARP_TESTER_COMMAND;
 		Status											: out	T_NET_ARP_TESTER_STATUS;
 
-		IPCache_Lookup							: out	STD_LOGIC;
-		IPCache_IPv4Address_rst			: in	STD_LOGIC;
-		IPCache_IPv4Address_nxt			: in	STD_LOGIC;
+		IPCache_Lookup							: out	std_logic;
+		IPCache_IPv4Address_rst			: in	std_logic;
+		IPCache_IPv4Address_nxt			: in	std_logic;
 		IPCache_IPv4Address_Data		: out	T_SLV_8;
 
-		IPCache_Valid								: in	STD_LOGIC;
-		IPCache_MACAddress_rst			: out	STD_LOGIC;
-		IPCache_MACAddress_nxt			: out	STD_LOGIC;
+		IPCache_Valid								: in	std_logic;
+		IPCache_MACAddress_rst			: out	std_logic;
+		IPCache_MACAddress_nxt			: out	std_logic;
 		IPCache_MACAddress_Data			: in	T_SLV_8
 	);
 end entity;
 
 
 architecture rtl of arp_Tester is
-	attribute KEEP													: BOOLEAN;
+	attribute KEEP													: boolean;
 
-	signal Tick															: STD_LOGIC;
+	signal Tick															: std_logic;
 	attribute KEEP of Tick									: signal is TRUE;
 
 	constant LOOKUP_ADDRESSES								: T_NET_IPV4_ADDRESS_VECTOR														:= (
@@ -91,9 +90,9 @@ architecture rtl of arp_Tester is
 		15 =>			to_net_ipv4_address("192.168.99.1")
 	);
 
-	subtype T_BYTE_INDEX										 is NATURAL range 0 to 3;
+	subtype T_BYTE_INDEX										 is natural range 0 to 3;
 
-	type T_STATE IS (
+	type T_STATE is (
 		ST_IDLE,
 		ST_IPCACHE_LOOKUP_WAIT,
 		ST_IPCACHE_READ
@@ -102,17 +101,17 @@ architecture rtl of arp_Tester is
 	signal State														: T_STATE																								:= ST_IDLE;
 	signal NextState												: T_STATE;
 
-	signal IPv4Address_we										: STD_LOGIC;
+	signal IPv4Address_we										: std_logic;
 	signal IPv4Address_sel									: T_BYTE_INDEX;
 	signal IPv4Address_d										: T_NET_IPV4_ADDRESS																		:= to_net_ipv4_address("192.168.99.1");
 
-	attribute KEEP of IPCache_MACAddress_Data	: signal IS TRUE;
+	attribute KEEP of IPCache_MACAddress_Data	: signal is TRUE;
 
-	SIGNAl Reader_Counter_en								: STD_LOGIC;
-	SIGNAl Reader_Counter_us								: UNSIGNED(log2ceilnz(T_BYTE_INDEX'high) - 1 downto 0)	:= (others => '0');
+	signal Reader_Counter_en								: std_logic;
+	signal Reader_Counter_us								: unsigned(log2ceilnz(T_BYTE_INDEX'high) - 1 downto 0)	:= (others => '0');
 
-	SIGNAl Lookup_Counter_en								: STD_LOGIC;
-	SIGNAl Lookup_Counter_us								: UNSIGNED(3 downto 0)																	:= (others => '0');
+	signal Lookup_Counter_en								: std_logic;
+	signal Lookup_Counter_us								: unsigned(3 downto 0)																	:= (others => '0');
 
 begin
 --	assert FALSE report "TICKCOUNTER_MAX: " & INTEGER'image(TimingToCycles(ARP_LOOKUP_INTERVAL, CLOCK_FREQ)) & "    ARP_LOOKUP_INTERVAL: " & REAL'image(ARP_LOOKUP_INTERVAL_MS) & " ms" severity NOTE;
@@ -231,11 +230,11 @@ begin
 
 	-- lookup interval tick generator
 	process(Clock)
-		constant TICKCOUNTER_RES								: TIME																								:= ARP_LOOKUP_INTERVAL;
-		constant TICKCOUNTER_MAX								: POSITIVE																						:= TimingToCycles(TICKCOUNTER_RES, CLOCK_FREQ);
-		constant TICKCOUNTER_BITS								: POSITIVE																						:= log2ceilnz(TICKCOUNTER_MAX);
+		constant TICKCOUNTER_RES								: time																								:= ARP_LOOKUP_INTERVAL;
+		constant TICKCOUNTER_MAX								: positive																						:= TimingToCycles(TICKCOUNTER_RES, CLOCK_FREQ);
+		constant TICKCOUNTER_BITS								: positive																						:= log2ceilnz(TICKCOUNTER_MAX);
 
-		variable TickCounter_s									: SIGNED(TICKCOUNTER_BITS downto 0)										:= to_signed(TICKCOUNTER_MAX, TICKCOUNTER_BITS + 1);
+		variable TickCounter_s									: signed(TICKCOUNTER_BITS downto 0)										:= to_signed(TICKCOUNTER_MAX, TICKCOUNTER_BITS + 1);
 	begin
 		if rising_edge(Clock) then
 			if (Tick = '1') then

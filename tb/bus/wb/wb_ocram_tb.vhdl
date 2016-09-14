@@ -57,7 +57,7 @@ architecture behavior of ocram_wb_tb is
 
 begin  -- behavior
 
-  UUT: ocram_wb
+  UUT: entity PoC.ocram_wb
     generic map (
       A_BITS      => A_BITS,
       D_BITS      => D_BITS,

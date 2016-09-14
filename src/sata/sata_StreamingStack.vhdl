@@ -1,16 +1,15 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Package:					TODO
+-- Entity:					TODO
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
 -- =============================================================================
@@ -49,24 +48,24 @@ use			PoC.xil.all;
 
 entity sata_StreamingStack is
 	generic (
-		DEBUG												: BOOLEAN;
-		ENABLE_CHIPSCOPE						: BOOLEAN;
-		ENABLE_DEBUGPORT						: BOOLEAN;
+		DEBUG												: boolean;
+		ENABLE_CHIPSCOPE						: boolean;
+		ENABLE_DEBUGPORT						: boolean;
 
 		REFCLOCK_FREQ								: FREQ;
 		INITIAL_SATA_GENERATION			: T_SATA_GENERATION;
-		ALLOW_SPEED_NEGOTIATION			: BOOLEAN;
+		ALLOW_SPEED_NEGOTIATION			: boolean;
 		LOGICAL_BLOCK_SIZE					: MEMORY
 	);
 	port (
 		-- SATA stack common interface
-		PowerDown										: in		STD_LOGIC;
-		ClockNetwork_Reset					: in		STD_LOGIC;
-		ClockNetwork_ResetDone			: out		STD_LOGIC;
-		SATA_Clock									: out		STD_LOGIC;
-		SATA_Clock_Stable						: out		STD_LOGIC;
-		Reset												: in		STD_LOGIC;
-		ResetDone										: out		STD_LOGIC;
+		PowerDown										: in		std_logic;
+		ClockNetwork_Reset					: in		std_logic;
+		ClockNetwork_ResetDone			: out		std_logic;
+		SATA_Clock									: out		std_logic;
+		SATA_Clock_Stable						: out		std_logic;
+		Reset												: in		std_logic;
+		ResetDone										: out		std_logic;
 
 		-- Config interface
 		SATAGenerationMin						: in		T_SATA_GENERATION;
@@ -84,31 +83,31 @@ entity sata_StreamingStack is
 		Address_LB									: in		T_SLV_48;
 		BlockCount_LB								: in		T_SLV_48;
 		-- TX path
-		TX_Valid										: in		STD_LOGIC;
+		TX_Valid										: in		std_logic;
 		TX_Data											: in		T_SLV_32;
-		TX_SOR											: in		STD_LOGIC;
-		TX_EOR											: in		STD_LOGIC;
-		TX_Ack											: out		STD_LOGIC;
+		TX_SOR											: in		std_logic;
+		TX_EOR											: in		std_logic;
+		TX_Ack											: out		std_logic;
 		-- RX path
-		RX_Valid										: out		STD_LOGIC;
+		RX_Valid										: out		std_logic;
 		RX_Data											: out		T_SLV_32;
-		RX_SOR											: out		STD_LOGIC;
-		RX_EOR											: out		STD_LOGIC;
-		RX_Ack											: in		STD_LOGIC;
+		RX_SOR											: out		std_logic;
+		RX_EOR											: out		std_logic;
+		RX_Ack											: in		std_logic;
 
 		-- Debug ports
 		DebugPortIn									: in		T_SATADBG_STREAMINGSTACK_IN;
 		DebugPortOut								: out		T_SATADBG_STREAMINGSTACK_OUT;
 
 		-- ChipScope ports
-		DebugClock											: in		STD_LOGIC;
+		DebugClock											: in		std_logic;
 --		TransMonitor_ILA_ControlBus			: inout	T_XIL_CHIPSCOPE_CONTROL;
 		TransceiverLayer_ILA_ControlBus	: inout	T_XIL_CHIPSCOPE_CONTROL;
 		PhyLayer_ILA_ControlBus					: inout	T_XIL_CHIPSCOPE_CONTROL;
 		LinkLayer_ILA_ControlBus				: inout	T_XIL_CHIPSCOPE_CONTROL;
 		TransportLayer_ILA_ControlBus		: inout	T_XIL_CHIPSCOPE_CONTROL;
 		CommandLayer_ILA_ControlBus			: inout	T_XIL_CHIPSCOPE_CONTROL;
-		SoFPGA_Tracer_TriggerEvent			: in		STD_LOGIC;
+		SoFPGA_Tracer_TriggerEvent			: in		std_logic;
 
 		-- vendor specific ports
 		SATA_Common_In							: in		T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
@@ -119,20 +118,20 @@ end entity;
 
 
 architecture rtl of sata_StreamingStack is
-	attribute KEEP											: BOOLEAN;
-	attribute ENUM_ENCODING							: STRING;
+	attribute KEEP											: boolean;
+	attribute ENUM_ENCODING							: string;
 
 	-- ===========================================================================
 	-- StreamDBStack configuration
 	-- ===========================================================================
-	constant PORTS											: POSITIVE							:= 1;
+	constant PORTS											: positive							:= 1;
 	constant CONTROLLER_TYPE						: T_SATA_DEVICE_TYPE		:= SATA_DEVICE_TYPE_HOST;
-	constant ENABLE_TRANS_GLUE_FIFOS		: BOOLEAN								:= FALSE;
+	constant ENABLE_TRANS_GLUE_FIFOS		: boolean								:= FALSE;
 
 	-- ===========================================================================
 	-- signal declarations
 	-- ===========================================================================
-	signal ClockNetwork_ResetDone_i 		: STD_LOGIC;
+	signal ClockNetwork_ResetDone_i 		: std_logic;
 
 	-- SATAController signals
 	-- ===========================================================================
@@ -141,7 +140,7 @@ architecture rtl of sata_StreamingStack is
 	-- StreamingLayer
 	-- ================================================================
 	-- clock and reset signals
-	signal SATASC_ResetDone 						: STD_LOGIC;
+	signal SATASC_ResetDone 						: std_logic;
 
 	-- CSE signals
 	signal SATASC_Status								: T_SATA_STREAMING_STATUS;
@@ -150,18 +149,18 @@ architecture rtl of sata_StreamingStack is
 	signal SATASC_ATAHostRegisters 			: T_SATA_ATA_HOST_REGISTERS;
 
 	-- signals to lower layer
-	signal SATASC_TX_Valid							: STD_LOGIC;
+	signal SATASC_TX_Valid							: std_logic;
 	signal SATASC_TX_Data								: T_SLV_32;
-	signal SATASC_TX_SOT								: STD_LOGIC;
-	signal SATASC_TX_EOT								: STD_LOGIC;
-	signal SATASC_RX_Ack								: STD_LOGIC;
+	signal SATASC_TX_SOT								: std_logic;
+	signal SATASC_TX_EOT								: std_logic;
+	signal SATASC_RX_Ack								: std_logic;
 
 	-- SATA Controller
 	-- ================================================================
 	-- clock and reset signals
-	signal SATAC_Clock									: STD_LOGIC;
-	signal SATAC_Clock_Stable						: STD_LOGIC;
-	signal SATAC_ResetDone							: STD_LOGIC;
+	signal SATAC_Clock									: std_logic;
+	signal SATAC_Clock_Stable						: std_logic;
+	signal SATAC_ResetDone							: std_logic;
 
 	-- CSE signals
 	signal SATAC_Status									: T_SATA_SATACONTROLLER_STATUS;
@@ -171,10 +170,10 @@ architecture rtl of sata_StreamingStack is
 	signal SATAC_SATAGeneration					: T_SATA_GENERATION;
 
 	-- signals to upper layer
-	signal SATAC_TX_Ack									: STD_LOGIC;
-	signal SATAC_RX_SOT									: STD_LOGIC;
-	signal SATAC_RX_EOT									: STD_LOGIC;
-	signal SATAC_RX_Valid								: STD_LOGIC;
+	signal SATAC_TX_Ack									: std_logic;
+	signal SATAC_RX_SOT									: std_logic;
+	signal SATAC_RX_EOT									: std_logic;
+	signal SATAC_RX_Valid								: std_logic;
 	signal SATAC_RX_Data								: T_SLV_32;
 
 	-- DebugPort
@@ -187,13 +186,13 @@ architecture rtl of sata_StreamingStack is
 
 begin
 	assert FALSE report "sata_StreamingStack configuration:"																					severity NOTE;
-	assert FALSE report "  Ports:                  " & INTEGER'image(PORTS)														severity NOTE;
+	assert FALSE report "  Ports:                  " & integer'image(PORTS)														severity NOTE;
 	assert FALSE report "  Debug:                  " & to_string(DEBUG)																severity NOTE;
 	assert FALSE report "  Enable ChipScope:       " & to_string(ENABLE_CHIPSCOPE)										severity NOTE;
 	assert FALSE report "  Enable DebugPort:       " & to_string(ENABLE_DEBUGPORT)										severity NOTE;
 	assert FALSE report "  ClockIn Frequency:      " & to_string(REFCLOCK_FREQ, 3)										severity NOTE;
 	assert FALSE report "  ControllerType:         " & T_SATA_DEVICE_TYPE'image(CONTROLLER_TYPE)			severity NOTE;
-	assert FALSE report "  Init. SATA Generation:  Gen" & INTEGER'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
+	assert FALSE report "  Init. SATA Generation:  Gen" & integer'image(INITIAL_SATA_GENERATION + 1)	severity NOTE;
 	assert FALSE report "  AllowSpeedNegotiation:  " & to_string(ALLOW_SPEED_NEGOTIATION)							severity NOTE;
 	assert FALSE report "  LogicalBlockSize (App): " & to_string(LOGICAL_BLOCK_SIZE, 3)								severity NOTE;
 	assert FALSE report "  Enable TransGlueFIFOs:  " & to_string(ENABLE_TRANS_GLUE_FIFOS)							severity NOTE;
@@ -385,80 +384,80 @@ begin
 		DebugPortOut														<= SATAS_DebugPortOut;
 	end generate;
 	genChipScopeComplete : if (ENABLE_CHIPSCOPE = TRUE) generate
-		signal DebugPortIn_TriggerEvent 		: STD_LOGIC;
+		signal DebugPortIn_TriggerEvent 		: std_logic;
 
-		signal TransceiverILA_Trigger0			: STD_LOGIC_VECTOR(29 downto 0);
-		signal TransceiverILA_TriggerEvent	: STD_LOGIC;
+		signal TransceiverILA_Trigger0			: std_logic_vector(29 downto 0);
+		signal TransceiverILA_TriggerEvent	: std_logic;
 
-		signal PhyILA_Data						: STD_LOGIC_VECTOR(150 downto 0);
-		signal PhyILA_Trigger0				: STD_LOGIC_VECTOR(7 downto 0);
-		signal PhyILA_Trigger1				: STD_LOGIC_VECTOR(35 downto 0);
-		signal PhyILA_Trigger2				: STD_LOGIC_VECTOR(35 downto 0);
-		signal PhyILA_Trigger3				: STD_LOGIC_VECTOR(25 downto 0);
-		signal PhyILA_Trigger4				: STD_LOGIC_VECTOR(12 downto 0);
-		signal PhyILA_TriggerEvent		: STD_LOGIC;
+		signal PhyILA_Data						: std_logic_vector(150 downto 0);
+		signal PhyILA_Trigger0				: std_logic_vector(7 downto 0);
+		signal PhyILA_Trigger1				: std_logic_vector(35 downto 0);
+		signal PhyILA_Trigger2				: std_logic_vector(35 downto 0);
+		signal PhyILA_Trigger3				: std_logic_vector(25 downto 0);
+		signal PhyILA_Trigger4				: std_logic_vector(12 downto 0);
+		signal PhyILA_TriggerEvent		: std_logic;
 
-		signal PhyILA_Data_d					: STD_LOGIC_VECTOR(150 downto 0)	:= (others => '0');
-		signal PhyILA_Trigger0_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal PhyILA_Trigger1_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal PhyILA_Trigger2_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal PhyILA_Trigger3_d			: STD_LOGIC_VECTOR(25 downto 0)		:= (others => '0');
-		signal PhyILA_Trigger4_d			: STD_LOGIC_VECTOR(12 downto 0)		:= (others => '0');
+		signal PhyILA_Data_d					: std_logic_vector(150 downto 0)	:= (others => '0');
+		signal PhyILA_Trigger0_d			: std_logic_vector(7 downto 0)		:= (others => '0');
+		signal PhyILA_Trigger1_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal PhyILA_Trigger2_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal PhyILA_Trigger3_d			: std_logic_vector(25 downto 0)		:= (others => '0');
+		signal PhyILA_Trigger4_d			: std_logic_vector(12 downto 0)		:= (others => '0');
 
-		signal LinkILA_Data						: STD_LOGIC_VECTOR(253 downto 0);
-		signal LinkILA_Trigger0				: STD_LOGIC_VECTOR(7 downto 0);
-		signal LinkILA_Trigger1				: STD_LOGIC_VECTOR(39 downto 0);
-		signal LinkILA_Trigger2				: STD_LOGIC_VECTOR(35 downto 0);
-		signal LinkILA_Trigger3				: STD_LOGIC_VECTOR(39 downto 0);
-		signal LinkILA_Trigger4				: STD_LOGIC_VECTOR(35 downto 0);
-		signal LinkILA_Trigger5				: STD_LOGIC_VECTOR(15 downto 0);
-		signal LinkILA_Trigger6				: STD_LOGIC_VECTOR(15 downto 0);
-		signal LinkILA_TriggerEvent		: STD_LOGIC;
+		signal LinkILA_Data						: std_logic_vector(253 downto 0);
+		signal LinkILA_Trigger0				: std_logic_vector(7 downto 0);
+		signal LinkILA_Trigger1				: std_logic_vector(39 downto 0);
+		signal LinkILA_Trigger2				: std_logic_vector(35 downto 0);
+		signal LinkILA_Trigger3				: std_logic_vector(39 downto 0);
+		signal LinkILA_Trigger4				: std_logic_vector(35 downto 0);
+		signal LinkILA_Trigger5				: std_logic_vector(15 downto 0);
+		signal LinkILA_Trigger6				: std_logic_vector(15 downto 0);
+		signal LinkILA_TriggerEvent		: std_logic;
 
-		signal LinkILA_Data_d					: STD_LOGIC_VECTOR(253 downto 0)	:= (others => '0');
-		signal LinkILA_Trigger0_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger1_d			: STD_LOGIC_VECTOR(39 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger2_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger3_d			: STD_LOGIC_VECTOR(39 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger4_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger5_d			: STD_LOGIC_VECTOR(15 downto 0)		:= (others => '0');
-		signal LinkILA_Trigger6_d			: STD_LOGIC_VECTOR(15 downto 0)		:= (others => '0');
+		signal LinkILA_Data_d					: std_logic_vector(253 downto 0)	:= (others => '0');
+		signal LinkILA_Trigger0_d			: std_logic_vector(7 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger1_d			: std_logic_vector(39 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger2_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger3_d			: std_logic_vector(39 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger4_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger5_d			: std_logic_vector(15 downto 0)		:= (others => '0');
+		signal LinkILA_Trigger6_d			: std_logic_vector(15 downto 0)		:= (others => '0');
 
-		signal TransILA_Data					: STD_LOGIC_VECTOR(180 downto 0);
-		signal TransILA_Trigger0			: STD_LOGIC_VECTOR(7 downto 0);
-		signal TransILA_Trigger1			: STD_LOGIC_VECTOR(35 downto 0);
-		signal TransILA_Trigger2			: STD_LOGIC_VECTOR(13 downto 0);
-		signal TransILA_Trigger3			: STD_LOGIC_VECTOR(13 downto 0);
-		signal TransILA_Trigger4			: STD_LOGIC_VECTOR(25 downto 0);
-		signal TransILA_Trigger5			: STD_LOGIC_VECTOR(19 downto 0);
-		signal TransILA_TriggerEvent	: STD_LOGIC;
+		signal TransILA_Data					: std_logic_vector(180 downto 0);
+		signal TransILA_Trigger0			: std_logic_vector(7 downto 0);
+		signal TransILA_Trigger1			: std_logic_vector(35 downto 0);
+		signal TransILA_Trigger2			: std_logic_vector(13 downto 0);
+		signal TransILA_Trigger3			: std_logic_vector(13 downto 0);
+		signal TransILA_Trigger4			: std_logic_vector(25 downto 0);
+		signal TransILA_Trigger5			: std_logic_vector(19 downto 0);
+		signal TransILA_TriggerEvent	: std_logic;
 
-		signal TransILA_Data_d				: STD_LOGIC_VECTOR(180 downto 0)	:= (others => '0');
-		signal TransILA_Trigger0_d		: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal TransILA_Trigger1_d		: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal TransILA_Trigger2_d		: STD_LOGIC_VECTOR(13 downto 0)		:= (others => '0');
-		signal TransILA_Trigger3_d		: STD_LOGIC_VECTOR(13 downto 0)		:= (others => '0');
-		signal TransILA_Trigger4_d		: STD_LOGIC_VECTOR(25 downto 0)		:= (others => '0');
-		signal TransILA_Trigger5_d		: STD_LOGIC_VECTOR(19 downto 0)		:= (others => '0');
+		signal TransILA_Data_d				: std_logic_vector(180 downto 0)	:= (others => '0');
+		signal TransILA_Trigger0_d		: std_logic_vector(7 downto 0)		:= (others => '0');
+		signal TransILA_Trigger1_d		: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal TransILA_Trigger2_d		: std_logic_vector(13 downto 0)		:= (others => '0');
+		signal TransILA_Trigger3_d		: std_logic_vector(13 downto 0)		:= (others => '0');
+		signal TransILA_Trigger4_d		: std_logic_vector(25 downto 0)		:= (others => '0');
+		signal TransILA_Trigger5_d		: std_logic_vector(19 downto 0)		:= (others => '0');
 
-		signal Stream_Data						: STD_LOGIC_VECTOR(183 downto 0);
-		signal Stream_Trigger0				: STD_LOGIC_VECTOR(7 downto 0);
-		signal Stream_Trigger1				: STD_LOGIC_VECTOR(35 downto 0);
-		signal Stream_Trigger2				: STD_LOGIC_VECTOR(8 downto 0);
-		signal Stream_Trigger3				: STD_LOGIC_VECTOR(4 downto 0);
-		signal Stream_Trigger4				: STD_LOGIC_VECTOR(7 downto 0);
-		signal Stream_Trigger5				: STD_LOGIC_VECTOR(35 downto 0);
-		signal Stream_Trigger6				: STD_LOGIC_VECTOR(37 downto 0);
-		signal Stream_TriggerEvent		: STD_LOGIC;
+		signal Stream_Data						: std_logic_vector(183 downto 0);
+		signal Stream_Trigger0				: std_logic_vector(7 downto 0);
+		signal Stream_Trigger1				: std_logic_vector(35 downto 0);
+		signal Stream_Trigger2				: std_logic_vector(8 downto 0);
+		signal Stream_Trigger3				: std_logic_vector(4 downto 0);
+		signal Stream_Trigger4				: std_logic_vector(7 downto 0);
+		signal Stream_Trigger5				: std_logic_vector(35 downto 0);
+		signal Stream_Trigger6				: std_logic_vector(37 downto 0);
+		signal Stream_TriggerEvent		: std_logic;
 
-		signal Stream_Data_d					: STD_LOGIC_VECTOR(183 downto 0)	:= (others => '0');
-		signal Stream_Trigger0_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal Stream_Trigger1_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal Stream_Trigger2_d			: STD_LOGIC_VECTOR(8 downto 0)		:= (others => '0');
-		signal Stream_Trigger3_d			: STD_LOGIC_VECTOR(4 downto 0)		:= (others => '0');
-		signal Stream_Trigger4_d			: STD_LOGIC_VECTOR(7 downto 0)		:= (others => '0');
-		signal Stream_Trigger5_d			: STD_LOGIC_VECTOR(35 downto 0)		:= (others => '0');
-		signal Stream_Trigger6_d			: STD_LOGIC_VECTOR(37 downto 0)		:= (others => '0');
+		signal Stream_Data_d					: std_logic_vector(183 downto 0)	:= (others => '0');
+		signal Stream_Trigger0_d			: std_logic_vector(7 downto 0)		:= (others => '0');
+		signal Stream_Trigger1_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal Stream_Trigger2_d			: std_logic_vector(8 downto 0)		:= (others => '0');
+		signal Stream_Trigger3_d			: std_logic_vector(4 downto 0)		:= (others => '0');
+		signal Stream_Trigger4_d			: std_logic_vector(7 downto 0)		:= (others => '0');
+		signal Stream_Trigger5_d			: std_logic_vector(35 downto 0)		:= (others => '0');
+		signal Stream_Trigger6_d			: std_logic_vector(37 downto 0)		:= (others => '0');
 
 		function dbg_EncodePrimitive(Data : T_SLV_32; CharIsK : T_SLV_4) return T_SLV_2 is
 		begin
@@ -482,7 +481,7 @@ begin
 			end case;
 		end function;
 
-		function dbg_EncodeFISType(FISType : T_SATA_FISTYPE) return STD_LOGIC_VECTOR is
+		function dbg_EncodeFISType(FISType : T_SATA_FISTYPE) return std_logic_vector is
 		begin
 			return to_slv(T_SATA_FISTYPE'pos(FISType), log2ceilnz(T_SATA_FISTYPE'pos(T_SATA_FISTYPE'high) + 1));
 		end function;
@@ -493,7 +492,7 @@ begin
 		signal LinkILA_RX_Trigger2		: std_logic_vector(7 downto 0);
 		signal LinkILA_RX_Trigger3		: std_logic_vector(7 downto 0);
 
-		signal clocktest												: STD_LOGIC			:= '0';
+		signal clocktest												: std_logic			:= '0';
 	begin
 		DebugPortIn_TriggerEvent <= DebugPortIn.TransceiverLayer.InsertBitErrorTX or DebugPortIn.TransceiverLayer.InsertBitErrorRX or DebugPortIn.LinkLayer.InsertBitErrorHeaderTX;
 
@@ -963,15 +962,15 @@ begin
 		Stream_Trigger6_d		<= Stream_Trigger6	when rising_edge(SATAC_Clock);
 
 
-		TransceiverILA : ENTITY PoC.sata_TransceiverLayer_ILA
-			PORT MAP (
+		TransceiverILA : entity PoC.sata_TransceiverLayer_ILA
+			port map (
 				CONTROL		=> TransceiverLayer_ILA_ControlBus,
 				CLK				=> DebugClock,
 				TRIG0			=> TransceiverILA_Trigger0,
 				TRIG_OUT	=> TransceiverILA_TriggerEvent
 			);
 
-		PhyILA : ENTITY PoC.sata_PhysicalLayer_ILA
+		PhyILA : entity PoC.sata_PhysicalLayer_ILA
 			port map (
 				CONTROL		=> PhyLayer_ILA_ControlBus,
 				CLK				=> SATAC_Clock,

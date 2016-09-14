@@ -52,43 +52,43 @@ end entity;
 architecture tb of iic_Controller_tb is
 	constant CLOCK_FREQ					: FREQ			:= 100 MHz;
 
-	constant ADDRESS_BITS				: POSITIVE	:= 7;
-	constant DATA_BITS					: POSITIVE	:= 8;
+	constant ADDRESS_BITS				: positive	:= 7;
+	constant DATA_BITS					: positive	:= 8;
 
-	signal Clock								: STD_LOGIC;
-	signal Reset								: STD_LOGIC;
+	signal Clock								: std_logic;
+	signal Reset								: std_logic;
 
-	signal Master_Request				: STD_LOGIC;
-	signal Master_Grant					: STD_LOGIC;
+	signal Master_Request				: std_logic;
+	signal Master_Grant					: std_logic;
 	signal Master_Command				: T_IO_IIC_COMMAND;
 	signal Master_Status				: T_IO_IIC_STATUS;
 	signal Master_Error					: T_IO_IIC_ERROR;
 
-	signal Master_Address				: STD_LOGIC_VECTOR(ADDRESS_BITS - 1 downto 0);
+	signal Master_Address				: std_logic_vector(ADDRESS_BITS - 1 downto 0);
 
-	signal Master_WP_Valid			: STD_LOGIC;
-	signal Master_WP_Data				: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
-	signal Master_WP_Last				: STD_LOGIC;
-	signal Master_WP_Ack				: STD_LOGIC;
-	signal Master_RP_Valid			: STD_LOGIC;
-	signal Master_RP_Data				: STD_LOGIC_VECTOR(DATA_BITS - 1 downto 0);
-	signal Master_RP_Last				: STD_LOGIC;
-	signal Master_RP_Ack				: STD_LOGIC;
+	signal Master_WP_Valid			: std_logic;
+	signal Master_WP_Data				: std_logic_vector(DATA_BITS - 1 downto 0);
+	signal Master_WP_Last				: std_logic;
+	signal Master_WP_Ack				: std_logic;
+	signal Master_RP_Valid			: std_logic;
+	signal Master_RP_Data				: std_logic_vector(DATA_BITS - 1 downto 0);
+	signal Master_RP_Last				: std_logic;
+	signal Master_RP_Ack				: std_logic;
 
 	-- tristate interface: STD_LOGIC;
-	signal Master_SerialClock_i	: STD_LOGIC;
-	signal Master_SerialClock_o	: STD_LOGIC;
-	signal Master_SerialClock_t	: STD_LOGIC;
-	signal Master_SerialData_i	: STD_LOGIC;
-	signal Master_SerialData_o	: STD_LOGIC;
-	signal Master_SerialData_t	: STD_LOGIC;
+	signal Master_SerialClock_i	: std_logic;
+	signal Master_SerialClock_o	: std_logic;
+	signal Master_SerialClock_t	: std_logic;
+	signal Master_SerialData_i	: std_logic;
+	signal Master_SerialData_o	: std_logic;
+	signal Master_SerialData_t	: std_logic;
 
-	signal Slave1_SerialClock_i	: STD_LOGIC;
-	signal Slave1_SerialClock_o	: STD_LOGIC;
-	signal Slave1_SerialClock_t	: STD_LOGIC;
-	signal Slave1_SerialData_i	: STD_LOGIC;
-	signal Slave1_SerialData_o	: STD_LOGIC;
-	signal Slave1_SerialData_t	: STD_LOGIC;
+	signal Slave1_SerialClock_i	: std_logic;
+	signal Slave1_SerialClock_o	: std_logic;
+	signal Slave1_SerialClock_t	: std_logic;
+	signal Slave1_SerialData_i	: std_logic;
+	signal Slave1_SerialData_o	: std_logic;
+	signal Slave1_SerialData_t	: std_logic;
 
 begin
 	-- initialize global simulation status
@@ -140,9 +140,9 @@ begin
 		);
 
 	blkSerialClock : block
-		signal SerialClock_Wire	: STD_LOGIC;
-		signal Master_Wire			: STD_LOGIC		:= 'Z';
-		signal Slave1_Wire			: STD_LOGIC		:= 'Z';
+		signal SerialClock_Wire	: std_logic;
+		signal Master_Wire			: std_logic		:= 'Z';
+		signal Slave1_Wire			: std_logic		:= 'Z';
 	begin
 		-- pullup resistor
 		SerialClock_Wire			<= 'H';
@@ -158,9 +158,9 @@ begin
 	end block;
 
 	blkSerialData : block
-		signal SerialData_Wire	: STD_LOGIC;
-		signal Master_Wire			: STD_LOGIC		:= 'Z';
-		signal Slave1_Wire			: STD_LOGIC		:= 'Z';
+		signal SerialData_Wire	: std_logic;
+		signal Master_Wire			: std_logic		:= 'Z';
+		signal Slave1_Wire			: std_logic		:= 'Z';
 	begin
 		-- pullup resistor
 		SerialData_Wire				<= 'H';

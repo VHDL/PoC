@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Module:				 	TODO
+-- Entity:				 	TODO
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,7 +26,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -42,35 +41,35 @@ use			PoC.xil.all;
 
 entity xil_DRP_BusSync is
 	port (
-		In_Clock			: in	STD_LOGIC;
-		In_Reset			: in	STD_LOGIC;
-		In_Enable			: in	STD_LOGIC;																				--
+		In_Clock			: in	std_logic;
+		In_Reset			: in	std_logic;
+		In_Enable			: in	std_logic;																				--
 		In_Address		: in	T_XIL_DRP_ADDRESS;																--
-		In_ReadWrite	: in	STD_LOGIC;																				--
+		In_ReadWrite	: in	std_logic;																				--
 		In_DataIn			: in	T_XIL_DRP_DATA;																		--
 		In_DataOut		: out	T_XIL_DRP_DATA;																		--
-		In_Ack				: out	STD_LOGIC;																				--
+		In_Ack				: out	std_logic;																				--
 
-		Out_Clock			: in	STD_LOGIC;
-		Out_Reset			: in	STD_LOGIC;
-		Out_Enable		: out	STD_LOGIC;																				--
+		Out_Clock			: in	std_logic;
+		Out_Reset			: in	std_logic;
+		Out_Enable		: out	std_logic;																				--
 		Out_Address		: out	T_XIL_DRP_ADDRESS;																--
-		Out_ReadWrite	: out	STD_LOGIC;																				--
+		Out_ReadWrite	: out	std_logic;																				--
 		Out_DataIn		: in	T_XIL_DRP_DATA;																		--
 		Out_DataOut		: out	T_XIL_DRP_DATA;																		--
-		Out_Ack				: in	STD_LOGIC																					--
+		Out_Ack				: in	std_logic																					--
 	);
 end entity;
 
 
 architecture rtl of xil_DRP_BusSync is
-	signal Reset_1						: STD_LOGIC;
-	signal Reset_2						: STD_LOGIC;
-	signal Enable_2						: STD_LOGIC;
-	signal Ready_1						: STD_LOGIC;
+	signal Reset_1						: std_logic;
+	signal Reset_2						: std_logic;
+	signal Enable_2						: std_logic;
+	signal Ready_1						: std_logic;
 
-	signal Reg_ReadWrite_1		: STD_LOGIC						:= '0';
-	signal Reg_ReadWrite_2		: STD_LOGIC						:= '0';
+	signal Reg_ReadWrite_1		: std_logic						:= '0';
+	signal Reg_ReadWrite_2		: std_logic						:= '0';
 	signal Reg_Address_1			: T_XIL_DRP_ADDRESS		:= (others => '0');
 	signal Reg_Address_2			: T_XIL_DRP_ADDRESS		:= (others => '0');
 	signal Reg_DataIn_1				: T_XIL_DRP_DATA			:= (others => '0');

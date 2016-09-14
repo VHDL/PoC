@@ -1,41 +1,41 @@
-LIBRARY IEEE;
-USE	IEEE.STD_LOGIC_1164.ALL;
-USE	IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use	IEEE.STD_LOGIC_1164.all;
+use	IEEE.NUMERIC_STD.all;
 
-ENTITY EventSync IS
-  PORT (
-	Clock1			: IN	STD_LOGIC;															-- input clock domain
-	Clock2			: IN	STD_LOGIC;															-- output clock domain
-	src			: IN	STD_LOGIC;
-	strobe			: OUT	STD_LOGIC				-- event detect
+entity EventSync is
+  port (
+	Clock1			: in	std_logic;															-- input clock domain
+	Clock2			: in	std_logic;															-- output clock domain
+	src			: in	std_logic;
+	strobe			: out	std_logic				-- event detect
 	);
-END;
+end;
 
-ARCHITECTURE rtl OF EventSync IS
-	SIGNAL sreg		: STD_LOGIC	:= '0';
-	SIGNAL sample		: STD_LOGIC_VECTOR(1 downto 0)	:= "00";
-	SIGNAL toggle		: STD_LOGIC := '0';
-BEGIN
+architecture rtl of EventSync is
+	signal sreg		: std_logic	:= '0';
+	signal sample		: std_logic_vector(1 downto 0)	:= "00";
+	signal toggle		: std_logic := '0';
+begin
 	-- input T-FF @Clock1
-	PROCESS(Clock1)
-	BEGIN
-		IF rising_edge(Clock1) THEN
-			IF (src = '1' AND sreg = '0') THEN
+	process(Clock1)
+	begin
+		if rising_edge(Clock1) then
+			if (src = '1' and sreg = '0') then
 				toggle <= not toggle;
-			END IF;
+			end if;
 			sreg <= src;
-		END IF;
-	END PROCESS;
+		end if;
+	end process;
 
 	-- D-FFs @Clock2
-	PROCESS(Clock2)
-	BEGIN
-		IF rising_edge(Clock2) THEN
+	process(Clock2)
+	begin
+		if rising_edge(Clock2) then
 			sample <= sample(0) & toggle;
-		END IF;
-	END PROCESS;
+		end if;
+	end process;
 
 	-- calculate event signal
-	strobe <= sample(0) XOR sample(1);
+	strobe <= sample(0) xor sample(1);
 
-END;
+end;

@@ -4,6 +4,13 @@
 # Documentation
 README.md
 
+# subdirectories
+hooks/
+filters/
+
+# manual tools
+build_md.py
+
 # scripts to customize git
 git-alias.setup.sh
 git-alias.setup.ps1

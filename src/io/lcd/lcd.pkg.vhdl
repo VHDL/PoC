@@ -1,19 +1,18 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --									Thomas B. Preußer
 --
--- Module:				 	TODO
+-- Entity:				 	TODO
 --
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -28,7 +27,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
 library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
@@ -43,14 +42,14 @@ use			PoC.physical.all;
 package lcd is
 
 	-- define array indices
-	constant MAX_LCD_COLUMN_COUNT			: POSITIVE			:= 16;
-	constant MAX_LCD_ROW_COUNT				: POSITIVE			:= 2;
+	constant MAX_LCD_COLUMN_COUNT			: positive			:= 16;
+	constant MAX_LCD_ROW_COUNT				: positive			:= 2;
 
-	constant T_LCD_COLUMN_INDEX_BW		: POSITIVE			:= log2ceilnz(MAX_LCD_COLUMN_COUNT);
-	constant T_LCD_ROW_INDEX_BW				: POSITIVE			:= log2ceilnz(MAX_LCD_ROW_COUNT);
+	constant T_LCD_COLUMN_INDEX_BW		: positive			:= log2ceilnz(MAX_LCD_COLUMN_COUNT);
+	constant T_LCD_ROW_INDEX_BW				: positive			:= log2ceilnz(MAX_LCD_ROW_COUNT);
 
-	subtype T_LCD_COLUMN_INDEX				is INTEGER range 0 to MAX_LCD_COLUMN_COUNT - 1;
-	subtype T_LCD_ROW_INDEX						is INTEGER range 0 to MAX_LCD_ROW_COUNT - 1;
+	subtype T_LCD_COLUMN_INDEX				is integer range 0 to MAX_LCD_COLUMN_COUNT - 1;
+	subtype T_LCD_ROW_INDEX						is integer range 0 to MAX_LCD_ROW_COUNT - 1;
 
 	type T_LCD_CHAR is (
 		LCD_CHAR_SPACE,
@@ -67,9 +66,9 @@ package lcd is
 		LCD_LCHAR_u, LCD_LCHAR_v, LCD_LCHAR_w, LCD_LCHAR_x, LCD_LCHAR_y, LCD_LCHAR_z
 	);
 
-	type T_LCD_CHAR_VECTOR	is array(NATURAL range <>)	of T_LCD_CHAR;
+	type T_LCD_CHAR_VECTOR	is array(natural range <>)	of T_LCD_CHAR;
 
-	subtype T_LCD_ROW				is T_RAWSTRING(0 to MAX_LCD_COLUMN_COUNT - 1);						-- don't use "IS ARRAY (T_LCD_COLUMN_INDEX)" => expression is not sliceable
+	subtype T_LCD_ROW				is T_RAWSTRING(0 to MAX_LCD_COLUMN_COUNT - 1);						-- don't use "IS array (T_LCD_COLUMN_INDEX)" => expression is not sliceable
 	type		T_LCD						is array (T_LCD_ROW_INDEX)	of T_LCD_ROW;
 
 
@@ -115,8 +114,8 @@ package lcd is
 
 	-- command bytes for a KS0066U LCD controller
 	-- ===========================================================================
-	constant KS0066U_REG_COMMAND							: STD_LOGIC	:= '0';
-	constant KS0066U_REG_DATA									: STD_LOGIC	:= '1';
+	constant KS0066U_REG_COMMAND							: std_logic	:= '0';
+	constant KS0066U_REG_DATA									: std_logic	:= '1';
 
 
 	-- command bytes for a KS0066U LCD controller
@@ -168,85 +167,85 @@ package lcd is
 
 	procedure LCDBufferProjection(signal buffer1 : in T_LCD_CHAR_VECTOR; signal buffer2 : out T_LCD_CHAR_VECTOR);
 
-	function Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) return T_BCD;
+	function Bin2BCD(Sum_In : T_BCD; C_In : std_logic) return T_BCD;
 
-	function calc_length(slv_length : POSITIVE) return POSITIVE;
+	function calc_length(slv_length : positive) return positive;
 
-	function to_LCD_CHAR_VECTOR(slv : STD_LOGIC_VECTOR) return T_LCD_CHAR_VECTOR;
+	function to_LCD_CHAR_VECTOR(slv : std_logic_vector) return T_LCD_CHAR_VECTOR;
 	function to_LCD_CHAR_VECTOR(rawstr : T_RAWSTRING) return T_LCD_CHAR_VECTOR;
-	function to_LCD_CHAR_VECTOR(str : STRING) return T_LCD_CHAR_VECTOR;
+	function to_LCD_CHAR_VECTOR(str : string) return T_LCD_CHAR_VECTOR;
 
 	function to_LCD_CHAR(slv : T_SLV_4) return T_LCD_CHAR;
 	function to_LCD_CHAR2(rawchar : T_RAWCHAR) return T_LCD_CHAR;
-	function to_LCD_CHAR(char : CHARACTER) return T_LCD_CHAR;
+	function to_LCD_CHAR(char : character) return T_LCD_CHAR;
 
 	function LCD_CHAR2Bin(char : T_LCD_CHAR) return T_SLV_8;
 
 	function lcd_go_home(row_us : std_logic_vector) return T_SLV_8;
-	function lcd_display_on(ShowCursor : BOOLEAN; Blink : BOOLEAN) return T_SLV_8;
+	function lcd_display_on(ShowCursor : boolean; Blink : boolean) return T_SLV_8;
 
-	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) return T_LCD_CHAR;
-	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) return T_LCD_CHAR_VECTOR;
+	function ite(cond : boolean; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) return T_LCD_CHAR;
+	function ite(cond : boolean; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) return T_LCD_CHAR_VECTOR;
 
-END;
+end;
 
 library	IEEE;
 use			IEEE.numeric_std.all;
 
 package body lcd is
-	FUNCTION to_char(bcd : T_BCD) return CHARACTER IS
-		VARIABLE temp		: T_UINT_8;
-	BEGIN
+	function to_char(bcd : T_BCD) return character is
+		variable temp		: T_UINT_8;
+	begin
 		temp := to_integer(unsigned(bcd));
-		return ite((temp <= 9), CHARACTER'val(temp), '?');
-	END;
+		return ite((temp <= 9), character'val(temp), '?');
+	end;
 
-	FUNCTION calc_length(slv_length : POSITIVE) return POSITIVE IS
-	BEGIN
+	function calc_length(slv_length : positive) return positive is
+	begin
 		return ((slv_length - 1) / 4) + 1;
-	END;
+	end;
 
-	FUNCTION to_LCD_CHAR_VECTOR(slv : STD_LOGIC_VECTOR) return T_LCD_CHAR_VECTOR IS
-		CONSTANT Segments		: POSITIVE																	:= calc_length(slv'length);
+	function to_LCD_CHAR_VECTOR(slv : std_logic_vector) return T_LCD_CHAR_VECTOR is
+		constant Segments		: positive																	:= calc_length(slv'length);
 
-		VARIABLE Result			: T_LCD_CHAR_VECTOR(0 TO Segments - 1)	:= (OTHERS => LCD_CHAR_0);
-		VARIABLE SliceStart	: NATURAL;
-		VARIABLE Slice			: T_SLV_4;
-	BEGIN
-		FOR I IN Segments - 1 DOWNTO 0 LOOP
+		variable Result			: T_LCD_CHAR_VECTOR(0 to Segments - 1)	:= (others => LCD_CHAR_0);
+		variable SliceStart	: natural;
+		variable Slice			: T_SLV_4;
+	begin
+		for i in Segments - 1 downto 0 loop
 			SliceStart				:= (I * 4) + slv'low;
 
-			Slice							:= (OTHERS => '0');
-			FOR J IN 0 TO 3 LOOP
-				EXIT WHEN ((SliceStart + J) > slv'high);
+			Slice							:= (others => '0');
+			for j in 0 to 3 loop
+				exit when ((SliceStart + J) > slv'high);
 				Slice(J)				:= slv(SliceStart + J);
-			END LOOP;
+			end loop;
 
 			Result(I)					:= to_LCD_CHAR(Slice);
-		END LOOP;
+		end loop;
 
 		return Result;
-	END;
+	end;
 
-	FUNCTION to_LCD_CHAR_VECTOR(rawstr : T_RAWSTRING) return T_LCD_CHAR_VECTOR IS
-		VARIABLE Result			: T_LCD_CHAR_VECTOR(0 TO rawstr'length - 1)	:= (OTHERS => LCD_CHAR_SPACE);
-	BEGIN
-		FOR I IN 0 TO rawstr'length - 1 LOOP
+	function to_LCD_CHAR_VECTOR(rawstr : T_RAWSTRING) return T_LCD_CHAR_VECTOR is
+		variable Result			: T_LCD_CHAR_VECTOR(0 to rawstr'length - 1)	:= (others => LCD_CHAR_SPACE);
+	begin
+		for i in 0 to rawstr'length - 1 loop
 			Result(I)					:= to_LCD_CHAR2(rawstr(I));
-		END LOOP;
+		end loop;
 
 		return Result;
-	END;
+	end;
 
-	FUNCTION to_LCD_CHAR_VECTOR(str : STRING) return T_LCD_CHAR_VECTOR IS
-		VARIABLE Result			: T_LCD_CHAR_VECTOR(0 TO str'length - 1)	:= (OTHERS => LCD_CHAR_SPACE);
-	BEGIN
-		FOR I IN 1 TO str'length LOOP
+	function to_LCD_CHAR_VECTOR(str : string) return T_LCD_CHAR_VECTOR is
+		variable Result			: T_LCD_CHAR_VECTOR(0 to str'length - 1)	:= (others => LCD_CHAR_SPACE);
+	begin
+		for i in 1 to str'length loop
 			Result(I - 1)			:= to_LCD_CHAR(str(I));
-		END LOOP;
+		end loop;
 
 		return Result;
-	END;
+	end;
 
 	procedure LCDBufferProjection(signal buffer1 : in T_LCD_CHAR_VECTOR; signal buffer2 : out T_LCD_CHAR_VECTOR) is
 	begin
@@ -279,7 +278,7 @@ package body lcd is
 		end case;
 	end;
 
-	function to_LCD_CHAR(char : CHARACTER) return T_LCD_CHAR is
+	function to_LCD_CHAR(char : character) return T_LCD_CHAR is
 	begin
 		case char is
 			when ' ' =>			return LCD_CHAR_SPACE;
@@ -559,46 +558,46 @@ package body lcd is
 		return "000001" & to_sl(inc_ndec) & to_sl(shift);
 	end;
 
-	FUNCTION lcd_go_home(row_us : std_logic_vector) return T_SLV_8 IS
-	BEGIN
+	function lcd_go_home(row_us : std_logic_vector) return T_SLV_8 is
+	begin
 		return '1' & row_us(0) & "000000";
-	END;
+	end;
 
-	FUNCTION lcd_display_on(ShowCursor : BOOLEAN; Blink : BOOLEAN) return T_SLV_8 IS
-		VARIABLE Result	: T_SLV_8														:= x"00";
-	BEGIN
+	function lcd_display_on(ShowCursor : boolean; Blink : boolean) return T_SLV_8 is
+		variable Result	: T_SLV_8														:= x"00";
+	begin
 		Result(3)		:= '1';
 		Result(2)		:= '1';			-- display on/off bit
 
-		IF (ShowCursor = TRUE) THEN
+		if ShowCursor then
 			Result(1)	:= '1';			-- show cursor on/off bit
-		END IF;
-		IF (Blink = TRUE) THEN
+		end if;
+		if Blink then
 			Result(0)	:= '1';			-- blinking on/off bit
-		END IF;
+		end if;
 
 		return Result;
-	END;
+	end;
 
-	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) return T_LCD_CHAR is
+	function ite(cond : boolean; value1 : T_LCD_CHAR; value2 : T_LCD_CHAR) return T_LCD_CHAR is
 	begin
-		if (cond = TRUE) then
+		if cond then
 			return value1;
 		else
 			return value2;
 		end if;
 	end;
 
-	function ite(cond : BOOLEAN; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) return T_LCD_CHAR_VECTOR is
+	function ite(cond : boolean; value1 : T_LCD_CHAR_VECTOR; value2 : T_LCD_CHAR_VECTOR) return T_LCD_CHAR_VECTOR is
 	begin
-		if (cond = TRUE) then
+		if cond then
 			return value1;
 		else
 			return value2;
 		end if;
 	end;
 
-	function Bin2BCD(Sum_In : T_BCD; C_In : STD_LOGIC) return T_BCD is
+	function Bin2BCD(Sum_In : T_BCD; C_In : std_logic) return T_BCD is
 	begin
 		if C_In = '0' then
 			case Sum_In is

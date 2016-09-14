@@ -1,0 +1,18 @@
+##
+## USB UART
+## -----------------------------------------------------------------------------
+##	Bank:						13
+##		VCCO:					1.8V (FPGA_1V8)
+##	Location:				U44
+##		Vendor:				Silicon Labs
+##		Device:				CP2103-GM
+##		Baud-Rate:		300 Bd - 1 MBd
+##	Note:						USB-UART is the master, FPGA is the slave => so TX is an input and RX an output
+NET "AC701_USB_UART_TX"						LOC = "T19";		## {IN}			U44.25 {OUT}
+NET "AC701_USB_UART_RX"						LOC = "U19";		## {OUT}		U44.24 {IN}
+NET "AC701_USB_UART_RTS_n"				LOC = "V19";		## {IN}			U44.23 {OUT}	Ready to Transmit (USB-UART has new data)
+NET "AC701_USB_UART_CTS_n"				LOC = "W19";		## {OUT}		U44.22 {IN}		Clear to Send (FPGA is able to receive data)
+NET "AC701_USB_UART_*"						IOSTANDARD = LVCMOS25;
+
+# Ignore timings on async I/O pins
+NET "AC701_USB_UART_*"						TIG;

@@ -1,18 +1,17 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
--- ============================================================================
--- Module:				 	TODO
---
+-- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
+-- Entity:				 	TODO
+--
 -- Description:
--- ------------------------------------
---		TODO
+-- -------------------------------------
+-- .. TODO:: No documentation available.
 --
 -- License:
--- ============================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -27,138 +26,138 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- ============================================================================
+-- =============================================================================
 
-LIBRARY IEEE;
-USE			IEEE.STD_LOGIC_1164.ALL;
-USE			IEEE.NUMERIC_STD.ALL;
+library IEEE;
+use			IEEE.STD_LOGIC_1164.all;
+use			IEEE.NUMERIC_STD.all;
 
-LIBRARY PoC;
---USE			PoC.config.ALL;
-USE			PoC.utils.ALL;
-USE			PoC.vectors.ALL;
-USE			PoC.net.ALL;
+library PoC;
+--use			PoC.config.all;
+use			PoC.utils.all;
+use			PoC.vectors.all;
+use			PoC.net.all;
 
 
-ENTITY eth_GEMAC_GMII IS
-	GENERIC (
-		DEBUG														: BOOLEAN									:= TRUE;
+entity eth_GEMAC_GMII is
+	generic (
+		DEBUG														: boolean									:= TRUE;
 		CLOCK_FREQ_MHZ									: REAL										:= 125.0;					-- 125 MHz
 
-		TX_FIFO_DEPTH										: POSITIVE								:= 2048;					-- 2 KiB TX Buffer
-		TX_INSERT_CROSSCLOCK_FIFO				: BOOLEAN									:= TRUE;					-- true = crossclock fifo; false = fifo_glue
-		TX_SUPPORT_JUMBO_FRAMES					: BOOLEAN									:= FALSE;					-- TODO:
-		TX_DISABLE_UNDERRUN_PROTECTION	: BOOLEAN									:= FALSE;					-- TODO: 							true: no protection; false: store complete frame in buffer befor transmitting it
+		TX_FIFO_DEPTH										: positive								:= 2048;					-- 2 KiB TX Buffer
+		TX_INSERT_CROSSCLOCK_FIFO				: boolean									:= TRUE;					-- true = crossclock fifo; false = fifo_glue
+		TX_SUPPORT_JUMBO_FRAMES					: boolean									:= FALSE;					-- TODO:
+		TX_DISABLE_UNDERRUN_PROTECTION	: boolean									:= FALSE;					-- TODO: 							true: no protection; false: store complete frame in buffer befor transmitting it
 
-		RX_FIFO_DEPTH										: POSITIVE								:= 4096;					-- 4 KiB TX Buffer
-		RX_INSERT_CROSSCLOCK_FIFO				: BOOLEAN									:= TRUE;					-- true = crossclock fifo; false = fifo_glue
-		RX_SUPPORT_JUMBO_FRAMES					: BOOLEAN									:= FALSE					-- TODO:
+		RX_FIFO_DEPTH										: positive								:= 4096;					-- 4 KiB TX Buffer
+		RX_INSERT_CROSSCLOCK_FIFO				: boolean									:= TRUE;					-- true = crossclock fifo; false = fifo_glue
+		RX_SUPPORT_JUMBO_FRAMES					: boolean									:= FALSE					-- TODO:
 	);
-	PORT (
+	port (
 		-- clock interface
-		TX_Clock									: IN	STD_LOGIC;
-		RX_Clock									: IN	STD_LOGIC;
-		Eth_TX_Clock							: IN	STD_LOGIC;
-		Eth_RX_Clock							: IN	STD_LOGIC;
-		RS_TX_Clock								: IN	STD_LOGIC;
-		RS_RX_Clock								: IN	STD_LOGIC;
+		TX_Clock									: in	std_logic;
+		RX_Clock									: in	std_logic;
+		Eth_TX_Clock							: in	std_logic;
+		Eth_RX_Clock							: in	std_logic;
+		RS_TX_Clock								: in	std_logic;
+		RS_RX_Clock								: in	std_logic;
 
 		-- reset interface
-		TX_Reset									: IN	STD_LOGIC;
-		RX_Reset									: IN	STD_LOGIC;
-		RS_TX_Reset								: IN	STD_LOGIC;
-		RS_RX_Reset								: IN	STD_LOGIC;
+		TX_Reset									: in	std_logic;
+		RX_Reset									: in	std_logic;
+		RS_TX_Reset								: in	std_logic;
+		RS_RX_Reset								: in	std_logic;
 
 		-- Command-Status-Error interface
-		TX_BufferUnderrun					: OUT	STD_LOGIC;
-		RX_FrameDrop							: OUT	STD_LOGIC;
-		RX_FrameCorrupt						: OUT	STD_LOGIC;
+		TX_BufferUnderrun					: out	std_logic;
+		RX_FrameDrop							: out	std_logic;
+		RX_FrameCorrupt						: out	std_logic;
 
 		-- MAC LocalLink interface
-		TX_Valid									: IN	STD_LOGIC;
-		TX_Data										: IN	T_SLV_8;
-		TX_SOF										: IN	STD_LOGIC;
-		TX_EOF										: IN	STD_LOGIC;
-		TX_Ack										: OUT	STD_LOGIC;
+		TX_Valid									: in	std_logic;
+		TX_Data										: in	T_SLV_8;
+		TX_SOF										: in	std_logic;
+		TX_EOF										: in	std_logic;
+		TX_Ack										: out	std_logic;
 
-		RX_Valid									: OUT	STD_LOGIC;
-		RX_Data										: OUT	T_SLV_8;
-		RX_SOF										: OUT	STD_LOGIC;
-		RX_EOF										: OUT	STD_LOGIC;
-		RX_Ack										: In	STD_LOGIC;
+		RX_Valid									: out	std_logic;
+		RX_Data										: out	T_SLV_8;
+		RX_SOF										: out	std_logic;
+		RX_EOF										: out	std_logic;
+		RX_Ack										: in	std_logic;
 
 		-- MAC-GMII interface
-		RS_TX_Valid								: OUT	STD_LOGIC;
-		RS_TX_Data								: OUT	T_SLV_8;
-		RS_TX_Error								: OUT	STD_LOGIC;
+		RS_TX_Valid								: out	std_logic;
+		RS_TX_Data								: out	T_SLV_8;
+		RS_TX_Error								: out	std_logic;
 
-		RS_RX_Valid								: IN	STD_LOGIC;
-		RS_RX_Data								: IN	T_SLV_8;
-		RS_RX_Error								: IN	STD_LOGIC--;
+		RS_RX_Valid								: in	std_logic;
+		RS_RX_Data								: in	T_SLV_8;
+		RS_RX_Error								: in	std_logic--;
 
 		-- Management Data Input/Output
---		MDIO											: INOUT T_ETHERNET_PHY_INTERFACE_MDIO
+--		MDIO											: inout T_ETHERNET_PHY_INTERFACE_MDIO
 	);
-END;
+end entity;
 
 
-ARCHITECTURE rtl OF eth_GEMAC_GMII IS
-	ATTRIBUTE KEEP							: BOOLEAN;
+architecture rtl of eth_GEMAC_GMII is
+	attribute KEEP							: boolean;
 
-	CONSTANT SOF_BIT						: NATURAL			:= 8;
-	CONSTANT EOF_BIT						: NATURAL			:= 9;
-
-
-	SIGNAL TX_FIFO_Valid				: STD_LOGIC;
-	SIGNAL TX_FIFO_Data					: T_SLV_8;
-	SIGNAL TX_FIFO_SOF					: STD_LOGIC;
-	SIGNAL TX_FIFO_EOF					: STD_LOGIC;
-	SIGNAL TX_FIFO_Commit				: STD_LOGIC;
-
-	SIGNAL TX_MAC_Ack						: STD_LOGIC;
+	constant SOF_BIT						: natural			:= 8;
+	constant EOF_BIT						: natural			:= 9;
 
 
-	SIGNAL RX_MAC_Valid					: STD_LOGIC;
-	SIGNAL RX_MAC_Data					: T_SLV_8;
-	SIGNAL RX_MAC_SOF						: STD_LOGIC;
-	SIGNAL RX_MAC_EOF						: STD_LOGIC;
-	SIGNAL RX_MAC_GoodFrame			: STD_LOGIC;
+	signal TX_FIFO_Valid				: std_logic;
+	signal TX_FIFO_Data					: T_SLV_8;
+	signal TX_FIFO_SOF					: std_logic;
+	signal TX_FIFO_EOF					: std_logic;
+	signal TX_FIFO_Commit				: std_logic;
 
-	SIGNAL RX_FIFO_put					: STD_LOGIC;
-	SIGNAL RX_FIFO_Full					: STD_LOGIC;
+	signal TX_MAC_Ack						: std_logic;
 
-	SIGNAL RX_FIFO_Commit				: STD_LOGIC;
-	SIGNAL RX_FIFO_Rollback			: STD_LOGIC;
 
-BEGIN
+	signal RX_MAC_Valid					: std_logic;
+	signal RX_MAC_Data					: T_SLV_8;
+	signal RX_MAC_SOF						: std_logic;
+	signal RX_MAC_EOF						: std_logic;
+	signal RX_MAC_GoodFrame			: std_logic;
+
+	signal RX_FIFO_put					: std_logic;
+	signal RX_FIFO_Full					: std_logic;
+
+	signal RX_FIFO_Commit				: std_logic;
+	signal RX_FIFO_Rollback			: std_logic;
+
+begin
 	-- ==========================================================================================================================================================
-	-- ASSERT statements
+	-- assert statements
 	-- ==========================================================================================================================================================
-	ASSERT TX_FIFO_DEPTH > ite(TX_DISABLE_UNDERRUN_PROTECTION, 0, ite(TX_SUPPORT_JUMBO_FRAMES, 10*1000, 1600))	REPORT "TX-FIFO is to small" SEVERITY ERROR;
-	ASSERT RX_FIFO_DEPTH > ite(TX_SUPPORT_JUMBO_FRAMES, 10*1000, 1600)																					REPORT "RX-FIFO is to small" SEVERITY ERROR;
+	assert TX_FIFO_DEPTH > ite(TX_DISABLE_UNDERRUN_PROTECTION, 0, ite(TX_SUPPORT_JUMBO_FRAMES, 10*1000, 1600))	report "TX-FIFO is to small" severity ERROR;
+	assert RX_FIFO_DEPTH > ite(TX_SUPPORT_JUMBO_FRAMES, 10*1000, 1600)																					report "RX-FIFO is to small" severity ERROR;
 
 	-- ==========================================================================================================================================================
 	-- TX path
 	-- ==========================================================================================================================================================
-	blkTXFIFO : BLOCK
-		SIGNAL XClk_TX_FIFO_DataIn				: STD_LOGIC_VECTOR(9 DOWNTO 0);
-		SIGNAL XClk_TX_FIFO_Full					: STD_LOGIC;
+	blkTXFIFO : block
+		signal XClk_TX_FIFO_DataIn				: std_logic_vector(9 downto 0);
+		signal XClk_TX_FIFO_Full					: std_logic;
 
-		SIGNAL XClk_TX_FIFO_Valid					: STD_LOGIC;
-		SIGNAL XClk_TX_FIFO_DataOut				: STD_LOGIC_VECTOR(XClk_TX_FIFO_DataIn'range);
+		signal XClk_TX_FIFO_Valid					: std_logic;
+		signal XClk_TX_FIFO_DataOut				: std_logic_vector(XClk_TX_FIFO_DataIn'range);
 
-		SIGNAL XClk_TX_FIFO_got						: STD_LOGIC;
-		SIGNAL TX_FIFO_DataOut						: STD_LOGIC_VECTOR(XClk_TX_FIFO_DataIn'range);
-		SIGNAL TX_FIFO_Full								: STD_LOGIC;
+		signal XClk_TX_FIFO_got						: std_logic;
+		signal TX_FIFO_DataOut						: std_logic_vector(XClk_TX_FIFO_DataIn'range);
+		signal TX_FIFO_Full								: std_logic;
 
-	BEGIN
+	begin
 		XClk_TX_FIFO_DataIn(TX_Data'range)		<= TX_Data;
 		XClk_TX_FIFO_DataIn(SOF_BIT)					<= TX_SOF;
 		XClk_TX_FIFO_DataIn(EOF_BIT)					<= TX_EOF;
 
-		genTX_XClk_0 : IF (TX_INSERT_CROSSCLOCK_FIFO = TRUE) GENERATE
-			XClk_TX_FIFO : ENTITY PoC.fifo_ic_got
-				GENERIC MAP (
+		genTX_XClk_0 : if (TX_INSERT_CROSSCLOCK_FIFO = TRUE) generate
+			XClk_TX_FIFO : entity PoC.fifo_ic_got
+				generic map (
 					D_BITS							=> XClk_TX_FIFO_DataIn'length,
 					MIN_DEPTH						=> 16,
 					DATA_REG						=> TRUE,
@@ -166,14 +165,14 @@ BEGIN
 					ESTATE_WR_BITS			=> 0,
 					FSTATE_RD_BITS			=> 0
 				)
-				PORT MAP (
+				port map (
 					-- Write Interface
 					clk_wr							=> TX_Clock,
 					rst_wr							=> TX_Reset,
 					put									=> TX_Valid,
 					din									=> XClk_TX_FIFO_DataIn,
 					full								=> XClk_TX_FIFO_Full,
-					estate_wr						=> OPEN,
+					estate_wr						=> open,
 
 					-- Read Interface
 					clk_rd							=> RS_TX_Clock,
@@ -181,17 +180,17 @@ BEGIN
 					got									=> XClk_TX_FIFO_got,
 					valid								=> XClk_TX_FIFO_Valid,
 					dout								=> XClk_TX_FIFO_DataOut,
-					fstate_rd						=> OPEN
+					fstate_rd						=> open
 				);
 
-			TX_Ack		<= NOT XClk_TX_FIFO_Full;
-		END GENERATE;
-		genTX_XClk_1 : IF (TX_INSERT_CROSSCLOCK_FIFO = FALSE) GENERATE
-			Glue_TX_FIFO : ENTITY PoC.fifo_glue
-				GENERIC MAP (
+			TX_Ack		<= not XClk_TX_FIFO_Full;
+		end generate;
+		genTX_XClk_1 : if (TX_INSERT_CROSSCLOCK_FIFO = FALSE) generate
+			Glue_TX_FIFO : entity PoC.fifo_glue
+				generic map (
 					D_BITS							=> XClk_TX_FIFO_DataIn'length
 				)
-				PORT MAP (
+				port map (
 					-- Control
 					clk									=> TX_Clock,
 					rst									=> TX_Reset,
@@ -204,7 +203,7 @@ BEGIN
 					vld									=> XClk_TX_FIFO_Valid,
 					do									=> XClk_TX_FIFO_DataOut
 				);
-		END GENERATE;
+		end generate;
 
 
 		-- TX-Buffer Underrun Protection (configured by: TX_DISABLE_UNDERRUN_PROTECTION)
@@ -219,8 +218,8 @@ BEGIN
 		-- ========================================================================================================================================================
 		TX_FIFO_Commit		<= ite(TX_DISABLE_UNDERRUN_PROTECTION, '1', XClk_TX_FIFO_DataOut(EOF_BIT));
 
-		TX_FIFO : ENTITY PoC.fifo_cc_got_tempput
-			GENERIC MAP (
+		TX_FIFO : entity PoC.fifo_cc_got_tempput
+			generic map (
 				D_BITS							=> XClk_TX_FIFO_DataOut'length,
 				MIN_DEPTH						=> TX_FIFO_DEPTH,
 				ESTATE_WR_BITS			=> 0,
@@ -229,7 +228,7 @@ BEGIN
 				STATE_REG						=> TRUE,
 				OUTPUT_REG					=> FALSE
 			)
-			PORT MAP (
+			port map (
 				clk									=> RS_TX_Clock,
 				rst									=> RS_TX_Reset,
 
@@ -237,7 +236,7 @@ BEGIN
 				put									=> XClk_TX_FIFO_Valid,
 				din									=> XClk_TX_FIFO_DataOut,
 				full								=> TX_FIFO_Full,
-				estate_wr						=> OPEN,
+				estate_wr						=> open,
 
 				-- Temporary put control
 				commit							=> TX_FIFO_Commit,
@@ -247,18 +246,18 @@ BEGIN
 				got									=> TX_MAC_Ack,
 				valid								=> TX_FIFO_Valid,
 				dout								=> TX_FIFO_DataOut,
-				fstate_rd						=> OPEN
+				fstate_rd						=> open
 			);
 
-		XClk_TX_FIFO_got		<= NOT TX_FIFO_Full;
+		XClk_TX_FIFO_got		<= not TX_FIFO_Full;
 
 		TX_FIFO_Data		<= TX_FIFO_DataOut(TX_FIFO_Data'range);
 		TX_FIFO_SOF			<= TX_FIFO_DataOut(SOF_BIT);
 		TX_FIFO_EOF			<= TX_FIFO_DataOut(EOF_BIT);
-	END BLOCK;
+	end block;
 
-	TX_MAC : ENTITY PoC.Eth_GEMAC_TX
-		PORT MAP (
+	TX_MAC : entity PoC.Eth_GEMAC_TX
+		port map (
 			RS_TX_Clock								=> RS_TX_Clock,
 			RS_TX_Reset								=> RS_TX_Reset,
 
@@ -281,8 +280,8 @@ BEGIN
 	-- ==========================================================================================================================================================
 	-- RX path
 	-- ==========================================================================================================================================================
-	RX_MAC : ENTITY PoC.Eth_GEMAC_RX
-		PORT MAP (
+	RX_MAC : entity PoC.Eth_GEMAC_RX
+		port map (
 			RS_RX_Clock								=> RS_RX_Clock,
 			RS_RX_Reset								=> RS_RX_Reset,
 
@@ -301,32 +300,32 @@ BEGIN
 			RS_RX_Error								=> RS_RX_Error
 		);
 
-	blkRXFSM : BLOCK
-		TYPE T_STATE IS (ST_IDLE, ST_DATA);
+	blkRXFSM : block
+		type T_STATE is (ST_IDLE, ST_DATA);
 
-		SIGNAL State					: T_STATE					:= ST_IDLE;
-		SIGNAL NextState			: T_STATE;
+		signal State					: T_STATE					:= ST_IDLE;
+		signal NextState			: T_STATE;
 
-		SIGNAL RX_Is_SOF			: STD_LOGIC;
-		SIGNAL RX_Is_EOF			: STD_LOGIC;
+		signal RX_Is_SOF			: std_logic;
+		signal RX_Is_EOF			: std_logic;
 
-	BEGIN
-		RX_Is_SOF							<= RX_MAC_Valid AND RX_MAC_SOF;
-		RX_Is_EOF							<= RX_MAC_Valid AND RX_MAC_EOF;
+	begin
+		RX_Is_SOF							<= RX_MAC_Valid and RX_MAC_SOF;
+		RX_Is_EOF							<= RX_MAC_Valid and RX_MAC_EOF;
 
-		PROCESS(RS_RX_Clock)
-		BEGIN
-			IF rising_edge(RS_RX_Clock) THEN
-				IF (RS_RX_Reset = '1') THEN
+		process(RS_RX_Clock)
+		begin
+			if rising_edge(RS_RX_Clock) then
+				if (RS_RX_Reset = '1') then
 					State						<= ST_IDLE;
-				ELSE
+				else
 					State						<= NextState;
-				END IF;
-			END IF;
-		END PROCESS;
+				end if;
+			end if;
+		end process;
 
-		PROCESS(State, RX_MAC_Valid, RX_Is_SOF, RX_Is_EOF, RX_MAC_GoodFrame, RX_FIFO_Full)
-		BEGIN
+		process(State, RX_MAC_Valid, RX_Is_SOF, RX_Is_EOF, RX_MAC_GoodFrame, RX_FIFO_Full)
+		begin
 			NextState								<= State;
 
 			RX_FIFO_put							<= '0';
@@ -336,64 +335,64 @@ BEGIN
 			RX_FrameDrop						<= '0';
 			RX_FrameCorrupt					<= '0';
 
-			CASE State IS
-				WHEN ST_IDLE =>
-					IF (RX_FIFO_Full = '1') THEN
-						IF (RX_Is_SOF = '1') THEN
+			case State is
+				when ST_IDLE =>
+					if (RX_FIFO_Full = '1') then
+						if (RX_Is_SOF = '1') then
 							RX_FrameDrop				<= '1';
-						END IF;
-					ELSE
-						IF (RX_Is_SOF = '1') THEN
+						end if;
+					else
+						if (RX_Is_SOF = '1') then
 							RX_FIFO_put					<= '1';
 
 							NextState						<= ST_DATA;
-						END IF;
-					END IF;
+						end if;
+					end if;
 
-				WHEN ST_DATA =>
+				when ST_DATA =>
 					RX_FIFO_put							<= RX_MAC_Valid;
 
-					IF (RX_FIFO_Full = '1') THEN
+					if (RX_FIFO_Full = '1') then
 						RX_FIFO_put						<= '0';
 						RX_FIFO_Rollback			<= '1';
 						RX_FrameDrop					<= '1';
 
 						NextState							<= ST_IDLE;
-					ELSE
-						IF (RX_Is_EOF = '1') THEN
-							IF (RX_MAC_GoodFrame = '1') THEN
+					else
+						if (RX_Is_EOF = '1') then
+							if (RX_MAC_GoodFrame = '1') then
 								RX_FIFO_Commit		<= '1';
-							ELSE
+							else
 								RX_FIFO_Rollback	<= '1';
 								RX_FrameCorrupt		<= '1';
-							END IF;
+							end if;
 
 							NextState						<= ST_IDLE;
-						END IF;
-					END IF;
+						end if;
+					end if;
 
-			END CASE;
-		END PROCESS;
-	END BLOCK;
+			end case;
+		end process;
+	end block;
 
-	blkRXFIFO : BLOCK
-		SIGNAL RX_FIFO_DataIn				: STD_LOGIC_VECTOR(9 DOWNTO 0);
---		SIGNAL RX_FIFO_Full					: STD_LOGIC;
+	blkRXFIFO : block
+		signal RX_FIFO_DataIn				: std_logic_vector(9 downto 0);
+--		signal RX_FIFO_Full					: STD_LOGIC;
 
-		SIGNAL RX_FIFO_got					: STD_LOGIC;
-		SIGNAL RX_FIFO_Valid				: STD_LOGIC;
-		SIGNAL RX_FIFO_DataOut			: STD_LOGIC_VECTOR(RX_FIFO_DataIn'range);
+		signal RX_FIFO_got					: std_logic;
+		signal RX_FIFO_Valid				: std_logic;
+		signal RX_FIFO_DataOut			: std_logic_vector(RX_FIFO_DataIn'range);
 
-		SIGNAL XClk_RX_FIFO_Full		: STD_LOGIC;
-		SIGNAL XClk_RX_FIFO_DataOut	: STD_LOGIC_VECTOR(RX_FIFO_DataIn'range);
+		signal XClk_RX_FIFO_Full		: std_logic;
+		signal XClk_RX_FIFO_DataOut	: std_logic_vector(RX_FIFO_DataIn'range);
 
-	BEGIN
+	begin
 		RX_FIFO_DataIn(RX_MAC_Data'range)		<= RX_MAC_Data;
 		RX_FIFO_DataIn(SOF_BIT)							<= RX_MAC_SOF;
 		RX_FIFO_DataIn(EOF_BIT)							<= RX_MAC_EOF;
 
-		RX_FIFO : ENTITY PoC.fifo_cc_got_tempput
-			GENERIC MAP (
+		RX_FIFO : entity PoC.fifo_cc_got_tempput
+			generic map (
 				D_BITS							=> RX_FIFO_DataIn'length,
 				MIN_DEPTH						=> RX_FIFO_DEPTH,
 				ESTATE_WR_BITS			=> 0,
@@ -402,7 +401,7 @@ BEGIN
 				STATE_REG						=> TRUE,
 				OUTPUT_REG					=> FALSE
 			)
-			PORT MAP (
+			port map (
 				clk									=> RS_RX_Clock,
 				rst									=> RS_RX_Reset,
 
@@ -410,7 +409,7 @@ BEGIN
 				put									=> RX_FIFO_put,
 				din									=> RX_FIFO_DataIn,
 				full								=> RX_FIFO_Full,
-				estate_wr						=> OPEN,
+				estate_wr						=> open,
 
 				-- Temporary put control
 				commit							=> RX_FIFO_Commit,
@@ -420,18 +419,18 @@ BEGIN
 				got									=> RX_FIFO_got,
 				valid								=> RX_FIFO_Valid,
 				dout								=> RX_FIFO_DataOut,
-				fstate_rd						=> OPEN
+				fstate_rd						=> open
 			);
 
-		RX_FIFO_got			<= NOT XClk_RX_FIFO_Full;
+		RX_FIFO_got			<= not XClk_RX_FIFO_Full;
 
 
-		genRX_XClk_0 : IF (RX_INSERT_CROSSCLOCK_FIFO = FALSE) GENERATE
-			Glue_RX_FIFO : ENTITY PoC.fifo_glue
-					GENERIC MAP (
+		genRX_XClk_0 : if (RX_INSERT_CROSSCLOCK_FIFO = FALSE) generate
+			Glue_RX_FIFO : entity PoC.fifo_glue
+					generic map (
 						D_BITS							=> RX_FIFO_DataOut'length
 					)
-					PORT MAP (
+					port map (
 						-- Control
 						clk									=> RX_Clock,
 						rst									=> RX_Reset,
@@ -444,10 +443,10 @@ BEGIN
 						vld									=> RX_Valid,
 						do									=> XClk_RX_FIFO_DataOut
 					);
-		END GENERATE;
-		genRX_XClk_1 : IF (RX_INSERT_CROSSCLOCK_FIFO = TRUE) GENERATE
-			XClk_RX_FIFO : ENTITY PoC.fifo_ic_got
-				GENERIC MAP (
+		end generate;
+		genRX_XClk_1 : if (RX_INSERT_CROSSCLOCK_FIFO = TRUE) generate
+			XClk_RX_FIFO : entity PoC.fifo_ic_got
+				generic map (
 					D_BITS							=> RX_FIFO_DataOut'length,
 					MIN_DEPTH						=> 16,
 					DATA_REG						=> TRUE,
@@ -455,14 +454,14 @@ BEGIN
 					ESTATE_WR_BITS			=> 0,
 					FSTATE_RD_BITS			=> 0
 				)
-				PORT MAP (
+				port map (
 					-- Write Interface
 					clk_wr							=> RS_RX_Clock,
 					rst_wr							=> RS_RX_Reset,
 					put									=> RX_FIFO_Valid,
 					din									=> RX_FIFO_DataOut,
 					full								=> XClk_RX_FIFO_Full,
-					estate_wr						=> OPEN,
+					estate_wr						=> open,
 
 					-- Read Interface
 					clk_rd							=> RX_Clock,
@@ -470,12 +469,12 @@ BEGIN
 					got									=> RX_Ack,
 					valid								=> RX_Valid,
 					dout								=> XClk_RX_FIFO_DataOut,
-					fstate_rd						=> OPEN
+					fstate_rd						=> open
 				);
 
 			RX_Data			<= XClk_RX_FIFO_DataOut(RX_Data'range);
 			RX_SOF			<= XClk_RX_FIFO_DataOut(SOF_BIT);
 			RX_EOF			<= XClk_RX_FIFO_DataOut(EOF_BIT);
-		END GENERATE;
-	END BLOCK;
-END;
+		end generate;
+	end block;
+end architecture;

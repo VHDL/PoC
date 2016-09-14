@@ -1,17 +1,16 @@
 -- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:					Patrick Lehmann
 --									Thomas Frank
 --									Steffen Koehler
 --									Martin Zabel
 --
--- Module: 					Wrapper for Device-Specific Transceivers
+-- Entity: 					Wrapper for Device-Specific Transceivers
 --
 -- Description:
--- ------------------------------------
+-- -------------------------------------
 -- Asynchronous signals: PowerDown, ClockNetwork_Reset, ClockNetwork_ResetDone
 -- Transceiver In/Outputs: VSS_*
 --
@@ -33,7 +32,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,21 +68,21 @@ use			PoC.sata_TransceiverTypes.all;
 
 entity sata_TransceiverLayer is
 	generic (
-		DEBUG											: BOOLEAN											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
-		ENABLE_DEBUGPORT					: BOOLEAN											:= FALSE;																		-- export internal signals to upper layers for debug purposes
+		DEBUG											: boolean											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
+		ENABLE_DEBUGPORT					: boolean											:= FALSE;																		-- export internal signals to upper layers for debug purposes
 		REFCLOCK_FREQ							: FREQ												:= 150 MHz;																								-- 150 MHz
-		PORTS											: POSITIVE										:= 2;																											-- Number of Ports per Transceiver
+		PORTS											: positive										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
 	);
 	port (
 		-- @async --------------------------------------------------------------------------------
-		PowerDown									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		ClockNetwork_Reset				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		ClockNetwork_ResetDone		: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		PowerDown									: in	std_logic_vector(PORTS - 1 downto 0);
+		ClockNetwork_Reset				: in	std_logic_vector(PORTS - 1 downto 0);
+		ClockNetwork_ResetDone		: out	std_logic_vector(PORTS - 1 downto 0);
 
 		-- @SATA_Clock ---------------------------------------------------------------------------
-		Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		ResetDone									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Reset											: in	std_logic_vector(PORTS - 1 downto 0);
+		ResetDone									: out	std_logic_vector(PORTS - 1 downto 0);
 
 		Command										: in	T_SATA_TRANSCEIVER_COMMAND_VECTOR(PORTS - 1 downto 0);
 		Status										: out	T_SATA_TRANSCEIVER_STATUS_VECTOR(PORTS - 1 downto 0);
@@ -93,39 +92,39 @@ entity sata_TransceiverLayer is
 		DebugPortIn								: in	T_SATADBG_TRANSCEIVER_IN_VECTOR(PORTS	- 1 downto 0);
 		DebugPortOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
-		SATA_Clock								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		SATA_Clock_Stable					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		SATA_Clock								: out	std_logic_vector(PORTS - 1 downto 0);
+		SATA_Clock_Stable					: out	std_logic_vector(PORTS - 1 downto 0);
 
-		RP_Reconfig								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_Reconfig								: in	std_logic_vector(PORTS - 1 downto 0);
 		RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
-		RP_ReconfigComplete				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RP_ConfigReloaded					: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RP_Lock										:	in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RP_Locked									: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RP_ReconfigComplete				: out	std_logic_vector(PORTS - 1 downto 0);
+		RP_ConfigReloaded					: out	std_logic_vector(PORTS - 1 downto 0);
+		RP_Lock										:	in	std_logic_vector(PORTS - 1 downto 0);
+		RP_Locked									: out	std_logic_vector(PORTS - 1 downto 0);
 
 		OOB_TX_Command						: in	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
-		OOB_TX_Complete						: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		OOB_TX_Complete						: out	std_logic_vector(PORTS - 1 downto 0);
 		OOB_RX_Received						: out	T_SATA_OOB_VECTOR(PORTS - 1 downto 0);
-		OOB_HandshakeComplete			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		OOB_AlignDetected    			: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		OOB_HandshakeComplete			: in	std_logic_vector(PORTS - 1 downto 0);
+		OOB_AlignDetected    			: in	std_logic_vector(PORTS - 1 downto 0);
 
 		TX_Data										: in	T_SLVV_32(PORTS - 1 downto 0);
 		TX_CharIsK								: in	T_SLVV_4(PORTS - 1 downto 0);
 
 		RX_Data										: out	T_SLVV_32(PORTS - 1 downto 0);
 		RX_CharIsK								: out	T_SLVV_4(PORTS - 1 downto 0);
-		RX_Valid									: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Valid									: out std_logic_vector(PORTS - 1 downto 0);
 
 		-- vendor specific signals
 		VSS_Common_In							: in	T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS;
 		VSS_Private_In						: in	T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR(PORTS	- 1 downto 0);
 		VSS_Private_Out						: out	T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR(PORTS	- 1 downto 0)
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_TransceiverLayer is
-	attribute KEEP 								: BOOLEAN;
+	attribute KEEP 								: boolean;
 
 	constant C_DEVICE_INFO				: T_DEVICE_INFO		:= DEVICE_INFO;
 
@@ -135,8 +134,8 @@ architecture rtl of sata_TransceiverLayer is
 
 begin
 	genreport : for i in 0 to PORTS - 1 generate
-		assert FALSE report "port:    " & INTEGER'image(i)																										severity NOTE;
-		assert FALSE report "  Init. SATA Generation: Gen " & INTEGER'image(INITIAL_SATA_GENERATIONS(i) + 1)	severity NOTE;
+		assert FALSE report "port:    " & integer'image(i)																										severity NOTE;
+		assert FALSE report "  Init. SATA Generation: Gen " & integer'image(INITIAL_SATA_GENERATIONS(i) + 1)	severity NOTE;
 	end generate;
 
 -- ==================================================================
@@ -148,6 +147,7 @@ begin
 		severity FAILURE;
 
 	assert ((C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_ZYNQ) or
+					(C_DEVICE_INFO.DEVFAMILY = DEVICE_FAMILY_ARTIX) or
 					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_KINTEX) or
 					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_VIRTEX) or
 					(C_DEVICE_INFO.DevFamily = DEVICE_FAMILY_STRATIX))
@@ -156,6 +156,7 @@ begin
 
 	assert ((C_DEVICE_INFO.Device = DEVICE_VIRTEX5) or
 					(C_DEVICE_INFO.Device = DEVICE_ZYNQ7) or
+					(C_DEVICE_INFO.DEVICE = DEVICE_ARTIX7) or
 					(C_DEVICE_INFO.Device = DEVICE_KINTEX7) or
 					(C_DEVICE_INFO.Device = DEVICE_VIRTEX7) or
 					(C_DEVICE_INFO.Device = DEVICE_STRATIX2) or
@@ -164,6 +165,7 @@ begin
 		severity FAILURE;
 
 	assert ((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTP_DUAL) or
+					(C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTPE2) or
 					(C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2) or
 					(C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB))
 		report "Transceiver not yet supported."
@@ -171,6 +173,7 @@ begin
 
 	assert (((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTP_DUAL)	and (PORTS <= 2)) or
 					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE1)		and (PORTS <= 4)) or
+					((C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTPE2)		and (PORTS <= 4)) or
 					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2)		and (PORTS <= 4)) or
 					((C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB)			and (PORTS <= 2)))
 		report "To many ports per transceiver."
@@ -304,7 +307,60 @@ begin
 					VSS_Private_Out						=> VSS_Private_Out
 				);
 		end generate;	-- Xilinx.Virtex6.GTXE1
-		genGTXE2 : if (C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GTXE2) generate
+		genGTPE2 : if (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTPE2) generate
+			Trans : sata_Transceiver_Series7_GTPE2
+				generic map (
+					DEBUG											=> DEBUG,
+					ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
+					REFCLOCK_FREQ							=> REFCLOCK_FREQ,
+					PORTS											=> PORTS,													-- Number of Ports per Transceiver
+					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
+				)
+				port map (
+					Reset											=> Reset,
+					ResetDone									=> ResetDone,
+					ClockNetwork_Reset				=> ClockNetwork_Reset,
+					ClockNetwork_ResetDone		=> ClockNetwork_ResetDone,
+
+					PowerDown									=> PowerDown,
+					Command										=> Command,
+					Status										=> Status,
+					Error											=> Error,
+
+					-- debug ports
+					DebugPortIn								=> DebugPortIn,
+					DebugPortOut							=> DebugPortOut,
+
+					SATA_Clock								=> SATA_Clock,
+					SATA_Clock_Stable					=> SATA_Clock_Stable,
+
+					RP_Reconfig								=> RP_Reconfig,
+					RP_SATAGeneration					=> RP_SATAGeneration,
+					RP_ReconfigComplete				=> RP_ReconfigComplete,
+					RP_ConfigReloaded					=> RP_ConfigReloaded,
+					RP_Lock										=> RP_Lock,
+					RP_Locked									=> RP_Locked,
+
+					OOB_TX_Command						=> OOB_TX_Command,
+					OOB_TX_Complete						=> OOB_TX_Complete,
+					OOB_RX_Received						=> OOB_RX_Received,
+					OOB_HandshakeComplete			=> OOB_HandshakeComplete,
+					OOB_AlignDetected 				=> OOB_AlignDetected,
+
+					TX_Data										=> TX_Data_i,
+					TX_CharIsK								=> TX_CharIsK,
+
+					RX_Data										=> RX_Data_i,
+					RX_CharIsK								=> RX_CharIsK_i,
+					RX_Valid									=> RX_Valid,
+
+					-- vendor specific signals
+					VSS_Common_In							=> VSS_Common_In,
+					VSS_Private_In						=> VSS_Private_In,
+					VSS_Private_Out						=> VSS_Private_Out
+				);
+		end generate;	-- Xilinx.Series7.GTPE2
+		genGTXE2 : if (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTXE2) generate
 			Trans : sata_Transceiver_Series7_GTXE2
 				generic map (
 					DEBUG											=> DEBUG,

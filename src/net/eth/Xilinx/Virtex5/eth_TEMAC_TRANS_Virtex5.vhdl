@@ -12,8 +12,8 @@ use			PoC.physical.all;
 
 entity eth_TEMAC_TRANS_Virtex5 is
 	generic (
-		DEBUG														: BOOLEAN					:= FALSE;
-		PORTS														: POSITIVE				:= 1;
+		DEBUG														: boolean					:= FALSE;
+		PORTS														: positive				:= 1;
 		PCS_MDIO_ADDRESS								: T_SLVV_8;
 
 		SUPPORT_JUMBO_FRAMES						: T_BOOLVEC;
@@ -25,63 +25,63 @@ entity eth_TEMAC_TRANS_Virtex5 is
 	);
 	port(
 		-- clock interface
-		TX_Clock											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_Clock											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Eth_TX_Clock									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Eth_RX_Clock									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RS_TX_Clock										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RS_RX_Clock										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Clock											: in	std_logic_vector(PORTS - 1 downto 0);
+		RX_Clock											: in	std_logic_vector(PORTS - 1 downto 0);
+		Eth_TX_Clock									: in	std_logic_vector(PORTS - 1 downto 0);
+		Eth_RX_Clock									: in	std_logic_vector(PORTS - 1 downto 0);
+		RS_TX_Clock										: in	std_logic_vector(PORTS - 1 downto 0);
+		RS_RX_Clock										: in	std_logic_vector(PORTS - 1 downto 0);
 
-		TX_Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_Reset											: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Eth_TX_Reset									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Eth_RX_Reset									: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RS_TX_Reset										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RS_RX_Reset										: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Reset											: in	std_logic_vector(PORTS - 1 downto 0);
+		RX_Reset											: in	std_logic_vector(PORTS - 1 downto 0);
+		Eth_TX_Reset									: in	std_logic_vector(PORTS - 1 downto 0);
+		Eth_RX_Reset									: in	std_logic_vector(PORTS - 1 downto 0);
+		RS_TX_Reset										: in	std_logic_vector(PORTS - 1 downto 0);
+		RS_RX_Reset										: in	std_logic_vector(PORTS - 1 downto 0);
 
-		Ethernet_Clock								: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Ethernet_ClockStable					: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Ethernet_Clock								: in	std_logic_vector(PORTS - 1 downto 0);
+		Ethernet_ClockStable					: in	std_logic_vector(PORTS - 1 downto 0);
 
-		Reset													: in	STD_LOGIC;				-- @async:	Reset
+		Reset													: in	std_logic;				-- @async:	Reset
 
 		-- PoC.Stream interface
-		TX_Valid											: in STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_Valid											: in std_logic_vector(PORTS - 1 downto 0);
 		TX_Data												: in T_SLVV_8(PORTS - 1 downto 0);
-		TX_SOF												: in STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		TX_EOF												: in STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		TX_Ack												: out STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		TX_SOF												: in std_logic_vector(PORTS - 1 downto 0);
+		TX_EOF												: in std_logic_vector(PORTS - 1 downto 0);
+		TX_Ack												: out std_logic_vector(PORTS - 1 downto 0);
 
-		RX_Valid											: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_Valid											: out	std_logic_vector(PORTS - 1 downto 0);
 		RX_Data												: out	T_SLVV_8(PORTS - 1 downto 0);
-		RX_SOF												: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_EOF												: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		RX_Ack												: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		RX_SOF												: out	std_logic_vector(PORTS - 1 downto 0);
+		RX_EOF												: out	std_logic_vector(PORTS - 1 downto 0);
+		RX_Ack												: in	std_logic_vector(PORTS - 1 downto 0);
 
 		-- Management interface
-		MDIO_Clock_i									: in	STD_LOGIC;
-		MDIO_Data_i										: in	STD_LOGIC;
-		MDIO_Data_o										: out	STD_LOGIC;
+		MDIO_Clock_i									: in	std_logic;
+		MDIO_Data_i										: in	std_logic;
+		MDIO_Data_o										: out	std_logic;
 
 		-- TRANS interface
-		Trans_PowerDown								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_TX_Reset								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_RX_Reset								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_LoopBack								: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);										-- perform loopback testing
-		Trans_EnableCommaAlign				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);						-- enable comma alignment
+		Trans_PowerDown								: out	std_logic_vector(PORTS - 1 downto 0);
+		Trans_TX_Reset								: out	std_logic_vector(PORTS - 1 downto 0);
+		Trans_RX_Reset								: out	std_logic_vector(PORTS - 1 downto 0);
+		Trans_LoopBack								: out	std_logic_vector(PORTS - 1 downto 0);										-- perform loopback testing
+		Trans_EnableCommaAlign				: out	std_logic_vector(PORTS - 1 downto 0);						-- enable comma alignment
 
 		-- TRANS TX interface
 		Trans_TX_Data									: out	T_SLVV_8(PORTS - 1 downto 0);
-		Trans_TX_CharIsK							: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_TX_DisparityMode				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_TX_DisparityValue				: out	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_TX_BufferError					: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_TX_CharIsK							: out	std_logic_vector(PORTS - 1 downto 0);
+		Trans_TX_DisparityMode				: out	std_logic_vector(PORTS - 1 downto 0);
+		Trans_TX_DisparityValue				: out	std_logic_vector(PORTS - 1 downto 0);
+		Trans_TX_BufferError					: in	std_logic_vector(PORTS - 1 downto 0);
 
 		-- TRANS RX interface
 		Trans_RX_Data									: in	T_SLVV_8(PORTS - 1 downto 0);
-		Trans_RX_CharIsK							: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_RX_CharIsComma					: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_RX_DisparityError				: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-		Trans_RX_NotInTable						: in	STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+		Trans_RX_CharIsK							: in	std_logic_vector(PORTS - 1 downto 0);
+		Trans_RX_CharIsComma					: in	std_logic_vector(PORTS - 1 downto 0);
+		Trans_RX_DisparityError				: in	std_logic_vector(PORTS - 1 downto 0);
+		Trans_RX_NotInTable						: in	std_logic_vector(PORTS - 1 downto 0);
 		Trans_RX_BufferStatus					: in	T_SLVV_2(PORTS - 1 downto 0);
 		Trans_RX_ClockCorrectionCount	: in	T_SLVV_3(PORTS - 1 downto 0)
 	);
@@ -90,60 +90,60 @@ end;
 
 architecture rtl of eth_TEMAC_TRANS_Virtex5 is
 
-	signal TEMAC_TX_Ack							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal TX_FSM_Valid							: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TEMAC_TX_Ack							: std_logic_vector(PORTS - 1 downto 0);
+	signal TX_FSM_Valid							: std_logic_vector(PORTS - 1 downto 0);
 	signal TX_FSM_Data							: T_SLVV_8(PORTS - 1 downto 0);
-	signal TX_FSM_UnderrunDetected	: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TX_FSM_UnderrunDetected	: std_logic_vector(PORTS - 1 downto 0);
 
-	signal TEMAC_RX_Valid						: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TEMAC_RX_Valid						: std_logic_vector(PORTS - 1 downto 0);
 	signal TEMAC_RX_Data						: T_SLVV_8(PORTS - 1 downto 0);
-	signal TEMAC_RX_GoodFrame				: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal TEMAC_RX_BadFrame				: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
-	signal RX_FSM_OverflowDetected	: STD_LOGIC_VECTOR(PORTS - 1 downto 0);
+	signal TEMAC_RX_GoodFrame				: std_logic_vector(PORTS - 1 downto 0);
+	signal TEMAC_RX_BadFrame				: std_logic_vector(PORTS - 1 downto 0);
+	signal RX_FSM_OverflowDetected	: std_logic_vector(PORTS - 1 downto 0);
 
 begin
 
 	genFIFOChain : for i in 0 to PORTS - 1 generate
-		constant SOF_BIT						: NATURAL			:= 8;
-		constant EOF_BIT						: NATURAL			:= 9;
+		constant SOF_BIT						: natural			:= 8;
+		constant EOF_BIT						: natural			:= 9;
 
-		signal XClk_TX_FIFO_Valid		: STD_LOGIC;
-		signal XClk_TX_FIFO_DataOut	: STD_LOGIC_VECTOR(9 downto 0);
-		signal XClk_TX_FIFO_got			: STD_LOGIC;
+		signal XClk_TX_FIFO_Valid		: std_logic;
+		signal XClk_TX_FIFO_DataOut	: std_logic_vector(9 downto 0);
+		signal XClk_TX_FIFO_got			: std_logic;
 
-		signal TX_FIFO_DataOut			: STD_LOGIC_VECTOR(9 downto 0);
-		signal TX_FIFO_Full					: STD_LOGIC;
+		signal TX_FIFO_DataOut			: std_logic_vector(9 downto 0);
+		signal TX_FIFO_Full					: std_logic;
 
-		signal TX_FIFO_Valid				: STD_LOGIC;
+		signal TX_FIFO_Valid				: std_logic;
 		signal TX_FIFO_Data					: T_SLV_8;
-		signal TX_FIFO_SOF					: STD_LOGIC;
-		signal TX_FIFO_EOF					: STD_LOGIC;
-		signal TX_FSM_Commit				: STD_LOGIC;
-		signal TX_FSM_Rollback			: STD_LOGIC;
+		signal TX_FIFO_SOF					: std_logic;
+		signal TX_FIFO_EOF					: std_logic;
+		signal TX_FSM_Commit				: std_logic;
+		signal TX_FSM_Rollback			: std_logic;
 
-		signal TX_FSM_Ack						: STD_LOGIC;
+		signal TX_FSM_Ack						: std_logic;
 
-		signal RX_FSM_Valid					: STD_LOGIC;
+		signal RX_FSM_Valid					: std_logic;
 		signal RX_FSM_Data					: T_SLV_8;
-		signal RX_FSM_SOF						: STD_LOGIC;
-		signal RX_FSM_EOF						: STD_LOGIC;
-		signal RX_FSM_Commit				: STD_LOGIC;
-		signal RX_FSM_Rollback			: STD_LOGIC;
+		signal RX_FSM_SOF						: std_logic;
+		signal RX_FSM_EOF						: std_logic;
+		signal RX_FSM_Commit				: std_logic;
+		signal RX_FSM_Rollback			: std_logic;
 
-		signal RX_FIFO_put					: STD_LOGIC;
-		signal RX_FIFO_DataIn				: STD_LOGIC_VECTOR(9 downto 0);
-		signal RX_FIFO_Full					: STD_LOGIC;
-		signal RX_FIFO_got					: STD_LOGIC;
-		signal RX_FIFO_Valid				: STD_LOGIC;
-		signal RX_FIFO_DataOut			: STD_LOGIC_VECTOR(9 downto 0);
-		signal RX_FIFO_Ack					: STD_LOGIC;
+		signal RX_FIFO_put					: std_logic;
+		signal RX_FIFO_DataIn				: std_logic_vector(9 downto 0);
+		signal RX_FIFO_Full					: std_logic;
+		signal RX_FIFO_got					: std_logic;
+		signal RX_FIFO_Valid				: std_logic;
+		signal RX_FIFO_DataOut			: std_logic_vector(9 downto 0);
+		signal RX_FIFO_Ack					: std_logic;
 
-		signal XClk_RX_FIFO_Full		: STD_LOGIC;
+		signal XClk_RX_FIFO_Full		: std_logic;
 
 
 	begin
 		-- ==========================================================================================================================================================
-		-- ASSERT statements
+		-- assert statements
 		-- ==========================================================================================================================================================
 		assert ((TX_FIFO_DEPTHS(i) * 1 Byte) >= ite(TX_ENABLE_UNDERRUN_PROTECTION(i),	ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 Byte), 0 Byte))	report "TX-FIFO is to small" severity ERROR;
 		assert ((RX_FIFO_DEPTHS(i) * 1 Byte) >=																				ite(SUPPORT_JUMBO_FRAMES(i), 10 KiB, 1522 Byte))					report "RX-FIFO is to small" severity ERROR;
@@ -159,8 +159,8 @@ begin
 			TX_Ack(i)																<= XClk_TX_FIFO_got;
 		end generate;
 		genTX_XClk1 : if (TX_INSERT_CROSSCLOCK_FIFO(i) = TRUE) generate
-			signal XClk_TX_FIFO_DataIn		: STD_LOGIC_VECTOR(9 downto 0);
-			signal XClk_TX_FIFO_Full			: STD_LOGIC;
+			signal XClk_TX_FIFO_DataIn		: std_logic_vector(9 downto 0);
+			signal XClk_TX_FIFO_Full			: std_logic;
 		begin
 			XClk_TX_FIFO_DataIn(TX_Data(i)'range)		<= TX_Data(i);
 			XClk_TX_FIFO_DataIn(SOF_BIT)						<= TX_SOF(i);
@@ -193,7 +193,7 @@ begin
 					fstate_rd						=> open
 				);
 
-			TX_Ack(i)	<= NOT XClk_TX_FIFO_Full;
+			TX_Ack(i)	<= not XClk_TX_FIFO_Full;
 		end generate;
 
 		XClk_TX_FIFO_got	<= not TX_FIFO_Full;
@@ -241,7 +241,7 @@ begin
 				);
 		end generate;
 		gen1 : if (TX_ENABLE_UNDERRUN_PROTECTION(i) = TRUE) generate
-			signal Commit			: STD_LOGIC;
+			signal Commit			: std_logic;
 		begin
 			Commit		<= XClk_TX_FIFO_Valid and XClk_TX_FIFO_DataOut(EOF_BIT);
 
@@ -330,8 +330,8 @@ begin
 		RX_FIFO_DataIn(EOF_BIT)						<= RX_FSM_EOF;
 		RX_FIFO_Ack												<= not RX_FIFO_Full;
 
-		RX_FIFO : ENTITY PoC.fifo_cc_got_tempput
-			GENERIC MAP (
+		RX_FIFO : entity PoC.fifo_cc_got_tempput
+			generic map (
 				D_BITS							=> RX_FIFO_DataIn'length,
 				MIN_DEPTH						=> RX_FIFO_DEPTHS(i),
 				ESTATE_WR_BITS			=> 0,
@@ -340,7 +340,7 @@ begin
 				STATE_REG						=> TRUE,
 				OUTPUT_REG					=> FALSE
 			)
-			PORT MAP (
+			port map (
 				clk									=> RS_RX_Clock(i),
 				rst									=> RS_RX_Reset(i),
 
@@ -348,7 +348,7 @@ begin
 				put									=> RX_FIFO_put,
 				din									=> RX_FIFO_DataIn,
 				full								=> RX_FIFO_Full,
-				estate_wr						=> OPEN,
+				estate_wr						=> open,
 
 				-- Temporary put control
 				commit							=> RX_FSM_Commit,
@@ -358,7 +358,7 @@ begin
 				got									=> RX_FIFO_got,
 				valid								=> RX_FIFO_Valid,
 				dout								=> RX_FIFO_DataOut,
-				fstate_rd						=> OPEN
+				fstate_rd						=> open
 			);
 
 		RX_FIFO_got			<= not XClk_RX_FIFO_Full;
@@ -371,10 +371,10 @@ begin
 			XClk_RX_FIFO_Full				<= not RX_Ack(i);
 		end generate;
 		genRX_XClk1 : if (RX_INSERT_CROSSCLOCK_FIFO(i) = TRUE) generate
-			signal XClk_RX_FIFO_DataOut		: STD_LOGIC_VECTOR(9 downto 0);
+			signal XClk_RX_FIFO_DataOut		: std_logic_vector(9 downto 0);
 		begin
-			XClk_RX_FIFO : ENTITY PoC.fifo_ic_got
-				GENERIC MAP (
+			XClk_RX_FIFO : entity PoC.fifo_ic_got
+				generic map (
 					D_BITS							=> RX_FIFO_DataOut'length,
 					MIN_DEPTH						=> 16,
 					DATA_REG						=> TRUE,
@@ -382,14 +382,14 @@ begin
 					ESTATE_WR_BITS			=> 0,
 					FSTATE_RD_BITS			=> 0
 				)
-				PORT MAP (
+				port map (
 					-- Write Interface
 					clk_wr							=> RS_RX_Clock(i),
 					rst_wr							=> RS_RX_Reset(i),
 					put									=> RX_FIFO_Valid,
 					din									=> RX_FIFO_DataOut,
 					full								=> XClk_RX_FIFO_Full,
-					estate_wr						=> OPEN,
+					estate_wr						=> open,
 
 					-- Read Interface
 					clk_rd							=> RX_Clock(i),
@@ -397,7 +397,7 @@ begin
 					got									=> RX_Ack(i),
 					valid								=> RX_Valid(i),
 					dout								=> XClk_RX_FIFO_DataOut,
-					fstate_rd						=> OPEN
+					fstate_rd						=> open
 				);
 
 			RX_Data(i)	<= XClk_RX_FIFO_DataOut(RX_Data(i)'range);
@@ -407,9 +407,9 @@ begin
 	end generate;
 
 	gen1 : if (PORTS = 1) generate
-		signal TEMAC_MDIO_Clock_i			: STD_LOGIC_VECTOR(0 downto 0);
-		signal TEMAC_MDIO_Data_i			: STD_LOGIC_VECTOR(0 downto 0);
-		signal TEMAC_MDIO_Data_o			: STD_LOGIC_VECTOR(0 downto 0);
+		signal TEMAC_MDIO_Clock_i			: std_logic_vector(0 downto 0);
+		signal TEMAC_MDIO_Data_i			: std_logic_vector(0 downto 0);
+		signal TEMAC_MDIO_Data_o			: std_logic_vector(0 downto 0);
 	begin
 
 		TEMAC_MDIO_Clock_i		<= (others => MDIO_Clock_i);
@@ -728,9 +728,9 @@ begin
 	end generate;
 
 	gen2 : if (PORTS = 2) generate
-		signal TEMAC_MDIO_Clock_i			: STD_LOGIC_VECTOR(1 downto 0);
-		signal TEMAC_MDIO_Data_i			: STD_LOGIC_VECTOR(1 downto 0);
-		signal TEMAC_MDIO_Data_o			: STD_LOGIC_VECTOR(1 downto 0);
+		signal TEMAC_MDIO_Clock_i			: std_logic_vector(1 downto 0);
+		signal TEMAC_MDIO_Data_i			: std_logic_vector(1 downto 0);
+		signal TEMAC_MDIO_Data_o			: std_logic_vector(1 downto 0);
 	begin
 
 		TEMAC_MDIO_Clock_i		<= (others => MDIO_Clock_i);
