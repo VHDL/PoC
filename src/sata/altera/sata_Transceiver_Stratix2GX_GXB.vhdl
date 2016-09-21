@@ -15,6 +15,7 @@ use		PoC.vectors.all;
 use		PoC.strings.all;
 use		PoC.physical.all;
 use		PoC.sata_TransceiverTypes.all;
+use		PoC.satadbg.all;
 
 
 entity sata_Transceiver_Stratix2GX_GXB is
@@ -39,6 +40,7 @@ entity sata_Transceiver_Stratix2GX_GXB is
 --		DebugPortOut		: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
 		SATA_Clock		: out	std_logic_vector(PORTS - 1 downto 0);
+		SATA_Clock_Stable	: out	std_logic_vector(PORTS - 1 downto 0);
 
 		RP_Reconfig		: in	std_logic_vector(PORTS - 1 downto 0);
 		RP_SATAGeneration	: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
@@ -68,9 +70,6 @@ entity sata_Transceiver_Stratix2GX_GXB is
 end;
 
 architecture rtl of sata_Transceiver_Stratix2GX_GXB is
-
-	constant NO_DEVICE_TIMEOUT		: time	:= 50 ms;			-- simulation: 20 us, synthesis: 50 ms
-	constant NEW_DEVICE_TIMEOUT		: time	:= 1000 ms;		--
 
 	constant C_DEVICE_INFO			: T_DEVICE_INFO		:= DEVICE_INFO;
 
@@ -126,8 +125,6 @@ begin
 		signal rx_errdetect	: std_logic_vector(3 downto 0);
 		signal rx_errin		: std_logic_vector(3 downto 0);
 		signal rx_oob_status	: T_SATA_OOB;
-		signal rx_signaldetect	: std_logic;
-		signal rx_comreset	: std_logic;
 
 		signal sata_rx_ctrl	: std_logic_vector(3 downto 0);
 		signal sata_rx_data	: std_logic_vector(31 downto 0);
@@ -137,15 +134,11 @@ begin
 
 		signal sata_gen		: std_logic_vector(1 downto 0) := to_slv(INITIAL_SATA_GENERATIONS(i),2);
 		signal config_state	: std_logic_vector(15 downto 0) := (others => '0');
-
-		signal nodevice		: std_logic;
-		signal newdevice	: std_logic;
-		signal ll_newdevice	: std_logic;
+		signal gxb_locked_sync	: std_logic_vector(1 downto 0) := (others => '0');
 
 	begin
 		SATA_Clock(i) <= ll_clk;
-		ResetDone(i) <= '1';
-		ClockNetwork_ResetDone(i) <= '1';
+		ClockNetwork_ResetDone(i) <= pll_locked and gxb_locked;
 
 		-- rx & tx bit signal
 		VSS_Private_Out(i).TX <= sfp_tx;
@@ -155,11 +148,9 @@ begin
 		RP_ReconfigComplete(i) <= config_state(14);
 		RP_ConfigReloaded(i) <= config_state(15);
 
-		-- TODO ? : Status Statemachine -> see SATATransceiver_Virtex5_GTP.vhd
-		Status(i) <=	SATA_TRANSCEIVER_STATUS_RESETING when Command(i) = SATA_TRANSCEIVER_CMD_RESET else
-				SATA_TRANSCEIVER_STATUS_RECONFIGURING when gxb_busy = '1' or pll_busy = '1' else
-				SATA_TRANSCEIVER_STATUS_NEW_DEVICE when ll_newdevice = '1' else
-				SATA_TRANSCEIVER_STATUS_NO_DEVICE when nodevice = '1' else
+		-- TODO ? : Status Statemachine
+		Status(i) <=	SATA_TRANSCEIVER_STATUS_RECONFIGURING when config_state /= (config_state'range => '0') else
+				SATA_TRANSCEIVER_STATUS_INIT when gxb_locked_sync(1) = '0' else
 				SATA_TRANSCEIVER_STATUS_READY;
 
 		Error(i).RX <= SATA_TRANSCEIVER_RX_ERROR_NONE;
@@ -175,13 +166,10 @@ begin
 		sata_tx_data 		<= TX_Data(i);
 		sata_tx_ctrl		<= TX_CharIsK(i);
 
-		rx_errin(0) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(0);
-		rx_errin(1) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(1);
-		rx_errin(2) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(2);
-		rx_errin(3) <= not pll_locked or not gxb_locked or pll_busy or gxb_busy or rx_errdetect(3);
-
-		rx_electricalidle <= not rx_signaldetect;
-		rx_comreset <= '1' when rx_oob_status = SATA_OOB_COMRESET else '0';
+		rx_errin(0) <= not gxb_locked or gxb_busy or rx_errdetect(0);
+		rx_errin(1) <= not gxb_locked or gxb_busy or rx_errdetect(1);
+		rx_errin(2) <= not gxb_locked or gxb_busy or rx_errdetect(2);
+		rx_errin(3) <= not gxb_locked or gxb_busy or rx_errdetect(3);
 
 		-- speed reconfiguration (link layer interface)
 		process(ll_clk) begin
@@ -192,6 +180,7 @@ begin
 				if gxb_busy = '0' and pll_busy = '0' then
 					config_state <= config_state(14 downto 0) & RP_Reconfig(i);
 				end if;
+				gxb_locked_sync <= gxb_locked_sync(0) & gxb_locked;
 			end if;
 		end process;
 
@@ -207,13 +196,13 @@ begin
 			strobe => reconf
 		);
 
-		device_sync : entity PoC.EventSync
-		port map (
-			Clock1 => refclk,
-			Clock2 => ll_clk,
-			src => newdevice,
-			strobe => ll_newdevice
-		);
+--		device_sync : entity PoC.EventSync
+--		port map (
+--			Clock1 => refclk,
+--			Clock2 => ll_clk,
+--			src => newdevice,
+--			strobe => ll_newdevice
+--		);
 
 		sata_oob_unit : entity PoC.sata_oob
 		port map (
@@ -251,7 +240,7 @@ begin
 		sata_io : sata_basic
 		port map (
 			inclk => refclk,
-			reset => '0',--reset,
+			reset => '0', --reset,
 			locked => gxb_locked,
 			rx_clkout => rx_clkout,
 			rx_dataout => rx_dataout,
@@ -282,19 +271,18 @@ begin
 			busy => pll_busy
 		);
 
-		dev_detect : entity PoC.sata_DeviceDetector
-		generic map (
-			CLOCK_FREQ => CLOCK_IN_FREQ,
-			NO_DEVICE_TIMEOUT => NO_DEVICE_TIMEOUT,
-			NEW_DEVICE_TIMEOUT => NEW_DEVICE_TIMEOUT
-		)
-		port map (
-			Clock => refclk,
-			ElectricalIDLE => rx_electricalidle,
-			RxComReset => rx_comreset,
-			NoDevice => nodevice,
-			NewDevice => newdevice
-		);
+		-- ======================================================================
+		-- Use generic module to generate SATA_Clock_Stable and ResetDone
+		-- requires a MAXSKEW constraint of the signal driving Async_Reset
+		-- ======================================================================
+		ClockStable: entity work.sata_Transceiver_ClockStable
+			port map (
+				PLL_Locked		=> pll_locked,
+				SATA_Clock		=> ll_clk,
+				Kill_Stable		=> RP_Reconfig(i),
+				ResetDone		=> ResetDone(i),
+				SATA_Clock_Stable	=> SATA_Clock_Stable(i)
+			);
 
 	end generate;
 end;

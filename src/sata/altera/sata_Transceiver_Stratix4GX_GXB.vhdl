@@ -155,14 +155,9 @@ begin
 		signal config_state	: std_logic_vector(15 downto 0) := (others => '0');
 		signal gxb_locked_sync	: std_logic_vector(1 downto 0) := (others => '0');
 
-		signal clock_stable     : std_logic;
-		signal reset_done       : std_logic;
-
 	begin
 		SATA_Clock(i) <= ll_clk;
-		ResetDone(i) <= reset_done;
 		ClockNetwork_ResetDone(i) <= pll_locked and gxb_locked;
-		SATA_Clock_Stable(i) <= clock_stable;
 
 		-- rx & tx bit signal
 		VSS_Private_Out(i).TX <= sfp_tx;
@@ -307,8 +302,9 @@ begin
 				PLL_Locked		=> pll_locked,
 				SATA_Clock		=> ll_clk,
 				Kill_Stable		=> RP_Reconfig(i),
-				ResetDone		=> reset_done,
-				SATA_Clock_Stable	=> clock_stable);
+				ResetDone		=> ResetDone(i),
+				SATA_Clock_Stable	=> SATA_Clock_Stable(i)
+			);
 
 	end generate;
 end;
