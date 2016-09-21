@@ -35,6 +35,10 @@ use			IEEE.NUMERIC_STD.all;
 
 
 package sata_TransceiverTypes is
+	type T_SATA_TRANSCEIVER_REFCLOCK_SOURCE is (
+		SATA_TRANSCEIVER_REFCLOCK_INTERN
+	);
+
 	type T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS is record
 		RefClockIn_50_MHz	: std_logic;
 		RefClockIn_150_MHz	: std_logic;

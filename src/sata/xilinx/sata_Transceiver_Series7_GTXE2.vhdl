@@ -59,7 +59,7 @@ entity sata_Transceiver_Series7_GTXE2 is
 		DEBUG											: boolean											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: boolean											:= FALSE;																		-- enables the assignment of signals to the debugport
 		REFCLOCK_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
-		REFCLOCK_SOURCE 					: T_SATA_TRANSCEIVER_REFCLOCK_SOURCE := SATA_TRANSCEIVER_REFCLOCK_GTREFCLK0; -- reference clock selection for transceiver primitive
+		REFCLOCK_SOURCE 					: T_SATA_TRANSCEIVER_REFCLOCK_SOURCE := SATA_TRANSCEIVER_REFCLOCK_INTERN; -- reference clock selection for transceiver primitive
 		PORTS											: positive										:= 2;																				-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
