@@ -25,7 +25,6 @@ vhdl		poc		(netlist / "sata_LinkLayer_ILA.vhdl")
 vhdl		poc		(netlist / "sata_PhysicalLayer_ILA.vhdl")
 vhdl		poc		(netlist / "sata_StreamingLayer_ILA.vhdl")
 vhdl		poc		(netlist / "sata_TransceiverLayer_ILA.vhdl")
-vhdl		poc		(netlist / "sata_TransceiverMonitor_ILA.vhdl")
 vhdl		poc		(netlist / "sata_TransportLayer_ILA.vhdl")
 
 vhdl		poc		"src/sata/sata_StreamingStack.vhdl"					# Top-Level
