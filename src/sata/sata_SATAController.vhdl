@@ -94,7 +94,7 @@ entity sata_SATAController is
 		ENABLE_DEBUGPORT								: boolean											:= FALSE;
 		-- transceiver settings
 		REFCLOCK_FREQ										: FREQ												:= 150 MHz;
-		REFCLOCK_SOURCE 								: T_SATA_TRANSCEIVER_REFCLOCK_SOURCE := SATA_TRANSCEIVER_REFCLOCK_GTREFCLK0;
+		REFCLOCK_SOURCE 								: T_SATA_TRANSCEIVER_REFCLOCK_SOURCE := SATA_TRANSCEIVER_REFCLOCK_INTERN;
 		PORTS														: positive										:= 2;	-- Port 0									Port 1
 		-- physical layer settings
 		CONTROLLER_TYPES								: T_SATA_DEVICE_TYPE_VECTOR		:= (0 => SATA_DEVICE_TYPE_HOST,	1 => SATA_DEVICE_TYPE_HOST);

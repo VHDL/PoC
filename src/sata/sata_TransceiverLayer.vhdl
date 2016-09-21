@@ -71,7 +71,7 @@ entity sata_TransceiverLayer is
 		DEBUG											: boolean											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: boolean											:= FALSE;																		-- export internal signals to upper layers for debug purposes
 		REFCLOCK_FREQ							: FREQ												:= 150 MHz;																								-- 150 MHz
-		REFCLOCK_SOURCE 					: T_SATA_TRANSCEIVER_REFCLOCK_SOURCE := SATA_TRANSCEIVER_REFCLOCK_GTREFCLK0; 					-- reference clock selection for transceiver primitive
+		REFCLOCK_SOURCE 					: T_SATA_TRANSCEIVER_REFCLOCK_SOURCE := SATA_TRANSCEIVER_REFCLOCK_INTERN; 					-- reference clock selection for transceiver primitive
 		PORTS											: positive										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
 	);
@@ -442,6 +442,7 @@ begin
 --					DebugPortOut							=> DebugPortOut,
 
 					SATA_Clock								=> SATA_Clock,
+					SATA_Clock_Stable							=> SATA_Clock_Stable,
 
 					RP_Reconfig								=> RP_Reconfig,
 					RP_SATAGeneration					=> RP_SATAGeneration,
@@ -491,6 +492,7 @@ begin
 --					DebugPortOut							=> DebugPortOut,
 
 					SATA_Clock								=> SATA_Clock,
+					SATA_Clock_Stable							=> SATA_Clock_Stable,
 
 					RP_Reconfig								=> RP_Reconfig,
 					RP_SATAGeneration					=> RP_SATAGeneration,

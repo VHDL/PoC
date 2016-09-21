@@ -266,6 +266,7 @@ package satacomp is
 			DebugPortOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
 			SATA_Clock								: out	std_logic_vector(PORTS - 1 downto 0);
+			SATA_Clock_Stable							: out	std_logic_vector(PORTS - 1 downto 0);
 
 			RP_Reconfig								: in	std_logic_vector(PORTS - 1 downto 0);
 			RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
@@ -424,6 +425,7 @@ package satacomp is
 --			DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
 			SATA_Clock								: out	std_logic_vector(PORTS - 1 downto 0);
+			SATA_Clock_Stable							: out	std_logic_vector(PORTS - 1 downto 0);
 
 			RP_Reconfig								: in	std_logic_vector(PORTS - 1 downto 0);
 			RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
@@ -473,6 +475,7 @@ package satacomp is
 --			DebugportOut							: out	T_SATADBG_TRANSCEIVER_OUT_VECTOR(PORTS	- 1 downto 0);
 
 			SATA_Clock								: out	std_logic_vector(PORTS - 1 downto 0);
+			SATA_Clock_Stable							: out	std_logic_vector(PORTS - 1 downto 0);
 
 			RP_Reconfig								: in	std_logic_vector(PORTS - 1 downto 0);
 			RP_SATAGeneration					: in	T_SATA_GENERATION_VECTOR(PORTS - 1 downto 0);
