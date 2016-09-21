@@ -37,7 +37,7 @@ library PoC;
 
 package sata_TransceiverTypes is
 	type T_SATA_TRANSCEIVER_REFCLOCK_SOURCE is (
-		SATA_TRANSCEIVER_REFCLOCK_INTERN,
+		SATA_TRANSCEIVER_REFCLOCK_INTERNAL,
 		SATA_TRANSCEIVER_REFCLOCK_GTREFCLK0,
 		SATA_TRANSCEIVER_REFCLOCK_GTREFCLK1
 	);
@@ -73,7 +73,7 @@ package body sata_TransceiverTypes is
 		case source is
 			when SATA_TRANSCEIVER_REFCLOCK_GTREFCLK0 => return "001";
 			when SATA_TRANSCEIVER_REFCLOCK_GTREFCLK1 => return "010";
-			when SATA_TRANSCEIVER_REFCLOCK_INTERN    => return "111";
+			when SATA_TRANSCEIVER_REFCLOCK_INTERNAL  => return "111";
 		end case;
 	end function;
 
