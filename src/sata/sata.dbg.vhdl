@@ -64,8 +64,10 @@ package satadbg is
 
 		GTX_TX_Reset							: std_logic;
 		GTX_RX_Reset							: std_logic;
+		GTX_RX_PMAReset						: std_logic;
 		GTX_TX_ResetDone					: std_logic;
 		GTX_RX_ResetDone					: std_logic;
+		GTX_RX_PMAResetDone				: std_logic;
 
 		FSM												: std_logic_vector(3 downto 0);
 

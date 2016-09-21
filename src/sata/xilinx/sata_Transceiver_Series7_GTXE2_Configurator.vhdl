@@ -12,7 +12,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,10 +45,10 @@ use			PoC.xil.all;
 -- Notice
 -- ==================================================================
 --	modifies FPGA configuration bits via Dynamic Reconfiguration Port (DRP)
---	changes via DRP require a full GTX_DUAL reset
+--	changes via DRP require a full GTXE2 reset
 
 --	used configuration words
---	address		bits		|	GTX_DUAL generic name				GEN_1			GEN_2		Note GEN_1			Note GEN_2
+--	address		bits		|	GTXE2 generic name					GEN_1			GEN_2		Note GEN_1			Note GEN_2
 -- =============================================================================
 --	0x05			[3]			|	PLL_TXDIVSEL_OUT_1 [1]				 0				 0		divide by 2			divide by 1
 --	0x05			[4]			|	PLL_TXDIVSEL_OUT_1 [0]				 1				 0		divide by 2			divide by 1
@@ -86,7 +86,7 @@ entity sata_Transceiver_Series7_GTXE2_Configurator is
 		GTX_ReloadConfig				: out	std_logic;							-- @DRP_Clock
 		GTX_ReloadConfigDone		: in	std_logic								-- @DRP_Clock
 	);
-end;
+end entity;
 
 
 architecture rtl of sata_Transceiver_Series7_GTXE2_Configurator is
@@ -117,7 +117,7 @@ architecture rtl of sata_Transceiver_Series7_GTXE2_Configurator is
 		2 => (RX_CDR_CFG	=> x"0380008BFF10200010")
 	);
 
-	-- 3. convert generics into ConfigROM enties for each config set and each speed configuration
+	-- 3. convert generics into ConfigROM entries for each config set and each speed configuration
 	constant XILDRP_CONFIG_ROM								: T_XIL_DRP_CONFIG_ROM := (
 		-- Set 0, SATA Generation 1
 		0 => (Configs =>																				--											SET		generic			slice						DRP-Addr		Bits				Mask
@@ -196,7 +196,7 @@ begin
 
 	doReconfig				<= Reconfig_DRP;
 
-	-- synchronize ReconfigComplete, ConfigReloaded, Locked from DRP_Clock to SATA_Clock
+	-- synchronize ReconfigComplete and ConfigReloaded from DRP_Clock to SATA_Clock
 	sync2 : entity PoC.sync_Strobe
 		generic map (
 			BITS				=> 2
@@ -268,7 +268,7 @@ begin
 					NextState						<= ST_RELOAD;
 				end if;
 
-			-- reload GTX_DUAL configuration
+			-- reload GTXE2 configuration
 			-- ------------------------------------------------------------------
 			-- assign ReloadConfig until ReloadConfigDone goes to '0'
 			when ST_RELOAD =>
@@ -310,4 +310,4 @@ begin
 	-- GTX_ReloadConfig**** interface
 	GTX_ReloadConfig	<= ReloadConfig_i;
 
-end;
+end architecture;

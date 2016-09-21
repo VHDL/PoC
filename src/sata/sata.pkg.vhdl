@@ -124,6 +124,8 @@ package sata is
 
 	constant C_SATA_GENERATION_MAX	: T_SATA_GENERATION		:= SATA_GENERATION_3;
 
+	function to_SATAWordFreq(gen : T_SATA_GENERATION) return FREQ;
+
 	-- Described in module 'sata_PhysicalLayer'.
 	type T_SATA_PHY_COMMAND is (
 		SATA_PHY_CMD_NONE,
@@ -555,6 +557,16 @@ end package;
 
 
 package body sata is
+	function to_SATAWordFreq(gen : T_SATA_GENERATION) return FREQ is
+	begin
+		case gen is
+			when SATA_GENERATION_1 =>			return  37500 kHz;
+			when SATA_GENERATION_2 =>			return  75000 kHz;
+			when SATA_GENERATION_3 =>			return 150000 kHz;
+			when others =>								return      0 kHz;
+		end case;
+	end function;
+
 	-- ===========================================================================
 	-- to_sata_*_command
 	-- ===========================================================================

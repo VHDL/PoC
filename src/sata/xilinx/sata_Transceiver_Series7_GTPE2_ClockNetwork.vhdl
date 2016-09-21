@@ -67,6 +67,8 @@ end entity;
 architecture rtl of sata_Transceiver_Series7_GTPE2_ClockNetwork is
 	attribute KEEP											: boolean;
 
+	constant MMCM_VCO_FREQ							: FREQ				:= 900 MHz;
+
 	signal ClkNet_Reset									: std_logic;
 
 	signal MMCM_Reset										: std_logic;
@@ -160,7 +162,6 @@ begin
 	SATA_MMCM : MMCME2_ADV
 		generic map (
 			STARTUP_WAIT						=> false,
-			BANDWIDTH								=> "LOW",																			-- LOW = Jitter Filter
 			COMPENSATION						=> "BUF_IN",	--"ZHOLD",
 
 			CLKIN1_PERIOD						=> to_real(to_time(CLOCK_IN_FREQ), 1 ns),
@@ -168,18 +169,18 @@ begin
 			REF_JITTER1							=> 0.00048,
 			REF_JITTER2							=> 0.00048,																		-- Not used
 
-			CLKFBOUT_MULT_F					=> 900.0 / to_real(CLOCK_IN_FREQ, 1 MHz),			-- target VCO frequency is 900 MHz
+			CLKFBOUT_MULT_F					=> div(MMCM_VCO_FREQ, CLOCK_IN_FREQ),					-- target VCO frequency is 900 MHz
 			CLKFBOUT_PHASE					=> 0.0,
 			CLKFBOUT_USE_FINE_PS		=> false,
 
 			DIVCLK_DIVIDE						=> 1,
 
-			CLKOUT0_DIVIDE_F				=> 6.0,
+			CLKOUT0_DIVIDE_F				=> div(MMCM_VCO_FREQ, to_SATAWordFreq(INITIAL_SATA_GENERATION)),
 			CLKOUT0_PHASE						=> 0.0,
 			CLKOUT0_DUTY_CYCLE			=> 0.500,
 			CLKOUT0_USE_FINE_PS			=> false,
 
-			CLKOUT1_DIVIDE					=> 3,
+			CLKOUT1_DIVIDE					=> MMCM_VCO_FREQ / (to_SATAWordFreq(INITIAL_SATA_GENERATION) * 2),
 			CLKOUT1_PHASE						=> 0.0,
 			CLKOUT1_DUTY_CYCLE			=> 0.500,
 			CLKOUT1_USE_FINE_PS			=> false

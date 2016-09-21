@@ -41,6 +41,7 @@ use			PoC.strings.all;
 use			PoC.physical.all;
 use			PoC.components.all;
 use			PoC.sata.all;
+use			PoC.satacomp.all;
 use			PoC.satadbg.all;
 use			PoC.sata_TransceiverTypes.all;
 use			PoC.xil.all;
@@ -53,6 +54,7 @@ entity sata_StreamingStack is
 		ENABLE_DEBUGPORT						: boolean;
 
 		REFCLOCK_FREQ								: FREQ;
+		REFCLOCK_SOURCE 						: T_SATA_TRANSCEIVER_REFCLOCK_SOURCE;
 		INITIAL_SATA_GENERATION			: T_SATA_GENERATION;
 		ALLOW_SPEED_NEGOTIATION			: boolean;
 		LOGICAL_BLOCK_SIZE					: MEMORY
@@ -289,6 +291,7 @@ begin
 			DEBUG													=> DEBUG,
 			ENABLE_DEBUGPORT							=> ENABLE_DEBUGPORT,
 			REFCLOCK_FREQ									=> REFCLOCK_FREQ,
+			REFCLOCK_SOURCE								=> REFCLOCK_SOURCE,
 			PORTS													=> 1,
 			CONTROLLER_TYPES(0)						=> SATA_DEVICE_TYPE_HOST,
 			INITIAL_SATA_GENERATIONS(0)		=> INITIAL_SATA_GENERATION,

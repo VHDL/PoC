@@ -472,7 +472,7 @@ begin
 
 
 			when ST_NOCOM_RECONFIG =>
-				-- Reconfiguration during NOCOMMUNICTION condition.
+				-- Reconfiguration during NOCOMMUNICATION condition.
 				Status_i								<= SATA_PHY_STATUS_NOCOMMUNICATION;
 				OOBC_Reset_i 						<= '1';
 				Trans_RP_Reconfig_i			<= '1';
@@ -480,7 +480,7 @@ begin
 
 
 			when ST_NOCOM_RECONFIG_WAIT =>
-				-- Reconfiguration during NOCOMMUNICTION condition. Clock might be
+				-- Reconfiguration during NOCOMMUNICATION condition. Clock might be
 				-- unstable when FSM is in this state. See description in header.
 				Status_i								<= SATA_PHY_STATUS_NOCOMMUNICATION;
 				OOBC_Reset_i 						<= '1';

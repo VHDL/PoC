@@ -36,8 +36,19 @@ library PoC;
 
 
 package sata_TransceiverTypes is
+	type T_SATA_TRANSCEIVER_REFCLOCK_SOURCE is (
+		SATA_TRANSCEIVER_REFCLOCK_GTGREFCLK,
+		SATA_TRANSCEIVER_REFCLOCK_GTREFCLK0,
+		SATA_TRANSCEIVER_REFCLOCK_GTREFCLK1
+	);
+
+	function to_bv (source : T_SATA_TRANSCEIVER_REFCLOCK_SOURCE) return bit_vector;
+	function to_slv(source : T_SATA_TRANSCEIVER_REFCLOCK_SOURCE) return std_logic_vector;
+
 	type T_SATA_TRANSCEIVER_COMMON_IN_SIGNALS is record
-		RefClockIn_150_MHz		: std_logic;
+		RefClockIn_IBUFDS			: std_logic_vector(1 downto 0);
+		RefClockIn_BUFG				: std_logic;
+		DRP_Clock							: std_logic;
 	end record;
 
 	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS is record
@@ -54,4 +65,20 @@ package sata_TransceiverTypes is
 	type T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS_VECTOR		is array(natural range <>) of T_SATA_TRANSCEIVER_PRIVATE_IN_SIGNALS;
 	type T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS_VECTOR	is array(natural range <>) of T_SATA_TRANSCEIVER_PRIVATE_OUT_SIGNALS;
 
+end;
+
+package body sata_TransceiverTypes is
+	function to_bv(source : T_SATA_TRANSCEIVER_REFCLOCK_SOURCE) return bit_vector is
+	begin
+		case source is
+			when SATA_TRANSCEIVER_REFCLOCK_GTREFCLK0 => return "001";
+			when SATA_TRANSCEIVER_REFCLOCK_GTREFCLK1 => return "010";
+			when SATA_TRANSCEIVER_REFCLOCK_GTGREFCLK => return "111";
+		end case;
+	end function;
+
+	function to_slv(source : T_SATA_TRANSCEIVER_REFCLOCK_SOURCE) return std_logic_vector is
+	begin
+		return to_stdlogicvector(to_bv(source));
+	end function;
 end;

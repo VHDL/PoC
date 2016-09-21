@@ -56,9 +56,11 @@ use			PoC.xil.all;
 
 entity sata_Transceiver_Series7_GTPE2 is
 	generic (
+		SIM_RESET_SPEEDUP 				: boolean 										:= TRUE;
 		DEBUG											: boolean											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: boolean											:= FALSE;																		-- enables the assignment of signals to the debugport
 		REFCLOCK_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
+		REFCLOCK_SOURCE 					: T_SATA_TRANSCEIVER_REFCLOCK_SOURCE := SATA_TRANSCEIVER_REFCLOCK_GTREFCLK0; -- reference clock selection for transceiver primitive
 		PORTS											: positive										:= 2;																				-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
@@ -122,8 +124,6 @@ architecture rtl of sata_Transceiver_Series7_GTPE2 is
 
 --	constant C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
 
-	signal RefClockIn_150_MHz_BUFR		: std_logic;
-
 	function to_ClockDividerSelection(gen : T_SATA_GENERATION) return std_logic_vector is
 	begin
 		case gen is
@@ -134,7 +134,7 @@ architecture rtl of sata_Transceiver_Series7_GTPE2 is
 		end case;
 	end function;
 
-	function get_FeedbackClockDivider(RefClock_Freq : FREQ) return positive is
+	function get_FeedbackClockDivider(RefClock_Freq : FREQ) return natural is
 	begin
 		if    (RefClock_Freq = 150 MHz) then	return 4;
 		elsif (RefClock_Freq = 200 MHz) then	return 3;
@@ -142,7 +142,7 @@ architecture rtl of sata_Transceiver_Series7_GTPE2 is
 		end if;
 	end function;
 
-	function get_ReferenceClockDivider(RefClock_Freq : FREQ) return positive is
+	function get_ReferenceClockDivider(RefClock_Freq : FREQ) return natural is
 	begin
 		if    (RefClock_Freq = 150 MHz) then	return 1;
 		elsif (RefClock_Freq = 200 MHz) then	return 1;
@@ -183,7 +183,7 @@ begin
 	QuadPLL_PowerDown(0)		<= slv_and(PowerDown);
 	QuadPLL_Reset(0)				<= QuadPLL_PowerDown(0) or slv_and(ClockNetwork_Reset);
 
-	QuadPLL_DRP_Clock				<= '0';
+	QuadPLL_DRP_Clock				<= VSS_Common_In.DRP_Clock;
 	QuadPLL_DRP_Enable			<= '0';
 	QuadPLL_DRP_ReadWrite		<= '0';
 	QuadPLL_DRP_Address			<= x"0000";
@@ -195,7 +195,7 @@ begin
 		generic map (
 			-- Simulation attributes
 			SIM_RESET_SPEEDUP		=> "TRUE",
-			SIM_PLL0REFCLK_SEL	=> "111",									-- select GTGREFCLK0 (from fabric)
+			SIM_PLL0REFCLK_SEL	=> to_bv(REFCLOCK_SOURCE),
 			SIM_PLL1REFCLK_SEL	=> "001",									-- select GTREFCLK0 (from IBUFDS_GTE2)
 			SIM_VERSION					=> ("2.0"),
 
@@ -225,10 +225,10 @@ begin
 		)
 		port map (
 			-- Clock inputs
-			GTGREFCLK0					=> VSS_Common_In.RefClockIn_150_MHz,	-- from fabric
-			GTGREFCLK1					=> VSS_Common_In.RefClockIn_150_MHz,	-- from fabric
-			GTREFCLK0						=> '0',																-- from IBUFDS_GTE2
-			GTREFCLK1						=> '0',																-- from IBUFDS_GTE2
+			GTGREFCLK0					=> VSS_Common_In.RefClockIn_BUFG,			-- from fabric
+			GTGREFCLK1					=> '0',																-- from fabric
+			GTREFCLK0						=> VSS_Common_In.RefClockIn_IBUFDS(0),		-- from IBUFDS_GTE2
+			GTREFCLK1						=> VSS_Common_In.RefClockIn_IBUFDS(1),		-- from IBUFDS_GTE2
 			GTEASTREFCLK0				=> '0',																-- from previous GTPE2
 			GTEASTREFCLK1				=> '0',																-- from previous GTPE2
 			GTWESTREFCLK0				=> '0',																-- from next GTPE2
@@ -238,7 +238,7 @@ begin
 			PLL0PD							=> QuadPLL_PowerDown(0),
 			PLL0RESET						=> QuadPLL_Reset(0),
 			-- PLL 0 -
-			PLL0REFCLKSEL				=> "111",									-- select GTGREFCLK0 (from fabric)
+			PLL0REFCLKSEL				=> to_slv(REFCLOCK_SOURCE),
 			PLL0REFCLKLOST			=> open,
 			PLL0FBCLKLOST				=> open,
 			PLL0LOCKDETCLK			=> '0',
@@ -303,22 +303,30 @@ begin
 -- GTXE2 			others =>	'0'								-- not documented; set to "0..0" ?
 -- GTXE2 		);
 
+		-- The following values have been obtained from the Transceiver Wizard shipped with Vivado 2016.2.
+		-- The same values are documented in AR# 51369, last updated on 2014-04-17.
 		constant GTP_RXCDR_CFG							: bit_vector(83 downto 0)				:=
-			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_1), x"0000047FE106024481010",				-- 1.5 GHz line rate		- from wizard generated code
+			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_1), x"0000047FE106024481010",				-- 1.5 GHz line rate
 			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_2), x"0000047FE206024481010",				-- 3.0 GHz line rate
 			ite((INITIAL_SATA_GENERATIONS_I(i) = SATA_GENERATION_3), x"0000087FE206024441010",				-- 6.0 GHz line rate
-																															 x"0000087FE206024441010")));			-- default value from wizard
+																															 x"0000087FE206024441010")));			-- default value
 
 
 		-- Control FSM @SATA_Clock
-		type T_STATE is (ST_RESET, ST_READY, ST_COMMUNICATION, ST_RECONFIGURATION, ST_RESET_BY_FSM, ST_CLEAR_RX_BUF);
+		type T_STATE is (ST_RESET,
+										 ST_INIT_START_RX_RESET, ST_INIT_DRP_CLEAR_BIT_WAIT, ST_INIT_WAIT_PMARESET1, ST_INIT_WAIT_PMARESET2,
+										 ST_INIT_DRP_SET_BIT_WAIT, ST_INIT_WAIT_RESETDONE,
+										 ST_READY,
+										 ST_RDY_START_RX_PMARESET, ST_RDY_DRP_CLEAR_BIT_WAIT, ST_RDY_WAIT_PMARESET,
+										 ST_RDY_DRP_SET_BIT_WAIT, ST_RDY_WAIT_RESETDONE,
+										 ST_COMMUNICATION); --, ST_RECONFIGURATION);
 
 		signal State												: T_STATE				:= ST_RESET;
 		signal NextState										: T_STATE;
 
 		signal Kill_SATA_Clock_Stable 			: std_logic;
-		signal GTP_Reset_by_FSM							: std_logic;
-		signal GTP_Reset_by_FSM_d						: std_logic;
+		signal FSM_Reconfig 								: std_logic;
+		signal FSM_ConfigSelect 						: std_logic_vector(2 downto 0);
 
 		-- Input/Outputs of ClockNetwork module/block
 		signal ClkNet_Reset									: std_logic;
@@ -344,23 +352,18 @@ begin
 		signal GTP_TX_PowerDown							: T_SLV_2;
 		signal GTP_RX_PowerDown							: T_SLV_2;
 
-		-- Reset both TX & RX
-		signal GTP_Reset										: std_logic;
-
-		-- TX resets
-		signal GTP_TX_Reset									: std_logic;
-		signal GTP_TX_PCSReset							: std_logic;
-		signal GTP_TX_PMAReset							: std_logic;
-		signal GTP_TX_PMAResetDone					: std_logic;
-		-- RX resets
-		signal GTP_RX_Reset									: std_logic;
-		signal GTP_RX_PCSReset							: std_logic;
-		signal GTP_RX_PMAReset							: std_logic;
-		signal GTP_RX_PMAResetDone					: std_logic;
-		signal GTP_RX_BufferReset						: std_logic;
-
+		-- Resets
+		signal GTP_TX_Reset_r								: std_logic; -- @SATA_clock, async set
+		signal GTP_TX_Reset_nxt							: std_logic;
+		signal GTP_RX_Reset_r								: std_logic; -- @SATA_clock, async set
+		signal GTP_RX_Reset_nxt							: std_logic;
+		signal GTP_RX_PMAReset_r						: std_logic; -- @SATA_clock
+		signal GTP_RX_PMAReset_nxt					: std_logic;
+		signal GTP_RX_PMAResetDone					: std_logic; -- @async
 		signal GTP_TX_ResetDone							: std_logic;
 		signal GTP_RX_ResetDone							: std_logic;
+
+		signal RX_PMAResetDone							: std_logic; -- @SATA_Clock
 
 		-- linerate clock divider selection
 		-- =====================================================================
@@ -372,18 +375,21 @@ begin
 		signal GTP_TX_LineRateSelectDone		: std_logic;
 		signal GTP_RX_LineRateSelectDone		: std_logic;
 
-		signal GTPConfig_Enable							: std_logic;
-		signal GTPConfig_Address						: T_XIL_DRP_ADDRESS;
-		signal GTPConfig_ReadWrite					: std_logic;
-		signal GTPConfig_DataOut						: T_XIL_DRP_DATA;
+		-- DRP
+		-- =====================================================================
+		--signal GTPConfig_Enable							: std_logic;
+		--signal GTPConfig_Address						: T_XIL_DRP_ADDRESS;
+		--signal GTPConfig_ReadWrite					: std_logic;
+		--signal GTPConfig_DataOut						: T_XIL_DRP_DATA;
+		signal GTPConfig_ReconfigComplete		: std_logic;
 
-		signal DRPSync_Enable								: std_logic;
-		signal DRPSync_Address							: T_XIL_DRP_ADDRESS;
-		signal DRPSync_ReadWrite						: std_logic;
-		signal DRPSync_DataOut							: T_XIL_DRP_DATA;
+		--signal DRPSync_Enable								: std_logic;
+		--signal DRPSync_Address							: T_XIL_DRP_ADDRESS;
+		--signal DRPSync_ReadWrite						: std_logic;
+		--signal DRPSync_DataOut							: T_XIL_DRP_DATA;
 
-		signal DRPMux_In_DataOut						: T_XIL_DRP_DATA_VECTOR(1 downto 0);
-		signal DRPMux_Ack										: std_logic_vector(1 downto 0);
+		--signal DRPMux_In_DataOut						: T_XIL_DRP_DATA_VECTOR(1 downto 0);
+		--signal DRPMux_Ack										: std_logic_vector(1 downto 0);
 
 		signal GTP_DRP_Clock								: std_logic;
 		signal GTP_DRP_Enable								: std_logic;
@@ -393,6 +399,8 @@ begin
 		signal GTP_DRP_DataOut							: T_XIL_DRP_DATA;
 		signal GTP_DRP_Ack									: std_logic;
 
+		-- Status
+		-- =====================================================================
 		signal GTP_DigitalMonitor						: T_SLV_16;
 		signal GTP_RX_Monitor_sel						: T_SLV_2;
 		signal GTP_RX_Monitor_Data					: std_logic_vector(6 downto 0);
@@ -409,6 +417,8 @@ begin
 		signal GTP_RX_ElectricalIDLE_async	: std_logic;
 		signal RX_ElectricalIDLE						: std_logic;
 
+		-- OOB
+		-- =====================================================================
 		signal GTP_TX_ComInit								: std_logic;
 		signal GTP_TX_ComWake								: std_logic;
 		signal GTP_TX_ComSAS								: std_logic;
@@ -429,6 +439,7 @@ begin
 		signal OOB_RX_Received_i						: T_SATA_OOB;
 
 		-- timings
+		-- =====================================================================
 		constant CLOCK_GEN1_FREQ						: FREQ						:= REFCLOCK_FREQ / 4.0;
 		constant CLOCK_GEN2_FREQ						: FREQ						:= REFCLOCK_FREQ / 2.0;
 		constant CLOCK_GEN3_FREQ						: FREQ						:= REFCLOCK_FREQ / 1.0;
@@ -469,6 +480,7 @@ begin
 		signal OOBTO_Timeout_d							: std_logic					:= '0';
 		signal TX_ComFinish									: std_logic;
 
+		-- =====================================================================
 		signal TX_RateChangeDone						: std_logic					:= '0';
 		signal RX_RateChangeDone						: std_logic					:= '0';
 		signal RateChangeDone								: std_logic;
@@ -525,7 +537,7 @@ begin
 				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(i)			-- intial SATA Generation
 			)
 			port map (
-				ClockIn_150MHz						=> VSS_Common_In.RefClockIn_150_MHz,
+				ClockIn_150MHz						=> VSS_Common_In.RefClockIn_BUFG,
 
 				ClockNetwork_Reset				=> ClkNet_Reset,
 				ClockNetwork_ResetDone		=> ClkNet_ResetDone,
@@ -568,94 +580,206 @@ begin
 					else
 						State		<= NextState;
 					end if;
-
-					GTP_Reset_by_FSM_d <= GTP_Reset_by_FSM;
 				end if;
 			end if;
 		end process;
 
-		process(State, Command, Reset,
+		process(State, Command, Reset, QuadPLL_Locked, GTPConfig_ReconfigComplete,
 						OOB_HandshakeComplete, OOB_TX_Command,
-						SATA_Clock_Stable_i, GTP_TX_ResetDone, GTP_RX_ResetDone)
+						SATA_Clock_Stable_i, GTP_TX_ResetDone, GTP_RX_ResetDone, RX_PMAResetDone)
 		begin
 			NextState				<= State;
 
 			Status_i				<= SATA_TRANSCEIVER_STATUS_INIT;
 			Error_i.Common	<= SATA_TRANSCEIVER_ERROR_NONE;
 
-			Kill_SATA_Clock_Stable <= '0';
-			GTP_Reset_by_FSM	<= '0'; -- if asserted, then NextState must be ST_RESET_BY_FSM
+			Kill_SATA_Clock_Stable	<= '0';
+			GTP_TX_Reset_nxt				<= '0';
+			GTP_RX_Reset_nxt				<= '0';
+			GTP_RX_PMAReset_nxt			<= '0';
+			FSM_Reconfig 						<= '0';
+			FSM_ConfigSelect 				<= (others => '-');
+
 			case State is
 				when ST_RESET =>
-					Status_i			<= SATA_TRANSCEIVER_STATUS_INIT;
+					-- Stay here as long as synchronous reset of TransceiverLayer is asserted
+					-- or ResetDone = '0' (see above).
+					Status_i					<= SATA_TRANSCEIVER_STATUS_INIT;
+					GTP_TX_Reset_nxt	<= '1';
+					GTP_RX_Reset_nxt	<= '1';
+
+					if (Reset(i) = '0' and QuadPLL_Locked = '1') then
+						NextState <= ST_INIT_START_RX_RESET;
+					end if;
+
+				-----------------------------------------------------------------------
+				-- Transceiver reset during initialization
+				-----------------------------------------------------------------------
+				when ST_INIT_START_RX_RESET =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_INIT;
+
+					-- TX reset sequence can be started now (if any).
+					-- Keep RX in reset.
+					GTP_RX_Reset_nxt	<= '1';
+
+					if SIMULATION and SIM_RESET_SPEEDUP then
+						-- Skip workaround.
+						NextState <= ST_INIT_WAIT_RESETDONE;
+					else
+						-- Clear bit 11 @ address 0x11
+						FSM_Reconfig 			<= '1';
+						FSM_ConfigSelect 	<= to_slv(3, FSM_ConfigSelect'length);
+						NextState 				<= ST_INIT_DRP_CLEAR_BIT_WAIT;
+					end if;
+
+				when ST_INIT_DRP_CLEAR_BIT_WAIT =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_INIT;
+
+					-- Keep RX in reset.
+					GTP_RX_Reset_nxt	<= '1';
+
+					FSM_ConfigSelect 		<= to_slv(3, FSM_ConfigSelect'length);
+					if GTPConfig_ReconfigComplete = '1' then
+						NextState 				<= ST_INIT_WAIT_PMARESET1;
+					end if;
+
+				when ST_INIT_WAIT_PMARESET1 =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_INIT;
+
+					-- wait until reset sequence enters PMA Reset
+					-- This is indicated by a falling edge on RXPMARESETDONE
+					if RX_PMAResetDone = '1' then -- wait for high level first
+						NextState 			<= ST_INIT_WAIT_PMARESET2;
+					end if;
+
+				when ST_INIT_WAIT_PMARESET2 =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_INIT;
+
+					if RX_PMAResetDone = '0' then -- falling edge detected
+						-- Set bit 11 @ address 0x11
+						FSM_Reconfig 			<= '1';
+						FSM_ConfigSelect 	<= to_slv(4, FSM_ConfigSelect'length);
+
+						NextState 			<= ST_INIT_DRP_SET_BIT_WAIT;
+					end if;
+
+				when ST_INIT_DRP_SET_BIT_WAIT =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_INIT;
+
+					FSM_ConfigSelect 		<= to_slv(4, FSM_ConfigSelect'length);
+					if GTPConfig_ReconfigComplete = '1' then
+						NextState 				<= ST_INIT_WAIT_RESETDONE;
+					end if;
+
+				when ST_INIT_WAIT_RESETDONE =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_INIT;
 
 					if (Reset(i) = '1') then
-						GTP_Reset_by_FSM <= '1';
-						NextState <= ST_RESET_BY_FSM;
+						NextState <= ST_RESET;
 
 					elsif (GTP_RX_ResetDone = '1') then
-						-- Normally, TX will be ready after ~316 clock cycles and RX after
-						-- ~2516 clock cycles.
+						-- Normally, TX is ready before RX
 						if (GTP_TX_ResetDone = '0') then
 							-- TX seems not to get ready. Try Again.
-							GTP_Reset_by_FSM <= '1';
-							NextState	 <= ST_RESET_BY_FSM;
+							NextState	<= ST_RESET;
 						else
-							NextState			<= ST_READY;
+							NextState	<= ST_READY;
 						end if;
 					end if;
 
-				when ST_RESET_BY_FSM =>
-					-- GTP_Reset_by_FSM_d is asserted in this cycle. This signal drives
-					-- the asynchronous GTTXRESET and GTRXRESET inputs of the
-					-- transceiver. Thus, glitches due to binary encoding of the FSM state
-					-- must be avoided. This is achieved by asserting GTP_Reset_by_FSM
-					-- and switching to this state.
-					Status_i			<= SATA_TRANSCEIVER_STATUS_INIT;
-
-					if Reset(i) = '1' then
-							-- stay here as long as reset is asserted and hold GTP reset
-							GTP_Reset_by_FSM <= '1';
-					else
-						NextState <= ST_RESET;
-					end if;
-
+				-----------------------------------------------------------------------
+				-- Transceiver is ready for OOB
+				-----------------------------------------------------------------------
 				when ST_READY =>
 					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
 
 					if (Reset(i) = '1') then
-						NextState		<= ST_RESET_BY_FSM;
-						GTP_Reset_by_FSM <= '1';
+						NextState		<= ST_RESET;
 
 					elsif (OOB_HandshakeComplete(i) = '1') then
-						-- GTP_RX_Reset is asserted below
-						NextState		<= ST_CLEAR_RX_BUF;
+						-- RX must be reset after OOB handshake. Do not report errors.
+						NextState 				<= ST_RDY_START_RX_PMARESET;
 
 					else
 						null;		-- TODO: reconfig?
 
 					end if;
 
+				-----------------------------------------------------------------------
+				-- Transceiver reset after OOB
+				-- Note: PMA reset must be asserted after (!) bit has been cleared.
+				-----------------------------------------------------------------------
+				when ST_RDY_START_RX_PMARESET =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_READY;
 
-				when ST_CLEAR_RX_BUF =>
-					-- RX buffer must be cleared after OOB handshake. Do not report errors.
-					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
-
-					if (Reset(i) = '1') then
-						NextState		<= ST_RESET_BY_FSM;
-						GTP_Reset_by_FSM <= '1';
-
-					elsif GTP_RX_ResetDone = '1' then
-						NextState		<= ST_COMMUNICATION;
+					if SIMULATION and SIM_RESET_SPEEDUP then
+						-- Skip workaround.
+						NextState <= ST_RDY_WAIT_PMARESET;
+					else
+						-- Clear bit 11 @ address 0x11
+						FSM_Reconfig 			<= '1';
+						FSM_ConfigSelect 	<= to_slv(3, FSM_ConfigSelect'length);
+						NextState 				<= ST_RDY_DRP_CLEAR_BIT_WAIT;
 					end if;
 
+				when ST_RDY_DRP_CLEAR_BIT_WAIT =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_READY;
 
+					FSM_ConfigSelect 		<= to_slv(3, FSM_ConfigSelect'length);
+					if GTPConfig_ReconfigComplete = '1' then
+						NextState 				<= ST_RDY_WAIT_PMARESET;
+					end if;
+
+				when ST_RDY_WAIT_PMARESET =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_READY;
+
+					-- Assert and hold PMA Reset.
+					GTP_RX_PMAReset_nxt	<= '1';
+
+					-- Wait until both RX_PMAResetDone and GTP_RX_ResetDone are
+					-- de-asserted by the transceiver (GTP_RX_ResetDone is de-asserted
+					-- later than RX_PMAResetDone in simulation).
+					if RX_PMAResetDone = '0' and GTP_RX_ResetDone = '0' then -- falling edge detected
+						-- Set bit 11 @ address 0x11
+						FSM_Reconfig 			<= '1';
+						FSM_ConfigSelect 	<= to_slv(4, FSM_ConfigSelect'length);
+
+						if SIMULATION and SIM_RESET_SPEEDUP then
+							-- Skip workaround.
+							NextState <= ST_RDY_WAIT_RESETDONE;
+						else
+							NextState <= ST_RDY_DRP_SET_BIT_WAIT;
+						end if;
+					end if;
+
+				when ST_RDY_DRP_SET_BIT_WAIT =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_READY;
+
+					-- Hold PMA Reset until bit 11 has been set again.
+					GTP_RX_PMAReset_nxt <= '1';
+					FSM_ConfigSelect 		<= to_slv(4, FSM_ConfigSelect'length);
+					if GTPConfig_ReconfigComplete = '1' then
+						NextState 				<= ST_RDY_WAIT_RESETDONE;
+					end if;
+
+				when ST_RDY_WAIT_RESETDONE =>
+					Status_i					<= SATA_TRANSCEIVER_STATUS_READY;
+
+					if (Reset(i) = '1') then
+						NextState <= ST_RESET;
+
+					elsif (GTP_RX_ResetDone = '1') then
+							NextState	<= ST_COMMUNICATION;
+					end if;
+
+				-----------------------------------------------------------------------
+				-- Transceiver is ready for communication
+				-----------------------------------------------------------------------
 				when ST_COMMUNICATION =>
 					Status_i			<= SATA_TRANSCEIVER_STATUS_READY;
 
 					if (Reset(i) = '1') then
-						NextState		<= ST_RESET_BY_FSM;
-						GTP_Reset_by_FSM <= '1';
+						NextState		<= ST_RESET;
 
 					elsif (OOB_TX_Command(i) /= SATA_OOB_NONE) then
 						NextState			<= ST_READY;
@@ -665,10 +789,13 @@ begin
 					-- are only informative! Only common errors (e.g. due to reconfiguration)
 					-- are signaled this way.
 
-				when ST_RECONFIGURATION =>
+				-----------------------------------------------------------------------
+				-- Reconfiguration, not available
+				-----------------------------------------------------------------------
+				--when ST_RECONFIGURATION =>
 					-- Assert Kill_SATA_Clock_Stable before ClkNet_Reset is asserted
 					-- Assert only if ClkNet_ResetDone will really go low!
-					Status_i			<= SATA_TRANSCEIVER_STATUS_RECONFIGURING;
+					--Status_i			<= SATA_TRANSCEIVER_STATUS_RECONFIGURING;
 
 					null;
 			end case;
@@ -713,21 +840,27 @@ begin
 
 
 		-- =========================================================================
-		-- Reset control
+		-- GTP Reset control
 		-- =========================================================================
-		-- Transceiver resets
-		--	 QuadPLL_Locked will be asserted some clock cycles after QuadPLL_Locked_async
-		--	 Thus GTP_Reset will be deasserted some time after the QuadPLL gets locked.
-		GTP_Reset											<= (not QuadPLL_Locked_async(QUADPLL_PORTID)) or (not QuadPLL_Locked) or GTP_Reset_by_FSM_d; -- or GTP_ReloadConfig;
-		-- TX resets
-		GTP_TX_Reset									<= GTP_Reset;
-		GTP_TX_PMAReset								<= '0';
-		GTP_TX_PCSReset								<= '0';
-		-- RX resets
-		GTP_RX_Reset									<= GTP_Reset or OOB_HandshakeComplete(i);
-		GTP_RX_PMAReset								<= '0';
-		GTP_RX_PCSReset								<= '0';
-		GTP_RX_BufferReset						<= '0';
+
+		-- GTP_TX_Reset and GTP_RX_Reset must asserted asynchronously when PLL is not locked.
+		-- Synchronous assertion and release of these resets is conrolled by FSM.
+		process (QuadPLL_Locked_async, SATA_Clock_i) is
+		begin	 -- process
+			if QuadPLL_Locked_async(QUADPLL_PORTID) = '0' then
+				-- assert reset (immediately)	 as long as PLL is not locked
+				GTP_RX_Reset_r		<= '1';
+				GTP_TX_Reset_r		<= '1';
+				GTP_RX_PMAReset_r <= '0';	 -- must not be asserted together with GTP_RX_Reset_r
+
+			elsif rising_edge(SATA_Clock_i) then
+				if SATA_Clock_Stable_i = '1' then
+					GTP_TX_Reset_r		<= GTP_TX_Reset_nxt;
+					GTP_RX_Reset_r		<= GTP_RX_Reset_nxt;
+					GTP_RX_PMAReset_r <= GTP_RX_PMAReset_nxt;
+				end if;
+			end if;
+		end process;
 
 		-- =========================================================================
 		-- LineRate control / linerate clock divider selection / reconfiguration port
@@ -769,32 +902,32 @@ begin
 		-- ==================================================================
 		-- DRP - dynamic reconfiguration port
 		-- ==================================================================
---		GTPConfig : entity PoC.sata_Transceiver_Series7_GTPE2_Configurator
---			generic map (
---				DEBUG											=> DEBUG,
---				DRPCLOCK_FREQ							=> REFCLOCK_FREQ,
---				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(i)
---			)
---			port map (
---				DRP_Clock									=> GTP_DRP_Clock,
---				DRP_Reset									=> '0',														-- @DRP_Clock
---				SATA_Clock								=> SATA_Clock_i,
---
---				Reconfig									=> RP_Reconfig(i),								-- @SATA_Clock
---				SATAGeneration						=> RP_SATAGeneration(i),					-- @SATA_Clock
---				ReconfigComplete					=> RP_ReconfigComplete(i),				-- @SATA_Clock
---				ConfigReloaded						=> RP_ConfigReloaded(i),					-- @SATA_Clock
---
---				GTP_DRP_Enable						=> GTPConfig_Enable,							-- @DRP_Clock
---				GTP_DRP_Address						=> GTPConfig_Address,							-- @DRP_Clock
---				GTP_DRP_ReadWrite					=> GTPConfig_ReadWrite,						-- @DRP_Clock
---				GTP_DRP_DataIn						=> DRPMux_In_DataOut(0),					-- @DRP_Clock
---				GTP_DRP_DataOut						=> GTPConfig_DataOut,							-- @DRP_Clock
---				GTP_DRP_Ack								=> DRPMux_Ack(0),								-- @DRP_Clock
---
---				GTP_ReloadConfig					=> open,								--GTP_ReloadConfig,							-- @DRP_Clock
---				GTP_ReloadConfigDone			=> ResetDone_r					-- @DRP_Clock
---			);
+		GTP_DRP_Clock <= VSS_Common_In.DRP_Clock;
+
+		GTPConfig : entity PoC.sata_Transceiver_Series7_GTPE2_Configurator
+			generic map (
+				DEBUG											=> DEBUG,
+				DRPCLOCK_FREQ							=> REFCLOCK_FREQ,
+				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(i)
+			)
+			port map (
+				DRP_Clock									=> GTP_DRP_Clock,
+				DRP_Reset									=> '0',														-- @DRP_Clock
+				SATA_Clock								=> SATA_Clock_i,
+
+				Reconfig									=> FSM_Reconfig,									-- @SATA_Clock
+				ConfigSelect 							=> FSM_ConfigSelect,							-- @SATA_Clock
+				ReconfigComplete					=> GTPConfig_ReconfigComplete,		-- @SATA_Clock
+
+				GTP_DRP_Enable						=> GTP_DRP_Enable,							-- @DRP_Clock
+				GTP_DRP_Address						=> GTP_DRP_Address,							-- @DRP_Clock
+				GTP_DRP_ReadWrite					=> GTP_DRP_ReadWrite,						-- @DRP_Clock
+				GTP_DRP_DataIn						=> GTP_DRP_DataOut,							-- @DRP_Clock
+				GTP_DRP_DataOut						=> GTP_DRP_DataIn,							-- @DRP_Clock
+				GTP_DRP_Ack								=> GTP_DRP_Ack									-- @DRP_Clock
+			);
+
+-- Needed if DRP should also be driven by Picoblaze (or a like)
 --
 --		DRPSync : entity PoC.xil_DRP_BusSync
 --			port map (
@@ -849,8 +982,8 @@ begin
 		-- Data path / status / error detection
 		-- ==================================================================
 		-- TX path
-		GTP_TX_Data							<= TX_Data(i)			;--when rising_edge(SATA_Clock_i);
-		GTP_TX_CharIsK					<= TX_CharIsK(i)	;--when rising_edge(SATA_Clock_i);
+		GTP_TX_Data							<= TX_Data(i)			when rising_edge(SATA_Clock_i);
+		GTP_TX_CharIsK					<= TX_CharIsK(i)	when rising_edge(SATA_Clock_i);
 
 		-- RX path
 		RX_Valid(i)							<= '1'; -- do not use undocumented RXVALID output of transceiver
@@ -919,14 +1052,16 @@ begin
 
 		sync1_RXUserClock : entity PoC.sync_Bits_Xilinx
 			generic map (
-				BITS			=> 2																			-- number of BITS to synchronize
+				BITS			=> 3																			-- number of BITS to synchronize
 			)
 			port map (
 				Clock			=> SATA_Clock_i,													-- Clock to be synchronized to
 				Input(0)	=> QuadPLL_Locked_async(QUADPLL_PORTID),	-- Data to be synchronized
 				Input(1)	=> GTP_RX_ElectricalIDLE_async,						--
+				Input(2)  => GTP_RX_PMAResetDone,										--
 				Output(0)	=> QuadPLL_Locked,												-- synchronised data
-				Output(1)	=> GTP_RX_ElectricalIDLE									--
+				Output(1)	=> GTP_RX_ElectricalIDLE,									--
+				Output(2) => RX_PMAResetDone												--
 			);
 
 		filter1 : entity PoC.filter_and
@@ -1051,7 +1186,7 @@ begin
 			generic map (
 				-- Simulation-Only attributes
 				SIM_RECEIVER_DETECT_PASS								=> "TRUE",
-				SIM_RESET_SPEEDUP												=> "TRUE",										-- set to "TRUE" to speed up simulation reset
+				SIM_RESET_SPEEDUP												=> ite(SIM_RESET_SPEEDUP, "TRUE", "FALSE"),
 				SIM_TX_EIDLE_DRIVE_LEVEL								=> "X",
 				SIM_VERSION															=> "2.0",		-- GTXE2 "4.0"
 
@@ -1378,16 +1513,16 @@ begin
 				GTRESETSEL											=> '0',														-- @async:			0 => sequential mode (recommended)
 				RESETOVRD												=> '0',														-- @async:			reserved; tie to ground
 				-- TX resets
-				GTTXRESET												=> GTP_TX_Reset,
-				TXPCSRESET											=> GTP_TX_PCSReset,
-				TXPMARESET											=> GTP_TX_PMAReset,
-				TXPMARESETDONE									=> GTP_TX_PMAResetDone,		-- GTPE2
+				GTTXRESET												=> GTP_TX_Reset_r,
+				TXPCSRESET											=> '0',
+				TXPMARESET											=> '0',
+				TXPMARESETDONE									=> open,								-- GTPE2
 				-- RX resets
-				GTRXRESET												=> GTP_RX_Reset,
-				RXPCSRESET											=> GTP_RX_PCSReset,
-				RXPMARESET											=> GTP_RX_PMAReset,
+				GTRXRESET												=> GTP_RX_Reset_r,
+				RXPCSRESET											=> '0',
+				RXPMARESET											=> GTP_RX_PMAReset_r,
 				RXPMARESETDONE									=> GTP_RX_PMAResetDone,	-- GTPE2
-				RXBUFRESET											=> GTP_RX_BufferReset,						-- @async:
+				RXBUFRESET											=> '0',														-- @async:
 				RXOOBRESET											=> '0',														-- @async:			reserved; tie to ground
 				EYESCANRESET										=> '0',
 				RXCDRFREQRESET									=> '0',														-- @async:			CDR frequency detector reset
@@ -1679,11 +1814,11 @@ begin
 		GTP_DigitalMonitor(15 downto 15)	<= "0";
 
 		genCSP0 : if (ENABLE_DEBUGPORT = FALSE) generate
-			GTP_DRP_Clock									<= '0';
-			GTP_DRP_Enable								<= '0';
-			GTP_DRP_ReadWrite							<= '0';
-			GTP_DRP_Address								<= (others => '0');
-			GTP_DRP_DataIn								<= x"0000";
+			GTP_DRP_Clock						<= VSS_Common_In.DRP_Clock;
+			--GTP_DRP_Enable								<= '0';
+			--GTP_DRP_ReadWrite							<= '0';
+			--GTP_DRP_Address								<= (others => '0');
+			--GTP_DRP_DataIn								<= x"0000";
 			--	<float>										<= GTP_DRP_DataOut;
 			--	<float>										<= GTP_DRP_Ack;
 		end generate;
@@ -1724,11 +1859,12 @@ begin
 --			);
 
 		begin
-			GTP_DRP_Clock			<= DebugPortIn(i).DRP.Clock;
-			GTP_DRP_Enable		<= DebugPortIn(i).DRP.Enable;
-			GTP_DRP_ReadWrite	<= DebugPortIn(i).DRP.ReadWrite;
-			GTP_DRP_Address		<= DebugPortIn(i).DRP.Address;
-			GTP_DRP_DataIn		<= DebugPortIn(i).DRP.Data;
+			-- For DRP commands issued by Picoblaze (or a like)
+			--GTP_DRP_Clock			<= DebugPortIn(i).DRP.Clock;
+			--GTP_DRP_Enable		<= DebugPortIn(i).DRP.Enable;
+			--GTP_DRP_ReadWrite	<= DebugPortIn(i).DRP.ReadWrite;
+			--GTP_DRP_Address		<= DebugPortIn(i).DRP.Address;
+			--GTP_DRP_DataIn		<= DebugPortIn(i).DRP.Data;
 
 			DebugPortOut(i).PowerDown									<= PowerDown(i);
 			DebugPortOut(i).ClockNetwork_Reset				<= ClockNetwork_Reset(i);
@@ -1746,11 +1882,13 @@ begin
 			DebugPortOut(i).GTX_CPLL_Reset						<= QuadPLL_Reset(QUADPLL_PORTID);
 			DebugPortOut(i).GTX_CPLL_Locked						<= QuadPLL_Locked_async(QUADPLL_PORTID);
 
-			DebugPortOut(i).GTX_TX_Reset							<= GTP_TX_Reset;
-			DebugPortOut(i).GTX_RX_Reset							<= GTP_RX_Reset;
+			DebugPortOut(i).GTX_TX_Reset							<= GTP_TX_Reset_r;
+			DebugPortOut(i).GTX_RX_Reset							<= GTP_RX_Reset_r;
+			DebugPortOut(i).GTX_RX_PMAReset						<= GTP_RX_PMAReset_r;
 			DebugPortOut(i).GTX_TX_ResetDone					<= GTP_TX_ResetDone;
 			DebugPortOut(i).GTX_RX_ResetDone					<= GTP_RX_ResetDone;
-			DebugPortOut(i).FSM												<= '0' & to_slv(State);
+			DebugPortOut(i).GTX_RX_PMAResetDone				<= GTP_RX_PMAResetDone;
+			DebugPortOut(i).FSM												<= to_slv(State);
 
 			DebugPortOut(i).OOB_Clock									<= '0';
 			DebugPortOut(i).RP_SATAGeneration					<= RP_SATAGeneration(i);
@@ -1788,8 +1926,9 @@ begin
 			DebugPortOut(i).RX_BufferStatus						<= GTP_RX_BufferStatus;
 			DebugPortOut(i).RX_ClockCorrectionStatus	<= GTP_RX_ClockCorrectionStatus;
 
-			DebugPortOut(i).DRP.Data									<= DRPMux_In_DataOut(1);
-			DebugPortOut(i).DRP.Ack										<= DRPMux_Ack(1);
+			-- For DRP commands issued by Picoblaze (or a like)
+			--DebugPortOut(i).DRP.Data									<= DRPMux_In_DataOut(1);
+			--DebugPortOut(i).DRP.Ack										<= DRPMux_Ack(1);
 
 			DebugPortOut(i).DigitalMonitor						<= GTP_DigitalMonitor;
 			GTP_RX_Monitor_sel												<= DebugPortIn(i).RX_Monitor_sel;

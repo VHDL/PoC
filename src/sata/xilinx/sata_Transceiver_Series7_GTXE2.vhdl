@@ -59,6 +59,7 @@ entity sata_Transceiver_Series7_GTXE2 is
 		DEBUG											: boolean											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: boolean											:= FALSE;																		-- enables the assignment of signals to the debugport
 		REFCLOCK_FREQ							: FREQ												:= 150 MHz;																	-- 150 MHz
+		REFCLOCK_SOURCE 					: T_SATA_TRANSCEIVER_REFCLOCK_SOURCE := SATA_TRANSCEIVER_REFCLOCK_GTREFCLK0; -- reference clock selection for transceiver primitive
 		PORTS											: positive										:= 2;																				-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 to 3	=> C_SATA_GENERATION_MAX)				-- intial SATA Generation
 	);
@@ -121,8 +122,6 @@ architecture rtl of sata_Transceiver_Series7_GTXE2 is
 	constant NEW_DEVICE_TIMEOUT				: time																			:= 1 us;
 
 --	constant C_DEVICE_INFO						: T_DEVICE_INFO		:= DEVICE_INFO;
-
-	signal RefClockIn_150_MHz_BUFR		: std_logic;
 
 	function to_ClockDividerSelection(gen : T_SATA_GENERATION) return std_logic_vector is
 	begin
@@ -394,10 +393,11 @@ begin
 		-- clock signals
 		GTX_QPLLRefClock							<= '0';
 		GTX_QPLLClock									<= '0';
-		GTX_RefClockGlobal						<= VSS_Common_In.RefClockIn_150_MHz;
+		GTX_RefClockGlobal						<= VSS_Common_In.RefClockIn_BUFG;--'0';
 		GTX_RefClockNorth							<= "00";
 		GTX_RefClockSouth							<= "00";
-		GTX_RefClock									<= "00";
+		GTX_RefClock(0) 							<= VSS_Common_In.RefClockIn_IBUFDS(0);
+		GTX_RefClock(1)								<= VSS_Common_In.RefClockIn_IBUFDS(1);
 
 		-- ======================================================================
 		-- ClockNetwork
@@ -419,7 +419,7 @@ begin
 				INITIAL_SATA_GENERATION		=> INITIAL_SATA_GENERATIONS(i)			-- intial SATA Generation
 			)
 			port map (
-				ClockIn_150MHz						=> VSS_Common_In.RefClockIn_150_MHz,
+				ClockIn_150MHz						=> VSS_Common_In.RefClockIn_BUFG,
 
 				ClockNetwork_Reset				=> ClkNet_Reset,
 				ClockNetwork_ResetDone		=> ClkNet_ResetDone,
@@ -895,7 +895,7 @@ begin
 				SIM_RESET_SPEEDUP												=> "TRUE",										-- set to "TRUE" to speed up simulation reset
 				SIM_TX_EIDLE_DRIVE_LEVEL								=> "X",
 				SIM_VERSION															=> "4.0",
-				SIM_CPLLREFCLK_SEL											=> "111",											-- GTGREFCLK (GTX_RefClockGlobal) is used
+				SIM_CPLLREFCLK_SEL											=> to_bv(REFCLOCK_SOURCE),
 
 				-- Channel PLL clock attributes																				-- A reference input clock of 150 MHz,
 				CPLL_REFCLK_DIV													=> CPLL_REFERENCE_CLOCK_DIVIDER,
@@ -1149,7 +1149,7 @@ begin
 			)
 			port map (
 				-- clock selects and clock inputs
-				CPLLREFCLKSEL										=> "111",													-- @async:		111 => use GTGREFCLK
+				CPLLREFCLKSEL										=> to_slv(REFCLOCK_SOURCE),
 
 				GTREFCLK0												=> GTX_RefClock(0),								-- @clock:		selectable by CPLLREFCLKSEL = 001
 				GTREFCLK1												=> GTX_RefClock(1),								-- @clock:		selectable by CPLLREFCLKSEL = 010
@@ -1551,8 +1551,10 @@ begin
 
 			DebugPortOut(i).GTX_TX_Reset							<= GTX_TX_Reset;
 			DebugPortOut(i).GTX_RX_Reset							<= GTX_RX_Reset;
+			DebugPortOut(i).GTX_RX_PMAReset						<= '0';
 			DebugPortOut(i).GTX_TX_ResetDone					<= GTX_TX_ResetDone;
 			DebugPortOut(i).GTX_RX_ResetDone					<= GTX_RX_ResetDone;
+			DebugPortOut(i).GTX_RX_PMAResetDone				<= '0';
 			DebugPortOut(i).FSM												<= '0' & to_slv(State);
 
 			DebugPortOut(i).OOB_Clock									<= '0';

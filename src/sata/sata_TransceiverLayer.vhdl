@@ -71,6 +71,7 @@ entity sata_TransceiverLayer is
 		DEBUG											: boolean											:= FALSE;																		-- generate additional debug signals and preserve them (attribute keep)
 		ENABLE_DEBUGPORT					: boolean											:= FALSE;																		-- export internal signals to upper layers for debug purposes
 		REFCLOCK_FREQ							: FREQ												:= 150 MHz;																								-- 150 MHz
+		REFCLOCK_SOURCE 					: T_SATA_TRANSCEIVER_REFCLOCK_SOURCE := SATA_TRANSCEIVER_REFCLOCK_GTREFCLK0; 					-- reference clock selection for transceiver primitive
 		PORTS											: positive										:= 2;																											-- Number of Ports per Transceiver
 		INITIAL_SATA_GENERATIONS	: T_SATA_GENERATION_VECTOR		:= (0 => SATA_GENERATION_2,	1 => SATA_GENERATION_2)				-- intial SATA Generation
 	);
@@ -310,9 +311,11 @@ begin
 		genGTPE2 : if (C_DEVICE_INFO.TRANSCEIVERTYPE = TRANSCEIVER_GTPE2) generate
 			Trans : sata_Transceiver_Series7_GTPE2
 				generic map (
+					SIM_RESET_SPEEDUP 				=> true,
 					DEBUG											=> DEBUG,
 					ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 					REFCLOCK_FREQ							=> REFCLOCK_FREQ,
+					REFCLOCK_SOURCE						=> REFCLOCK_SOURCE,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
@@ -366,6 +369,7 @@ begin
 					DEBUG											=> DEBUG,
 					ENABLE_DEBUGPORT					=> ENABLE_DEBUGPORT,
 					REFCLOCK_FREQ							=> REFCLOCK_FREQ,
+					REFCLOCK_SOURCE						=> REFCLOCK_SOURCE,
 					PORTS											=> PORTS,													-- Number of Ports per Transceiver
 					INITIAL_SATA_GENERATIONS	=> INITIAL_SATA_GENERATIONS				-- intial SATA Generation
 				)
