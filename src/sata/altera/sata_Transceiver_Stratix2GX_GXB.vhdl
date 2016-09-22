@@ -184,6 +184,9 @@ begin
 			end if;
 		end process;
 
+		-- initial generation is set to 6G
+		assert(INITIAL_SATA_GENERATIONS(i) = SATA_GENERATION_3) report "Invalid initial SATA generation" severity failure;
+
 		config_sync : entity PoC.EventSyncVector
 		generic map (
 			BITS => 2,
