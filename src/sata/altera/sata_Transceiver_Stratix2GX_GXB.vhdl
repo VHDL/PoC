@@ -121,7 +121,7 @@ begin
 		signal rx_clkout	: std_logic;
 		signal rx_ctrlout	: std_logic_vector(3 downto 0);
 		signal rx_dataout	: std_logic_vector(31 downto 0);
-		signal rx_electricalidle : std_logic;
+		signal rx_signaldetect  : std_logic;
 		signal rx_errdetect	: std_logic_vector(3 downto 0);
 		signal rx_errin		: std_logic_vector(3 downto 0);
 		signal rx_oob_status	: T_SATA_OOB;
