@@ -1017,7 +1017,7 @@ class PoC(ILogable, ArgParseMixin):
 	@PoCEntityAttribute()
 	@BoardDeviceAttributeGroup()
 	@NoCleanUpAttribute()
-	def HandleCoreGeneratorCompilation(self, args):
+	def HandleIpCatalogCompilation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
 		self._CheckISEEnvironment()
