@@ -1123,6 +1123,10 @@ begin
 
 	-- debug port
 	-- ===========================================================================
+	genNoDebugPort: if not ENABLE_DEBUGPORT generate
+		DebugPortOut <= C_SATADBG_LINK_LLFSM_OUT_EMPTY;
+	end generate genNoDebugPort;
+
 	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_EncodeState(st : T_STATE) return std_logic_vector is
 		begin

@@ -541,8 +541,12 @@ begin
 	Link_RX_FS_Ack			<= FISD_Link_RX_FS_Ack;
 
 	-- debug ports
-	-- ==========================================================================================================================================================
-	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+	-- ===========================================================================
+	genNoDebugPort: if not ENABLE_DEBUGPORT generate
+		DebugPortOut <= C_SATADBG_TRANS_OUT_EMPTY;
+	end generate genNoDebugPort;
+
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
 			function dbg_generateCommandEncodings return string is
 				variable  l : STD.TextIO.line;

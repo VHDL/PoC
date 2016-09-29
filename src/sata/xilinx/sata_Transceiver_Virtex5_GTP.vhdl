@@ -1685,8 +1685,9 @@ begin
 
 
 	-- debug port
-	-- ==========================================================================================================================================================
+	-- =====================================================================
 --	DebugPortOut(0).RefClock		<= GTP_RefClockOut;
 --	DebugPortOut(0).TXOutClock	<= GTP_TX_RefClockOut(0);
 --	DebugPortOut(0).RXRecClock	<= GTP_RX_RefClockOut(0);
+	DebugPortOut(i) <= C_SATADBG_TRANSCEIVER_OUT_EMPTY;
 end;

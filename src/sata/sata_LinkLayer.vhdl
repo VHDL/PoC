@@ -735,7 +735,11 @@ begin
 	-- ================================================================
 	-- debug ports
 	-- ================================================================
-	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+	genNoDebugPort: if not ENABLE_DEBUGPORT generate
+		DebugPortOut <= C_SATADBG_LINK_OUT_EMPTY;
+	end generate genNoDebugPort;
+
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate
 			function dbg_generateCommandEncodings return string is

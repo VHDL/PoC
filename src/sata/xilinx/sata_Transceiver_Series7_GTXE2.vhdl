@@ -1489,6 +1489,8 @@ begin
 			GTX_DRP_DataIn								<= x"0000";
 			--	<float>										<= GTX_DRP_DataOut;
 			--	<float>										<= GTX_DRP_Ack;
+			GTX_RX_Monitor_sel						<= (others => '0');
+			DebugPortOut(i) 							<= C_SATADBG_TRANSCEIVER_OUT_EMPTY;
 		end generate;
 		genCSP1 : if (ENABLE_DEBUGPORT = TRUE) generate
 			function to_slv(Status : T_STATE) return std_logic_vector is

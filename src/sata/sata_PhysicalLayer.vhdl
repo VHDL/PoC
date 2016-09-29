@@ -306,6 +306,10 @@ begin
 
 	-- debug port
 	-- ===========================================================================
+	genNoDebugPort: if not ENABLE_DEBUGPORT generate
+		DebugPortOut <= C_SATADBG_PHYSICAL_OUT_EMPTY;
+	end generate genNoDebugPort;
+
 	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
 		DebugPortOut.TX_Data				<= Trans_TX_Data_i;

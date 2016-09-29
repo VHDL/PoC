@@ -486,6 +486,10 @@ begin
 
   -- debug ports
   -- ===========================================================================
+	genNoDebugPort: if not ENABLE_DEBUGPORT generate
+		DebugPortOut <= C_SATADBG_STREAMING_OUT_EMPTY;
+	end generate genNoDebugPort;
+
   genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
   begin
 		genXilinx : if (VENDOR = VENDOR_XILINX) generate

@@ -112,6 +112,26 @@ package satadbg is
 		RX_Monitor_Data						: T_SLV_8;
 	end record;
 
+	constant C_SATADBG_TRANSCEIVER_OUT_EMPTY : T_SATADBG_TRANSCEIVER_OUT := (
+		FSM											 => (others => '0'),
+		RP_SATAGeneration				 => SATA_GENERATION_1,
+		TX_RateSelection				 => (others => '0'),
+		RX_RateSelection				 => (others => '0'),
+		TX_Data									 => (others => '0'),
+		TX_CharIsK							 => (others => '0'),
+		TX_BufferStatus					 => (others => '0'),
+		RX_Data									 => (others => '0'),
+		RX_CharIsK							 => (others => '0'),
+		RX_CharIsComma					 => (others => '0'),
+		RX_DisparityError				 => (others => '0'),
+		RX_NotInTableError			 => (others => '0'),
+		RX_BufferStatus					 => (others => '0'),
+		RX_ClockCorrectionStatus => (others => '0'),
+		DRP											 => C_XIL_DRP_BUS_OUT_EMPTY,
+		DigitalMonitor					 => (others => '0'),
+		RX_Monitor_Data					 => (others => '0'),
+		others									 => '0');
+
 	type T_SATADBG_TRANSCEIVER_IN is record
 		ForceOOBCommand						: T_SATA_OOB;
 		ForceTXElectricalIdle			: std_logic;
@@ -142,6 +162,12 @@ package satadbg is
 		OOB_HandshakeComplete			: std_logic;
 	end record;
 
+	constant C_SATADBG_PHYSICAL_OOBCONTROL_OUT_EMPTY : T_SATADBG_PHYSICAL_OOBCONTROL_OUT := (
+		FSM							=> (others => '0'),
+		OOB_TX_Command	=> SATA_OOB_NONE,
+		OOB_RX_Received => SATA_OOB_NONE,
+		others					=> '0');
+
 	type T_SATADBG_PHYSICAL_PFSM_OUT is record
 		FSM												: std_logic_vector(3 downto 0);
 		Command 									: T_SATA_PHY_COMMAND;
@@ -158,6 +184,16 @@ package satadbg is
 		TrysPerGeneration					: std_logic_vector(7 downto 0);
 	end record;
 
+	constant C_SATADBG_PHYSICAL_PFSM_OUT_EMPTY : T_SATADBG_PHYSICAL_PFSM_OUT := (
+		FSM								=> (others => '0'),
+		Command						=> SATA_PHY_CMD_NONE,
+		Status						=> SATA_PHY_STATUS_RESET,
+		Error							=> SATA_PHY_ERROR_NONE,
+		SATAGeneration		=> SATA_GENERATION_1,
+		GenerationChanges => (others => '0'),
+		TrysPerGeneration => (others => '0'),
+		others						=> '0');
+
 	type T_SATADBG_PHYSICAL_OUT is record
 		TX_Data										: T_SLV_32;
 		TX_CharIsK								: T_SLV_4;
@@ -169,6 +205,15 @@ package satadbg is
 		PFSM											: T_SATADBG_PHYSICAL_PFSM_OUT;
 	end record;
 
+	constant C_SATADBG_PHYSICAL_OUT_EMPTY : T_SATADBG_PHYSICAL_OUT := (
+		TX_Data		 => (others => '0'),
+		TX_CharIsK => (others => '0'),
+		RX_Data		 => (others => '0'),
+		RX_CharIsK => (others => '0'),
+		OOBControl => C_SATADBG_PHYSICAL_OOBCONTROL_OUT_EMPTY,
+		PFSM			 => C_SATADBG_PHYSICAL_PFSM_OUT_EMPTY,
+		others		 => '0');
+
 
 	-- ===========================================================================
 	-- SATA Link Layer Types
@@ -179,6 +224,10 @@ package satadbg is
 		TX_IsLongFrame							: std_logic;
 		TX_RetryFailed							: std_logic;
 	end record;
+
+	constant C_SATADBG_LINK_LLFSM_OUT_EMPTY : T_SATADBG_LINK_LLFSM_OUT := (
+		FSM		 => (others => '0'),
+		others => '0');
 
 	type T_SATADBG_LINK_OUT is record
 		LLFSM												: T_SATADBG_LINK_LLFSM_OUT;
@@ -247,6 +296,20 @@ package satadbg is
 		TX_Phy_CiK									: T_SLV_4;										-- 4 bit
 	end record;		--																							=> 120 bit
 
+	constant C_SATADBG_LINK_OUT_EMPTY : T_SATADBG_LINK_OUT := (
+		LLFSM											 => C_SATADBG_LINK_LLFSM_OUT_EMPTY,
+		RX_Phy_Data								 => (others => '0'),
+		RX_Phy_CiK								 => (others => '0'),
+		RX_Primitive							 => SATA_PRIMITIVE_NONE,
+		RX_DataUnscrambler_DataOut => (others => '0'),
+		RX_Data										 => (others => '0'),
+		TX_Data										 => (others => '0'),
+		TX_DataScrambler_DataOut	 => (others => '0'),
+		TX_Primitive							 => SATA_PRIMITIVE_NONE,
+		TX_Phy_Data								 => (others => '0'),
+		TX_Phy_CiK								 => (others => '0'),
+		others										 => '0');
+
 	type T_SATADBG_LINK_IN is record
 		InsertBitErrorHeaderTX			: std_logic;
 	end record;
@@ -261,13 +324,22 @@ package satadbg is
 		FSM													: std_logic_vector(4 downto 0);				-- 5 bits
 	end record;
 
+	constant C_SATADBG_TRANS_TFSM_OUT_EMPTY : T_SATADBG_TRANS_TFSM_OUT := (
+		FSM => (others => '0'));
+
 	type T_SATADBG_TRANS_FISE_OUT is record
 		FSM													: std_logic_vector(3 downto 0);				-- 4 bits
 	end record;
 
+	constant C_SATADBG_TRANS_FISE_OUT_EMPTY : T_SATADBG_TRANS_FISE_OUT := (
+		FSM => (others => '0'));
+
 	type T_SATADBG_TRANS_FISD_OUT is record
 		FSM													: std_logic_vector(4 downto 0);				-- 5 bits
 	end record;
+
+	constant C_SATADBG_TRANS_FISD_OUT_EMPTY : T_SATADBG_TRANS_FISD_OUT := (
+		FSM => (others => '0'));
 
 	type T_SATADBG_TRANS_OUT is record
 		TFSM												: T_SATADBG_TRANS_TFSM_OUT;						-- 5 bits
@@ -319,6 +391,22 @@ package satadbg is
 		Link_RX_FS_SyncEsc					: std_logic;
 	end record;
 
+	constant C_SATADBG_TRANS_OUT_EMPTY : T_SATADBG_TRANS_OUT := (
+		TFSM							 => C_SATADBG_TRANS_TFSM_OUT_EMPTY,
+		FISE							 => C_SATADBG_TRANS_FISE_OUT_EMPTY,
+		FISD							 => C_SATADBG_TRANS_FISD_OUT_EMPTY,
+		ATAHostRegisters	 => C_SATA_ATA_HOST_REGISTERS_EMPTY,
+		ATADeviceRegisters => C_SATA_ATA_DEVICE_REGISTERS_EMPTY,
+		TX_Data						 => (others => '0'),
+		RX_Data						 => (others => '0'),
+		FISE_FISType			 => SATA_FISTYPE_UNKNOWN,
+		FISE_Status				 => SATA_FISE_STATUS_RESET,
+		FISD_FISType			 => SATA_FISTYPE_UNKNOWN,
+		FISD_Status				 => SATA_FISD_STATUS_RESET,
+		Link_TX_Data			 => (others => '0'),
+		Link_RX_Data			 => (others => '0'),
+		others						 => '0');
+
 	-- ===========================================================================
 	-- SATA Controller Types
 	-- ===========================================================================
@@ -345,6 +433,24 @@ package satadbg is
 		Transport_Error				: T_SATA_TRANS_ERROR;									-- 3 bit
 	end record;
 
+	constant C_SATADBG_SATACONTROLLER_OUT_EMPTY : T_SATADBG_SATACONTROLLER_OUT := (
+		TransceiverLayer		=> C_SATADBG_TRANSCEIVER_OUT_EMPTY,
+		Transceiver_Command => SATA_TRANSCEIVER_CMD_NONE,
+		Transceiver_Status	=> SATA_TRANSCEIVER_STATUS_INIT,
+		Transceiver_Error		=> C_SATA_TRANSCEIVER_ERROR_EMPTY,
+		PhysicalLayer				=> C_SATADBG_PHYSICAL_OUT_EMPTY,
+		Physical_Command		=> SATA_PHY_CMD_NONE,
+		Physical_Status			=> SATA_PHY_STATUS_RESET,
+		Physical_Error			=> SATA_PHY_ERROR_NONE,
+		LinkLayer						=> C_SATADBG_LINK_OUT_EMPTY,
+		Link_Command				=> SATA_LINK_CMD_NONE,
+		Link_Status					=> SATA_LINK_STATUS_NO_COMMUNICATION,
+		Link_Error					=> SATA_LINK_ERROR_NONE,
+		TransportLayer			=> C_SATADBG_TRANS_OUT_EMPTY,
+		Transport_Command		=> SATA_TRANS_CMD_NONE,
+		Transport_Status		=> SATA_TRANS_STATUS_RESET,
+		Transport_Error			=> SATA_TRANS_ERROR_NONE);
+
 	type T_SATADBG_SATACONTROLLER_IN is record
 		TransceiverLayer			: T_SATADBG_TRANSCEIVER_IN;
 		LinkLayer							: T_SATADBG_LINK_IN;
@@ -361,6 +467,10 @@ package satadbg is
     NextTransfer : std_logic;
     LastTransfer : std_logic;
 	end record;
+
+	constant C_SATADBG_STREAMING_SFSM_OUT_EMPTY : T_SATADBG_STREAMING_SFSM_OUT := (
+		FSM => (others => '0'),
+		others => '0');
 
   type T_SATADBG_STREAMING_OUT is record
     Command             	: T_SATA_STREAMING_COMMAND;
@@ -404,6 +514,22 @@ package satadbg is
     TC_TX_InsertEOT 			: std_logic;
 	end record;
 
+	constant C_SATADBG_STREAMING_OUT_EMPTY : T_SATADBG_STREAMING_OUT := (
+		Command							 => SATA_STREAM_CMD_NONE,
+		Status							 => SATA_STREAM_STATUS_RESET,
+		Error								 => SATA_STREAM_ERROR_NONE,
+		Address_AppLB				 => (others => '0'),
+		BlockCount_AppLB		 => (others => '0'),
+		Address_DevLB				 => (others => '0'),
+		BlockCount_DevLB		 => (others => '0'),
+		IDF_DriveInformation => C_SATA_DRIVE_INFORMATION_EMPTY,
+		SFSM								 => C_SATADBG_STREAMING_SFSM_OUT_EMPTY,
+		RX_Data							 => (others => '0'),
+		Trans_RX_Data				 => (others => '0'),
+		TX_Data							 => (others => '0'),
+		TC_TX_Data					 => (others => '0'),
+		others							 => '0');
+
 
 	-- ===========================================================================
 	-- SATA Streaming Stack Types
@@ -436,10 +562,36 @@ package satadbg is
 		Streaming_Error			: T_SATA_STREAMING_ERROR;
 	end record;
 
+	constant C_SATADBG_STREAMINGSTACK_OUT_EMPTY : T_SATADBG_STREAMINGSTACK_OUT := (
+		TransceiverLayer		=> C_SATADBG_TRANSCEIVER_OUT_EMPTY,
+		Transceiver_Command => SATA_TRANSCEIVER_CMD_NONE,
+		Transceiver_Status	=> SATA_TRANSCEIVER_STATUS_INIT,
+		Transceiver_Error		=> C_SATA_TRANSCEIVER_ERROR_EMPTY,
+		PhysicalLayer				=> C_SATADBG_PHYSICAL_OUT_EMPTY,
+		Physical_Command		=> SATA_PHY_CMD_NONE,
+		Physical_Status			=> SATA_PHY_STATUS_RESET,
+		Physical_Error			=> SATA_PHY_ERROR_NONE,
+		LinkLayer						=> C_SATADBG_LINK_OUT_EMPTY,
+		Link_Command				=> SATA_LINK_CMD_NONE,
+		Link_Status					=> SATA_LINK_STATUS_NO_COMMUNICATION,
+		Link_Error					=> SATA_LINK_ERROR_NONE,
+		TransportLayer			=> C_SATADBG_TRANS_OUT_EMPTY,
+		Transport_Command		=> SATA_TRANS_CMD_NONE,
+		Transport_Status		=> SATA_TRANS_STATUS_RESET,
+		Transport_Error			=> SATA_TRANS_ERROR_NONE,
+		StreamingLayer			=> C_SATADBG_STREAMING_OUT_EMPTY,
+		Streaming_Command		=> SATA_STREAM_CMD_NONE,
+		Streaming_Status		=> SATA_STREAM_STATUS_RESET,
+		Streaming_Error			=> SATA_STREAM_ERROR_NONE);
+
 	type T_SATADBG_STREAMINGSTACK_IN is record
 		TransceiverLayer		: T_SATADBG_TRANSCEIVER_IN;
 		LinkLayer						: T_SATADBG_LINK_IN;
 	end record;
+
+	constant C_SATADBG_STREAMINGSTACK_IN_EMPTY : T_SATADBG_STREAMINGSTACK_IN := (
+		TransceiverLayer => C_SATADBG_TRANSCEIVER_IN_EMPTY,
+		LinkLayer				 => C_SATADBG_LINK_IN_EMPTY);
 
 	type T_SATADBG_TRANSCEIVER_OUT_VECTOR			is array (natural range <>)	of T_SATADBG_TRANSCEIVER_OUT;
 	type T_SATADBG_TRANSCEIVER_IN_VECTOR			is array (natural range <>)	of T_SATADBG_TRANSCEIVER_IN;

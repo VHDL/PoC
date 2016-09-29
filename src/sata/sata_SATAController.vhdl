@@ -630,6 +630,8 @@ begin
 		genNoDebugPort : if not(ENABLE_DEBUGPORT = TRUE) generate
 			Link_DebugPortIn											<= C_SATADBG_LINK_IN_EMPTY;
 			Transceiver_DebugPortIn(i)						<= C_SATADBG_TRANSCEIVER_IN_EMPTY;
+
+			DebugPortOut(i) <= C_SATADBG_SATACONTROLLER_OUT_EMPTY;
 		end generate;
 	end generate;
 

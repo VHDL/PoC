@@ -554,7 +554,11 @@ begin
 		sim_SATAGeneration	<= to_unsigned(SATAGeneration_cur, 3) + 1;
 	end generate;
 
-	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+	genNoDebugPort: if not ENABLE_DEBUGPORT generate
+		DebugPortOut <= C_SATADBG_PHYSICAL_PFSM_OUT_EMPTY;
+	end generate genNoDebugPort;
+
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_EncodeState(st : T_STATE) return std_logic_vector is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));

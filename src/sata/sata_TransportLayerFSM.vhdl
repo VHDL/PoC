@@ -1080,7 +1080,11 @@ begin
 
 	-- debug ports
 	-- ===========================================================================
-	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
+	genNoDebugPort: if not ENABLE_DEBUGPORT generate
+		DebugPortOut <= C_SATADBG_TRANS_TFSM_OUT_EMPTY;
+	end generate genNoDebugPort;
+
+	genDebugPort : if (ENABLE_DEBUGPORT = TRUE) generate
 		function dbg_EncodeState(st : T_STATE) return std_logic_vector is
 		begin
 			return to_slv(T_STATE'pos(st), log2ceilnz(T_STATE'pos(T_STATE'high) + 1));

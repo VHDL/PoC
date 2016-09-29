@@ -1821,6 +1821,7 @@ begin
 			--GTP_DRP_DataIn								<= x"0000";
 			--	<float>										<= GTP_DRP_DataOut;
 			--	<float>										<= GTP_DRP_Ack;
+			DebugPortOut(i) <= C_SATADBG_TRANSCEIVER_OUT_EMPTY;
 		end generate;
 		genCSP1 : if (ENABLE_DEBUGPORT = TRUE) generate
 			function to_slv(Status : T_STATE) return std_logic_vector is

@@ -173,7 +173,6 @@ architecture rtl of sata_StreamingStack is
 	signal SATAC_DebugPortOut		: T_SATADBG_SATACONTROLLER_OUT;
 --	signal SATASC_DebugPortIn		: T_SATADBG_SATASC_IN;
 	signal SATASC_DebugPortOut	: T_SATADBG_STREAMING_OUT;
-	signal SATAS_DebugPortOut		: T_SATADBG_STREAMINGSTACK_OUT;
 
 begin
 	assert FALSE report "sata_StreamingStack configuration:"																					severity NOTE;
@@ -340,6 +339,8 @@ begin
 		-- assign default values to debugport (empty)
 		SATAC_DebugPortIn.TransceiverLayer			<= C_SATADBG_TRANSCEIVER_IN_EMPTY;
 		SATAC_DebugPortIn.LinkLayer							<= C_SATADBG_LINK_IN_EMPTY;
+
+		DebugPortOut 														<= C_SATADBG_STREAMINGSTACK_OUT_EMPTY;
 	end generate;
 	genDebug : if (ENABLE_DEBUGPORT = TRUE) generate
 	begin
@@ -347,31 +348,29 @@ begin
 		SATAC_DebugPortIn.TransceiverLayer			<= DebugPortIn.TransceiverLayer;
 		SATAC_DebugPortIn.LinkLayer							<= DebugPortIn.LinkLayer;
 
-		SATAS_DebugPortOut.TransceiverLayer			<= SATAC_DebugPortOut.TransceiverLayer;
-		SATAS_DebugPortOut.Transceiver_Command	<= SATAC_DebugPortOut.Transceiver_Command;
-		SATAS_DebugPortOut.Transceiver_Status		<= SATAC_DebugPortOut.Transceiver_Status;
-		SATAS_DebugPortOut.Transceiver_Error		<= SATAC_DebugPortOut.Transceiver_Error;
+		DebugPortOut.TransceiverLayer						<= SATAC_DebugPortOut.TransceiverLayer;
+		DebugPortOut.Transceiver_Command				<= SATAC_DebugPortOut.Transceiver_Command;
+		DebugPortOut.Transceiver_Status					<= SATAC_DebugPortOut.Transceiver_Status;
+		DebugPortOut.Transceiver_Error					<= SATAC_DebugPortOut.Transceiver_Error;
 
-		SATAS_DebugPortOut.PhysicalLayer				<= SATAC_DebugPortOut.PhysicalLayer;
-		SATAS_DebugPortOut.Physical_Command			<= SATAC_DebugPortOut.Physical_Command;
-		SATAS_DebugPortOut.Physical_Status			<= SATAC_DebugPortOut.Physical_Status;
-		SATAS_DebugPortOut.Physical_Error				<= SATAC_DebugPortOut.Physical_Error;
+		DebugPortOut.PhysicalLayer							<= SATAC_DebugPortOut.PhysicalLayer;
+		DebugPortOut.Physical_Command						<= SATAC_DebugPortOut.Physical_Command;
+		DebugPortOut.Physical_Status						<= SATAC_DebugPortOut.Physical_Status;
+		DebugPortOut.Physical_Error							<= SATAC_DebugPortOut.Physical_Error;
 
-		SATAS_DebugPortOut.LinkLayer						<= SATAC_DebugPortOut.LinkLayer;
-		SATAS_DebugPortOut.Link_Command					<= SATAC_DebugPortOut.Link_Command;
-		SATAS_DebugPortOut.Link_Status					<= SATAC_DebugPortOut.Link_Status;
-		SATAS_DebugPortOut.Link_Error						<= SATAC_DebugPortOut.Link_Error;
+		DebugPortOut.LinkLayer									<= SATAC_DebugPortOut.LinkLayer;
+		DebugPortOut.Link_Command								<= SATAC_DebugPortOut.Link_Command;
+		DebugPortOut.Link_Status								<= SATAC_DebugPortOut.Link_Status;
+		DebugPortOut.Link_Error									<= SATAC_DebugPortOut.Link_Error;
 
-		SATAS_DebugPortOut.TransportLayer				<= SATAC_DebugPortOut.TransportLayer;
-		SATAS_DebugPortOut.Transport_Command		<= SATAC_DebugPortOut.Transport_Command;
-		SATAS_DebugPortOut.Transport_Status			<= SATAC_DebugPortOut.Transport_Status;
-		SATAS_DebugPortOut.Transport_Error			<= SATAC_DebugPortOut.Transport_Error;
+		DebugPortOut.TransportLayer							<= SATAC_DebugPortOut.TransportLayer;
+		DebugPortOut.Transport_Command					<= SATAC_DebugPortOut.Transport_Command;
+		DebugPortOut.Transport_Status						<= SATAC_DebugPortOut.Transport_Status;
+		DebugPortOut.Transport_Error						<= SATAC_DebugPortOut.Transport_Error;
 
-		SATAS_DebugPortOut.StreamingLayer				<= SATASC_DebugPortOut;
-		SATAS_DebugPortOut.Streaming_Command		<= SATASC_DebugPortOut.Command;
-		SATAS_DebugPortOut.Streaming_Status			<= SATASC_DebugPortOut.Status;
-		SATAS_DebugPortOut.Streaming_Error			<= SATASC_DebugPortOut.Error;
-
-		DebugPortOut														<= SATAS_DebugPortOut;
+		DebugPortOut.StreamingLayer							<= SATASC_DebugPortOut;
+		DebugPortOut.Streaming_Command					<= SATASC_DebugPortOut.Command;
+		DebugPortOut.Streaming_Status						<= SATASC_DebugPortOut.Status;
+		DebugPortOut.Streaming_Error						<= SATASC_DebugPortOut.Error;
 	end generate;
 end architecture;

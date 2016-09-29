@@ -1199,17 +1199,18 @@ begin
 -- ==================================================================
 -- debugging signals
 -- ==================================================================
-		DebugPortOut(I).PLL_Reset						<= GTX_PLL_Reset_r;
-		DebugPortOut(I).TXPLL_Locked				<= GTX_TXPLL_ResetDone;
-		DebugPortOut(I).RXPLL_Locked				<= GTX_RXPLL_ResetDone;
+		--DebugPortOut(I).PLL_Reset						<= GTX_PLL_Reset_r;
+		--DebugPortOut(I).TXPLL_Locked				<= GTX_TXPLL_ResetDone;
+		--DebugPortOut(I).RXPLL_Locked				<= GTX_RXPLL_ResetDone;
 
-		DebugPortOut(I).MMCM_Reset					<= ClkNet_Reset;
-		DebugPortOut(I).MMCM_Locked					<= ClkNet_ResetDone;
+		--DebugPortOut(I).MMCM_Reset					<= ClkNet_Reset;
+		--DebugPortOut(I).MMCM_Locked					<= ClkNet_ResetDone;
 
-		DebugPortOut(I).RefClock						<= ClockIn_150MHz_BUFR;
-		DebugPortOut(I).TXOutClock					<= GTX_TX_RefClockOut;
-		DebugPortOut(I).RXRecClock					<= GTX_RX_RefClockOut;
-		DebugPortOut(I).SATAClock						<= GTX_Clock_4X;
+		--DebugPortOut(I).RefClock						<= ClockIn_150MHz_BUFR;
+		--DebugPortOut(I).TXOutClock					<= GTX_TX_RefClockOut;
+		--DebugPortOut(I).RXRecClock					<= GTX_RX_RefClockOut;
+		--DebugPortOut(I).SATAClock						<= GTX_Clock_4X;
+		DebugPortOut(i) <= C_SATADBG_TRANSCEIVER_OUT_EMPTY;
 
 -- ==================================================================
 -- ChipScope debugging signals

@@ -468,6 +468,9 @@ begin
 					VSS_Private_In						=> VSS_Private_In,
 					VSS_Private_Out						=> VSS_Private_Out
 				);
+			l0: for i in 0 to PORTS-1 generate
+				DebugPortOut(i) <= C_SATADBG_TRANSCEIVER_OUT_EMPTY;
+			end generate l0;
 		end generate;	-- Altera.Stratix2.GXB
 		genS4GX_GXB : if ((C_DEVICE_INFO.Device = DEVICE_STRATIX4) and (C_DEVICE_INFO.TransceiverType = TRANSCEIVER_GXB)) generate
 			Trans : sata_Transceiver_Stratix4GX_GXB
@@ -518,6 +521,9 @@ begin
 					VSS_Private_In						=> VSS_Private_In,
 					VSS_Private_Out						=> VSS_Private_Out
 				);
+			l0: for i in 0 to PORTS-1 generate
+				DebugPortOut(i) <= C_SATADBG_TRANSCEIVER_OUT_EMPTY;
+			end generate l0;
 		end generate;	-- Altera.Stratix4.GXB
 	end generate;		-- Altera.*
 

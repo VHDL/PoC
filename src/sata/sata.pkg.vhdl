@@ -100,6 +100,11 @@ package sata is
 		RX			: T_SATA_TRANSCEIVER_RX_ERROR;
 	end record;
 
+	constant C_SATA_TRANSCEIVER_ERROR_EMPTY : T_SATA_TRANSCEIVER_ERROR := (
+		Common => SATA_TRANSCEIVER_ERROR_NONE,
+		TX		 => SATA_TRANSCEIVER_TX_ERROR_NONE,
+		RX		 => SATA_TRANSCEIVER_RX_ERROR_NONE);
+
 	type T_SATA_OOB_VECTOR										is array (natural range <>) of T_SATA_OOB;
 	type T_SATA_TRANSCEIVER_COMMAND_VECTOR		is array (natural range <>) of T_SATA_TRANSCEIVER_COMMAND;
 	type T_SATA_TRANSCEIVER_STATUS_VECTOR			is array (natural range <>) of T_SATA_TRANSCEIVER_STATUS;
@@ -326,6 +331,14 @@ package sata is
 		SectorCount				: T_SLV_16;
 	end record;
 
+	constant C_SATA_ATA_HOST_REGISTERS_EMPTY : T_SATA_ATA_HOST_REGISTERS := (
+		Command => (others => '0'),
+		Control => (others => '0'),
+		Feature => (others => '0'),
+		LBlockAddress => (others => '0'),
+		SectorCount => (others => '0'),
+		others => '0');
+
 	type T_SATA_ATA_DEVICE_FLAGS is record
 		Interrupt					: std_logic;
 		Direction					: std_logic;
@@ -359,6 +372,15 @@ package sata is
 		SectorCount				: T_SLV_16;
 		TransferCount			: T_SLV_16;
 	end record;
+
+	constant C_SATA_ATA_DEVICE_REGISTERS_EMPTY : T_SATA_ATA_DEVICE_REGISTERS := (
+		Flags => (others => '0'),
+		Status => (others => '0'),
+		EndStatus => (others => '0'),
+		Error => (others => '0'),
+		LBlockAddress => (others => '0'),
+		SectorCount => (others => '0'),
+		TransferCount => (others => '0'));
 
 	type T_SATA_HOST_REGISTER_STATUS is record
 		Detect						: T_SLV_4;
@@ -517,6 +539,11 @@ package sata is
 		SupportsNCQ								: std_logic;
 	end record;
 
+	constant C_SATA_SATA_CAPABILITY_EMPTY : T_SATA_SATA_CAPABILITY := (
+		SATAGenerationMin => SATA_GENERATION_1,
+		SATAGenerationMax => SATA_GENERATION_1,
+		others						=> '0');
+
 	type T_SATA_DRIVE_INFORMATION is record
 		DriveSize_LB							: unsigned(63 downto 0); -- unit is Drive Logical Blocks (DevLB)
 		PhysicalBlockSize_ldB			: unsigned(7 downto 0);  -- log_2(size_in_bytes)
@@ -526,6 +553,14 @@ package sata is
 
 		Valid											: std_logic;
 	end record;
+
+	constant C_SATA_DRIVE_INFORMATION_EMPTY : T_SATA_DRIVE_INFORMATION := (
+		DriveSize_LB					=> (others => '0'),
+		PhysicalBlockSize_ldB => (others => '0'),
+		LogicalBlockSize_ldB	=> (others => '0'),
+		ATACapabilityFlags		=> (others => '0'),
+		SATACapabilityFlags		=> C_SATA_SATA_CAPABILITY_EMPTY,
+		others => '0');
 
 	type T_SATA_IDF_BUS is record
 		Clock											: std_logic;
