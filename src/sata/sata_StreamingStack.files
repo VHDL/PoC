@@ -15,16 +15,4 @@ vhdl		poc		"src/sata/sata.dbg.vhdl"
 include				"src/sata/sata_SATAController.files"
 include				"src/sata/sata_StreamingLayer.files"
 
-#xco						"PoC.sata.TransceiverLayer_ILA"
-#xco						"PoC.sata.PhysicalLayer_ILA"
-#xco						"PoC.sata.LinkLayer_ILA"
-#xco						"PoC.sata.TransportLayer_ILA"
-#xco						"PoC.sata.StreamingLayer_ILA"
-path netlist = ((${CONFIG.DirectoryNames:NetlistFiles} / ${SPECIAL:Device}) / "sata")
-vhdl		poc		(netlist / "sata_LinkLayer_ILA.vhdl")
-vhdl		poc		(netlist / "sata_PhysicalLayer_ILA.vhdl")
-vhdl		poc		(netlist / "sata_StreamingLayer_ILA.vhdl")
-vhdl		poc		(netlist / "sata_TransceiverLayer_ILA.vhdl")
-vhdl		poc		(netlist / "sata_TransportLayer_ILA.vhdl")
-
 vhdl		poc		"src/sata/sata_StreamingStack.vhdl"					# Top-Level
