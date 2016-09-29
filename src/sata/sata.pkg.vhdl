@@ -38,7 +38,6 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 use			PoC.strings.all;
 use			PoC.physical.all;
-use			PoC.sata_TransceiverTypes.all;
 
 
 package sata is

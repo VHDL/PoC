@@ -113,4 +113,20 @@ package sata_TransceiverTypes is
 	);
 	end component;
 
+	-- Debug Types and Constants
+	------------------------------------------------------------------------------
+	type T_SATADBG_TRANSCEIVER_OUT is record
+		dummy	: std_logic;
+	end record;
+
+	constant C_SATADBG_TRANSCEIVER_OUT_EMPTY : T_SATADBG_TRANSCEIVER_OUT := (
+		dummy => '0');
+
+	type T_SATADBG_TRANSCEIVER_IN is record
+		InsertBitErrorTX 					: std_logic; -- required
+		InsertBitErrorRX 					: std_logic; -- required
+	end record;
+
+	constant C_SATADBG_TRANSCEIVER_IN_EMPTY : T_SATADBG_TRANSCEIVER_IN := (
+		others => '0');
 end package;
