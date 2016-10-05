@@ -11,6 +11,8 @@ GPIO.Switch.ucf
 GPIO.Switch.xdc
 GPIO.LED.ucf
 GPIO.LED.xdc
+GPIO.SMA.ucf
+GPIO.SMA.xdc
 GPIO.Rotary.ucf
 GPIO.Rotary.xdc
 FanControl.ucf

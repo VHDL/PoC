@@ -12,5 +12,6 @@ LSECompiler.py
 ISECompiler.py
 QuartusCompiler.py
 VivadoCompiler.py
+XCICompiler.py
 XCOCompiler.py
 XSTCompiler.py

@@ -41,20 +41,20 @@ else:
 	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Mentor.QuestaSim")
 
 
-from subprocess import check_output
-from textwrap import dedent
+from subprocess                 import check_output
+from textwrap                   import dedent
 
 from lib.Functions              import CallByRefParam
 from Base.Exceptions            import PlatformNotSupportedException
-from Base.Logging                import LogEntry, Severity
+from Base.Logging               import LogEntry, Severity
 from Base.Configuration         import Configuration as BaseConfiguration, ConfigurationException
-from Base.Simulator              import SimulationResult, PoCSimulationResultFilter
+from Base.Simulator             import SimulationResult, PoCSimulationResultFilter
 from Base.Executable            import Executable
 from Base.Executable            import ExecutableArgument, ShortFlagArgument, ShortTupleArgument, PathArgument, StringArgument, CommandLineArgumentList
-from ToolChains.Mentor.Mentor    import MentorException
+from ToolChains.Mentor.Mentor   import MentorException
 
 
-class QuestaException(MentorException):
+class QuestaSimException(MentorException):
 	pass
 
 
@@ -240,7 +240,7 @@ class QuestaVHDLCompiler(Executable, QuestaSimMixIn):
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
-			raise QuestaException("Failed to launch vcom run.") from ex
+			raise QuestaSimException("Failed to launch vcom run.") from ex
 
 		self._hasOutput = False
 		self._hasWarnings = False
@@ -370,7 +370,7 @@ class QuestaSimulator(Executable, QuestaSimMixIn):
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
-			raise QuestaException("Failed to launch vsim run.") from ex
+			raise QuestaSimException("Failed to launch vsim run.") from ex
 
 		self._hasOutput = False
 		self._hasWarnings = False
@@ -440,7 +440,7 @@ class QuestaVHDLLibraryTool(Executable, QuestaSimMixIn):
 		try:
 			self.StartProcess(parameterList)
 		except Exception as ex:
-			raise QuestaException("Failed to launch vlib run.") from ex
+			raise QuestaSimException("Failed to launch vlib run.") from ex
 
 		self._hasOutput = False
 		self._hasWarnings = False
