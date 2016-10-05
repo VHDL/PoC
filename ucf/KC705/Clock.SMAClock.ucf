@@ -19,5 +19,5 @@
 ##		Bank:						15
 ##			VCCO:					2.5V (VCC2V5_FPGA)
 ##		Location:				J11, J12
-NET "KC705_SMAClock_n"									LOC = "K25" | IOSTANDARD = LVDS_25;	## {INOUT}	J12
 NET "KC705_SMAClock_p"									LOC = "L25" | IOSTANDARD = LVDS_25;	## {INOUT}	J11
+NET "KC705_SMAClock_n"									LOC = "K25" | IOSTANDARD = LVDS_25;	## {INOUT}	J12

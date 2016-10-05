@@ -33,134 +33,130 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library PoC;
-use			PoC.config.all;
 use			PoC.utils.all;
-use			PoC.components.all;
 use			PoC.xil.all;
 
 
 entity xil_DRP_BusSync is
 	port (
 		In_Clock			: in	std_logic;
-		In_Reset			: in	std_logic;
-		In_Enable			: in	std_logic;																				--
-		In_Address		: in	T_XIL_DRP_ADDRESS;																--
-		In_ReadWrite	: in	std_logic;																				--
-		In_DataIn			: in	T_XIL_DRP_DATA;																		--
-		In_DataOut		: out	T_XIL_DRP_DATA;																		--
-		In_Ack				: out	std_logic;																				--
+		In_Enable			: in	std_logic;						--
+		In_Address		: in	T_XIL_DRP_ADDRESS;		--
+		In_ReadWrite	: in	std_logic;						--
+		In_DataIn			: in	T_XIL_DRP_DATA;				--
+		In_DataOut		: out	T_XIL_DRP_DATA;				--
+		In_Ack				: out	std_logic;						--
 
 		Out_Clock			: in	std_logic;
-		Out_Reset			: in	std_logic;
-		Out_Enable		: out	std_logic;																				--
-		Out_Address		: out	T_XIL_DRP_ADDRESS;																--
-		Out_ReadWrite	: out	std_logic;																				--
-		Out_DataIn		: in	T_XIL_DRP_DATA;																		--
-		Out_DataOut		: out	T_XIL_DRP_DATA;																		--
-		Out_Ack				: in	std_logic																					--
+		Out_Enable		: out	std_logic;						--
+		Out_Address		: out	T_XIL_DRP_ADDRESS;		--
+		Out_ReadWrite	: out	std_logic;						--
+		Out_DataIn		: in	T_XIL_DRP_DATA;				--
+		Out_DataOut		: out	T_XIL_DRP_DATA;				--
+		Out_Ack				: in	std_logic							--
 	);
 end entity;
 
 
 architecture rtl of xil_DRP_BusSync is
-	signal Reset_1						: std_logic;
-	signal Reset_2						: std_logic;
-	signal Enable_2						: std_logic;
-	signal Ready_1						: std_logic;
+	signal syncInToOut_DataIn		: std_logic_vector(T_XIL_DRP_DATA'length + T_XIL_DRP_ADDRESS'length + 1 downto 0);
+	signal syncInToOut_DataOut	: std_logic_vector(T_XIL_DRP_DATA'length + T_XIL_DRP_ADDRESS'length + 1 downto 0);
 
-	signal Reg_ReadWrite_1		: std_logic						:= '0';
-	signal Reg_ReadWrite_2		: std_logic						:= '0';
-	signal Reg_Address_1			: T_XIL_DRP_ADDRESS		:= (others => '0');
-	signal Reg_Address_2			: T_XIL_DRP_ADDRESS		:= (others => '0');
-	signal Reg_DataIn_1				: T_XIL_DRP_DATA			:= (others => '0');
-	signal Reg_DataIn_2				: T_XIL_DRP_DATA			:= (others => '0');
-	signal Reg_DataOut_1			: T_XIL_DRP_DATA			:= (others => '0');
-	signal Reg_DataOut_2			: T_XIL_DRP_DATA			:= (others => '0');
+	signal syncOutToIn_DataIn		: std_logic_vector(T_XIL_DRP_DATA'length downto 0);
+	signal syncOutToIn_DataOut	: std_logic_vector(T_XIL_DRP_DATA'length downto 0);
+
+	procedure map_sl(vec : inout std_logic_vector; input : in std_logic; lastIndex : inout natural) is
+	begin
+		vec(lastIndex)	:= input;
+		lastIndex				:= lastIndex + 1;
+	end procedure;
+
+	procedure map_slv(vec : inout std_logic_vector; input : in std_logic_vector; lastIndex : inout natural) is
+	begin
+		vec(input'length + lastIndex - 1 downto lastIndex) := input;
+		lastIndex := lastIndex + input'length;
+	end procedure;
+
+	procedure unmap_sl(vec : inout std_logic_vector; output : out std_logic; lastIndex : inout natural) is
+	begin
+		output		:= vec(lastIndex);
+		lastIndex	:= lastIndex + 1;
+	end procedure;
+
+	procedure unmap_slv(vec : inout std_logic_vector; output : out std_logic_vector; lastIndex : inout natural) is
+	begin
+		output		:= vec(input'length + lastIndex - 1 downto lastIndex);
+		lastIndex := lastIndex + input'length;
+	end procedure;
+
+	procedure mapInputToVector(vec : inout std_logic_vector; Enable : in std_logic; ReadWrite : in std_logic; Address : in std_logic_vector; Data : in std_logic_vector) is
+		variable lastIndex	: natural	:= 0;
+	begin
+		map_slv(vec, Enable,		lastIndex);
+		map_slv(vec, ReadWrite,	lastIndex);
+		map_slv(vec, Address,		lastIndex);
+		map_slv(vec, Data,			lastIndex);
+	end procedure;
+
+	procedure unmapInputToVector(vec : inout std_logic_vector; Enable : out std_logic; ReadWrite : out std_logic; Address : out std_logic_vector; Data : out std_logic_vector) is
+		variable lastIndex	: natural	:= 0;
+	begin
+		unmap_slv(vec, Enable,		lastIndex);
+		unmap_slv(vec, ReadWrite,	lastIndex);
+		unmap_slv(vec, Address,		lastIndex);
+		unmap_slv(vec, Data,			lastIndex);
+	end procedure;
+
+	procedure mapOutputToVector(vec : inout std_logic_vector; Ack : in std_logic; Data : in std_logic_vector) is
+		variable lastIndex	: natural	:= 0;
+	begin
+		map_slv(vec, Ack,		lastIndex);
+		map_slv(vec, Data,			lastIndex);
+	end procedure;
+
+	procedure unmapVectorToOutput(vec : inout std_logic_vector; Ack : out std_logic; Data : out std_logic_vector) is
+		variable lastIndex	: natural	:= 0;
+	begin
+		unmap_slv(vec, Ack,		lastIndex);
+		unmap_slv(vec, Data,			lastIndex);
+	end procedure;
 
 begin
-	syncOutClock : entity PoC.sync_Strobe
+	mapInputToVector(syncInToOut_DataIn, In_Enable, In_ReadWrite, In_Address, In_DataIn);
+
+	syncInToOut : sync_Vector
 		generic map (
-			BITS				=> 2
+			MASTER_BITS					=> 1,
+			SLAVE_BITS					=> syncInToOut_DataIn'length - 1,
+			INIT								=> x"00000000"
 		)
 		port map (
-			Clock1			=> In_Clock,
-			Clock2			=> Out_Clock,
-			Input(0)		=> In_Reset,
-			Input(1)		=> In_Enable,
-			Output(0)		=> Reset_2,
-			Output(1)		=> Enable_2
+			Clock1							=> In_Clock,							-- <Clock>	input clock
+			Clock2							=> Out_Clock,							-- <Clock>	output clock
+			Input								=> syncInToOut_DataIn,		-- @Clock1:	input vector
+			Output							=> syncInToOut_DataOut,		-- @Clock2:	output vector
+			Busy								=> open,									-- @Clock1:	busy bit
+			Changed							=> Out_Enable							-- @Clock2:	changed bit
 		);
 
-	syncInClock : entity PoC.sync_Strobe
+	unmapVectorToOutput(syncInToOut_DataOut, open, Out_ReadWrite, Out_Address, Out_DataOut);
+
+	mapOutputToVector(syncOutToIn_DataIn, Out_Ack, Out_DataIn);
+
+	syncOutToIn : sync_Vector
 		generic map (
-			BITS				=> 2
+			MASTER_BITS					=> 1,
+			SLAVE_BITS					=> syncOutToIn_DataIn'length - 1,
+			INIT								=> x"00000000"
 		)
 		port map (
-			Clock1			=> Out_Clock,
-			Clock2			=> In_Clock,
-			Input(0)		=> Out_Reset,
-			Input(1)		=> Out_Ack,
-			Output(0)		=> Reset_1,
-			Output(1)		=> Ready_1
+			Clock1							=> Out_Clock,							-- <Clock>	input clock
+			Clock2							=> In_Clock,							-- <Clock>	output clock
+			Input								=> syncOutToIn_DataIn,		-- @Clock1:	input vector
+			Output							=> syncOutToIn_DataOut,		-- @Clock2:	output vector
+			Busy								=> open,									-- @Clock1:	busy bit
+			Changed							=> In_Ack									-- @Clock2:	changed bit
 		);
 
-	process(In_Clock)
-	begin
-		if rising_edge(In_Clock) then
-			if ((Reset_1 or In_Reset) = '1') then
-				Reg_ReadWrite_1		<= '0';
-				Reg_Address_1			<= (others => '0');
-				Reg_DataOut_1			<= (others => '0');
-			elsif (In_Enable = '1') then
-				Reg_ReadWrite_1	<= In_ReadWrite;
-				Reg_Address_1		<= In_Address;
-				Reg_DataOut_1		<= In_DataIn;
-			end if;
-		end if;
-	end process;
-
-	process(Out_Clock)
-	begin
-		if rising_edge(Out_Clock) then
-			if ((Reset_2 or Out_Reset) = '1') then
-				Reg_ReadWrite_2		<= '0';
-				Reg_Address_2			<= (others => '0');
-				Reg_DataOut_2			<= (others => '0');
-			elsif (Enable_2 = '1') then
-				Reg_ReadWrite_2	<= Reg_ReadWrite_1;
-				Reg_Address_2		<= Reg_Address_1;
-				Reg_DataOut_2		<= Reg_DataOut_1;
-			end if;
-		end if;
-	end process;
-
-	In_DataOut		<= Reg_DataIn_1;
-	In_Ack				<= Ready_1	when rising_edge(In_Clock);
-
-	Out_Enable		<= Enable_2 when rising_edge(Out_Clock);
-	Out_ReadWrite	<= Reg_ReadWrite_2;
-	Out_Address		<= Reg_Address_2;
-	Out_DataOut		<= Reg_DataOut_2;
-
-	process(Out_Clock)
-	begin
-		if rising_edge(Out_Clock) then
-			if ((Reset_2 or Out_Reset) = '1') then
-				Reg_DataIn_2			<= (others => '0');
-			elsif (Out_Ack = '1') then
-				Reg_DataIn_2		<= Out_DataIn;
-			end if;
-		end if;
-	end process;
-
-	process(In_Clock)
-	begin
-		if rising_edge(In_Clock) then
-			if ((Reset_1 or In_Reset) = '1') then
-				Reg_DataIn_1			<= (others => '0');
-			elsif (Ready_1 = '1') then
-				Reg_DataIn_1		<= Reg_DataIn_2;
-			end if;
-		end if;
-	end process;
-end;
+	unmapVectorToOutput(syncOutToIn_DataOut, open, In_DataOut);
+end architecture;
