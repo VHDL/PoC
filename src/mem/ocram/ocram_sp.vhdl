@@ -19,10 +19,11 @@
 -- time, which starts at the rising-edge of the clock and (in the worst case)
 -- extends until the next rising-edge of the clock.
 --
--- **WARNING:** The simulated behavior on RT-level is too optimistic. During a
--- write, always the new data will be returned as read value.
+-- .. WARNING::
+--    The simulated behavior on RT-level is too optimistic. During a
+--    write, always the new data will be returned as read value.
 --
--- *TODO:* implement correct behavior for RT-level simulation
+-- .. TODO:: Implement correct behavior for RT-level simulation.
 --
 -- License:
 -- =============================================================================

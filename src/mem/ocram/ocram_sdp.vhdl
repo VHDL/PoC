@@ -25,11 +25,12 @@
 --   rising-edge of the write clock and (in the worst case) extends until the
 --   next rising-edge of the write clock.
 --
--- **WARNING:** The simulated behavior on RT-level is too optimistic. The
--- mixed-port read-during-write behavior is only valid if the read and write
--- clock are in phase. Otherwise, simulation will always show known data.
+-- .. WARNING::
+--    The simulated behavior on RT-level is too optimistic. The
+--    mixed-port read-during-write behavior is only valid if the read and write
+--    clock are in phase. Otherwise, simulation will always show known data.
 --
--- *TODO:* implement correct behavior for RT-level simulation
+-- .. TODO:: Implement correct behavior for RT-level simulation.
 --
 -- License:
 -- =============================================================================

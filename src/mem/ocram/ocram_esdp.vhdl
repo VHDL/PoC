@@ -31,10 +31,11 @@
 --   rising-edge of the write clock (``clk1``) and (in the worst case) extends
 --   until the next rising-edge of the write clock.
 --
--- **WARNING:** The simulated behavior on RT-level is too optimistic. When reading
--- at the write address always the new data will be returned.
+-- .. WARNING::
+--    The simulated behavior on RT-level is too optimistic. When reading
+--    at the write address always the new data will be returned.
 --
--- *TODO:* implement correct behavior for RT-level simulation
+-- .. TODO:: Implement correct behavior for RT-level simulation.
 --
 -- License:
 -- =============================================================================
