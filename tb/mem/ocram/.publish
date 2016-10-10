@@ -7,4 +7,5 @@ README.md
 
 # --------------------------------------
 ocram_sdp_tb.*
+ocram_esdp_tb.*
 #ocram_chain_tb.*
