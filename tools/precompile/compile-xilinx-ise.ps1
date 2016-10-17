@@ -117,8 +117,8 @@ if ($GHDL)
 
 	# export GHDL environment variable if not allready set
 	if (-not (Test-Path env:GHDL))
-	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 
+	{	$env:GHDL = "$GHDLBinDir\ghdl.exe"		}
 	if ($VHDL93)
 	{	$Command = "$GHDLXilinxScript -All -VHDL93 -Source $SourceDir -Output $DestDir\$XilinxDirName2"
 		Invoke-Expression $Command
