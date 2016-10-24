@@ -1,4 +1,4 @@
-# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
+# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
@@ -11,13 +11,13 @@
 # |_|    |___/
 #
 # =============================================================================
-# Authors:            Patrick Lehmann
+# Authors:						Patrick Lehmann
 #
-# Python package:      pyAttribute base classes
+# Python package:	    pyAttribute Implementation
 #
 # Description:
 # ------------------------------------
-#		Implements user defined attributes for Python
+#		TODO
 #
 # License:
 # ============================================================================
@@ -27,7 +27,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+#		http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,10 +35,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
+#
 class Attribute:
-	__AttributesMemberName__ =  "__pyattr__"
-	_debug =                    False
+	__AttributesMemberName__ = "__pyattr__"
+	_debug = False
 
 	def __call__(self, func):
 		self._AppendAttribute(func, self)
@@ -58,7 +58,7 @@ class Attribute:
 	@classmethod
 	def GetMethods(cls, cl):
 		methods = {}
-		for funcname,func in cl.__class__.__dict__.items():
+		for funcname, func in cl.__class__.__dict__.items():
 			if hasattr(func, '__dict__'):
 				if (Attribute.__AttributesMemberName__ in func.__dict__):
 					attributes = func.__dict__[Attribute.__AttributesMemberName__]
@@ -80,10 +80,10 @@ class Attribute:
 class AttributeHelperMixin:
 	def GetMethods(self):
 		return {
-			funcname: func
+				funcname: func
 				for funcname, func in self.__class__.__dict__.items()
 				if hasattr(func, '__dict__')
-		}.items()
+			}.items()
 
 	def HasAttribute(self, method):
 		if (Attribute.__AttributesMemberName__ in method.__dict__):
