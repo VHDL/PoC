@@ -45,4 +45,3 @@ begin  -- architecture rtl
       q2   => q2);
 
 end architecture rtl;
-
