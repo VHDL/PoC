@@ -66,8 +66,10 @@ architecture tb of ocram_esdp_tb is
 	signal q1		: std_logic_vector(D_BITS-1 downto 0);
 	signal q2		: std_logic_vector(D_BITS-1 downto 0);
 
-	signal rd_dat : std_logic_vector(D_BITS-1 downto 0);
-	signal exp_q2 : std_logic_vector(D_BITS-1 downto 0);
+	signal rd_d1  : std_logic_vector(D_BITS-1 downto 0);
+	signal exp_q1 : std_logic_vector(D_BITS-1 downto 0) := (others => '-');
+	signal rd_d2  : std_logic_vector(D_BITS-1 downto 0);
+	signal exp_q2 : std_logic_vector(D_BITS-1 downto 0) := (others => '-');
 
 begin
 	-- initialize global simulation status
@@ -109,51 +111,55 @@ begin
 
 		for i in 0 to 7 loop
 			simWaitUntilRisingEdge(clk, 1);
-			ce1 <= '1';
-			we1 <= '1';
-			a1 <= to_unsigned(i, a1'length);
-			d1 <= std_logic_vector(to_unsigned(i, d1'length));
+			ce1		<= '1';
+			we1		<= '1';
+			a1		<= to_unsigned(i, a1'length);
+			d1		<= std_logic_vector(to_unsigned(i, d1'length));
+			rd_d1 <= std_logic_vector(to_unsigned(i, d1'length));
 
 			-- read is delayed by one clock cycle
-			ce2		 <= ce1;
-			a2		 <= a1;
-			rd_dat <= d1;											-- data to be read
+			ce2		<= ce1;
+			a2		<= a1;
+			rd_d2 <= d1;											-- data to be read
 		end loop;
 
 		simWaitUntilRisingEdge(clk, 1);
-		ce1 <= '0';
-		we1 <= '0';
-    a1  <= (others => '-');
+		ce1		<= '0';
+		we1		<= '0';
+		a1		<= (others => '-');
+		rd_d1 <= (others => '-');
 
 		-- last read is delayed by one clock cycle
-		ce2		 <= ce1;
-		a2		 <= a1;
-		rd_dat <= d1;											-- data to be read
+		ce2		<= ce1;
+		a2		<= a1;
+		rd_d2 <= d1;												-- data to be read
 
 		-------------------------------------------------------------------------
 		-- Alternating write / read
 		for i in 8 to 15 loop
 			simWaitUntilRisingEdge(clk, 1);
-			ce1 <= not ce1; -- write @ even addresses
-			we1 <= '1';
-			a1 <= to_unsigned(i, a1'length);
-			d1 <= std_logic_vector(to_unsigned(i, d1'length));
+			ce1		<= not ce1;									-- write @ even addresses
+			we1		<= '1';
+			a1		<= to_unsigned(i, a1'length);
+			d1		<= std_logic_vector(to_unsigned(i, d1'length));
+			rd_d1 <= std_logic_vector(to_unsigned(i, d1'length));
 
 			-- read is delayed by one clock cycle
-			ce2		 <= ce1;
-			a2		 <= a1;
-			rd_dat <= d1;											-- data to be read
+			ce2		<= ce1;
+			a2		<= a1;
+			rd_d2 <= d1;											-- data to be read
 		end loop;
 
 		simWaitUntilRisingEdge(clk, 1);
-		ce1 <= '0';
-		we1 <= '0';
-    a1  <= (others => '-');
+		ce1		<= '0';
+		we1		<= '0';
+		a1		<= (others => '-');
+		rd_d1 <= (others => '-');
 
 		-- last read is delayed by one clock cycle
-		ce2		 <= ce1;
-		a2		 <= a1;
-		rd_dat <= d1;											-- data to be read
+		ce2		<= ce1;
+		a2		<= a1;
+		rd_d2 <= d1;												-- data to be read
 
 		-------------------------------------------------------------------------
 		-- Finish
@@ -167,8 +173,11 @@ begin
 		wait;  -- forever
   end process Stimuli;
 
+	-- Also checks if old value is kept if ce1 = '0'
+	exp_q1 <= rd_d1 when rising_edge(clk) and ce1 = '1';
+
 	-- Also checks if old value is kept if ce2 = '0'
-	exp_q2 <= rd_dat when rising_edge(clk) and ce2 = '1';
+	exp_q2 <= rd_d2 when rising_edge(clk) and ce2 = '1';
 
   Checker: process
 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker process");
@@ -176,7 +185,8 @@ begin
   begin
 		for i in 0 to 20 loop
 			simWaitUntilRisingEdge(clk, 1);
-			simAssertion(Is_X(exp_q2) or q2 = exp_q2);
+			simAssertion(std_match(q1, exp_q1));
+			simAssertion(std_match(q2, exp_q2));
 		end loop;
 
     -- This process is finished
