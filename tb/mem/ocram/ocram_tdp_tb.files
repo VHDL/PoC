@@ -5,7 +5,7 @@
 # Note: all files are relative to PoC root directory
 #
 # PoC.mem.ocram
-include				"src/mem/ocram/ocram_sp.files"					#	Unit Under Test
+include				"src/mem/ocram/ocram_tdp.files"							#	Unit Under Test
 
 # Testbench files
-vhdl		test	"tb/mem/ocram/ocram_sp_tb.vhdl"				# Testbench
+vhdl		test	"tb/mem/ocram/ocram_tdp_tb.vhdl"						# Testbench
