@@ -59,7 +59,9 @@
 --    The simulated behavior on RT-level is too optimistic. When reading
 --    at the write address always the new data will be returned.
 --
--- .. TODO:: Implement correct behavior for RT-level simulation.
+-- .. TODO::
+--    Implement correct behavior for RT-level simulation.
+--    Xilinx Vivado synthesizes LUT-RAM, fix it.
 --
 -- License:
 -- =============================================================================
@@ -167,7 +169,8 @@ begin
 			end if;
 		end process;
 
-		q1 <= ram(to_integer(a1_reg));				-- gets new data
+		q1 <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a1_reg)) else
+					ram(to_integer(a1_reg));				-- gets new data
 
 		process (clk2)
 		begin	-- process
@@ -178,8 +181,12 @@ begin
 			end if;
 		end process;
 
-		-- read data is unknown, when reading at write address
-		q2 <= ram(to_integer(a2_reg));
+		-- NOTE: Do not move into clocked process above, otherwise synthesis with
+		-- XST will fail.
+		-- TODO: read data is unknown, when reading at write address
+		-- TODO: Improper synthesis results from Vivado.
+		q2 <= (others => 'X') when SIMULATION and is_X(std_logic_vector(a2_reg)) else
+					ram(to_integer(a2_reg));
 	end generate gInfer;
 
 	gAltera: if VENDOR = VENDOR_ALTERA generate

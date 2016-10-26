@@ -164,8 +164,10 @@ begin
 			end if;
 		end process;
 
-		q1 <= ram(to_integer(a1_reg));		-- returns new data
-		q2 <= ram(to_integer(a2_reg));		-- returns new data
+		q1 <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a1_reg)) else
+					ram(to_integer(a1_reg));		-- returns new data
+		q2 <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a2_reg)) else
+					ram(to_integer(a2_reg));		-- returns new data
 	end generate gInfer;
 
 	gAltera: if VENDOR = VENDOR_ALTERA generate
