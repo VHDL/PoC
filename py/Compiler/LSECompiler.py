@@ -145,7 +145,7 @@ class Compiler(BaseCompiler):
 		argumentFile.LogFile =      self.Directories.Working / (netlist.ModuleName + ".lse.log")
 		argumentFile.VHDLVersion =  self._vhdlVersion
 
-		argumentFile.HDLParams.update(self._GetSynthHDLParameters(netlist))
+		argumentFile.HDLParams.update(self._GetHDLParameters(netlist.ConfigSectionName))
 
 		argumentFile.Write(self.PoCProject)
 		return argumentFile

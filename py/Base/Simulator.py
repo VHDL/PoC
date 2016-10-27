@@ -217,10 +217,6 @@ class Simulator(Shared):
 	def _RunView(self, testbench):
 		pass
 
-	def _GetSimHDLParameters(self, testbench):
-		"""Parse option 'SimHDLParameters' for Verilog Parameters / VHDL Generics."""
-		return self._GetHDLParameters(testbench.ConfigSectionName, "SimHDLParameters")
-
 	def PrintOverallSimulationReport(self):
 		self.LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
 		self.LogQuiet("{HEADLINE}{headline: ^80s}{NOCOLOR}".format(headline="Overall Simulation Report", **Init.Foreground))
