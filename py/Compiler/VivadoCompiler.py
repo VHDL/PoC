@@ -160,23 +160,14 @@ class Compiler(BaseCompiler):
 				format(file=file.Path.as_posix())
 
 		topLevelGenerics =  ""
-		topLevelDefines =   ""
 
-		vhdlGenerics = self.Host.PoCConfig[netlist.ConfigSectionName]['VHDLGenerics']
-		if (len(vhdlGenerics) > 0):
-			for keyValuePair in vhdlGenerics.split(";"):
-				topLevelGenerics += " -generic {kvp}".format(kvp=keyValuePair.strip())
+		for key, value in self._GetSynthHDLParameters(netlist).items():
+			topLevelGenerics += " -generic {{{k}={v}}}".format(k=key,v=value)
 
-		verilogGenerics = self.Host.PoCConfig[netlist.ConfigSectionName]['VerilogDefines']
-		if (len(verilogGenerics) > 0):
-			for keyValuePair in verilogGenerics.split(";"):
-				topLevelDefines += " -verilog_define {kvp}".format(kvp=keyValuePair.strip())
-
-		buffer += "synth_design -top {top} -part {part}{TopLevelGenerics}{TopLevelDefines}\n".format(
+		buffer += "synth_design -top {top} -part {part}{TopLevelGenerics}\n".format(
 			top=netlist.ModuleName,
 			part=device.ShortName,
-			TopLevelGenerics=topLevelGenerics,
-			TopLevelDefines=topLevelDefines
+			TopLevelGenerics=topLevelGenerics
 		)
 		buffer += "write_checkpoint -noxdef {top}.dcp \n".format(top=netlist.ModuleName)
 		buffer += "catch {{ report_utilization -file {top}_synth.rpt -pb {top}_synth.pb }}\n".format(top=netlist.ModuleName)
