@@ -175,3 +175,16 @@ class Shared(ILogable):
 			for warn in fileListFile.Warnings:
 				self.LogWarning(warn)
 			raise SkipableCommonException("Found critical warnings while parsing '{0!s}'".format(fileListFilePath))
+
+	def _GetHDLParameters(self, configSectionName, optionName):
+		"""Parse option 'HDLParameters' for Verilog Parameters / VHDL Generics."""
+		result = {}
+		hdlParameters = self.Host.PoCConfig[configSectionName][optionName]
+		if (len(hdlParameters) > 0):
+			for keyValuePair in hdlParameters.split(";"):
+				try:
+					key,value = keyValuePair.split("=")
+				except ValueError as ex:
+					raise CommonException("Syntax error in option {o} or 'HDLParameters' within section {s}.".format(s=configSectionName,o=optionName))
+				result[key.strip()] = value.strip()
+		return result

@@ -248,7 +248,7 @@ class SynthesisArgumentFile(File):
 		self._topLevel =      None
 		self.Logfile =       None
 		self._vhdlVersion =		VHDLVersion.Any
-		self._hdlParams =			[]
+		self._hdlParams =			{}
 
 	@property
 	def Architecture(self):
@@ -321,9 +321,8 @@ class SynthesisArgumentFile(File):
 			buffer += "-vh2008\n"
 		if (self.Logfile is not None):
 			buffer += "-logfile {0}\n".format(self.Logfile)
-		if (len(self._hdlParams) > 0):
-			for keyValuePair in self._hdlParams:
-				buffer += "-hdl_param {Key} {Value}\n".format(Key=keyValuePair[0].strip(), Value=keyValuePair[1].strip())
+		for key, value in self._hdlParams.items():
+			buffer += "-hdl_param {k} {v}\n".format(k=key,v=value)
 
 		for file in project.Files(fileType=FileTypes.VHDLSourceFile):
 			buffer += "-lib {library}\n-vhd {file}\n".format(file=file.Path.as_posix(), library=file.LibraryName)
