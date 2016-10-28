@@ -39,6 +39,23 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et
 accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet
 
+Cite the PoC-Library
+********************
+
+.. code-block:: tex
+   :caption: The PoC-Library hosted at GitHub.com
+
+   @online{poc,
+     title={{PoC - Pile of Cores}},
+     author={{Professur für VLSI-Entwurfssysteme, Diagnostik und Architektur}},
+     publisher={{Professur für VLSI-Entwurfssysteme, Diagnostik und Architektur}},
+     organization={{Technische Universität Dresden}},
+     year={2014},
+     month={12},
+     url={https://github.com/VLSI-EDA/PoC},
+     urldate={2016-10-28},
+   }
+
 
 .. toctree::
    :hidden:
