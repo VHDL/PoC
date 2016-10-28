@@ -246,7 +246,7 @@ class SynthesisArgumentFile(File):
 		self._speedGrade =    None
 		self._package =       None
 		self._topLevel =      None
-		self.Logfile =       None
+		self.Logfile =        None
 		self._vhdlVersion =		VHDLVersion.Any
 		self._hdlParams =			{}
 
@@ -321,8 +321,8 @@ class SynthesisArgumentFile(File):
 			buffer += "-vh2008\n"
 		if (self.Logfile is not None):
 			buffer += "-logfile {0}\n".format(self.Logfile)
-		for key, value in self._hdlParams.items():
-			buffer += "-hdl_param {k} {v}\n".format(k=key,v=value)
+		for keyValuePair in self._hdlParams.items():
+			buffer += "-hdl_param {0} {1}\n".format(*keyValuePair)
 
 		for file in project.Files(fileType=FileTypes.VHDLSourceFile):
 			buffer += "-lib {library}\n-vhd {file}\n".format(file=file.Path.as_posix(), library=file.LibraryName)

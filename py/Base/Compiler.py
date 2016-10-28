@@ -485,10 +485,6 @@ class Compiler(Shared):
 				with task.FilePath.open('w') as fileHandle:
 					fileHandle.write(NewContent)
 
-	def _GetSynthHDLParameters(self, netlist):
-		"""Parse option 'SynthHDLParameters' for Verilog Parameters / VHDL Generics."""
-		return self._GetHDLParameters(netlist.ConfigSectionName,"SynthHDLParameters")
-
 	def PrintOverallCompileReport(self):
 		self.LogQuiet("{HEADLINE}{line}{NOCOLOR}".format(line="=" * 80, **Init.Foreground))
 		self.LogQuiet("{HEADLINE}{headline: ^80s}{NOCOLOR}".format(headline="Overall Compile Report", **Init.Foreground))

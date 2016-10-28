@@ -236,11 +236,11 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 
 		xstFileContent = xstFileContent.format(**xstTemplateDictionary)
 
-		hdlParameters=self._GetSynthHDLParameters(netlist)
+		hdlParameters=self._GetHDLParameters(netlist.ConfigSectionName)
 		if(len(hdlParameters)>0):
 			xstFileContent += "-generics {"
-			for key, value in hdlParameters.items():
-				xstFileContent += " {k}={v}".format(k=key,v=value)
+			for keyValuePair in hdlParameters.items():
+				xstFileContent += " {0}={1}".format(*keyValuePair)
 			xstFileContent += " }\n"
 
 		self.LogDebug("Writing Xilinx Compiler Tool option file to '{0!s}'".format(netlist.XstFile))

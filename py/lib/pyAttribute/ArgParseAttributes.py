@@ -1,4 +1,4 @@
-# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
+# EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 # vim: tabstop=2:shiftwidth=2:noexpandtab
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
@@ -11,13 +11,13 @@
 # |_|    |___/
 #
 # =============================================================================
-# Authors:            Patrick Lehmann
+# Authors:						Patrick Lehmann
 #
-# Python package:      ArgParse pyAttribute attributes
+# Python module:	    pyAttributes for ArgParse
 #
 # Description:
 # ------------------------------------
-#		Predefined attributes for ArgParse
+#		TODO
 #
 # License:
 # ============================================================================
@@ -27,7 +27,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+#		http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,8 +35,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
-
-from .pyAttribute import Attribute, AttributeHelperMixin
+#
+from . import Attribute, AttributeHelperMixin
 
 
 class CommandGroupAttribute(Attribute):
@@ -50,8 +50,9 @@ class CommandGroupAttribute(Attribute):
 	def GroupName(self):
 		return self.__groupName
 
+
 class DefaultAttribute(Attribute):
-	__handler =  None
+	__handler = None
 
 	def __call__(self, func):
 		self.__handler = func
@@ -61,15 +62,16 @@ class DefaultAttribute(Attribute):
 	def Handler(self):
 		return self.__handler
 
+
 class CommandAttribute(Attribute):
-	__command =  ""
-	__handler =  None
+	__command = ""
+	__handler = None
 	__kwargs =  None
 
 	def __init__(self, command, **kwargs):
 		super().__init__()
-		self.__command =  command
-		self.__kwargs =    kwargs
+		self.__command = command
+		self.__kwargs = kwargs
 
 	def __call__(self, func):
 		self.__handler = func
@@ -87,14 +89,15 @@ class CommandAttribute(Attribute):
 	def KWArgs(self):
 		return self.__kwargs
 
+
 class ArgumentAttribute(Attribute):
 	__args =    None
 	__kwargs =  None
 
 	def __init__(self, *args, **kwargs):
 		super().__init__()
-		self.__args =    args
-		self.__kwargs =  kwargs
+		self.__args =   args
+		self.__kwargs = kwargs
 
 	@property
 	def Args(self):
@@ -104,22 +107,26 @@ class ArgumentAttribute(Attribute):
 	def KWArgs(self):
 		return self.__kwargs
 
+
 class SwitchArgumentAttribute(ArgumentAttribute):
 	def __init__(self, *args, **kwargs):
 		kwargs['action'] =  "store_const"
-		kwargs['const'] =    True
-		kwargs['default'] =  False
+		kwargs['const'] =   True
+		kwargs['default'] = False
 		super().__init__(*args, **kwargs)
+
 
 class CommonArgumentAttribute(ArgumentAttribute):
 	pass
 
+
 class CommonSwitchArgumentAttribute(SwitchArgumentAttribute):
 	pass
 
+
 class ArgParseMixin(AttributeHelperMixin):
-	__mainParser =   None
-	__subParser =    None
+	__mainParser =  None
+	__subParser =   None
 	__subParsers =  {}
 
 	def __init__(self, **kwargs):
@@ -130,15 +137,15 @@ class ArgParseMixin(AttributeHelperMixin):
 		self.__mainParser = argparse.ArgumentParser(**kwargs)
 		self.__subParser = self.__mainParser.add_subparsers(help='sub-command help')
 
-		for _,func in CommonArgumentAttribute.GetMethods(self):
+		for _, func in CommonArgumentAttribute.GetMethods(self):
 			for comAttribute in CommonArgumentAttribute.GetAttributes(func):
 				self.__mainParser.add_argument(*(comAttribute.Args), **(comAttribute.KWArgs))
 
-		for _,func in CommonSwitchArgumentAttribute.GetMethods(self):
+		for _, func in CommonSwitchArgumentAttribute.GetMethods(self):
 			for comAttribute in CommonSwitchArgumentAttribute.GetAttributes(func):
 				self.__mainParser.add_argument(*(comAttribute.Args), **(comAttribute.KWArgs))
 
-		for _,func in self.GetMethods():
+		for _, func in self.GetMethods():
 			defAttributes = DefaultAttribute.GetAttributes(func)
 			if (len(defAttributes) != 0):
 				defAttribute = defAttributes[0]
