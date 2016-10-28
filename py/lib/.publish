@@ -15,8 +15,7 @@ Decorators.py
 Functions.py
 
 # pyAttributes
-pyAttribute.py
-ArgParseAttributes.py
+pyAttribute/
 
 # Parser and Code Document Object Model (CodeDOM)
 Parser.py
