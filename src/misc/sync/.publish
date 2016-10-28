@@ -10,6 +10,8 @@ sync.pkg.vhdl
 # Clock-Domain-Crossing (CDC) circuits
 sync_Bits.files
 sync_Bits.vhdl
+sync_Pulse.files
+sync_Pulse.vhdl
 sync_Reset.files
 sync_Reset.vhdl
 sync_Strobe.files
@@ -21,8 +23,10 @@ sync_Command.vhdl
 
 # Altera specific implementations
 sync_Bits_Altera.vhdl
+sync_Pulse_Altera.vhdl
 sync_Reset_Altera.vhdl
 
 # Xilinx specific implementations
 sync_Bits_Xilinx.vhdl
+sync_Pulse_Xilinx.vhdl
 sync_Reset_Xilinx.vhdl
