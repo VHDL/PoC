@@ -254,6 +254,57 @@ begin
 		rd_d1 <= (others => '-');
 
 		-------------------------------------------------------------------------
+		-- Alternate between write on port 1 and write on port 2 to the same
+		-- address. Data is read again from memory after all writes.
+		for i in 32 to 39 loop
+			simWaitUntilRisingEdge(clk, 1);
+			ce1		<= '1';
+			we1		<= '1';
+			a1		<= to_unsigned(i, a1'length);
+			d1		<= std_logic_vector(to_unsigned(i, d1'length));
+			rd_d1 <= std_logic_vector(to_unsigned(i, d1'length));
+			ce2		<= '0';
+			we2   <= '-';
+			a2		<= (others => '-');
+			rd_d2 <= (others => '-');
+
+			simWaitUntilRisingEdge(clk, 1);
+			ce1		<= '0';
+			we1   <= '-';
+			a1		<= (others => '-');
+			rd_d1 <= (others => '-');
+			ce2		<= '1';
+			we2		<= '1';
+			a2		<= to_unsigned(i, a1'length);
+			d2		<= std_logic_vector(to_unsigned(i, d1'length));
+			rd_d2 <= std_logic_vector(to_unsigned(i, d1'length));
+		end loop;
+
+		for i in 32 to 39 loop
+			simWaitUntilRisingEdge(clk, 1);
+			ce1		<= '1';
+			we1		<= '0';
+			a1		<= to_unsigned(i, a1'length);
+			d1		<= std_logic_vector(to_unsigned(i, d1'length));
+			rd_d1 <= std_logic_vector(to_unsigned(i, d1'length));
+			ce2		<= '1';
+			we2		<= '0';
+			a2		<= to_unsigned(i, a1'length);
+			d2		<= std_logic_vector(to_unsigned(i, d1'length));
+			rd_d2 <= std_logic_vector(to_unsigned(i, d1'length));
+		end loop;
+
+		simWaitUntilRisingEdge(clk, 1);
+		ce1		<= '0';
+		we1   <= '-';
+		a1		<= (others => '-');
+		rd_d1 <= (others => '-');
+		ce2		<= '0';
+		we2		<= '-';
+		a2		<= (others => '-');
+		rd_d2 <= (others => '-');
+
+		-------------------------------------------------------------------------
 		-- Finish
 		finished <= true;
 

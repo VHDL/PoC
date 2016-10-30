@@ -19,7 +19,6 @@
 -- correct Mixed-Port Read-During-Write Behavior and handles X propagation.
 --
 -- .. TODO::
---    * Write collision check
 --    * Mixed-port read-during-write behavior
 --
 -- License:
@@ -118,34 +117,112 @@ begin
   write2 <= to_x01(ce2 and we2);
   read2  <= to_x01(ce2 and not we2);
 
-	process (clk1, clk2)
+  process (clk1, clk2)
+    -- Flag and address indicating whether a write occurs in the current clock
+		-- cycle. Set and cleared at the rising_edge of the port's clock.
+		-- The write address is set to don't care when write location is undefined,
+		-- to match all addresses in collision checks from other port.
+    variable writing1 : boolean;
+    variable writing2 : boolean;
+    variable waddr1   : unsigned(A_BITS-1 downto 0);
+    variable waddr2   : unsigned(A_BITS-1 downto 0);
+
+		-- Check for write-collision check on port 1. Only set during one execution
+		-- of the process. 
+		variable check_wr1 : boolean;
+		
 	begin	-- process
+		check_wr1 := false;
+
+		-- Writing to Memory
+		-- =========================================================================
 		if rising_edge(clk1) then
+			writing1 := false;
+			waddr1   := (others => '-');
+			
 			if write1 = '1' then
 				-- RAM is definitely written ...
+				writing1 := true;
 				if is_x(std_logic_vector(a1)) then
 					-- ... but address is unknown
 					ram <= (others => (others => 'X'));
 				else
 					--- ... and address is well known
+					waddr1 := a1;
 					ram(to_integer(a1)) <= d1;
+					-- writing2 and waddr2 are not yet up-to-date, check for
+					-- write-collision below
+					check_wr1 := true;
 				end if;
 				-- same-port read during write: return new data
 				q1 <= d1;
 
 			elsif write1 = 'X' then
 				-- RAM may be written ...
+				writing1 := true;
 				if is_x(std_logic_vector(a1)) then
 					-- ... but address is unknown
 					ram <= (others => (others => 'X'));
 				else
 					--- ... and address is well known
+					waddr1 := a1;
 					ram(to_integer(a1)) <= (others => 'X');
 				end if;
 				-- same-port read during write: unknown data
 				q1 <= (others => 'X');
 			end if;
+		end if;
 
+		-- Must be executed after write to port 1 due to write-collsion check
+		if rising_edge(clk2) then
+			writing2 := false;
+			waddr2   := (others => '-');
+			
+			if write2 = '1' then
+				-- RAM is definitely written ...
+				writing2 := true;
+				if is_x(std_logic_vector(a2)) then
+					-- ... but address is unknown
+					ram <= (others => (others => 'X'));
+				else
+					--- ... and address is well known
+					waddr2 := a2;
+					-- writing1 and waddr1 are up-to-date, check for write-collision
+					if writing1 and std_match(waddr1, a2) then
+						ram(to_integer(a2)) <= (others => 'X');
+					else
+						ram(to_integer(a2)) <= d2;
+					end if;
+				end if;
+				-- same-port read during write: return new data
+				q2 <= d2;
+
+			elsif write2 = 'X' then
+				-- RAM may be written ...
+				writing2 := true;
+				if is_x(std_logic_vector(a2)) then
+					-- ... but address is unknown
+					ram <= (others => (others => 'X'));
+				else
+					--- ... and address is well known
+					waddr2 := a2;
+					ram(to_integer(a2)) <= (others => 'X');
+				end if;
+				-- same-port read during write: unknown data
+				q1 <= (others => 'X');
+			end if;
+		end if;
+
+		-- writing1 and waddr1 are up-to-date, check for write-collision
+		if check_wr1 then
+			if writing2 and std_match(waddr2, a1) then
+				ram(to_integer(a2)) <= (others => 'X');
+			end if;
+		end if;
+
+		-- Reading (only) from Memory
+		-- =========================================================================
+		if rising_edge(clk1) then
 			if read1 = '1' then
 				-- Definitely read only from RAM ...
 				if is_x(std_logic_vector(a1)) then
@@ -161,31 +238,6 @@ begin
 		end if;
 
 		if rising_edge(clk2) then
-			if write2 = '1' then
-				-- RAM is definitely written ...
-				if is_x(std_logic_vector(a2)) then
-					-- ... but address is unknown
-					ram <= (others => (others => 'X'));
-				else
-					--- ... and address is well known
-					ram(to_integer(a2)) <= d2;
-				end if;
-				-- same-port read during write: return new data
-				q2 <= d2;
-
-			elsif write2 = 'X' then
-				-- RAM may be written ...
-				if is_x(std_logic_vector(a2)) then
-					-- ... but address is unknown
-					ram <= (others => (others => 'X'));
-				else
-					--- ... and address is well known
-					ram(to_integer(a2)) <= (others => 'X');
-				end if;
-				-- same-port read during write: unknown data
-				q1 <= (others => 'X');
-			end if;
-
 			if read2 = '1' then
 				-- Definitely read only from RAM ...
 				if is_x(std_logic_vector(a2)) then
