@@ -1,23 +1,37 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /ocram_tdp_sim_tb/clk
-add wave -noupdate /ocram_tdp_sim_tb/ce1
-add wave -noupdate /ocram_tdp_sim_tb/ce2
-add wave -noupdate /ocram_tdp_sim_tb/we1
-add wave -noupdate /ocram_tdp_sim_tb/we2
-add wave -noupdate -radix hexadecimal /ocram_tdp_sim_tb/a1
-add wave -noupdate -radix hexadecimal /ocram_tdp_sim_tb/a2
-add wave -noupdate -radix hexadecimal /ocram_tdp_sim_tb/d1
-add wave -noupdate -radix hexadecimal /ocram_tdp_sim_tb/d2
-add wave -noupdate -radix hexadecimal /ocram_tdp_sim_tb/q1
-add wave -noupdate -radix hexadecimal /ocram_tdp_sim_tb/q2
-add wave -noupdate -radix hexadecimal /ocram_tdp_sim_tb/rd_d1
-add wave -noupdate -radix hexadecimal /ocram_tdp_sim_tb/rd_d2
-add wave -noupdate -radix hexadecimal /ocram_tdp_sim_tb/exp_q1
-add wave -noupdate -radix hexadecimal /ocram_tdp_sim_tb/exp_q2
-add wave -noupdate -divider UUT
+add wave -noupdate -divider {Test 0,0}
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/clk1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/ce1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/we1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/a1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/d1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/q1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/exp_q1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/clk2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/ce2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/we2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/a2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/d2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/q2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(0)/exp_q2
+add wave -noupdate -divider {Test 0,90}
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/clk1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/ce1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/we1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/a1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/d1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/q1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/exp_q1
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/clk2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/ce2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/we2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/a2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/d2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/q2
+add wave -noupdate /ocram_tdp_sim_tb/gTest(1)/exp_q2
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {560000 ps} 0}
+WaveRestoreCursors {{Cursor 1} {15833 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -33,4 +47,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {261100 ps} {723100 ps}
+WaveRestoreZoom {0 ps} {91876 ps}

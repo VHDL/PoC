@@ -19,7 +19,7 @@
 -- correct Mixed-Port Read-During-Write Behavior and handles X propagation.
 --
 -- .. TODO::
---    * Mixed-port read-during-write behavior
+--    * Mixed-port read-during-write behavior when write is issued during a read
 --
 -- License:
 -- =============================================================================
@@ -229,7 +229,12 @@ begin
 					-- ... but address is unknown
 					q1 <= (others => 'X');
 				else
-					q1 <= ram(to_integer(a1));
+					-- check for mixed-port read-during-write
+					if writing2 and std_match(a1,waddr2) then
+						q1 <= (others => 'X');
+					else
+						q1 <= ram(to_integer(a1));
+					end if;
 				end if;
 			elsif read1 = 'X' then
 				-- Maybe read only from RAM
@@ -244,7 +249,12 @@ begin
 					-- ... but address is unknown
 					q2 <= (others => 'X');
 				else
-					q2 <= ram(to_integer(a2));
+					-- check for mixed-port read-during-write
+					if writing1 and std_match(a2,waddr1) then
+						q2 <= (others => 'X');
+					else
+						q2 <= ram(to_integer(a2));
+					end if;
 				end if;
 			elsif read2 = 'X' then
 				-- Maybe read only from RAM
