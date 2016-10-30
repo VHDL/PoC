@@ -61,10 +61,11 @@ architecture tb of ocram_tdp_sim_tb is
 
 	type T_TEST_CONFIG_VEC is array (natural range<>) of T_TEST_CONFIG;
 
+	-- phase = 0 means 360 degrees
 	constant TEST_CONFIGS : T_TEST_CONFIG_VEC := (
-		0 => (phase1 =>  0 deg, phase2 =>  0 deg), -- clocks in-phase (including delta cyle)
-		1 => (phase1 =>  0 deg, phase2 => 90 deg)  -- provoke mixed-port read-during-write
---		2 => (phase1 => 90 deg, phase2 =>  0 deg)  -- TODO: checks not yet implemented
+		0 => (phase1 =>  180 deg, phase2 => 180 deg), -- clocks in-phase (including delta cyle)
+		1 => (phase1 =>  180 deg, phase2 =>  90 deg), -- provoke mixed-port read-during-write
+		2 => (phase1 =>  90 deg, phase2 => 180 deg)   -- dito
 	);
 begin
 	-- initialize global simulation status
@@ -142,10 +143,9 @@ begin
 			d1    <= (others => '-');
 			rd_d1 <= (others => '-');
 
-			-------------------------------------------------------------------------
 			-- Write in 8 consecutive clock cycles on port 1, read one cycle later on
 			-- port 2
-
+			-------------------------------------------------------------------------
 			for i in 0 to 7 loop
 				simWaitUntilRisingEdge(clk1, 1);
 				ce1		<= '1';
@@ -156,13 +156,14 @@ begin
 			end loop;
 
 			simWaitUntilRisingEdge(clk1, 1);
+			-- last read on port 2 here
 			ce1		<= '0';
 			we1		<= '0';
 			a1		<= (others => '-');
 			rd_d1 <= (others => '-');
 
-			-------------------------------------------------------------------------
 			-- Alternating write on port 1 / read on port 2
+			-------------------------------------------------------------------------
 			for i in 8 to 15 loop
 				simWaitUntilRisingEdge(clk1, 1);
 				ce1		<= not ce1;									-- write @ even addresses
@@ -173,76 +174,60 @@ begin
 			end loop;
 
 			simWaitUntilRisingEdge(clk1, 1);
+			-- last read on port 2 here
 			ce1		<= '0';
 			we1		<= '0';
 			a1		<= (others => '-');
 			rd_d1 <= (others => '-');
 
-			simWaitUntilRisingEdge(clk1, 1);
-			-- only action on port 2 here
-
-			-------------------------------------------------------------------------
 			-- Write in 8 consecutive clock cycles on port 2, read one cycle later on
 			-- port 1
-			for i in 16 to 23 loop
-				simWaitUntilRisingEdge(clk1, 1);
-				-- read is delayed by one clock cycle
-				ce1		<= ce2;
-				we1   <= '0';
-				a1		<= a2;
-				if CLOCK1_PHASE = CLOCK2_PHASE then
-					rd_d1 <= d2;
-				else
-					-- read-during-write at same address
-					rd_d1 <= (others => 'X');
-				end if;
-			end loop;
-
-			simWaitUntilRisingEdge(clk1, 1);
-			-- last read is delayed by one clock cycle
-			ce1		<= ce2;
-			we1   <= '0';
-			a1		<= a2;
-			if CLOCK1_PHASE = CLOCK2_PHASE then
-				rd_d1 <= d2;
-			else
-				-- read-during-write at same address
-				rd_d1 <= (others => 'X');
-			end if;
-
 			-------------------------------------------------------------------------
-			-- Alternating write on port 2 / read on port 1
-			for i in 24 to 31 loop
-				simWaitUntilRisingEdge(clk1, 1);
-				-- read is delayed by one clock cycle
-				ce1		<= ce2;
-				we1   <= '0';
-				a1		<= a2;
-				if CLOCK1_PHASE = CLOCK2_PHASE then
-					rd_d1 <= d2;
-				else
-					-- read-during-write at same address
-					rd_d1 <= (others => 'X');
-				end if;
-			end loop;
-
 			simWaitUntilRisingEdge(clk1, 1);
-			-- last read is delayed by one clock cycle
-			ce1		<= ce2;
-			we1   <= '0';
-			a1		<= a2;
-			if CLOCK1_PHASE = CLOCK2_PHASE then
-				rd_d1 <= d2;
-			else
-				-- read-during-write at same address
-				rd_d1 <= (others => 'X');
-			end if;
-
-			simWaitUntilRisingEdge(clk1, 1);
+			-- first write on port 2 here
 			ce1		<= '0';
 			we1   <= '-';
 			a1		<= (others => '-');
 			rd_d1 <= (others => '-');
+
+			for i in 16 to 23 loop
+				simWaitUntilRisingEdge(clk1, 1);
+				ce1		<= '1';
+				we1   <= '0';
+				a1		<= to_unsigned(i, A_BITS);
+				if CLOCK1_PHASE >= CLOCK2_PHASE then
+					-- read succeeds either if clocks are in phase or read clock is
+					-- behind write clock
+					rd_d1 <= std_logic_vector(to_unsigned(i, D_BITS));
+				else
+					-- read-during-write at same address
+					rd_d1 <= (others => 'X');
+				end if;
+			end loop;
+
+			-- Alternating write on port 2 / read on port 1
+			-------------------------------------------------------------------------
+			simWaitUntilRisingEdge(clk1, 1);
+			-- first write on port 2 here
+			ce1		<= '0';
+			we1   <= '-';
+			a1		<= (others => '-');
+			rd_d1 <= (others => '-');
+
+			for i in 24 to 31 loop
+				simWaitUntilRisingEdge(clk1, 1);
+				ce1		<= not ce1;
+				we1   <= '0';
+				a1		<= to_unsigned(i, A_BITS);
+				if CLOCK1_PHASE >= CLOCK2_PHASE then
+					-- read succeeds either if clocks are in phase or read clock is
+					-- behind write clock
+					rd_d1 <= std_logic_vector(to_unsigned(i, D_BITS));
+				else
+					-- read-during-write at same address
+					rd_d1 <= (others => 'X');
+				end if;
+			end loop;
 
 			-------------------------------------------------------------------------
 			-- Alternate between write on port 1 and write on port 2 to the same
@@ -268,7 +253,9 @@ begin
 				we1		<= '0';
 				a1		<= to_unsigned(i, A_BITS);
 				d1		<= std_logic_vector(to_unsigned(i, D_BITS));
-				if CLOCK1_PHASE = CLOCK2_PHASE then
+				if CLOCK2_PHASE >= CLOCK1_PHASE then
+					-- write succeeds either if clocks are in phase or second write clock
+					-- is behind first write clock
 					rd_d1 <= std_logic_vector(to_unsigned(i, D_BITS));
 				else
 					-- write-during-write at same address
@@ -276,17 +263,16 @@ begin
 				end if;
 			end loop;
 
+			-------------------------------------------------------------------------
+			-- Finish
 			simWaitUntilRisingEdge(clk1, 1);
 			ce1		<= '0';
 			we1   <= '-';
 			a1		<= (others => '-');
 			rd_d1 <= (others => '-');
 
-			-------------------------------------------------------------------------
-			-- Finish
-			finished1 <= true;
-
 			-- This process is finished
+			finished1 <= true;
 			simDeactivateProcess(simProcessID);
 			wait;  -- forever
 		end process Stimuli1;
@@ -303,73 +289,58 @@ begin
 			d2    <= (others => '-');
 			rd_d2 <= (others => '-');
 
-			-------------------------------------------------------------------------
 			-- Write in 8 consecutive clock cycles on port 1, read one cycle later on
 			-- port 2
-
-			for i in 0 to 7 loop
-				simWaitUntilRisingEdge(clk2, 1);
-				-- read is delayed by one clock cycle
-				ce2		<= ce1;
-				we2   <= '0';
-				a2		<= a1;
-				if CLOCK1_PHASE = CLOCK2_PHASE then
-					rd_d2 <= d1;
-				else
-					-- read-during-write at same address
-					rd_d2 <= (others => 'X');
-				end if;
-			end loop;
-
-			simWaitUntilRisingEdge(clk2, 1);
-			-- last read is delayed by one clock cycle
-			ce2		<= ce1;
-			we2   <= '0';
-			a2		<= a1;
-			if CLOCK1_PHASE = CLOCK2_PHASE then
-				rd_d2 <= d1;
-			else
-				-- read-during-write at same address
-				rd_d2 <= (others => 'X');
-			end if;
-
 			-------------------------------------------------------------------------
-			-- Alternating write on port 1 / read on port 2
-			for i in 8 to 15 loop
-				simWaitUntilRisingEdge(clk2, 1);
-				-- read is delayed by one clock cycle
-				ce2		<= ce1;
-				we2   <= '0';
-				a2		<= a1;
-				if CLOCK1_PHASE = CLOCK2_PHASE then
-					rd_d2 <= d1;
-				else
-					-- read-during-write at same address
-					rd_d2 <= (others => 'X');
-				end if;
-			end loop;
-
 			simWaitUntilRisingEdge(clk2, 1);
-			-- last read is delayed by one clock cycle
-			ce2		<= ce1;
-			we2   <= '0';
-			a2		<= a1;
-			if CLOCK1_PHASE = CLOCK2_PHASE then
-				rd_d2 <= d1;
-			else
-				-- read-during-write at same address
-				rd_d2 <= (others => 'X');
-			end if;
-
-			simWaitUntilRisingEdge(clk2, 1);
+			-- first write on port 1 here
 			ce2		<= '0';
 			we2   <= '-';
 			a2		<= (others => '-');
 			rd_d2 <= (others => '-');
 
+			for i in 0 to 7 loop
+				simWaitUntilRisingEdge(clk2, 1);
+				ce2		<= '1';
+				we2   <= '0';
+				a2		<= to_unsigned(i, A_BITS);
+				if CLOCK2_PHASE >= CLOCK1_PHASE then
+					-- read succeeds either if clocks are in phase or read clock is
+					-- behind write clock
+					rd_d2 <= std_logic_vector(to_unsigned(i, D_BITS));
+				else
+					-- read-during-write at same address
+					rd_d2 <= (others => 'X');
+				end if;
+			end loop;
+
+			-- Alternating write on port 1 / read on port 2
 			-------------------------------------------------------------------------
+			simWaitUntilRisingEdge(clk2, 1);
+			-- first write on port 1 here
+			ce2		<= '0';
+			we2   <= '-';
+			a2		<= (others => '-');
+			rd_d2 <= (others => '-');
+
+			for i in 8 to 15 loop
+				simWaitUntilRisingEdge(clk2, 1);
+				ce2		<= not ce2;
+				we2   <= '0';
+				a2		<= to_unsigned(i, A_BITS);
+				if CLOCK2_PHASE >= CLOCK1_PHASE then
+					-- read succeeds either if clocks are in phase or read clock is
+					-- behind write clock
+					rd_d2 <= std_logic_vector(to_unsigned(i, D_BITS));
+				else
+					-- read-during-write at same address
+					rd_d2 <= (others => 'X');
+				end if;
+			end loop;
+
 			-- Write in 8 consecutive clock cycles on port 2, read one cycle later on
 			-- port 1
+			-------------------------------------------------------------------------
 			for i in 16 to 23 loop
 				simWaitUntilRisingEdge(clk2, 1);
 				ce2		<= '1';
@@ -380,6 +351,7 @@ begin
 			end loop;
 
 			simWaitUntilRisingEdge(clk2, 1);
+			-- last read on port 1 here
 			ce2		<= '0';
 			we2		<= '0';
 			a2		<= (others => '-');
@@ -397,13 +369,11 @@ begin
 			end loop;
 
 			simWaitUntilRisingEdge(clk2, 1);
+			-- last read on port 1 here
 			ce2		<= '0';
 			we2		<= '0';
 			a2		<= (others => '-');
 			rd_d2 <= (others => '-');
-
-			simWaitUntilRisingEdge(clk2, 1);
-			-- only action on port 1 here
 
 			-------------------------------------------------------------------------
 			-- Alternate between write on port 1 and write on port 2 to the same
@@ -429,7 +399,9 @@ begin
 				we2		<= '0';
 				a2		<= to_unsigned(i, A_BITS);
 				d2		<= std_logic_vector(to_unsigned(i, D_BITS));
-				if CLOCK1_PHASE = CLOCK2_PHASE then
+				if CLOCK2_PHASE >= CLOCK1_PHASE then
+					-- write succeeds either if clocks are in phase or second write clock
+					-- is behind first write clock
 					rd_d2 <= std_logic_vector(to_unsigned(i, D_BITS));
 				else
 					-- write-during-write at same address
@@ -437,17 +409,16 @@ begin
 				end if;
 			end loop;
 
+			-------------------------------------------------------------------------
+			-- Finish
 			simWaitUntilRisingEdge(clk2, 1);
 			ce2		<= '0';
 			we2		<= '-';
 			a2		<= (others => '-');
 			rd_d2 <= (others => '-');
 
-			-------------------------------------------------------------------------
-			-- Finish
-			finished2 <= true;
-
 			-- This process is finished
+			finished2 <= true;
 			simDeactivateProcess(simProcessID);
 			wait;  -- forever
 		end process Stimuli2;
