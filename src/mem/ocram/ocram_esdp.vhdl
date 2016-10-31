@@ -61,13 +61,12 @@
 --   rising-edge of the write clock (``clk1``) and (in the worst case) extends
 --   until the next rising-edge of the write clock.
 --
--- .. WARNING::
---    The simulated behavior on RT-level is too optimistic. When reading
---    at the write address always the new data will be returned.
+-- For simulation, always our dedicated simulation model PoC.mem.ocram.tdp_sim
+-- is used.
 --
 -- License:
 -- =============================================================================
--- Copyright 2008-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2008-2016 Technische Universitaet Dresden - Germany
 --										 Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -123,7 +122,7 @@ architecture rtl of ocram_esdp is
 	constant DEPTH : positive := 2**A_BITS;
 
 begin
-	gInfer : if (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX) generate
+	gInfer : if not SIMULATION and ((VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
 
 		-- For Xilinx ISE, Xilinx Vivado and Lattice LSE we can reuse the ocram_tdp.
 		--
@@ -149,7 +148,7 @@ begin
 				q2	 => q2);
 	end generate gInfer;
 
-	gAltera: if VENDOR = VENDOR_ALTERA generate
+	gAltera: if not SIMULATION and (VENDOR = VENDOR_ALTERA) generate
 		component ocram_tdp_altera
 			generic (
 				A_BITS		: positive;
@@ -196,6 +195,49 @@ begin
 				q2	 => q2
 			);
 	end generate gAltera;
+
+	gSim: if SIMULATION generate
+		-- Use component instantiation so that simulation model can be excluded
+		-- from synthesis.
+		component ocram_tdp_sim is
+			generic (
+				A_BITS	 : positive;
+				D_BITS	 : positive;
+				FILENAME : string);
+			port (
+				clk1 : in	 std_logic;
+				clk2 : in	 std_logic;
+				ce1	 : in	 std_logic;
+				ce2	 : in	 std_logic;
+				we1	 : in	 std_logic;
+				we2	 : in	 std_logic;
+				a1	 : in	 unsigned(A_BITS-1 downto 0);
+				a2	 : in	 unsigned(A_BITS-1 downto 0);
+				d1	 : in	 std_logic_vector(D_BITS-1 downto 0);
+				d2	 : in	 std_logic_vector(D_BITS-1 downto 0);
+				q1	 : out std_logic_vector(D_BITS-1 downto 0);
+				q2	 : out std_logic_vector(D_BITS-1 downto 0));
+		end component ocram_tdp_sim;
+	begin
+		sim_tdp: ocram_tdp_sim
+			generic map (
+				A_BITS	 => A_BITS,
+				D_BITS	 => D_BITS,
+				FILENAME => FILENAME)
+			port map (
+				clk1 => clk1,
+				clk2 => clk2,
+				ce1	 => ce1,
+				ce2	 => ce2,
+				we1	 => we1,
+				we2	 => '0',
+				a1	 => a1,
+				a2	 => a2,
+				d1	 => d1,
+				d2	 => (others => '0'),
+				q1	 => q1,
+				q2	 => q2);
+	end generate gSim;
 
 	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
 		report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported."

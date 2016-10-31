@@ -125,7 +125,7 @@ begin
     variable waddr2   : unsigned(A_BITS-1 downto 0);
 
 		-- Check for write-collision check on port 1. Only set during one execution
-		-- of the process. 
+		-- of the process.
 		variable check_wr1 : boolean;
 
     -- Flag and address indicating whether a read occurs in the current clock
