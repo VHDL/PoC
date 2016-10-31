@@ -241,6 +241,7 @@ begin
 				rd_d1 <= std_logic_vector(to_unsigned(i, D_BITS));
 
 				simWaitUntilRisingEdge(clk1, 1);
+				-- write on port 2
 				ce1		<= '0';
 				we1   <= '-';
 				a1		<= (others => '-');
@@ -254,8 +255,43 @@ begin
 				a1		<= to_unsigned(i, A_BITS);
 				d1		<= std_logic_vector(to_unsigned(i, D_BITS));
 				if CLOCK2_PHASE >= CLOCK1_PHASE then
-					-- write succeeds either if clocks are in phase or second write clock
-					-- is behind first write clock
+					-- write succeeds either if clocks are in phase or if clock of second
+					-- write is behind clock of first write
+					rd_d1 <= std_logic_vector(to_unsigned(i, D_BITS));
+				else
+					-- write-during-write at same address
+					rd_d1 <= (others => 'X');
+				end if;
+			end loop;
+
+			-------------------------------------------------------------------------
+			-- Alternate between write on port 2 and write on port 1 to the same
+			-- address. Data is read again from memory after all writes.
+			for i in 40 to 47 loop
+				simWaitUntilRisingEdge(clk1, 1);
+				-- write on port 2
+				ce1		<= '0';
+				we1   <= '-';
+				a1		<= (others => '-');
+				rd_d1 <= (others => '-');
+
+				simWaitUntilRisingEdge(clk1, 1);
+				ce1		<= '1';
+				we1		<= '1';
+				a1		<= to_unsigned(i, A_BITS);
+				d1		<= std_logic_vector(to_unsigned(i, D_BITS));
+				rd_d1 <= std_logic_vector(to_unsigned(i, D_BITS));
+			end loop;
+
+			for i in 40 to 47 loop
+				simWaitUntilRisingEdge(clk1, 1);
+				ce1		<= '1';
+				we1		<= '0';
+				a1		<= to_unsigned(i, A_BITS);
+				d1		<= std_logic_vector(to_unsigned(i, D_BITS));
+				if CLOCK1_PHASE >= CLOCK2_PHASE then
+					-- write succeeds either if clocks are in phase or if clock of second
+					-- write is behind clock of first write
 					rd_d1 <= std_logic_vector(to_unsigned(i, D_BITS));
 				else
 					-- write-during-write at same address
@@ -380,6 +416,7 @@ begin
 			-- address. Data is read again from memory after all writes.
 			for i in 32 to 39 loop
 				simWaitUntilRisingEdge(clk2, 1);
+				-- write on port 1
 				ce2		<= '0';
 				we2   <= '-';
 				a2		<= (others => '-');
@@ -400,8 +437,43 @@ begin
 				a2		<= to_unsigned(i, A_BITS);
 				d2		<= std_logic_vector(to_unsigned(i, D_BITS));
 				if CLOCK2_PHASE >= CLOCK1_PHASE then
-					-- write succeeds either if clocks are in phase or second write clock
-					-- is behind first write clock
+					-- write succeeds either if clocks are in phase or if clock of second
+					-- write is behind clock of first write
+					rd_d2 <= std_logic_vector(to_unsigned(i, D_BITS));
+				else
+					-- write-during-write at same address
+					rd_d2 <= (others => 'X');
+				end if;
+			end loop;
+
+			-------------------------------------------------------------------------
+			-- Alternate between write on port 2 and write on port 1 to the same
+			-- address. Data is read again from memory after all writes.
+			for i in 40 to 47 loop
+				simWaitUntilRisingEdge(clk2, 1);
+				ce2		<= '1';
+				we2		<= '1';
+				a2		<= to_unsigned(i, A_BITS);
+				d2		<= std_logic_vector(to_unsigned(i, D_BITS));
+				rd_d2 <= std_logic_vector(to_unsigned(i, D_BITS));
+
+				simWaitUntilRisingEdge(clk2, 1);
+				-- write on port 1
+				ce2		<= '0';
+				we2   <= '-';
+				a2		<= (others => '-');
+				rd_d2 <= (others => '-');
+			end loop;
+
+			for i in 40 to 47 loop
+				simWaitUntilRisingEdge(clk2, 1);
+				ce2		<= '1';
+				we2		<= '0';
+				a2		<= to_unsigned(i, A_BITS);
+				d2		<= std_logic_vector(to_unsigned(i, D_BITS));
+				if CLOCK1_PHASE >= CLOCK2_PHASE then
+					-- write succeeds either if clocks are in phase or if clock of second
+					-- write is behind clock of first write
 					rd_d2 <= std_logic_vector(to_unsigned(i, D_BITS));
 				else
 					-- write-during-write at same address

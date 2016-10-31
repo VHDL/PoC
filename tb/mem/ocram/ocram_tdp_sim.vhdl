@@ -4,7 +4,7 @@
 -- =============================================================================
 -- Authors:				 	Martin Zabel
 --
--- Entity:				 	True dual-port memory.
+-- Entity:				 	Simulation model for true dual-port memory.
 --
 -- Description:
 -- -------------------------------------
@@ -216,7 +216,7 @@ begin
 		-- writing1 and waddr1 are up-to-date, check for write-collision
 		if check_wr1 then
 			if writing2 and std_match(waddr2, a1) then
-				ram(to_integer(a2)) <= (others => 'X');
+				ram(to_integer(a1)) <= (others => 'X');
 			end if;
 		end if;
 
