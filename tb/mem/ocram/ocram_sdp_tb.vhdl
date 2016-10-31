@@ -125,20 +125,20 @@ begin
     wce <= '1';
     rce <= '1';                         -- read again
     wait until falling_edge(clk);
-		simAssertion((q = x"22222222"), "Wrong read data1");
+		simAssertion((q = x"22222222"), "Wrong read data2");
 
     d   <= x"33333333";
     we  <= '1';                         -- write new value
     wce <= '1';
     rce <= '0';                         -- no read
     wait until falling_edge(clk);
-		simAssertion((q = x"22222222"), "Wrong read data1");
+		simAssertion((q = x"22222222"), "Wrong read data3");
 
     we  <= '0';                         -- no write
     wce <= '1';
     rce <= '0';                         -- no read
     wait until falling_edge(clk);
-		simAssertion((q = x"22222222"), "Wrong read data1");
+		simAssertion((q = x"22222222"), "Wrong read data4");
 
     d   <= x"44444444";
     we  <= '1';
@@ -151,7 +151,7 @@ begin
     wce <= '0';                         -- write clock disabled
     rce <= '1';                         -- should be normal read
     wait until falling_edge(clk);
-		simAssertion((q = x"44444444"), "Wrong read data1");
+		simAssertion((q = x"44444444"), "Wrong read data5");
 
     we  <= '0';
     wce <= '0';

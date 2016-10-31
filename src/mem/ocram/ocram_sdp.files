@@ -12,4 +12,5 @@ vhdl    poc   "src/mem/mem.pkg.vhdl"              					# Memory package
 
 # PoC.mem.ocram
 vhdl    poc   "src/mem/ocram/ocram.pkg.vhdl"     		 				# On-Chip-RAM
+vhdl		poc		"tb/mem/ocram/ocram_tdp_sim.vhdl"							# Simulation model
 vhdl    poc   "src/mem/ocram/ocram_sdp.vhdl"								# Simple dual-port RAM
