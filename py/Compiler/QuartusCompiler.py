@@ -145,7 +145,7 @@ class Compiler(BaseCompiler):
 		quartusSettings.GlobalAssignments['DEVICE'] =              device.ShortName
 		quartusSettings.GlobalAssignments['TOP_LEVEL_ENTITY'] =    netlist.ModuleName
 		quartusSettings.GlobalAssignments['VHDL_INPUT_VERSION'] =  "VHDL_2008"
-		quartusSettings.Parameters.update(self._GetSynthHDLParameters(netlist))
+		quartusSettings.Parameters.update(self._GetHDLParameters(netlist.ConfigSectionName))
 
 		# transform files from PoCProject to global assignment commands in a QSF files
 		quartusSettings.CopySourceFilesFromProject(self.PoCProject)

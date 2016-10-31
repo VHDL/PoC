@@ -160,9 +160,8 @@ class Compiler(BaseCompiler):
 				format(file=file.Path.as_posix())
 
 		topLevelGenerics =  ""
-
-		for key, value in self._GetSynthHDLParameters(netlist).items():
-			topLevelGenerics += " -generic {{{k}={v}}}".format(k=key,v=value)
+		for keyValuePair in self._GetHDLParameters(netlist.ConfigSectionName).items():
+			topLevelGenerics += " -generic {{{0}={1}}}".format(*keyValuePair)
 
 		buffer += "synth_design -top {top} -part {part}{TopLevelGenerics}\n".format(
 			top=netlist.ModuleName,
