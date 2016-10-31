@@ -18,9 +18,6 @@
 -- various synthesis compilers. The implementation here also simulates the
 -- correct Mixed-Port Read-During-Write Behavior and handles X propagation.
 --
--- .. TODO::
---    * Mixed-port read-during-write behavior when write is issued during a read
---
 -- License:
 -- =============================================================================
 -- Copyright 2016-2016 Technische Universitaet Dresden - Germany
@@ -120,8 +117,8 @@ begin
   process (clk1, clk2)
     -- Flag and address indicating whether a write occurs in the current clock
 		-- cycle. Set and cleared at the rising_edge of the port's clock.
-		-- The write address is set to don't care when write location is undefined,
-		-- to match all addresses in collision checks from other port.
+		-- The write address is set to don't care when the write location is
+		-- undefined, to match all addresses in collision checks from other port.
     variable writing1 : boolean;
     variable writing2 : boolean;
     variable waddr1   : unsigned(A_BITS-1 downto 0);
@@ -130,7 +127,17 @@ begin
 		-- Check for write-collision check on port 1. Only set during one execution
 		-- of the process. 
 		variable check_wr1 : boolean;
-		
+
+    -- Flag and address indicating whether a read occurs in the current clock
+		-- cycle. Set and cleared at the rising_edge of the port's clock.
+		-- In opposition to the writing flag, the reading flag is only set if the
+		-- address is well known and the read succeeded at the rising clock edge.
+		-- A read fails afterwards if a write happens during the read clock cycle.
+    variable reading1 : boolean;
+    variable reading2 : boolean;
+    variable raddr1   : unsigned(A_BITS-1 downto 0);
+    variable raddr2   : unsigned(A_BITS-1 downto 0);
+
 	begin	-- process
 		check_wr1 := false;
 
@@ -139,7 +146,7 @@ begin
 		if rising_edge(clk1) then
 			writing1 := false;
 			waddr1   := (others => '-');
-			
+
 			if write1 = '1' then
 				-- RAM is definitely written ...
 				writing1 := true;
@@ -177,7 +184,7 @@ begin
 		if rising_edge(clk2) then
 			writing2 := false;
 			waddr2   := (others => '-');
-			
+
 			if write2 = '1' then
 				-- RAM is definitely written ...
 				writing2 := true;
@@ -223,6 +230,9 @@ begin
 		-- Reading (only) from Memory
 		-- =========================================================================
 		if rising_edge(clk1) then
+			reading1 := false;
+			raddr1   := (others => '-');
+
 			if read1 = '1' then
 				-- Definitely read only from RAM ...
 				if is_x(std_logic_vector(a1)) then
@@ -233,6 +243,9 @@ begin
 					if writing2 and std_match(a1,waddr2) then
 						q1 <= (others => 'X');
 					else
+						-- further checks are only required if address is well known
+						reading1 := true;
+						raddr1   := a1;
 						q1 <= ram(to_integer(a1));
 					end if;
 				end if;
@@ -243,6 +256,9 @@ begin
 		end if;
 
 		if rising_edge(clk2) then
+			reading2 := false;
+			raddr2   := (others => '-');
+
 			if read2 = '1' then
 				-- Definitely read only from RAM ...
 				if is_x(std_logic_vector(a2)) then
@@ -253,12 +269,33 @@ begin
 					if writing1 and std_match(a2,waddr1) then
 						q2 <= (others => 'X');
 					else
+						-- further checks are only required if address is well known
+						reading2 := true;
+						raddr2   := a2;
 						q2 <= ram(to_integer(a2));
 					end if;
 				end if;
 			elsif read2 = 'X' then
 				-- Maybe read only from RAM
 				q2 <= (others => 'X');
+			end if;
+		end if;
+
+    -- Write-during-read check
+    -- =========================================================================
+		-- cannot be included in read part above, because check is performed on a
+		-- following rising edge of the write clock (not read clock!).
+		if rising_edge(clk1) and writing1 then
+			if reading2 and std_match(raddr2, waddr1) then
+				-- read is disturbed by a write during the read clock cycle
+				q2 <= (others => 'X');
+			end if;
+		end if;
+
+		if rising_edge(clk2) and writing2 then
+			if reading1 and std_match(raddr1, waddr2) then
+				-- read is disturbed by a write during the read clock cycle
+				q1 <= (others => 'X');
 			end if;
 		end if;
 	end process;

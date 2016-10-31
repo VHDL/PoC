@@ -148,7 +148,7 @@ begin
 
 		-- last read is delayed by one clock cycle
 		ce2		<= ce1;
-    we2   <= '0';
+		we2   <= '0';
 		a2		<= a1;
 		rd_d2 <= d1;												-- data to be read
 
@@ -214,7 +214,7 @@ begin
 
 		-- last read is delayed by one clock cycle
 		ce1		<= ce2;
-    we1   <= '0';
+		we1   <= '0';
 		a1		<= a2;
 		rd_d1 <= d2;												-- data to be read
 
@@ -308,10 +308,10 @@ begin
 		-- Finish
 		finished <= true;
 
-    -- This process is finished
+		-- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever
-  end process Stimuli;
+	end process Stimuli;
 
 	-- Also checks if old value is kept if ce1 = '0'
 	exp_q1 <= rd_d1 when rising_edge(clk) and ce1 = '1';
@@ -319,10 +319,10 @@ begin
 	-- Also checks if old value is kept if ce2 = '0'
 	exp_q2 <= rd_d2 when rising_edge(clk) and ce2 = '1';
 
-  Checker: process
+	Checker: process
 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker process");
 		variable i : integer;
-  begin
+	begin
 		while not finished loop
 			simWaitUntilRisingEdge(clk, 1);
 			simAssertion(std_match(q1, exp_q1));
@@ -332,6 +332,6 @@ begin
     -- This process is finished
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever
-  end process Checker;
+	end process Checker;
 
 end architecture;

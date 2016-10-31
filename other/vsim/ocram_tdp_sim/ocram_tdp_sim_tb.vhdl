@@ -74,7 +74,7 @@ begin
 	gTest: for test in TEST_CONFIGS'range generate
 		constant CLOCK1_PHASE : T_PHASE := TEST_CONFIGS(test).phase1;
 		constant CLOCK2_PHASE : T_PHASE := TEST_CONFIGS(test).phase2;
-		
+
 		constant simTestID : T_SIM_TEST_ID := simCreateTest("Phase1="&integer'image(CLOCK1_PHASE / 1 deg)&
 																												" Phase2="&integer'image(CLOCK2_PHASE / 1 deg));
 
@@ -160,6 +160,7 @@ begin
 			ce1		<= '0';
 			we1		<= '0';
 			a1		<= (others => '-');
+			d1    <= (others => '-');
 			rd_d1 <= (others => '-');
 
 			-- Alternating write on port 1 / read on port 2
@@ -178,6 +179,7 @@ begin
 			ce1		<= '0';
 			we1		<= '0';
 			a1		<= (others => '-');
+			d1    <= (others => '-');
 			rd_d1 <= (others => '-');
 
 			-- Write in 8 consecutive clock cycles on port 2, read one cycle later on
@@ -188,6 +190,7 @@ begin
 			ce1		<= '0';
 			we1   <= '-';
 			a1		<= (others => '-');
+			d1    <= (others => '-');
 			rd_d1 <= (others => '-');
 
 			for i in 16 to 23 loop
@@ -195,6 +198,7 @@ begin
 				ce1		<= '1';
 				we1   <= '0';
 				a1		<= to_unsigned(i, A_BITS);
+				d1    <= (others => '-');
 				if CLOCK1_PHASE >= CLOCK2_PHASE then
 					-- read succeeds either if clocks are in phase or read clock is
 					-- behind write clock
@@ -212,6 +216,7 @@ begin
 			ce1		<= '0';
 			we1   <= '-';
 			a1		<= (others => '-');
+			d1    <= (others => '-');
 			rd_d1 <= (others => '-');
 
 			for i in 24 to 31 loop
@@ -219,6 +224,7 @@ begin
 				ce1		<= not ce1;
 				we1   <= '0';
 				a1		<= to_unsigned(i, A_BITS);
+				d1    <= (others => '-');
 				if CLOCK1_PHASE >= CLOCK2_PHASE then
 					-- read succeeds either if clocks are in phase or read clock is
 					-- behind write clock
@@ -245,6 +251,7 @@ begin
 				ce1		<= '0';
 				we1   <= '-';
 				a1		<= (others => '-');
+				d1    <= (others => '-');
 				rd_d1 <= (others => '-');
 			end loop;
 
@@ -273,6 +280,7 @@ begin
 				ce1		<= '0';
 				we1   <= '-';
 				a1		<= (others => '-');
+				d1    <= (others => '-');
 				rd_d1 <= (others => '-');
 
 				simWaitUntilRisingEdge(clk1, 1);
@@ -299,12 +307,60 @@ begin
 				end if;
 			end loop;
 
+			-- Read in 8 consecutive clock cycles on port 1, write one cycle later on
+			-- port 2
+			-------------------------------------------------------------------------
+			for i in 48 to 55 loop
+				simWaitUntilRisingEdge(clk1, 1);
+				ce1		<= '1';
+				we1		<= '0';
+				a1		<= to_unsigned(i, A_BITS);
+				d1		<= (others => '-');
+				if CLOCK1_PHASE <= CLOCK2_PHASE then
+					-- read succeeds if clocks are in phase or if read clock is before
+					-- write clock
+					rd_d1 <= (others => 'U'); -- memory not yet initialized
+				else
+					-- write-during-read at same address
+					rd_d1 <= (others => 'X');
+				end if;
+			end loop;
+
+			simWaitUntilRisingEdge(clk1, 1);
+			-- last write on port 2 here
+			ce1		<= '0';
+			we1		<= '0';
+			a1		<= (others => '-');
+			d1    <= (others => '-');
+			rd_d1 <= (others => '-');
+
+			-- Read in 8 consecutive clock cycles on port 2, write one cycle later on
+			-- port 1
+			-------------------------------------------------------------------------
+			simWaitUntilRisingEdge(clk1, 1);
+			-- first read on port 2 here
+			ce1		<= '0';
+			we1		<= '0';
+			a1		<= (others => '-');
+			d1    <= (others => '-');
+			rd_d1 <= (others => '-');
+
+			for i in 56 to 63 loop
+				simWaitUntilRisingEdge(clk1, 1);
+				ce1		<= '1';
+				we1		<= '1';
+				a1		<= to_unsigned(i, A_BITS);
+				d1		<= std_logic_vector(to_unsigned(i, D_BITS));
+				rd_d1 <= std_logic_vector(to_unsigned(i, D_BITS));
+			end loop;
+
 			-------------------------------------------------------------------------
 			-- Finish
 			simWaitUntilRisingEdge(clk1, 1);
 			ce1		<= '0';
 			we1   <= '-';
 			a1		<= (others => '-');
+			d1    <= (others => '-');
 			rd_d1 <= (others => '-');
 
 			-- This process is finished
@@ -333,6 +389,7 @@ begin
 			ce2		<= '0';
 			we2   <= '-';
 			a2		<= (others => '-');
+			d2    <= (others => '-');
 			rd_d2 <= (others => '-');
 
 			for i in 0 to 7 loop
@@ -340,6 +397,7 @@ begin
 				ce2		<= '1';
 				we2   <= '0';
 				a2		<= to_unsigned(i, A_BITS);
+				d2    <= (others => '-');
 				if CLOCK2_PHASE >= CLOCK1_PHASE then
 					-- read succeeds either if clocks are in phase or read clock is
 					-- behind write clock
@@ -357,6 +415,7 @@ begin
 			ce2		<= '0';
 			we2   <= '-';
 			a2		<= (others => '-');
+			d2    <= (others => '-');
 			rd_d2 <= (others => '-');
 
 			for i in 8 to 15 loop
@@ -364,6 +423,7 @@ begin
 				ce2		<= not ce2;
 				we2   <= '0';
 				a2		<= to_unsigned(i, A_BITS);
+				d2    <= (others => '-');
 				if CLOCK2_PHASE >= CLOCK1_PHASE then
 					-- read succeeds either if clocks are in phase or read clock is
 					-- behind write clock
@@ -391,6 +451,7 @@ begin
 			ce2		<= '0';
 			we2		<= '0';
 			a2		<= (others => '-');
+			d2    <= (others => '-');
 			rd_d2 <= (others => '-');
 
 			-------------------------------------------------------------------------
@@ -409,6 +470,7 @@ begin
 			ce2		<= '0';
 			we2		<= '0';
 			a2		<= (others => '-');
+			d2    <= (others => '-');
 			rd_d2 <= (others => '-');
 
 			-------------------------------------------------------------------------
@@ -420,6 +482,7 @@ begin
 				ce2		<= '0';
 				we2   <= '-';
 				a2		<= (others => '-');
+				d2    <= (others => '-');
 				rd_d2 <= (others => '-');
 
 				simWaitUntilRisingEdge(clk2, 1);
@@ -462,6 +525,7 @@ begin
 				ce2		<= '0';
 				we2   <= '-';
 				a2		<= (others => '-');
+				d2    <= (others => '-');
 				rd_d2 <= (others => '-');
 			end loop;
 
@@ -481,12 +545,60 @@ begin
 				end if;
 			end loop;
 
+			-- Read in 8 consecutive clock cycles on port 1, write one cycle later on
+			-- port 2
+			-------------------------------------------------------------------------
+			simWaitUntilRisingEdge(clk2, 1);
+			-- first read on port 1 here
+			ce2		<= '0';
+			we2		<= '0';
+			a2		<= (others => '-');
+			d2    <= (others => '-');
+			rd_d2 <= (others => '-');
+
+			for i in 48 to 55 loop
+				simWaitUntilRisingEdge(clk2, 1);
+				ce2		<= '1';
+				we2		<= '1';
+				a2		<= to_unsigned(i, A_BITS);
+				d2		<= std_logic_vector(to_unsigned(i, D_BITS));
+				rd_d2 <= std_logic_vector(to_unsigned(i, D_BITS));
+			end loop;
+
+			-- Read in 8 consecutive clock cycles on port 2, write one cycle later on
+			-- port 1
+			-------------------------------------------------------------------------
+			for i in 56 to 63 loop
+				simWaitUntilRisingEdge(clk2, 1);
+				ce2		<= '1';
+				we2		<= '0';
+				a2		<= to_unsigned(i, A_BITS);
+				d2		<= (others => '-');
+				if CLOCK2_PHASE <= CLOCK1_PHASE then
+					-- read succeeds if clocks are in phase or if read clock is before
+					-- write clock
+					rd_d2 <= (others => 'U'); -- memory not yet initialized
+				else
+					-- write-during-read at same address
+					rd_d2 <= (others => 'X');
+				end if;
+			end loop;
+
+			simWaitUntilRisingEdge(clk2, 1);
+			-- last write on port 1 here
+			ce2		<= '0';
+			we2		<= '0';
+			a2		<= (others => '-');
+			d2    <= (others => '-');
+			rd_d2 <= (others => '-');
+
 			-------------------------------------------------------------------------
 			-- Finish
 			simWaitUntilRisingEdge(clk2, 1);
 			ce2		<= '0';
 			we2		<= '-';
 			a2		<= (others => '-');
+			d2    <= (others => '-');
 			rd_d2 <= (others => '-');
 
 			-- This process is finished
@@ -534,5 +646,5 @@ begin
 			wait;  -- forever
 		end process Checker2;
 	end generate gTest;
-	
+
 end architecture;
