@@ -109,6 +109,7 @@ architecture sim of ocram_tdp_sim is
 begin
 	assert SIMULATION report "This model is only for simulation." severity error;
 
+	-- handle 'U' as 'X'
   write1 <= to_x01(ce1 and we1);
   read1  <= to_x01(ce1 and not we1);
   write2 <= to_x01(ce2 and we2);
@@ -156,13 +157,13 @@ begin
 				else
 					--- ... and address is well known
 					waddr1 := a1;
-					ram(to_integer(a1)) <= d1;
+					ram(to_integer(a1)) <= to_ux01(d1);
 					-- writing2 and waddr2 are not yet up-to-date, check for
 					-- write-collision below
 					check_wr1 := true;
 				end if;
 				-- same-port read during write: return new data
-				q1 <= d1;
+				q1 <= to_ux01(d1);
 
 			elsif write1 = 'X' then
 				-- RAM may be written ...
@@ -198,11 +199,11 @@ begin
 					if writing1 and std_match(waddr1, a2) then
 						ram(to_integer(a2)) <= (others => 'X');
 					else
-						ram(to_integer(a2)) <= d2;
+						ram(to_integer(a2)) <= to_ux01(d2);
 					end if;
 				end if;
 				-- same-port read during write: return new data
-				q2 <= d2;
+				q2 <= to_ux01(d2);
 
 			elsif write2 = 'X' then
 				-- RAM may be written ...
