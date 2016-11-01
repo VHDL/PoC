@@ -122,7 +122,7 @@ architecture rtl of ocram_esdp is
 	constant DEPTH : positive := 2**A_BITS;
 
 begin
-	gInfer : if not SIMULATION and ((VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
+	gInfer : if not SIMULATION and ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
 
 		-- For Xilinx ISE, Xilinx Vivado and Lattice LSE we can reuse the ocram_tdp.
 		--
@@ -239,7 +239,7 @@ begin
 				q2	 => q2);
 	end generate gSim;
 
-	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
+	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC and SIMULATION) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
 		report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported."
 		severity failure;
 end architecture;

@@ -83,7 +83,7 @@ architecture rtl of ocram_sdp is
 
 begin
 
-	gInfer : if not SIMULATION and ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
+	gInfer : if not SIMULATION and ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
 		-- RAM can be inferred correctly
 		-- Xilinx notes:
 		--	 WRITE_MODE is set to WRITE_FIRST, but this also means that read data
@@ -188,7 +188,7 @@ begin
 				q2	 => q);
 	end generate gSim;
 
-	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
+	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC and SIMULATION) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
 		report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported."
 		severity failure;
 end architecture;

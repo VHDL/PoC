@@ -105,7 +105,7 @@ architecture rtl of ocram_tdp is
 	constant DEPTH : positive := 2**A_BITS;
 
 begin
-	gInfer : if not SIMULATION and ((VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
+	gInfer : if not SIMULATION and ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
 		-- RAM can be inferred correctly only if '-use_new_parser yes' is enabled in XST options
 		subtype word_t	is std_logic_vector(D_BITS - 1 downto 0);
 		type		ram_t		is array(0 to DEPTH - 1) of word_t;
@@ -259,7 +259,7 @@ begin
 				q2	 => q2);
 	end generate gSim;
 
-	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
+	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC and SIMULATION) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
 		report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported."
 		severity failure;
 end architecture;
