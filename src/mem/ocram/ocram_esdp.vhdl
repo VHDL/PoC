@@ -174,7 +174,7 @@ begin
 		-- Direct instantiation of altsyncram (including component
 		-- declaration above) is not sufficient for ModelSim.
 		-- That requires also usage of altera_mf library.
-		ram_tdp: ocram_tdp_altera
+		ram_altera: ocram_tdp_altera
 			generic map (
 				A_BITS		=> A_BITS,
 				D_BITS		=> D_BITS,
