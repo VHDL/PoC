@@ -103,7 +103,7 @@ if ($GHDL)
 
 	$GHDLLatticeScript = "$GHDLScriptDir\compile-lattice.ps1"
 	if (-not (Test-Path $GHDLLatticeScript -PathType Leaf))
-	{ Write-Host "[ERROR]: Lattice compile script from GHDL is not executable." -ForegroundColor Red
+	{ Write-Host "[ERROR]: Lattice compile script '$GHDLLatticeScript' from GHDL not found." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 

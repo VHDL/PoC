@@ -99,7 +99,7 @@ if ($GHDL)
 
 	$GHDLOSVVMScript = "$GHDLScriptDir\compile-osvvm.ps1"
 	if (-not (Test-Path $GHDLOSVVMScript -PathType Leaf))
-	{ Write-Host "[ERROR]: OSVVM compile script from GHDL is not executable." -ForegroundColor Red
+	{ Write-Host "[ERROR]: OSVVM compile script '$GHDLOSVVMScript' from GHDL not found." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 

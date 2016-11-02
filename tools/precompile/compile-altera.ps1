@@ -103,7 +103,7 @@ if ($GHDL)
 
 	$GHDLAlteraScript = "$GHDLScriptDir\compile-altera.ps1"
 	if (-not (Test-Path $GHDLAlteraScript -PathType Leaf))
-	{ Write-Host "[ERROR]: Altera compile script from GHDL is not executable." -ForegroundColor Red
+	{ Write-Host "[ERROR]: Altera compile script '$GHDLAlteraScript' from GHDL not found." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 

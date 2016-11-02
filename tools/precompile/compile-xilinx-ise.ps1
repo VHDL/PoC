@@ -108,7 +108,7 @@ if ($GHDL)
 
 	$GHDLXilinxScript = "$GHDLScriptDir\compile-xilinx-ise.ps1"
 	if (-not (Test-Path $GHDLXilinxScript -PathType Leaf))
-	{ Write-Host "[ERROR]: Xilinx compile script from GHDL is not executable." -ForegroundColor Red
+	{ Write-Host "[ERROR]: Xilinx compile script '$GHDLXilinxScript' from GHDL not found." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
 
