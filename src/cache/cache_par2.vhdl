@@ -9,15 +9,8 @@
 --
 -- Description:
 -- -------------------------------------
--- Implements a cache with parallel tag-unit and data memory.
---
--- .. NOTE::
---    This component infers a single-port memory with read-first behavior, that
---    is, upon writes the old-data is returned on the read output. Such memory
---    (e.g. LUT-RAM) is not available on all devices. Thus, synthesis may
---    infer a lot of flip-flops plus multiplexers instead, which is very inefficient.
---    It is recommended to use :doc:`PoC.cache.par2 <cache_par2>` instead which has a
---    slightly different interface.
+-- Cache with parallel tag-unit and data memory. For the data memory,
+-- :doc:`PoC.mem.ocram.sp <../mem/ocram/ocram_sp>` is used.
 --
 -- All inputs are synchronous to the rising-edge of the clock `clock`.
 --
@@ -36,7 +29,9 @@
 -- +---------+-----------+-------------+---------+---------------------------------+
 -- |  1      |    1      |    1        |    0    | Write cache line and discard it |
 -- +---------+-----------+-------------+---------+---------------------------------+
--- |  0      |           |    0        |    1    | Replace cache line.             |
+-- |  0      |    0      |    0        |    1    | Read cache line before replace. |
+-- +---------+-----------+-------------+---------+---------------------------------+
+-- |  0      |    1      |    0        |    1    | Replace cache line.             |
 -- +---------+-----------+-------------+---------+---------------------------------+
 --
 -- All commands use ``Address`` to lookup (request) or replace a cache line.
@@ -52,9 +47,14 @@
 -- Upon reading a cache line, the current content is outputed on ``CacheLineOut``
 -- with a latency of one clock cycle.
 --
--- Upon replacing a cache line, the new content is given by ``CacheLineIn``. The
--- old content is outputed on ``CacheLineOut`` and the old tag on ``OldAddress``,
--- both with a latency of one clock cycle.
+-- Replacing a cache line requires two steps:
+--
+-- 1. Read old contents of cache line by setting ``ReadWrite`` to '0'. The old
+--    content is outputed on ``CacheLineOut`` and the old tag on ``OldAddress``,
+--    both with a latency of one clock cycle.
+--
+-- 2. Write new cache line by setting ``ReadWrite`` to '1'. The new content is
+--    given by ``CacheLineIn``.
 --
 -- License:
 -- =============================================================================
@@ -83,7 +83,7 @@ use			PoC.utils.all;
 use			PoC.vectors.all;
 
 
-entity cache_par is
+entity cache_par2 is
 	generic (
 		REPLACEMENT_POLICY : string		:= "LRU";
 		CACHE_LINES				 : positive := 32;--1024;
@@ -110,7 +110,7 @@ entity cache_par is
 end entity;
 
 
-architecture rtl of cache_par is
+architecture rtl of cache_par2 is
 	attribute KEEP : boolean;
 
 	constant LINE_INDEX_BITS : positive := log2ceilnz(CACHE_LINES);
@@ -123,14 +123,18 @@ architecture rtl of cache_par is
 	signal TU_TagHit		: std_logic;
 	signal TU_TagMiss		: std_logic;
 
-	-- replace
-	signal TU_ReplaceLineIndex : std_logic_vector(LINE_INDEX_BITS - 1 downto 0);
-	signal TU_OldAddress			 : std_logic_vector(ADDRESS_BITS - 1 downto 0);
+  -- replace
+  signal ReplaceWrite        : std_logic;
+  signal TU_ReplaceLineIndex : std_logic_vector(LINE_INDEX_BITS - 1 downto 0);
+  signal TU_OldAddress       : std_logic_vector(ADDRESS_BITS - 1 downto 0);
 
+	-- data memory
 	signal MemoryIndex_us : unsigned(LINE_INDEX_BITS - 1 downto 0);
-	signal CacheMemory		: T_CACHE_LINE_VECTOR(CACHE_LINES - 1 downto 0);
+	signal MemoryAccess   : std_logic;
 
 begin
+
+	ReplaceWrite <= Replace and ReadWrite;
 
 	-- Cache TagUnit
 	TU : entity PoC.cache_tagunit_par
@@ -144,7 +148,7 @@ begin
 			Clock => Clock,
 			Reset => Reset,
 
-			Replace					 => Replace,
+			Replace					 => ReplaceWrite,
 			ReplaceLineIndex => TU_ReplaceLineIndex,
 			NewAddress			 => Address,
 			OldAddress			 => TU_OldAddress,
@@ -162,17 +166,26 @@ begin
 	MemoryIndex_us <= unsigned(TU_LineIndex) when Request = '1' else
 										unsigned(TU_ReplaceLineIndex);
 
+	MemoryAccess <= (Request and TU_TagHit) or Replace;
+
+	-- Data Memory
+	data_mem: entity work.ocram_sp
+    generic map (
+      A_BITS   => LINE_INDEX_BITS,
+      D_BITS   => DATA_BITS,
+      FILENAME => "")
+    port map (
+      clk => Clock,
+      ce  => MemoryAccess,
+      we  => ReadWrite,
+      a   => MemoryIndex_us,
+      d   => CacheLineIn,
+      q   => CacheLineOut);
+
+	-- Pipelined outputs.
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
-			if ((Request and TU_TagHit and ReadWrite) or Replace) = '1' then
-				CacheMemory(to_integer(MemoryIndex_us)) <= CacheLineIn;
-			end if;
-
-			-- Single-port memory with read before write is required here.
-			-- Cannot be mapped to `PoC.ocram_sdp`.
-			CacheLineOut <= CacheMemory(to_integer(MemoryIndex_us));
-
 			-- Control outputs have same latency as cache line data.
 			if Reset = '1' then
 				CacheMiss <= '0';
@@ -185,4 +198,5 @@ begin
 			OldAddress <= TU_OldAddress;
 		end if;
 	end process;
+
 end architecture;

@@ -15,3 +15,5 @@ cache_tagunit_seq.vhdl
 
 cache_par.files
 cache_par.vhdl
+cache_par2.files
+cache_par2.vhdl

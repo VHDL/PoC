@@ -1,16 +1,9 @@
 
-cache_par
-#########
+cache_par2
+##########
 
-Implements a cache with parallel tag-unit and data memory.
-
-.. NOTE::
-   This component infers a single-port memory with read-first behavior, that
-   is, upon writes the old-data is returned on the read output. Such memory
-   (e.g. LUT-RAM) is not available on all devices. Thus, synthesis may
-   infer a lot of flip-flops plus multiplexers instead, which is very inefficient.
-   It is recommended to use :doc:`PoC.cache.par2 <cache_par2>` instead which has a
-   slightly different interface.
+Cache with parallel tag-unit and data memory. For the data memory,
+:doc:`PoC.mem.ocram.sp <../mem/ocram/ocram_sp>` is used.
 
 All inputs are synchronous to the rising-edge of the clock `clock`.
 
@@ -29,7 +22,9 @@ All inputs are synchronous to the rising-edge of the clock `clock`.
 +---------+-----------+-------------+---------+---------------------------------+
 |  1      |    1      |    1        |    0    | Write cache line and discard it |
 +---------+-----------+-------------+---------+---------------------------------+
-|  0      |           |    0        |    1    | Replace cache line.             |
+|  0      |    0      |    0        |    1    | Read cache line before replace. |
++---------+-----------+-------------+---------+---------------------------------+
+|  0      |    1      |    0        |    1    | Replace cache line.             |
 +---------+-----------+-------------+---------+---------------------------------+
 
 All commands use ``Address`` to lookup (request) or replace a cache line.
@@ -45,21 +40,26 @@ Upon writing a cache line, the new content is given by ``CacheLineIn``.
 Upon reading a cache line, the current content is outputed on ``CacheLineOut``
 with a latency of one clock cycle.
 
-Upon replacing a cache line, the new content is given by ``CacheLineIn``. The
-old content is outputed on ``CacheLineOut`` and the old tag on ``OldAddress``,
-both with a latency of one clock cycle.
+Replacing a cache line requires two steps:
+
+1. Read old contents of cache line by setting ``ReadWrite`` to '0'. The old
+   content is outputed on ``CacheLineOut`` and the old tag on ``OldAddress``,
+   both with a latency of one clock cycle.
+
+2. Write new cache line by setting ``ReadWrite`` to '1'. The new content is
+   given by ``CacheLineIn``.
 
 
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/cache/cache_par.vhdl
+.. literalinclude:: ../../../src/cache/cache_par2.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
    :lines: 86-110
 
-Source file: `cache/cache_par.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_par.vhdl>`_
+Source file: `cache/cache_par2.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_par2.vhdl>`_
 
 
 
