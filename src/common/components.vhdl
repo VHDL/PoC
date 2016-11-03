@@ -112,6 +112,7 @@ package body components is
 				return ((d and en) or (q and not en)) or rst;
 			else
 				report "Unsupported INIT value for synthesis." severity FAILURE;
+				return 'X';
 			end if;
 		elsif (rst = '1') then
 			return INIT;
@@ -146,6 +147,7 @@ package body components is
 				return ((not q and (t and en)) or (q and not (t and en))) or rst;
 			else
 				report "Unsupported INIT value for synthesis." severity FAILURE;
+				return 'X';
 			end if;
 		elsif (rst = '1') then
 			return INIT;
