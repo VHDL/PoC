@@ -5,12 +5,13 @@
 -- =============================================================================
 -- Authors:					Martin Zabel
 --
--- Module:					Adapter between PoC's "mem" interface and the application
--- 									interface ("app") of the Xilinx MIG IP core for 7-Series
--- 									FPGAs.
+-- Module:					Adapter for the Xilinx MIG IP core on 7-Series FPGAs.
 --
 -- Description:
 -- ------------------------------------
+-- Adapter between PoC's "mem" interface and the application interface ("app")
+-- of the Xilinx MIG IP core for 7-Series	FPGAs.
+--
 -- Simplifies the application interface ("app") of the Xilinx MIG IP core.
 -- The "mem" interface provides single-cycle fully pipelined read/write access
 -- to the memory. All accesses are word-aligned. Always all bytes of a word are

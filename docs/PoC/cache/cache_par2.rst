@@ -5,9 +5,33 @@ cache_par2
 Cache with parallel tag-unit and data memory. For the data memory,
 :doc:`PoC.mem.ocram.sp <../mem/ocram/ocram_sp>` is used.
 
-All inputs are synchronous to the rising-edge of the clock `clock`.
+Configuration
+*************
 
-**Command truth table:**
++--------------------+----------------------------------------------------+
+| Parameter          | Description                                        |
++====================+====================================================+
+| REPLACEMENT_POLICY | Replacement policy of embedded cache.              |
++--------------------+----------------------------------------------------+
+| CACHE_LINES        | Number of cache lines.                             |
++--------------------+----------------------------------------------------+
+| ASSOCIATIVITY      | Associativity of embedded cache.                   |
++--------------------+----------------------------------------------------+
+| ADDR_BITS          | Number of bits of full memory address, including   |
+|                    | byte address bits.                                 |
++--------------------+----------------------------------------------------+
+| BYTE_ADDR_BITS     | Number of byte address bits in full memory address.|
+|                    | Can be zero if byte addressing is not required.    |
++--------------------+----------------------------------------------------+
+| DATA_BITS          | Size of a cache line in bits. Equals also the size |
+|                    | of the read and write data ports of the CPU and    |
+|                    | memory side. DATA_BITS must be divisible by        |
+|                    | 2**BYTE_ADDR_BITS.                                 |
++--------------------+----------------------------------------------------+
+
+
+Command truth table
+*******************
 
 +---------+-----------+-------------+---------+---------------------------------+
 | Request | ReadWrite | Invalidate  | Replace | Command                         |
@@ -26,6 +50,12 @@ All inputs are synchronous to the rising-edge of the clock `clock`.
 +---------+-----------+-------------+---------+---------------------------------+
 |  0      |    1      |    0        |    1    | Replace cache line.             |
 +---------+-----------+-------------+---------+---------------------------------+
+
+
+Operation
+*********
+
+All inputs are synchronous to the rising-edge of the clock `clock`.
 
 All commands use ``Address`` to lookup (request) or replace a cache line.
 ``Address`` and ``OldAddress`` do not include the word/byte select part.
@@ -50,6 +80,9 @@ Replacing a cache line requires two steps:
 2. Write new cache line by setting ``ReadWrite`` to '1'. The new content is
    given by ``CacheLineIn``.
 
+.. TODO::
+   * Allow partial update of cache line (byte write enable).
+
 
 
 .. rubric:: Entity Declaration:
@@ -58,7 +91,7 @@ Replacing a cache line requires two steps:
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 87-112
+   :lines: 120-146
 
 Source file: `cache/cache_par2.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_par2.vhdl>`_
 

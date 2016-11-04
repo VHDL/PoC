@@ -1,4 +1,4 @@
--- EMACS settings: -*-  tab-width: 2; vhdl-indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
@@ -12,9 +12,33 @@
 -- Cache with parallel tag-unit and data memory. For the data memory,
 -- :doc:`PoC.mem.ocram.sp <../mem/ocram/ocram_sp>` is used.
 --
--- All inputs are synchronous to the rising-edge of the clock `clock`.
+-- Configuration
+-- *************
 --
--- **Command truth table:**
+-- +--------------------+----------------------------------------------------+
+-- | Parameter          | Description                                        |
+-- +====================+====================================================+
+-- | REPLACEMENT_POLICY | Replacement policy of embedded cache.              |
+-- +--------------------+----------------------------------------------------+
+-- | CACHE_LINES        | Number of cache lines.                             |
+-- +--------------------+----------------------------------------------------+
+-- | ASSOCIATIVITY      | Associativity of embedded cache.                   |
+-- +--------------------+----------------------------------------------------+
+-- | ADDR_BITS          | Number of bits of full memory address, including   |
+-- |                    | byte address bits.                                 |
+-- +--------------------+----------------------------------------------------+
+-- | BYTE_ADDR_BITS     | Number of byte address bits in full memory address.|
+-- |                    | Can be zero if byte addressing is not required.    |
+-- +--------------------+----------------------------------------------------+
+-- | DATA_BITS          | Size of a cache line in bits. Equals also the size |
+-- |                    | of the read and write data ports of the CPU and    |
+-- |                    | memory side. DATA_BITS must be divisible by        |
+-- |                    | 2**BYTE_ADDR_BITS.                                 |
+-- +--------------------+----------------------------------------------------+
+--
+--
+-- Command truth table
+-- *******************
 --
 -- +---------+-----------+-------------+---------+---------------------------------+
 -- | Request | ReadWrite | Invalidate  | Replace | Command                         |
@@ -33,6 +57,12 @@
 -- +---------+-----------+-------------+---------+---------------------------------+
 -- |  0      |    1      |    0        |    1    | Replace cache line.             |
 -- +---------+-----------+-------------+---------+---------------------------------+
+--
+--
+-- Operation
+-- *********
+--
+-- All inputs are synchronous to the rising-edge of the clock `clock`.
 --
 -- All commands use ``Address`` to lookup (request) or replace a cache line.
 -- ``Address`` and ``OldAddress`` do not include the word/byte select part.
@@ -56,6 +86,9 @@
 --
 -- 2. Write new cache line by setting ``ReadWrite`` to '1'. The new content is
 --    given by ``CacheLineIn``.
+--
+-- .. TODO::
+--    * Allow partial update of cache line (byte write enable).
 --
 -- License:
 -- =============================================================================
@@ -89,7 +122,8 @@ entity cache_par2 is
 		REPLACEMENT_POLICY : string		:= "LRU";
 		CACHE_LINES				 : positive := 32;
 		ASSOCIATIVITY			 : positive := 32;
-		ADDRESS_BITS			 : positive := 8;
+		ADDR_BITS					 : positive := 8;
+		BYTE_ADDR_BITS		 : natural	:= 0;
 		DATA_BITS					 : positive := 8;
 		HIT_MISS_REG			 : boolean	:= true	 -- must be true for Cocotb.
 	);
@@ -100,14 +134,14 @@ entity cache_par2 is
 		Request		 : in std_logic;
 		ReadWrite	 : in std_logic;
 		Invalidate : in std_logic;
-		Replace 	 : in std_logic;
-		Address		 : in std_logic_vector(ADDRESS_BITS - 1 downto 0);
+		Replace		 : in std_logic;
+		Address		 : in std_logic_vector(ADDR_BITS-1 downto BYTE_ADDR_BITS);
 
 		CacheLineIn	 : in	 std_logic_vector(DATA_BITS - 1 downto 0);
 		CacheLineOut : out std_logic_vector(DATA_BITS - 1 downto 0);
 		CacheHit		 : out std_logic := '0';
 		CacheMiss		 : out std_logic := '0';
-		OldAddress	 : out std_logic_vector(ADDRESS_BITS - 1 downto 0)
+		OldAddress	 : out std_logic_vector(ADDR_BITS-1 downto BYTE_ADDR_BITS)
 	);
 end entity;
 
@@ -128,7 +162,7 @@ architecture rtl of cache_par2 is
   -- replace
   signal ReplaceWrite        : std_logic;
   signal TU_ReplaceLineIndex : std_logic_vector(LINE_INDEX_BITS - 1 downto 0);
-  signal TU_OldAddress       : std_logic_vector(ADDRESS_BITS - 1 downto 0);
+  signal TU_OldAddress       : std_logic_vector(OldAddress'range);
 
 	-- data memory
 	signal MemoryIndex_us : unsigned(LINE_INDEX_BITS - 1 downto 0);
@@ -144,7 +178,7 @@ begin
 			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 			CACHE_LINES				 => CACHE_LINES,
 			ASSOCIATIVITY			 => ASSOCIATIVITY,
-			ADDRESS_BITS			 => ADDRESS_BITS
+			ADDRESS_BITS			 => ADDR_BITS-BYTE_ADDR_BITS
 		)
 		port map (
 			Clock => Clock,
