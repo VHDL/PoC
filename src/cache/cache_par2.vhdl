@@ -18,11 +18,12 @@
 -- +--------------------+----------------------------------------------------+
 -- | Parameter          | Description                                        |
 -- +====================+====================================================+
--- | REPLACEMENT_POLICY | Replacement policy of embedded cache.              |
+-- | REPLACEMENT_POLICY | Replacement policy. For supported policies see     |
+-- |                    | PoC.cache_replacement_policy.                      |
 -- +--------------------+----------------------------------------------------+
 -- | CACHE_LINES        | Number of cache lines.                             |
 -- +--------------------+----------------------------------------------------+
--- | ASSOCIATIVITY      | Associativity of embedded cache.                   |
+-- | ASSOCIATIVITY      | Associativity of the cache.                        |
 -- +--------------------+----------------------------------------------------+
 -- | ADDR_BITS          | Number of bits of full memory address, including   |
 -- |                    | byte address bits.                                 |

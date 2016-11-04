@@ -11,11 +11,12 @@ Configuration
 +--------------------+----------------------------------------------------+
 | Parameter          | Description                                        |
 +====================+====================================================+
-| REPLACEMENT_POLICY | Replacement policy of embedded cache.              |
+| REPLACEMENT_POLICY | Replacement policy. For supported policies see     |
+|                    | PoC.cache_replacement_policy.                      |
 +--------------------+----------------------------------------------------+
 | CACHE_LINES        | Number of cache lines.                             |
 +--------------------+----------------------------------------------------+
-| ASSOCIATIVITY      | Associativity of embedded cache.                   |
+| ASSOCIATIVITY      | Associativity of the cache.                        |
 +--------------------+----------------------------------------------------+
 | ADDR_BITS          | Number of bits of full memory address, including   |
 |                    | byte address bits.                                 |
@@ -91,7 +92,7 @@ Replacing a cache line requires two steps:
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 120-146
+   :lines: 121-147
 
 Source file: `cache/cache_par2.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_par2.vhdl>`_
 
