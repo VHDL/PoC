@@ -146,7 +146,6 @@ begin
 
 			Replace					 => Replace,
 			ReplaceLineIndex => TU_ReplaceLineIndex,
-			NewAddress			 => Address,
 			OldAddress			 => TU_OldAddress,
 
 			Request		 => Request,

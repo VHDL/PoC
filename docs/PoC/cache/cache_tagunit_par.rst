@@ -32,12 +32,16 @@ If hit, ``LineIndex`` specifies the cache line where to find the content.
 
 The output ``ReplaceLineIndex`` indicates which cache line will be replaced as
 next by a replace command. The output ``OldAddress`` specifies the old tag stored at this
-index. The replace command will store the ``NewAddress`` and update the cache-line
+index. The replace command will store the ``Address`` and update the cache-line
 usage at the rising-edge of the clock.
 
 For a direct-mapped cache, the number of ``CACHE_LINES`` must be a power of 2.
 For a set-associative cache, the expression ``CACHE_LINES / ASSOCIATIVITY``
 must be a power of 2.
+
+.. NOTE::
+   The port ``NewAddress`` has been removed. Use ``Address`` instead as
+   described above.
 
 
 
@@ -47,7 +51,7 @@ must be a power of 2.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 75-99
+   :lines: 79-102
 
 Source file: `cache/cache_tagunit_par.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_tagunit_par.vhdl>`_
 

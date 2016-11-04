@@ -150,7 +150,6 @@ begin
 
 			Replace					 => ReplaceWrite,
 			ReplaceLineIndex => TU_ReplaceLineIndex,
-			NewAddress			 => Address,
 			OldAddress			 => TU_OldAddress,
 
 			Request		 => Request,

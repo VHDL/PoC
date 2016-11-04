@@ -39,12 +39,16 @@
 --
 -- The output ``ReplaceLineIndex`` indicates which cache line will be replaced as
 -- next by a replace command. The output ``OldAddress`` specifies the old tag stored at this
--- index. The replace command will store the ``NewAddress`` and update the cache-line
+-- index. The replace command will store the ``Address`` and update the cache-line
 -- usage at the rising-edge of the clock.
 --
 -- For a direct-mapped cache, the number of ``CACHE_LINES`` must be a power of 2.
 -- For a set-associative cache, the expression ``CACHE_LINES / ASSOCIATIVITY``
 -- must be a power of 2.
+--
+-- .. NOTE::
+--    The port ``NewAddress`` has been removed. Use ``Address`` instead as
+--    described above.
 --
 -- License:
 -- =============================================================================
@@ -85,7 +89,6 @@ entity cache_tagunit_par is
 
 		Replace					 : in	 std_logic;
 		ReplaceLineIndex : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
-		NewAddress			 : in	 std_logic_vector(ADDRESS_BITS - 1 downto 0);
 		OldAddress			 : out std_logic_vector(ADDRESS_BITS - 1 downto 0);
 
 		Request		 : in	 std_logic;
@@ -146,7 +149,7 @@ begin
 		begin
 			if rising_edge(Clock) then
 				if (Replace = '1') then
-					TagMemory(to_integer(ReplaceWay_us))	 <= NewAddress;
+					TagMemory(to_integer(ReplaceWay_us))	 <= Address;
 				end if;
 
 				for i in ValidMemory'range loop
@@ -207,15 +210,11 @@ begin
 
 		signal Address_Tag			: T_TAG_LINE;
 		signal Address_Index		: unsigned(INDEX_BITS - 1 downto 0);
-		signal NewAddress_Tag		: T_TAG_LINE;
-		signal NewAddress_Index : unsigned(INDEX_BITS - 1 downto 0);
 
 		signal DM_TagHit	  : std_logic; -- includes Valid
 
 		signal TagMemory	 : T_TAG_LINE_VECTOR(CACHE_LINES-1 downto 0);
 		signal ValidMemory : std_logic_vector(CACHE_LINES-1 downto 0) := (others => '0');
-
-		signal ValidUpdateIndex : unsigned(INDEX_BITS-1 downto 0);
 
 		signal TagHit_i	 : std_logic;
 		signal TagMiss_i : std_logic;
@@ -223,31 +222,25 @@ begin
   begin
 		assert CACHE_LINES = 2**INDEX_BITS report "Unsupported number of cache lines." severity failure;
 
-    -- Split incoming 'Address' and 'NewAddress'
+    -- Split incoming 'Address'
     Address_Tag      <= Address(Address'left downto INDEX_BITS);
     Address_Index    <= unsigned(Address(INDEX_BITS-1 downto 0));
-    NewAddress_Tag   <= NewAddress(NewAddress'left downto INDEX_BITS);
-    NewAddress_Index <= unsigned(NewAddress(INDEX_BITS-1 downto 0));
 
 		-- access tag memory and compare tags / valids
 		DM_TagHit <= to_sl(TagMemory  (to_integer(Address_Index)) = Address_Tag and
 											 ValidMemory(to_integer(Address_Index)) = '1');
 
-		-- index for writing into ValidMemory
-		ValidUpdateIndex <= NewAddress_Index when Replace = '1' else
-												Address_Index;
-
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
 				if (Replace = '1') then
-					TagMemory(to_integer(NewAddress_Index)) <= NewAddress_Tag;
+					TagMemory(to_integer(Address_Index)) <= Address_Tag;
 				end if;
 
 				if Reset = '1' then
 					ValidMemory <= (others => '0');
 				elsif (Replace = '1') or (TagHit_i = '1' and Invalidate = '1')	then
-					ValidMemory(to_integer(ValidUpdateIndex)) <= Replace; -- clear when Invalidate
+					ValidMemory(to_integer(Address_Index)) <= Replace; -- clear when Invalidate
 				end if;
 			end if;
 		end process;
@@ -261,8 +254,8 @@ begin
 		TagHit		<= TagHit_i;
 		TagMiss		<= TagMiss_i;
 
-		ReplaceLineIndex <= std_logic_vector(NewAddress_Index);
-		OldAddress			 <= TagMemory(to_integer(NewAddress_Index)) & std_logic_vector(NewAddress_Index);
+		ReplaceLineIndex <= std_logic_vector(Address_Index);
+		OldAddress			 <= TagMemory(to_integer(Address_Index)) & std_logic_vector(Address_Index);
 	end generate;
 
 	-- ===========================================================================
@@ -283,8 +276,6 @@ begin
 		-- Splitted address
 		signal Address_Tag			: T_TAG_LINE;
 		signal Address_Index		: unsigned(INDEX_BITS - 1 downto 0);
-		signal NewAddress_Tag		: T_TAG_LINE;
-		signal NewAddress_Index : unsigned(INDEX_BITS - 1 downto 0);
 
 		-- Way-specific signals
 		signal TagHits : std_logic_vector(ASSOCIATIVITY-1 downto 0); -- includes Valid
@@ -308,13 +299,11 @@ begin
 		assert CACHE_SETS = 2**INDEX_BITS report "Unsupported number of cache-sets." severity failure;
 
 		----------------------------------------------------------------------------
-    -- Split incoming 'Address' and 'NewAddress'
+    -- Split incoming 'Address'
 		-- Enable only one cache-set
 		----------------------------------------------------------------------------
     Address_Tag      <= Address(Address'left downto INDEX_BITS);
     Address_Index    <= unsigned(Address(INDEX_BITS-1 downto 0));
-    NewAddress_Tag   <= NewAddress(NewAddress'left downto INDEX_BITS);
-    NewAddress_Index <= unsigned(NewAddress(INDEX_BITS-1 downto 0));
 
 		----------------------------------------------------------------------------
 		-- Generate tag-memory and comparators for each way
@@ -333,13 +322,13 @@ begin
 			begin  -- process
 				if rising_edge(Clock) then
 					if Replace = '1' and ReplaceWay = way then
-						TagMemory(to_integer(NewAddress_Index)) <= NewAddress_Tag;
+						TagMemory(to_integer(Address_Index)) <= Address_Tag;
 					end if;
 
 					if Reset = '1' then
 						ValidMemory <= (others => '0');
 					elsif Replace = '1' and ReplaceWay = way then
-						ValidMemory(to_integer(NewAddress_Index)) <= '1';
+						ValidMemory(to_integer(Address_Index)) <= '1';
 					elsif Invalidate = '1' and TagHits(way) = '1' then
 						ValidMemory(to_integer(Address_Index)) <= '0';
 					end if;
@@ -347,7 +336,7 @@ begin
 			end process;
 
 			-- old address when replacing
-			OldTags(way) <= TagMemory(to_integer(NewAddress_Index));
+			OldTags(way) <= TagMemory(to_integer(Address_Index));
 		end generate genWay;
 
 		HitWay <= onehot2bin(TagHits, 0);
@@ -373,10 +362,10 @@ begin
 			CS_Invalidate(to_integer(Address_Index)) <= Invalidate;
 		end process;
 
-		process(NewAddress_Index, Replace)
+		process(Address_Index, Replace)
 		begin
 			CS_Replace															 <= (others => '0');
-			CS_Replace(to_integer(NewAddress_Index)) <= Replace;
+			CS_Replace(to_integer(Address_Index)) <= Replace;
 		end process;
 
 		genSet : for cs in 0 to CACHE_SETS-1 generate
@@ -400,13 +389,13 @@ begin
 				);
 		end generate genSet;
 
-		ReplaceWay <= unsigned(Policy_ReplaceWay(to_integer(NewAddress_Index)));
+		ReplaceWay <= unsigned(Policy_ReplaceWay(to_integer(Address_Index)));
 
 		----------------------------------------------------------------------------
 		-- Replace-specific outputs
 		----------------------------------------------------------------------------
-		ReplaceLineIndex <= std_logic_vector(ReplaceWay) & std_logic_vector(NewAddress_Index);
-		OldAddress			 <= OldTags(to_integer(ReplaceWay)) & std_logic_vector(NewAddress_Index);
+		ReplaceLineIndex <= std_logic_vector(ReplaceWay) & std_logic_vector(Address_Index);
+		OldAddress			 <= OldTags(to_integer(ReplaceWay)) & std_logic_vector(Address_Index);
 
 	end generate;
 end architecture;
