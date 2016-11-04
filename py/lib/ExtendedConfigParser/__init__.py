@@ -5,20 +5,19 @@
 # ==============================================================================
 # Authors:          Patrick Lehmann
 #
-# Python Class:     Derived and extended configparser from Python standard library
+# Python Module:    Derived and extended configparser from Python standard library
 #
 # Description:
 # ------------------------------------
-#		- Improved interpolation algorithm
-#		- Added an interpolation cache
-#		- Added recursive interpolation (indirect addressing): ${key1.${key2:opt2}:opt1}
-#		- Added %{keyword} interpolation, to access the section name: %{parent}
-#		- Added support for multiple DEFAULT sections [CONFIG.DEFAULT] for all [CONFIG.**] sections
+#   - Improved interpolation algorithm
+#   - Added an interpolation cache
+#   - Added recursive interpolation (indirect addressing): ${key1.${key2:opt2}:opt1}
+#   - Added %{keyword} interpolation, to access the section name: %{parent}
+#   - Added support for multiple DEFAULT sections [CONFIG.DEFAULT] for all [CONFIG.**] sections
 #
 # License:
 # ==============================================================================
-# Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+# Copyright 2007-2016 Patrick Lehmann - Dresden, Germany
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
