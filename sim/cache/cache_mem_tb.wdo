@@ -1,0 +1,44 @@
+onerror {resume}
+quietly WaveActivateNextPane {} 0
+add wave -noupdate /cache_mem_tb/clk
+add wave -noupdate /cache_mem_tb/rst
+add wave -noupdate /cache_mem_tb/status
+add wave -noupdate /cache_mem_tb/cpu_req
+add wave -noupdate /cache_mem_tb/cpu_write
+add wave -noupdate /cache_mem_tb/cpu_addr
+add wave -noupdate /cache_mem_tb/cpu_wdata
+add wave -noupdate /cache_mem_tb/cpu_rdy
+add wave -noupdate /cache_mem_tb/cpu_rstb
+add wave -noupdate /cache_mem_tb/cpu_rdata
+add wave -noupdate /cache_mem_tb/mem_req
+add wave -noupdate /cache_mem_tb/mem_write
+add wave -noupdate /cache_mem_tb/mem_addr
+add wave -noupdate /cache_mem_tb/mem_wdata
+add wave -noupdate /cache_mem_tb/mem_rdy
+add wave -noupdate /cache_mem_tb/mem_rstb
+add wave -noupdate /cache_mem_tb/mem_rdata
+add wave -noupdate /cache_mem_tb/cache_inst/cache_Request
+add wave -noupdate /cache_mem_tb/cache_inst/cache_ReadWrite
+add wave -noupdate /cache_mem_tb/cache_inst/cache_Invalidate
+add wave -noupdate /cache_mem_tb/cache_inst/cache_Replace
+add wave -noupdate /cache_mem_tb/cache_inst/cache_Address
+add wave -noupdate /cache_mem_tb/cache_inst/cache_Hit
+add wave -noupdate /cache_mem_tb/cache_inst/fsm_cs
+TreeUpdate [SetDefaultTree]
+WaveRestoreCursors {{Cursor 1} {8426903228 fs} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 150
+configure wave -valuecolwidth 100
+configure wave -justifyvalue left
+configure wave -signalnamewidth 1
+configure wave -snapdistance 10
+configure wave -datasetprefix 0
+configure wave -rowmargin 4
+configure wave -childrowmargin 2
+configure wave -gridoffset 0
+configure wave -gridperiod 1
+configure wave -griddelta 40
+configure wave -timeline 0
+configure wave -timelineunits ns
+update
+WaveRestoreZoom {782172437518 fs} {782475134868 fs}

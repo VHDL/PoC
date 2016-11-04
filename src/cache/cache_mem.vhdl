@@ -84,7 +84,7 @@ entity cache_mem is
 		CACHE_LINES				 : positive := 32;
 		ASSOCIATIVITY			 : positive := 32;
 		ADDR_BITS	      	 : positive := 8;
-		BYTE_ADDR_BITS	 	 : positive := 0;
+		BYTE_ADDR_BITS	 	 : natural  := 0;
 		DATA_BITS					 : positive := 8
 	);
 	port (
@@ -217,24 +217,32 @@ begin  -- architecture rtl
 				cpu_rdy <= '1';
 
 				cache_Request		 <= to_x01(cpu_req);
-				cache_ReadWrite	 <= to_x01(cpu_write);
 				cache_Invalidate <= '0';
 
-        if to_x01(cache_Hit) = '1' then
-          cpu_rstb_nxt <= not cpu_write; -- read successful
+				if to_x01(cpu_req) = '1' then
+					cache_ReadWrite	 <= to_x01(cpu_write);
 
-          if to_x01(cpu_write_r) = '1' then -- write-through policy
-            fsm_ns <= ACCESS_MEM;
-          elsif to_x01(cpu_write_r) = '0' then
-						null; -- usage of Is_X() provokes warning during synthesis
-          else
-            fsm_ns <= UNKNOWN;
-          end if;
-        elsif to_x01(cache_Hit) = '0' then
-					fsm_ns       <= ACCESS_MEM;
+					if to_x01(cache_Hit) = '1' then
+						cpu_rstb_nxt <= not cpu_write; -- read successful
+
+						if to_x01(cpu_write) = '1' then -- write-through policy
+							fsm_ns <= ACCESS_MEM;
+						elsif to_x01(cpu_write) = '0' then
+							null; -- usage of Is_X() provokes warning during synthesis
+						else
+							fsm_ns <= UNKNOWN;
+						end if;
+					elsif to_x01(cache_Hit) = '0' then
+						fsm_ns       <= ACCESS_MEM;
+					else
+						fsm_ns			 <= UNKNOWN;
+						cpu_rstb_nxt <= 'X';
+					end if;
+
+				elsif to_x01(cpu_req) = '0' then
+					cache_ReadWrite <= '-';
 				else
-					fsm_ns			 <= UNKNOWN;
-					cpu_rstb_nxt <= 'X';
+					fsm_ns <= UNKNOWN;
 				end if;
 
 
