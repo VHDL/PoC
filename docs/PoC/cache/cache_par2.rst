@@ -34,7 +34,8 @@ described below.
 
 Upon requests, the outputs ``CacheMiss`` and ``CacheHit`` indicate (high-active)
 whether the ``Address`` is stored within the cache, or not. Both outputs have a
-latency of one clock cycle.
+latency of one clock cycle (pipelined) if ``HIT_MISS_REG`` is true, otherwise the
+result is outputted immediately (combinational).
 
 Upon writing a cache line, the new content is given by ``CacheLineIn``.
 Upon reading a cache line, the current content is outputed on ``CacheLineOut``
@@ -57,7 +58,7 @@ Replacing a cache line requires two steps:
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 86-110
+   :lines: 87-112
 
 Source file: `cache/cache_par2.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_par2.vhdl>`_
 

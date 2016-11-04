@@ -1,4 +1,4 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; vhdl-indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
@@ -41,7 +41,8 @@
 --
 -- Upon requests, the outputs ``CacheMiss`` and ``CacheHit`` indicate (high-active)
 -- whether the ``Address`` is stored within the cache, or not. Both outputs have a
--- latency of one clock cycle.
+-- latency of one clock cycle (pipelined) if ``HIT_MISS_REG`` is true, otherwise the
+-- result is outputted immediately (combinational).
 --
 -- Upon writing a cache line, the new content is given by ``CacheLineIn``.
 -- Upon reading a cache line, the current content is outputed on ``CacheLineOut``
@@ -86,10 +87,11 @@ use			PoC.vectors.all;
 entity cache_par2 is
 	generic (
 		REPLACEMENT_POLICY : string		:= "LRU";
-		CACHE_LINES				 : positive := 32;--1024;
-		ASSOCIATIVITY			 : positive := 32;--4;
-		ADDRESS_BITS			 : positive := 8; --32-6;
-		DATA_BITS					 : positive := 8  --64*8
+		CACHE_LINES				 : positive := 32;
+		ASSOCIATIVITY			 : positive := 32;
+		ADDRESS_BITS			 : positive := 8;
+		DATA_BITS					 : positive := 8;
+		HIT_MISS_REG			 : boolean	:= true	 -- must be true for Cocotb.
 	);
 	port (
 		Clock : in std_logic;
@@ -181,21 +183,28 @@ begin
       d   => CacheLineIn,
       q   => CacheLineOut);
 
-	-- Pipelined outputs.
-	process(Clock)
-	begin
-		if rising_edge(Clock) then
-			-- Control outputs have same latency as cache line data.
-			if Reset = '1' then
-				CacheMiss <= '0';
-				CacheHit	<= '0';
-			else
-				CacheMiss <= TU_TagMiss;
-				CacheHit	<= TU_TagHit;
-			end if;
+	-- Hit / Miss
+	gNoHitMissReg: if not HIT_MISS_REG generate
+		CacheMiss <= TU_TagMiss;
+		CacheHit	<= TU_TagHit;
+	end generate gNoHitMissReg;
 
-			OldAddress <= TU_OldAddress;
-		end if;
-	end process;
+	gHitMissReg: if HIT_MISS_REG generate	-- Pipelined outputs.
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if Reset = '1' then
+					CacheMiss <= '0';
+					CacheHit	<= '0';
+				else
+					CacheMiss <= TU_TagMiss;
+					CacheHit	<= TU_TagHit;
+				end if;
+			end if;
+		end process;
+	end generate gHitMissReg;
+
+	-- Same latency as CacheLineOut
+	OldAddress <= TU_OldAddress when rising_edge(Clock);
 
 end architecture;
