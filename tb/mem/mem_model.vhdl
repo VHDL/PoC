@@ -17,6 +17,9 @@
 -- * D_BTIS:  width of data bus.
 -- * LATENCY: the latency of the pipelined read.
 --
+-- .. NOTE::
+--    Synchronous reset is required after simulation startup.
+--
 -- License:
 -- ============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
@@ -92,21 +95,44 @@ architecture sim of mem_model is
 	signal rdata_p : RDATA_T(1 to LATENCY);
 	signal rstb_p : std_logic_vector(1 to LATENCY) := (others => '0');
 
-	-- ready control logic
-	type FSM_TYPE is (RESET, READY);
-	signal fsm_cs : FSM_TYPE;
+	-- FSM
+	type T_FSM is (RESET, READY, UNKNOWN);
+	signal fsm_cs : T_FSM := UNKNOWN; -- current state
+
+	signal req_write : X01;
+	signal req_read  : X01;
 
 begin  -- architecture sim
 
+	-- Command decoding, handle 'U' as 'X'
+	req_write <= to_x01(mem_req and mem_write);
+	req_read  <= to_x01(mem_req and not mem_write);
+
 	-- TODO: implement some logic / FSM which introduces wait states
 	process(clk)
+		variable fsm_ns : T_FSM; -- next state
 	begin
 		if rising_edge(clk) then
-			if rst = '1' then
-				fsm_cs <= RESET;
-			else
-				fsm_cs <= READY;
-			end if;
+			fsm_ns := fsm_cs;
+
+			case fsm_cs is
+				when READY =>
+					-- check for valid command
+					if is_x(req_read) or is_x(req_write) then
+						report "Invalid read/write command." severity error;
+						fsm_ns := UNKNOWN;
+					end if;
+
+				when RESET   => fsm_ns := READY;
+				when UNKNOWN => null;
+			end case;
+
+			-- Reset override
+			case to_x01(rst) is
+				when '1' => fsm_cs <= RESET;
+				when '0' => fsm_cs <= fsm_ns;
+				when 'X' => fsm_cs <= UNKNOWN;
+			end case;
 		end if;
 	end process;
 
@@ -118,25 +144,30 @@ begin  -- architecture sim
 
 			-- access memory only when ready, ignore requests otherwise
 			if fsm_cs = READY then
-				if mem_req = '1' then
-					if mem_write = '1' then
-						if Is_X(std_logic_vector(mem_addr)) then
-							report "Invalid address during write." severity error;
-						else
-							ram(to_integer(mem_addr)) <= mem_wdata;
-						end if;
-					elsif mem_write = '0' then -- read
-						if Is_X(std_logic_vector(mem_addr)) then
-							report "Invalid address during read." severity error;
-						else
-							rdata_p(1) <= ram(to_integer(mem_addr));
-							rstb_p(1)  <= '1';
-						end if;
+				if (req_write) = '1' then
+					if Is_X(std_logic_vector(mem_addr)) then
+						report "Invalid address during write." severity error;
+						ram <= (others => (others => 'X'));
 					else
-						report "Invalid write/read command." severity error;
+						ram(to_integer(mem_addr)) <= to_ux01(mem_wdata);
 					end if;
-				elsif mem_req /= '0' then
-					report "Invalid request." severity error;
+				elsif (req_write = 'X') then
+					-- error is reported above
+					ram        <= (others => (others => 'X'));
+				end if;
+
+				if req_read = '1' then
+					rstb_p(1)  <= '1';
+					if Is_X(std_logic_vector(mem_addr)) then
+						report "Invalid address during read." severity error;
+						rdata_p(1) <= (others => 'X');
+					else
+						rdata_p(1) <= ram(to_integer(mem_addr));
+					end if;
+				elsif req_read = 'X' then
+					-- error is reported above
+					rstb_p(1)  <= 'X';
+					rdata_p(1) <= (others => 'X');
 				end if;
 			end if;
 
@@ -147,14 +178,20 @@ begin  -- architecture sim
 			end if;
 
 			-- reset only read strobe
-			if rst = '1' then
-				rstb_p <= (others => '0');
-			end if;
+			case to_x01(rst) is
+				when '1' =>	rstb_p <= (others => '0');
+				when '0' => null;
+				when 'X' => rstb_p <= (others => 'X');
+			end case;
 		end if;
 	end process;
 
 	-- Outputs
-	mem_rdy		<= '1' when fsm_cs = READY else '0';
+	with fsm_cs select mem_rdy <=
+		'1' when READY,
+		'X' when UNKNOWN,
+		'0' when others;
+
 	mem_rdata <= rdata_p(LATENCY);
 	mem_rstb	<= rstb_p (LATENCY);
 
