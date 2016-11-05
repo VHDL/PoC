@@ -68,7 +68,7 @@ entity mem_model is
   generic (
     A_BITS  : positive;
     D_BITS  : positive;
-		LATENCY : positive
+		LATENCY : positive := 1
   );
 
   port (
