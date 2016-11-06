@@ -8,9 +8,8 @@
 include       "src/cache/cache_mem.files"           # UUT (Unit Under Test)
 
 # PoC.arith
-include       "src/arith/arith_prng.files"          # required for memtest_fsm
+include       "src/arith/arith_prng.files"
 
 # Testbench files
 vhdl    test  "tb/mem/mem_model.vhdl"               # Memory Model
-vhdl    test  "tb/cache/cache_memtest_fsm.vhdl"     # Memory Tester FSM
 vhdl    test  "tb/cache/cache_mem_tb.vhdl"          # Testbench
