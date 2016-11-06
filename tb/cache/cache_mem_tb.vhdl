@@ -38,6 +38,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 library poc;
 use poc.physical.all;
@@ -60,7 +61,9 @@ architecture sim of cache_mem_tb is
   constant BYTE_ADDR_BITS     : natural  := 1;
   constant DATA_BITS          : positive := 16;
 	constant WORD_ADDR_BITS     : positive := ADDR_BITS-BYTE_ADDR_BITS;
+	constant MEMORY_WORDS       : positive := 2**WORD_ADDR_BITS;
 
+	-- NOTE:
 	-- Cache accesses are always aligned to a word boundary. A memory word and a
 	-- cache line consist of DATA_BITS bits. For example if DATA_BITS=16:
 	--
@@ -234,6 +237,12 @@ begin
 			end loop;
 		end procedure;
 
+		-- Seeds for random request generation
+		variable seed1 : positive := 1;
+		variable seed2 : positive := 1;
+
+		variable temp_r : real;
+
   begin
 		-- Reset is mandatory
     rst <= '1';
@@ -247,17 +256,17 @@ begin
 		-- Fill memory with valid data and read it back
 		-- --------------------------------------------
 		-- Due to the No-Write-Allocate policy no cache hit occurs.
-		for addr in 0 to 2**WORD_ADDR_BITS-1 loop
+		for addr in 0 to MEMORY_WORDS-1 loop
 			write(addr);
 		end loop;  -- addr
-		for addr in 0 to 2**WORD_ADDR_BITS-1 loop
+		for addr in 0 to MEMORY_WORDS-1 loop
 			read(addr);
 		end loop;  -- addr
 		for i in 0 to 3 loop nop; end loop;
 
 		-- Linear access, read/write/read at every address
 		-- -----------------------------------------------
-		for addr in 0 to 2**WORD_ADDR_BITS-1 loop
+		for addr in 0 to MEMORY_WORDS-1 loop
 			read(addr);  -- cache hit only if cache size equals memory size.
 			write(addr); -- cache hit, write-through
 			read(addr);  -- cache hit
@@ -267,7 +276,7 @@ begin
 
 		-- Linear access in chunks of cache size, read/write/read every chunk
 		-- ------------------------------------------------------------------
-		for chunk in 0 to (2**WORD_ADDR_BITS / CACHE_LINES)-1 loop
+		for chunk in 0 to (MEMORY_WORDS / CACHE_LINES)-1 loop
 			for addr in chunk*CACHE_LINES to (chunk+1)*CACHE_LINES-1 loop
 				read(addr);  -- cache hit only if cache size equals memory size.
 			end loop; -- addr
@@ -280,6 +289,19 @@ begin
 			nop;
 		end loop;  -- chunk
 		for i in 0 to 3 loop nop; end loop;
+
+		-- Random access
+		-- -------------
+		for i in 1 to 1000 loop
+			uniform(seed1, seed2, temp_r);
+			if temp_r < 0.5 then
+				uniform(seed1, seed2, temp_r);
+				read(natural(floor(temp_r * real(MEMORY_WORDS))));
+			else
+				uniform(seed1, seed2, temp_r);
+				write(natural(floor(temp_r * real(MEMORY_WORDS))));
+			end if;
+		end loop;
 
 		-- Finished
 		-- --------
