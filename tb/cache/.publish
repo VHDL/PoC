@@ -4,5 +4,10 @@
 # Documentation
 README.md
 
+# Entities
 cache_par_tb.files
 cache_par_cocotb.py
+cache_par2_tb.files
+cache_par2_cocotb.py
+cache_mem_tb.files
+cache_mem_tb.vhdl

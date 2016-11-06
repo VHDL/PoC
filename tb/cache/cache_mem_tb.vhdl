@@ -67,7 +67,7 @@ architecture sim of cache_mem_tb is
 	-- Cache accesses are always aligned to a word boundary. A memory word and a
 	-- cache line consist of DATA_BITS bits. For example if DATA_BITS=16:
 	--
-	-- * word address 0 selects the bits  0..15 in memory, 
+	-- * word address 0 selects the bits  0..15 in memory,
 	-- * word address 1 selects the bits 16..31 in memory, and so on.
 
 	-- Global signals
