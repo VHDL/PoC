@@ -106,6 +106,19 @@ architecture rtl of cache_tagunit_par is
 
 	constant SETS : positive := CACHE_LINES / ASSOCIATIVITY;
 
+	-- Returns true if unsigned value contains metalogical values.
+	-- Similar function is_x(unsigned) is only shipped with VHDL'08.
+	function contains_x(value : unsigned) return boolean is
+	begin
+		-- Use pragma to get rid of meaningless Quartus warning 10325 "ignored
+		-- choice containing meta-values ..." in function is_x(std_logic_vector).
+		-- Synthesis tools which ignore this pragma should return false for is_x().
+		-- synthesis translate_off
+		return is_x(std_logic_vector(value));
+		-- synthesis translate_on
+		return false; -- no meta-values in hardware here
+	end function;
+
 begin
 	-- ===========================================================================
 	-- Full-Associative Cache
@@ -175,7 +188,8 @@ begin
 
 		ReplaceWay_us		 <= unsigned(Policy_ReplaceWay);
 		ReplaceLineIndex <= Policy_ReplaceWay;
-		OldAddress			 <= TagMemory(to_integer(ReplaceWay_us));
+		OldAddress			 <= (others => 'X') when contains_x(ReplaceWay_us) else
+												TagMemory(to_integer(ReplaceWay_us));
 
 		-- replacement policy
 		Policy : entity PoC.cache_replacement_policy
@@ -219,6 +233,9 @@ begin
 		signal TagHit_i	 : std_logic;
 		signal TagMiss_i : std_logic;
 
+		signal Tag   : T_TAG_LINE; -- read tag from memory
+		signal Valid : std_logic;  -- read valid from memory
+
   begin
 		assert CACHE_LINES = 2**INDEX_BITS report "Unsupported number of cache lines." severity failure;
 
@@ -226,9 +243,12 @@ begin
     Address_Tag      <= Address(Address'left downto INDEX_BITS);
     Address_Index    <= unsigned(Address(INDEX_BITS-1 downto 0));
 
-		-- access tag memory and compare tags / valids
-		DM_TagHit <= to_sl(TagMemory  (to_integer(Address_Index)) = Address_Tag and
-											 ValidMemory(to_integer(Address_Index)) = '1');
+		-- Access tag / valid memory and compare tags.
+ 		Tag   <= (others => 'X') when contains_x(Address_Index) else
+					   TagMemory  (to_integer(Address_Index));
+		Valid <= 'X' when contains_x(Address_Index) else
+						 ValidMemory(to_integer(Address_Index));
+		DM_TagHit <= to_sl(Tag = Address_Tag) and Valid;
 
 		process(Clock)
 		begin
@@ -255,7 +275,7 @@ begin
 		TagMiss		<= TagMiss_i;
 
 		ReplaceLineIndex <= std_logic_vector(Address_Index);
-		OldAddress			 <= TagMemory(to_integer(Address_Index)) & std_logic_vector(Address_Index);
+		OldAddress			 <= Tag & std_logic_vector(Address_Index);
 	end generate;
 
 	-- ===========================================================================
@@ -312,10 +332,17 @@ begin
 		genWay : for way in 0 to ASSOCIATIVITY-1 generate
 			signal TagMemory	 : T_TAG_LINE_VECTOR(CACHE_SETS-1 downto 0);
 			signal ValidMemory : std_logic_vector(CACHE_SETS-1 downto 0) := (others => '0');
+
+			signal Tag   : T_TAG_LINE; -- read tag from memory
+			signal Valid : std_logic;  -- read valid from memory
 		begin
-			-- comparator
-			TagHits(way) <= to_sl(TagMemory  (to_integer(Address_Index)) = Address_Tag and
-														ValidMemory(to_integer(Address_Index)) = '1');
+			-- Access tag / valid memory and compare tags.
+			Tag   <= (others => 'X') when contains_x(Address_Index) else
+							 TagMemory  (to_integer(Address_Index));
+			Valid <= 'X' when contains_x(Address_Index) else
+							 ValidMemory(to_integer(Address_Index));
+
+			TagHits(way) <= to_sl(Tag = Address_Tag) and Valid;
 
 			-- memory update
 			process (Clock) is
@@ -336,7 +363,7 @@ begin
 			end process;
 
 			-- old address when replacing
-			OldTags(way) <= TagMemory(to_integer(Address_Index));
+			OldTags(way) <= Tag;
 		end generate genWay;
 
 		HitWay <= onehot2bin(TagHits, 0);
@@ -354,18 +381,34 @@ begin
 		----------------------------------------------------------------------------
 		-- Generate policy for each cache-set
 		----------------------------------------------------------------------------
-		process(Address_Index, TagHit_i, Invalidate)
+		process(Address_Index, TagHit_i)
 		begin
 			CS_TagAccess														 <= (others => '0');
-			CS_TagAccess(to_integer(Address_Index))	 <= TagHit_i;
+			if contains_x(Address_Index) then -- for simulation only
+				null;--TODO: CS_TagAccess <= (others => 'X');
+			else
+				CS_TagAccess(to_integer(Address_Index)) <= TagHit_i;
+			end if;
+		end process;
+
+		process(Address_Index, Invalidate)
+		begin
 			CS_Invalidate														 <= (others => '0');
-			CS_Invalidate(to_integer(Address_Index)) <= Invalidate;
+			if contains_x(Address_Index) then -- for simulation only
+				null;--TODO: CS_Invalidate <= (others => 'X');
+			else
+				CS_Invalidate(to_integer(Address_Index)) <= Invalidate;
+			end if;
 		end process;
 
 		process(Address_Index, Replace)
 		begin
 			CS_Replace															 <= (others => '0');
-			CS_Replace(to_integer(Address_Index)) <= Replace;
+			if contains_x(Address_Index) then -- for simulation only
+				null;--TODO: CS_Replace <= (others => 'X');
+			else
+				CS_Replace(to_integer(Address_Index)) <= Replace;
+			end if;
 		end process;
 
 		genSet : for cs in 0 to CACHE_SETS-1 generate
@@ -389,13 +432,15 @@ begin
 				);
 		end generate genSet;
 
-		ReplaceWay <= unsigned(Policy_ReplaceWay(to_integer(Address_Index)));
+		ReplaceWay <= (others => 'X') when contains_x(Address_Index) else
+									unsigned(Policy_ReplaceWay(to_integer(Address_Index)));
 
 		----------------------------------------------------------------------------
 		-- Replace-specific outputs
 		----------------------------------------------------------------------------
 		ReplaceLineIndex <= std_logic_vector(ReplaceWay) & std_logic_vector(Address_Index);
-		OldAddress			 <= OldTags(to_integer(ReplaceWay)) & std_logic_vector(Address_Index);
+		OldAddress			 <= (others => 'X') when contains_x(ReplaceWay) else
+												OldTags(to_integer(ReplaceWay)) & std_logic_vector(Address_Index);
 
 	end generate;
 end architecture;
