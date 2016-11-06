@@ -121,6 +121,7 @@ architecture rtl of cache_mem is
 	signal cache_LineIn			: std_logic_vector(DATA_BITS-1 downto 0);
 	signal cache_LineOut		: std_logic_vector(DATA_BITS-1 downto 0);
 	signal cache_Hit				: std_logic;
+	signal cache_Miss				: std_logic;
 
 	-- Address and data path
 	signal cpu_write_r : std_logic;
@@ -161,7 +162,7 @@ begin  -- architecture rtl
 			CacheLineIn  => cache_LineIn,
 			CacheLineOut => cache_LineOut,
 			CacheHit     => cache_Hit,
-			CacheMiss    => open,
+			CacheMiss    => cache_Miss,
 			OldAddress   => open);
 
   -- Address and Data path
@@ -193,7 +194,7 @@ begin  -- architecture rtl
 
 	-- FSM
 	-- ===========================================================================
-	process(fsm_cs, cpu_req, cpu_write, cache_Hit, cpu_write_r,
+	process(fsm_cs, cpu_req, cpu_write, cache_Hit, cache_Miss, cpu_write_r,
 					mem_rdy, mem_rstb)
 	begin
 		-- Update state registers
@@ -217,52 +218,36 @@ begin  -- architecture rtl
 				cpu_rdy <= '1';
 
 				cache_Request		 <= to_x01(cpu_req);
+				cache_ReadWrite	 <= to_x01(cpu_write); -- doesn't care if no request
 				cache_Invalidate <= '0';
 
-				if to_x01(cpu_req) = '1' then
-					cache_ReadWrite	 <= to_x01(cpu_write);
+				cpu_rstb_nxt <= cache_Hit and not cpu_write; -- read successful
 
-					if to_x01(cache_Hit) = '1' then
-						cpu_rstb_nxt <= not cpu_write; -- read successful
-
-						if to_x01(cpu_write) = '1' then -- write-through policy
-							fsm_ns <= ACCESS_MEM;
-						elsif to_x01(cpu_write) = '0' then
-							null; -- usage of Is_X() provokes warning during synthesis
-						else
-							fsm_ns <= UNKNOWN;
-						end if;
-					elsif to_x01(cache_Hit) = '0' then
-						fsm_ns       <= ACCESS_MEM;
-					else
-						fsm_ns			 <= UNKNOWN;
-						cpu_rstb_nxt <= 'X';
-					end if;
-
-				elsif to_x01(cpu_req) = '0' then
-					cache_ReadWrite <= '-';
-				else
-					fsm_ns <= UNKNOWN;
-				end if;
+				case ((cache_Hit and cpu_write) or cache_Miss) is
+					when '1' =>	-- write successfull but write-through, or cache miss
+						fsm_ns <= ACCESS_MEM;
+					when '0' => -- read successfull
+						null;
+					when others => -- invalid input
+						fsm_ns <= UNKNOWN;
+				end case;
 
 
 			when ACCESS_MEM =>
 				-- Access memory.
 				-- --------------
 				mem_req <= '1';
-				if to_x01(mem_rdy) = '1' then -- access granted
-          if to_x01(cpu_write_r) = '1' then
-            fsm_ns <= READY;
-          elsif to_x01(cpu_write_r) = '0' then
-            fsm_ns <= READING_MEM;
-          else
-            fsm_ns <= UNKNOWN;
-          end if;
-				elsif to_x01(mem_rdy) = '0' then
-					null; -- usage of Is_X() provokes warning during synthesis
-				else
-					fsm_ns <= UNKNOWN;
-				end if;
+				case to_x01(mem_rdy) is
+					when '1' => -- access granted
+						case to_x01(cpu_write_r) is
+							when '1'    => fsm_ns <= READY; -- write
+							when '0'    => fsm_ns <= READING_MEM; -- read
+							when others => fsm_ns <= UNKNOWN; -- invalid input
+						end case;
+
+					when '0' =>	null; -- still waiting
+					when others => fsm_ns <= UNKNOWN; -- invalid input
+				end case;
 
 
       when READING_MEM =>
@@ -271,13 +256,13 @@ begin  -- architecture rtl
 				cache_Replace   <= to_x01(mem_rstb);
 				cache_ReadWrite <= '1';
 
-				if to_x01(mem_rstb) = '1' then -- read data available
-					fsm_ns <= READY;
-				elsif to_x01(mem_rstb) = '0' then
-					null; -- usage of Is_X() provokes warning during synthesis
-				else
-					fsm_ns <= UNKNOWN;
-				end if;
+				case to_x01(mem_rstb) is
+					when '1' => -- read data available
+						-- read data is directly passed to CPU in datapath above
+						fsm_ns <= READY;
+					when '0' => null;-- still waiting
+					when others => fsm_ns <= UNKNOWN; -- invalid input
+				end case;
 
 
 			when UNKNOWN =>
@@ -296,16 +281,17 @@ begin  -- architecture rtl
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			if to_x01(rst) = '1' then
-				fsm_cs		 <= READY;
-				cpu_rstb_r <= '0';
-			elsif to_x01(rst) = '0' then
-				fsm_cs		 <= fsm_ns;
-				cpu_rstb_r <= cpu_rstb_nxt;
-			else
-				fsm_cs		 <= UNKNOWN;
-				cpu_rstb_r <= 'X';
-			end if;
+			case to_x01(rst) is
+				when '1' =>
+					fsm_cs		 <= READY;
+					cpu_rstb_r <= '0';
+				when '0' =>
+					fsm_cs		 <= fsm_ns;
+					cpu_rstb_r <= cpu_rstb_nxt;
+				when others =>
+					fsm_cs		 <= UNKNOWN;
+					cpu_rstb_r <= 'X';
+			end case;
 		end if;
 	end process;
 
