@@ -1,3 +1,0 @@
-# WORKAROUND: needed until GHDL ships vendor compile scripts in the monthly build
-*.sh
-*.grcrules
