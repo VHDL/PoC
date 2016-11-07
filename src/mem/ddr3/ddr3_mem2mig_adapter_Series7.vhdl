@@ -5,26 +5,29 @@
 -- =============================================================================
 -- Authors:					Martin Zabel
 --
--- Module:					Adapter between PoC's "mem" interface and the application
--- 									interface ("app") of the Xilinx MIG IP core for 7-Series
--- 									FPGAs.
+-- Module:					Adapter for the Xilinx MIG IP core on 7-Series FPGAs.
 --
 -- Description:
 -- ------------------------------------
+-- Adapter between the :doc:`PoC.Mem </References/Interfaces/Memory>`
+-- interface and the application interface ("app")
+-- of the Xilinx MIG IP core for 7-Series	FPGAs.
+--
 -- Simplifies the application interface ("app") of the Xilinx MIG IP core.
--- The "mem" interface provides single-cycle fully pipelined read/write access
+-- The PoC.Mem interface provides single-cycle fully pipelined read/write access
 -- to the memory. All accesses are word-aligned. Always all bytes of a word are
--- written to the memory.
+-- written to the memory. More details can be found
+-- :doc:`here </References/Interfaces/Memory>`.
 --
 -- Generic parameters:
 --
--- * D_BITS: Data bus width of the "mem" and "app" interface. Also size of one
+-- * D_BITS: Data bus width of the PoC.Mem and "app" interface. Also size of one
 --   word in bits.
 --
 -- * DQ_BITS: Size of data bus between memory controller and external memory
 --   (DIMM, SoDIMM).
 --
--- * MEM_A_BITS: Address bus width of the "mem" interface.
+-- * MEM_A_BITS: Address bus width of the PoC.Mem interface.
 --
 -- * APP_A_BTIS: Address bus width of the "app" interface.
 --
@@ -65,6 +68,7 @@ entity ddr3_mem2mig_adapter_Series7 is
 	);
 
 	port (
+		-- PoC.Mem interface
     mem_req   : in  std_logic;
     mem_write : in  std_logic;
     mem_addr  : in  unsigned(MEM_A_BITS-1 downto 0);
@@ -73,6 +77,7 @@ entity ddr3_mem2mig_adapter_Series7 is
     mem_rstb  : out std_logic;
     mem_rdata : out std_logic_vector(D_BITS-1 downto 0);
 
+		-- Xilinx MIG IP Core interface
 		init_calib_complete : in	std_logic;
 		app_rd_data					: in	std_logic_vector((D_BITS)-1 downto 0);
 		app_rd_data_end			: in	std_logic;
