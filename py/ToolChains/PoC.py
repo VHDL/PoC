@@ -47,6 +47,7 @@ from pathlib              import Path
 from subprocess           import check_output, check_call, CalledProcessError
 
 from Base.Configuration   import Configuration as BaseConfiguration
+from ToolChains.Git       import Git
 
 
 class Configuration(BaseConfiguration):
@@ -63,13 +64,25 @@ class Configuration(BaseConfiguration):
 	}
 
 	def ConfigureForAll(self):
-		try:
-			latestTagHash = check_output(["git", "rev-list", "--tags", "--max-count=1"], universal_newlines=True).strip()
-			latestTagName = check_output(["git", "describe", "--tags", latestTagHash], universal_newlines=True).strip()
-			latestTagName = latestTagName
-			self._host.LogNormal("  PoC version: {0} (found in git)".format(latestTagName))
-			self._host.PoCConfig['INSTALL.PoC']['Version'] = latestTagName
-		except CalledProcessError:
+		success = False
+		if (len(self._host.PoCConfig['INSTALL.Git']) != 0):
+			try:
+				binaryDirectoryPath = Path(self._host.PoCConfig['INSTALL.Git']['BinaryDirectory'])
+				self._git = Git(self._host.Platform, self._host.DryRun, binaryDirectoryPath, logger=self._host.Logger)
+				gitRevList = self._git.GetGitRevList()
+				gitRevList.RevListParameters[gitRevList.SwitchTags] = True
+				gitRevList.RevListParameters[gitRevList.SwitchMaxCount] = 1
+				latestTagHash = gitRevList.Execute().strip()
+				gitDescribe = self._git.GetGitDescribe()
+				gitDescribe.DescribeParameters[gitDescribe.SwitchTags] = latestTagHash
+				latestTagName = gitDescribe.Execute().strip()
+				self._host.LogNormal("  PoC version: {0} (found in git)".format(latestTagName))
+				self._host.PoCConfig['INSTALL.PoC']['Version'] = latestTagName
+				success = True
+			except CalledProcessError:
+				pass
+
+		if not success:
 			print("WARNING: Can't get version information from latest git tag.")
 			pocVersion = self._template['ALL']['INSTALL.PoC']['Version']
 			self._host.LogNormal("  PoC version: {0} (found in default configuration)".format(pocVersion))
