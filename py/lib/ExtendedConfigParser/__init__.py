@@ -37,7 +37,7 @@ import re
 from sys        import version_info
 
 from collections  import OrderedDict as _default_dict, ChainMap as _ChainMap, MutableMapping
-from configparser import ConfigParser, SectionProxy, Interpolation, MAX_INTERPOLATION_DEPTH, DEFAULTSECT, _UNSET, ConverterMapping
+from configparser import ConfigParser, SectionProxy, Interpolation, MAX_INTERPOLATION_DEPTH, DEFAULTSECT, _UNSET
 from configparser import NoSectionError, InterpolationDepthError, InterpolationSyntaxError, NoOptionError, InterpolationMissingOptionError
 
 import itertools
@@ -48,6 +48,7 @@ class ExtendedSectionProxy(SectionProxy):
 		if not self._parser.has_option(self._name, key):
 			raise KeyError(self._name + ":" + key)
 		return self._parser.get(self._name, key)
+
 
 # WORKAROUND: Required for ReadTheDocs, which doesn't support Python 3.5 yet.
 if (version_info < (3,5,0)):
@@ -108,6 +109,8 @@ if (version_info < (3,5,0)):
 
 		def __len__(self):
 			return len(self._data)
+else:
+	from configparser import ConverterMapping
 
 
 # Monkey patching ... (a.k.a. duck punshing
