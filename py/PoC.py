@@ -56,10 +56,10 @@ from Compiler.XCICompiler           import Compiler as XCICompiler
 from Compiler.XCOCompiler           import Compiler as XCOCompiler
 from Compiler.XSTCompiler           import Compiler as XSTCompiler
 from Compiler.VivadoCompiler        import Compiler as VivadoCompiler
-from PoC.Config                     import Board
-from PoC.Entity                     import NamespaceRoot, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
-from PoC.Solution                   import Repository
-from PoC.Query                      import Query
+from DataBase.Config                    import Board
+from DataBase.Entity                    import NamespaceRoot, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
+from DataBase.Solution                  import Repository
+from DataBase.Query                     import Query
 from Simulator.ActiveHDLSimulator       import Simulator as ActiveHDLSimulator
 from Simulator.CocotbSimulator          import Simulator as CocotbSimulator
 from Simulator.GHDLSimulator            import Simulator as GHDLSimulator
