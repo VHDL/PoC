@@ -17,6 +17,3 @@ requirements.txt
 # PoC configuration files
 config.private.ini
 my_project.vhdl
-
-# WORKAROUND: needed until GHDL ships vendor compile scripts in the monthly build
-ghdl/
