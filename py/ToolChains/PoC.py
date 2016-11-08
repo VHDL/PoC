@@ -56,7 +56,7 @@ class Configuration(BaseConfiguration):
 	_template =    {
 		"ALL": {
 			"INSTALL.PoC": {
-				"Version":                "1.0.0",
+				"Version":                "1.1.0",
 				"InstallationDirectory":  None
 			},
 			"SOLUTION.Solutions": {}
@@ -68,12 +68,12 @@ class Configuration(BaseConfiguration):
 		if (len(self._host.PoCConfig['INSTALL.Git']) != 0):
 			try:
 				binaryDirectoryPath = Path(self._host.PoCConfig['INSTALL.Git']['BinaryDirectory'])
-				self._git = Git(self._host.Platform, self._host.DryRun, binaryDirectoryPath, logger=self._host.Logger)
-				gitRevList = self._git.GetGitRevList()
+				git = Git(self._host.Platform, self._host.DryRun, binaryDirectoryPath, logger=self._host.Logger)
+				gitRevList = git.GetGitRevList()
 				gitRevList.RevListParameters[gitRevList.SwitchTags] = True
 				gitRevList.RevListParameters[gitRevList.SwitchMaxCount] = 1
 				latestTagHash = gitRevList.Execute().strip()
-				gitDescribe = self._git.GetGitDescribe()
+				gitDescribe = git.GetGitDescribe()
 				gitDescribe.DescribeParameters[gitDescribe.SwitchTags] = latestTagHash
 				latestTagName = gitDescribe.Execute().strip()
 				self._host.LogNormal("  PoC version: {0} (found in git)".format(latestTagName))
@@ -91,27 +91,6 @@ class Configuration(BaseConfiguration):
 		pocInstallationDirectory = Path(environ.get('PoCRootDirectory'))
 		self._host.LogNormal("  Installation directory: {0!s} (found in environment variable)".format(pocInstallationDirectory))
 		self._host.PoCConfig['INSTALL.PoC']['InstallationDirectory'] = pocInstallationDirectory.as_posix()
-
-	def __CheckForGit(self):
-		try:
-			check_call(["git", "--version"])
-			return True
-		except OSError:
-			return False
-
-	def __IsUnderGitControl(self):
-		try:
-			response = check_output(["git", "rev-parse", "--is-inside-work-tree"], universal_newlines=True).strip()
-			return (response == "true")
-		except OSError:
-			return False
-
-	def __GetCurrentBranchName(self):
-		try:
-			response = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], universal_newlines=True).strip()
-			return response
-		except OSError:
-			return False
 
 	# LOCAL = git rev-parse @
 	# PS G:\git\PoC> git rev-parse "@"

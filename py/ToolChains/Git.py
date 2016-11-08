@@ -165,7 +165,7 @@ class Configuration(BaseConfiguration):
 		# get version and backend
 		output = check_output([str(gitPath), "--version"], universal_newlines=True)
 		version = None
-		versionRegExpStr = r"^git version (\d\.\d\.\d+).*"
+		versionRegExpStr = r"^git version (\d+\.\d+\.\d+).*"
 		versionRegExp = re_compile(versionRegExpStr)
 		for line in output.split('\n'):
 			if version is None:
