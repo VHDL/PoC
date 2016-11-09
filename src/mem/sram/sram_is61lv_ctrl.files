@@ -7,8 +7,8 @@
 # Common PoC packages for configuration, synthesis and simulation
 include				"src/common/common.files"											# load common packages
 
-# PoC.mem
-vhdl    poc   "src/mem/mem.pkg.vhdl"        		      			# Memory package
+# PoC.io
+vhdl    poc   "src/io/io.pkg.vhdl"													# IO package
 
 # PoC.mem.sram
 vhdl    poc   "src/mem/sram/sram_is61lv_ctrl.vhdl"					# IS61LV Controller

@@ -42,10 +42,13 @@
 -- Regarding the user application interface, more details can be found
 -- :doc:`here </References/Interfaces/Memory>`.
 --
--- The outer design must connect GND ('0') to the SRAM chip enable ``ce_n``.
+-- The system top-level must connect GND ('0') to the SRAM chip enable ``ce_n``.
 --
 -- When using an IS61LV25616: the SRAM byte enables ``lb_n`` and ``ub_n`` must be
 -- connected to ``sram_be_n(0)`` and ``sram_be_n(1)``, respectively.
+--
+-- The system top-level must instantiate the appropriate tri-state driver for
+-- ``sram_data``.
 --
 -- Synchronous reset is used.
 --
@@ -92,7 +95,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library poc;
-use poc.config.all;
+use poc.io.all;
 
 entity sram_is61lv_ctrl is
 
@@ -119,14 +122,19 @@ entity sram_is61lv_ctrl is
 		sram_oe_n : out   std_logic;
 		sram_we_n : out   std_logic;
 		sram_addr : out   unsigned(A_BITS-1 downto 0);
-		sram_data : inout std_logic_vector(D_BITS-1 downto 0));
+		sram_data : inout T_IO_TRISTATE_VECTOR(D_BITS-1 downto 0));
 end sram_is61lv_ctrl;
 
 architecture rtl of sram_is61lv_ctrl is
+	attribute KEEP : boolean;
+
 	-- WAR = Write After Read
+	-- Don't merge with SRAM output registers.
 	type FSM_TYPE is (RUNNING, WAR, WRITING);
 	signal fsm_cs : FSM_TYPE;
 	signal fsm_ns : FSM_TYPE;
+
+	attribute KEEP of fsm_cs : signal is true;
 
 	-- ready register
 	signal rdy_r   : std_logic;
@@ -152,16 +160,25 @@ architecture rtl of sram_is61lv_ctrl is
 	signal reading_nxt : std_logic;
 
 	-- SRAM write enable, low-active
+	-- Don't merge with FSM state register.
 	signal sram_we_r_n   : std_logic;
 	signal sram_we_nxt_n : std_logic;
 
+	attribute KEEP of sram_we_r_n : signal is true;
+
 	-- SRAM output enable, low-active
+	-- Don't merge with reading_r.
 	signal sram_oe_r_n   : std_logic;
 	signal sram_oe_nxt_n : std_logic;
 
+	attribute KEEP of sram_oe_r_n : signal is true;
+
 	-- Own output enable, low-active
+	-- Each bit needs its own output enable register!
 	signal own_oe_r_n   : std_logic_vector(D_BITS-1 downto 0);
 	signal own_oe_nxt_n : std_logic;
+
+	attribute KEEP of own_oe_r_n : signal is true;
 
 begin
 
@@ -271,7 +288,10 @@ begin
 
 	gNoSdinReg: if SDIN_REG = false generate
 		-- direct output, register elsewhere
-		rdata <= sram_data;
+		l1: for i in 0 to D_BITS-1 generate
+			rdata(i) <= sram_data(i).i;
+		end generate l1;
+
 		rstb  <= reading_r;
 	end generate gNoSdinReg;
 
@@ -280,7 +300,9 @@ begin
 		begin  -- process
 			if rising_edge(clk) then
 				if reading_r = '1' then             -- don't collect garbage
-					rdata <= sram_data;
+					for i in 0 to D_BITS-1 loop
+						rdata(i) <= sram_data(i).i;
+					end loop;  -- i
 				end if;
 
 				if rst = '1' then
@@ -296,8 +318,8 @@ begin
 	sram_addr <= addr_r;
 
 	l1: for i in 0 to D_BITS-1 generate
-		-- each bit needs its own output enable
-		sram_data(i) <= wdata_r(i) when own_oe_r_n(i) = '0' else 'Z';
+		sram_data(i).o <= wdata_r(i);
+		sram_data(i).t <= own_oe_r_n(i); -- driven when '0', otherwise high-z
 	end generate l1;
 
 	sram_oe_n <= sram_oe_r_n;

@@ -1,0 +1,53 @@
+[*]
+[*] GTKWave Analyzer v3.3.62 (w)1999-2014 BSI
+[*] Wed Nov  9 13:48:52 2016
+[*]
+[dumpfile_mtime] "Wed Nov  9 13:44:58 2016"
+[dumpfile_size] 3427
+[timestart] 0
+[size] 1476 600
+[pos] -1 -1
+*-25.154661 24600000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.sram_is61lv_ctrl_tb.
+[sst_width] 214
+[signals_width] 278
+[sst_expanded] 1
+[sst_vpaned_height] 151
+@28
+top.sram_is61lv_ctrl_tb.clk
+top.sram_is61lv_ctrl_tb.rst
+@200
+-User interface
+@28
+top.sram_is61lv_ctrl_tb.req
+top.sram_is61lv_ctrl_tb.write
+@22
+#{top.sram_is61lv_ctrl_tb.addr[7:0]} top.sram_is61lv_ctrl_tb.addr[7] top.sram_is61lv_ctrl_tb.addr[6] top.sram_is61lv_ctrl_tb.addr[5] top.sram_is61lv_ctrl_tb.addr[4] top.sram_is61lv_ctrl_tb.addr[3] top.sram_is61lv_ctrl_tb.addr[2] top.sram_is61lv_ctrl_tb.addr[1] top.sram_is61lv_ctrl_tb.addr[0]
+#{top.sram_is61lv_ctrl_tb.rdata[15:0]} top.sram_is61lv_ctrl_tb.rdata[15] top.sram_is61lv_ctrl_tb.rdata[14] top.sram_is61lv_ctrl_tb.rdata[13] top.sram_is61lv_ctrl_tb.rdata[12] top.sram_is61lv_ctrl_tb.rdata[11] top.sram_is61lv_ctrl_tb.rdata[10] top.sram_is61lv_ctrl_tb.rdata[9] top.sram_is61lv_ctrl_tb.rdata[8] top.sram_is61lv_ctrl_tb.rdata[7] top.sram_is61lv_ctrl_tb.rdata[6] top.sram_is61lv_ctrl_tb.rdata[5] top.sram_is61lv_ctrl_tb.rdata[4] top.sram_is61lv_ctrl_tb.rdata[3] top.sram_is61lv_ctrl_tb.rdata[2] top.sram_is61lv_ctrl_tb.rdata[1] top.sram_is61lv_ctrl_tb.rdata[0]
+@28
+#{top.sram_is61lv_ctrl_tb.mask[1:0]} top.sram_is61lv_ctrl_tb.mask[1] top.sram_is61lv_ctrl_tb.mask[0]
+@22
+#{top.sram_is61lv_ctrl_tb.wdata[15:0]} top.sram_is61lv_ctrl_tb.wdata[15] top.sram_is61lv_ctrl_tb.wdata[14] top.sram_is61lv_ctrl_tb.wdata[13] top.sram_is61lv_ctrl_tb.wdata[12] top.sram_is61lv_ctrl_tb.wdata[11] top.sram_is61lv_ctrl_tb.wdata[10] top.sram_is61lv_ctrl_tb.wdata[9] top.sram_is61lv_ctrl_tb.wdata[8] top.sram_is61lv_ctrl_tb.wdata[7] top.sram_is61lv_ctrl_tb.wdata[6] top.sram_is61lv_ctrl_tb.wdata[5] top.sram_is61lv_ctrl_tb.wdata[4] top.sram_is61lv_ctrl_tb.wdata[3] top.sram_is61lv_ctrl_tb.wdata[2] top.sram_is61lv_ctrl_tb.wdata[1] top.sram_is61lv_ctrl_tb.wdata[0]
+@28
+top.sram_is61lv_ctrl_tb.rstb
+top.sram_is61lv_ctrl_tb.rdy
+@200
+-SRAM interface
+@28
+top.sram_is61lv_ctrl_tb.sram_we_n
+top.sram_is61lv_ctrl_tb.sram_oe_n
+@22
+#{top.sram_is61lv_ctrl_tb.sram_addr[7:0]} top.sram_is61lv_ctrl_tb.sram_addr[7] top.sram_is61lv_ctrl_tb.sram_addr[6] top.sram_is61lv_ctrl_tb.sram_addr[5] top.sram_is61lv_ctrl_tb.sram_addr[4] top.sram_is61lv_ctrl_tb.sram_addr[3] top.sram_is61lv_ctrl_tb.sram_addr[2] top.sram_is61lv_ctrl_tb.sram_addr[1] top.sram_is61lv_ctrl_tb.sram_addr[0]
+@28
+#{top.sram_is61lv_ctrl_tb.sram_be_n[1:0]} top.sram_is61lv_ctrl_tb.sram_be_n[1] top.sram_is61lv_ctrl_tb.sram_be_n[0]
+@22
+#{top.sram_is61lv_ctrl_tb.sram_dbus[15:0]} top.sram_is61lv_ctrl_tb.sram_dbus[15] top.sram_is61lv_ctrl_tb.sram_dbus[14] top.sram_is61lv_ctrl_tb.sram_dbus[13] top.sram_is61lv_ctrl_tb.sram_dbus[12] top.sram_is61lv_ctrl_tb.sram_dbus[11] top.sram_is61lv_ctrl_tb.sram_dbus[10] top.sram_is61lv_ctrl_tb.sram_dbus[9] top.sram_is61lv_ctrl_tb.sram_dbus[8] top.sram_is61lv_ctrl_tb.sram_dbus[7] top.sram_is61lv_ctrl_tb.sram_dbus[6] top.sram_is61lv_ctrl_tb.sram_dbus[5] top.sram_is61lv_ctrl_tb.sram_dbus[4] top.sram_is61lv_ctrl_tb.sram_dbus[3] top.sram_is61lv_ctrl_tb.sram_dbus[2] top.sram_is61lv_ctrl_tb.sram_dbus[1] top.sram_is61lv_ctrl_tb.sram_dbus[0]
+@200
+-sram_data (tri-state vector)
+@28
+top.sram_is61lv_ctrl_tb.sram_data[0].t
+top.sram_is61lv_ctrl_tb.sram_data[0].o
+top.sram_is61lv_ctrl_tb.sram_data[0].i
+[pattern_trace] 1
+[pattern_trace] 0
