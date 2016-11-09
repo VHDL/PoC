@@ -30,7 +30,7 @@
 # limitations under the License.
 # ==============================================================================
 #
-
+import operator
 from functools  import reduce
 from operator    import or_
 from sys        import version_info
@@ -48,8 +48,9 @@ class CallByRefParam:
 	def __init__(self, value=None):
 		self.value = value
 
-	def __lshift__(self, other):
+	def __ilshift__(self, other):
 		self.value = other
+		return self
 
 	def __eq__(self, other):  return self.value == other
 	def __ne__(self, other):  return self.value != other
