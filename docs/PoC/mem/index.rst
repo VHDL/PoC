@@ -10,6 +10,7 @@ implementations.
 
  * :doc:`PoC.mem.ddr3 <ddr3/index>` - DDR3 memory controllers
  * :doc:`PoC.mem.ddr2 <ddr2/index>` - DDR2 memory controllers
+ * :doc:`PoC.mem.sram <sram/index>` - SRAM controllers
  * :doc:`PoC.mem.lut <lut/index>` - Lookup-Table (LUT) implementations
  * :doc:`PoC.mem.ocram <ocram/index>` - On-Chip RAM abstraction layer
  * :doc:`PoC.mem.ocrom <ocrom/index>` - On-Chip ROM abstraction layer
@@ -25,6 +26,7 @@ implementations.
 
    ddr3/index
    ddr2/index
+   sram/index
    lut/index
    ocram/index
    ocrom/index
