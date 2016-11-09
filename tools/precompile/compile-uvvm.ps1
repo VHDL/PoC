@@ -5,12 +5,12 @@
 # ==============================================================================
 #	Authors:            Patrick Lehmann
 #
-#	PowerShell Script:  Compile Xilinx's simulation libraries
+#	PowerShell Script:  Compile UVVM's simulation packages
 #
 # Description:
 # ------------------------------------
-#	This PowerShell script compiles Xilinx's Vivado simulation libraries into a
-# local directory.
+#	This PowerShell script compiles UVVM's simulation packages into a local
+#	directory.
 #
 # License:
 # ==============================================================================
@@ -31,34 +31,25 @@
 # ==============================================================================
 
 # .SYNOPSIS
-# This CmdLet pre-compiles the simulation libraries from Xilinx Vivado.
+# This CmdLet pre-compiles the simulation libraries from UVVM.
 #
 # .DESCRIPTION
 # This CmdLet:
-#   (1) Creates a sub-directory 'xilinx-vivado' in the current working directory
-#   (2) Compiles all Xilinx Vivado simulation libraries and packages for
+#   (1) Creates a sub-directory 'uvvm' in the current working directory
+#   (2) Compiles all UVVM simulation libraries and packages for
 #       o GHDL
 #       o QuestaSim
-#   (3) Creates a symlink 'xilinx' -> 'xilinx-vivado'
 #
 [CmdletBinding()]
 param(
 	# Pre-compile all libraries and packages for all simulators.
 	[switch]$All =				$false,
 
-	# Pre-compile the Xilinx Vivado libraries for GHDL.
+	# Pre-compile the UVVM libraries for GHDL.
 	[switch]$GHDL =				$false,
 
-	# Pre-compile the Xilinx Vivado libraries for QuestaSim.
+	# Pre-compile the UVVM libraries for QuestaSim.
 	[switch]$Questa =			$false,
-
-	# Change the 'xilinx' symlink to 'xilinx-vivado'.
-	[switch]$ReLink =			$false,
-
-	# Set VHDL Standard to '93.
-	[switch]$VHDL93 =			$false,
-	# Set VHDL Standard to '08.
-	[switch]$VHDL2008 =		$false,
 
 	# Clean up directory before analyzing.
 	[switch]$Clean =			$false,
@@ -67,7 +58,8 @@ param(
 	[switch]$Help =				$false
 )
 
-$PoCRootDir =		"\..\.."
+$PoCRootDir =						"\..\.."
+$UVVMSourceDirectory =	"lib\uvvm"
 
 # resolve paths
 $WorkingDir =		Get-Location
@@ -92,16 +84,15 @@ if ($Help)
 }
 
 $GHDL,$Questa =			Resolve-Simulator $All $GHDL $Questa
-$VHDL93,$VHDL2008 = Resolve-VHDLVersion $VHDL93 $VHDL2008
 
 $PreCompiledDir =		Get-PrecompiledDirectoryName $PoCPS1
-$XilinxDirName =		Get-XilinxDirectoryName $PoCPS1
-$XilinxDirName2 =		"$XilinxDirName-vivado"
+$UVVMDirName =			"uvvm"
+$SourceDirectory =	"$PoCRootDir\$UVVMSourceDirectory"
 
 # GHDL
 # ==============================================================================
 if ($GHDL)
-{	Write-Host "Pre-compiling Xilinx's simulation libraries for GHDL" -ForegroundColor Cyan
+{	Write-Host "Pre-compiling UVVM's simulation libraries for GHDL" -ForegroundColor Cyan
 	Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Cyan
 
 	$GHDLBinDir =			Get-GHDLBinaryDirectory $PoCPS1
@@ -109,47 +100,26 @@ if ($GHDL)
 	$GHDLDirName =		Get-GHDLDirectoryName $PoCPS1
 
 	# Assemble output directory
-	$DestDir = "$PoCRootDir\$PrecompiledDir\$GHDLDirName"
+	$DestDir = "$PoCRootDir\$PrecompiledDir\$GHDLDirName\$UVVMDirName"
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 
-	$GHDLXilinxScript = "$GHDLScriptDir\compile-xilinx-vivado.ps1"
-	if (-not (Test-Path $GHDLXilinxScript -PathType Leaf))
-	{ Write-Host "[ERROR]: Xilinx compile script '$GHDLXilinxScript' from GHDL not found." -ForegroundColor Red
+	$GHDLUVVMScript = "$GHDLScriptDir\compile-uvvm.ps1"
+	if (-not (Test-Path $GHDLUVVMScript -PathType Leaf))
+	{ Write-Host "[ERROR]: UVVM compile script '$GHDLUVVMScript' from GHDL not found." -ForegroundColor Red
 		Exit-PrecompileScript -1
 	}
-
-	$VivadoInstallDir =	Get-VivadoInstallationDirectory $PoCPS1
-	$SourceDir =				"$VivadoInstallDir\data\vhdl\src"
 
 	# export GHDL environment variable if not allready set
 	if (-not (Test-Path env:GHDL))
 	{	$env:GHDL = $GHDLBinDir		}
 
-	if ($VHDL93)
-	{	$Command = "$GHDLXilinxScript -All -VHDL93 -Source $SourceDir -Output $DestDir\$XilinxDirName2 -Verbose:`$$EnableVerbose -Debug:`$$EnableDebug"
-		Invoke-Expression $Command
-		if ($LastExitCode -ne 0)
-		{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
-			Exit-PrecompileScript -1
-		}
+	$Command = "$GHDLUVVMScript -All -SuppressWarnings -Source $SourceDirectory -Output $DestDir -Verbose:`$$EnableVerbose -Debug:`$$EnableDebug"
+	Invoke-Expression $Command
+	if ($LastExitCode -ne 0)
+	{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
+		Exit-PrecompileScript -1
 	}
-	if ($VHDL2008)
-	{	$Command = "$GHDLXilinxScript -All -VHDL2008 -Source $SourceDir -Output $DestDir\$XilinxDirName2 -Verbose:`$$EnableVerbose -Debug:`$$EnableDebug"
-		Invoke-Expression $Command
-		if ($LastExitCode -ne 0)
-		{	Write-Host "[ERROR]: While executing vendor library compile script from GHDL." -ForegroundColor Red
-			Exit-PrecompileScript -1
-		}
-	}
-
-	if (Test-Path $XilinxDirName -PathType Leaf)
-	{	rm $XilinxDirName -ErrorAction SilentlyContinue		}
-	# New-Symlink $XilinxDirName2 $XilinxDirName -ErrorAction SilentlyContinue
-	# if ($LastExitCode -ne 0)
-	# {	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
-		# Exit-PrecompileScript -1
-	# }
 
 	# restore working directory
 	cd $WorkingDir
@@ -159,52 +129,88 @@ if ($GHDL)
 # QuestaSim/ModelSim
 # ==============================================================================
 if ($Questa)
-{	Write-Host "Pre-compiling Xilinx's simulation libraries for QuestaSim" -ForegroundColor Cyan
+{	Write-Host "Pre-compiling UVVM's simulation libraries for QuestaSim" -ForegroundColor Cyan
 	Write-Host "--------------------------------------------------------------------------------" -ForegroundColor Cyan
 
 	$VSimBinDir =			Get-ModelSimBinaryDirectory $PoCPS1
 	$VSimDirName =		Get-QuestaSimDirectoryName $PoCPS1
 
 	# Assemble output directory
-	$DestDir="$PoCRootDir\$PrecompiledDir\$VSimDirName\$XilinxDirName2"
+	$DestDir = (Convert-Path (Resolve-Path "$PoCRootDir\$PrecompiledDir\$VSimDirName")) + "\$UVVMDirName"
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
+	cd ..
 
-	$VivadoBinDir = Get-VivadoBinaryDirectory $PoCPS1
-	$Vivado_tcl =		"$VivadoBinDir\vivado.bat"
-	Open-VivadoEnvironment $PoCPS1
+	$Library = "uvvm_util"
+	$Files = @(
+		"uvvm_util\src\types_pkg.vhd",
+		"uvvm_util\src\adaptations_pkg.vhd",
+		"uvvm_util\src\string_methods_pkg.vhd",
+		"uvvm_util\src\protected_types_pkg.vhd",
+		"uvvm_util\src\hierarchy_linked_list_pkg.vhd",
+		"uvvm_util\src\alert_hierarchy_pkg.vhd",
+		"uvvm_util\src\license_pkg.vhd",
+		"uvvm_util\src\methods_pkg.vhd",
+		"uvvm_util\src\bfm_common_pkg.vhd",
+		"uvvm_util\src\uvvm_util_context.vhd"
+	)
+	$SourceFiles = $Files | % { "$SourceDirectory\$_" }
 
-	New-ModelSim_ini
+	# Compile libraries with vcom, executed in destination directory
+	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
+	& "$VSimBinDir\vlib.exe" $Library
+	& "$VSimBinDir\vmap.exe" -del $Library
+	& "$VSimBinDir\vmap.exe" $Library "$DestDir"
 
-	$Simulator =	"questa"
-	$Language =		"all"
-	$Library =		"all"
-	$Family =			"all"
-
-	$CommandFile = "vivado.tcl"
-	$VSimBinDir_TclPath =	$VSimBinDir.Replace("\", "/")
-	$DestDir_TclPath =		$DestDir.Replace("\", "/")
-	"compile_simlib -force -library $Library -family $Family -language $Language -simulator $Simulator -simulator_exec_path $VSimBinDir_TclPath -directory $DestDir_TclPath`nexit" | Out-File $CommandFile -Encoding ascii
-	if (-not $?)
-	{	Write-Host "[ERROR]: Cannot create temporary tcl script." -ForegroundColor Red
-		Exit-PrecompileScript -1
+	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
+	$ErrorCount += 0
+	foreach ($File in $SourceFiles)
+	{	Write-Host "Compiling '$File'..." -ForegroundColor Cyan
+		$InvokeExpr = "$VSimBinDir\vcom.exe -suppress 1346,1236 -2008 -work $Library " + $File + " 2>&1"
+		Invoke-Expression $InvokeExpr
+		if ($LastExitCode -ne 0)
+		{	$ErrorCount += 1
+			if ($HaltOnError)
+			{	break		}
+		}
 	}
 
-	$Command = "$Vivado_tcl -mode batch -source $CommandFile"
-	Invoke-Expression $Command
-	if ($LastExitCode -ne 0)
-	{	Write-Host "[ERROR]: Error while compiling Xilinx Vivado libraries." -ForegroundColor Red
-		Exit-PrecompileScript -1
+
+	$UVVMDirName =			"uvvm_vvc_framework"
+	# Assemble output directory
+	$DestDir = (Convert-Path (Resolve-Path "$PoCRootDir\$PrecompiledDir\$VSimDirName")) + "\$UVVMDirName"
+	# Create and change to destination directory
+	Initialize-DestinationDirectory $DestDir
+	cd ..
+
+	$Library = "uvvm_vvc_framework"
+	$Files = @(
+		"uvvm_vvc\src\ti_vvc_framework_support_pkg.vhd",
+		"uvvm_vvc\src\ti_generic_queue_pkg.vhd",
+		"uvvm_vvc\src\ti_data_queue_pkg.vhd",
+		"uvvm_vvc\src\ti_data_fifo_pkg.vhd",
+		"uvvm_vvc\src\ti_data_stack_pkg.vhd"
+	)
+	$SourceFiles = $Files | % { "$SourceDirectory\$_" }
+
+	# Compile libraries with vcom, executed in destination directory
+	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
+	& "$VSimBinDir\vlib.exe" $Library
+	& "$VSimBinDir\vmap.exe" -del $Library
+	& "$VSimBinDir\vmap.exe" $Library "$DestDir"
+
+	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
+	$ErrorCount += 0
+	foreach ($File in $SourceFiles)
+	{	Write-Host "Compiling '$File'..." -ForegroundColor Cyan
+		$InvokeExpr = "$VSimBinDir\vcom.exe -suppress 1346,1236 -2008 -work $Library " + $File + " 2>&1"
+		Invoke-Expression $InvokeExpr
+		if ($LastExitCode -ne 0)
+		{	$ErrorCount += 1
+			if ($HaltOnError)
+			{	break		}
+		}
 	}
-
-	rm $XilinxDirName -ErrorAction SilentlyContinue
-	# New-Symlink $XilinxDirName2 $XilinxDirName -ErrorAction SilentlyContinue
-	# if ($LastExitCode -ne 0)
-	# {	Write-Host "[ERROR]: While creating a symlink. Not enough rights?" -ForegroundColor Red
-		# Exit-PrecompileScript -1
-	# }
-
-	Close-VivadoEnvironment
 
 	# restore working directory
 	cd $WorkingDir

@@ -104,7 +104,7 @@ if ($GHDL)
 	$GHDLDirName =		Get-GHDLDirectoryName $PoCPS1
 
 	# Assemble output directory
-	$DestDir="$PoCRootDir\$PrecompiledDir\$GHDLDirName"
+	$DestDir = "$PoCRootDir\$PrecompiledDir\$GHDLDirName"
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
 
