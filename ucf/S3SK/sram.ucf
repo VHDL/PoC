@@ -1,37 +1,3 @@
-#####################################################
-### SPARTAN-3 STARTER KIT BOARD CONSTRAINTS FILE
-###
-### Taken from Xilinx User Guide.
-###
-### Changes by Martin Zabel:
-### - Adjusted signal names.
-### - Added timing constraints.
-#####################################################
-
-# === Common ===
-TIMEGRP RFFS = RISING FFS;
-TIMEGRP FFFS = FALLING FFS;
-
-# ==== Pushbuttons =====
-NET "rst_in"  LOC = "L14" | IOSTANDARD = LVCMOS33 ;
-
-# === Clock Inputs ===
-NET "clk_in"  LOC = "T9" | IOSTANDARD = LVCMOS33 ;
-
-NET "clk_in" TNM_NET = "clk_in";
-TIMESPEC "TS_clk" = PERIOD "clk_in" 20 ns HIGH 50 %;
-
-# === LEDs ===
-NET "led<0>"  LOC = "K12" | IOSTANDARD = LVCMOS33 ;
-NET "led<1>"  LOC = "P14" | IOSTANDARD = LVCMOS33 ;
-NET "led<2>"  LOC = "L12" | IOSTANDARD = LVCMOS33 ;
-NET "led<3>"  LOC = "N14" | IOSTANDARD = LVCMOS33 ;
-NET "led<4>"  LOC = "P13" | IOSTANDARD = LVCMOS33 ;
-NET "led<5>"  LOC = "N12" | IOSTANDARD = LVCMOS33 ;
-NET "led<6>"  LOC = "P12" | IOSTANDARD = LVCMOS33 ;
-NET "led<7>"  LOC = "P11" | IOSTANDARD = LVCMOS33 ;
-
-# === SRAM ===
 NET "sram_addr<0>"   LOC = "L5" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
 NET "sram_addr<10>"  LOC = "G5" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
 NET "sram_addr<11>"  LOC = "H3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
@@ -91,22 +57,27 @@ NET "sram_ub_n<0>"   LOC = "T4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
 NET "sram_ub_n<1>"   LOC = "R4" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
 NET "sram_we_n"      LOC = "G3" | IOSTANDARD = LVCMOS33  | SLEW = FAST ;
 
-INST "sram_data[*]" TNM = "sram_data_pads";
-INST "sram_oe_n"    TNM = "sram_ctrl_pads";
-INST "sram_ce_n[*]" TNM = "sram_ctrl_pads";
-INST "sram_lb_n[*]" TNM = "sram_ctrl_pads";
-INST "sram_ub_n[*]" TNM = "sram_ctrl_pads";
-INST "sram_addr[*]" TNM = "sram_ctrl_pads";
-
+# Timing Constraints Example
+# ==========================
 #
+#TIMEGRP RFFS = RISING FFS;
+#TIMEGRP FFFS = FALLING FFS;
+#
+#INST "sram_data[*]" TNM = "sram_data_pads";
+#INST "sram_oe_n"    TNM = "sram_ctrl_pads";
+#INST "sram_ce_n[*]" TNM = "sram_ctrl_pads";
+#INST "sram_lb_n[*]" TNM = "sram_ctrl_pads";
+#INST "sram_ub_n[*]" TNM = "sram_ctrl_pads";
+#INST "sram_addr[*]" TNM = "sram_ctrl_pads";
+
 # Setup if DCM is used.
 #
-TIMEGRP "sram_ctrl_pads" OFFSET = OUT 3 ns AFTER "clk_in"  ;
-TIMEGRP "sram_data_pads" OFFSET = IN  7 ns VALID 7 ns BEFORE "clk_in"  ;
-TIMEGRP "sram_data_pads" OFFSET = OUT 3 ns AFTER "clk_in"  ;
+#TIMEGRP "sram_ctrl_pads" OFFSET = OUT 3 ns AFTER "clk_in"  ;
+#TIMEGRP "sram_data_pads" OFFSET = IN  7 ns VALID 7 ns BEFORE "clk_in"  ;
+#TIMEGRP "sram_data_pads" OFFSET = OUT 3 ns AFTER "clk_in"  ;
 
-NET "sram_we_n" OFFSET = OUT  3 ns AFTER "clk_in" TIMEGRP RFFS;
-NET "sram_we_n" OFFSET = OUT 13 ns AFTER "clk_in" TIMEGRP FFFS;
+#NET "sram_we_n" OFFSET = OUT  3 ns AFTER "clk_in" TIMEGRP RFFS;
+#NET "sram_we_n" OFFSET = OUT 13 ns AFTER "clk_in" TIMEGRP FFFS;
 
 #
 # Setup if DCM is not used.
