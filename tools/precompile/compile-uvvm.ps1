@@ -136,10 +136,10 @@ if ($Questa)
 	$VSimDirName =		Get-QuestaSimDirectoryName $PoCPS1
 
 	# Assemble output directory
-	$DestDir = (Convert-Path (Resolve-Path "$PoCRootDir\$PrecompiledDir\$VSimDirName")) + "\$UVVMDirName"
+	$DestDir="$PoCRootDir\$PrecompiledDir\$VSimDirName\$UVVMDirName"
 	# Create and change to destination directory
 	Initialize-DestinationDirectory $DestDir
-	cd ..
+
 
 	$Library = "uvvm_util"
 	$Files = @(
@@ -158,16 +158,19 @@ if ($Questa)
 
 	# Compile libraries with vcom, executed in destination directory
 	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
-	& "$VSimBinDir\vlib.exe" $Library
-	& "$VSimBinDir\vmap.exe" -del $Library
-	& "$VSimBinDir\vmap.exe" $Library "$DestDir"
+	$InvokeExpr = "$VSimBinDir\vlib.exe " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVLibLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe -del " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe " + $Library + " $DestDir\$Library 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
 
 	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
 	$ErrorCount += 0
 	foreach ($File in $SourceFiles)
-	{	Write-Host "Compiling '$File'..." -ForegroundColor Cyan
+	{	Write-Host "Compiling '$File'..." -ForegroundColor DarkCyan
 		$InvokeExpr = "$VSimBinDir\vcom.exe -suppress 1346,1236 -2008 -work $Library " + $File + " 2>&1"
-		Invoke-Expression $InvokeExpr
+		$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVComLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
 		if ($LastExitCode -ne 0)
 		{	$ErrorCount += 1
 			if ($HaltOnError)
@@ -176,35 +179,213 @@ if ($Questa)
 	}
 
 
-	$UVVMDirName =			"uvvm_vvc_framework"
-	# Assemble output directory
-	$DestDir = (Convert-Path (Resolve-Path "$PoCRootDir\$PrecompiledDir\$VSimDirName")) + "\$UVVMDirName"
-	# Create and change to destination directory
-	Initialize-DestinationDirectory $DestDir
-	cd ..
-
 	$Library = "uvvm_vvc_framework"
 	$Files = @(
-		"uvvm_vvc\src\ti_vvc_framework_support_pkg.vhd",
-		"uvvm_vvc\src\ti_generic_queue_pkg.vhd",
-		"uvvm_vvc\src\ti_data_queue_pkg.vhd",
-		"uvvm_vvc\src\ti_data_fifo_pkg.vhd",
-		"uvvm_vvc\src\ti_data_stack_pkg.vhd"
+		"uvvm_vvc_framework\src\ti_vvc_framework_support_pkg.vhd",
+		"uvvm_vvc_framework\src\ti_generic_queue_pkg.vhd",
+		"uvvm_vvc_framework\src\ti_data_queue_pkg.vhd",
+		"uvvm_vvc_framework\src\ti_data_fifo_pkg.vhd",
+		"uvvm_vvc_framework\src\ti_data_stack_pkg.vhd"
 	)
 	$SourceFiles = $Files | % { "$SourceDirectory\$_" }
 
 	# Compile libraries with vcom, executed in destination directory
 	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
-	& "$VSimBinDir\vlib.exe" $Library
-	& "$VSimBinDir\vmap.exe" -del $Library
-	& "$VSimBinDir\vmap.exe" $Library "$DestDir"
+	$InvokeExpr = "$VSimBinDir\vlib.exe " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVLibLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe -del " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe " + $Library + " $DestDir\$Library 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
 
 	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
 	$ErrorCount += 0
 	foreach ($File in $SourceFiles)
-	{	Write-Host "Compiling '$File'..." -ForegroundColor Cyan
+	{	Write-Host "Compiling '$File'..." -ForegroundColor DarkCyan
 		$InvokeExpr = "$VSimBinDir\vcom.exe -suppress 1346,1236 -2008 -work $Library " + $File + " 2>&1"
-		Invoke-Expression $InvokeExpr
+		$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVComLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+		if ($LastExitCode -ne 0)
+		{	$ErrorCount += 1
+			if ($HaltOnError)
+			{	break		}
+		}
+	}
+
+
+	$Library = "bitvis_vip_axilite"
+	$Files = @(
+		"bitvis_vip_axilite\src\axilite_bfm_pkg.vhd",
+		"bitvis_vip_axilite\src\vvc_cmd_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_target_support_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_vvc_framework_common_methods_pkg.vhd",
+		"bitvis_vip_axilite\src\vvc_methods_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_queue_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_vvc_entity_support_pkg.vhd",
+		"bitvis_vip_axilite\src\axilite_vvc.vhd"
+	)
+	$SourceFiles = $Files | % { "$SourceDirectory\$_" }
+
+	# Compile libraries with vcom, executed in destination directory
+	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
+	$InvokeExpr = "$VSimBinDir\vlib.exe " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVLibLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe -del " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe " + $Library + " $DestDir\$Library 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+
+	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
+	$ErrorCount += 0
+	foreach ($File in $SourceFiles)
+	{	Write-Host "Compiling '$File'..." -ForegroundColor DarkCyan
+		$InvokeExpr = "$VSimBinDir\vcom.exe -suppress 1346,1236 -2008 -work $Library " + $File + " 2>&1"
+		$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVComLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+		if ($LastExitCode -ne 0)
+		{	$ErrorCount += 1
+			if ($HaltOnError)
+			{	break		}
+		}
+	}
+
+
+	$Library = "bitvis_vip_axistream"
+	$Files = @(
+		"bitvis_vip_axistream\src\axistream_bfm_pkg.vhd",
+		"bitvis_vip_axistream\src\vvc_cmd_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_target_support_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_vvc_framework_common_methods_pkg.vhd",
+		"bitvis_vip_axistream\src\vvc_methods_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_queue_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_vvc_entity_support_pkg.vhd",
+		"bitvis_vip_axistream\src\axistream_vvc.vhd"
+	)
+	$SourceFiles = $Files | % { "$SourceDirectory\$_" }
+
+	# Compile libraries with vcom, executed in destination directory
+	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
+	$InvokeExpr = "$VSimBinDir\vlib.exe " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVLibLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe -del " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe " + $Library + " $DestDir\$Library 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+
+	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
+	$ErrorCount += 0
+	foreach ($File in $SourceFiles)
+	{	Write-Host "Compiling '$File'..." -ForegroundColor DarkCyan
+		$InvokeExpr = "$VSimBinDir\vcom.exe -suppress 1346,1236 -2008 -work $Library " + $File + " 2>&1"
+		$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVComLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+		if ($LastExitCode -ne 0)
+		{	$ErrorCount += 1
+			if ($HaltOnError)
+			{	break		}
+		}
+	}
+
+
+	$Library = "bitvis_vip_i2c"
+	$Files = @(
+		"bitvis_vip_i2c\src\i2c_bfm_pkg.vhd",
+		"bitvis_vip_i2c\src\vvc_cmd_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_target_support_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_vvc_framework_common_methods_pkg.vhd",
+		"bitvis_vip_i2c\src\vvc_methods_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_queue_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_vvc_entity_support_pkg.vhd",
+		"bitvis_vip_i2c\src\i2c_vvc.vhd"
+	)
+	$SourceFiles = $Files | % { "$SourceDirectory\$_" }
+
+	# Compile libraries with vcom, executed in destination directory
+	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
+	$InvokeExpr = "$VSimBinDir\vlib.exe " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVLibLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe -del " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe " + $Library + " $DestDir\$Library 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+
+	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
+	$ErrorCount += 0
+	foreach ($File in $SourceFiles)
+	{	Write-Host "Compiling '$File'..." -ForegroundColor DarkCyan
+		$InvokeExpr = "$VSimBinDir\vcom.exe -suppress 1346,1236 -2008 -work $Library " + $File + " 2>&1"
+		$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVComLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+		if ($LastExitCode -ne 0)
+		{	$ErrorCount += 1
+			if ($HaltOnError)
+			{	break		}
+		}
+	}
+
+
+	$Library = "bitvis_vip_sbi"
+	$Files = @(
+		"bitvis_vip_sbi/src/sbi_bfm_pkg.vhd",
+		"bitvis_vip_sbi/src/vvc_cmd_pkg.vhd",
+		"uvvm_vvc_framework/src_target_dependent/td_target_support_pkg.vhd",
+		"uvvm_vvc_framework/src_target_dependent/td_vvc_framework_common_methods_pkg.vhd",
+		"bitvis_vip_sbi/src/vvc_methods_pkg.vhd",
+		"uvvm_vvc_framework/src_target_dependent/td_queue_pkg.vhd",
+		"uvvm_vvc_framework/src_target_dependent/td_vvc_entity_support_pkg.vhd",
+		"bitvis_vip_sbi/src/sbi_vvc.vhd"
+	)
+	$SourceFiles = $Files | % { "$SourceDirectory\$_" }
+
+	# Compile libraries with vcom, executed in destination directory
+	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
+	$InvokeExpr = "$VSimBinDir\vlib.exe " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVLibLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe -del " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe " + $Library + " $DestDir\$Library 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+
+	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
+	$ErrorCount += 0
+	foreach ($File in $SourceFiles)
+	{	Write-Host "Compiling '$File'..." -ForegroundColor DarkCyan
+		$InvokeExpr = "$VSimBinDir\vcom.exe -suppress 1346,1236 -2008 -work $Library " + $File + " 2>&1"
+		$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVComLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+		if ($LastExitCode -ne 0)
+		{	$ErrorCount += 1
+			if ($HaltOnError)
+			{	break		}
+		}
+	}
+
+
+	$Library = "bitvis_vip_uart"
+	$Files = @(
+		"bitvis_vip_uart\src\uart_bfm_pkg.vhd",
+		"bitvis_vip_uart\src\vvc_cmd_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_target_support_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_vvc_framework_common_methods_pkg.vhd",
+		"bitvis_vip_uart\src\vvc_methods_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_queue_pkg.vhd",
+		"uvvm_vvc_framework\src_target_dependent\td_vvc_entity_support_pkg.vhd",
+		"bitvis_vip_uart\src\uart_rx_vvc.vhd",
+		"bitvis_vip_uart\src\uart_tx_vvc.vhd",
+		"bitvis_vip_uart\src\uart_vvc.vhd"
+	)
+	$SourceFiles = $Files | % { "$SourceDirectory\$_" }
+
+	# Compile libraries with vcom, executed in destination directory
+	Write-Host "Creating library '$Library' with vlib/vmap..." -ForegroundColor Yellow
+	$InvokeExpr = "$VSimBinDir\vlib.exe " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVLibLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe -del " + $Library + " 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+	$InvokeExpr = "$VSimBinDir\vmap.exe " + $Library + " $DestDir\$Library 2>&1"
+	$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVMapLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
+
+	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
+	$ErrorCount += 0
+	foreach ($File in $SourceFiles)
+	{	Write-Host "Compiling '$File'..." -ForegroundColor DarkCyan
+		$InvokeExpr = "$VSimBinDir\vcom.exe -suppress 1346,1236 -2008 -work $Library " + $File + " 2>&1"
+		$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaVComLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
 		if ($LastExitCode -ne 0)
 		{	$ErrorCount += 1
 			if ($HaltOnError)
