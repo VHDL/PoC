@@ -198,16 +198,16 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	# Files
 	Library=uvvm_util
 	Files=(
-		uvvm_util\src\types_pkg.vhd
-		uvvm_util\src\adaptations_pkg.vhd
-		uvvm_util\src\string_methods_pkg.vhd
-		uvvm_util\src\protected_types_pkg.vhd
-		uvvm_util\src\hierarchy_linked_list_pkg.vhd
-		uvvm_util\src\alert_hierarchy_pkg.vhd
-		uvvm_util\src\license_pkg.vhd
-		uvvm_util\src\methods_pkg.vhd
-		uvvm_util\src\bfm_common_pkg.vhd
-		uvvm_util\src\uvvm_util_context.vhd
+		uvvm_util/src/types_pkg.vhd
+		uvvm_util/src/adaptations_pkg.vhd
+		uvvm_util/src/string_methods_pkg.vhd
+		uvvm_util/src/protected_types_pkg.vhd
+		uvvm_util/src/hierarchy_linked_list_pkg.vhd
+		uvvm_util/src/alert_hierarchy_pkg.vhd
+		uvvm_util/src/license_pkg.vhd
+		uvvm_util/src/methods_pkg.vhd
+		uvvm_util/src/bfm_common_pkg.vhd
+		uvvm_util/src/uvvm_util_context.vhd
 	)
 
 	# Compile libraries with vcom, executed in destination directory
