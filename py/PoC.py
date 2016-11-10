@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -75,6 +75,15 @@ from lib.ExtendedConfigParser           import ExtendedConfigParser
 from lib.Functions                      import Init, Exit
 from lib.Parser                         import ParserException
 from lib.pyAttribute                    import Attribute
+
+
+__author__ =      "Patrick Lehmann, Martin Zabel"
+__copyright__ =   "Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture"
+__maintainer__ =  "Patrick Lehmann"
+__email__ =       "Patrick.Lehmann@tu-dresden.de"
+__version__ =     "1.1.0"
+__status__ =      "Production"
+__license__ =     "Apache License 2.0"
 
 
 class PoCEntityAttribute(Attribute):
