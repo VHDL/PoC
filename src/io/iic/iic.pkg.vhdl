@@ -56,7 +56,7 @@ package iic is
 	-- Drive std_logic values from Tri-State signals and in reverse.
 	-- Use this procedure only in simulation
 	procedure io_tristate_driver (
-		signal pcb  : inout T_IO_IIC_SERIAL_PCB;
+		signal pad  : inout T_IO_IIC_SERIAL_PCB;
 		signal iot  : inout T_IO_IIC_SERIAL
 	);
 
@@ -136,16 +136,16 @@ end package;
 
 package body iic is
 	procedure io_tristate_driver (
-		signal pcb  : inout T_IO_IIC_SERIAL_PCB;
+		signal pad  : inout T_IO_IIC_SERIAL_PCB;
 		signal iot  : inout T_IO_IIC_SERIAL
 	) is
 	begin
-		pcb.Clock   <= ite((iot.Clock.t = '1'), 'Z', iot.Clock.o);
-		iot.Clock.i <= pcb.Clock;
+		pad.Clock   <= ite((iot.Clock.t = '1'), 'Z', iot.Clock.o);
+		iot.Clock.i <= pad.Clock;
 		iot.Clock.t <= 'Z';     -- drive all record members
 		iot.Clock.o <= 'Z';     -- drive all record members
-		pcb.Data    <= ite((iot.Data.t = '1'), 'Z', iot.Data.o);
-		iot.Data.i  <= pcb.Data;
+		pad.Data    <= ite((iot.Data.t = '1'), 'Z', iot.Data.o);
+		iot.Data.i  <= pad.Data;
 		iot.Data.t  <= 'Z';     -- drive all record members
 		iot.Data.o  <= 'Z';     -- drive all record members
 	end procedure;
