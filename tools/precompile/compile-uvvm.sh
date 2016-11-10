@@ -123,7 +123,7 @@ if [ $? -ne 0 ]; then
 	exit -1;
 fi
 
-
+UVVMDirName=uvvm
 # GHDL
 # ==============================================================================
 if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
@@ -134,7 +134,7 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	GetGHDLDirectories $PoC_sh
 
 	# Assemble output directory
-	DestDir=$PoCRootDir/$PrecompiledDir/$GHDLDirName
+	DestDir=$PoCRootDir/$PrecompiledDir/$GHDLDirName/$UVVMDirName
 	# Create and change to destination directory
 	# -> $DestinationDirectory
 	CreateDestinationDirectory $DestDir
@@ -179,16 +179,16 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	GetVSimDirectories $PoC_sh
 
 	# Assemble output directory
-	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName
+	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName/$UVVMDirName
 	# Create and change to destination directory
 	# -> $DestinationDirectory
 	CreateDestinationDirectory $DestDir
 
 
-	# clean uvvm directory
-	if [ -d $DestDir/uvvm ]; then
-		echo -e "${YELLOW}Cleaning library 'uvvm' ...${ANSI_NOCOLOR}"
-		rm -rf uvvm
+	# clean uvvm_util directory
+	if [ -d $DestDir/uvvm_util ]; then
+		echo -e "${YELLOW}Cleaning library 'uvvm_util' ...${ANSI_NOCOLOR}"
+		rm -rf uvvm_util
 	fi
 
 	# Get UVVM installation directory
@@ -196,20 +196,18 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	SourceDir=$UVVMInstallDir
 
 	# Files
-	Library=uvvm
+	Library=uvvm_util
 	Files=(
-		NamePkg.vhd
-		OsvvmGlobalPkg.vhd
-		TextUtilPkg.vhd
-		TranscriptPkg.vhd
-		AlertLogPkg.vhd
-		MemoryPkg.vhd
-		MessagePkg.vhd
-		SortListPkg_int.vhd
-		RandomBasePkg.vhd
-		RandomPkg.vhd
-		CoveragePkg.vhd
-		OsvvmContext.vhd
+		uvvm_util\src\types_pkg.vhd
+		uvvm_util\src\adaptations_pkg.vhd
+		uvvm_util\src\string_methods_pkg.vhd
+		uvvm_util\src\protected_types_pkg.vhd
+		uvvm_util\src\hierarchy_linked_list_pkg.vhd
+		uvvm_util\src\alert_hierarchy_pkg.vhd
+		uvvm_util\src\license_pkg.vhd
+		uvvm_util\src\methods_pkg.vhd
+		uvvm_util\src\bfm_common_pkg.vhd
+		uvvm_util\src\uvvm_util_context.vhd
 	)
 
 	# Compile libraries with vcom, executed in destination directory
@@ -222,7 +220,7 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	ERRORCOUNT=0
 	for File in ${Files[@]}; do
 		echo "  Compiling '$File'..."
-		$VSimBinDir/vcom -2008 -work $Library $SourceDir/$File
+		$VSimBinDir/vcom -suppress 1346,1236 -2008 -work $Library $SourceDir/$File
 		if [ $? -ne 0 ]; then
 			let ERRORCOUNT++
 		fi
