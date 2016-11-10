@@ -79,18 +79,18 @@ from lib.pyAttribute                    import Attribute
 
 class PoCEntityAttribute(Attribute):
 	def __call__(self, func):
-		self._AppendAttribute(func, ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="A space separated list of PoC entities."))
+		self._AppendAttribute(func, ArgumentAttribute(metavar="PoC Entity", dest="FQN", type=str, nargs='+', help="A space separated list of PoC entities."))
 		return func
 
 class BoardDeviceAttributeGroup(Attribute):
 	def __call__(self, func):
-		self._AppendAttribute(func, ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name."))
-		self._AppendAttribute(func, ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name."))
+		self._AppendAttribute(func, ArgumentAttribute("--device", metavar="DeviceName", dest="DeviceName", help="The target platform's device name."))
+		self._AppendAttribute(func, ArgumentAttribute("--board", metavar="BoardName", dest="BoardName", help="The target platform's board name."))
 		return func
 
 class VHDLVersionAttribute(Attribute):
 	def __call__(self, func):
-		self._AppendAttribute(func, ArgumentAttribute("--std", metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??"))
+		self._AppendAttribute(func, ArgumentAttribute("--std", metavar="VHDLVersion", dest="VHDLVersion", help="Simulate with VHDL-??"))
 		return func
 
 class GUIModeAttribute(Attribute):
@@ -298,8 +298,8 @@ class PoC(ILogable, ArgParseMixin):
 	@CommonSwitchArgumentAttribute("-d", "--debug",   dest="debug",   help="enable debug mode")
 	@CommonSwitchArgumentAttribute("-v", "--verbose", dest="verbose", help="print out detailed messages")
 	@CommonSwitchArgumentAttribute("-q", "--quiet",   dest="quiet",   help="reduce messages to a minimum")
-	@CommonArgumentAttribute("--sln", metavar="<SolutionID>", dest="SolutionID", help="Solution name")
-	@CommonArgumentAttribute("--prj", metavar="<ProjectID>", dest="ProjectID", help="Solution name")
+	@CommonArgumentAttribute("--sln", metavar="SolutionID", dest="SolutionID", help="Solution name")
+	@CommonArgumentAttribute("--prj", metavar="ProjectID", dest="ProjectID", help="Solution name")
 	def Run(self):
 		ArgParseMixin.Run(self)
 
@@ -333,7 +333,7 @@ class PoC(ILogable, ArgParseMixin):
 	# create the sub-parser for the "help" command
 	# ----------------------------------------------------------------------------
 	@CommandAttribute("help", help="help help")
-	@ArgumentAttribute(metavar="<Command>", dest="Command", type=str, nargs="?", help="Print help page(s) for a command.")
+	@ArgumentAttribute(metavar="Command", dest="Command", type=str, nargs="?", help="Print help page(s) for a command.")
 	def HandleHelp(self, args):
 		self.PrintHeadline()
 		if (args.Command is None):
@@ -352,7 +352,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands") # mccabe:disable=MC0001
 	@CommandAttribute("configure", help="Configure vendor tools for PoC.")
-	@ArgumentAttribute(metavar="<ToolChain>", dest="ToolChain", type=str, nargs="?", help="Specify a tool chain to be configured.")
+	@ArgumentAttribute(metavar="ToolChain", dest="ToolChain", type=str, nargs="?", help="Specify a tool chain to be configured.")
 	def HandleConfiguration(self, args):
 		self.PrintHeadline()
 
@@ -508,7 +508,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("remove-solution", help="Add a solution to PoC.")
-	@ArgumentAttribute(metavar="<SolutionID>", dest="SolutionID", type=str, help="Solution name.")
+	@ArgumentAttribute(metavar="SolutionID", dest="SolutionID", type=str, help="Solution name.")
 	def HandleRemoveSolution(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -565,7 +565,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	# @CommandGroupAttribute("Configuration commands")
 	# @CommandAttribute("remove-project", help="Add a project to PoC.")
-	# @ArgumentAttribute(metavar="<Project>", dest="Project", type=str, help="Project name.")
+	# @ArgumentAttribute(metavar="Project", dest="Project", type=str, help="Project name.")
 	# def HandleRemoveProject(self, args):
 	# 	self.PrintHeadline()
 	# 	self.__PrepareForConfiguration()
@@ -599,7 +599,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	# @CommandGroupAttribute("Configuration commands")
 	# @CommandAttribute("remove-ipcore", help="Add a ipcore to PoC.")
-	# @ArgumentAttribute(metavar="<IPCore>", dest="IPCore", type=str, help="IPCore name.")
+	# @ArgumentAttribute(metavar="IPCore", dest="IPCore", type=str, help="IPCore name.")
 	# def HandleRemoveIPCore(self, args):
 	# 	self.PrintHeadline()
 	# 	self.__PrepareForConfiguration()
@@ -618,7 +618,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	# @CommandGroupAttribute("Configuration commands")
 	# @CommandAttribute("remove-testbench", help="Add a testbench to PoC.")
-	# @ArgumentAttribute(metavar="<Testbench>", dest="Testbench", type=str, help="Testbench name.")
+	# @ArgumentAttribute(metavar="Testbench", dest="Testbench", type=str, help="Testbench name.")
 	# def HandleRemoveTestbench(self, args):
 	# 	self.PrintHeadline()
 	# 	self.__PrepareForConfiguration()
@@ -628,7 +628,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("query", help="Simulate a PoC Entity with Aldec Active-HDL")
-	@ArgumentAttribute(metavar="<Query>", dest="Query", type=str, help="todo help")
+	@ArgumentAttribute(metavar="Query", dest="Query", type=str, help="todo help")
 	def HandleQueryConfiguration(self, args):
 		self.__PrepareForConfiguration()
 		query = Query(self)
@@ -687,7 +687,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands") # mccabe:disable=MC0001
 	@CommandAttribute("list-testbench", help="List all testbenches")
 	@PoCEntityAttribute()
-	@ArgumentAttribute("--kind", metavar="<Kind>", dest="TestbenchKind", help="Testbench kind: VHDL | COCOTB")
+	@ArgumentAttribute("--kind", metavar="Kind", dest="TestbenchKind", help="Testbench kind: VHDL | COCOTB")
 	def HandleListTestbenches(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
@@ -920,7 +920,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("list-netlist", help="List all netlists")
 	@PoCEntityAttribute()
-	@ArgumentAttribute("--kind", metavar="<Kind>", dest="NetlistKind", help="Netlist kind: Lattice | Quartus | XST | CoreGen")
+	@ArgumentAttribute("--kind", metavar="Kind", dest="NetlistKind", help="Netlist kind: Lattice | Quartus | XST | CoreGen")
 	def HandleListNetlist(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()

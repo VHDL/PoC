@@ -42,19 +42,19 @@
 #
 [CmdletBinding()]
 param(
-	# Pre-compile all libraries and packages for all simulators
+	# Pre-compile all libraries and packages for all simulators.
 	[switch]$All =				$false,
 
-	# Pre-compile the OSVVM libraries for GHDL
+	# Pre-compile the OSVVM libraries for GHDL.
 	[switch]$GHDL =				$false,
 
-	# Pre-compile the OSVVM libraries for QuestaSim
+	# Pre-compile the OSVVM libraries for QuestaSim.
 	[switch]$Questa =			$false,
 
 	# Clean up directory before analyzing.
 	[switch]$Clean =			$false,
 
-	# Show the embedded help page(s)
+	# Show the embedded help page(s).
 	[switch]$Help =				$false
 )
 
@@ -168,9 +168,9 @@ if ($Questa)
 	Write-Host "Compiling library '$Library' with vcom..." -ForegroundColor Yellow
 	$ErrorCount += 0
 	foreach ($File in $SourceFiles)
-	{	Write-Host "Compiling '$File'..." -ForegroundColor Cyan
-		$InvokeExpr = "$VSimBinDir\vcom.exe -2008 -work $Library " + $File + " 2>&1"
-		Invoke-Expression $InvokeExpr
+	{	Write-Host "Compiling '$File'..." -ForegroundColor DarkCyan
+		$InvokeExpr = "$VSimBinDir\vcom.exe -suppress 1246 -2008 -work $Library " + $File + " 2>&1"
+		$ErrorRecordFound = Invoke-Expression $InvokeExpr | Restore-NativeCommandStream | Write-ColoredQuestaLine $SuppressWarnings "  " -Verbose:$EnableVerbose -Debug:$EnableDebug
 		if ($LastExitCode -ne 0)
 		{	$ErrorCount += 1
 			if ($HaltOnError)

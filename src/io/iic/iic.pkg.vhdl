@@ -36,9 +36,30 @@ use			IEEE.NUMERIC_STD.all;
 library PoC;
 use			PoC.utils.all;
 use			PoC.physical.all;
+use			PoC.io.all;
 
 
 package iic is
+	type T_IO_IIC_SERIAL is record
+		Clock : T_IO_TRISTATE;
+		Data  : T_IO_TRISTATE;
+	end record;
+
+	type T_IO_IIC_SERIAL_PCB is record
+		Clock : std_logic;
+		Data  : std_logic;
+	end record;
+
+	type T_IO_IIC_SERIAL_VECTOR     is array(natural range <>) of T_IO_IIC_SERIAL;
+	type T_IO_IIC_SERIAL_PCB_VECTOR is array(natural range <>) of T_IO_IIC_SERIAL_PCB;
+
+	-- Drive std_logic values from Tri-State signals and in reverse.
+	-- Use this procedure only in simulation
+	procedure io_tristate_driver (
+		signal pcb  : inout T_IO_IIC_SERIAL_PCB;
+		signal iot  : inout T_IO_IIC_SERIAL
+	);
+
 	-- IICBusController
 	-- ==========================================================================================================================================================
 	type T_IO_IIC_BUSMODE is (
@@ -111,3 +132,21 @@ package iic is
 	type T_IO_IIC_STATUS_VECTOR		is array(natural range <>) of T_IO_IIC_STATUS;
 	type T_IO_IIC_ERROR_VECTOR		is array(natural range <>) of T_IO_IIC_ERROR;
 end package;
+
+
+package body iic is
+	procedure io_tristate_driver (
+		signal pcb  : inout T_IO_IIC_SERIAL_PCB;
+		signal iot  : inout T_IO_IIC_SERIAL
+	) is
+	begin
+		pcb.Clock   <= ite((iot.Clock.t = '1'), 'Z', iot.Clock.o);
+		iot.Clock.i <= pcb.Clock;
+		iot.Clock.t <= 'Z';     -- drive all record members
+		iot.Clock.o <= 'Z';     -- drive all record members
+		pcb.Data    <= ite((iot.Data.t = '1'), 'Z', iot.Data.o);
+		iot.Data.i  <= pcb.Data;
+		iot.Data.t  <= 'Z';     -- drive all record members
+		iot.Data.o  <= 'Z';     -- drive all record members
+	end procedure;
+end package body;
