@@ -4,15 +4,15 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-#	Authors:          Martin Zabel
-#                   Patrick Lehmann
+#	Authors:					Patrick Lehmann
 #
-#	Bash Script:			Compile Altera's simulation libraries
+#	Bash Script:			Compile UVVM simulation packages
 #
 # Description:
 # ------------------------------------
-#	This is a bash script compiles Altera's simulation libraries into a local
-#	directory.
+#	This is a Bash script (executable) which:
+#		- creates a subdirectory in the current working directory
+#		- compiles all UVVM packages
 #
 # License:
 # ==============================================================================
@@ -31,6 +31,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+#
+# configure script here
+UVVMLibDir=lib/uvvm
 
 # work around for Darwin (Mac OS)
 READLINK=readlink; if [[ $(uname) == "Darwin" ]]; then READLINK=greadlink; fi
@@ -49,8 +52,6 @@ source $ScriptDir/shared.sh
 
 # command line argument processing
 NO_COMMAND=1
-VHDL93=0
-VHDL2008=0
 while [[ $# > 0 ]]; do
 	key="$1"
 	case $key in
@@ -73,12 +74,6 @@ while [[ $# > 0 ]]; do
 		HELP=TRUE
 		NO_COMMAND=0
 		;;
-		--vhdl93)
-		VHDL93=1
-		;;
-		--vhdl2008)
-		VHDL2008=1
-		;;
 		*)		# unknown option
 		echo 1>&2 -e "${COLORED_ERROR} Unknown command line option '$key'.${ANSI_NOCOLOR}"
 		exit -1
@@ -95,13 +90,13 @@ if [ "$HELP" == "TRUE" ]; then
 	test $NO_COMMAND -eq 1 && echo 1>&2 -e "\n${COLORED_ERROR} No command selected.${ANSI_NOCOLOR}"
 	echo ""
 	echo "Synopsis:"
-	echo "  Script to compile the Altera Quartus simulation libraries for"
+	echo "  Script to compile the simulation library UVVM for"
 	echo "  - GHDL"
 	echo "  - QuestaSim/ModelSim"
 	echo "  on Linux."
 	echo ""
 	echo "Usage:"
-	echo "  compile-altera.sh [-c] [--help|--all|--ghdl|--questa] [<Options>]"
+	echo "  compile-uvvm.sh [-c] [--help|--all|--ghdl|--questa]"
 	echo ""
 	echo "Common commands:"
 	echo "  -h --help             Print this help page"
@@ -112,10 +107,6 @@ if [ "$HELP" == "TRUE" ]; then
 	echo "     --ghdl             Compile for GHDL."
 	echo "     --questa           Compile for QuestaSim/ModelSim."
 	echo ""
-	echo "Options:"
-	echo "     --vhdl93           Compile for VHDL-93."
-	echo "     --vhdl2008         Compile for VHDL-2008."
-	echo ""
 	exit 0
 fi
 
@@ -124,24 +115,14 @@ if [ "$COMPILE_ALL" == "TRUE" ]; then
 	COMPILE_FOR_GHDL=TRUE
 	COMPILE_FOR_VSIM=TRUE
 fi
-if [ \( $VHDL93 -eq 0 \) -a \( $VHDL2008 -eq 0 \) ]; then
-	VHDL93=1
-	VHDL2008=1
-fi
 
 PrecompiledDir=$($PoC_sh query CONFIG.DirectoryNames:PrecompiledFiles 2>/dev/null)
 if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled directory.${ANSI_NOCOLOR}"
+	echo 1>&2 -e "${COLORED_ERROR} Cannot get precompiled dir.${ANSI_NOCOLOR}"
 	echo 1>&2 -e "${ANSI_RED}$PrecompiledDir${ANSI_NOCOLOR}"
 	exit -1;
 fi
 
-AlteraDirName=$($PoC_sh query CONFIG.DirectoryNames:AlteraSpecificFiles 2>/dev/null)
-if [ $? -ne 0 ]; then
-	echo 1>&2 -e "${COLORED_ERROR} Cannot get Altera directory.${ANSI_NOCOLOR}"
-	echo 1>&2 -e "${ANSI_RED}$AlteraDirName${ANSI_NOCOLOR}"
-	exit -1;
-fi
 
 # GHDL
 # ==============================================================================
@@ -159,19 +140,12 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	CreateDestinationDirectory $DestDir
 
 	# Assemble Altera compile script path
-	GHDLAlteraScript="$($READLINK -f $GHDLScriptDir/compile-altera.sh)"
+	GHDLUVVMScript="$($READLINK -f $GHDLScriptDir/compile-uvvm.sh)"
 
 
-	echo "=> $GHDLAlteraScript"
-
-	# Get Altera installation directory
-	QuartusInstallDir=$($PoC_sh query INSTALL.Altera.Quartus:InstallationDirectory 2>/dev/null)
-	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} Cannot get Altera Quartus installation directory.${ANSI_NOCOLOR}"
-		echo 1>&2 -e "${ANSI_RED}$QuartusInstallDir${ANSI_NOCOLOR}"
-		exit -1;
-	fi
-	SourceDir=$QuartusInstallDir/eda/sim_lib
+	# Get UVVM installation directory
+	UVVMInstallDir=$PoCRootDir/$UVVMLibDir
+	SourceDir=$UVVMInstallDir
 
 	# export GHDL binary dir if not allready set
 	if [ -z $GHDL ]; then
@@ -181,20 +155,19 @@ if [ "$COMPILE_FOR_GHDL" == "TRUE" ]; then
 	BASH=$(which bash)
 
 	# compile all architectures, skip existing and large files, no wanrings
-	if [ $VHDL93 -eq 1 ]; then
-		$BASH $GHDLAlteraScript --all --vhdl93 -s -S -n --src $SourceDir --out $AlteraDirName
-		if [ $? -ne 0 ]; then
-			echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
-			exit -1;
-		fi
+	$BASH $GHDLUVVMScript --all -n --src $SourceDir --out "."
+	if [ $? -ne 0 ]; then
+		echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
+		exit -1;
 	fi
-	if [ $VHDL2008 -eq 1 ]; then
-		$BASH $GHDLAlteraScript --all --vhdl2008 -s -S -n --src $SourceDir --out $AlteraDirName
-		if [ $? -ne 0 ]; then
-			echo 1>&2 -e "${COLORED_ERROR} While executing vendor library compile script from GHDL.${ANSI_NOCOLOR}"
-			exit -1;
-		fi
-	fi
+
+	# # Cleanup
+	# if [ "$CLEAN" == "TRUE" ]; then
+		# echo -e "${YELLOW}Cleaning library 'uvvm' ...${ANSI_NOCOLOR}"
+		# rm -Rf $DestDir 2> /dev/null
+	# fi
+
+	cd $WorkingDir
 fi
 
 # QuestaSim/ModelSim
@@ -206,41 +179,62 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 	GetVSimDirectories $PoC_sh
 
 	# Assemble output directory
-	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName/$AlteraDirName
+	DestDir=$PoCRootDir/$PrecompiledDir/$VSimDirName
 	# Create and change to destination directory
 	# -> $DestinationDirectory
 	CreateDestinationDirectory $DestDir
 
-	QuartusBinDir=$($PoC_sh query INSTALL.Altera.Quartus:BinaryDirectory 2>/dev/null)
-  if [ $? -ne 0 ]; then
-	  echo 1>&2 -e "${COLORED_ERROR} Cannot get Altera Quartus binary directory.${ANSI_NOCOLOR}"
-	  echo 1>&2 -e "${COLORED_MESSAGE} $QuartusBinDir${ANSI_NOCOLOR}"
-		echo 1>&2 -e "${ANSI_YELLOW}Run 'poc.sh configure' to configure your Altera Quartus installation.${ANSI_NOCOLOR}"
-		exit -1;
-  fi
-	Quartus_sh=$QuartusBinDir/quartus_sh
 
-	# create an empty modelsim.ini in the altera directory and add reference to parent modelsim.ini
-	CreateLocalModelsim_ini
-
-
-	Simulator=questasim
-	Language=vhdl
-	TargetArchitectures=("all")		# "cycloneiii" "stratixiv")
-
-	# compile common libraries
-	$Quartus_sh --simlib_comp -tool $Simulator -language $Language -tool_path $VSimBinDir -directory $DestDir -rtl_only
-	if [ $? -ne 0 ]; then
-		echo 1>&2 -e "${COLORED_ERROR} While compiling common libraries.${ANSI_NOCOLOR}"
-		exit -1;
+	# clean uvvm directory
+	if [ -d $DestDir/uvvm ]; then
+		echo -e "${YELLOW}Cleaning library 'uvvm' ...${ANSI_NOCOLOR}"
+		rm -rf uvvm
 	fi
 
-	for Family in ${TargetArchitectures[@]}; do
-		$Quartus_sh --simlib_comp -tool $Simulator -language $Language -family $Family -tool_path $VSimBinDir -directory $DestDir -no_rtl
+	# Get UVVM installation directory
+	UVVMInstallDir=$PoCRootDir/$UVVMLibDir
+	SourceDir=$UVVMInstallDir
+
+	# Files
+	Library=uvvm
+	Files=(
+		NamePkg.vhd
+		OsvvmGlobalPkg.vhd
+		TextUtilPkg.vhd
+		TranscriptPkg.vhd
+		AlertLogPkg.vhd
+		MemoryPkg.vhd
+		MessagePkg.vhd
+		SortListPkg_int.vhd
+		RandomBasePkg.vhd
+		RandomPkg.vhd
+		CoveragePkg.vhd
+		OsvvmContext.vhd
+	)
+
+	# Compile libraries with vcom, executed in destination directory
+	echo -e "${YELLOW}Creating library '$Library' with vlib/vmap...${ANSI_NOCOLOR}"
+	$VSimBinDir/vlib $Library
+	$VSimBinDir/vmap -del $Library
+	$VSimBinDir/vmap $Library $DestDir/$Library
+
+	echo -e "${YELLOW}Compiling library '$Library' with vcom...${ANSI_NOCOLOR}"
+	ERRORCOUNT=0
+	for File in ${Files[@]}; do
+		echo "  Compiling '$File'..."
+		$VSimBinDir/vcom -2008 -work $Library $SourceDir/$File
 		if [ $? -ne 0 ]; then
-			echo 1>&2 -e "${COLORED_ERROR} While compiling family '$Family' libraries.${ANSI_NOCOLOR}"
-			exit -1;
+			let ERRORCOUNT++
 		fi
 	done
-fi
 
+	# print overall result
+	echo -n "Compiling library '$Library' with vcom "
+	if [ $ERRORCOUNT -gt 0 ]; then
+		echo -e $COLORED_FAILED
+	else
+		echo -e $COLORED_SUCCESSFUL
+	fi
+
+	cd $WorkingDir
+fi
