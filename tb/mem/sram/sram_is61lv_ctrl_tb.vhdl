@@ -109,18 +109,6 @@ architecture sim of sram_is61lv_ctrl_tb is
   -- The real data bus
   signal sram_dbus : std_logic_vector(D_BITS-1 downto 0) := (others => 'Z');
 
-  procedure tristate_driver (
-    signal pad : inout std_logic_vector;
-    signal iot : inout T_IO_TRISTATE_VECTOR) is
-  begin
-    for k in pad'range loop
-      pad(k)   <= 'Z' when iot(k).t = '1' else iot(k).o;
-      iot(k).i <= pad(k);
-      iot(k).t <= 'Z';
-      iot(k).o <= 'Z';
-    end loop;
-  end procedure;
-
 begin  -- architecture sim
 
   simInitialize;
@@ -149,13 +137,10 @@ begin  -- architecture sim
       sram_data => sram_data);
 
   -- Tri-state driver on top-level
-  tristate_driver(sram_dbus, sram_data);
-
-  --tri_drv: for i in 0 to D_BITS-1 generate
-  --  sram_dbus(i)   <= 'Z' when sram_data(i).t = '1' else sram_data(i).o;
-  --  sram_data(i).i <= sram_dbus(i);
-  --end generate tri_drv;
-
+  io_tristate_driver(
+		tristate => sram_data,
+		pad      => sram_dbus
+	);
 
   Stimuli : process
     constant simProcessID : T_SIM_PROCESS_ID := simRegisterProcess("Stimuli");
