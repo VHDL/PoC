@@ -226,6 +226,179 @@ if [ "$COMPILE_FOR_VSIM" == "TRUE" ]; then
 		fi
 	done
 
+	# Files
+	Library=uvvm_vvc_framework
+	Files=(
+		uvvm_vvc_framework/src/ti_vvc_framework_support_pkg.vhd
+		uvvm_vvc_framework/src/ti_generic_queue_pkg.vhd
+		uvvm_vvc_framework/src/ti_data_queue_pkg.vhd
+		uvvm_vvc_framework/src/ti_data_fifo_pkg.vhd
+		uvvm_vvc_framework/src/ti_data_stack_pkg.vhd
+	)
+
+	# Compile libraries with vcom, executed in destination directory
+	echo -e "${YELLOW}Creating library '$Library' with vlib/vmap...${ANSI_NOCOLOR}"
+	$VSimBinDir/vlib $Library
+	$VSimBinDir/vmap -del $Library
+	$VSimBinDir/vmap $Library $DestDir/$Library
+
+	echo -e "${YELLOW}Compiling library '$Library' with vcom...${ANSI_NOCOLOR}"
+	ERRORCOUNT=0
+	for File in ${Files[@]}; do
+		echo "  Compiling '$File'..."
+		$VSimBinDir/vcom -suppress 1346,1236 -2008 -work $Library $SourceDir/$File
+		if [ $? -ne 0 ]; then
+			let ERRORCOUNT++
+		fi
+	done
+
+	# Files
+	Library=bitvis_vip_axilite
+	Files=(
+		bitvis_vip_axilite/src/axilite_bfm_pkg.vhd
+		bitvis_vip_axilite/src/vvc_cmd_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_target_support_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_vvc_framework_common_methods_pkg.vhd
+		bitvis_vip_axilite/src/vvc_methods_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_queue_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_vvc_entity_support_pkg.vhd
+		bitvis_vip_axilite/src/axilite_vvc.vhd
+	)
+
+	# Compile libraries with vcom, executed in destination directory
+	echo -e "${YELLOW}Creating library '$Library' with vlib/vmap...${ANSI_NOCOLOR}"
+	$VSimBinDir/vlib $Library
+	$VSimBinDir/vmap -del $Library
+	$VSimBinDir/vmap $Library $DestDir/$Library
+
+	echo -e "${YELLOW}Compiling library '$Library' with vcom...${ANSI_NOCOLOR}"
+	ERRORCOUNT=0
+	for File in ${Files[@]}; do
+		echo "  Compiling '$File'..."
+		$VSimBinDir/vcom -suppress 1346,1236 -2008 -work $Library $SourceDir/$File
+		if [ $? -ne 0 ]; then
+			let ERRORCOUNT++
+		fi
+	done
+
+	# Files
+	Library=bitvis_vip_axistream
+	Files=(
+		bitvis_vip_axistream/src/axistream_bfm_pkg.vhd
+		bitvis_vip_axistream/src/vvc_cmd_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_target_support_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_vvc_framework_common_methods_pkg.vhd
+		bitvis_vip_axistream/src/vvc_methods_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_queue_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_vvc_entity_support_pkg.vhd
+		bitvis_vip_axistream/src/axistream_vvc.vhd
+	)
+
+	# Compile libraries with vcom, executed in destination directory
+	echo -e "${YELLOW}Creating library '$Library' with vlib/vmap...${ANSI_NOCOLOR}"
+	$VSimBinDir/vlib $Library
+	$VSimBinDir/vmap -del $Library
+	$VSimBinDir/vmap $Library $DestDir/$Library
+
+	echo -e "${YELLOW}Compiling library '$Library' with vcom...${ANSI_NOCOLOR}"
+	ERRORCOUNT=0
+	for File in ${Files[@]}; do
+		echo "  Compiling '$File'..."
+		$VSimBinDir/vcom -suppress 1346,1236 -2008 -work $Library $SourceDir/$File
+		if [ $? -ne 0 ]; then
+			let ERRORCOUNT++
+		fi
+	done
+
+	# Files
+	Library=bitvis_vip_i2c
+	Files=(
+		bitvis_vip_i2c/src/i2c_bfm_pkg.vhd
+		bitvis_vip_i2c/src/vvc_cmd_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_target_support_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_vvc_framework_common_methods_pkg.vhd
+		bitvis_vip_i2c/src/vvc_methods_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_queue_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_vvc_entity_support_pkg.vhd
+		bitvis_vip_i2c/src/i2c_vvc.vhd
+	)
+
+	# Compile libraries with vcom, executed in destination directory
+	echo -e "${YELLOW}Creating library '$Library' with vlib/vmap...${ANSI_NOCOLOR}"
+	$VSimBinDir/vlib $Library
+	$VSimBinDir/vmap -del $Library
+	$VSimBinDir/vmap $Library $DestDir/$Library
+
+	echo -e "${YELLOW}Compiling library '$Library' with vcom...${ANSI_NOCOLOR}"
+	ERRORCOUNT=0
+	for File in ${Files[@]}; do
+		echo "  Compiling '$File'..."
+		$VSimBinDir/vcom -suppress 1346,1236 -2008 -work $Library $SourceDir/$File
+		if [ $? -ne 0 ]; then
+			let ERRORCOUNT++
+		fi
+	done
+
+	# Files
+	Library=bitvis_vip_sbi
+	Files=(
+		bitvis_vip_sbi/src/sbi_bfm_pkg.vhd
+		bitvis_vip_sbi/src/vvc_cmd_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_target_support_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_vvc_framework_common_methods_pkg.vhd
+		bitvis_vip_sbi/src/vvc_methods_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_queue_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_vvc_entity_support_pkg.vhd
+		bitvis_vip_sbi/src/sbi_vvc.vhd
+	)
+
+	# Compile libraries with vcom, executed in destination directory
+	echo -e "${YELLOW}Creating library '$Library' with vlib/vmap...${ANSI_NOCOLOR}"
+	$VSimBinDir/vlib $Library
+	$VSimBinDir/vmap -del $Library
+	$VSimBinDir/vmap $Library $DestDir/$Library
+
+	echo -e "${YELLOW}Compiling library '$Library' with vcom...${ANSI_NOCOLOR}"
+	ERRORCOUNT=0
+	for File in ${Files[@]}; do
+		echo "  Compiling '$File'..."
+		$VSimBinDir/vcom -suppress 1346,1236 -2008 -work $Library $SourceDir/$File
+		if [ $? -ne 0 ]; then
+			let ERRORCOUNT++
+		fi
+	done
+
+	# Files
+	Library=bitvis_vip_uart
+	Files=(
+		bitvis_vip_uart/src/uart_bfm_pkg.vhd
+		bitvis_vip_uart/src/vvc_cmd_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_target_support_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_vvc_framework_common_methods_pkg.vhd
+		bitvis_vip_uart/src/vvc_methods_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_queue_pkg.vhd
+		uvvm_vvc_framework/src_target_dependent/td_vvc_entity_support_pkg.vhd
+		bitvis_vip_uart/src/uart_rx_vvc.vhd
+		bitvis_vip_uart/src/uart_tx_vvc.vhd
+		bitvis_vip_uart/src/uart_vvc.vhd
+	)
+
+	# Compile libraries with vcom, executed in destination directory
+	echo -e "${YELLOW}Creating library '$Library' with vlib/vmap...${ANSI_NOCOLOR}"
+	$VSimBinDir/vlib $Library
+	$VSimBinDir/vmap -del $Library
+	$VSimBinDir/vmap $Library $DestDir/$Library
+
+	echo -e "${YELLOW}Compiling library '$Library' with vcom...${ANSI_NOCOLOR}"
+	ERRORCOUNT=0
+	for File in ${Files[@]}; do
+		echo "  Compiling '$File'..."
+		$VSimBinDir/vcom -suppress 1346,1236 -2008 -work $Library $SourceDir/$File
+		if [ $? -ne 0 ]; then
+			let ERRORCOUNT++
+		fi
+	done
+
 	# print overall result
 	echo -n "Compiling library '$Library' with vcom "
 	if [ $ERRORCOUNT -gt 0 ]; then
