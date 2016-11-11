@@ -30,7 +30,6 @@
 # limitations under the License.
 # ==============================================================================
 #
-import operator
 from functools  import reduce
 from operator    import or_
 from sys        import version_info
