@@ -76,19 +76,10 @@ architecture tb of iic_Controller_tb is
 	signal Master_RP_Ack				: std_logic;
 
 	-- tristate interface: STD_LOGIC;
-	signal Master_SerialClock_i	: std_logic;
-	signal Master_SerialClock_o	: std_logic;
-	signal Master_SerialClock_t	: std_logic;
-	signal Master_SerialData_i	: std_logic;
-	signal Master_SerialData_o	: std_logic;
-	signal Master_SerialData_t	: std_logic;
+	signal Master_Serial				: T_IO_IIC_SERIAL;
 
-	signal Slave1_SerialClock_i	: std_logic;
-	signal Slave1_SerialClock_o	: std_logic;
-	signal Slave1_SerialClock_t	: std_logic;
-	signal Slave1_SerialData_i	: std_logic;
-	signal Slave1_SerialData_o	: std_logic;
-	signal Slave1_SerialData_t	: std_logic;
+	signal Slave1_Serial				: T_IO_IIC_SERIAL;
+	signal Slave2_Serial				: T_IO_IIC_SERIAL;
 
 begin
 	-- initialize global simulation status
@@ -100,43 +91,38 @@ begin
 
 	UUT : entity PoC.iic_Controller
 		generic map (
-			DEBUG													=> FALSE,
-			CLOCK_FREQ										=> CLOCK_FREQ,
-			IIC_BUSMODE										=> IO_IIC_BUSMODE_FASTMODEPLUS,	--IO_IIC_BUSMODE_STANDARDMODE,
-			IIC_ADDRESS										=> (7 downto 1 => '0') & '-',
-			ADDRESS_BITS									=> ADDRESS_BITS,
-			DATA_BITS											=> DATA_BITS,
-			ALLOW_MEALY_TRANSITION				=> TRUE
+			DEBUG										=> FALSE,
+			CLOCK_FREQ							=> CLOCK_FREQ,
+			IIC_BUSMODE							=> IO_IIC_BUSMODE_FASTMODEPLUS,	--IO_IIC_BUSMODE_STANDARDMODE,
+			IIC_ADDRESS							=> (7 downto 1 => '0') & '-',
+			ADDRESS_BITS						=> ADDRESS_BITS,
+			DATA_BITS								=> DATA_BITS,
+			ALLOW_MEALY_TRANSITION	=> TRUE
 		)
 		port map (
-			Clock													=> Clock,
-			Reset													=> Reset,
+			Clock										=> Clock,
+			Reset										=> Reset,
 
 			-- IICController master interface
-			Master_Request								=> Master_Request,
-			Master_Grant									=> Master_Grant,
-			Master_Command								=> Master_Command,
-			Master_Status									=> Master_Status,
-			Master_Error									=> Master_Error,
+			Master_Request					=> Master_Request,
+			Master_Grant						=> Master_Grant,
+			Master_Command					=> Master_Command,
+			Master_Status						=> Master_Status,
+			Master_Error						=> Master_Error,
 
-			Master_Address								=> Master_Address,
+			Master_Address					=> Master_Address,
 
-			Master_WP_Valid								=> Master_WP_Valid,
-			Master_WP_Data								=> Master_WP_Data,
-			Master_WP_Last								=> Master_WP_Last,
-			Master_WP_Ack									=> Master_WP_Ack,
-			Master_RP_Valid								=> Master_RP_Valid,
-			Master_RP_Data								=> Master_RP_Data,
-			Master_RP_Last								=> Master_RP_Last,
-			Master_RP_Ack									=> Master_RP_Ack,
+			Master_WP_Valid					=> Master_WP_Valid,
+			Master_WP_Data					=> Master_WP_Data,
+			Master_WP_Last					=> Master_WP_Last,
+			Master_WP_Ack						=> Master_WP_Ack,
+			Master_RP_Valid					=> Master_RP_Valid,
+			Master_RP_Data					=> Master_RP_Data,
+			Master_RP_Last					=> Master_RP_Last,
+			Master_RP_Ack						=> Master_RP_Ack,
 
 			-- tristate interface
-			SerialClock_i									=> Master_SerialClock_i,
-			SerialClock_o									=> Master_SerialClock_o,
-			SerialClock_t									=> Master_SerialClock_t,
-			SerialData_i									=> Master_SerialData_i,
-			SerialData_o									=> Master_SerialData_o,
-			SerialData_t									=> Master_SerialData_t
+			Serial									=> Master_Serial
 		);
 
 	blkSerialClock : block
@@ -147,14 +133,14 @@ begin
 		-- pullup resistor
 		SerialClock_Wire			<= 'H';
 
-		Master_Wire						<= 'L', '0' after 20 ns		when (Master_SerialClock_t = '0') else 'Z' after 100 ns;
-		Slave1_Wire						<= 'L', '0' after 30 ns		when (Slave1_SerialClock_t = '0') else 'Z' after 200 ns;
+		Master_Wire						<= 'L', '0' after 20 ns		when (Master_Serial.Clock.T = '0') else 'Z' after 100 ns;
+		Slave1_Wire						<= 'L', '0' after 30 ns		when (Slave1_Serial.Clock.T = '0') else 'Z' after 200 ns;
 		SerialClock_Wire			<= Master_Wire;
 		SerialClock_Wire			<= Slave1_Wire;
 
 		-- readers
-		Master_SerialClock_i	<= to_X01(SerialClock_Wire) after 40 ns;
-		Slave1_SerialClock_i	<= to_X01(SerialClock_Wire) after 50 ns;
+		Master_Serial.Clock.I	<= to_X01(SerialClock_Wire) after 40 ns;
+		Slave1_Serial.Clock.I	<= to_X01(SerialClock_Wire) after 50 ns;
 	end block;
 
 	blkSerialData : block
@@ -166,14 +152,14 @@ begin
 		SerialData_Wire				<= 'H';
 
 		-- drivers
-		Master_Wire						<= 'L', '0' after 20 ns		when (Master_SerialData_t = '0') else 'Z' after 100 ns;
-		Slave1_Wire						<= 'L', '0' after 30 ns		when (Slave1_SerialData_t = '0') else 'Z' after 200 ns;
+		Master_Wire						<= 'L', '0' after 20 ns		when (Master_Serial.Data.T = '0') else 'Z' after 100 ns;
+		Slave1_Wire						<= 'L', '0' after 30 ns		when (Slave1_Serial.Data.T = '0') else 'Z' after 200 ns;
 		SerialData_Wire				<= Master_Wire;
 		SerialData_Wire				<= Slave1_Wire;
 
 		-- readers
-		Master_SerialData_i		<= to_X01(SerialData_Wire) after 40 ns;
-		Slave1_SerialData_i		<= to_X01(SerialData_Wire) after 50 ns;
+		Master_Serial.Data.I	<= to_X01(SerialData_Wire) after 40 ns;
+		Slave1_Serial.Data.I	<= to_X01(SerialData_Wire) after 50 ns;
 	end block;
 
 	procMaster : process
@@ -268,96 +254,96 @@ begin
 	procAck : process
 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Acknolegements");
 	begin
-		Slave1_SerialClock_o		<= '0';
-		Slave1_SerialClock_t		<= '1';
-		Slave1_SerialData_o			<= '0';
-		Slave1_SerialData_t			<= '1';
+		Slave1_Serial.Clock.O		<= '0';
+		Slave1_Serial.Clock.T		<= '1';
+		Slave1_Serial.Data.O		<= '0';
+		Slave1_Serial.Data.T		<= '1';
 
 		-- ack impulse -> Quick Command Write
 		for i in 1 to 9 loop
-			wait until falling_edge(Slave1_SerialClock_i);
+			wait until falling_edge(Slave1_Serial.Clock.I);
 		end loop;
 
 		wait for 100 ns;
-		Slave1_SerialData_t			<= '0';
-		wait until rising_edge(Slave1_SerialClock_i);
+		Slave1_Serial.Data.T		<= '0';
+		wait until rising_edge(Slave1_Serial.Clock.I);
 		wait for 50 ns;
-		Slave1_SerialData_t			<= '1';
-		wait until rising_edge(Slave1_SerialClock_i);
+		Slave1_Serial.Data.T		<= '1';
+		wait until rising_edge(Slave1_Serial.Clock.I);
 
 		-- ack impulse -> Quick Command Read
 		for i in 1 to 9 loop
-			wait until falling_edge(Slave1_SerialClock_i);
+			wait until falling_edge(Slave1_Serial.Clock.I);
 		end loop;
 
 		wait for 100 ns;
-		Slave1_SerialData_t			<= '0';
-		wait until rising_edge(Slave1_SerialClock_i);
+		Slave1_Serial.Data.T		<= '0';
+		wait until rising_edge(Slave1_Serial.Clock.I);
 		wait for 50 ns;
-		Slave1_SerialData_t			<= '1';
-		wait until rising_edge(Slave1_SerialClock_i);
+		Slave1_Serial.Data.T		<= '1';
+		wait until rising_edge(Slave1_Serial.Clock.I);
 
 		-- ack impulse -> Send Bytes
 		-- Address ACK
 		for i in 1 to 9 loop
-			wait until falling_edge(Slave1_SerialClock_i);
+			wait until falling_edge(Slave1_Serial.Clock.I);
 		end loop;
 
 		wait for 100 ns;
-		Slave1_SerialData_t			<= '0';
-		wait until rising_edge(Slave1_SerialClock_i);
+		Slave1_Serial.Data.T		<= '0';
+		wait until rising_edge(Slave1_Serial.Clock.I);
 		wait for 50 ns;
-		Slave1_SerialData_t			<= '1';
+		Slave1_Serial.Data.T		<= '1';
 
 		-- Data 0 ACK
 		for i in 1 to 9 loop
-			wait until falling_edge(Slave1_SerialClock_i);
+			wait until falling_edge(Slave1_Serial.Clock.I);
 		end loop;
 
 		wait for 100 ns;
-		Slave1_SerialData_t			<= '0';
-		wait until rising_edge(Slave1_SerialClock_i);
+		Slave1_Serial.Data.T		<= '0';
+		wait until rising_edge(Slave1_Serial.Clock.I);
 		wait for 50 ns;
-		Slave1_SerialData_t			<= '1';
+		Slave1_Serial.Data.T		<= '1';
 
 		-- Data 1 ACK
 		for i in 1 to 9 loop
-			wait until falling_edge(Slave1_SerialClock_i);
+			wait until falling_edge(Slave1_Serial.Clock.I);
 		end loop;
 
 		wait for 100 ns;
-		Slave1_SerialData_t			<= '0';
-		wait until rising_edge(Slave1_SerialClock_i);
+		Slave1_Serial.Data.T		<= '0';
+		wait until rising_edge(Slave1_Serial.Clock.I);
 		wait for 50 ns;
-		Slave1_SerialData_t			<= '1';
+		Slave1_Serial.Data.T		<= '1';
 
 		-- Data 2 ACK
 		for i in 1 to 9 loop
-			wait until falling_edge(Slave1_SerialClock_i);
+			wait until falling_edge(Slave1_Serial.Clock.I);
 		end loop;
 
 		wait for 100 ns;
-		Slave1_SerialData_t			<= '0';
-		wait until rising_edge(Slave1_SerialClock_i);
+		Slave1_Serial.Data.T		<= '0';
+		wait until rising_edge(Slave1_Serial.Clock.I);
 		wait for 50 ns;
-		Slave1_SerialData_t			<= '1';
+		Slave1_Serial.Data.T		<= '1';
 
 		-- Data 3 ACK
 		for i in 1 to 9 loop
-			wait until falling_edge(Slave1_SerialClock_i);
+			wait until falling_edge(Slave1_Serial.Clock.I);
 		end loop;
 
 		wait for 100 ns;
-		Slave1_SerialData_t			<= '0';
-		wait until rising_edge(Slave1_SerialClock_i);
+		Slave1_Serial.Data.T		<= '0';
+		wait until rising_edge(Slave1_Serial.Clock.I);
 		wait for 50 ns;
-		Slave1_SerialData_t			<= '1';
-		wait until rising_edge(Slave1_SerialClock_i);
+		Slave1_Serial.Data.T		<= '1';
+		wait until rising_edge(Slave1_Serial.Clock.I);
 
 
 		-- disable this slave
-		Slave1_SerialClock_t		<= '1';
-		Slave1_SerialData_t			<= '1';
+		Slave1_Serial.Clock.T		<= '1';
+		Slave1_Serial.Data.T		<= '1';
 
 		-- This process is finished
 		simDeactivateProcess(simProcessID);

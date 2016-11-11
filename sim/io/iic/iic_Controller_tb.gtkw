@@ -2,10 +2,8 @@
 [*] GTKWave Analyzer v3.3.69 (w)1999-2016 BSI
 [*] Tue Feb 09 18:01:59 2016
 [*]
-[dumpfile] "H:\Austausch\PoC\temp\ghdl\iiC_Controller_tb.ghw"
 [dumpfile_mtime] "Tue Feb 09 17:57:18 2016"
 [dumpfile_size] 10916870
-[savefile] "H:\Austausch\PoC\sim\io\iic\iiC_Controller_tb.gtkw"
 [timestart] 19773000000
 [size] 1676 997
 [pos] -1 -1
