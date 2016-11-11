@@ -4,6 +4,9 @@
 # ==============================================================================
 # Note: all files are relative to PoC root directory
 #
+# UVVM Verification IP for I2C
+include				"lib/UVVM.files"
+
 # PoC.io.iic
 include				"src/io/iic/iic_Controller.files"						# Unit Under Test
 

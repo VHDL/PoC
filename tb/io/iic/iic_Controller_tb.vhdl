@@ -44,6 +44,12 @@ use			PoC.sim_types.all;
 use			PoC.simulation.all;
 use			PoC.waveform.all;
 
+library uvvm_util;
+use			uvvm_util.types_pkg.all;
+
+library bitvis_vip_i2c;
+use			bitvis_vip_i2c.i2c_bfm_pkg.all;
+
 
 entity iic_Controller_tb is
 end entity;
@@ -80,6 +86,7 @@ architecture tb of iic_Controller_tb is
 
 	signal Slave1_Serial				: T_IO_IIC_SERIAL;
 	signal Slave2_Serial				: T_IO_IIC_SERIAL;
+	signal i2c_vvc_if						: T_I2C_IF;
 
 begin
 	-- initialize global simulation status
@@ -129,24 +136,29 @@ begin
 		signal SerialClock_Wire	: std_logic;
 		signal Master_Wire			: std_logic		:= 'Z';
 		signal Slave1_Wire			: std_logic		:= 'Z';
+		signal Slave2_Wire			: std_logic		:= 'Z';
 	begin
 		-- pullup resistor
 		SerialClock_Wire			<= 'H';
 
 		Master_Wire						<= 'L', '0' after 20 ns		when (Master_Serial.Clock.T = '0') else 'Z' after 100 ns;
 		Slave1_Wire						<= 'L', '0' after 30 ns		when (Slave1_Serial.Clock.T = '0') else 'Z' after 200 ns;
+		Slave2_Wire						<= 'L', '0' after 40 ns		when (Slave1_Serial.Clock.T = '0') else 'Z' after 300 ns;
 		SerialClock_Wire			<= Master_Wire;
 		SerialClock_Wire			<= Slave1_Wire;
+		SerialClock_Wire			<= Slave2_Wire;
 
 		-- readers
 		Master_Serial.Clock.I	<= to_X01(SerialClock_Wire) after 40 ns;
 		Slave1_Serial.Clock.I	<= to_X01(SerialClock_Wire) after 50 ns;
+		Slave2_Serial.Clock.I	<= to_X01(SerialClock_Wire) after 60 ns;
 	end block;
 
 	blkSerialData : block
 		signal SerialData_Wire	: std_logic;
 		signal Master_Wire			: std_logic		:= 'Z';
 		signal Slave1_Wire			: std_logic		:= 'Z';
+		signal Slave2_Wire			: std_logic		:= 'Z';
 	begin
 		-- pullup resistor
 		SerialData_Wire				<= 'H';
@@ -154,12 +166,15 @@ begin
 		-- drivers
 		Master_Wire						<= 'L', '0' after 20 ns		when (Master_Serial.Data.T = '0') else 'Z' after 100 ns;
 		Slave1_Wire						<= 'L', '0' after 30 ns		when (Slave1_Serial.Data.T = '0') else 'Z' after 200 ns;
+		Slave2_Wire						<= 'L', '0' after 40 ns		when (Slave1_Serial.Data.T = '0') else 'Z' after 300 ns;
 		SerialData_Wire				<= Master_Wire;
 		SerialData_Wire				<= Slave1_Wire;
+		SerialData_Wire				<= Slave2_Wire;
 
 		-- readers
 		Master_Serial.Data.I	<= to_X01(SerialData_Wire) after 40 ns;
 		Slave1_Serial.Data.I	<= to_X01(SerialData_Wire) after 50 ns;
+		Slave2_Serial.Data.I	<= to_X01(SerialData_Wire) after 60 ns;
 	end block;
 
 	procMaster : process
@@ -349,4 +364,24 @@ begin
 		simDeactivateProcess(simProcessID);
 		wait;  -- forever
 	end process;
+
+
+	i2c_vvc_if.scl				<= Slave2_Serial.Clock.I;
+	Slave2_Serial.Clock.T	<= not i2c_vvc_if.scl;
+	i2c_vvc_if.sda				<= Slave2_Serial.Clock.I;
+	Slave2_Serial.Clock.T	<= not i2c_vvc_if.sda;
+
+
+	IIC_VVC : entity bitvis_vip_i2c.i2c_vvc
+		generic map (
+			GC_INSTANCE_IDX                       => 1,  -- Instance index for this I2C_VVCT instance
+			GC_MASTER_MODE                        => true,
+			GC_I2C_CONFIG                         => C_I2C_BFM_CONFIG_DEFAULT,  -- Behavior specification for BFM
+			GC_CMD_QUEUE_COUNT_MAX                => 1000,
+			GC_CMD_QUEUE_COUNT_THRESHOLD          => 950,
+			GC_CMD_QUEUE_COUNT_THRESHOLD_SEVERITY => warning
+		)
+		port map (
+			i2c_vvc_if		=> i2c_vvc_if
+		);
 end architecture;
