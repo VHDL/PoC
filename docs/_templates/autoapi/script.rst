@@ -1,5 +1,5 @@
 
-{{ node.name }}
+{{ node.name }}.py
 =={{ '=' * node.name|length }}==
 
 .. automodule:: {{ node.name }}
