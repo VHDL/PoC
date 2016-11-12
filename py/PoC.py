@@ -833,7 +833,7 @@ class PoC(ILogable, ArgParseMixin):
 		vhdlVersion =  self._ExtractVHDLVersion(args.VHDLVersion)
 
 		simulator = GHDLSimulator(self, self.DryRun, args.GUIMode)
-		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion, guiMode=args.GUIMode)		#, vhdlGenerics=None)
+		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)		#, vhdlGenerics=None)
 
 		Exit.exit(0 if allPassed else 1)
 
@@ -1129,6 +1129,15 @@ class PoC(ILogable, ArgParseMixin):
 
 # main program
 def main(): # mccabe:disable=MC0001
+	"""
+	This is the entry point for PoC.py written as a function.
+
+	1. It extracts common flags from the script's arguments list, before :py:class:`argparse.ArgumentParser` is fully loaded.
+	2. It initializes colorama for colored outputs
+	3. It creates an instance of PoC and hands over to class based execution. All is wrapped in a big ``try..except`` block to catch every unhandled exception.
+	4. Shutdown the script and return its exit code.
+	"""
+
 	dryRun =  "--dryrun"  in sys_argv
 	debug =   "-d"        in sys_argv
 	verbose = "-v"        in sys_argv

@@ -55,9 +55,7 @@ class Simulator(BaseSimulator):
 	_COCOTB_SIMBUILD_DIRECTORY = "sim_build"
 
 	def __init__(self, host, dryRun, guiMode):
-		super().__init__(host, dryRun)
-
-		self._guiMode =       guiMode
+		super().__init__(host, dryRun, guiMode)
 
 		configSection =                 host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working =      host.Directories.Temp / configSection['CocotbFiles']
