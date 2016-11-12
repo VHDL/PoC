@@ -46,26 +46,21 @@ use			PoC.iic.all;
 
 entity iic_BusController is
 	generic (
-		CLOCK_FREQ										: FREQ													:= 100 MHz;
-		ADD_INPUT_SYNCHRONIZER				: boolean												:= FALSE;
-		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;			-- 100 kHz
-		ALLOW_MEALY_TRANSITION				: boolean												:= TRUE
+		CLOCK_FREQ							: FREQ													:= 100 MHz;
+		ADD_INPUT_SYNCHRONIZER	: boolean												:= FALSE;
+		IIC_BUSMODE							: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;			-- 100 kHz
+		ALLOW_MEALY_TRANSITION	: boolean												:= TRUE
 	);
 	port (
-		Clock													: in	std_logic;
-		Reset													: in	std_logic;
+		Clock										: in	std_logic;
+		Reset										: in	std_logic;
 
-		Request												: in	std_logic;
-		Grant													: out	std_logic;
-		Command												: in	T_IO_IICBUS_COMMAND;
-		Status												: out	T_IO_IICBUS_STATUS;
+		Request									: in	std_logic;
+		Grant										: out	std_logic;
+		Command									: in	T_IO_IICBUS_COMMAND;
+		Status									: out	T_IO_IICBUS_STATUS;
 
-		SerialClock_i									: in	std_logic;
-		SerialClock_o									: out	std_logic;
-		SerialClock_t									: out	std_logic;
-		SerialData_i									: in	std_logic;
-		SerialData_o									: out	std_logic;
-		SerialData_t									: out	std_logic
+		Serial									: inout T_IO_IIC_SERIAL
 	);
 end entity;
 
@@ -330,8 +325,8 @@ architecture rtl of iic_BusController is
 begin
 
 	genSync0 : if not ADD_INPUT_SYNCHRONIZER generate
-		SerialClock_raw		<= SerialClock_i;
-		SerialData_raw		<= SerialData_i;
+		SerialClock_raw		<= Serial.Clock.I;
+		SerialData_raw		<= Serial.Data.I;
 	end generate;
 	genSync1 : if ADD_INPUT_SYNCHRONIZER generate
 		sync : entity PoC.sync_Bits
@@ -340,21 +335,21 @@ begin
 			)
 			port map (
 				Clock			=> Clock,							-- Clock to be synchronized to
-				Input(0)	=> SerialClock_i,			-- Data to be synchronized
-				Input(1)	=> SerialData_i,			-- Data to be synchronized
+				Input(0)	=> Serial.Clock.I,		-- Data to be synchronized
+				Input(1)	=> Serial.Data.I,			-- Data to be synchronized
 				Output(0)	=> SerialClock_raw,		-- synchronised data
 				Output(1)	=> SerialData_raw			-- synchronised data
 			);
 	end generate;
 
 	-- Output D-FFs
-	SerialClock_o			<= '0';
 	SerialClock_t_d		<= SerialClock_t_r		when rising_edge(Clock);
-	SerialClock_t			<= SerialClock_t_d;
+	Serial.Clock.T		<= SerialClock_t_d;
+	Serial.Clock.O		<= '0';
 
-	SerialData_o			<= '0';
 	SerialData_t_d		<= SerialData_t_r			when rising_edge(Clock);
-	SerialData_t			<= SerialData_t_d;
+	Serial.Data.T			<= SerialData_t_d;
+	Serial.Data.O			<= '0';
 
 	genSpikeSupp0 : if (TIME_SPIKE_SUPPRESSION <= to_time(CLOCK_FREQ)) generate
 		SerialClockIn	<= SerialClock_raw;

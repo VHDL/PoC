@@ -46,43 +46,38 @@ use			PoC.iic.all;
 
 entity iic_Controller is
 	generic (
-		DEBUG													: boolean												:= FALSE;
-		CLOCK_FREQ										: FREQ													:= 100 MHz;
-		IIC_BUSMODE										: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;
-		IIC_ADDRESS										: std_logic_vector							:= (7 downto 1 => '0') & '-';
-		ADDRESS_BITS									: positive											:= 7;
-		DATA_BITS											: positive											:= 8;
-		ALLOW_MEALY_TRANSITION				: boolean												:= TRUE
+		DEBUG										: boolean												:= FALSE;
+		CLOCK_FREQ							: FREQ													:= 100 MHz;
+		IIC_BUSMODE							: T_IO_IIC_BUSMODE							:= IO_IIC_BUSMODE_STANDARDMODE;
+		IIC_ADDRESS							: std_logic_vector							:= (7 downto 1 => '0') & '-';
+		ADDRESS_BITS						: positive											:= 7;
+		DATA_BITS								: positive											:= 8;
+		ALLOW_MEALY_TRANSITION	: boolean												:= TRUE
 	);
 	port (
-		Clock													: in	std_logic;
-		Reset													: in	std_logic;
+		Clock										: in	std_logic;
+		Reset										: in	std_logic;
 
 		-- IICController master interface
-		Master_Request								: in	std_logic;
-		Master_Grant									: out	std_logic;
-		Master_Command								: in	T_IO_IIC_COMMAND;
-		Master_Status									: out	T_IO_IIC_STATUS;
-		Master_Error									: out	T_IO_IIC_ERROR;
+		Master_Request					: in	std_logic;
+		Master_Grant						: out	std_logic;
+		Master_Command					: in	T_IO_IIC_COMMAND;
+		Master_Status						: out	T_IO_IIC_STATUS;
+		Master_Error						: out	T_IO_IIC_ERROR;
 
-		Master_Address								: in	std_logic_vector(ADDRESS_BITS - 1 downto 0);
+		Master_Address					: in	std_logic_vector(ADDRESS_BITS - 1 downto 0);
 
-		Master_WP_Valid								: in	std_logic;
-		Master_WP_Data								: in	std_logic_vector(DATA_BITS - 1 downto 0);
-		Master_WP_Last								: in	std_logic;
-		Master_WP_Ack									: out	std_logic;
-		Master_RP_Valid								: out	std_logic;
-		Master_RP_Data								: out	std_logic_vector(DATA_BITS - 1 downto 0);
-		Master_RP_Last								: out	std_logic;
-		Master_RP_Ack									: in	std_logic;
+		Master_WP_Valid					: in	std_logic;
+		Master_WP_Data					: in	std_logic_vector(DATA_BITS - 1 downto 0);
+		Master_WP_Last					: in	std_logic;
+		Master_WP_Ack						: out	std_logic;
+		Master_RP_Valid					: out	std_logic;
+		Master_RP_Data					: out	std_logic_vector(DATA_BITS - 1 downto 0);
+		Master_RP_Last					: out	std_logic;
+		Master_RP_Ack						: in	std_logic;
 
 		-- tristate interface
-		SerialClock_i									: in	std_logic;
-		SerialClock_o									: out	std_logic;
-		SerialClock_t									: out	std_logic;
-		SerialData_i									: in	std_logic;
-		SerialData_o									: out	std_logic;
-		SerialData_t									: out	std_logic
+		Serial									: inout T_IO_IIC_SERIAL
 	);
 end entity;
 
@@ -1055,30 +1050,23 @@ begin
 
 	IICBC : entity PoC.iic_BusController
 		generic map (
-			CLOCK_FREQ										=> CLOCK_FREQ,
-			IIC_BUSMODE										=> IIC_BUSMODE,
-			ALLOW_MEALY_TRANSITION				=> ALLOW_MEALY_TRANSITION
+			CLOCK_FREQ							=> CLOCK_FREQ,
+			IIC_BUSMODE							=> IIC_BUSMODE,
+			ALLOW_MEALY_TRANSITION	=> ALLOW_MEALY_TRANSITION
 		)
 		port map (
-			Clock													=> Clock,
-			Reset													=> Reset,
+			Clock										=> Clock,
+			Reset										=> Reset,
 
-			Request												=> IICBC_Request,
-			Grant													=> IICBC_Grant,
+			Request									=> IICBC_Request,
+			Grant										=> IICBC_Grant,
 
-			Command												=> IICBC_Command,
-			Status												=> IICBC_Status,
+			Command									=> IICBC_Command,
+			Status									=> IICBC_Status,
 
-			SerialClock_i									=> SerialClock_i,
-			SerialClock_o									=> SerialClock_o,
-			SerialClock_t									=> SerialClock_t_i,
-			SerialData_i									=> SerialData_i,
-			SerialData_o									=> SerialData_o,
-			SerialData_t									=> SerialData_t_i
+			Serial									=> Serial
 		);
 
-	SerialClock_t		<= SerialClock_t_i;
-	SerialData_t		<= SerialData_t_i;
 
 	genDBG : if DEBUG generate
 		-- Configuration
@@ -1167,10 +1155,10 @@ begin
 		DBG_DebugVector_d(0).State						<= to_slv(State);
 		DBG_DebugVector_d(0).IICBC_Command		<= IICBC_Command;
 		DBG_DebugVector_d(0).IICBC_Status			<= IICBC_Status;
-		DBG_DebugVector_d(0).Clock_i					<= SerialClock_i;
-		DBG_DebugVector_d(0).Clock_t					<= SerialClock_t_i;
-		DBG_DebugVector_d(0).Data_i						<= SerialData_i;
-		DBG_DebugVector_d(0).Data_t						<= SerialData_t_i;
+		DBG_DebugVector_d(0).Clock_i					<= Serial.Clock.I;
+		DBG_DebugVector_d(0).Clock_t					<= Serial.Clock.T;
+		DBG_DebugVector_d(0).Data_i						<= Serial.Data.I;
+		DBG_DebugVector_d(0).Data_t						<= Serial.Data.T;
 
 		genDataDelay : for i in 0 to DBG_DebugVector_d'high - 1 generate
 			DBG_DebugVector_d(i + 1)	<= DBG_DebugVector_d(i) when rising_edge(Clock);
