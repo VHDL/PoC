@@ -32,17 +32,6 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.CocotbSimulator")
-
-
 # load dependencies
 import shutil
 from textwrap                import dedent
@@ -52,6 +41,12 @@ from Base.Simulator          import SimulatorException, Simulator as BaseSimulat
 from DataBase.Config              import Vendors
 from DataBase.Entity              import WildCard
 from ToolChains.GNU          import Make
+
+
+__api__ = [
+	'Simulator'
+]
+__all__ = __api__
 
 
 class Simulator(BaseSimulator):

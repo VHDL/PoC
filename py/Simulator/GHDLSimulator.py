@@ -32,15 +32,6 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.GHDLSimulator")
-
-
 # load dependencies
 from pathlib                import Path
 
@@ -52,7 +43,15 @@ from ToolChains.GHDL        import GHDL, GHDLException, GHDLReanalyzeException
 from ToolChains.GTKWave     import GTKWave
 
 
+__api__ = [
+	'Simulator'
+]
+__all__ = __api__
+
+
 class Simulator(BaseSimulator):
+	"""This class encapsulates the GHDL simulator."""
+
 	_TOOL_CHAIN =            ToolChain.GHDL_GTKWave
 	_TOOL =                  Tool.GHDL
 

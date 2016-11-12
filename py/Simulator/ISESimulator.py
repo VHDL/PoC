@@ -32,15 +32,6 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.ISESimulator")
-
-
 # load dependencies
 from pathlib                    import Path
 
@@ -48,6 +39,12 @@ from Base.Project               import ToolChain, Tool
 from Base.Simulator             import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException
 from ToolChains.Xilinx.Xilinx   import XilinxProjectExportMixIn
 from ToolChains.Xilinx.ISE      import ISE, ISESimulator, ISEException
+
+
+__api__ = [
+	'Simulator'
+]
+__all__ = __api__
 
 
 class Simulator(BaseSimulator, XilinxProjectExportMixIn):

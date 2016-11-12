@@ -33,6 +33,7 @@
 # limitations under the License.
 # ==============================================================================
 #
+# load dependencies
 from argparse                       import RawDescriptionHelpFormatter
 from collections                    import OrderedDict
 from configparser                   import Error as ConfigParser_Error, DuplicateOptionError
@@ -85,6 +86,18 @@ __version__ =     "1.1.0"
 __status__ =      "Production"
 __license__ =     "Apache License 2.0"
 
+__api__ = [
+	'PoCEntityAttribute',
+	'BoardDeviceAttributeGroup',
+	'VHDLVersionAttribute',
+	'GUIModeAttribute',
+	'NoCleanUpAttribute',
+	'PoC',
+	'main'
+]
+__all__ = __api__
+
+
 
 class PoCEntityAttribute(Attribute):
 	def __call__(self, func):
@@ -111,6 +124,7 @@ class NoCleanUpAttribute(Attribute):
 	def __call__(self, func):
 		self._AppendAttribute(func, SwitchArgumentAttribute("--no-cleanup", dest="NoCleanUp", help="Don't delete intermediate files. Skip post-delete rules."))
 		return func
+
 
 class PoC(ILogable, ArgParseMixin):
 	HeadLine =                "The PoC-Library - Service Tool"
@@ -805,6 +819,7 @@ class PoC(ILogable, ArgParseMixin):
 	@BoardDeviceAttributeGroup()
 	@VHDLVersionAttribute()
 	@GUIModeAttribute()
+	@ArgumentAttribute("--reproducer", metavar="Name", dest="CreateReproducer", help="Create a bug reproducer")
 	def HandleGHDLSimulation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()

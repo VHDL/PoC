@@ -47,31 +47,32 @@ class Executable:
 		# finally:
 			# self._process.terminate()
 
-
-tclShell = Executable(r"C:\Lattice\diamond\3.7_x64\bin\nt64\pnmainc.exe")
-print("starting process: {0!s}".format(tclShell.Path))
-tclShell.StartProcess([])
-reader = tclShell.GetReader()
-iterator = iter(reader)
-print("sending boundary")
-tclShell.SendBoundary()
-for line in iterator:
-	print(line)
-	if (line == tclShell._POC_BOUNDARY):
-		break
-print("pnmainc.exe is ready...")
-print("sending synthesis -f arith_prng.prj")
-tclShell.Send("synthesis -f arith_prng.prj\n")
-print("sending boundary")
-tclShell.SendBoundary()
-for line in iterator:
-	print(line)
-	if (line == tclShell._POC_BOUNDARY):
-		break
-print("pnmainc.exe is ready...")
-print("sending: exit")
-tclShell.Send("exit\n")
-print("reading output")
-for line in iterator:
-	print(line)
-print("done")
+# entry point
+if __name__ == "__main__":
+	tclShell = Executable(r"C:\Lattice\diamond\3.7_x64\bin\nt64\pnmainc.exe")
+	print("starting process: {0!s}".format(tclShell.Path))
+	tclShell.StartProcess([])
+	reader = tclShell.GetReader()
+	iterator = iter(reader)
+	print("sending boundary")
+	tclShell.SendBoundary()
+	for line in iterator:
+		print(line)
+		if (line == tclShell._POC_BOUNDARY):
+			break
+	print("pnmainc.exe is ready...")
+	print("sending synthesis -f arith_prng.prj")
+	tclShell.Send("synthesis -f arith_prng.prj\n")
+	print("sending boundary")
+	tclShell.SendBoundary()
+	for line in iterator:
+		print(line)
+		if (line == tclShell._POC_BOUNDARY):
+			break
+	print("pnmainc.exe is ready...")
+	print("sending: exit")
+	tclShell.Send("exit\n")
+	print("reading output")
+	for line in iterator:
+		print(line)
+	print("done")

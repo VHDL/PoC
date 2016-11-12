@@ -81,7 +81,6 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
      urldate={2016-10-28},
    }
 
-
 .. toctree::
    :hidden:
 
@@ -92,6 +91,8 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
    Miscelaneous/ThirdParty
    ConstraintFiles/index
    References/index
+   PyInfrastructure/index
    GetInvolved/index
    Miscelaneous/ChangeLog
    References/Licenses/License
+   genindex

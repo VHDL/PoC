@@ -20,6 +20,8 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../py'))
+
 
 # -- General configuration ------------------------------------------------
 
@@ -31,20 +33,33 @@ sys.path.insert(0, os.path.abspath('.'))
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.inheritance_diagram',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
-    'sphinx.ext.coverage',
+    # 'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     # 'sphinx.ext.githubpages',
     'sphinxcontrib.autoprogram',
+    'autoapi.sphinx',
     'poc'
 ]
 
 if (not (tags.has('PoCExternal') or tags.has('PoCInternal'))):
 	tags.add('PoCExternal')
 
+# Extract Python documentation and generate ReST files.
+autoapi_modules = {
+  'PoC':        {'output': 'PyInfrastructure'},
+  'Base':       {'output': 'PyInfrastructure'},
+  'Compiler':   {'output': 'PyInfrastructure'},
+  'DataBase':   {'output': 'PyInfrastructure'},
+  'Parser':     {'output': 'PyInfrastructure'},
+  'Simulator':  {'output': 'PyInfrastructure'},
+  'ToolChains': {'output': 'PyInfrastructure'},
+  'lib':        {'output': 'PyInfrastructure'}
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates', '_themes']
@@ -314,4 +329,6 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/2/': None}
+intersphinx_mapping = {
+	'python': ('http://docs.python.org/3.5/', None)
+}

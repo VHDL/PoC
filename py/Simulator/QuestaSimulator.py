@@ -30,15 +30,6 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.vSimSimulator")
-
-
 # load dependencies
 from pathlib                      import Path
 
@@ -47,6 +38,12 @@ from Base.Project                 import FileTypes, ToolChain, Tool
 from Base.Simulator               import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException
 from DataBase.Config                   import Vendors
 from ToolChains.Mentor.QuestaSim  import QuestaSim, QuestaSimException
+
+
+__api__ = [
+	'Simulator'
+]
+__all__ = __api__
 
 
 class Simulator(BaseSimulator):
