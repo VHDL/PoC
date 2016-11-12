@@ -121,7 +121,16 @@ class CompileResult(Enum):
 
 
 class Compiler(Shared):
-	"""Base class for all Compiler classes."""
+	"""
+	Base class for all Compiler classes.
+
+	:param host: The hosting instance for this instance.
+	:type host: object
+	:param dryRun: Enable dry-run mode
+	:type dryRun: bool
+	:param noCleanUp: Don't clean up after a run.
+	:type noCleanUp: bool
+	"""
 
 	_ENVIRONMENT =    Environment.Synthesis
 	_vhdlVersion =    VHDLVersion.VHDL93
@@ -132,6 +141,7 @@ class Compiler(Shared):
 		Destination = None
 
 	def __init__(self, host, dryRun, noCleanUp):
+		"""Constructur"""
 		super().__init__(host, dryRun)
 
 		self._noCleanUp =       noCleanUp
@@ -146,10 +156,12 @@ class Compiler(Shared):
 	def NoCleanUp(self):      return self._noCleanUp
 
 	def _PrepareCompiler(self):
+		"""Prepare for compilation. This method forwards to :py:meth:`Base.Compiler.Compiler._Prepare`, which is un herited from:py:class:`Base.Shared.Shared`."""
 		self._Prepare()
 
 	def TryRun(self, netlist, *args, **kwargs):
 		"""Try to run a testbench. Skip skipable exceptions by printing the error and its cause."""
+
 		__COMPILE_STATE_TO_SYNTHESIS_STATUS__ = {
 			CompileState.Prepare:    CompileStatus.InternalError,
 			CompileState.PreCopy:    CompileStatus.SystemError,
@@ -188,6 +200,8 @@ class Compiler(Shared):
 			synthesis.StopTimer()
 
 	def Run(self, netlist, board):
+		"""Run a testbench."""
+
 		self.LogQuiet("{CYAN}IP core: {0!s}{NOCOLOR}".format(netlist.Parent, **Init.Foreground))
 		# # TODO: refactor
 		# self.LogNormal("Checking for dependencies:")

@@ -96,6 +96,10 @@
    :members:
    :undoc-members:
 
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: {{ item }}
+	 .. rubric:: Members
+
 {##}
 {%- endfor -%}
 {%- endif -%}
@@ -112,6 +116,10 @@
    :members:
    :undoc-members:
    :inherited-members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: {{ item }}
+	 .. rubric:: Members
 
 {##}
 {%- endfor -%}

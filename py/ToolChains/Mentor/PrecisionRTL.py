@@ -31,15 +31,18 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Mentor.PrecisionRTL")
-
+# load dependencies
 from Base.Configuration import Configuration as BaseConfiguration
+
+
+__api__ = [
+	# 'VivadoException',
+	'Configuration',
+	# 'VivadoMixIn',
+	# 'Vivado'
+]
+__all__ = __api__
+
 
 class Configuration(BaseConfiguration):
 	pass
