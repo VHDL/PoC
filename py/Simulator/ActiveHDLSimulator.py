@@ -53,9 +53,8 @@ class Simulator(BaseSimulator):
 	_TOOL =                  Tool.Aldec_aSim
 
 	def __init__(self, host, dryRun, guiMode):
-		super().__init__(host, dryRun)
+		super().__init__(host, dryRun, guiMode)
 
-		self._guiMode =       guiMode
 		self._vhdlVersion =   None
 		self._vhdlGenerics =  None
 		self._toolChain =     None

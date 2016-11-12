@@ -56,10 +56,9 @@ class Simulator(BaseSimulator, XilinxProjectExportMixIn):
 	_TOOL =                  Tool.Xilinx_xSim
 
 	def __init__(self, host, dryRun, guiMode):
-		super().__init__(host, dryRun)
+		super().__init__(host, dryRun, guiMode)
 		XilinxProjectExportMixIn.__init__(self)
 
-		self._guiMode =       guiMode
 		self._vhdlVersion =   None
 		self._vhdlGenerics =  None
 		self._toolChain =     None

@@ -11,4 +11,5 @@ include				"lib/UVVM.files"
 include				"src/io/iic/iic_Controller.files"						# Unit Under Test
 
 # Testbench file(s)
+vhdl		test	"tb/io/iic/iic_Controller_th.vhdl"					# Testharness
 vhdl		test	"tb/io/iic/iic_Controller_tb.vhdl"					# Testbench

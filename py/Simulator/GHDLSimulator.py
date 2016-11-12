@@ -60,9 +60,9 @@ class Simulator(BaseSimulator):
 		GTKWBinary = None
 
 	def __init__(self, host, dryRun, guiMode):
-		super().__init__(host, dryRun)
+		"""Constructor"""
+		super().__init__(host, dryRun, guiMode)
 
-		self._guiMode =       guiMode
 		self._vhdlGenerics =  None
 		self._toolChain =     None
 
@@ -70,7 +70,7 @@ class Simulator(BaseSimulator):
 		self.Directories.Working =      host.Directories.Temp / ghdlFilesDirectoryName
 		self.Directories.PreCompiled =  host.Directories.PreCompiled / ghdlFilesDirectoryName
 
-		if (guiMode is True):
+		if (self._guiMode is True):
 			# prepare paths for GTKWave, if configured
 			sectionName = 'INSTALL.GTKWave'
 			if (len(host.PoCConfig.options(sectionName)) != 0):
@@ -82,6 +82,8 @@ class Simulator(BaseSimulator):
 		self._PrepareSimulator()
 
 	def _PrepareSimulator(self):
+		""""""
+
 		# create the GHDL executable factory
 		self.LogVerbose("Preparing GHDL simulator.")
 		ghdlSection =     self.Host.PoCConfig['INSTALL.GHDL']
@@ -91,6 +93,8 @@ class Simulator(BaseSimulator):
 		self._toolChain = GHDL(self.Host.Platform, self.DryRun, binaryPath, version, backend, logger=self.Logger)
 
 	def _RunAnalysis(self, testbench):
+		""""""
+
 		# create a GHDLAnalyzer instance
 		ghdl = self._toolChain.GetGHDLAnalyze()
 		ghdl.Parameters[ghdl.FlagVerbose] =           (self.Logger.LogLevel is Severity.Debug)
@@ -121,6 +125,8 @@ class Simulator(BaseSimulator):
 				raise SkipableSimulatorException("Error while analysing '{0!s}'.".format(file.Path))
 
 	def _SetVHDLVersionAndIEEEFlavor(self, ghdl):
+		""""""
+
 		ghdl.Parameters[ghdl.SwitchIEEEFlavor] =  "synopsys"
 
 		if (self._vhdlVersion is VHDLVersion.VHDL93):
@@ -129,6 +135,8 @@ class Simulator(BaseSimulator):
 			ghdl.Parameters[ghdl.SwitchVHDLVersion] = repr(self._vhdlVersion)[-2:]
 
 	def _SetExternalLibraryReferences(self, ghdl):
+		""""""
+
 		# add external library references
 		externalLibraryReferences = []
 		for extLibrary in self._pocProject.ExternalVHDLLibraries:
@@ -140,6 +148,8 @@ class Simulator(BaseSimulator):
 	# running elaboration
 	# ==========================================================================
 	def _RunElaboration(self, testbench):
+		""""""
+
 		if (self._toolChain.Backend == "mcode"):
 			return
 
@@ -161,6 +171,8 @@ class Simulator(BaseSimulator):
 			raise SkipableSimulatorException("Error while elaborating '{0}.{1}'.".format(VHDL_TESTBENCH_LIBRARY_NAME, testbench.ModuleName))
 
 	def _RunSimulation(self, testbench):
+		""""""
+
 		# create a GHDLRun instance
 		ghdl = self._toolChain.GetGHDLRun()
 		ghdl.Parameters[ghdl.FlagVerbose] =             (self.Logger.LogLevel is Severity.Debug)
@@ -206,6 +218,8 @@ class Simulator(BaseSimulator):
 		testbench.Result = ghdl.Run()
 
 	def _RunView(self, testbench):
+		"""foo"""
+
 		if (not testbench.WaveformFile.exists()):
 			raise SkipableSimulatorException("Waveform file '{0!s}' not found.".format(testbench.WaveformFile)) \
 				from FileNotFoundError(str(testbench.WaveformFile))
