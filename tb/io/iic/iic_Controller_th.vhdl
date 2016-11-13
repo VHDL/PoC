@@ -374,8 +374,10 @@ begin
 
 	i2c_vvc_if.scl				<= Slave2_Serial.Clock.I;
 	Slave2_Serial.Clock.T	<= not i2c_vvc_if.scl;
+	Slave2_Serial.Clock.O	<= '0';
 	i2c_vvc_if.sda				<= Slave2_Serial.Clock.I;
 	Slave2_Serial.Clock.T	<= not i2c_vvc_if.sda;
+	Slave2_Serial.Clock.O	<= '0';
 
 
 	IIC_VVC : entity bitvis_vip_i2c.i2c_vvc
