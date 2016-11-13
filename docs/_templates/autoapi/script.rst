@@ -114,6 +114,8 @@
 {% for item in node.classes %}
 .. autoclass:: {{ item }}
    :members:
+   :private-members:
+   :special-members:
    :undoc-members:
    :inherited-members:
 
