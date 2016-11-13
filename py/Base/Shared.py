@@ -53,7 +53,7 @@ __all__ = __api__
 # local helper function
 def to_time(seconds):
 	"""
-	Convert n seconds to a str with pattern {min}:{sec:02}.
+	Convert *n* seconds to a :py:class:`str` with this pattern: "{min}:{sec:02}".
 
 	:type seconds:  int
 	:param seconds: Number of seconds to be converted.

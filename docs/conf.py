@@ -51,6 +51,8 @@ extensions = [
 if (not (tags.has('PoCExternal') or tags.has('PoCInternal'))):
 	tags.add('PoCExternal')
 
+autodoc_member_order = "bysource"
+
 # Extract Python documentation and generate ReST files.
 autoapi_modules = {
   'PoC':        {'output': "PyInfrastructure", 'template': "script"},
