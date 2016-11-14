@@ -256,21 +256,35 @@ class Simulator(BaseSimulator):
 
 		vsim.Parameters[vsim.SwitchBatchCommand] = vsimBatchCommand
 
-		recompileScriptPath = self.Directories.Working / "recompile.do"
-		self.LogDebug("Reading recompile script from '{0!s}'".format(recompileScriptPath))
-		with recompileScriptPath.open('r') as fileHandle:
-			relaunchScriptContent = fileHandle.read()
+		# writing a relaunch file
+		recompileScriptPath =     self.Directories.Working / "recompile.do"
+		relaunchScriptPath =      self.Directories.Working / "relaunch.do"
+		saveWaveformScriptPath =  self.Directories.Working / "saveWaveform.do"
 
-		relaunchScriptContent += dedent("""\
+		relaunchScriptContent = dedent("""\
+			puts "Loading recompile script '{recompileScript}'..."
+			do {recompileScript}
 			puts "Loading run script '{runScript}'..."
 			do {runScript}
 			""").format(
+			recompileScript=recompileScriptPath.as_posix(),
 				runScript=vsimRunScript
 			)
 
-		relaunchScriptPath = self.Directories.Working / "relaunch.do"
 		self.LogDebug("Writing relaunch script to '{0!s}'".format(relaunchScriptPath))
 		with relaunchScriptPath.open('w') as fileHandle:
 			fileHandle.write(relaunchScriptContent)
+
+		# writing a saveWaveform file
+		saveWaveformScriptContent = dedent("""\
+			puts "Saving waveform settings to '{waveformFile}'..."
+			write format wave -window .main_pane.wave.interior.cs.body.pw.wf {waveformFile}
+			""").format(
+				waveformFile=tclWaveFilePath.as_posix()
+			)
+
+		self.LogDebug("Writing saveWaveform script to '{0!s}'".format(saveWaveformScriptPath))
+		with saveWaveformScriptPath.open('w') as fileHandle:
+			fileHandle.write(saveWaveformScriptContent)
 
 		testbench.Result = vsim.Simulate()
