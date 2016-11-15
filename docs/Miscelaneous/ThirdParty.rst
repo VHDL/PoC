@@ -17,7 +17,7 @@ library for writing VHDL and Verilog testbenches in Python.
 +--------------------+-----------------------------------------------------------------------------------------------------------+
 | **Copyright:**     | Copyright © 2013, `Potential Ventures Ltd. <http://potential.ventures/>`_, SolarFlare Communications Inc. |
 +--------------------+-----------------------------------------------------------------------------------------------------------+
-| **License:**       | :doc:`Revised BSD License (local copy) </References/Licenses/BSDLicense_Cocotb>`                          |
+| **License:**       | :doc:`Revised BSD License (local copy) </Licenses/BSDLicense_Cocotb>`                                     |
 +--------------------+-----------------------------------------------------------------------------------------------------------+
 | **Documentation:** | `http://cocotb.readthedocs.org/ <http://cocotb.readthedocs.org/>`_                                        |
 +--------------------+-----------------------------------------------------------------------------------------------------------+
@@ -41,7 +41,7 @@ existing testbench or testbench models.
 +----------------+---------------------------------------------------------------------------------------+
 | **Copyright:** | Copyright © 2012-2016 by `SynthWorks Design Inc. <http://www.synthworks.com/>`_       |
 +----------------+---------------------------------------------------------------------------------------+
-| **License:**   | :doc:`Artistic License 2.0 (local copy) </References/Licenses/ArtisticLicense2.0>`    |
+| **License:**   | :doc:`Artistic License 2.0 (local copy) </Licenses/ArtisticLicense2.0>`               |
 +----------------+---------------------------------------------------------------------------------------+
 | **Website:**   | `http://osvvm.org/ <http://osvvm.org/>`_                                              |
 +----------------+---------------------------------------------------------------------------------------+
