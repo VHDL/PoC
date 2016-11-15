@@ -64,11 +64,11 @@ Source file: `fifo/fifo_cc_got.vhdl <https://github.com/VLSI-EDA/PoC/blob/master
 
 .. seealso::
 
-   :doc:`PoC.fifo.dc_got </PoC/fifo/fifo_dc_got>`
+   :doc:`PoC.fifo.dc_got </IPCores/fifo/fifo_dc_got>`
      For a FIFO with dependent clocks.
-   :doc:`PoC.fifo.ic_got </PoC/fifo/fifo_ic_got>`
+   :doc:`PoC.fifo.ic_got </IPCores/fifo/fifo_ic_got>`
      For a FIFO with independent clocks (cross-clock FIFO).
-   :doc:`PoC.fifo.glue </PoC/fifo/fifo_glue>`
+   :doc:`PoC.fifo.glue </IPCores/fifo/fifo_glue>`
      For a minimal FIFO / pipeline decoupling.
 
 

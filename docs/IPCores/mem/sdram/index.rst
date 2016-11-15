@@ -26,7 +26,7 @@ MT46V32M16-6T DDR memory at a frequency of 100 MHz (DDR-200). A usage
 example is given in PoC-Examples_.
 
 .. Note::
-   See also :doc:`PoC.xil.mig </PoC/xil/mig/index>` for board specific memory controller
+   See also :doc:`PoC.xil.mig </IPCores/xil/mig/index>` for board specific memory controller
    implementations created by Xilinx's Memory Interface Generator (MIG).
 
 

@@ -2,8 +2,8 @@
 uart_wb
 #######
 
-Wrapper module for :doc:`PoC.io.uart.rx </PoC/io/uart/uart_rx>` and
-:doc:`PoC.io.uart.tx </PoC/io/uart/uart_tx>` to support the Wishbone
+Wrapper module for :doc:`PoC.io.uart.rx </IPCores/io/uart/uart_rx>` and
+:doc:`PoC.io.uart.tx </IPCores/io/uart/uart_tx>` to support the Wishbone
 interface. Synchronized reset is used.
 
 
