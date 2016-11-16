@@ -5,17 +5,18 @@
 -- ============================================================================
 -- Authors:					Martin Zabel
 --
--- Module:					Model of pipelined memory with "mem" interface.
+-- Module:					Model of pipelined memory with PoC.Mem interface.
 --
 -- Description:
 -- ------------------------------------
+-- Model of pipelined memory with
+-- :doc:`PoC.Mem </Interfaces/Memory>` interface.
+--
 -- To be used for simulation as a replacement for a real memory controller.
 --
--- Generic parameters:
+-- The interface is documented in detail :doc:`here </Interfaces/Memory>`.
 --
--- * A_BITS:  number of word address bits.
--- * D_BTIS:  width of data bus.
--- * LATENCY: the latency of the pipelined read.
+-- Additional parameter: LATENCY = the latency of the pipelined read.
 --
 -- .. NOTE::
 --    Synchronous reset is required after simulation startup.
@@ -79,6 +80,7 @@ entity mem_model is
     mem_write : in  std_logic;
     mem_addr  : in  unsigned(A_BITS-1 downto 0);
     mem_wdata : in  std_logic_vector(D_BITS-1 downto 0);
+    mem_wmask : in  std_logic_vector(D_BITS/8-1 downto 0) := (others => '0');
     mem_rdy   : out std_logic;
     mem_rstb  : out std_logic;
     mem_rdata : out std_logic_vector(D_BITS-1 downto 0));
@@ -149,7 +151,13 @@ begin  -- architecture sim
 						report "Invalid address during write." severity error;
 						ram <= (others => (others => 'X'));
 					else
-						ram(to_integer(mem_addr)) <= to_ux01(mem_wdata);
+						for i in 0 to D_BITS/8-1 loop
+							if Is_X(mem_wmask(i)) then
+								ram(to_integer(mem_addr))(i*8+7 downto i*8) <= (others => 'X');
+							elsif mem_wmask(i) = '0' then
+								ram(to_integer(mem_addr))(i*8+7 downto i*8) <= to_ux01(mem_wdata(i*8+7 downto i*8));
+							end if;
+						end loop;  -- i
 					end if;
 				elsif (req_write = 'X') then
 					-- error is reported above
