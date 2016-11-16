@@ -15,7 +15,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@
 # limitations under the License.
 # ==============================================================================
 #
+# load dependencies
 from lib.Functions        import Init
 from lib.Parser           import ParserException
 from lib.CodeDOM          import AndExpression, OrExpression, XorExpression, NotExpression, InExpression, NotInExpression
@@ -41,6 +42,23 @@ from Parser.FilesCodeDOM  import IfElseIfElseStatement, ReportStatement
 from Parser.FilesCodeDOM  import IncludeStatement, LibraryStatement
 from Parser.FilesCodeDOM  import LDCStatement, SDCStatement, UCFStatement, XDCStatement
 from Parser.FilesCodeDOM  import VHDLStatement, VerilogStatement, CocotbStatement
+
+
+__api__ = [
+	'FileReference',
+	'IncludeFileMixIn',
+	'VHDLSourceFileMixIn',
+	'VerilogSourceFileMixIn',
+	'CocotbSourceFileMixIn',
+	'LDCSourceFileMixIn',
+	'SDCSourceFileMixIn',
+	'UCFSourceFileMixIn',
+	'XDCSourceFileMixIn',
+	'VHDLLibraryReference',
+	'FilesParserMixIn'
+]
+__all__ = __api__
+
 
 # to print the reconstructed files file after parsing, set DEBUG to True
 DEBUG = not True

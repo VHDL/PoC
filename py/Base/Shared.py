@@ -16,7 +16,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,15 +31,6 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Class PoCCompiler")
-
-
 # load dependencies
 import shutil
 from datetime           import datetime
@@ -49,18 +40,44 @@ from lib.Parser         import ParserException
 from Base.Exceptions    import CommonException, SkipableCommonException
 from Base.Logging       import ILogable
 from Base.Project       import ToolChain, Tool, VHDLVersion, Environment
-from PoC.Solution       import VirtualProject, FileListFile
+from DataBase.Solution       import VirtualProject, FileListFile
+
+
+__api__ = [
+	'to_time',
+	'Shared'
+]
+__all__ = __api__
 
 
 # local helper function
 def to_time(seconds):
-	"""Convert n seconds to a str with pattern {min}:{sec:02}."""
+	"""
+	Convert *n* seconds to a :py:class:`str` with this pattern: "{min}:{sec:02}".
+
+	:type seconds:  int
+	:param seconds: Number of seconds to be converted.
+	:rtype:         str
+	:return:        Returns a string formatted as #:##. E.g. "1:05"
+	"""
+
 	minutes = int(seconds / 60)
 	seconds = seconds - (minutes * 60)
 	return "{min}:{sec:02}".format(min=minutes, sec=seconds)
 
 
 class Shared(ILogable):
+	"""
+	Base class for Simulator and Compiler.
+
+	:type  host:      object
+	:param host:      The hosting instance for this instance.
+	:type  dryRun:    bool
+	:param dryRun:    Enable dry-run mode
+	:type  noCleanUp: bool
+	:param noCleanUp: Don't clean up after a run.
+	"""
+
 	_ENVIRONMENT =    Environment.Any
 	_TOOL_CHAIN =     ToolChain.Any
 	_TOOL =           Tool.Any

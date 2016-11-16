@@ -13,7 +13,7 @@ interresting project, please send us feedback or get listed on our
 If you are more familiar with PoC and it's components, you might start asking
 youself how components internally work. Please read our more advanced topics in
 the online help, read our inline source code comments or start a discussion on
-`Gitter <#discuss-with-us-on-gitter>`_ to ask us directly.
+`Gitter <#talk-to-us-on-gitter>`_ to ask us directly.
 
 Now you should be very familiar with our work and you might be interessted in
 developing own components and contribute them to the main repository. See the
@@ -212,7 +212,7 @@ Commit your porposed changes to your feature branch and push all changes to GitH
    :target: https://github.com/VLSI-EDA/PoC/pulls
 
 Go to your forked repository and klick on "Compare and Pull-Request" or go to
-our PoC repository and create a new `pull request <https://github.com/VLSI-EDA/PoC/pullrequest>`_.
+our PoC repository and create a new `pull request <https://github.com/VLSI-EDA/PoC/pulls>`_.
 
 If this is your first Pull-Request, you need to sign our Contributers License
 Agreement (CLA).

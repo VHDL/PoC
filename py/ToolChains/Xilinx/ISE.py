@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,15 +32,7 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Xilinx.ISE")
-
-
+# load dependencies
 from subprocess            import check_output
 
 from Base.Configuration          import Configuration as BaseConfiguration, ConfigurationException
@@ -52,6 +44,27 @@ from Base.Project                import Project as BaseProject, ProjectFile, Con
 from Base.Simulator              import SimulationResult, PoCSimulationResultFilter
 from ToolChains.Xilinx.Xilinx    import XilinxException
 from lib.Functions              import CallByRefParam
+
+
+__api__ = [
+	'ISEException',
+	'Configuration',
+	'ISEMixIn',
+	'ISE',
+	'Fuse',
+	'ISESimulator',
+	'Xst',
+	'CoreGenerator',
+	'VhCompFilter',
+	'FuseFilter',
+	'SimulatorFilter',
+	'XstFilter',
+	'CoreGeneratorFilter'
+	'ISEProject',
+	'ISEProjectFile',
+	'UserConstraintFile'
+]
+__all__ = __api__
 
 
 class ISEException(XilinxException):

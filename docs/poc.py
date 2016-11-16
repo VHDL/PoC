@@ -15,7 +15,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#											Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ class SourceFile:
 class Extract:
 	def __init__(self):
 		self.sourceDirectory =     Path("../src")
-		self.outputDirectory =     Path("PoC")
+		self.outputDirectory =     Path("IPCores")
 		self.relSourceDirectory =  Path("../../src")
 
 		self.templateFile =     Path("Entity.template")

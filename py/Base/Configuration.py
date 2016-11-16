@@ -15,7 +15,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,19 +30,19 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Base.Configuration")
-
-
+# load dependencies
 from collections          import OrderedDict
 from pathlib              import Path
 
 from Base.Exceptions      import ExceptionBase
+
+
+__api__ = [
+	'ConfigurationException',
+	'SkipConfigurationException',
+	'Configuration'
+]
+__all__ = __api__
 
 
 class ConfigurationException(ExceptionBase):

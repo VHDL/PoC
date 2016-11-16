@@ -16,7 +16,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2015 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,14 +30,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Base.Exceptions")
+#
+__api__ = [
+	'ExceptionBase',
+	'EnvironmentException',
+	'PlatformNotSupportedException',
+	'NotConfiguredException',
+	'SkipableException',
+	'CommonException',
+	'SkipableCommonException'
+]
+__all__ = __api__
 
 
 class ExceptionBase(Exception):

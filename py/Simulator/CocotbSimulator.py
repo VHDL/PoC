@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,26 +32,21 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Simulator.CocotbSimulator")
-
-
 # load dependencies
 import shutil
 from textwrap                import dedent
 
 from Base.Project            import FileTypes, ToolChain, Tool
 from Base.Simulator          import SimulatorException, Simulator as BaseSimulator
-from PoC.Config              import Vendors
-from PoC.Entity              import WildCard
+from DataBase.Config              import Vendors
+from DataBase.Entity              import WildCard
 from ToolChains.GNU          import Make
+
+
+__api__ = [
+	'Simulator'
+]
+__all__ = __api__
 
 
 class Simulator(BaseSimulator):
@@ -60,9 +55,7 @@ class Simulator(BaseSimulator):
 	_COCOTB_SIMBUILD_DIRECTORY = "sim_build"
 
 	def __init__(self, host, dryRun, guiMode):
-		super().__init__(host, dryRun)
-
-		self._guiMode =       guiMode
+		super().__init__(host, dryRun, guiMode)
 
 		configSection =                 host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working =      host.Directories.Temp / configSection['CocotbFiles']

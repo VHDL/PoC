@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+#
+# load dependencies
 from argparse                       import RawDescriptionHelpFormatter
 from collections                    import OrderedDict
 from configparser                   import Error as ConfigParser_Error, DuplicateOptionError
@@ -56,10 +57,10 @@ from Compiler.XCICompiler           import Compiler as XCICompiler
 from Compiler.XCOCompiler           import Compiler as XCOCompiler
 from Compiler.XSTCompiler           import Compiler as XSTCompiler
 from Compiler.VivadoCompiler        import Compiler as VivadoCompiler
-from PoC.Config                     import Board
-from PoC.Entity                     import NamespaceRoot, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
-from PoC.Solution                   import Repository
-from PoC.Query                      import Query
+from DataBase.Config                    import Board
+from DataBase.Entity                    import NamespaceRoot, FQN, EntityTypes, WildCard, TestbenchKind, NetlistKind
+from DataBase.Solution                  import Repository
+from DataBase.Query                     import Query
 from Simulator.ActiveHDLSimulator       import Simulator as ActiveHDLSimulator
 from Simulator.CocotbSimulator          import Simulator as CocotbSimulator
 from Simulator.GHDLSimulator            import Simulator as GHDLSimulator
@@ -77,20 +78,41 @@ from lib.Parser                         import ParserException
 from lib.pyAttribute                    import Attribute
 
 
+__author__ =      "Patrick Lehmann, Martin Zabel"
+__copyright__ =   "Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture"
+__maintainer__ =  "Patrick Lehmann"
+__email__ =       "Patrick.Lehmann@tu-dresden.de"
+__version__ =     "1.1.0"
+__status__ =      "Production"
+__license__ =     "Apache License 2.0"
+
+__api__ = [
+	'PoCEntityAttribute',
+	'BoardDeviceAttributeGroup',
+	'VHDLVersionAttribute',
+	'GUIModeAttribute',
+	'NoCleanUpAttribute',
+	'PoC',
+	'main'
+]
+__all__ = __api__
+
+
+
 class PoCEntityAttribute(Attribute):
 	def __call__(self, func):
-		self._AppendAttribute(func, ArgumentAttribute(metavar="<PoC Entity>", dest="FQN", type=str, nargs='+', help="A space separated list of PoC entities."))
+		self._AppendAttribute(func, ArgumentAttribute(metavar="PoC Entity", dest="FQN", type=str, nargs='+', help="A space separated list of PoC entities."))
 		return func
 
 class BoardDeviceAttributeGroup(Attribute):
 	def __call__(self, func):
-		self._AppendAttribute(func, ArgumentAttribute("--device", metavar="<DeviceName>", dest="DeviceName", help="The target platform's device name."))
-		self._AppendAttribute(func, ArgumentAttribute("--board", metavar="<BoardName>", dest="BoardName", help="The target platform's board name."))
+		self._AppendAttribute(func, ArgumentAttribute("--device", metavar="DeviceName", dest="DeviceName", help="The target platform's device name."))
+		self._AppendAttribute(func, ArgumentAttribute("--board", metavar="BoardName", dest="BoardName", help="The target platform's board name."))
 		return func
 
 class VHDLVersionAttribute(Attribute):
 	def __call__(self, func):
-		self._AppendAttribute(func, ArgumentAttribute("--std", metavar="<VHDLVersion>", dest="VHDLVersion", help="Simulate with VHDL-??"))
+		self._AppendAttribute(func, ArgumentAttribute("--std", metavar="VHDLVersion", dest="VHDLVersion", help="Simulate with VHDL-??"))
 		return func
 
 class GUIModeAttribute(Attribute):
@@ -103,7 +125,8 @@ class NoCleanUpAttribute(Attribute):
 		self._AppendAttribute(func, SwitchArgumentAttribute("--no-cleanup", dest="NoCleanUp", help="Don't delete intermediate files. Skip post-delete rules."))
 		return func
 
-class PoC(ILogable, ArgParseMixin):
+
+class PileOfCores(ILogable, ArgParseMixin):
 	HeadLine =                "The PoC-Library - Service Tool"
 
 	# configure hard coded variables here
@@ -140,7 +163,7 @@ class PoC(ILogable, ArgParseMixin):
 		Project =     None
 
 
-	def __init__(self, debug, verbose, quiet, dryRun):
+	def __init__(self, debug, verbose, quiet, dryRun, sphinx=False):
 		# Call the initializer of ILogable
 		# --------------------------------------------------------------------------
 		if quiet:      severity = Severity.Quiet
@@ -151,15 +174,12 @@ class PoC(ILogable, ArgParseMixin):
 		logger = Logger(self, severity, printToStdOut=True)
 		ILogable.__init__(self, logger=logger)
 
-		# Do some basic checks
-		self.__CheckEnvironment()
-
 		# Call the constructor of the ArgParseMixin
 		# --------------------------------------------------------------------------
 		description = dedent("""\
 			This is the PoC-Library Service Tool.
 			""")
-		epilog = "Epidingsbums"
+		epilog = "Pile-of-Cores"
 
 		class HelpFormatter(RawDescriptionHelpFormatter):
 			def __init__(self, *args, **kwargs):
@@ -167,6 +187,10 @@ class PoC(ILogable, ArgParseMixin):
 				super().__init__(*args, **kwargs)
 
 		ArgParseMixin.__init__(self, description=description, epilog=epilog, formatter_class=HelpFormatter, add_help=False)
+		if sphinx: return
+
+		# Do some basic checks
+		self.__CheckEnvironment()
 
 		# declare members
 		# --------------------------------------------------------------------------
@@ -297,8 +321,8 @@ class PoC(ILogable, ArgParseMixin):
 	@CommonSwitchArgumentAttribute("-d", "--debug",   dest="debug",   help="enable debug mode")
 	@CommonSwitchArgumentAttribute("-v", "--verbose", dest="verbose", help="print out detailed messages")
 	@CommonSwitchArgumentAttribute("-q", "--quiet",   dest="quiet",   help="reduce messages to a minimum")
-	@CommonArgumentAttribute("--sln", metavar="<SolutionID>", dest="SolutionID", help="Solution name")
-	@CommonArgumentAttribute("--prj", metavar="<ProjectID>", dest="ProjectID", help="Solution name")
+	@CommonArgumentAttribute("--sln", metavar="SolutionID", dest="SolutionID", help="Solution name")
+	@CommonArgumentAttribute("--prj", metavar="ProjectID", dest="ProjectID", help="Solution name")
 	def Run(self):
 		ArgParseMixin.Run(self)
 
@@ -332,7 +356,7 @@ class PoC(ILogable, ArgParseMixin):
 	# create the sub-parser for the "help" command
 	# ----------------------------------------------------------------------------
 	@CommandAttribute("help", help="help help")
-	@ArgumentAttribute(metavar="<Command>", dest="Command", type=str, nargs="?", help="Print help page(s) for a command.")
+	@ArgumentAttribute(metavar="Command", dest="Command", type=str, nargs="?", help="Print help page(s) for a command.")
 	def HandleHelp(self, args):
 		self.PrintHeadline()
 		if (args.Command is None):
@@ -351,7 +375,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands") # mccabe:disable=MC0001
 	@CommandAttribute("configure", help="Configure vendor tools for PoC.")
-	@ArgumentAttribute(metavar="<ToolChain>", dest="ToolChain", type=str, nargs="?", help="Specify a tool chain to be configured.")
+	@ArgumentAttribute(metavar="ToolChain", dest="ToolChain", type=str, nargs="?", help="Specify a tool chain to be configured.")
 	def HandleConfiguration(self, args):
 		self.PrintHeadline()
 
@@ -404,6 +428,8 @@ class PoC(ILogable, ArgParseMixin):
 					nxt = True
 				except SkipConfigurationException:
 					break
+				except ConfigurationException:
+					raise
 				except ExceptionBase as ex:
 					print("  {RED}FAULT:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
 
@@ -505,7 +531,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("remove-solution", help="Add a solution to PoC.")
-	@ArgumentAttribute(metavar="<SolutionID>", dest="SolutionID", type=str, help="Solution name.")
+	@ArgumentAttribute(metavar="SolutionID", dest="SolutionID", type=str, help="Solution name.")
 	def HandleRemoveSolution(self, args):
 		self.PrintHeadline()
 		self.__PrepareForConfiguration()
@@ -562,7 +588,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	# @CommandGroupAttribute("Configuration commands")
 	# @CommandAttribute("remove-project", help="Add a project to PoC.")
-	# @ArgumentAttribute(metavar="<Project>", dest="Project", type=str, help="Project name.")
+	# @ArgumentAttribute(metavar="Project", dest="Project", type=str, help="Project name.")
 	# def HandleRemoveProject(self, args):
 	# 	self.PrintHeadline()
 	# 	self.__PrepareForConfiguration()
@@ -596,7 +622,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	# @CommandGroupAttribute("Configuration commands")
 	# @CommandAttribute("remove-ipcore", help="Add a ipcore to PoC.")
-	# @ArgumentAttribute(metavar="<IPCore>", dest="IPCore", type=str, help="IPCore name.")
+	# @ArgumentAttribute(metavar="IPCore", dest="IPCore", type=str, help="IPCore name.")
 	# def HandleRemoveIPCore(self, args):
 	# 	self.PrintHeadline()
 	# 	self.__PrepareForConfiguration()
@@ -615,7 +641,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	# @CommandGroupAttribute("Configuration commands")
 	# @CommandAttribute("remove-testbench", help="Add a testbench to PoC.")
-	# @ArgumentAttribute(metavar="<Testbench>", dest="Testbench", type=str, help="Testbench name.")
+	# @ArgumentAttribute(metavar="Testbench", dest="Testbench", type=str, help="Testbench name.")
 	# def HandleRemoveTestbench(self, args):
 	# 	self.PrintHeadline()
 	# 	self.__PrepareForConfiguration()
@@ -625,7 +651,7 @@ class PoC(ILogable, ArgParseMixin):
 	# ----------------------------------------------------------------------------
 	@CommandGroupAttribute("Configuration commands")
 	@CommandAttribute("query", help="Simulate a PoC Entity with Aldec Active-HDL")
-	@ArgumentAttribute(metavar="<Query>", dest="Query", type=str, help="todo help")
+	@ArgumentAttribute(metavar="Query", dest="Query", type=str, help="todo help")
 	def HandleQueryConfiguration(self, args):
 		self.__PrepareForConfiguration()
 		query = Query(self)
@@ -684,7 +710,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands") # mccabe:disable=MC0001
 	@CommandAttribute("list-testbench", help="List all testbenches")
 	@PoCEntityAttribute()
-	@ArgumentAttribute("--kind", metavar="<Kind>", dest="TestbenchKind", help="Testbench kind: VHDL | COCOTB")
+	@ArgumentAttribute("--kind", metavar="Kind", dest="TestbenchKind", help="Testbench kind: VHDL | COCOTB")
 	def HandleListTestbenches(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
@@ -793,6 +819,7 @@ class PoC(ILogable, ArgParseMixin):
 	@BoardDeviceAttributeGroup()
 	@VHDLVersionAttribute()
 	@GUIModeAttribute()
+	@ArgumentAttribute("--reproducer", metavar="Name", dest="CreateReproducer", help="Create a bug reproducer")
 	def HandleGHDLSimulation(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSimulation()
@@ -806,7 +833,7 @@ class PoC(ILogable, ArgParseMixin):
 		vhdlVersion =  self._ExtractVHDLVersion(args.VHDLVersion)
 
 		simulator = GHDLSimulator(self, self.DryRun, args.GUIMode)
-		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion, guiMode=args.GUIMode)		#, vhdlGenerics=None)
+		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)		#, vhdlGenerics=None)
 
 		Exit.exit(0 if allPassed else 1)
 
@@ -917,7 +944,7 @@ class PoC(ILogable, ArgParseMixin):
 	@CommandGroupAttribute("Simulation commands")
 	@CommandAttribute("list-netlist", help="List all netlists")
 	@PoCEntityAttribute()
-	@ArgumentAttribute("--kind", metavar="<Kind>", dest="NetlistKind", help="Netlist kind: Lattice | Quartus | XST | CoreGen")
+	@ArgumentAttribute("--kind", metavar="Kind", dest="NetlistKind", help="Netlist kind: Lattice | Quartus | XST | CoreGen")
 	def HandleListNetlist(self, args):
 		self.PrintHeadline()
 		self.__PrepareForSynthesis()
@@ -1102,6 +1129,15 @@ class PoC(ILogable, ArgParseMixin):
 
 # main program
 def main(): # mccabe:disable=MC0001
+	"""
+	This is the entry point for PoC.py written as a function.
+
+	1. It extracts common flags from the script's arguments list, before :py:class:`~argparse.ArgumentParser` is fully loaded.
+	2. It initializes colorama for colored outputs
+	3. It creates an instance of PoC and hands over to class based execution. All is wrapped in a big ``try..except`` block to catch every unhandled exception.
+	4. Shutdown the script and return its exit code.
+	"""
+
 	dryRun =  "--dryrun"  in sys_argv
 	debug =   "-d"        in sys_argv
 	verbose = "-v"        in sys_argv
@@ -1113,7 +1149,7 @@ def main(): # mccabe:disable=MC0001
 	try:
 		Init.init()
 		# handover to a class instance
-		poc = PoC(debug, verbose, quiet, dryRun)
+		poc = PileOfCores(debug, verbose, quiet, dryRun)
 		poc.Run()
 		Exit.exit()
 
@@ -1160,5 +1196,6 @@ def main(): # mccabe:disable=MC0001
 if __name__ == "__main__":
 	Exit.versionCheck((3,5,0))
 	main()
-else:
-	Exit.printThisIsNoLibraryFile(PoC.HeadLine)
+# else:
+# 	print(__name__)
+# 	Exit.printThisIsNoLibraryFile(PoC.HeadLine)

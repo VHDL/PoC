@@ -32,10 +32,24 @@
 # limitations under the License.
 # ==============================================================================
 #
-import re
-from collections  import OrderedDict as _default_dict, ChainMap as _ChainMap
-from configparser import ConfigParser, SectionProxy, Interpolation, MAX_INTERPOLATION_DEPTH, DEFAULTSECT, _UNSET, ConverterMapping
+# load dependencies
+from itertools    import chain as itertools_chain
+from functools    import partial as functools_partial
+from re           import compile as re_compile, escape as re_escape, VERBOSE as RE_VERBOSE
+from sys          import version_info
+
+from collections  import OrderedDict as _default_dict, ChainMap as _ChainMap, MutableMapping
+from configparser import ConfigParser, SectionProxy, Interpolation, MAX_INTERPOLATION_DEPTH, DEFAULTSECT, _UNSET
 from configparser import NoSectionError, InterpolationDepthError, InterpolationSyntaxError, NoOptionError, InterpolationMissingOptionError
+
+
+__api__ = [
+	'ExtendedSectionProxy',
+	'ExtendedInterpolation',
+	'ExtendedConfigParser'
+]
+__all__ = __api__
+
 
 class ExtendedSectionProxy(SectionProxy):
 	def __getitem__(self, key):
@@ -43,14 +57,78 @@ class ExtendedSectionProxy(SectionProxy):
 			raise KeyError(self._name + ":" + key)
 		return self._parser.get(self._name, key)
 
+
+# WORKAROUND: Required for ReadTheDocs, which doesn't support Python 3.5 yet.
+if (version_info < (3,5,0)):
+	class ConverterMapping(MutableMapping):
+		"""Enables reuse of get*() methods between the parser and section proxies.
+
+		If a parser class implements a getter directly, the value for the given
+		key will be ``None``. The presence of the converter name here enables
+		section proxies to find and use the implementation on the parser class.
+		"""
+
+		GETTERCRE = re_compile(r"^get(?P<name>.+)$")
+
+		def __init__(self, parser):
+			self._parser = parser
+			self._data = {}
+			for getter in dir(self._parser):
+				m = self.GETTERCRE.match(getter)
+				if not m or not callable(getattr(self._parser, getter)):
+					continue
+				self._data[m.group('name')] = None  # See class docstring.
+
+		def __getitem__(self, key):
+			return self._data[key]
+
+		def __setitem__(self, key, value):
+			try:
+				k = 'get' + key
+			except TypeError:
+				raise ValueError('Incompatible key: {} (type: {})'
+												 ''.format(key, type(key)))
+			if k == 'get':
+				raise ValueError('Incompatible key: cannot use "" as a name')
+			self._data[key] = value
+			func = functools_partial(self._parser._get_conv, conv=value)
+			func.converter = value
+			setattr(self._parser, k, func)
+			for proxy in self._parser.values():
+				getter = functools_partial(proxy.get, _impl=func)
+				setattr(proxy, k, getter)
+
+		def __delitem__(self, key):
+			try:
+				k = 'get' + (key or None)
+			except TypeError:
+				raise KeyError(key)
+			del self._data[key]
+			for inst in itertools_chain((self._parser,), self._parser.values()):
+				try:
+					delattr(inst, k)
+				except AttributeError:
+					# don't raise since the entry was present in _data, silently
+					# clean up
+					continue
+
+		def __iter__(self):
+			return iter(self._data)
+
+		def __len__(self):
+			return len(self._data)
+else:
+	from configparser import ConverterMapping
+
+
 # Monkey patching ... (a.k.a. duck punshing
 import configparser
 configparser.SectionProxy = ExtendedSectionProxy
 
 
 class ExtendedInterpolation(Interpolation):
-	_KEYCRE = re.compile(r"\$\{(?P<ref>[^}]+)\}")
-	_KEYCRE2 = re.compile(r"\$\[(?P<ref>[^\]]+)\}")
+	_KEYCRE = re_compile(r"\$\{(?P<ref>[^}]+)\}")
+	_KEYCRE2 = re_compile(r"\$\[(?P<ref>[^\]]+)\}")
 
 	def __init__(self):
 		self._cache = dict()
@@ -245,9 +323,9 @@ class ExtendedConfigParser(ConfigParser):
 		if delimiters == ('=', ':'):
 			self._optcre =                self.OPTCRE_NV if allow_no_value else self.OPTCRE
 		else:
-			d = "|".join(re.escape(d) for d in delimiters)
-			if allow_no_value:            self._optcre = re.compile(self._OPT_NV_TMPL.format(delim=d), re.VERBOSE)
-			else:                         self._optcre = re.compile(self._OPT_TMPL.format(delim=d), re.VERBOSE)
+			d = "|".join(re_escape(d) for d in delimiters)
+			if allow_no_value:            self._optcre = re_compile(self._OPT_NV_TMPL.format(delim=d), RE_VERBOSE)
+			else:                         self._optcre = re_compile(self._OPT_TMPL.format(delim=d), RE_VERBOSE)
 
 		if (interpolation is None):     self._interpolation = Interpolation()
 		elif (interpolation is _UNSET): self._interpolation = ExtendedInterpolation()

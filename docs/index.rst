@@ -63,6 +63,7 @@ At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergr
 sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et
 accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet
 
+
 Cite the PoC-Library
 ********************
 
@@ -81,17 +82,37 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
      urldate={2016-10-28},
    }
 
-
 .. toctree::
+   :caption: Introduction
    :hidden:
 
    WhatIsPoC/index
    QuickStart
+   GetInvolved/index
+   References/Licenses/License
+
+.. toctree::
+   :caption: Main Documentation
+   :hidden:
+
    UsingPoC/index
-   PoC/index
+   Interfaces/index
+   IPCores/index
    Miscelaneous/ThirdParty
    ConstraintFiles/index
-   References/index
-   GetInvolved/index
+
+.. toctree::
+   :caption: References
+   :hidden:
+
+   References/CommandReference
+   References/Database
+   PyInfrastructure/index
+   More ... <References/more>
+
+.. toctree::
+   :caption: Appendix
+   :hidden:
+
    Miscelaneous/ChangeLog
-   References/Licenses/License
+   genindex

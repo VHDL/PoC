@@ -16,6 +16,10 @@ _themes/
 */
 *.rst
 
+# Introspection file for sphinxcontrib-autoprogram
+PoCSphinx.py
+
 poc.py
+
 # make.bat
 # Makefile

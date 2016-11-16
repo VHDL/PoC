@@ -8,7 +8,8 @@ README.md
 Hooks/
 
 # Executables
-Wrapper.ps1
+PoC.psm1
+PowerShell.psm1
 wrapper.sh
 
 # Configuration files

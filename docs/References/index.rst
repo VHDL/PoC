@@ -5,13 +5,12 @@ References
 .. toctree::
    :maxdepth: 1
 
+   NamingConventions
    CommandReference
+   Database
    WrapperScriptHookFiles
    FileFormats/index
-   Interfaces/index
-   NamingConventions
    ListOfDevices
    ListOfBoards
-   Glossary
    KnownIssues
    Licenses/index

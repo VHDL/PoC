@@ -11,4 +11,4 @@ __init__.py
 ActiveHDL.py
 Diamond.py
 Lattice.py
-Synopsys.py
+Synplify.py

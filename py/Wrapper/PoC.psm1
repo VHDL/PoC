@@ -15,7 +15,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#											Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -342,12 +342,12 @@ function Invoke-CloseEnvironment
 	{	foreach ($ToolName in $LoadEnv[$VendorName]['Tools'].Keys)
 		{	if ($LoadEnv[$VendorName]['Tools'][$ToolName]['Load'])
 			{	# if exists, source the tool pre-hook file
-				$ToolPostHookFile = "$PoC_RootDir\$PoC_HookDirectory\$($LoadEnv[$VendorName]['Tools'][$ToolName]['PostHookFile'])"
+				$ToolPostHookFile = "$PoC_HookDir\$($LoadEnv[$VendorName]['Tools'][$ToolName]['PostHookFile'])"
 				if (Test-Path $ToolPostHookFile -PathType Leaf)
 				{	. ($ToolPostHookFile)		}
 
 				# if exists, source the vendor pre-hook file
-				$VendorPostHookFile = "$PoC_RootDir\$PoC_HookDirectory\$($LoadEnv[$VendorName]['PostHookFile'])"
+				$VendorPostHookFile = "$PoC_HookDir\$($LoadEnv[$VendorName]['PostHookFile'])"
 				if (Test-Path $VendorPostHookFile -PathType Leaf)
 				{	. ($VendorPostHookFile)	}
 

@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,15 +32,6 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	pass
-	# place library initialization code here
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Base")
-
-
 # load dependencies
 from datetime           import datetime
 from enum               import Enum, unique
@@ -50,22 +41,42 @@ from Base.Exceptions    import ExceptionBase, SkipableException
 from Base.Logging       import LogEntry
 from Base.Project       import Environment, VHDLVersion
 from Base.Shared        import Shared, to_time
-from PoC.Entity         import WildCard
-from PoC.TestCase       import TestCase, SimulationStatus, TestSuite
+from DataBase.Entity    import WildCard
+from DataBase.TestCase  import TestCase, SimulationStatus, TestSuite
+
+
+# required for autoapi.sphinx
+__api__ = [
+	'SimulatorException',
+	'SkipableSimulatorException',
+	'PoCSimulationResultNotFoundException',
+	'SimulationState',
+	'SimulationResult',
+	'Simulator',
+	'PoCSimulationResultFilter'
+]
+__all__ = __api__
 
 
 VHDL_TESTBENCH_LIBRARY_NAME = "test"
 
 
 class SimulatorException(ExceptionBase):
+	"""Base class for all SimulatorExceptions."""
 	pass
 
 class SkipableSimulatorException(SimulatorException, SkipableException):
+	"""Base class for all skipable SimulatorExceptions."""
+	pass
+
+class PoCSimulationResultNotFoundException(SkipableSimulatorException):
+	"""This exception is raised if the expected PoC simulation result string was	not found in the simulator's output."""
 	pass
 
 
 @unique
 class SimulationState(Enum):
+	"""Simulation state enumeration."""
 	Prepare =     0
 	Analyze =     1
 	Elaborate =   2
@@ -75,23 +86,37 @@ class SimulationState(Enum):
 
 @unique
 class SimulationResult(Enum):
+	"""Simulation result enumeration."""
 	NotRun =      0
 	Error =       1
 	Failed =      2
 	NoAsserts =   3
 	Passed =      4
+	GUIRun =      5
 
 
 class Simulator(Shared):
+	"""
+	Base class for all Simulator classes.
+
+	:type  host:      object
+	:param host:      The hosting instance for this instance.
+	:type  dryRun:    bool
+	:param dryRun:    Enable dry-run mode
+	:type  noCleanUp: bool
+	:param noCleanUp: Don't clean up after a run.
+	"""
+
 	_ENVIRONMENT =    Environment.Simulation
 	_vhdlVersion =    VHDLVersion.VHDL2008
 
 	class __Directories__(Shared.__Directories__):
 		PreCompiled = None
 
-	def __init__(self, host, dryRun):
+	def __init__(self, host, dryRun, guiMode):
 		super().__init__(host, dryRun)
 
+		self._guiMode =         guiMode
 		self._testSuite =       TestSuite()  # TODO: This includes not the read ini files phases ...
 		self._state =           SimulationState.Prepare
 		self._analyzeTime =     None
@@ -198,7 +223,7 @@ class Simulator(Shared):
 		self._RunSimulation(testbench)
 		self._simulationTime = self._GetTimeDeltaSinceLastEvent()
 
-		if (guiMode is True):
+		if (self._guiMode is True):
 			self.LogNormal("Executing waveform viewer...")
 			self._state = SimulationState.View
 			self._RunView(testbench)
@@ -246,7 +271,8 @@ class Simulator(Shared):
 		SimulationStatus.SimulationError:     "RED",
 		SimulationStatus.SimulationFailed:    "RED",
 		SimulationStatus.SimulationNoAsserts: "YELLOW",
-		SimulationStatus.SimulationSuccess:   "GREEN"
+		SimulationStatus.SimulationSuccess:   "GREEN",
+		SimulationStatus.SimulationGUIRun:    "YELLOW"
 	}
 
 	__SIMULATION_REPORT_STATUS_TEXT_TABLE__ = {
@@ -258,7 +284,8 @@ class Simulator(Shared):
 		SimulationStatus.SimulationError:     "SIM. ERROR",
 		SimulationStatus.SimulationFailed:    "FAILED",
 		SimulationStatus.SimulationNoAsserts: "NO ASSERTS",
-		SimulationStatus.SimulationSuccess:   "PASSED"
+		SimulationStatus.SimulationSuccess:   "PASSED",
+		SimulationStatus.SimulationGUIRun:    "GUI RUN"
 	}
 
 	def PrintSimulationReportLine(self, testObject, indent, nameColumnWidth):
@@ -307,4 +334,4 @@ def PoCSimulationResultFilter(gen, simulationResult):
 
 		yield line
 
-	if (state != 6):    raise SkipableSimulatorException("No PoC Testbench Report in simulator output found.")
+	if (state != 6):    raise PoCSimulationResultNotFoundException("No PoC Testbench Report in simulator output found.")
