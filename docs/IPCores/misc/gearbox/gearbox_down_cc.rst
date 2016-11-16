@@ -1,3 +1,4 @@
+.. _IP:gearbox_down_cc:
 
 gearbox_down_cc
 ###############
@@ -19,6 +20,5 @@ gearbox_down_cc
    :lines: 46-70
 
 Source file: `misc/gearbox/gearbox_down_cc.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/gearbox/gearbox_down_cc.vhdl>`_
-
 
 

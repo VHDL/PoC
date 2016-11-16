@@ -1,3 +1,4 @@
+.. _IP:lcd_LCDBusController:
 
 lcd_LCDBusController
 ####################
@@ -15,6 +16,5 @@ lcd_LCDBusController
    :lines: 43-67
 
 Source file: `io/lcd/lcd_LCDBusController.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/lcd/lcd_LCDBusController.vhdl>`_
-
 
 

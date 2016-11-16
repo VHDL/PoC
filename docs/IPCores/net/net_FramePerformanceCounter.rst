@@ -1,3 +1,4 @@
+.. _IP:LocalLink_PerformanceCounter:
 
 LocalLink_PerformanceCounter
 ############################
@@ -13,6 +14,5 @@ LocalLink_PerformanceCounter
    :lines: 11-35
 
 Source file: `net/net_FramePerformanceCounter.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/net_FramePerformanceCounter.vhdl>`_
-
 
 

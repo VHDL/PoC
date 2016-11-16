@@ -1,3 +1,4 @@
+.. _IP:misc_Sequencer:
 
 misc_Sequencer
 ##############
@@ -15,6 +16,5 @@ misc_Sequencer
    :lines: 40-56
 
 Source file: `misc/misc_Sequencer.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/misc_Sequencer.vhdl>`_
-
 
 

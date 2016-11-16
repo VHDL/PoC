@@ -1,3 +1,4 @@
+.. _IP:mac_FrameLoopback:
 
 mac_FrameLoopback
 #################
@@ -15,6 +16,5 @@ mac_FrameLoopback
    :lines: 42-72
 
 Source file: `net/mac/mac_FrameLoopback.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/mac/mac_FrameLoopback.vhdl>`_
-
 
 

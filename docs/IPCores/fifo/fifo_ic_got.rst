@@ -1,3 +1,4 @@
+.. _IP:fifo_ic_got:
 
 fifo_ic_got
 ###########
@@ -50,6 +51,5 @@ Examples:
    :lines: 77-103
 
 Source file: `fifo/fifo_ic_got.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/fifo/fifo_ic_got.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:mac_RX_SrcMAC_Filter:
 
 mac_RX_SrcMAC_Filter
 ####################
@@ -15,6 +16,5 @@ mac_RX_SrcMAC_Filter
    :lines: 42-72
 
 Source file: `net/mac/mac_RX_SrcMAC_Filter.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/mac/mac_RX_SrcMAC_Filter.vhdl>`_
-
 
 

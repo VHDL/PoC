@@ -1,3 +1,4 @@
+.. _IP:stream_Mirror:
 
 stream_Mirror
 #############
@@ -15,6 +16,5 @@ stream_Mirror
    :lines: 41-70
 
 Source file: `bus/stream/stream_Mirror.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/bus/stream/stream_Mirror.vhdl>`_
-
 
 

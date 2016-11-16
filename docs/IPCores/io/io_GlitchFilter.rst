@@ -1,3 +1,4 @@
+.. _IP:io_GlitchFilter:
 
 io_GlitchFilter
 ###############
@@ -16,6 +17,5 @@ cycle counts can be configured.
    :lines: 41-51
 
 Source file: `io/io_GlitchFilter.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/io_GlitchFilter.vhdl>`_
-
 
 

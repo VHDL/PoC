@@ -1,3 +1,4 @@
+.. _IP:ipv6_RX:
 
 ipv6_RX
 #######
@@ -15,6 +16,5 @@ ipv6_RX
    :lines: 42-84
 
 Source file: `net/ipv6/ipv6_RX.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/ipv6/ipv6_RX.vhdl>`_
-
 
 

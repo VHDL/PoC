@@ -1,3 +1,4 @@
+.. _IP:ocram_tdp:
 
 ocram_tdp
 #########
@@ -54,6 +55,5 @@ Mixed-Port Read-During-Write
    :lines: 84-104
 
 Source file: `mem/ocram/ocram_tdp.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ocram/ocram_tdp.vhdl>`_
-
 
 

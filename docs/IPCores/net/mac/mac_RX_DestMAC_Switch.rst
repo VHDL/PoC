@@ -1,3 +1,4 @@
+.. _IP:mac_RX_DestMAC_Switch:
 
 mac_RX_DestMAC_Switch
 #####################
@@ -15,6 +16,5 @@ mac_RX_DestMAC_Switch
    :lines: 42-67
 
 Source file: `net/mac/mac_RX_DestMAC_Switch.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/mac/mac_RX_DestMAC_Switch.vhdl>`_
-
 
 

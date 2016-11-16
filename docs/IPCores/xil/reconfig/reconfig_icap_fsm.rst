@@ -1,3 +1,4 @@
+.. _IP:reconfig_icap_fsm:
 
 reconfig_icap_fsm
 #################
@@ -19,6 +20,5 @@ primitives to generate control signals. Tested on:
    :lines: 42-63
 
 Source file: `xil/reconfig/reconfig_icap_fsm.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/xil/reconfig/reconfig_icap_fsm.vhdl>`_
-
 
 

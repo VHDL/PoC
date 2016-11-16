@@ -1,3 +1,4 @@
+.. _IP:xil_SystemMonitor_Virtex6:
 
 xil_SystemMonitor_Virtex6
 #########################
@@ -32,6 +33,5 @@ temperature values are overrun.
    :lines: 56-66
 
 Source file: `xil/xil_SystemMonitor_Virtex6.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/xil/xil_SystemMonitor_Virtex6.vhdl>`_
-
 
 

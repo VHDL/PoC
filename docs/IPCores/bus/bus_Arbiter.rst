@@ -1,3 +1,4 @@
+.. _IP:bus_Arbiter:
 
 bus_Arbiter
 ###########
@@ -18,6 +19,5 @@ following arbitration strategies:
    :lines: 42-60
 
 Source file: `bus/bus_Arbiter.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/bus/bus_Arbiter.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:uart_tx:
 
 uart_tx
 #######
@@ -16,6 +17,5 @@ uart_tx
    :lines: 35-50
 
 Source file: `io/uart/uart_tx.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/uart/uart_tx.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:Eth_GEMAC_RX:
 
 Eth_GEMAC_RX
 ############
@@ -15,6 +16,5 @@ Eth_GEMAC_RX
    :lines: 42-62
 
 Source file: `net/eth/eth_GEMAC_RX.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/eth/eth_GEMAC_RX.vhdl>`_
-
 
 

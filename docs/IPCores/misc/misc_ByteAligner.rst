@@ -1,3 +1,4 @@
+.. _IP:misc_ByteAligner:
 
 misc_ByteAligner
 ################
@@ -15,6 +16,5 @@ misc_ByteAligner
    :lines: 40-53
 
 Source file: `misc/misc_ByteAligner.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/misc_ByteAligner.vhdl>`_
-
 
 

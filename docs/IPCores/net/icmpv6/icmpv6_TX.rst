@@ -1,3 +1,4 @@
+.. _IP:icmpv6_TX:
 
 icmpv6_TX
 #########
@@ -15,6 +16,5 @@ icmpv6_TX
    :lines: 42-56
 
 Source file: `net/icmpv6/icmpv6_TX.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/icmpv6/icmpv6_TX.vhdl>`_
-
 
 

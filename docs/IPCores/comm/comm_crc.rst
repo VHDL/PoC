@@ -1,3 +1,4 @@
+.. _IP:comm_crc:
 
 comm_crc
 ########
@@ -21,6 +22,5 @@ processing width.
    :lines: 45-64
 
 Source file: `comm/comm_crc.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/comm/comm_crc.vhdl>`_
-
 
 

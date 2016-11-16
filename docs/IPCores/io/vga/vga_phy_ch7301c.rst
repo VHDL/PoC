@@ -1,3 +1,4 @@
+.. _IP:vga_phy_ch7301c:
 
 vga_phy_ch7301c
 ###############
@@ -46,6 +47,5 @@ tests/ml505/vga_test_ml505.vhdl for an example.
    :lines: 70-83
 
 Source file: `io/vga/vga_phy_ch7301c.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/vga/vga_phy_ch7301c.vhdl>`_
-
 
 

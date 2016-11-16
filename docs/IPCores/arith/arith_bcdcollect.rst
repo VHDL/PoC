@@ -1,3 +1,4 @@
+.. _IP:arith_bcdcollect:
 
 arith_bcdcollect
 ################
@@ -15,6 +16,5 @@ arith_bcdcollect
    :lines: 37-55
 
 Source file: `arith/arith_bcdcollect.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_bcdcollect.vhdl>`_
-
 
 

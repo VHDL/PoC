@@ -1,3 +1,4 @@
+.. _IP:icmpv4_Wrapper:
 
 icmpv4_Wrapper
 ##############
@@ -15,6 +16,5 @@ icmpv4_Wrapper
    :lines: 42-91
 
 Source file: `net/icmpv4/icmpv4_Wrapper.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/icmpv4/icmpv4_Wrapper.vhdl>`_
-
 
 

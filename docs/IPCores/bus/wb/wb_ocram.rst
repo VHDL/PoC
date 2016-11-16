@@ -1,3 +1,4 @@
+.. _IP:ocram_wb:
 
 ocram_wb
 ########
@@ -34,6 +35,5 @@ PIPE_STAGES = 2
    :lines: 54-80
 
 Source file: `bus/wb/wb_ocram.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/bus/wb/wb_ocram.vhdl>`_
-
 
 

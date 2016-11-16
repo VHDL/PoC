@@ -43,6 +43,7 @@ class SourceCodeRange:
 		self.StartRow =   startRow
 		self.EndRow =     endRow
 
+
 class SourceFile:
 	def __init__(self, entitySourceCodeRange):    #, entityName, entitySourceCodeRange, summary, description, seeAlso):
 		self.File =                   entitySourceCodeRange.SourceFile
@@ -133,14 +134,15 @@ class Extract:
 	def ExtractComments(self, sourceFile):
 		"""
 		Extracts the documentation from the header of a PoC VHDL source.
-		 - The documentation header starts with a separator line matching /^--\s*={16,}$/.
-		 - The documentation header continues through all immediately following comment lines.
-		 - The contained information is added to the currently active section.
-		 - A specific section is opened by a line matching /^--\s*(?P<Section>\w+):/ with
-		   <Section> as one of Authors|Entity|Description|SeeAlso|License.
-		 - An underline /^-- -+$/ immediately following a section opening is ignored.
-		 - After the documentation header, the entity name is extracted from the entity declaration.
-		 """
+
+		* The documentation header starts with a separator line matching /^--\s*={16,}$/.
+		* The documentation header continues through all immediately following comment lines.
+		* The contained information is added to the currently active section.
+		* A specific section is opened by a line matching /^--\s*(?P<Section>\w+):/ with
+		  <Section> as one of Authors|Entity|Description|SeeAlso|License.
+		* An underline /^-- -+$/ immediately following a section opening is ignored.
+		* After the documentation header, the entity name is extracted from the entity declaration.
+		"""
 		class State(Enum):
 			BeforeDocHeader  = 0
 			InDocHeader      = 1

@@ -1,3 +1,4 @@
+.. _IP:Eth_Wrapper:
 
 Eth_Wrapper
 ###########
@@ -15,6 +16,5 @@ Eth_Wrapper
    :lines: 68-112
 
 Source file: `net/eth/eth_Wrapper.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/eth/eth_Wrapper.vhdl>`_
-
 
 

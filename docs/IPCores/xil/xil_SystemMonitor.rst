@@ -1,3 +1,4 @@
+.. _IP:xil_SystemMonitor:
 
 xil_SystemMonitor
 #################
@@ -33,6 +34,5 @@ monitors (normal, user temperature, over temperature).
    :lines: 62-73
 
 Source file: `xil/xil_SystemMonitor.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/xil/xil_SystemMonitor.vhdl>`_
-
 
 

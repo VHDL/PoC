@@ -1,3 +1,4 @@
+.. _IP:filter_and:
 
 filter_and
 ##########
@@ -15,6 +16,5 @@ filter_and
    :lines: 37-48
 
 Source file: `misc/filter/filter_and.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/filter/filter_and.vhdl>`_
-
 
 

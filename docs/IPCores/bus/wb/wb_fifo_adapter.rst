@@ -1,3 +1,4 @@
+.. _IP:wb_fifo_adapter:
 
 wb_fifo_adapter
 ###############
@@ -22,6 +23,5 @@ old comments:
    :lines: 80-104
 
 Source file: `bus/wb/wb_fifo_adapter.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/bus/wb/wb_fifo_adapter.vhdl>`_
-
 
 

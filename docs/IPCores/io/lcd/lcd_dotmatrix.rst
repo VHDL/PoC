@@ -1,3 +1,4 @@
+.. _IP:lcd_dotmatrix:
 
 lcd_dotmatrix
 #############
@@ -15,6 +16,5 @@ lcd_dotmatrix
    :lines: 36-67
 
 Source file: `io/lcd/lcd_dotmatrix.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/lcd/lcd_dotmatrix.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:cache_replacement_policy:
 
 cache_replacement_policy
 ########################
@@ -57,6 +58,5 @@ cache set (see above).
    :lines: 85-104
 
 Source file: `cache/cache_replacement_policy.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_replacement_policy.vhdl>`_
-
 
 

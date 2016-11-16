@@ -1,3 +1,4 @@
+.. _IP:xil_ICAP:
 
 xil_ICAP
 ########
@@ -20,6 +21,5 @@ Supported devices are:
    :lines: 47-66
 
 Source file: `xil/xil_ICAP.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/xil/xil_ICAP.vhdl>`_
-
 
 

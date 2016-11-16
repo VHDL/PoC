@@ -1,3 +1,4 @@
+.. _IP:mdio_Controller:
 
 mdio_Controller
 ###############
@@ -15,6 +16,5 @@ mdio_Controller
    :lines: 44-73
 
 Source file: `io/mdio/mdio_Controller.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/mdio/mdio_Controller.vhdl>`_
-
 
 

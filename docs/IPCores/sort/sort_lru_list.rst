@@ -1,3 +1,4 @@
+.. _IP:sort_lru_list:
 
 sort_lru_list
 #############
@@ -27,6 +28,5 @@ Supported operations:
    :lines: 55-74
 
 Source file: `sort/sort_lru_list.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sort/sort_lru_list.vhdl>`_
-
 
 

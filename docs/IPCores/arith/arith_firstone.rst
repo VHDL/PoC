@@ -1,3 +1,4 @@
+.. _IP:arith_firstone:
 
 arith_firstone
 ##############
@@ -28,6 +29,5 @@ This implementation uses carry chains for wider implementations.
    :lines: 50-61
 
 Source file: `arith/arith_firstone.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_firstone.vhdl>`_
-
 
 

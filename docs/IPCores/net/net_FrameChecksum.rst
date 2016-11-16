@@ -1,3 +1,4 @@
+.. _IP:net_FrameChecksum:
 
 net_FrameChecksum
 #################
@@ -15,6 +16,5 @@ net_FrameChecksum
    :lines: 41-72
 
 Source file: `net/net_FrameChecksum.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/net_FrameChecksum.vhdl>`_
-
 
 

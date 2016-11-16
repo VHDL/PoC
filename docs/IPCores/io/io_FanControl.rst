@@ -1,3 +1,4 @@
+.. _IP:io_FanControl:
 
 io_FanControl
 #############
@@ -34,6 +35,5 @@ io_FanControl
    :lines: 63-81
 
 Source file: `io/io_FanControl.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/io_FanControl.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:{EntityName}:
 
 {EntityName}
 {EntityNameUnderline}
@@ -15,4 +16,3 @@
 Source file: {GitHubSourceFile}
 
 {SeeAlsoBox}
-

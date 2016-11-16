@@ -1,3 +1,4 @@
+.. _IP:comm_scramble:
 
 comm_scramble
 #############
@@ -17,6 +18,5 @@ sequence is independent from the chosen output width.
    :lines: 37-51
 
 Source file: `comm/comm_scramble.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/comm/comm_scramble.vhdl>`_
-
 
 

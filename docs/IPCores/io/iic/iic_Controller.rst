@@ -1,3 +1,4 @@
+.. _IP:iic_Controller:
 
 iic_Controller
 ##############
@@ -18,6 +19,5 @@ is compatible to the System Management Bus (SMBus).
    :lines: 47-82
 
 Source file: `io/iic/iic_Controller.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/iic/iic_Controller.vhdl>`_
-
 
 

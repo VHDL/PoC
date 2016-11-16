@@ -1,3 +1,4 @@
+.. _IP:sort_lru_cache:
 
 sort_lru_cache
 ##############
@@ -29,6 +30,5 @@ Supported operations:
    :lines: 56-70
 
 Source file: `sort/sort_lru_cache.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sort/sort_lru_cache.vhdl>`_
-
 
 

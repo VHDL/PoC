@@ -1,3 +1,4 @@
+.. _IP:IICController_SFF8431:
 
 IICController_SFF8431
 #####################
@@ -13,6 +14,5 @@ IICController_SFF8431
    :lines: 15-49
 
 Source file: `io/iic/iic_Controller_SFF8431.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/iic/iic_Controller_SFF8431.vhdl>`_
-
 
 

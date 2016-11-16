@@ -1,3 +1,4 @@
+.. _IP:misc_Delay:
 
 misc_Delay
 ##########
@@ -15,6 +16,5 @@ misc_Delay
    :lines: 38-50
 
 Source file: `misc/misc_Delay.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/misc_Delay.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:sync_Pulse:
 
 sync_Pulse
 ##########
@@ -44,6 +45,5 @@ Source file: `misc/sync/sync_Pulse.vhdl <https://github.com/VLSI-EDA/PoC/blob/ma
      For a synchronizer for *strobe*-signals.
    :doc:`PoC.misc.sync.Vector </IPCores/misc/sync/sync_Vector>`
      For a multiple bits capable synchronizer.
-
 
 

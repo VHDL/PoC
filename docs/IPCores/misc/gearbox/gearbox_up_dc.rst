@@ -1,3 +1,4 @@
+.. _IP:gearbox_up_dc:
 
 gearbox_up_dc
 #############
@@ -25,6 +26,5 @@ Assertions:
    :lines: 51-66
 
 Source file: `misc/gearbox/gearbox_up_dc.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/gearbox/gearbox_up_dc.vhdl>`_
-
 
 

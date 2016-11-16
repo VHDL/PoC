@@ -1,3 +1,4 @@
+.. _IP:FrameLoopback:
 
 FrameLoopback
 #############
@@ -15,6 +16,5 @@ FrameLoopback
    :lines: 41-65
 
 Source file: `net/net_FrameLoopback.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/net_FrameLoopback.vhdl>`_
-
 
 

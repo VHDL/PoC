@@ -1,3 +1,4 @@
+.. _IP:arith_div:
 
 arith_div
 #########
@@ -19,6 +20,5 @@ outputs are undefined in this case.
    :lines: 38-61
 
 Source file: `arith/arith_div.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_div.vhdl>`_
-
 
 

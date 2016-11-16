@@ -1,3 +1,4 @@
+.. _IP:iic_Switch_PCA9548A:
 
 iic_Switch_PCA9548A
 ###################
@@ -15,6 +16,5 @@ iic_Switch_PCA9548A
    :lines: 42-90
 
 Source file: `io/iic/iic_Switch_PCA9548A.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/iic/iic_Switch_PCA9548A.vhdl>`_
-
 
 

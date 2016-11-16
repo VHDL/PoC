@@ -1,3 +1,4 @@
+.. _IP:ocram_sp:
 
 ocram_sp
 ########
@@ -38,6 +39,5 @@ also applies to Altera M20K memory blocks as described in the Altera:
    :lines: 68-82
 
 Source file: `mem/ocram/ocram_sp.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ocram/ocram_sp.vhdl>`_
-
 
 

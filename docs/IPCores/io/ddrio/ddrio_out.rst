@@ -1,3 +1,4 @@
+.. _IP:ddrio_out:
 
 ddrio_out
 #########
@@ -30,6 +31,5 @@ IOBs.
    :lines: 57-71
 
 Source file: `io/ddrio/ddrio_out.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/ddrio/ddrio_out.vhdl>`_
-
 
 

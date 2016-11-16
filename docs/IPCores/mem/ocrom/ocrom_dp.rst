@@ -1,3 +1,4 @@
+.. _IP:ocrom_dp:
 
 ocrom_dp
 ########
@@ -26,6 +27,5 @@ TODO: implement correct behavior for RT-level simulation
    :lines: 60-76
 
 Source file: `mem/ocrom/ocrom_dp.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ocrom/ocrom_dp.vhdl>`_
-
 
 

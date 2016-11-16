@@ -1,3 +1,4 @@
+.. _IP:stream_Source:
 
 stream_Source
 #############
@@ -15,6 +16,5 @@ stream_Source
    :lines: 42-58
 
 Source file: `bus/stream/stream_Source.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/bus/stream/stream_Source.vhdl>`_
-
 
 

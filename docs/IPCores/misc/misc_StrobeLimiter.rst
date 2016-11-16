@@ -1,3 +1,4 @@
+.. _IP:misc_StrobeLimiter:
 
 misc_StrobeLimiter
 ##################
@@ -15,6 +16,5 @@ misc_StrobeLimiter
    :lines: 39-51
 
 Source file: `misc/misc_StrobeLimiter.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/misc_StrobeLimiter.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:sdram_ctrl_phy_s3esk:
 
 sdram_ctrl_phy_s3esk
 ####################
@@ -85,6 +86,5 @@ Synchronous resets are used. Reset must be hold for at least two cycles.
    :lines: 127-171
 
 Source file: `mem/sdram/sdram_ctrl_phy_s3esk.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/sdram/sdram_ctrl_phy_s3esk.vhdl>`_
-
 
 

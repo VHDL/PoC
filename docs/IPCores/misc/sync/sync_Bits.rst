@@ -1,3 +1,4 @@
+.. _IP:sync_Bits:
 
 sync_Bits
 #########
@@ -44,6 +45,5 @@ Source file: `misc/sync/sync_Bits.vhdl <https://github.com/VLSI-EDA/PoC/blob/mas
      For a synchronizer for *strobe*-signals.
    :doc:`PoC.misc.sync.Vector </IPCores/misc/sync/sync_Vector>`
      For a multiple bits capable synchronizer.
-
 
 

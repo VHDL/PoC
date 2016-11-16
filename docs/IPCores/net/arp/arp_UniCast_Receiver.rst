@@ -1,3 +1,4 @@
+.. _IP:arp_UniCast_Receiver:
 
 arp_UniCast_Receiver
 ####################
@@ -15,6 +16,5 @@ arp_UniCast_Receiver
    :lines: 42-76
 
 Source file: `net/arp/arp_UniCast_Receiver.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/arp/arp_UniCast_Receiver.vhdl>`_
-
 
 

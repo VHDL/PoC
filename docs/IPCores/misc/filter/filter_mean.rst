@@ -1,3 +1,4 @@
+.. _IP:filter_mean:
 
 filter_mean
 ###########
@@ -15,6 +16,5 @@ filter_mean
    :lines: 37-48
 
 Source file: `misc/filter/filter_mean.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/filter/filter_mean.vhdl>`_
-
 
 

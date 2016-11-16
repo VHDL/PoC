@@ -1,3 +1,4 @@
+.. _IP:io_7SegmentMux_BCD:
 
 io_7SegmentMux_BCD
 ##################
@@ -18,6 +19,5 @@ numbers is supported.
    :lines: 45-60
 
 Source file: `io/io_7SegmentMux_BCD.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/io_7SegmentMux_BCD.vhdl>`_
-
 
 

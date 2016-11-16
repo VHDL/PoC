@@ -1,3 +1,4 @@
+.. _IP:arith_carrychain_inc:
 
 arith_carrychain_inc
 ####################
@@ -17,6 +18,5 @@ arith_carrychain_inc
    :lines: 43-52
 
 Source file: `arith/arith_carrychain_inc.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_carrychain_inc.vhdl>`_
-
 
 

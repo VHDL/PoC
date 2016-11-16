@@ -1,3 +1,4 @@
+.. _IP:ipv6_Wrapper:
 
 ipv6_Wrapper
 ############
@@ -15,6 +16,5 @@ ipv6_Wrapper
    :lines: 42-116
 
 Source file: `net/ipv6/ipv6_Wrapper.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/ipv6/ipv6_Wrapper.vhdl>`_
-
 
 

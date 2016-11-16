@@ -1,3 +1,4 @@
+.. _IP:arith_counter_ring:
 
 arith_counter_ring
 ##################
@@ -18,6 +19,5 @@ enabling ``INVERT_FEEDBACK``. The number of counter bits is configurable with
    :lines: 41-54
 
 Source file: `arith/arith_counter_ring.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_counter_ring.vhdl>`_
-
 
 

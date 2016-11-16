@@ -1,3 +1,4 @@
+.. _IP:uart_bclk:
 
 uart_bclk
 #########
@@ -21,6 +22,5 @@ old comments:
    :lines: 50-61
 
 Source file: `io/uart/uart_bclk.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/uart/uart_bclk.vhdl>`_
-
 
 

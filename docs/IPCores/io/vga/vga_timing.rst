@@ -1,3 +1,4 @@
+.. _IP:vga_timing:
 
 vga_timing
 ##########
@@ -54,6 +55,5 @@ differ between SMT and CVT.
    :lines: 80-96
 
 Source file: `io/vga/vga_timing.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/vga/vga_timing.vhdl>`_
-
 
 

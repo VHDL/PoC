@@ -1,3 +1,4 @@
+.. _IP:sync_Vector:
 
 sync_Vector
 ###########
@@ -24,6 +25,5 @@ Constraints:
    :lines: 49-63
 
 Source file: `misc/sync/sync_Vector.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/sync/sync_Vector.vhdl>`_
-
 
 

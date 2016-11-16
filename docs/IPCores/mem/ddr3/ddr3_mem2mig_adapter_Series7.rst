@@ -1,3 +1,4 @@
+.. _IP:ddr3_mem2mig_adapter_Series7:
 
 ddr3_mem2mig_adapter_Series7
 ############################
@@ -37,6 +38,5 @@ Containts only combinational logic.
    :lines: 61-96
 
 Source file: `mem/ddr3/ddr3_mem2mig_adapter_Series7.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ddr3/ddr3_mem2mig_adapter_Series7.vhdl>`_
-
 
 

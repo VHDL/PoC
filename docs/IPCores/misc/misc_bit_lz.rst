@@ -1,3 +1,4 @@
+.. _IP:misc_bit_lz:
 
 misc_bit_lz
 ###########
@@ -51,6 +52,5 @@ misc_bit_lz
    :lines: 69-91
 
 Source file: `misc/misc_bit_lz.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/misc_bit_lz.vhdl>`_
-
 
 

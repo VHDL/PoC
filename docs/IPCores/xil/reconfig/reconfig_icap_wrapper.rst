@@ -1,3 +1,4 @@
+.. _IP:reconfig_icap_wrapper:
 
 reconfig_icap_wrapper
 #####################
@@ -18,6 +19,5 @@ tbd
    :lines: 43-68
 
 Source file: `xil/reconfig/reconfig_icap_wrapper.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/xil/reconfig/reconfig_icap_wrapper.vhdl>`_
-
 
 

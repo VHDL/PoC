@@ -1,3 +1,4 @@
+.. _IP:mdio_IIC_Adapter:
 
 mdio_IIC_Adapter
 ################
@@ -15,6 +16,5 @@ mdio_IIC_Adapter
    :lines: 44-80
 
 Source file: `io/mdio/mdio_IIC_Adapter.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/mdio/mdio_IIC_Adapter.vhdl>`_
-
 
 

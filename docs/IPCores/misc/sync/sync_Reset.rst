@@ -1,3 +1,4 @@
+.. _IP:sync_Reset:
 
 sync_Reset
 ##########
@@ -35,6 +36,5 @@ Constraints:
    :lines: 60-69
 
 Source file: `misc/sync/sync_Reset.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/sync/sync_Reset.vhdl>`_
-
 
 

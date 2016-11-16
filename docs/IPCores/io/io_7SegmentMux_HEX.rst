@@ -1,3 +1,4 @@
+.. _IP:io_7SegmentMux_HEX:
 
 io_7SegmentMux_HEX
 ##################
@@ -17,6 +18,5 @@ are HEX encoded. A dot per digit is optional.
    :lines: 45-60
 
 Source file: `io/io_7SegmentMux_HEX.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/io_7SegmentMux_HEX.vhdl>`_
-
 
 

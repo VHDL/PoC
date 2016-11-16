@@ -1,3 +1,4 @@
+.. _IP:fifo_cc_got:
 
 fifo_cc_got
 ###########
@@ -70,6 +71,5 @@ Source file: `fifo/fifo_cc_got.vhdl <https://github.com/VLSI-EDA/PoC/blob/master
      For a FIFO with independent clocks (cross-clock FIFO).
    :doc:`PoC.fifo.glue </IPCores/fifo/fifo_glue>`
      For a minimal FIFO / pipeline decoupling.
-
 
 

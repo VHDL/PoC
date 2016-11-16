@@ -1,3 +1,4 @@
+.. _IP:sort_LeastFrequentlyUsed:
 
 sort_LeastFrequentlyUsed
 ########################
@@ -15,6 +16,5 @@ sort_LeastFrequentlyUsed
    :lines: 36-53
 
 Source file: `sort/sort_LeastFrequentlyUsed.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sort/sort_LeastFrequentlyUsed.vhdl>`_
-
 
 

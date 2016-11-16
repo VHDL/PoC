@@ -1,3 +1,4 @@
+.. _IP:stream_DeMux:
 
 stream_DeMux
 ############
@@ -15,6 +16,5 @@ stream_DeMux
    :lines: 41-70
 
 Source file: `bus/stream/stream_DeMux.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/bus/stream/stream_DeMux.vhdl>`_
-
 
 

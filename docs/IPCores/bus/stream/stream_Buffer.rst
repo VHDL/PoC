@@ -1,3 +1,4 @@
+.. _IP:stream_Buffer:
 
 stream_Buffer
 #############
@@ -18,6 +19,5 @@ meta information.
    :lines: 44-74
 
 Source file: `bus/stream/stream_Buffer.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/bus/stream/stream_Buffer.vhdl>`_
-
 
 

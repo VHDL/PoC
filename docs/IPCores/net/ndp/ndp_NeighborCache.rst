@@ -1,3 +1,4 @@
+.. _IP:ndp_NeighborCache:
 
 ndp_NeighborCache
 #################
@@ -15,6 +16,5 @@ ndp_NeighborCache
    :lines: 42-65
 
 Source file: `net/ndp/ndp_NeighborCache.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/ndp/ndp_NeighborCache.vhdl>`_
-
 
 

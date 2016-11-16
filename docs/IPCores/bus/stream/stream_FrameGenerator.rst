@@ -1,3 +1,4 @@
+.. _IP:stream_FrameGenerator:
 
 stream_FrameGenerator
 #####################
@@ -15,6 +16,5 @@ stream_FrameGenerator
    :lines: 40-66
 
 Source file: `bus/stream/stream_FrameGenerator.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/bus/stream/stream_FrameGenerator.vhdl>`_
-
 
 

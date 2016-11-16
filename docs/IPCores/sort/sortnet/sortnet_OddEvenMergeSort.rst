@@ -1,3 +1,4 @@
+.. _IP:sortnet_OddEvenMergeSort:
 
 sortnet_OddEvenMergeSort
 ########################
@@ -15,6 +16,5 @@ sortnet_OddEvenMergeSort
    :lines: 43-69
 
 Source file: `sort/sortnet/sortnet_OddEvenMergeSort.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:lcd_LCDBuffer:
 
 lcd_LCDBuffer
 #############
@@ -15,6 +16,5 @@ lcd_LCDBuffer
    :lines: 42-58
 
 Source file: `io/lcd/lcd_LCDBuffer.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/lcd/lcd_LCDBuffer.vhdl>`_
-
 
 

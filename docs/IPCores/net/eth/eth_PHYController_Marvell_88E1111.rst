@@ -1,3 +1,4 @@
+.. _IP:Eth_PHYController_Marvell_88E1111:
 
 Eth_PHYController_Marvell_88E1111
 #################################
@@ -15,6 +16,5 @@ Eth_PHYController_Marvell_88E1111
    :lines: 44-71
 
 Source file: `net/eth/eth_PHYController_Marvell_88E1111.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/eth/eth_PHYController_Marvell_88E1111.vhdl>`_
-
 
 

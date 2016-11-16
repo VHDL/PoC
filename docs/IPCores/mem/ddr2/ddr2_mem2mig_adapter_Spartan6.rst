@@ -1,3 +1,4 @@
+.. _IP:ddr2_mem2mig_adapter_Spartan6:
 
 ddr2_mem2mig_adapter_Spartan6
 #############################
@@ -37,6 +38,5 @@ Containts only combinational logic.
    :lines: 61-95
 
 Source file: `mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl>`_
-
 
 

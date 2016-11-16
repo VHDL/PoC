@@ -1,3 +1,4 @@
+.. _IP:list_lru_systolic:
 
 list_lru_systolic
 #################
@@ -15,6 +16,5 @@ list_lru_systolic
    :lines: 44-64
 
 Source file: `sort/sort_InsertSort.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/sort/sort_InsertSort.vhdl>`_
-
 
 

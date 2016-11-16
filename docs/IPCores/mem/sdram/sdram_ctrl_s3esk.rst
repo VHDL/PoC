@@ -1,3 +1,4 @@
+.. _IP:sdram_ctrl_s3esk:
 
 sdram_ctrl_s3esk
 ################
@@ -46,6 +47,5 @@ Synchronous resets are used.
    :lines: 89-132
 
 Source file: `mem/sdram/sdram_ctrl_s3esk.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/sdram/sdram_ctrl_s3esk.vhdl>`_
-
 
 

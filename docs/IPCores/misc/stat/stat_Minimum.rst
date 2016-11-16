@@ -1,3 +1,4 @@
+.. _IP:stat_Minimum:
 
 stat_Minimum
 ############
@@ -15,6 +16,5 @@ stat_Minimum
    :lines: 40-57
 
 Source file: `misc/stat/stat_Minimum.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/stat/stat_Minimum.vhdl>`_
-
 
 

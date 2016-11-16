@@ -1,3 +1,4 @@
+.. _IP:ndp_FSMQuery:
 
 ndp_FSMQuery
 ############
@@ -15,6 +16,5 @@ ndp_FSMQuery
    :lines: 42-79
 
 Source file: `net/ndp/ndp_FSMQuery.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/ndp/ndp_FSMQuery.vhdl>`_
-
 
 

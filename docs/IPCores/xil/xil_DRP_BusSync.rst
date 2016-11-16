@@ -1,3 +1,4 @@
+.. _IP:xil_DRP_BusSync:
 
 xil_DRP_BusSync
 ###############
@@ -15,6 +16,5 @@ xil_DRP_BusSync
    :lines: 40-58
 
 Source file: `xil/xil_DRP_BusSync.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/xil/xil_DRP_BusSync.vhdl>`_
-
 
 

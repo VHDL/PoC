@@ -1,3 +1,4 @@
+.. _IP:vga_phy:
 
 vga_phy
 #######
@@ -19,6 +20,5 @@ vga_phy
    :lines: 43-55
 
 Source file: `io/vga/vga_phy.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/vga/vga_phy.vhdl>`_
-
 
 

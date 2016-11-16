@@ -1,3 +1,4 @@
+.. _IP:misc_StrobeGenerator:
 
 misc_StrobeGenerator
 ####################
@@ -15,6 +16,5 @@ misc_StrobeGenerator
    :lines: 40-49
 
 Source file: `misc/misc_StrobeGenerator.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/misc_StrobeGenerator.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:arith_shifter_barrel:
 
 arith_shifter_barrel
 ####################
@@ -21,6 +22,5 @@ This is equivalent to the CPU instructions: SLL, SLA, SRL, SRA, RL, RR
    :lines: 45-57
 
 Source file: `arith/arith_shifter_barrel.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_shifter_barrel.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:cache_tagunit_par:
 
 cache_tagunit_par
 #################
@@ -50,6 +51,5 @@ must be a power of 2.
    :lines: 75-99
 
 Source file: `cache/cache_tagunit_par.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_tagunit_par.vhdl>`_
-
 
 

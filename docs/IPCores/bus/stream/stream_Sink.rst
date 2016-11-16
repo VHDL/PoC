@@ -1,3 +1,4 @@
+.. _IP:stream_Sink:
 
 stream_Sink
 ###########
@@ -15,6 +16,5 @@ stream_Sink
    :lines: 42-59
 
 Source file: `bus/stream/stream_Sink.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/bus/stream/stream_Sink.vhdl>`_
-
 
 

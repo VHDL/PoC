@@ -1,3 +1,4 @@
+.. _IP:ddrio_inout:
 
 ddrio_inout
 ###########
@@ -43,6 +44,5 @@ IOBs.
    :lines: 70-88
 
 Source file: `io/ddrio/ddrio_inout.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/ddrio/ddrio_inout.vhdl>`_
-
 
 

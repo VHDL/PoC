@@ -1,3 +1,4 @@
+.. _IP:fifo_cc_got_tempgot:
 
 fifo_cc_got_tempgot
 ###################
@@ -56,6 +57,5 @@ comparator (subtractor) in their path.
    :lines: 85-114
 
 Source file: `fifo/fifo_cc_got_tempgot.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/fifo/fifo_cc_got_tempgot.vhdl>`_
-
 
 

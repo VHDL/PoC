@@ -1,3 +1,4 @@
+.. _IP:uart_ft245:
 
 uart_ft245
 ##########
@@ -15,6 +16,5 @@ uart_ft245
    :lines: 37-63
 
 Source file: `io/uart/uart_ft245.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/uart/uart_ft245.vhdl>`_
-
 
 

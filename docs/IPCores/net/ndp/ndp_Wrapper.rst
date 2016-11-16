@@ -1,3 +1,4 @@
+.. _IP:NDP_Wrapper:
 
 NDP_Wrapper
 ###########
@@ -15,6 +16,5 @@ NDP_Wrapper
    :lines: 43-65
 
 Source file: `net/ndp/ndp_Wrapper.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/ndp/ndp_Wrapper.vhdl>`_
-
 
 

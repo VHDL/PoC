@@ -1,3 +1,4 @@
+.. _IP:arith_prefix_and:
 
 arith_prefix_and
 ################
@@ -17,6 +18,5 @@ This implementation uses carry chains for wider implementations.
    :lines: 43-51
 
 Source file: `arith/arith_prefix_and.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_prefix_and.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:icmpv6_Wrapper:
 
 icmpv6_Wrapper
 ##############
@@ -15,6 +16,5 @@ icmpv6_Wrapper
    :lines: 42-67
 
 Source file: `net/icmpv6/icmpv6_Wrapper.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/icmpv6/icmpv6_Wrapper.vhdl>`_
-
 
 

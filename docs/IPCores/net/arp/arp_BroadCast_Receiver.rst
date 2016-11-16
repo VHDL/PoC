@@ -1,3 +1,4 @@
+.. _IP:arp_BroadCast_Receiver:
 
 arp_BroadCast_Receiver
 ######################
@@ -15,6 +16,5 @@ arp_BroadCast_Receiver
    :lines: 42-74
 
 Source file: `net/arp/arp_BroadCast_Receiver.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/net/arp/arp_BroadCast_Receiver.vhdl>`_
-
 
 

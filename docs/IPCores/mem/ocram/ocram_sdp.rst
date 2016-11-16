@@ -1,3 +1,4 @@
+.. _IP:ocram_sdp:
 
 ocram_sdp
 #########
@@ -35,6 +36,5 @@ Mixed-Port Read-During-Write
    :lines: 65-82
 
 Source file: `mem/ocram/ocram_sdp.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ocram/ocram_sdp.vhdl>`_
-
 
 

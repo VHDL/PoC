@@ -1,3 +1,4 @@
+.. _IP:io_Debounce:
 
 io_Debounce
 ###########
@@ -26,6 +27,5 @@ of a two-FF input synchronizer on each input bit.
    :lines: 52-67
 
 Source file: `io/io_Debounce.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/io_Debounce.vhdl>`_
-
 
 

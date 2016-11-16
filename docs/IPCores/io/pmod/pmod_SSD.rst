@@ -1,3 +1,4 @@
+.. _IP:pmod_SSD:
 
 pmod_SSD
 ########
@@ -28,6 +29,5 @@ Pmod connector (7 anode bits, 1 cathode bit).
    :lines: 56-69
 
 Source file: `io/pmod/pmod_SSD.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/pmod/pmod_SSD.vhdl>`_
-
 
 

@@ -1,3 +1,4 @@
+.. _IP:fifo_dc_got_sm:
 
 fifo_dc_got_sm
 ##############
@@ -38,6 +39,5 @@ Synchronous reset is used. Both resets must overlap.
    :lines: 62-85
 
 Source file: `fifo/fifo_dc_got_sm.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/fifo/fifo_dc_got_sm.vhdl>`_
-
 
 

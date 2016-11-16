@@ -1,3 +1,4 @@
+.. _IP:xil_Reconfigurator:
 
 xil_Reconfigurator
 ##################
@@ -23,6 +24,5 @@ completes with another strobe on ``ReconfigDone``.
    :lines: 51-72
 
 Source file: `xil/xil_Reconfigurator.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/xil/xil_Reconfigurator.vhdl>`_
-
 
 
