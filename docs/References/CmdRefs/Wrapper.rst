@@ -36,6 +36,10 @@ are passed to :file:`PoC.py`.
 
    Enabled debug mode in the wrapper script.
 
+.. describe:: Other arguments
+
+   All remaining arguments are passed to :file:`PoC.py`.
+
 
 poc.sh
 ======
@@ -49,3 +53,7 @@ are passed to :file:`PoC.py`.
 .. option:: -D
 
    Enabled debug mode in the wrapper script.
+
+.. describe:: Other arguments
+
+   All remaining arguments are passed to :file:`PoC.py`.

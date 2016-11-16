@@ -1,4 +1,4 @@
-.. _Ref:Format:ini:
+.. _FileFormat:ini:
 
 .. raw:: html
 

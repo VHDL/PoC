@@ -62,9 +62,9 @@ Values containing ``${...}`` and ``%{...}`` are raw values, which need to be
 interpolated by the ExtendedConfigParser. See `Value Interpolation`_ and
 `Node Interpolation`_ for more details.
 
-Sections can have a default section called ``PREFIX.DEFAULT``. Options not
-found in a normal section are looked up in the default section. If found,
-the value of the matching option name is the lookup result.
+Sections can have a default section called ``DEFAULT``. Options not found in a
+normal section are looked up in the default section. If found, the value of the
+matching option name is the lookup result.
 
 .. rubric:: Example
 
@@ -77,6 +77,54 @@ the value of the matching option name is the lookup result.
    [section2]
    option1 = ${section1:option1}
    opt2 =    ${option1}
+
+
+Option lines can be of three kinds: An option, a reference, or a user defined
+variable. While the syntax is always the same, the meaning is infered from the
+context.
+
++---------------------------+-----------------------------------------------------------------+
+| Option Line Kind          | Distinguishing Characteristic                                   |
++===========================+=================================================================+
+| **Reference**             | The option name is called a (node) reference, if the value\     |
+|                           | of an option is a predefined keyword for the current node\      |
+|                           | class. Because the option's value is a keyword, it can not\     |
+|                           | be an interpolated value.                                       |
++---------------------------+-----------------------------------------------------------------+
+| **Option**                | The option uses a defined option name valid for the current\    |
+|                           | node class. The value can be a fixed or interpolated string.    |
++---------------------------+-----------------------------------------------------------------+
+| **User Defined Variable** | Otherwise an option line is a user defined variable. It can\    |
+|                           | have fixed or interpolated string values.                       |
++---------------------------+-----------------------------------------------------------------+
+
+.. code-block:: ini
+
+   [PoC]
+   Name =
+   Prefix =
+   arith =         Namespace
+   bus =           Namespace
+
+   [PoC.arith]
+   addw =          Entity
+   prng =          Entity
+
+   [PoC.bus]
+   stream =        Namespace
+   wb =            Namespace
+   Arbiter =       Entity
+
+   [PoC.bus.stream]
+   Buffer =        Entity
+   DeMux =         Entity
+   Mirror =        Entity
+   Mux =           Entity
+
+   [PoC.bus.wb]
+   fifo_adapter =  Entity
+   ocram_adapter = Entity
+   uart_wrapper =  Entity
 
 
 .. _IPDB:Nodes:
@@ -156,52 +204,6 @@ the section name ``bus.stream``. The section name has two parts: ``bus`` and
 hierarchical database. The parent node is ``PoC.bus`` and its grandparent is
 ``PoC``. (Note this is a special section. See the special sections table from
 above.)
-
-Option lines can be of three kinds:
-
-+---------------------------+-----------------------------------------------------------------+
-| Option Line Kind          | Distinguishing Characteristic                                   |
-+===========================+=================================================================+
-| **Reference**             | The option name is called a (node) reference, if the value\     |
-|                           | of an option is a predefined keyword for the current node\      |
-|                           | class. Because the option's value is a keyword, it can not\     |
-|                           | be an interpolated value.                                       |
-+---------------------------+-----------------------------------------------------------------+
-| **Option**                | The option uses a defined option name valid for the current\    |
-|                           | node class. The value can be a fixed or interpolated string.    |
-+---------------------------+-----------------------------------------------------------------+
-| **User Defined Variable** | Otherwise an option line is a user defined variable. It can\    |
-|                           | have fixed or interpolated string values.                       |
-+---------------------------+-----------------------------------------------------------------+
-
-.. code-block:: ini
-
-   [PoC]
-   Name =
-   Prefix =
-   arith =         Namespace
-   bus =           Namespace
-
-   [PoC.arith]
-   addw =          Entity
-   prng =          Entity
-
-   [PoC.bus]
-   stream =        Namespace
-   wb =            Namespace
-   Arbiter =       Entity
-
-   [PoC.bus.stream]
-   Buffer =        Entity
-   DeMux =         Entity
-   Mirror =        Entity
-   Mux =           Entity
-
-   [PoC.bus.wb]
-   fifo_adapter =  Entity
-   ocram_adapter = Entity
-   uart_wrapper =  Entity
-
 
 
 .. _IPDB:Refs:
