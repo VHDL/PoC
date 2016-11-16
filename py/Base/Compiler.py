@@ -91,7 +91,6 @@ class AppendLineTask(AppendLineRuleMixIn):
 @unique
 class CompileState(Enum):
 	"""Compile state enumeration."""
-
 	Prepare =     0
 	PreCopy =    10
 	PrePatch =   11
@@ -113,7 +112,6 @@ class CompileState(Enum):
 @unique
 class CompileResult(Enum):
 	"""Compilation result enumeration."""
-
 	NotRun =      0
 	Error =       1
 	Failed =      2
