@@ -25,16 +25,11 @@
 -- +--------------------+----------------------------------------------------+
 -- | ASSOCIATIVITY      | Associativity of the cache.                        |
 -- +--------------------+----------------------------------------------------+
--- | ADDR_BITS          | Number of bits of full memory address, including   |
--- |                    | byte address bits.                                 |
+-- | ADDR_BITS          | Number of address bits. Each address identifies    |
+-- |                    | exactly one cache line in memory.                  |
 -- +--------------------+----------------------------------------------------+
--- | BYTE_ADDR_BITS     | Number of byte address bits in full memory address.|
--- |                    | Can be zero if byte addressing is not required.    |
--- +--------------------+----------------------------------------------------+
--- | DATA_BITS          | Size of a cache line in bits. Equals also the size |
--- |                    | of the read and write data ports of the CPU and    |
--- |                    | memory side. DATA_BITS must be divisible by        |
--- |                    | 2**BYTE_ADDR_BITS.                                 |
+-- | DATA_BITS          | Size of a cache line in bits.                      |
+-- |                    | DATA_BITS must be divisible by 8.                  |
 -- +--------------------+----------------------------------------------------+
 --
 --
@@ -76,6 +71,9 @@
 -- result is outputted immediately (combinational).
 --
 -- Upon writing a cache line, the new content is given by ``CacheLineIn``.
+-- Only the bytes which are not masked, i.e. the corresponding bit in WriteMask
+-- is '0', are actually written.
+--
 -- Upon reading a cache line, the current content is outputed on ``CacheLineOut``
 -- with a latency of one clock cycle.
 --
@@ -87,9 +85,6 @@
 --
 -- 2. Write new cache line by setting ``ReadWrite`` to '1'. The new content is
 --    given by ``CacheLineIn``.
---
--- .. TODO::
---    * Allow partial update of cache line (byte write enable).
 --
 -- License:
 -- =============================================================================
@@ -124,7 +119,6 @@ entity cache_par2 is
 		CACHE_LINES				 : positive := 32;
 		ASSOCIATIVITY			 : positive := 32;
 		ADDR_BITS					 : positive := 8;
-		BYTE_ADDR_BITS		 : natural	:= 0;
 		DATA_BITS					 : positive := 8;
 		HIT_MISS_REG			 : boolean	:= true	 -- must be true for Cocotb.
 	);
@@ -134,15 +128,16 @@ entity cache_par2 is
 
 		Request		 : in std_logic;
 		ReadWrite	 : in std_logic;
+		WriteMask  : in std_logic_vector(DATA_BITS/8 - 1 downto 0) := (others => '0');
 		Invalidate : in std_logic;
 		Replace		 : in std_logic;
-		Address		 : in std_logic_vector(ADDR_BITS-1 downto BYTE_ADDR_BITS);
+		Address		 : in std_logic_vector(ADDR_BITS-1 downto 0);
 
 		CacheLineIn	 : in	 std_logic_vector(DATA_BITS - 1 downto 0);
 		CacheLineOut : out std_logic_vector(DATA_BITS - 1 downto 0);
 		CacheHit		 : out std_logic := '0';
 		CacheMiss		 : out std_logic := '0';
-		OldAddress	 : out std_logic_vector(ADDR_BITS-1 downto BYTE_ADDR_BITS)
+		OldAddress	 : out std_logic_vector(ADDR_BITS-1 downto 0)
 	);
 end entity;
 
@@ -179,7 +174,7 @@ begin
 			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 			CACHE_LINES				 => CACHE_LINES,
 			ASSOCIATIVITY			 => ASSOCIATIVITY,
-			ADDRESS_BITS			 => ADDR_BITS-BYTE_ADDR_BITS
+			ADDRESS_BITS			 => ADDR_BITS
 		)
 		port map (
 			Clock => Clock,
@@ -205,18 +200,24 @@ begin
 	MemoryAccess <= (Request and TU_TagHit) or Replace;
 
 	-- Data Memory
-	data_mem: entity work.ocram_sp
-    generic map (
-      A_BITS   => LINE_INDEX_BITS,
-      D_BITS   => DATA_BITS,
-      FILENAME => "")
-    port map (
-      clk => Clock,
-      ce  => MemoryAccess,
-      we  => ReadWrite,
-      a   => MemoryIndex_us,
-      d   => CacheLineIn,
-      q   => CacheLineOut);
+	gLane: for i in 0 to DATA_BITS/8 - 1 generate
+		signal we : std_logic;
+	begin
+		we <= ReadWrite and not WriteMask(i);
+
+		data_mem: entity work.ocram_sp
+			generic map (
+				A_BITS   => LINE_INDEX_BITS,
+				D_BITS   => 8, -- 8 bit per lane
+				FILENAME => "")
+			port map (
+				clk => Clock,
+				ce  => MemoryAccess,
+				we  => we,
+				a   => MemoryIndex_us,
+				d   => CacheLineIn (i*8+7 downto i*8),
+				q   => CacheLineOut(i*8+7 downto i*8));
+	end generate gLane;
 
 	-- Hit / Miss
 	gNoHitMissReg: if not HIT_MISS_REG generate

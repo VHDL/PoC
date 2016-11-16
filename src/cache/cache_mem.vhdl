@@ -35,13 +35,9 @@
 -- | ADDR_BITS          | Number of bits of full memory address, including   |
 -- |                    | byte address bits.                                 |
 -- +--------------------+----------------------------------------------------+
--- | BYTE_ADDR_BITS     | Number of byte address bits in full memory address.|
--- |                    | Can be zero if byte addressing is not required.    |
--- +--------------------+----------------------------------------------------+
 -- | DATA_BITS          | Size of a cache line in bits. Equals also the size |
 -- |                    | of the read and write data ports of the CPU and    |
--- |                    | memory side. DATA_BITS must be divisible by        |
--- |                    | 2**BYTE_ADDR_BITS.                                 |
+-- |                    | memory side. DATA_BITS must be divisible by 8.     |
 -- +--------------------+----------------------------------------------------+
 --
 --
@@ -84,7 +80,6 @@ entity cache_mem is
 		CACHE_LINES				 : positive := 32;
 		ASSOCIATIVITY			 : positive := 32;
 		ADDR_BITS	      	 : positive := 8;
-		BYTE_ADDR_BITS	 	 : natural  := 0;
 		DATA_BITS					 : positive := 8
 	);
 	port (
@@ -94,7 +89,7 @@ entity cache_mem is
     -- "CPU" side
     cpu_req   : in  std_logic;
     cpu_write : in  std_logic;
-    cpu_addr  : in  unsigned(ADDR_BITS-1 downto BYTE_ADDR_BITS);
+    cpu_addr  : in  unsigned(ADDR_BITS-1 downto 0);
     cpu_wdata : in  std_logic_vector(DATA_BITS-1 downto 0);
     cpu_rdy   : out std_logic;
     cpu_rstb  : out std_logic;
@@ -103,7 +98,7 @@ entity cache_mem is
 		-- Memory side
 		mem_req		: out std_logic;
 		mem_write : out std_logic;
-		mem_addr	: out unsigned(ADDR_BITS-1 downto BYTE_ADDR_BITS);
+		mem_addr	: out unsigned(ADDR_BITS-1 downto 0);
 		mem_wdata : out std_logic_vector(DATA_BITS-1 downto 0);
 		mem_rdy		: in	std_logic;
 		mem_rstb	: in	std_logic;
@@ -117,7 +112,7 @@ architecture rtl of cache_mem is
 	signal cache_ReadWrite	: std_logic;
 	signal cache_Invalidate : std_logic;
 	signal cache_Replace		: std_logic;
-	signal cache_Address		: std_logic_vector(ADDR_BITS-1 downto BYTE_ADDR_BITS);
+	signal cache_Address		: std_logic_vector(ADDR_BITS-1 downto 0);
 	signal cache_LineIn			: std_logic_vector(DATA_BITS-1 downto 0);
 	signal cache_LineOut		: std_logic_vector(DATA_BITS-1 downto 0);
 	signal cache_Hit				: std_logic;
@@ -148,7 +143,6 @@ begin  -- architecture rtl
 			CACHE_LINES        => CACHE_LINES,
 			ASSOCIATIVITY      => ASSOCIATIVITY,
 			ADDR_BITS          => ADDR_BITS,
-			BYTE_ADDR_BITS     => BYTE_ADDR_BITS,
 			DATA_BITS          => DATA_BITS,
 			HIT_MISS_REG       => false)
     port map (

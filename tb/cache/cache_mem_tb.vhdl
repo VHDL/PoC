@@ -122,8 +122,7 @@ begin
       REPLACEMENT_POLICY => REPLACEMENT_POLICY,
       CACHE_LINES        => CACHE_LINES,
       ASSOCIATIVITY      => ASSOCIATIVITY,
-      ADDR_BITS          => ADDR_BITS,
-      BYTE_ADDR_BITS     => BYTE_ADDR_BITS,
+      ADDR_BITS          => WORD_ADDR_BITS,
       DATA_BITS          => DATA_BITS)
     port map (
       clk       => clk,
