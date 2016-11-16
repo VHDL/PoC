@@ -194,6 +194,9 @@ begin
       got => wdata_got,
       val => wdata_val);
 
+	cpu_wdata <= wdata_val when cpu_write = '1' else (others => '-');
+	wdata_got <= cpu_write and cache_rdy and mem2_rdy;
+
 	-- The Request Generator of the CPU
   CPU_RequestGen: process
  		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("CPU RequestGen");
@@ -204,9 +207,7 @@ begin
 			cpu_req   <= '0';
 			cpu_write <= '-';
 			cpu_addr  <= (others => '-');
-			cpu_wdata <= (others => '-');
 			cpu_wmask <= (others => '-');
-			wdata_got <= '0';
 			wait until rising_edge(clk);
 		end procedure;
 
@@ -217,18 +218,13 @@ begin
 			wmask      : in std_logic_vector(BYTES_PER_WORD-1 downto 0) := (others => '0')
 		) is
 		begin
-			wait for 1 ps; -- wait until wdata_val has settled
-
 			-- apply request (will be ignored if not ready)
 			cpu_req   <= '1';
 			cpu_write <= '1';
 			cpu_addr  <= to_unsigned(addr, ADDR_BITS);
-			cpu_wdata <= wdata_val;
 			cpu_wmask <= wmask;
-			wdata_got <= '1';
 			while true loop
 				wait until rising_edge(clk);
-				wdata_got <= '0'; -- only pulse for one clock cycle!
 				exit when (cache_rdy and mem2_rdy) = '1';
 			end loop;
 		end procedure;
@@ -254,9 +250,7 @@ begin
 			cpu_req   <= '1';
 			cpu_write <= '0';
 			cpu_addr  <= to_unsigned(addr, ADDR_BITS);
-			cpu_wdata <= (others => '-');
 			cpu_wmask <= (others => '-');
-			wdata_got <= '0';
 			while true loop
 				wait until rising_edge(clk);
 				exit when (cache_rdy and mem2_rdy) = '1';
