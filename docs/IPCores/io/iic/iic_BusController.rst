@@ -15,7 +15,7 @@ controller is compatible to the System Management Bus (SMBus).
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 47-70
+   :lines: 47-65
 
 Source file: `io/iic/iic_BusController.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/io/iic/iic_BusController.vhdl>`_
 

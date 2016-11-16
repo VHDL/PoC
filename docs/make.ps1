@@ -71,6 +71,7 @@ function Exit-Script
   # unload modules
   # Remove-Module precompile -Verbose:$false
 
+	Pop-EnvironmentBlock
   # exit with exit code
   exit $ExitCode
 }
@@ -79,6 +80,9 @@ if ($Help)
 { Get-Help $MYINVOCATION.InvocationName -Detailed
   Exit-Script
 }
+
+Push-EnvironmentBlock
+$env:Path += ";C:\Tools\Graphviz\2.38\bin"
 
 if ($All)
 { $clean =      $true
@@ -126,7 +130,6 @@ $I18NSphinxOpts = "${env:SPHINXOPTS} $SourceDir"
 #    exit /b 1
 #  )
 
-$EnableDebug
 
 if ($clean)
 { $EnableVerbose -and (Write-Host "Cleaning build directory '$BuildDir'..." -Foreground DarkCyan  ) | Out-Null
