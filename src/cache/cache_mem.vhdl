@@ -11,7 +11,7 @@
 -- -------------------------------------
 -- This unit provides a cache (:doc:`PoC.cache.par2 <cache_par2>`) together
 -- with a cache controller which reads / writes cache lines from / to memory.
--- It has two PoC's "mem" interfaces:
+-- It has two :doc:`PoC.Mem </Interfaces/Memory>` interfaces:
 --
 -- * one for the "CPU" side  (ports with prefix ``cpu_``), and
 -- * one for the memory side (ports with prefix ``mem_``).
@@ -44,13 +44,11 @@
 -- Operation
 -- *********
 --
--- All inputs are synchronous to the rising-edge of the clock ``clk``.
 -- A synchronous reset must be applied even on a FPGA.
 --
--- The write policy is: write-through, no-write-allocate.
+-- The interface is documented in detail :doc:`here </Interfaces/Memory>`.
 --
--- .. TODO::
---    * Allow partial update of cache line (byte write enable).
+-- The write policy is: write-through, no-write-allocate.
 --
 -- License:
 -- =============================================================================
@@ -91,6 +89,7 @@ entity cache_mem is
     cpu_write : in  std_logic;
     cpu_addr  : in  unsigned(ADDR_BITS-1 downto 0);
     cpu_wdata : in  std_logic_vector(DATA_BITS-1 downto 0);
+    cpu_wmask : in  std_logic_vector(DATA_BITS/8-1 downto 0);
     cpu_rdy   : out std_logic;
     cpu_rstb  : out std_logic;
     cpu_rdata : out std_logic_vector(DATA_BITS-1 downto 0);
@@ -100,6 +99,7 @@ entity cache_mem is
 		mem_write : out std_logic;
 		mem_addr	: out unsigned(ADDR_BITS-1 downto 0);
 		mem_wdata : out std_logic_vector(DATA_BITS-1 downto 0);
+		mem_wmask : out std_logic_vector(DATA_BITS/8-1 downto 0);
 		mem_rdy		: in	std_logic;
 		mem_rstb	: in	std_logic;
 		mem_rdata : in	std_logic_vector(DATA_BITS-1 downto 0)
@@ -110,6 +110,7 @@ architecture rtl of cache_mem is
 	-- Interface to Cache instance.
 	signal cache_Request		: std_logic;
 	signal cache_ReadWrite	: std_logic;
+	signal cache_Writemask	: std_logic_vector(DATA_BITS/8-1 downto 0);
 	signal cache_Invalidate : std_logic;
 	signal cache_Replace		: std_logic;
 	signal cache_Address		: std_logic_vector(ADDR_BITS-1 downto 0);
@@ -122,6 +123,7 @@ architecture rtl of cache_mem is
 	signal cpu_write_r : std_logic;
 	signal cpu_addr_r  : unsigned(cpu_addr'range);
 	signal cpu_wdata_r : std_logic_vector(cpu_wdata'range);
+	signal cpu_wmask_r : std_logic_vector(cpu_wmask'range);
 
   -- FSM and other state registers
   type T_FSM is (READY, ACCESS_MEM, READING_MEM, UNKNOWN);
@@ -150,6 +152,7 @@ begin  -- architecture rtl
 			Reset        => rst,
 			Request      => cache_Request,
 			ReadWrite    => cache_ReadWrite,
+			WriteMask    => cache_WriteMask,
 			Invalidate   => cache_Invalidate,
 			Replace      => cache_Replace,
 			Address      => cache_Address,
@@ -161,9 +164,10 @@ begin  -- architecture rtl
 
   -- Address and Data path
   -- ===========================================================================
-  cache_Address <= std_logic_vector(cpu_addr) when fsm_cs = READY else
-									 std_logic_vector(cpu_addr_r);
-  cache_LineIn  <= cpu_wdata when fsm_cs = READY else mem_rdata;
+  cache_Address   <= std_logic_vector(cpu_addr) when fsm_cs = READY else
+									   std_logic_vector(cpu_addr_r);
+  cache_LineIn    <= cpu_wdata when fsm_cs = READY else mem_rdata;
+  cache_WriteMask <= cpu_wmask when fsm_cs = READY else (others => '0');
 
   cpu_rdata <= mem_rdata when fsm_cs = READING_MEM else
 							 cache_LineOut; -- when READY or ACCESS_MEM
@@ -173,6 +177,7 @@ begin  -- architecture rtl
 	mem_write <= cpu_write_r;
 	mem_addr  <= cpu_addr_r;
 	mem_wdata <= cpu_wdata_r;
+	mem_wmask <= cpu_wmask_r;
 
 	process(clk)
 	begin
@@ -182,6 +187,7 @@ begin  -- architecture rtl
 				cpu_write_r <= cpu_write;
 				cpu_addr_r  <= cpu_addr;
 				cpu_wdata_r <= cpu_wdata;
+				cpu_wmask_r <= cpu_wmask;
 			end if;
 		end if;
 	end process;

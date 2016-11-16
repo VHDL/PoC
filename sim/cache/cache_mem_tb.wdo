@@ -6,6 +6,7 @@ add wave -noupdate /cache_mem_tb/cpu_req
 add wave -noupdate /cache_mem_tb/cpu_write
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_addr
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_wdata
+add wave -noupdate /cache_mem_tb/cpu_wmask
 add wave -noupdate /cache_mem_tb/UUT/cache_Hit
 add wave -noupdate /cache_mem_tb/UUT/cache_Miss
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cache_rdy
@@ -15,6 +16,7 @@ add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_req
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_write
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_addr
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_wdata
+add wave -noupdate /cache_mem_tb/mem1_wmask
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rdy
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rstb
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rdata
@@ -39,4 +41,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {33463500 ps}
+WaveRestoreZoom {0 fs} {4402285416 fs}

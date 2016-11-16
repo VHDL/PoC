@@ -57,18 +57,17 @@ architecture sim of cache_mem_tb is
   constant REPLACEMENT_POLICY : string   := "LRU";
   constant CACHE_LINES        : positive := 32;
   constant ASSOCIATIVITY      : positive := 4;
-  constant ADDR_BITS          : positive := 7;
-  constant BYTE_ADDR_BITS     : natural  := 1;
-  constant DATA_BITS          : positive := 16;
-	constant WORD_ADDR_BITS     : positive := ADDR_BITS-BYTE_ADDR_BITS;
-	constant MEMORY_WORDS       : positive := 2**WORD_ADDR_BITS;
+  constant ADDR_BITS          : positive := 6;
+  constant DATA_BITS          : positive := 32;
+	constant MEMORY_WORDS       : positive := 2**ADDR_BITS;
+	constant BYTES_PER_WORD     : positive := DATA_BITS/8;
 
 	-- NOTE:
 	-- Cache accesses are always aligned to a word boundary. A memory word and a
 	-- cache line consist of DATA_BITS bits. For example if DATA_BITS=16:
 	--
-	-- * word address 0 selects the bits  0..15 in memory,
-	-- * word address 1 selects the bits 16..31 in memory, and so on.
+	-- * address 0 selects the bits  0..15 in memory,
+	-- * address 1 selects the bits 16..31 in memory, and so on.
 
 	-- Global signals
   signal clk : std_logic := '1';
@@ -77,8 +76,9 @@ architecture sim of cache_mem_tb is
 	-- Request from CPU
   signal cpu_req   : std_logic;
   signal cpu_write : std_logic;
-  signal cpu_addr  : unsigned(ADDR_BITS-1 downto BYTE_ADDR_BITS);
+  signal cpu_addr  : unsigned(ADDR_BITS-1 downto 0);
   signal cpu_wdata : std_logic_vector(DATA_BITS-1 downto 0);
+  signal cpu_wmask : std_logic_vector(DATA_BITS/8-1 downto 0);
 
 	-- Bus between CPU and Cache
 	-- write / addr / wdata are directly connected to the CPU
@@ -90,8 +90,9 @@ architecture sim of cache_mem_tb is
 	-- Bus between Cache and 1st Memory
   signal mem1_req   : std_logic;
   signal mem1_write : std_logic;
-  signal mem1_addr  : unsigned(ADDR_BITS-1 downto BYTE_ADDR_BITS);
+  signal mem1_addr  : unsigned(ADDR_BITS-1 downto 0);
   signal mem1_wdata : std_logic_vector(DATA_BITS-1 downto 0);
+  signal mem1_wmask : std_logic_vector(DATA_BITS/8-1 downto 0);
   signal mem1_rdy   : std_logic;
   signal mem1_rstb  : std_logic;
   signal mem1_rdata : std_logic_vector(DATA_BITS-1 downto 0);
@@ -122,7 +123,7 @@ begin
       REPLACEMENT_POLICY => REPLACEMENT_POLICY,
       CACHE_LINES        => CACHE_LINES,
       ASSOCIATIVITY      => ASSOCIATIVITY,
-      ADDR_BITS          => WORD_ADDR_BITS,
+      ADDR_BITS          => ADDR_BITS,
       DATA_BITS          => DATA_BITS)
     port map (
       clk       => clk,
@@ -131,6 +132,7 @@ begin
       cpu_write => cpu_write,
       cpu_addr  => cpu_addr,
       cpu_wdata => cpu_wdata,
+      cpu_wmask => cpu_wmask,
       cpu_rdy   => cache_rdy,
       cpu_rstb  => cache_rstb,
       cpu_rdata => cache_rdata,
@@ -138,6 +140,7 @@ begin
       mem_write => mem1_write,
       mem_addr  => mem1_addr,
       mem_wdata => mem1_wdata,
+      mem_wmask => mem1_wmask,
       mem_rdy   => mem1_rdy,
       mem_rstb  => mem1_rstb,
       mem_rdata => mem1_rdata);
@@ -148,7 +151,7 @@ begin
 	-- The 1st Memory
 	memory1: entity work.mem_model
 		generic map (
-			A_BITS	=> ADDR_BITS-BYTE_ADDR_BITS,
+			A_BITS	=> ADDR_BITS,
 			D_BITS	=> DATA_BITS)
 		port map (
 			clk       => clk,
@@ -157,6 +160,7 @@ begin
 			mem_write => mem1_write,
 			mem_addr  => mem1_addr,
 			mem_wdata => mem1_wdata,
+			mem_wmask => mem1_wmask,
 			mem_rdy   => mem1_rdy,
 			mem_rstb  => mem1_rstb,
 			mem_rdata => mem1_rdata);
@@ -164,7 +168,7 @@ begin
 	-- The 2nd Memory
 	memory2: entity work.mem_model
 		generic map (
-			A_BITS	=> ADDR_BITS-BYTE_ADDR_BITS,
+			A_BITS	=> ADDR_BITS,
 			D_BITS	=> DATA_BITS)
 		port map (
 			clk       => clk,
@@ -173,6 +177,7 @@ begin
 			mem_write => cpu_write,
 			mem_addr  => cpu_addr,
 			mem_wdata => cpu_wdata,
+			mem_wmask => cpu_wmask,
 			mem_rdy   => mem2_rdy,
 			mem_rstb  => mem2_rstb,
 			mem_rdata => mem2_rdata);
@@ -200,24 +205,45 @@ begin
 			cpu_write <= '-';
 			cpu_addr  <= (others => '-');
 			cpu_wdata <= (others => '-');
+			cpu_wmask <= (others => '-');
 			wdata_got <= '0';
 			wait until rising_edge(clk);
 		end procedure;
 
 		-- Write random data at given word address.
 		-- Waits until cache and 2nd memory are ready.
-		procedure write(addr : in natural) is
+		procedure write(
+			addr       : in natural;
+			wmask      : in std_logic_vector(BYTES_PER_WORD-1 downto 0) := (others => '0')
+		) is
 		begin
+			wait for 1 ps; -- wait until wdata_val has settled
+
 			-- apply request (will be ignored if not ready)
 			cpu_req   <= '1';
 			cpu_write <= '1';
-			cpu_addr  <= to_unsigned(addr, WORD_ADDR_BITS);
+			cpu_addr  <= to_unsigned(addr, ADDR_BITS);
 			cpu_wdata <= wdata_val;
+			cpu_wmask <= wmask;
 			wdata_got <= '1';
 			while true loop
 				wait until rising_edge(clk);
+				wdata_got <= '0'; -- only pulse for one clock cycle!
 				exit when (cache_rdy and mem2_rdy) = '1';
 			end loop;
+		end procedure;
+
+		-- Write single byte of random data at given word address.
+		-- Waits until cache and 2nd memory are ready.
+		procedure write_byte(
+			word_addr  : in natural;
+			byte_addr  : in natural range 0 to BYTES_PER_WORD-1
+		) is
+			variable mask : std_logic_vector(BYTES_PER_WORD-1 downto 0);
+		begin
+			mask := (others => '1');
+			mask(byte_addr) := '0';
+			write(word_addr, mask);
 		end procedure;
 
 		-- Read at given word address.
@@ -227,8 +253,9 @@ begin
 			-- apply request (will be ignored if not ready)
 			cpu_req   <= '1';
 			cpu_write <= '0';
-			cpu_addr  <= to_unsigned(addr, WORD_ADDR_BITS);
+			cpu_addr  <= to_unsigned(addr, ADDR_BITS);
 			cpu_wdata <= (others => '-');
+			cpu_wmask <= (others => '-');
 			wdata_got <= '0';
 			while true loop
 				wait until rising_edge(clk);
@@ -241,6 +268,7 @@ begin
 		variable seed2 : positive := 1;
 
 		variable temp_r : real;
+		variable temp_r2: real;
 
   begin
 		-- Reset is mandatory
@@ -255,6 +283,9 @@ begin
 		-- Fill memory with valid data and read it back
 		-- --------------------------------------------
 		-- Due to the No-Write-Allocate policy no cache hit occurs.
+
+		-- Write / read whole word
+		-- ***********************
 		for addr in 0 to MEMORY_WORDS-1 loop
 			write(addr);
 		end loop;  -- addr
@@ -263,18 +294,49 @@ begin
 		end loop;  -- addr
 		for i in 0 to 3 loop nop; end loop;
 
+		-- Write single bytes, read whole word
+		-- ***********************************
+		for word_addr in 0 to MEMORY_WORDS-1 loop
+			for byte_addr in 0 to BYTES_PER_WORD-1 loop
+				write_byte(word_addr, byte_addr);
+			end loop;
+		end loop;  -- addr
+		for addr in 0 to MEMORY_WORDS-1 loop
+			read(addr);
+		end loop;  -- addr
+		for i in 0 to 3 loop nop; end loop;
+
 		-- Linear access, read/write/read at every address
 		-- -----------------------------------------------
+
+		-- Write / read whole word
+		-- ***********************
 		for addr in 0 to MEMORY_WORDS-1 loop
 			read(addr);  -- cache hit only if cache size equals memory size.
 			write(addr); -- cache hit, write-through
 			read(addr);  -- cache hit
 			nop;
-		end loop;  -- chunk
+		end loop;
+		for i in 0 to 3 loop nop; end loop;
+
+		-- Write single bytes, read whole word
+		-- ***********************************
+		for word_addr in 0 to MEMORY_WORDS-1 loop
+			read(word_addr);  -- cache hit only if cache size equals memory size.
+			for byte_addr in 0 to BYTES_PER_WORD-1 loop
+				write_byte(word_addr, byte_addr);
+				-- cache hit, write-through
+			end loop;
+			read(word_addr);  -- cache hit
+			nop;
+		end loop;  -- word_addr
 		for i in 0 to 3 loop nop; end loop;
 
 		-- Linear access in chunks of cache size, read/write/read every chunk
 		-- ------------------------------------------------------------------
+
+		-- Write / read whole word
+		-- ***********************
 		for chunk in 0 to (MEMORY_WORDS / CACHE_LINES)-1 loop
 			for addr in chunk*CACHE_LINES to (chunk+1)*CACHE_LINES-1 loop
 				read(addr);  -- cache hit only if cache size equals memory size.
@@ -289,16 +351,43 @@ begin
 		end loop;  -- chunk
 		for i in 0 to 3 loop nop; end loop;
 
+		-- Write single bytes, read whole word
+		-- ***********************************
+		for chunk in 0 to (MEMORY_WORDS / CACHE_LINES)-1 loop
+			for word_addr in chunk*CACHE_LINES to (chunk+1)*CACHE_LINES-1 loop
+				read(word_addr);  -- cache hit only if cache size equals memory size.
+			end loop; -- word_addr
+			for word_addr in chunk*CACHE_LINES to (chunk+1)*CACHE_LINES-1 loop
+				for byte_addr in 0 to BYTES_PER_WORD-1 loop
+					write_byte(word_addr, byte_addr); -- cache hit, write-through
+				end loop;
+			end loop; -- word_addr
+			for word_addr in chunk*CACHE_LINES to (chunk+1)*CACHE_LINES-1 loop
+				read(word_addr);  -- cache hit
+			end loop; -- word_addr
+			nop;
+		end loop;  -- chunk
+		for i in 0 to 3 loop nop; end loop;
+
 		-- Random access
 		-- -------------
-		for i in 1 to 1000 loop
+		for i in 1 to 2000 loop
 			uniform(seed1, seed2, temp_r);
-			if temp_r < 0.5 then
+			if temp_r < 0.5 then -- read
 				uniform(seed1, seed2, temp_r);
 				read(natural(floor(temp_r * real(MEMORY_WORDS))));
-			else
+			else -- write
 				uniform(seed1, seed2, temp_r);
-				write(natural(floor(temp_r * real(MEMORY_WORDS))));
+				if temp_r < 0.5 then -- write whole word
+					uniform(seed1, seed2, temp_r);
+					write(natural(floor(temp_r * real(MEMORY_WORDS))));
+				else -- write single byte
+					temp_r2 := (temp_r-0.5) * 2.0; -- change range to [0:1)
+					uniform(seed1, seed2, temp_r);
+					write_byte(
+						natural(floor(temp_r * real(MEMORY_WORDS))),
+						natural(floor(temp_r2 * real(BYTES_PER_WORD))));
+				end if;
 			end if;
 		end loop;
 
