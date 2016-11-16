@@ -4,11 +4,8 @@
 # Documentation
 README.md
 
-css/
-javascript/
+# sub-directories
+*/
 
-images/
-logos/
-
-misc/
-sort/
+# style-sheet files
+*.css

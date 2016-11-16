@@ -1,8 +1,10 @@
+.. _CmdRef:
 
 Command Reference
 #################
 
-.. contents:: Contents of this Page
+This is the command line option reference for all provided scripts
+(Bash, PowerShell, Perl) and programs (Python) shipped with PoC.
 
 .. toctree::
 

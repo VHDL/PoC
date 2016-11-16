@@ -1,3 +1,4 @@
+.. _CmdRef:Wrapper:
 
 PoC Wrapper Scripts
 ###################
@@ -20,11 +21,16 @@ manager.
 
    The path to PoC's root directory.
 
+---------------------------------
 
 poc.ps1
 ========
 
 .. program:: poc.ps1
+
+:file:`PoC.ps1` is the wrapper for the Windows platform using a PowerShell script.
+It can be debugged by adding the command line switch :option:`-D`. All parameters
+are passed to :file:`PoC.py`.
 
 .. option:: -D
 
@@ -35,6 +41,10 @@ poc.sh
 ======
 
 .. program:: poc.sh
+
+:file:`PoC.sh` is the wrapper for Linux and Unix platforms using a Bash script.
+It can be debugged by adding the command line switch :option:`-D`. All parameters
+are passed to :file:`PoC.py`.
 
 .. option:: -D
 
