@@ -5,6 +5,7 @@ The PoC-Library is shiped with different third party libraries, which are
 located in the ``<PoCRoot>/lib/`` folder. This document lists all these
 libraries, their websites and licenses.
 
+.. _Cocotb:
 
 Cocotb
 ******
@@ -17,13 +18,14 @@ library for writing VHDL and Verilog testbenches in Python.
 +--------------------+-----------------------------------------------------------------------------------------------------------+
 | **Copyright:**     | Copyright © 2013, `Potential Ventures Ltd. <http://potential.ventures/>`_, SolarFlare Communications Inc. |
 +--------------------+-----------------------------------------------------------------------------------------------------------+
-| **License:**       | :doc:`Revised BSD License (local copy) </References/Licenses/Cocotb_BSDLicense>`                                     |
+| **License:**       | :doc:`Revised BSD License (local copy) </References/Licenses/Cocotb_BSDLicense>`                          |
 +--------------------+-----------------------------------------------------------------------------------------------------------+
 | **Documentation:** | `http://cocotb.readthedocs.org/ <http://cocotb.readthedocs.org/>`_                                        |
 +--------------------+-----------------------------------------------------------------------------------------------------------+
 | **Source:**        | `https://github.com/potentialventures/cocotb <https://github.com/potentialventures/cocotb>`_              |
 +--------------------+-----------------------------------------------------------------------------------------------------------+
 
+.. _OSVVM:
 
 OSVVM
 *****
@@ -41,14 +43,14 @@ existing testbench or testbench models.
 +----------------+---------------------------------------------------------------------------------------+
 | **Copyright:** | Copyright © 2012-2016 by `SynthWorks Design Inc. <http://www.synthworks.com/>`_       |
 +----------------+---------------------------------------------------------------------------------------+
-| **License:**   | :doc:`Artistic License 2.0 (local copy) </References/Licenses/ArtisticLicense2.0>`               |
+| **License:**   | :doc:`Artistic License 2.0 (local copy) </References/Licenses/ArtisticLicense2.0>`    |
 +----------------+---------------------------------------------------------------------------------------+
 | **Website:**   | `http://osvvm.org/ <http://osvvm.org/>`_                                              |
 +----------------+---------------------------------------------------------------------------------------+
 | **Source:**    | `https://github.com/JimLewis/OSVVM <https://github.com/JimLewis/OSVVM>`_              |
 +----------------+---------------------------------------------------------------------------------------+
 
-
+.. _UVVM:
 
 UVVM
 ****
@@ -81,6 +83,7 @@ the ``uart_receive()`` or ``axilite_write()`` BFM respectively.
 | **Source:**    | `https://github.com/UVVM/UVVM_All <https://github.com/UVVM/UVVM_All>`_                |
 +----------------+---------------------------------------------------------------------------------------+
 
+.. _VUnit:
 
 VUnit
 *****
