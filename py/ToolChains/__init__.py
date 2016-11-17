@@ -31,13 +31,13 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Repository Service Tool")
+class ToolMixIn:
+	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
+		self._platform =            platform
+		self._dryrun =              dryrun
+		self._binaryDirectoryPath = binaryDirectoryPath
+		self._version =             version
+		self._Logger =              logger
 
 
 from .PoC                   import Configuration as PoC_Configuration
