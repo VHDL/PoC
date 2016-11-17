@@ -55,7 +55,7 @@ if ($EnableDebug   -eq $null)  { $EnableDebug =    $false }
 if ($EnableDebug   -eq $true)  { $EnableVerbose =  $true  }
 
 # Display help if no command was selected
-$Help = $Help -or (-not ($all -or $html -or $dirhtml -or $singlehtml -or $pickle -or $linkcheck -or $clean -or $help))
+$Help = $Help -or (-not ($all -or $PoC -or $html -or $dirhtml -or $singlehtml -or $pickle -or $linkcheck -or $clean -or $help))
 
 function Exit-Script
 { <#

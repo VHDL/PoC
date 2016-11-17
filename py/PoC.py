@@ -98,7 +98,6 @@ __api__ = [
 __all__ = __api__
 
 
-
 class PoCEntityAttribute(Attribute):
 	def __call__(self, func):
 		self._AppendAttribute(func, ArgumentAttribute(metavar="PoC Entity", dest="FQN", type=str, nargs='+', help="A space separated list of PoC entities."))
