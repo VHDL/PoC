@@ -446,8 +446,6 @@ class PileOfCores(ILogable, ArgParseMixin):
 					nxt = True
 				except SkipConfigurationException:
 					break
-				except ConfigurationException:
-					raise
 				except ExceptionBase as ex:
 					print("  {RED}FAULT:{NOCOLOR} {0}".format(ex.message, **Init.Foreground))
 
