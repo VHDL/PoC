@@ -38,6 +38,7 @@ from re                      import compile as RegExpCompile
 from subprocess             import check_output
 
 from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
+from ToolChains.Mentor.QuestaSim import Configuration as Questa_Configuration
 from ToolChains.Altera.Altera import AlteraException
 
 
@@ -52,7 +53,7 @@ class ModelSimException(AlteraException):
 	pass
 
 
-class Configuration(BaseConfiguration):
+class Configuration(Questa_Configuration):
 	_vendor =    "Altera"
 	_toolName =  "ModelSim Altera Edition"
 	_section =  "INSTALL.Altera.ModelSim"
