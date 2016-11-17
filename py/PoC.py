@@ -118,7 +118,7 @@ class VHDLVersionAttribute(Attribute):
 
 class SimulationStepsAttribute(Attribute):
 	def __call__(self, func):
-		self._AppendAttribute(func, SwitchArgumentAttribute("-g", "-G", "--gui",  dest="GUIMode",     help="Run all steps (prepare, analysis, elaboration, optimization, simulation) and finally display the waveform in a GUI window."))
+		self._AppendAttribute(func, SwitchArgumentAttribute("-g", "--gui",        dest="GUIMode",     help="Run all steps (prepare, analysis, elaboration, optimization, simulation) and finally display the waveform in a GUI window."))
 		self._AppendAttribute(func, SwitchArgumentAttribute("-a", "--analyze",    dest="Analyze",     help="Run only the prepare and analysis step."))
 		self._AppendAttribute(func, SwitchArgumentAttribute("-e", "--elaborate",  dest="Elaborate",   help="Run only the prepare and elaboration step."))
 		# self._AppendAttribute(func, SwitchArgumentAttribute("-c", "--compile",    dest="Compile",     help="Run only the prepare and compile step."))
@@ -126,8 +126,10 @@ class SimulationStepsAttribute(Attribute):
 		self._AppendAttribute(func, SwitchArgumentAttribute("-C", "--recompile",  dest="Recompile",   help="Run all compile steps (prepare, analysis, elaboration, optimization)."))
 		self._AppendAttribute(func, SwitchArgumentAttribute("-s", "--simulate",   dest="Simulate",    help="Run only the prepare and simulation step."))
 		self._AppendAttribute(func, SwitchArgumentAttribute("-w", "--showwave",   dest="ShowWave",    help="Run only the prepare step and display the waveform in a GUI window."))
+		self._AppendAttribute(func, SwitchArgumentAttribute("-W", "--review",     dest="Review",      help="Run only display the waveform in a GUI window."))
 		self._AppendAttribute(func, SwitchArgumentAttribute("-S", "--resimulate", dest="Resimulate",  help="Run all simulation steps (prepare, simulation) and finally display the waveform in a GUI window."))
-		self._AppendAttribute(func, SwitchArgumentAttribute("-r", "--showreport", dest="ShowReport",  help="Show a simulation report."))
+		self._AppendAttribute(func, SwitchArgumentAttribute("-r", "--showreport",     dest="ShowReport",    help="Show a simulation report."))
+		# self._AppendAttribute(func, SwitchArgumentAttribute(      "--cleanup-after",  dest="CleanUpAfter",  help="Don't delete intermediate files. Skip post-delete rules."))
 		return func
 
 class CompileStepsAttribute(Attribute):
@@ -332,13 +334,13 @@ class PileOfCores(ILogable, ArgParseMixin):
 	# ============================================================================
 	# common arguments valid for all commands
 	# ----------------------------------------------------------------------------
-	@CommonSwitchArgumentAttribute("-D",              dest="DEBUG",   help="enable script wrapper debug mode")
-	@CommonSwitchArgumentAttribute(      "--dryrun",  dest="DryRun",  help="enable script wrapper debug mode")
-	@CommonSwitchArgumentAttribute("-d", "--debug",   dest="debug",   help="enable debug mode")
-	@CommonSwitchArgumentAttribute("-v", "--verbose", dest="verbose", help="print out detailed messages")
-	@CommonSwitchArgumentAttribute("-q", "--quiet",   dest="quiet",   help="reduce messages to a minimum")
-	@CommonArgumentAttribute("--sln", metavar="SolutionID", dest="SolutionID", help="Solution name")
-	@CommonArgumentAttribute("--prj", metavar="ProjectID", dest="ProjectID", help="Solution name")
+	@CommonSwitchArgumentAttribute("-D",              dest="DEBUG",   help="Enable script wrapper debug mode. See also :option:`poc.ps1 -D`.")
+	@CommonSwitchArgumentAttribute(      "--dryrun",  dest="DryRun",  help="Don't execute external programs.")
+	@CommonSwitchArgumentAttribute("-d", "--debug",   dest="debug",   help="Enable debug mode.")
+	@CommonSwitchArgumentAttribute("-v", "--verbose", dest="verbose", help="Print out detailed messages.")
+	@CommonSwitchArgumentAttribute("-q", "--quiet",   dest="quiet",   help="Reduce messages to a minimum.")
+	@CommonArgumentAttribute("--sln", metavar="SolutionID", dest="SolutionID",  help="Solution name.")
+	@CommonArgumentAttribute("--prj", metavar="ProjectID",  dest="ProjectID",   help="Project name.")
 	def Run(self):
 		ArgParseMixin.Run(self)
 
@@ -851,7 +853,7 @@ class PileOfCores(ILogable, ArgParseMixin):
 		fqnList =         self._ExtractFQNs(args.FQN)
 		board =           self._ExtractBoard(args.BoardName, args.DeviceName)
 		vhdlVersion =     self._ExtractVHDLVersion(args.VHDLVersion)
-		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, args.Optimize, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport)
+		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, False, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport, False)
 
 		# create a GHDLSimulator instance and prepare it
 		simulator = ActiveHDLSimulator(self, self.DryRun, simulationSteps)
@@ -881,7 +883,7 @@ class PileOfCores(ILogable, ArgParseMixin):
 		fqnList =         self._ExtractFQNs(args.FQN)
 		board =           self._ExtractBoard(args.BoardName, args.DeviceName)
 		vhdlVersion =     self._ExtractVHDLVersion(args.VHDLVersion)
-		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, args.Optimize, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport)
+		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, False, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport, False)
 
 		simulator = GHDLSimulator(self, self.DryRun, simulationSteps)
 		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)
@@ -904,7 +906,7 @@ class PileOfCores(ILogable, ArgParseMixin):
 
 		fqnList =         self._ExtractFQNs(args.FQN)
 		board =           self._ExtractBoard(args.BoardName, args.DeviceName)
-		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, args.Optimize, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport)
+		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, False, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport, False)
 
 		simulator = ISESimulator(self, self.DryRun, simulationSteps)
 		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=VHDLVersion.VHDL93)
@@ -928,7 +930,7 @@ class PileOfCores(ILogable, ArgParseMixin):
 		fqnList =         self._ExtractFQNs(args.FQN)
 		board =           self._ExtractBoard(args.BoardName, args.DeviceName)
 		vhdlVersion =     self._ExtractVHDLVersion(args.VHDLVersion)
-		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, args.Optimize, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport)
+		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, False, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport, False)
 
 		print(simulationSteps)
 
@@ -957,7 +959,7 @@ class PileOfCores(ILogable, ArgParseMixin):
 		board =           self._ExtractBoard(args.BoardName, args.DeviceName)
 		# FIXME: VHDL-2008 is broken in Vivado 2016.1 -> use VHDL-93 by default
 		vhdlVersion =     self._ExtractVHDLVersion(args.VHDLVersion, defaultVersion=VHDLVersion.VHDL93)
-		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, args.Optimize, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport)
+		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, False, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport, False)
 
 		simulator = VivadoSimulator(self, self.DryRun, simulationSteps)
 		allPassed = simulator.RunAll(fqnList, board=board, vhdlVersion=vhdlVersion)
@@ -984,7 +986,7 @@ class PileOfCores(ILogable, ArgParseMixin):
 
 		fqnList =         self._ExtractFQNs(args.FQN)
 		board =           self._ExtractBoard(args.BoardName, args.DeviceName)
-		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, args.Optimize, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport)
+		simulationSteps = self._ExtractSimulationSteps(args.GUIMode, args.Analyze, args.Elaborate, False, args.Recompile, args.Simulate, args.ShowWave, args.Resimulate, args.ShowReport, False)
 
 		# create a CocotbSimulator instance and prepare it
 		simulator = CocotbSimulator(self, self.DryRun, simulationSteps)

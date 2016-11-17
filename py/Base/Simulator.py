@@ -93,7 +93,7 @@ class SimulationSteps(Flags):
 	ShowReport =     1 << 15
 	Recompile =      1 << 25
 	Resimulate =     1 << 26
-	Review =         1 << 27
+	# Review =         1 << 27
 
 	def __and__(self, other):
 		if isinstance(other, bool):

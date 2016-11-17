@@ -79,11 +79,11 @@ Source file: :pocsrc:`fifo/fifo_cc_got.vhdl <fifo/fifo_cc_got.vhdl>`
 
 .. seealso::
 
-   :ref:`IP:fifo_dc_got>`
+   :ref:`IP:fifo_dc_got`
      For a FIFO with dependent clocks.
-   :ref:`IP:fifo_ic_got>`
+   :ref:`IP:fifo_ic_got`
      For a FIFO with independent clocks (cross-clock FIFO).
-   :ref:`IP:fifo_glue>`
+   :ref:`IP:fifo_glue`
      For a minimal FIFO / pipeline decoupling.
 
 
