@@ -4,6 +4,8 @@
 # Documentation
 README.md
 
-# Sphinx documentation
+# sub-directories
 */
-*.rst
+
+# style-sheet files
+*.css

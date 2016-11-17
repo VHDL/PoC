@@ -36,7 +36,7 @@
 from subprocess                 import check_output
 from textwrap                   import dedent
 
-from lib.Functions              import CallByRefParam
+from lib.Functions              import CallByRefParam, Init
 from Base.Exceptions            import PlatformNotSupportedException
 from Base.Logging               import LogEntry, Severity
 from Base.Configuration         import Configuration as BaseConfiguration, ConfigurationException
@@ -524,7 +524,12 @@ def QuestaVSimFilter(gen):
 			yield LogEntry(line, Severity.Error)
 		elif line.startswith("** Fatal: "):
 			yield LogEntry(line, Severity.Error)
-		elif line.startswith("# "):
+		elif line.startswith("# %%"):
+			if ("ERROR" in line):
+				yield LogEntry("{DARK_RED}{line}{NOCOLOR}".format(line=line[2:], **Init.Foreground), Severity.Error)
+			else:
+				yield LogEntry("{DARK_CYAN}{line}{NOCOLOR}".format(line=line[2:], **Init.Foreground), Severity.Normal)
+		elif line.startswith("#   "):
 			if (not PoCOutputFound):
 				yield LogEntry(line, Severity.Verbose)
 			else:
