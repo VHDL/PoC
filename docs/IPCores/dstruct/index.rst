@@ -7,5 +7,5 @@ These are data structure entities....
 
 .. toctree::
 
-   dstruct_deque
-   dstruct_stack
+   dstruct_deque <dstruct_deque>
+   dstruct_stack <dstruct_stack>

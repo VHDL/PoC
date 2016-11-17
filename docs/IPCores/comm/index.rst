@@ -7,5 +7,5 @@ These are communication entities....
 
 .. toctree::
 
-   comm_crc
-   comm_scramble
+   comm_crc <comm_crc>
+   comm_scramble <comm_scramble>

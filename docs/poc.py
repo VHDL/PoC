@@ -57,9 +57,10 @@ class SourceFile:
 
 class Extract:
 	def __init__(self):
-		self.sourceDirectory =     Path("../src")
-		self.outputDirectory =     Path("IPCores")
-		self.relSourceDirectory =  Path("../../src")
+		self.sourceDirectory =       Path("../src")
+		self.outputDirectory =       Path("IPCores")
+		self.relSourceDirectory =    Path("../../src")
+		self.relTestbenchDirectory = Path("../../tb")
 
 		self.templateFile =     Path("Entity.template")
 		self.templateContent =  ""
@@ -101,9 +102,11 @@ class Extract:
 				self.writeReST(item)
 
 	def writeReST(self, sourceFile):
-		relPath =     sourceFile.File.relative_to(self.sourceDirectory)
-		outputFile =  self.outputDirectory / relPath.with_suffix(".rst")
-		relSourceFile = ("../" * (len(relPath.parents) - 1)) / self.relSourceDirectory / relPath
+		sourceRelPath =     sourceFile.File.relative_to(self.sourceDirectory)
+		outputFile =  self.outputDirectory / sourceRelPath.with_suffix(".rst")
+		relSourceFile = ("../" * (len(sourceRelPath.parents) - 1)) / self.relSourceDirectory / sourceRelPath
+
+		testbenchRelPath = Path(sourceRelPath.with_name(sourceRelPath.stem + "_tb.vhdl"))
 
 		print("Writing reST file '{0!s}'.".format(outputFile))
 
@@ -124,7 +127,8 @@ class Extract:
 			EntityDescription=sourceFile.Description,
 			EntityFilePath=relSourceFile.as_posix(),
 			EntityDeclarationFromTo="{0}-{1}".format(sourceFile.EntitySourceCodeRange.StartRow, sourceFile.EntitySourceCodeRange.EndRow),
-			GitHubSourceFile="`{relPath} <https://github.com/VLSI-EDA/PoC/blob/master/src/{relPath}>`_".format(relPath=relPath.as_posix()),
+			SourceRelPath=sourceRelPath.as_posix(),
+			TestbenchRelPath=testbenchRelPath.as_posix(),
 			SeeAlsoBox=seeAlsoBox
 		)
 

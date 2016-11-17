@@ -26,6 +26,9 @@ implementations.
 
    Package <mem.pkg>
 
+.. toctree::
+   :hidden:
+
    ddr3 <ddr3/index>
    ddr2 <ddr2/index>
    lut <lut/index>

@@ -8,6 +8,8 @@ WishBone modules ...
 **Entities:**
 
 .. toctree::
-   wb_ocram
-   wb_fifo_adapter
-   wb_uart_wrapper
+   :hidden:
+
+   wb_ocram <wb_ocram>
+   wb_fifo_adapter <wb_fifo_adapter>
+   wb_uart_wrapper <wb_uart_wrapper>

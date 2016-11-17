@@ -23,6 +23,8 @@
 param(
   # Make all targets
   [switch]$all =        $false,
+  # Extract VHDL documentation
+  [switch]$PoC =        $false,
   # Make standalone HTML files
   [switch]$html =       $false,
   # Make HTML files named index.html in directories
@@ -83,6 +85,12 @@ if ($Help)
 
 Push-EnvironmentBlock
 $env:Path += ";C:\Tools\Graphviz\2.38\bin"
+
+if ($PoC)
+{	cd "$SphinxRootDir"
+	py -3 poc.py
+	Write-Host "Complete" -Foreground Green
+}
 
 if ($All)
 { $clean =      $true

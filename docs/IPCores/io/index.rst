@@ -33,6 +33,7 @@ The package :doc:`PoC.io <io.pkg>` holds all enum, function and component declar
  * :doc:`PoC.io.PulseWidthModulation <io_PulseWidthModulation>`
  * :doc:`PoC.io.TimingCounter <io_TimingCounter>`
 
+
 .. toctree::
    :hidden:
 
@@ -48,7 +49,13 @@ The package :doc:`PoC.io <io.pkg>` holds all enum, function and component declar
    uart <uart/index>
    vga <vga/index>
 
-   io.pkg
+.. toctree::
+   :hidden:
+
+   Package <io.pkg>
+
+.. toctree::
+   :hidden:
 
    io_7SegmentMux_BCD
    io_7SegmentMux_HEX

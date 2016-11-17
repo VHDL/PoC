@@ -12,12 +12,11 @@ provide the same simple memory interface to the user application.
 
 **Entities**
 
- * :doc:`PoC.mem.ddr2.mem2mig_adapter_Spartan6
-   <ddr2_mem2mig_adapter_Spartan6>` - Adapter for the Xilinx MIG core
+ * :ref:`IP:ddr2_mem2mig_adapter_Spartan6` - Adapter for the Xilinx MIG core
    for Spartan-6 FPGAs
 
 
 .. toctree::
    :hidden:
 
-   ddr2_mem2mig_adapter_Spartan6
+   ddr2_mem2mig_adapter_Spartan6 <ddr2_mem2mig_adapter_Spartan6>
