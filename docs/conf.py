@@ -358,7 +358,9 @@ intersphinx_mapping = {
 
 extlinks = {
 	'pocissue': ('https://github.com/VLSI-EDA/PoC/issues/%s', 'issue #'),
-	'pocpull':  ('https://github.com/VLSI-EDA/PoC/pull/%s', 'pull request #')
+	'pocpull':  ('https://github.com/VLSI-EDA/PoC/pull/%s', 'pull request #'),
+	'pocsrc':   ('https://github.com/VLSI-EDA/PoC/blob/master/src/%s?ts=2', None),
+	'poctb':    ('https://github.com/VLSI-EDA/PoC/blob/master/tb/%s?ts=2', None)
 }
 
 graphviz_output_format = "svg"

@@ -1,6 +1,7 @@
+.. _NS:icmpv6:
 
-icmpv6
-======
+PoC.net.icmpv6
+==============
 
 These are icmpv6 entities....
 

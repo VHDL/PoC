@@ -1,6 +1,7 @@
+.. _NS:ocram:
 
-ocram
-=====
+PoC.mem.ocram
+=============
 
 The namespace ``PoC.mem.ocram`` offers different on-chip RAM abstractions.
 

@@ -1,6 +1,7 @@
+.. _NS:ocrom:
 
-ocrom
-=====
+PoC.mem.ocrom
+=============
 
 The namespace ``PoC.mem.ocrom`` offers different on-chip ROM abstractions.
 

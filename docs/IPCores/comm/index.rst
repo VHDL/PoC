@@ -1,6 +1,7 @@
+.. _NS:comm:
 
-comm
-====
+PoC.comm
+========
 
 These are communication entities....
 

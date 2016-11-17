@@ -1,6 +1,7 @@
+.. _NS:mac:
 
-mac
-===
+PoC.net.mac
+===========
 
 These are mac entities....
 

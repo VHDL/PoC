@@ -1,6 +1,7 @@
+.. _NS:uart:
 
-uart
-====
+PoC.io.uart
+===========
 
 These are :abbr:`UART (Universal Asynchronous Receiver Transmitter)` entities....
 

@@ -1,6 +1,7 @@
+.. _NS:stat:
 
-stat
-====
+PoC.misc.stat
+=============
 
 These are stat entities....
 

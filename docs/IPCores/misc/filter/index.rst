@@ -1,6 +1,7 @@
+.. _NS:filter:
 
-filter
-======
+PoC.misc.filter
+===============
 
 These are filter entities....
 

@@ -1,6 +1,7 @@
+.. _NS:eth:
 
-eth
-===
+PoC.net.eth
+===========
 
 These are eth entities....
 

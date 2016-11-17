@@ -1,6 +1,7 @@
+.. _NS:gearbox:
 
-gearbox
-========
+PoC.misc.gearbox
+================
 
 These are gearbox entities....
 

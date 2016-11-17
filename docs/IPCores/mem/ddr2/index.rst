@@ -1,5 +1,7 @@
-ddr2
-====
+.. _NS:ddr2:
+
+PoC.mem.ddr2
+============
 
 The namespace ``PoC.mem.ddr2`` is designated for own implementations of
 DDR2 memory controllers as well as for adapters for vendor-specific

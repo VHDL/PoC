@@ -1,6 +1,7 @@
+.. _NS:misc:
 
-misc
-====
+PoC.misc
+========
 
 The namespace ``PoC.misc`` offers different yet uncathegorized entities.
 
@@ -27,10 +28,10 @@ The package :doc:`PoC.misc <misc.pkg>` holds all component declarations for this
 .. toctree::
    :hidden:
 
-   filter/index
-   gearbox/index
-   stat/index
-   sync/index
+   filter <filter/index>
+   gearbox <gearbox/index>
+   stat <stat/index>
+   sync <sync/index>
 
    misc.pkg
 

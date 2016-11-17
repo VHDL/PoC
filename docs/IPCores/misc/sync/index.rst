@@ -1,5 +1,7 @@
-sync
-====
+.. _NS:sync:
+
+PoC.misc.sync
+=============
 
 The namespace ``PoC.misc.sync`` offers different clock-domain-crossing (CDC)
 synchronizer circuits. All synchronizers are based on the basic 2 flip-flop

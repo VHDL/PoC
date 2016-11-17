@@ -1,6 +1,7 @@
+.. _NS:fifo:
 
-fifo
-====
+PoC.fifo
+========
 
 The namespace `PoC.fifo` offers different :abbr:`FIFO (first-in, first-out)` implementations.
 

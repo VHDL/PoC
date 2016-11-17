@@ -1,6 +1,7 @@
+.. _NS:iic:
 
-iic
-=====
+PoC.io.iic
+==========
 
 These are I2C entities....
 

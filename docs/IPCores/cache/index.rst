@@ -1,6 +1,7 @@
+.. _NS:cache:
 
-cache
-=====
+PoC.cache
+=========
 
 These are cache entities....
 

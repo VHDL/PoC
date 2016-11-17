@@ -1,6 +1,7 @@
+.. _NS:mig:
 
-mig
-===
+PoC.xil.mig
+===========
 
 The namespace ``PoC.xil.mig`` offers pre-configured memory controllers generated
 with Xilinx's Memory Interface Generator (MIG).

@@ -1,6 +1,7 @@
+.. _NS:wb:
 
-wb
-^^
+PoC.bus.wb
+==========
 
 WishBone modules ...
 

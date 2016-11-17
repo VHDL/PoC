@@ -1,6 +1,7 @@
+.. _NS:lcd:
 
-lcd
-===
+PoC.io.lcd
+==========
 
 These are LCD entities....
 

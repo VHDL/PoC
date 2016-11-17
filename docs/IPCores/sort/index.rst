@@ -1,6 +1,7 @@
+.. _NS:sort:
 
-sort
-====
+PoC.sort
+========
 
 These are sorting entities....
 
@@ -19,7 +20,7 @@ These are sorting entities....
 .. toctree::
    :hidden:
 
-   sortnet/index
+   sortnet <sortnet/index>
 
 .. toctree::
    :hidden:

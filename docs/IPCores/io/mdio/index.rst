@@ -1,6 +1,7 @@
+.. _NS:mdio:
 
-mdio
-====
+PoC.io.mdio
+===========
 
 These are MDIO entities....
 

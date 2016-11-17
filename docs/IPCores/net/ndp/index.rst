@@ -1,6 +1,7 @@
+.. _NS:ndp:
 
-ndp
-===
+PoC.net.ndp
+===========
 
 These are ndp entities....
 

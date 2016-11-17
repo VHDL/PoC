@@ -1,6 +1,7 @@
+.. _NS:ipv6:
 
-ipv6
-====
+PoC.net.ipv6
+============
 
 These are ipv6 entities....
 

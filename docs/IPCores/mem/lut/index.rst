@@ -1,6 +1,7 @@
+.. _NS:lut:
 
-lut
-===
+PoC.mem.lut
+===========
 
 The namespace ``PoC.mem.lut`` offers different lookup-tables (LUTs).
 

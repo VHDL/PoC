@@ -1,6 +1,7 @@
+.. _NS:vga:
 
-vga
-===
+PoC.io.vga
+==========
 
 These are VGA entities....
 

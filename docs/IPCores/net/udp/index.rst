@@ -1,6 +1,7 @@
+.. _NS:udp:
 
-udp
-===
+PoC.net.udp
+===========
 
 These are udp entities....
 

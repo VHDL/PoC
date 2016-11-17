@@ -1,6 +1,7 @@
+.. _NS:sdram:
 
-sdram
-=====
+PoC.mem.sdram
+=============
 
 The namespace ``PoC.mem.sdram`` offers components for the access of external SDRAMs.
 A common finite state-machine is used to address the memory via banks, rows and

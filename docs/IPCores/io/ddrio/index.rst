@@ -1,6 +1,7 @@
+.. _NS:ddrio:
 
-ddrio
-=====
+PoC.io.ddrio
+============
 
 These are :abbr:`DDR-I/O (Double Data Rate - Input/Output)` entities....
 

@@ -1,6 +1,7 @@
+.. _NS:dstruct:
 
-dstruct
-#######
+PoC.dstruct
+===========
 
 These are data structure entities....
 

@@ -1,6 +1,7 @@
+.. _NS:reconfig:
 
-reconfig
-========
+PoC.xil.reconfig
+================
 
 These are reconfig entities....
 

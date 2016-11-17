@@ -1,6 +1,7 @@
+.. _NS:stream:
 
-stream
-^^^^^^
+PoC.bus.stream
+==============
 
 PoC.Stream modules ...
 

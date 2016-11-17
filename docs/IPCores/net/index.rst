@@ -1,6 +1,7 @@
+.. _NS:net:
 
-net
-===
+PoC.net
+========
 
 These are bus entities....
 
@@ -25,16 +26,16 @@ These are bus entities....
 .. toctree::
    :hidden:
 
-   arp/index
-   eth/index
-   icmpv4/index
-   icmpv6/index
-   ipv4/index
-   ipv6/index
-   mac/index
-   ndp/index
-   stack/index
-   udp/index
+   arp <arp/index>
+   eth <eth/index>
+   icmpv4 <icmpv4/index>
+   icmpv6 <icmpv6/index>
+   ipv4 <ipv4/index>
+   ipv6 <ipv6/index>
+   mac <mac/index>
+   ndp <ndp/index>
+   stack <stack/index>
+   udp <udp/index>
 
 .. toctree::
    :hidden:

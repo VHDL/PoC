@@ -1,6 +1,7 @@
+.. _NS:sortnet:
 
-sortnet
-========
+PoC.sort.sortnet
+================
 
 This sub-namespace contains sorting network implementations.
 

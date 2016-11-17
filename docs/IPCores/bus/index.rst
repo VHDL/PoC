@@ -1,6 +1,7 @@
+.. _NS:bus:
 
-bus
-===
+PoC.bus
+========
 
 These are bus entities....
 
@@ -16,7 +17,7 @@ These are bus entities....
 .. toctree::
    :hidden:
 
-   stream/index
-   wb/index
+   stream <stream/index>
+   wb <wb/index>
 
    bus_Arbiter

@@ -1,5 +1,7 @@
-ddr3
-====
+.. _NS:ddr3:
+
+PoC.mem.ddr3
+============
 
 The namespace ``PoC.mem.ddr3`` is designated for own implementations of
 DDR3 memory controllers as well as for adapters for vendor-specific

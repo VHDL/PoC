@@ -1,5 +1,7 @@
-arith
-=====
+.. _NS:arith:
+
+PoC.arith
+=========
 
 These are arithmetic entities....
 

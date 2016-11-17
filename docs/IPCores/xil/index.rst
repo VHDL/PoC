@@ -1,6 +1,7 @@
+.. _NS:xil:
 
-xil
-===
+PoC.xil
+========
 
 This namespace is for Xilinx specific modules.
 
@@ -25,8 +26,8 @@ This namespace is for Xilinx specific modules.
 .. toctree::
    :hidden:
 
-   mig/index
-   reconfig/index
+   mig <mig/index>
+   reconfig <reconfig/index>
 
 .. toctree::
    :hidden:
