@@ -1,4 +1,4 @@
-.. _Int:
+.. _INT:
 
 IP Core Interfaces
 ##################
@@ -10,4 +10,3 @@ IP Core Interfaces
    PoC.FIFO <FIFO>
    PoC.Mem <Memory>
    PoC.Stream <Stream>
-
