@@ -1,21 +1,26 @@
 proc _poc_reanalyze {} {
-	set returnCode [exec -ignorestderr py -3 ../../py/PoC.py vsim PoC.sort.sortnet.BitonicSort --recompile]
+	set returnCode [exec -ignorestderr py -3 ../../py/PoC.py -d vsim PoC.sort.sortnet.BitonicSort --analyze --elaborate]
+	puts "ReturnCode: $returnCode"
 }
+
 proc poc_recompile {} {
-	poc_reanalyze
+	_poc_reanalyze
 	restart -force
 }
-poc_rerun {} {
+
+proc poc_rerun {} {
 	restart -force
 	# if xxx exists
 	# do ../../sim/sort/sortnet/sortnet_BitonicSort_tb.do
 	# else
 	do ../../sim/vSim.gui.tcl
 }
+
 proc poc_relaunch {} {
-	poc_reanalyze
+	_poc_reanalyze
 	poc_rerun
 }
+
 proc poc_reload_waveform {} {
 	puts "Not implemented!"
 	# if xxx exists
