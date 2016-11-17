@@ -31,15 +31,12 @@
 # ==============================================================================
 #
 # load dependencies
-from datetime import datetime
 from pathlib                      import Path
 from textwrap import dedent
 
-from lib.Functions                import Init
 from Base.Exceptions              import NotConfiguredException
 from Base.Project                 import FileTypes, ToolChain, Tool
-from Base.Simulator               import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException, SimulationState, SimulationResult, \
-	SimulationSteps
+from Base.Simulator               import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException, SimulationSteps
 from DataBase.Config              import Vendors
 from ToolChains.Mentor.QuestaSim  import QuestaSim, QuestaSimException
 
@@ -276,7 +273,7 @@ class Simulator(BaseSimulator):
 			puts "Loading run script '{runScript}'..."
 			do {runScript}
 			""").format(
-			recompileScript=recompileScriptPath.as_posix(),
+				recompileScript=recompileScriptPath.as_posix(),
 				runScript=vsimRunScript
 			)
 

@@ -90,7 +90,6 @@ __api__ = [
 	'PoCEntityAttribute',
 	'BoardDeviceAttributeGroup',
 	'VHDLVersionAttribute',
-	'GUIModeAttribute',
 	'SimulationStepsAttribute',
 	'CompileStepsAttribute',
 	'PileOfCores',
