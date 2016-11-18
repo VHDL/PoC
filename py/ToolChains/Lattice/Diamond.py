@@ -50,7 +50,6 @@ from ToolChains.Lattice.Lattice    import LatticeException
 __api__ = [
 	'DiamondException',
 	'Configuration',
-	'DiamondMixIn',
 	'Diamond',
 	'Synth',
 	'SynthesisArgumentFile',

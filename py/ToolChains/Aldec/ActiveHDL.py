@@ -50,7 +50,6 @@ from ToolChains.Aldec.Aldec import AldecException
 __api__ = [
 	'ActiveHDLException',
 	'Configuration',
-	'ActiveHDLMixIn',
 	'ActiveHDL',
 	'VHDLCompiler',
 	'StandaloneSimulator',

@@ -50,7 +50,6 @@ from lib.Functions              import CallByRefParam
 __api__ = [
 	'ISEException',
 	'Configuration',
-	'ToolMixIn',
 	'ISE',
 	'Fuse',
 	'ISESimulator',
@@ -60,7 +59,7 @@ __api__ = [
 	'FuseFilter',
 	'SimulatorFilter',
 	'XstFilter',
-	'CoreGeneratorFilter'
+	'CoreGeneratorFilter',
 	'ISEProject',
 	'ISEProjectFile',
 	'UserConstraintFile'

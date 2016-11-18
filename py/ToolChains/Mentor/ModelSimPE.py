@@ -7,7 +7,7 @@
 #                   Martin Zabel
 #                   Thomas B. Preusser
 #
-# Python Class:     Altera ModelSim specific classes
+# Python Class:     Mentor Graphics ModelSim specific classes
 #
 # Description:
 # ------------------------------------
@@ -34,12 +34,12 @@
 # ==============================================================================
 #
 # load dependencies
-from re                      import compile as RegExpCompile
-from subprocess             import check_output
+from re                           import compile as RegExpCompile
+from subprocess                   import check_output
 
-from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
-from ToolChains.Mentor.QuestaSim import Configuration as Questa_Configuration
-from ToolChains.Altera.Altera import AlteraException
+from Base.Configuration           import ConfigurationException
+from ToolChains.Mentor.Mentor     import MentorException
+from ToolChains.Mentor.QuestaSim  import Configuration as QuestaSim_Configuration
 
 
 __api__ = [
@@ -49,43 +49,44 @@ __api__ = [
 __all__ = __api__
 
 
-class ModelSimException(AlteraException):
+class ModelSimException(MentorException):
 	pass
 
 
-class Configuration(Questa_Configuration):
-	_vendor =    "Altera"
-	_toolName =  "ModelSim Altera Edition"
-	_section =  "INSTALL.Altera.ModelSim"
+class Configuration(QuestaSim_Configuration):
+	_vendor =    "Mentor"
+	_toolName =  "ModelSim PE"
+	_section =   "INSTALL.Mentor.ModelSimPE"
 	_template = {
 		"Windows": {
 			_section: {
-				"Version":                "10.4b",
-				"InstallationDirectory":  "${INSTALL.Altera:InstallationDirectory}/${INSTALL.Altera.Quartus:Version}/modelsim_ase",
-				"BinaryDirectory":        "${InstallationDirectory}/win32aloem"
+				"Version":                "10.4a",
+				"InstallationDirectory":  "${INSTALL.Mentor:InstallationDirectory}/ModelSim PE/${Version}",
+				"BinaryDirectory":        "${InstallationDirectory}/win32pe_edu"
 			}
 		},
 		"Linux": {
 			_section: {
-				"Version":                "10.4b",
-				"InstallationDirectory":  "${INSTALL.Altera:InstallationDirectory}/${INSTALL.Altera.Quartus:Version}/modelsim_ase",
-				"BinaryDirectory":        "${InstallationDirectory}/linuxaloem"
+				"Version":                "10.4a",
+				"InstallationDirectory":  "${INSTALL.Mentor:InstallationDirectory}/ModelSim PE/${Version}",
+				"BinaryDirectory":        "${InstallationDirectory}/linux32pe"
 			}
 		}
 	}
 
 	def CheckDependency(self):
-		# return True if Altera is configured
-		return (len(self._host.PoCConfig['INSTALL.Altera']) != 0)
+		# return True if Mentor is configured
+		return (len(self._host.PoCConfig['INSTALL.Mentor']) != 0)
 
 	def ConfigureForAll(self):
 		try:
-			if (not self._AskInstalled("Is ModelSim Altera Edition installed on your system?")):
+			if (not self._AskInstalled("Is Mentor ModelSim PE installed on your system?")):
 				self.ClearSection()
 			else:
+				version = self._ConfigureVersion()
 				self._ConfigureInstallationDirectory()
 				binPath = self._ConfigureBinaryDirectory()
-				self.__GetModelSimVersion(binPath)
+				self.__CheckQuestaSimVersion(binPath, version)
 		except ConfigurationException:
 			self.ClearSection()
 			raise
@@ -114,5 +115,7 @@ class Configuration(Questa_Configuration):
 				match = versionRegExp.match(line)
 				if match is not None:
 					version = match.group(1)
+
+		print(self._section, version)
 
 		self._host.PoCConfig[self._section]['Version'] = version

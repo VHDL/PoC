@@ -124,19 +124,19 @@ configured in PoC:
 .. |l-vivado| replace:: :ref:`vivado <USING:Synth:Xilinx-Vivado>`
 .. |r-vivado| replace:: :ref:`vivado <CMDREF:PoC.py-vivado>`
 
-+-------------+--------------------------------------------------+
-| Simulator   | Description                                      |
-+=============+==================================================+
-| |l-quartus| | Altera Quartus II or Quartus Prime               |
-+-------------+--------------------------------------------------+
-| |l-lse|     | Lattice Diamond - Lattice Synthesis Engine (LSE) |
-+-------------+--------------------------------------------------+
-| |l-xst|     | Xilinx ISE Systhesis Tool (XST)                  |
-+-------------+--------------------------------------------------+
-| |l-coregen| | Xilinx ISE Core Generator (CoreGen)              |
-+-------------+--------------------------------------------------+
-| |l-vivado|  | Xilinx Vivado Synthesis                          |
-+-------------+--------------------------------------------------+
++-------------+--------------------------------------------------+-------------+
+| Simulator   | Description                                      |             |
++=============+==================================================+=============+
+| |l-quartus| | Altera Quartus II or Quartus Prime               | |r-quartus| |
++-------------+--------------------------------------------------+-------------+
+| |l-lse|     | Lattice Diamond - Lattice Synthesis Engine (LSE) | |r-lse|     |
++-------------+--------------------------------------------------+-------------+
+| |l-xst|     | Xilinx ISE Systhesis Tool (XST)                  | |r-xst|     |
++-------------+--------------------------------------------------+-------------+
+| |l-coregen| | Xilinx ISE Core Generator (CoreGen)              | |r-coregen| |
++-------------+--------------------------------------------------+-------------+
+| |l-vivado|  | Xilinx Vivado Synthesis                          | |r-vivado|  |
++-------------+--------------------------------------------------+-------------+
 
 
 .. _USING:Synth:Altera-Quartus:

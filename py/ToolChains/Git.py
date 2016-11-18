@@ -50,7 +50,6 @@ from ToolChains import ToolMixIn
 __api__ = [
 	'GitException',
 	'Configuration',
-	'GitMixIn',
 	'Git',
 	'GitSCM',
 	'GitRevParse',
