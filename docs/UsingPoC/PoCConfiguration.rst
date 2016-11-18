@@ -1,5 +1,42 @@
 .. _USING:PoCConf:
 
+.. raw:: html
+
+   <style>kbd
+   { -moz-border-radius:3px;
+     -moz-box-shadow:0 1px 0 rgba(0,0,0,0.2),0 0 0 2px #fff inset;
+     -webkit-border-radius:3px;
+     -webkit-box-shadow:0 1px 0 rgba(0,0,0,0.2),0 0 0 2px #fff inset;
+     background-color:#f7f7f7;
+     border:1px solid #ccc;
+     border-radius:3px;
+     box-shadow:0 1px 0 rgba(0,0,0,0.2),0 0 0 2px #fff inset;
+     color:#333;
+     display:inline-block;
+     font-family:Arial,Helvetica,sans-serif;
+     font-size:11px;
+     line-height:1.4;
+     margin:0 .1em;
+     padding:.1em .6em;
+     text-shadow:0 1px 0 #fff;
+   }</style>
+
+.. |kbd-Y| raw:: html
+
+           <kbd>Y</kbd>
+
+.. |kbd-N| raw:: html
+
+           <kbd>N</kbd>
+
+.. |kbd-P| raw:: html
+
+           <kbd>P</kbd>
+
+.. |kbd-Return| raw:: html
+
+                <kbd>Return</kbd>
+
 Configuring PoC's Infrastructure
 ################################
 
@@ -19,8 +56,8 @@ Overview
 
 The setup process is started by invoking PoC's frontend script with the command
 ``configure``. Please follow the instructions on screen. Use the keyboard
-buttons: :kbd:`Y` to accept, :kbd:`N` to decline, :kbd:`P` to skip/pass a step
-and :kbd:`Return` to accept a default value displayed in brackets.
+buttons: |kbd-Y| to accept, |kbd-N| to decline, |kbd-P| to skip/pass a step and
+|kbd-Return| to accept a default value displayed in brackets.
 
 Optionally, a vendor or tool chain name can be passed to the configuration
 process to launch only its configuration routines.
