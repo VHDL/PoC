@@ -523,7 +523,7 @@ def QuestaVSimFilter(gen):
 				yield LogEntry("{DARK_RED}{line}{NOCOLOR}".format(line=line[2:], **Init.Foreground), Severity.Error)
 			else:
 				yield LogEntry("{DARK_CYAN}{line}{NOCOLOR}".format(line=line[2:], **Init.Foreground), Severity.Normal)
-		elif line.startswith("#   "):
+		elif line.startswith("# "):
 			if (not PoCOutputFound):
 				yield LogEntry(line, Severity.Verbose)
 			else:

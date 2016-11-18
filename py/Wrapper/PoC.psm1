@@ -211,7 +211,22 @@ $PoC_Environments =	@{
 		} # Tools
 	}	# Xilinx
 }
+# ==============================================================================
+function Invoke-BatchFile
+{	param(
+		[string]$Path,
+		[string]$Parameters
+	)
+	$environmentVariables = cmd.exe /c " `"$Path`" $Parameters && set "
+	foreach ($line in $environmentVariables)
+	{	if ($_ -match "^(.*?)=(.*)$")
+		{	Set-Content "env:\$($matches[1])" $matches[2]		}
+		else
+		{	$_																							}
+	}
+}
 
+# ==============================================================================
 function Get-PoCEnvironmentArray
 {	<#
 		.SYNOPSIS
