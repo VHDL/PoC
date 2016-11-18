@@ -113,38 +113,38 @@ The frontend offers several common options:
 One of the following supported synthesizers can be choosen, if installed and
 configured in PoC:
 
-.. |l-quartus| replace:: :ref:`quartus <USING:Synth:Altera-Quartus>`
-.. |r-quartus| replace:: :ref:`quartus <CMDREF:PoC.py-quartus>`
-.. |l-lse| replace:: :ref:`lse <USING:Synth:Lattice-Diamond>`
-.. |r-lse| replace:: :ref:`lse <CMDREF:PoC.py-lse>`
-.. |l-xst| replace:: :ref:`xst <USING:Synth:Xilinx-ISE>`
-.. |r-xst| replace:: :ref:`xst <CMDREF:PoC.py-xst>`
-.. |l-coregen| replace:: :ref:`coregen <USING:Synth:Xilinx-CoreGen>`
-.. |r-coregen| replace:: :ref:`coregen <CMDREF:PoC.py-coregen>`
-.. |l-vivado| replace:: :ref:`vivado <USING:Synth:Xilinx-Vivado>`
-.. |r-vivado| replace:: :ref:`vivado <CMDREF:PoC.py-vivado>`
+.. |l-quartus| replace:: :ref:`Altera Quartus II or Intel Quartus Prime <USING:Synth:Altera-Quartus>`
+.. |r-quartus| replace:: :ref:`PoC.py quartus <CMDREF:PoC.py-quartus>`
+.. |l-lse| replace:: :ref:`Lattice (Diamond) Synthesis Engine (LSE) <USING:Synth:Lattice-Diamond>`
+.. |r-lse| replace:: :ref:`PoC.py lse <CMDREF:PoC.py-lse>`
+.. |l-xst| replace:: :ref:`Xilinx ISE Systhesis Tool (XST) <USING:Synth:Xilinx-ISE>`
+.. |r-xst| replace:: :ref:`PoC.py xst <CMDREF:PoC.py-xst>`
+.. |l-coregen| replace:: :ref:`Xilinx ISE Core Generator (CoreGen) <USING:Synth:Xilinx-CoreGen>`
+.. |r-coregen| replace:: :ref:`PoC.py coregen <CMDREF:PoC.py-coregen>`
+.. |l-vivado| replace:: :ref:`Xilinx Vivado Synthesis <USING:Synth:Xilinx-Vivado>`
+.. |r-vivado| replace:: :ref:`PoC.py vivado <CMDREF:PoC.py-vivado>`
 
-+-------------+--------------------------------------------------+-------------+
-| Simulator   | Description                                      |             |
-+=============+==================================================+=============+
-| |l-quartus| | Altera Quartus II or Quartus Prime               | |r-quartus| |
-+-------------+--------------------------------------------------+-------------+
-| |l-lse|     | Lattice Diamond - Lattice Synthesis Engine (LSE) | |r-lse|     |
-+-------------+--------------------------------------------------+-------------+
-| |l-xst|     | Xilinx ISE Systhesis Tool (XST)                  | |r-xst|     |
-+-------------+--------------------------------------------------+-------------+
-| |l-coregen| | Xilinx ISE Core Generator (CoreGen)              | |r-coregen| |
-+-------------+--------------------------------------------------+-------------+
-| |l-vivado|  | Xilinx Vivado Synthesis                          | |r-vivado|  |
-+-------------+--------------------------------------------------+-------------+
++-------------------+-------------------+
+| Synthesizer       | Command Reference |
++===================+===================+
+| |l-quartus|       | |r-quartus|       |
++-------------------+-------------------+
+| |l-lse|           | |r-lse|           |
++-------------------+-------------------+
+| |l-xst|           | |r-xst|           |
++-------------------+-------------------+
+| |l-coregen|       | |r-coregen|       |
++-------------------+-------------------+
+| |l-vivado|        | |r-vivado|        |
++-------------------+-------------------+
 
 
 .. _USING:Synth:Altera-Quartus:
 
-Altera Quartus
-==============
+Altera / Intel Quartus
+======================
 
-The command to invoke a synthesis using Altera Quartus II or Quartus Prime is
+The command to invoke a synthesis using Altera Quartus II or Intel Quartus Prime is
 :any:`quartus <poc-py-quartus>` followed by a list of PoC entities. The following options are
 supported for Quartus:
 
