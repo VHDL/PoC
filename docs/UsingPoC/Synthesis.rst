@@ -1,3 +1,4 @@
+.. _USING:Synth:
 
 Synthesis
 #########
@@ -5,6 +6,8 @@ Synthesis
 .. contents:: Contents of this Page
    :local:
 
+
+.. _USING:Synth:Over:
 
 Overview
 ********
@@ -38,6 +41,9 @@ one of PoC's frontend script:
    :doc:`List of Supported Development Boards </References/ListOfBoards>`
      See this list to find a supported and well known development board.
 
+
+.. _USING:Synth:Quick:
+
 Quick Example
 *************
 
@@ -65,56 +71,81 @@ synthesized to a netlist.
 	 :alt: PowerShell console output after running PoC.arith.prng with XST.
 
 
+.. _USING:Synth:Single:
+
 Running a single Synthesis
 **************************
 
-A synthesis run is supervised by PoC's ``PoCRoot\py\PoC.py`` service tool,
-which offers a consistent interface to all synthesizers. Unfortunately, every
-platform has it's specialties, so a wrapper script is needed as abstraction from
-the host's operating system. Depending on the choosen tool chain, the wrapper
-script will source or invoke the vendor tool's environment scripts to pre-load
-the needed environment variables, paths or license file settings.
+A synthesis run is supervised by PoC's :ref:`PoCRoot\py\PoC.py <PoC>`
+service tool, which offers a consistent interface to all synthesizers.
+Unfortunately, every platform has it's specialties, so a wrapper script is
+needed as abstraction from the host's operating system. Depending on the choosen
+tool chain, the wrapper script will source or invoke the vendor tool's
+environment scripts to pre-load the needed environment variables, paths or
+license file settings.
 
 The order of options to the frontend script is as following:
 ``<common options> <compiler> <module> <compiler options>``
 
 The frontend offers several common options:
 
-+-----------------+-------------------------------+
-| Common Option   | Description                   |
-+=====+===========+===============================+
-| -q  | --quiet   | Quiet-mode (print nothing)    |
-+-----+-----------+-------------------------------+
-| -v  | --verbose | Print more messages           |
-+-----+-----------+-------------------------------+
-| -d  | --debug   | Debug mode (print everything) |
-+-----+-----------+-------------------------------+
-|     | --dryrun  | Run in dry-run mode           |
-+-----+-----------+-------------------------------+
+.. |-q| replace:: :option:`-q <PoC.py -q>`
+.. |-v| replace:: :option:`-v <PoC.py -v>`
+.. |-d| replace:: :option:`-d <PoC.py -d>`
+.. |--quiet| replace:: :option:`--quiet <PoC.py --quiet>`
+.. |--verbose| replace:: :option:`--verbose <PoC.py --verbose>`
+.. |--debug| replace:: :option:`--debug <PoC.py --debug>`
+.. |--dryrun| replace:: :option:`--dryrun <PoC.py --dryrun>`
+
++--------------------+-------------------------------+
+| Common Option      | Description                   |
++======+=============+===============================+
+| |-q| | |--quiet|   | Quiet-mode (print nothing)    |
++------+-------------+-------------------------------+
+| |-v| | |--verbose| | Print more messages           |
++------+-------------+-------------------------------+
+| |-d| | |--debug|   | Debug mode (print everything) |
++------+-------------+-------------------------------+
+|      | |--dryrun|  | Run in dry-run mode           |
++------+-------------+-------------------------------+
+
 
 One of the following supported synthesizers can be choosen, if installed and
 configured in PoC:
 
-+-----------+--------------------------------------------------+
-| Simulator | Description                                      |
-+===========+==================================================+
-| quartus   | Altera Quartus II or Quartus Prime               |
-+-----------+--------------------------------------------------+
-| lse       | Lattice Diamond - Lattice Synthesis Engine (LSE) |
-+-----------+--------------------------------------------------+
-| xst       | Xilinx ISE Systhesis Tool (XST)                  |
-+-----------+--------------------------------------------------+
-| coregen   | Xilinx ISE Core Generator (CoreGen)              |
-+-----------+--------------------------------------------------+
-| vivado    | Xilinx Vivado Synthesis                          |
-+-----------+--------------------------------------------------+
+.. |l-quartus| replace:: :ref:`quartus <USING:Synth:Altera-Quartus>`
+.. |r-quartus| replace:: :ref:`quartus <CMDREF:PoC.py-quartus>`
+.. |l-lse| replace:: :ref:`lse <USING:Synth:Lattice-Diamond>`
+.. |r-lse| replace:: :ref:`lse <CMDREF:PoC.py-lse>`
+.. |l-xst| replace:: :ref:`xst <USING:Synth:Xilinx-ISE>`
+.. |r-xst| replace:: :ref:`xst <CMDREF:PoC.py-xst>`
+.. |l-coregen| replace:: :ref:`coregen <USING:Synth:Xilinx-CoreGen>`
+.. |r-coregen| replace:: :ref:`coregen <CMDREF:PoC.py-coregen>`
+.. |l-vivado| replace:: :ref:`vivado <USING:Synth:Xilinx-Vivado>`
+.. |r-vivado| replace:: :ref:`vivado <CMDREF:PoC.py-vivado>`
 
++-------------+--------------------------------------------------+
+| Simulator   | Description                                      |
++=============+==================================================+
+| |l-quartus| | Altera Quartus II or Quartus Prime               |
++-------------+--------------------------------------------------+
+| |l-lse|     | Lattice Diamond - Lattice Synthesis Engine (LSE) |
++-------------+--------------------------------------------------+
+| |l-xst|     | Xilinx ISE Systhesis Tool (XST)                  |
++-------------+--------------------------------------------------+
+| |l-coregen| | Xilinx ISE Core Generator (CoreGen)              |
++-------------+--------------------------------------------------+
+| |l-vivado|  | Xilinx Vivado Synthesis                          |
++-------------+--------------------------------------------------+
+
+
+.. _USING:Synth:Altera-Quartus:
 
 Altera Quartus
 ==============
 
 The command to invoke a synthesis using Altera Quartus II or Quartus Prime is
-``quartus`` followed by a list of PoC entities. The following options are
+:any:`quartus <poc-py-quartus>` followed by a list of PoC entities. The following options are
 supported for Quartus:
 
 +--------------------------+---------------------------------------------------------+
@@ -132,13 +163,15 @@ supported for Quartus:
    cd PoCRoot
    .\poc.ps1 quartus PoC.arith.prng --board=DE4
 
+
+.. _USING:Synth:Lattice-Diamond:
 
 Lattice Diamond
 ===============
 
-The command to invoke a synthesis using Altera Quartus II or Quartus Prime is
-``quartus`` followed by a list of PoC entities. The following options are
-supported for Quartus:
+The command to invoke a synthesis using Lattice Diamond is ``lse`` followed by
+a list of PoC entities. The following options are supported for the Lattice
+Synthesis Engine (LSE):
 
 +--------------------------+---------------------------------------------------------+
 | Simulator Option         | Description                                             |
@@ -153,15 +186,17 @@ supported for Quartus:
 .. code-block:: PowerShell
 
    cd PoCRoot
-   .\poc.ps1 quartus PoC.arith.prng --board=DE4
+   .\poc.ps1 lse PoC.arith.prng --board=ECP5Versa
 
+
+.. _USING:Synth:Xilinx-ISE:
 
 Xilinx ISE Synthesis Tool (XST)
 ===============================
 
-The command to invoke a synthesis using Altera Quartus II or Quartus Prime is
-``quartus`` followed by a list of PoC entities. The following options are
-supported for Quartus:
+The command to invoke a synthesis using Xilinx ISE Synthesis is ``xst`` followed
+by a list of PoC entities. The following options are supported for the Xilinx
+Synthesis Tool (XST):
 
 +--------------------------+---------------------------------------------------------+
 | Simulator Option         | Description                                             |
@@ -176,15 +211,17 @@ supported for Quartus:
 .. code-block:: PowerShell
 
    cd PoCRoot
-   .\poc.ps1 quartus PoC.arith.prng --board=DE4
+   .\poc.ps1 xst PoC.arith.prng --board=KC705
 
+
+.. _USING:Synth:Xilinx-CoreGen:
 
 Xilinx ISE Core Generator
 =========================
 
-The command to invoke a synthesis using Altera Quartus II or Quartus Prime is
-``quartus`` followed by a list of PoC entities. The following options are
-supported for Quartus:
+The command to invoke an IP core generation using Xilinx Core Generator is
+``coregen`` followed by a list of PoC entities. The following options are
+supported for Core Generator (CG):
 
 +--------------------------+---------------------------------------------------------+
 | Simulator Option         | Description                                             |
@@ -199,14 +236,17 @@ supported for Quartus:
 .. code-block:: PowerShell
 
    cd PoCRoot
-   .\poc.ps1 quartus PoC.arith.prng --board=DE4
+   .\poc.ps1 coregen PoC.xil.mig.Atlys_1x128 --board=Atlys
+
+
+.. _USING:Synth:Xilinx-Vivado:
 
 Xilinx Vivado Synthesis
 =======================
 
-The command to invoke a synthesis using Altera Quartus II or Quartus Prime is
-``quartus`` followed by a list of PoC entities. The following options are
-supported for Quartus:
+The command to invoke a synthesis using Xilinx Vivado Synthesis is ``vivado``
+followed by a list of PoC entities. The following options are supported for
+Vivado Synthesis (Synth):
 
 +--------------------------+---------------------------------------------------------+
 | Simulator Option         | Description                                             |
@@ -221,7 +261,7 @@ supported for Quartus:
 .. code-block:: PowerShell
 
    cd PoCRoot
-   .\poc.ps1 quartus PoC.arith.prng --board=DE4
+   .\poc.ps1 vivado PoC.arith.prng --board=KC705
 
 
 

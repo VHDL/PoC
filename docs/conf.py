@@ -23,6 +23,7 @@ from subprocess import check_output
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../py'))
+sys.path.insert(0, os.path.abspath('_extensions'))
 
 
 # -- General configuration ------------------------------------------------
@@ -45,7 +46,7 @@ extensions = [
 	'sphinx.ext.ifconfig',
 	'sphinx.ext.viewcode',
 	# 'sphinx.ext.githubpages',
-	'sphinxcontrib.autoprogram',
+	'autoprogram',	    #'sphinxcontrib.autoprogram',
 	'autoapi.sphinx',
 	'poc'
 ]

@@ -3,6 +3,8 @@ compile-altera.ps1
 
 .. program:: compile-altera.ps1
 
+.. #   :label: comp-alt-ps
+
 This script pre-compiles the Altera primitives. This script will generate all
 outputs into a :file:`altera` directory.
 

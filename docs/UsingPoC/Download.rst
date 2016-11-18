@@ -1,9 +1,13 @@
+.. _USING:Download:
 
 Downloading PoC
 ###############
 
 .. contents:: Contents of this Page
    :local:
+
+
+.. _USING:Zip:
 
 Downloading from GitHub
 ***********************
@@ -19,6 +23,8 @@ table, to choose your desired git branch.
 | release  | `zip-file <https://github.com/VLSI-EDA/PoC/archive/release.zip>`_  |
 +----------+--------------------------------------------------------------------+
 
+
+.. _USING:GitClone:
 
 Downloading via ``git clone``
 *****************************
@@ -108,6 +114,8 @@ SSH protocol:
    An additional ``git submodule init`` and ``git submodule update`` call is not
    needed anymore.
 
+
+.. _USING:GitSubmodule:
 
 Downloading via ``git submodule add``
 *************************************

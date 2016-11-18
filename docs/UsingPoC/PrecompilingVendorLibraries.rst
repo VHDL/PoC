@@ -1,3 +1,4 @@
+.. _USING:PreCompile:
 
 Pre-Compiling Vendor Libraries
 ##############################
@@ -9,6 +10,9 @@ Pre-Compiling Vendor Libraries
 
 .. index::
    single: Pre-compilation
+
+
+.. _USING:PreCompile:Over:
 
 Overview
 ********
@@ -28,6 +32,9 @@ are located in ``\tools\precompile\`` and the output is stored in
 
 .. index::
    pair: Pre-compilation; Supported Simulators
+
+
+.. _USING:PreCompile:Simulators:
 
 Supported Simulators
 ********************
@@ -56,11 +63,15 @@ The current set of pre-compile scripts support these simulators:
 .. index::
    pair: Pre-compilation; Vendor Primitives
 
+.. _USING:PreCompile:Primitives:
+
 FPGA Vendor's Primitive Libraries
 *********************************
 
 .. index::
    pair: Pre-compilation; Altera
+
+.. _USING:PreCompile:Primitives:Altera:
 
 Altera
 ======
@@ -134,6 +145,8 @@ On Windows
 .. index::
    pair: Pre-compilation; Lattice
 
+.. _USING:PreCompile:Primitives:Lattice:
+
 Lattice
 ========
 
@@ -205,6 +218,8 @@ On Windows
 
 .. index::
    pair: Pre-compilation; Xilinx ISE
+
+.. _USING:PreCompile:Primitives:XilinxISE:
 
 Xilinx ISE
 ==========
@@ -278,6 +293,8 @@ On Windows
 .. index::
    pair: Pre-compilation; Xilinx Vivado
 
+.. _USING:PreCompile:Primitives:XilinxVivado
+
 Xilinx Vivado
 =============
 
@@ -350,11 +367,15 @@ On Windows
 .. index::
    pair: Pre-compilation; Third-Party Libraries
 
+.. _USING:PreCompile:ThirdParty:
+
 Third-Party Libraries
 *********************
 
 .. index::
    pair: Pre-compilation; OSVVM
+
+.. _USING:PreCompile:ThirdParty:OSVVM:
 
 OSVVM
 =====
@@ -416,6 +437,8 @@ On Windows
 .. index::
    pair: Pre-compilation; UVVM
 
+.. _USING:PreCompile:ThirdParty:UVVM:
+
 UVVM
 ====
 
@@ -476,11 +499,15 @@ On Windows
 .. index::
    pair: Pre-compilation; Simulator Adapters
 
+.. _USING:PreCompile:Adapter:
+
 Simulator Adapters
 ******************
 
 .. index::
    pair: Pre-compilation; Cocotb
+
+.. _USING:PreCompile:Adapter:Cocotb:
 
 Cocotb
 ======

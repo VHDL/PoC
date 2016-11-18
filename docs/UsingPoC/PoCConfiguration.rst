@@ -1,3 +1,4 @@
+.. _USING:PoCConf:
 
 Configuring PoC's Infrastructure
 ################################
@@ -10,6 +11,8 @@ at any time, for example to register new tools or to update tool versions.
    :local:
    :depth: 2
 
+
+.. _USING:PoCConf:Over:
 
 Overview
 ========
@@ -73,6 +76,8 @@ Please see the Linux instructions.
      Installation directory: D:\git\PoC (found in environment variable)
 
 
+.. _USING:PoCConf:PoC:
+
 The PoC-Library
 ===============
 PoC itself has a fully automated configuration routine. It detects if PoC is
@@ -85,6 +90,9 @@ by ``PoC.ps1`` or ``poc.sh``.
    Configuring PoC
      PoC version: v1.0.1 (found in git)
      Installation directory: D:\git\PoC (found in environment variable)
+
+
+.. _USING:PoCConf:Git:
 
 Git
 ===
@@ -102,6 +110,9 @@ Git
      Install Git hooks? [Y/n/p]:
      Installing Git hooks...
      Setting 'pre-commit' hook for PoC...
+
+
+.. _USING:PoCConf:Aldec:
 
 Aldec
 =====
@@ -121,6 +132,9 @@ Active-HDL
      Is Aldec Active-HDL installed on your system? [Y/n/p]: Y
      Aldec Active-HDL version [10.3]:
      Aldec Active-HDL installation directory [C:\Aldec\Active-HDL]: C:\Aldec\Active-HDL-Student-Edition
+
+
+.. _USING:PoCConf:Altera:
 
 Altera
 ======
@@ -148,6 +162,9 @@ ModelSim Altera Edition
    Configuring ModelSim Altera Edition
      Is ModelSim Altera Edition installed on your system? [Y/n/p]: Y
      ModelSim Altera Edition installation directory [C:\Altera\15.0\modelsim_ae]: C:\Altera\16.0\modelsim_ase
+
+
+.. _USING:PoCConf:Lattice:
 
 Lattice
 ========
@@ -177,6 +194,9 @@ Active-HDL Lattice Edition
      Active-HDL Lattice Edition version [10.2]:
      Active-HDL Lattice Edition installation directory [D:\Lattice\Diamond\3.7_x64\active-hdl]:
 
+
+.. _USING:PoCConf:Mentor:
+
 Mentor Graphics
 ===============
 Configure the installation directory for all mentor Graphics tools.
@@ -195,6 +215,9 @@ QuestaSim
      Is Mentor QuestaSim installed on your system? [Y/n/p]: Y
      Mentor QuestaSim version [10.4d]: 10.4c
      Mentor QuestaSim installation directory [C:\Mentor\QuestaSim\10.4c]: C:\Mentor\QuestaSim64\10.4c
+
+
+.. _USING:PoCConf:Xilinx:
 
 Xilinx
 ======
@@ -233,6 +256,9 @@ answer the following questions:
      Xilinx Vivado version [2016.2]:
      Xilinx Vivado installation directory [C:\Xilinx\Vivado\2016.2]:
 
+
+.. _USING:PoCConf:GHDL:
+
 GHDL
 ====
 .. code-block:: none
@@ -241,6 +267,9 @@ GHDL
      Is GHDL installed on your system? [Y/n/p]: Y
      GHDL installation directory [C:\Tools\GHDL\0.34dev]:
 
+
+.. _USING:PoCConf:GTKWave:
+
 GTKWave
 ========
 .. code-block:: none
@@ -248,6 +277,9 @@ GTKWave
    Configuring GTKWave
      Is GTKWave installed on your system? [Y/n/p]: Y
      GTKWave installation directory [C:\Tools\GTKWave\3.3.71]:
+
+
+.. _USING:PoCConf:HookFiles:
 
 Hook Files
 ==========

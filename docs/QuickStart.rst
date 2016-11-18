@@ -1,3 +1,4 @@
+.. _QUICK:
 
 Quick Start Guide
 #################
@@ -9,6 +10,8 @@ more details and examples.
 .. contents:: Contents of this Page
    :local:
 
+
+.. _QUICK:Requirements:
 
 Requirements and Dependencies
 *****************************
@@ -70,6 +73,8 @@ PoC as Git submodules into the `PoCRoot\\lib <https://github.com/VLSI-EDA/PoC/tr
 directory. See :doc:`Third Party Libraries </Miscelaneous/ThirdParty>` for more details on these libraries.
 
 
+.. _QUICK:Download:
+
 Download
 ********
 
@@ -87,6 +92,8 @@ details. The installation directory is referred to as ``PoCRoot``.
 | SSH      | ``git clone --recursive ssh://git@github.com:VLSI-EDA/PoC.git PoC`` |
 +----------+---------------------------------------------------------------------+
 
+
+.. _QUICK:Configuration:
 
 Configuring PoC on a Local System
 *********************************
@@ -107,6 +114,8 @@ your local system:
 Use the keyboard buttons: :kbd:`Y` to accept, :kbd:`N` to decline, :kbd:`P` to
 skip/pass a step and :kbd:`Return` to accept a default value displayed in brackets.
 
+
+.. _QUICK:Integration:
 
 Integration
 ***********
@@ -205,6 +214,8 @@ and if needed patch these IP cores. See :doc:`Synthesis </UsingPoC/Synthesis>`
 for more details.
 
 
+.. _QUICK:RunSimulation:
+
 Run a Simulation
 ****************
 
@@ -241,6 +252,8 @@ status (``... ERROR``, ``FAILED``, ``NO ASSERTS`` or ``PASSED``). See
 :doc:`Simulation </UsingPoC/Simulation>` for more details.
 
 
+.. _QUICK:RunSynthesis:
+
 Run a Synthesis
 ***************
 
@@ -267,6 +280,8 @@ synthesized to a netlist.
    :target: /_static/images/xst/arith_prng.posh.png
 	 :alt: PowerShell console output after running PoC.arith.prng with XST.
 
+
+.. _QUICK:Updating:
 
 Updating
 ********

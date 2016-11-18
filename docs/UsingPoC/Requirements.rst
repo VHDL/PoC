@@ -4,6 +4,8 @@
 .. include:: <mmlalias.txt>
 
 
+.. _USING:Require:
+
 Requirements
 ############
 
@@ -15,6 +17,8 @@ running testbenches or generating IP cores. We choose to use Python 3 as a
 platform independent scripting environment. All Python scripts are wrapped in
 Bash or PowerShell scripts, to hide some platform specifics of Darwin, Linux or
 Windows.
+
+.. _USING:Require:Common:
 
 Common requirements:
 ********************
@@ -31,20 +35,27 @@ Common requirements:
 
 * Synthesis tool chains:
 
-  * Altera Quartus |geq| 13.0 or
-  * Lattice Diamond or
+  * Altera Quartus II |geq| 13.0 or
+  * Altera Quartus Prime |geq| 15.1 or
+  * Intel Quartus Prime |geq| 16.1 or
+  * Lattice Diamond |geq| 3.6 or
   * Xilinx ISE 14.7 [#f1]_ or
-  * Xilinx Vivado [#f2]_
+  * Xilinx Vivado |geq| 2016.3 [#f2]_
 
 * Simulation tool chains
 
-  * Aldec Active-HDL or
+  * Aldec Active-HDL (or Student Edition) or
+  * Aldec Active-HDL Lattice Edition or
+  * Mentor Graphics ModelSim PE (or Student Edition) or
+  * Mentor Graphics ModelSim SE or
   * Mentor Graphics ModelSim Altera Edition or
   * Mentor Graphics QuestaSim or
   * Xilinx ISE Simulator 14.7 or
-  * Xilinx Vivado Simulator |geq| 2016.1 [#f3]_ or
+  * Xilinx Vivado Simulator |geq| 2016.3 [#f3]_ or
   * `GHDL <https://github.com/tgingold/ghdl>`_ |geq| 0.34dev and `GTKWave <http://gtkwave.sourceforge.net/>`_ |geq| 3.3.70
 
+
+.. _USING:Require:Linux:
 
 Linux specific requirements:
 ****************************
@@ -69,6 +80,8 @@ Optional Tools on Linux:
     Colorizes outputs of foreign scripts and programs. GRC is hosted on `GitHub <https://github.com/garabik/grc>`_
     The latest *.deb installation packages can be downloaded `here <http://kassiopeia.juls.savba.sk/~garabik/software/grc/>`_.
 
+
+.. _USING:Require:MacOS:
 
 Mac OS specific requirements:
 *****************************
@@ -97,6 +110,8 @@ Optional Tools on Mac OS:
     Colorizes outputs of foreign scripts and programs. GRC is hosted on `GitHub <https://github.com/garabik/grc>`_ |br|
     ``brew install Grc``
 
+
+.. _USING:Require:Windows:
 
 Windows specific requirements:
 ******************************

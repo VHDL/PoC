@@ -1,3 +1,4 @@
+.. _USING:
 
 Using PoC
 #########
