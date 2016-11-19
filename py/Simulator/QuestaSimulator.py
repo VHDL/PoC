@@ -31,13 +31,16 @@
 # ==============================================================================
 #
 # load dependencies
+from datetime import datetime
 from pathlib                      import Path
 from textwrap import dedent
 
+from lib.Functions                import Init
 from Base.Exceptions              import NotConfiguredException
 from Base.Project                 import FileTypes, ToolChain, Tool
-from Base.Simulator               import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException
-from DataBase.Config                   import Vendors
+from Base.Simulator               import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException, SimulationState, SimulationResult, \
+	SimulationSteps
+from DataBase.Config              import Vendors
 from ToolChains.Mentor.QuestaSim  import QuestaSim, QuestaSimException
 
 
@@ -51,8 +54,10 @@ class Simulator(BaseSimulator):
 	_TOOL_CHAIN =            ToolChain.Mentor_QuestaSim
 	_TOOL =                  Tool.Mentor_vSim
 
-	def __init__(self, host, dryRun, guiMode):
-		super().__init__(host, dryRun, guiMode)
+	def __init__(self, host, dryRun, simulationSteps):
+		# A separate elaboration step is not implemented in QuestaSim
+		simulationSteps &= ~SimulationSteps.Elaborate
+		super().__init__(host, dryRun, simulationSteps)
 
 		self._vhdlVersion =   None
 		self._vhdlGenerics =  None
@@ -62,8 +67,12 @@ class Simulator(BaseSimulator):
 		self.Directories.Working =      host.Directories.Temp / vSimSimulatorFiles
 		self.Directories.PreCompiled =  host.Directories.PreCompiled / vSimSimulatorFiles
 
-		self._PrepareSimulationEnvironment()
-		self._PrepareSimulator()
+		if (SimulationSteps.CleanUpBefore in self._simulationSteps):
+			pass
+
+		if (SimulationSteps.Prepare in self._simulationSteps):
+			self._PrepareSimulationEnvironment()
+			self._PrepareSimulator()
 
 	def _PrepareSimulator(self):
 		# create the QuestaSim executable factory
@@ -80,7 +89,7 @@ class Simulator(BaseSimulator):
 		version = questaSection['Version']
 		self._toolChain = QuestaSim(self.Host.Platform, self.DryRun, binaryPath, version, logger=self.Logger)
 
-	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None, guiMode=False):
+	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None):
 		# TODO: refactor into a ModelSim module, shared by QuestaSim and Cocotb (-> MixIn class)?
 		# select modelsim.ini
 		self._modelsimIniPath = self.Directories.PreCompiled
@@ -96,7 +105,7 @@ class Simulator(BaseSimulator):
 			raise SimulatorException("Modelsim ini file '{0!s}' not found.".format(self._modelsimIniPath)) \
 				from FileNotFoundError(str(self._modelsimIniPath))
 
-		super().Run(testbench, board, vhdlVersion, vhdlGenerics, guiMode)
+		super().Run(testbench, board, vhdlVersion, vhdlGenerics)
 
 	def _RunAnalysis(self, _):
 		# create a QuestaVHDLCompiler instance
@@ -163,7 +172,7 @@ class Simulator(BaseSimulator):
 			fileHandle.write(recompileScriptContent)
 
 	def _RunSimulation(self, testbench):
-		if self._guiMode:
+		if (SimulationSteps.ShowWaveform in self._simulationSteps):
 			return self._RunSimulationWithGUI(testbench)
 
 		tclBatchFilePath =        self.Host.Directories.Root / self.Host.PoCConfig[testbench.ConfigSectionName]['vSimBatchScript']
@@ -256,21 +265,35 @@ class Simulator(BaseSimulator):
 
 		vsim.Parameters[vsim.SwitchBatchCommand] = vsimBatchCommand
 
-		recompileScriptPath = self.Directories.Working / "recompile.do"
-		self.LogDebug("Reading recompile script from '{0!s}'".format(recompileScriptPath))
-		with recompileScriptPath.open('r') as fileHandle:
-			relaunchScriptContent = fileHandle.read()
+		# writing a relaunch file
+		recompileScriptPath =     self.Directories.Working / "recompile.do"
+		relaunchScriptPath =      self.Directories.Working / "relaunch.do"
+		saveWaveformScriptPath =  self.Directories.Working / "saveWaveform.do"
 
-		relaunchScriptContent += dedent("""\
+		relaunchScriptContent = dedent("""\
+			puts "Loading recompile script '{recompileScript}'..."
+			do {recompileScript}
 			puts "Loading run script '{runScript}'..."
 			do {runScript}
 			""").format(
+			recompileScript=recompileScriptPath.as_posix(),
 				runScript=vsimRunScript
 			)
 
-		relaunchScriptPath = self.Directories.Working / "relaunch.do"
 		self.LogDebug("Writing relaunch script to '{0!s}'".format(relaunchScriptPath))
 		with relaunchScriptPath.open('w') as fileHandle:
 			fileHandle.write(relaunchScriptContent)
+
+		# writing a saveWaveform file
+		saveWaveformScriptContent = dedent("""\
+			puts "Saving waveform settings to '{waveformFile}'..."
+			write format wave -window .main_pane.wave.interior.cs.body.pw.wf {waveformFile}
+			""").format(
+				waveformFile=tclWaveFilePath.as_posix()
+			)
+
+		self.LogDebug("Writing saveWaveform script to '{0!s}'".format(saveWaveformScriptPath))
+		with saveWaveformScriptPath.open('w') as fileHandle:
+			fileHandle.write(saveWaveformScriptContent)
 
 		testbench.Result = vsim.Simulate()
