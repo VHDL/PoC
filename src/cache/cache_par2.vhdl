@@ -2,10 +2,10 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Patrick Lehmann
---									Martin Zabel
+-- Authors:         Martin Zabel
+--                  Patrick Lehmann
 --
--- Entity:					Cache with parallel tag-unit and data memory.
+-- Entity:          Cache with parallel tag-unit and data memory.
 --
 -- Description:
 -- -------------------------------------
@@ -89,7 +89,7 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair for VLSI-Design, Diagnostics and Architecture
+--										 Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.

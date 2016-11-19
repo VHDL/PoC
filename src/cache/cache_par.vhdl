@@ -2,10 +2,10 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Patrick Lehmann
---									Martin Zabel
+-- Authors:         Patrick Lehmann
+--                  Martin Zabel
 --
--- Entity:					Cache with parallel tag-unit and data memory.
+-- Entity:          Cache with parallel tag-unit and data memory.
 --
 -- Description:
 -- -------------------------------------

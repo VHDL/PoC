@@ -81,7 +81,7 @@ The write policy is: write-through, no-write-allocate.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 105-138
+   :lines: 107-140
 
 Source file: `cache/cache_mem.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_mem.vhdl>`_
 
