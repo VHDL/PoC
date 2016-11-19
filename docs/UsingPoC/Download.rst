@@ -15,13 +15,22 @@ Downloading from GitHub
 The PoC-Library can be downloaded as a zip-file from GitHub. See the following
 table, to choose your desired git branch.
 
-+----------+--------------------------------------------------------------------+
-| Branch   | download link                                                      |
-+==========+====================================================================+
-| master   | `zip-file <https://github.com/VLSI-EDA/PoC/archive/master.zip>`_   |
-+----------+--------------------------------------------------------------------+
-| release  | `zip-file <https://github.com/VLSI-EDA/PoC/archive/release.zip>`_  |
-+----------+--------------------------------------------------------------------+
+.. |zip-master| image:: /_static/icons/ZIP.png
+   :scale: 40
+   :target: https://github.com/VLSI-EDA/PoC/archive/master.zip
+   :alt: Source Code from GitHub - 'master' branch.
+.. |zip-release| image:: /_static/icons/ZIP.png
+   :scale: 40
+   :target: https://github.com/VLSI-EDA/PoC/archive/release.zip
+   :alt: Source Code from GitHub - 'release' branch.
+
++----------+------------------------+
+| Branch   | Download Link          |
++==========+========================+
+| master   | zip-file |zip-master|  |
++----------+------------------------+
+| release  | zip-file |zip-release| |
++----------+------------------------+
 
 
 .. _USING:GitClone:
@@ -34,7 +43,7 @@ GitHub offers the transfer protocols HTTPS and SSH. You should use SSH if you
 have a GitHub account and have already uploaded an OpenSSH public key to GitHub,
 otherwise use HTTPS if you have no account or you want to use login credentials.
 
-The created folder :file:`<GitRoot>\PoC` is used as :file:`<PoCRoot>` in later
+The created folder :file:`<GitRoot>\\PoC` is used as :file:`<PoCRoot>` in later
 instructions or on other pages in this documentation.
 
 +----------+----------------------------------------+
@@ -84,7 +93,7 @@ On Windows
    All Windows command line instructions are intended for :program:`Windows PowerShell`,
    if not marked otherwise. So executing the following instructions in Windows
    Command Prompt (:program:`cmd.exe`) won't function or result in errors! See
-   the :doc:`Requirements section </UsingPoC/Requirements>` on where to
+   the :ref:`Requirements section <USING:Require>` on where to
    download or update PowerShell.
 
 Command line instructions to clone the PoC-Library onto a Windows machine with
@@ -173,7 +182,7 @@ On Windows
    All Windows command line instructions are intended for :program:`Windows PowerShell`,
    if not marked otherwise. So executing the following instructions in Windows
    Command Prompt (:program:`cmd.exe`) won't function or result in errors! See
-   the :doc:`Requirements section </UsingPoC/Requirements>` on where to
+   the :ref:`Requirements section <USING:Require>` on where to
    download or update PowerShell.
 
 Command line instructions to clone the PoC-Library onto a Windows machine with

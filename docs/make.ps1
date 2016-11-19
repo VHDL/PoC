@@ -147,7 +147,7 @@ if ($clean)
 }
 
 if ($html)
-{ $expr = "$SphinxBuild -b html $AllSphinxOpts $BuildDir\html"
+{ $expr = "$SphinxBuild -b html -t PoCInternal $AllSphinxOpts $BuildDir\html"
   $EnableVerbose -and (Write-Host "Building target 'html' into '$BuildDir\html'..." -Foreground DarkCyan  ) | Out-Null
 	$EnableDebug   -and (Write-Host "  $expr" -Foreground Cyan ) | Out-Null
 	Invoke-Expression $expr

@@ -57,7 +57,7 @@ The PoC-Library comes with some scripts to ease most of the common tasks, like
 running testbenches or generating IP cores. PoC uses Python 3 as a platform
 independent scripting environment. All Python scripts are wrapped in Bash or
 PowerShell scripts, to hide some platform specifics of Darwin, Linux or Windows.
-See :ref:`USING:Requirements` for further details.
+See :ref:`USING:Require` for further details.
 
 
 .. rubric:: PoC requires:
@@ -79,15 +79,6 @@ See :ref:`USING:Requirements` for further details.
 
 .. rubric:: PoC depends on third part libraries:
 
-* :ref:`ThirdParty:Cocotb` |gh-cocotb| |br|
-  A coroutine based cosimulation library for writing VHDL and Verilog testbenches in Python.
-* :ref:`ThirdParty:OSVVM` |gh-osvvm| |br|
-  Open Source VHDL Verification Methodology.
-* :ref:`ThirdParty:UVVM` |gh-uvvm| |br|
-  Universal VHDL Verification Methodology.
-* :ref:`ThirdParty:VUnit` |gh-vunit| |br|
-  An unit testing framework for VHDL.
-
 .. |gh-cocotb| image:: _static/logos/GitHub-Mark-32px.png
                :scale: 40
                :target: https://github.com/potentialventures/cocotb
@@ -104,6 +95,15 @@ See :ref:`USING:Requirements` for further details.
               :scale: 40
               :target: https://github.com/VUnit/vunit
               :alt: Source Code on GitHub
+
+* :ref:`THIRD:Cocotb` |gh-cocotb| |br|
+  A coroutine based cosimulation library for writing VHDL and Verilog testbenches in Python.
+* :ref:`THIRD:OSVVM` |gh-osvvm| |br|
+  Open Source VHDL Verification Methodology.
+* :ref:`THIRD:UVVM` |gh-uvvm| |br|
+  Universal VHDL Verification Methodology.
+* :ref:`THIRD:VUnit` |gh-vunit| |br|
+  An unit testing framework for VHDL.
 
 All dependencies are available as GitHub repositories and are linked to
 PoC as Git submodules into the `PoCRoot\\lib <https://github.com/VLSI-EDA/PoC/tree/master/lib>`_

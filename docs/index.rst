@@ -3,13 +3,13 @@ and Architecture** - Faculty of Computer Science, Technische Universität Dresde
 Germany |br|
 `https://tu-dresden.de/ing/informatik/ti/vlsi <https://tu-dresden.de/ing/informatik/ti/vlsi>`_
 
-.. image:: _static/logos/tu-dresden.jpg
+.. image:: /_static/logos/tu-dresden.jpg
    :scale: 10
    :alt: Technische Universität Dresden
 
 --------------------------------------------------------------------------------
 
-.. image:: _static/logos/GitHub-Mark-32px.png
+.. image:: /_static/logos/GitHub-Mark-32px.png
    :scale: 60
    :target: https://www.github.com/VLSI-EDA/PoC
    :alt: Source Code on GitHub
@@ -122,3 +122,11 @@ This document was generated on |docdate|.
 
    Miscelaneous/ChangeLog
    genindex
+
+.. ifconfig:: visibility in ('PoCInternal')
+
+   .. toctree::
+      :caption: Internal
+      :hidden:
+
+      Internal/Sphinx

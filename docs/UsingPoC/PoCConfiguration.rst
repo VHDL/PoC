@@ -1,4 +1,4 @@
-.. _USING:PoCConf:
+.. _USING:PoCConfig:
 
 .. raw:: html
 
