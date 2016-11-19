@@ -77,14 +77,16 @@
 -- Upon reading a cache line, the current content is outputed on ``CacheLineOut``
 -- with a latency of one clock cycle.
 --
--- Replacing a cache line requires two steps:
+-- Replacing a cache line requires two steps, both with ``Replace = '1'``:
 --
 -- 1. Read old contents of cache line by setting ``ReadWrite`` to '0'. The old
 --    content is outputed on ``CacheLineOut`` and the old tag on ``OldAddress``,
 --    both with a latency of one clock cycle.
 --
 -- 2. Write new cache line by setting ``ReadWrite`` to '1'. The new content is
---    given by ``CacheLineIn``.
+--    given by ``CacheLineIn``. All bytes shall be written, i.e.
+--    ``WriteMask = 0``. The new cache line content will be outputed
+--    again on ``CacheLineOut`` in the next clock cycle (latency = 1).
 --
 -- License:
 -- =============================================================================

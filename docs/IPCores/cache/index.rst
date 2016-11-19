@@ -7,8 +7,9 @@ The namespace `PoC.cache` offers different cache implementations.
 
 **Entities**
 
- * :ref:`IP:cache_mem`: Cache with PoC's "mem" interface based
-   on :ref:`IP:cache_par2` and including a cache controller.
+ * :ref:`IP:cache_cpu`: Cache with cache controller to be used within a CPU.
+
+ * :ref:`IP:cache_mem`: Cache with :ref:`INT:PoC.Mem` interface on the "CPU" side.
 
  * :ref:`IP:cache_par`: Cache with parallel tag-unit and
    data memory (using infered memory).
@@ -35,6 +36,7 @@ The namespace `PoC.cache` offers different cache implementations.
 .. toctree::
    :hidden:
 
+   cache_cpu <cache_cpu>
    cache_mem <cache_mem>
    cache_par <cache_par>
    cache_par2 <cache_par2>

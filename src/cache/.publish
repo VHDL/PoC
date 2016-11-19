@@ -17,5 +17,7 @@ cache_par.files
 cache_par.vhdl
 cache_par2.files
 cache_par2.vhdl
+cache_cpu.files
+cache_cpu.vhdl
 cache_mem.files
 cache_mem.vhdl

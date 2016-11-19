@@ -4,20 +4,45 @@
 -- =============================================================================
 -- Authors:         Martin Zabel
 --
--- Entity:          Cache with :ref:`INT:PoC.Mem` interface on the "CPU" side
+-- Entity:          Cache with cache controller to be used within a CPU
 --
 -- Description:
 -- -------------------------------------
 -- This unit provides a cache (:ref:`IP:cache_par2`) together
 -- with a cache controller which reads / writes cache lines from / to memory.
--- It has two :ref:`INT:PoC.Mem` interfaces:
+-- The memory is accessed using a :ref:`INT:PoC.Mem` interfaces, the related
+-- ports and parameters are prefixed with ``mem_``.
 --
--- * one for the "CPU" side  (ports with prefix ``cpu_``), and
--- * one for the memory side (ports with prefix ``mem_``).
+-- The CPU side (prefix ``cpu_``) has a modified PoC.Mem interface, so that
+-- this unit can be easily integrated into processor pipelines. For example,
+-- let's have a pipeline where a load/store instruction is executed in 3
+-- stages (after fetching, decoding, ...):
 --
--- Thus, this unit can be placed into an already available memory path between
--- the CPU and the memory (controller). If you want to plugin a cache into a
--- CPU pipeline, see :ref:`IP:cache_cpu`.
+-- 1. Execute (EX) for address calculation,
+-- 2. Load/Store 1 (LS1) for the cache access,
+-- 3. Load/Store 2 (LS2) where the cache returns the read data.
+--
+-- The read data is always returned one cycle after the cache access completes,
+-- so there is conceptually a pipeline register within this unit. The stage LS2
+-- can be merged with a write-back stage if the clock period allows so.
+--
+-- The stage LS1 and thus EX and LS2 must stall, until the cache access is
+-- completed, i.e., the EX/LS1 pipeline register must hold the cache request
+-- until it is acknowledged by the cache. This is signaled by ``cpu_got`` as
+-- described in Section Operation below. The pipeline moves forward (is
+-- enabled) when::
+--
+--   pipeline_enable <= (not cpu_req) or cpu_got;
+--
+-- If the pipeline can stall due to other reasons, care must be taken to not
+-- unintentionally executing the cache access twice or missing the read data.
+--
+-- Of course, the EX/LS1 pipeline register can be omitted and the CPU side
+-- directly fed by the address caculator. But be aware of the high setup time
+-- of this unit and high propate time for ``cpu_got``.
+--
+-- This unit supports only outstanding CPU request. More outstanding request
+-- are provided by :ref:`IP:cache_mem`.
 --
 --
 -- Configuration
@@ -59,6 +84,9 @@
 -- Operation
 -- *********
 --
+-- Alignment of Cache / Memory Accesses
+-- ++++++++++++++++++++++++++++++++++++
+--
 -- Memory accesses are always aligned to a word boundary. Each memory word
 -- (and each cache line) consists of MEM_DATA_BITS bits.
 -- For example if MEM_DATA_BITS=128:
@@ -76,12 +104,43 @@
 -- * CPU address 4 selects the bits   0.. 31 in memory word 1,
 -- * CPU address 5 selects the bits  32.. 63 in memory word 1, and so on.
 --
+--
+-- Shared and Memory Side Interface
+-- ++++++++++++++++++++++++++++++++
+--
 -- A synchronous reset must be applied even on a FPGA.
 --
--- The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
+-- The memory side interface is documented in detail :ref:`here <INT:PoC.Mem>`.
+--
+--
+-- CPU Side Interface
+-- ++++++++++++++++++
+--
+-- The CPU (pipeline stage LS1, see above) issues a request by setting
+-- ``cpu_req``, ``cpu_write``, ``cpu_addr``, ``cpu_wdata`` and ``cpu_wmask`` as
+-- in the :ref:`INT:PoC.Mem` interface. The cache acknowledges the request by
+-- setting ``cpu_got`` to '1'. If the request is not acknowledged (``cpu_got =
+-- '0'``) in the current clock cycle, then the request must be repeated in the
+-- following clock cycle(s) until it is acknowledged, i.e., the pipeline must
+-- stall.
+--
+-- A cache access is completed when it is acknowledged. A new request can be
+-- issued in the following clock cycle.
+--
+-- Of course, ``cpu_got`` may be asserted in the same clock cycle where the
+-- request was issued if a read hit occurs. This allows a throughput of one
+-- (read) request per clock cycle, but the drawback is, that ``cpu_got`` has a
+-- high propagation delay. Thus, this output should only control a simple
+-- pipeline enable logic.
+--
+-- When ``cpu_got`` is asserted for a read access, then the read data will be
+-- available in the following clock cycle.
+--
+-- Due to the write-through policy, a write will always take several clock
+-- cycles and acknowledged when the data has been issued to the memory.
 --
 -- SeeAlso:
---   :ref:`IP:cache_cpu`
+--   :ref:`IP:cache_mem`
 --
 -- License:
 -- =============================================================================
@@ -108,7 +167,7 @@ use ieee.numeric_std.all;
 library poc;
 use poc.utils.all;
 
-entity cache_mem is
+entity cache_cpu is
 	generic (
 		REPLACEMENT_POLICY : string		:= "LRU";
 		CACHE_LINES        : positive;
@@ -127,8 +186,7 @@ entity cache_mem is
     cpu_addr  : in  unsigned(log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS-1 downto 0);
     cpu_wdata : in  std_logic_vector(CPU_DATA_BITS-1 downto 0);
     cpu_wmask : in  std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
-    cpu_rdy   : out std_logic;
-    cpu_rstb  : out std_logic;
+    cpu_got   : out std_logic;
     cpu_rdata : out std_logic_vector(CPU_DATA_BITS-1 downto 0);
 
 		-- Memory side
@@ -143,7 +201,7 @@ entity cache_mem is
     );
 end entity;
 
-architecture rtl of cache_mem is
+architecture rtl of cache_cpu is
 	-- Interface to Cache instance.
 	signal cache_Request		: std_logic;
 	signal cache_ReadWrite	: std_logic;
@@ -156,12 +214,6 @@ architecture rtl of cache_mem is
 	signal cache_Hit				: std_logic;
 	signal cache_Miss				: std_logic;
 
-	-- Address and data path
-	signal cpu_write_r : std_logic;
-	signal cpu_addr_r  : unsigned(cpu_addr'range);
-	signal cpu_wdata_r : std_logic_vector(cpu_wdata'range);
-	signal cpu_wmask_r : std_logic_vector(cpu_wmask'range);
-
   -- FSM and other state registers
   type T_FSM is (READY, ACCESS_MEM, READING_MEM, UNKNOWN);
   signal fsm_cs : T_FSM -- current state
@@ -170,9 +222,6 @@ architecture rtl of cache_mem is
 		-- synthesis translate_on
 		;
   signal fsm_ns : T_FSM;-- next state
-
-	signal cpu_rstb_r		: std_logic;
-	signal cpu_rstb_nxt : std_logic;
 
 begin  -- architecture rtl
 
@@ -201,70 +250,51 @@ begin  -- architecture rtl
 
   -- Address and Data path
   -- ===========================================================================
-  cache_Address   <= std_logic_vector(cpu_addr) when fsm_cs = READY else
-									   std_logic_vector(cpu_addr_r);
-  cache_LineIn    <= cpu_wdata when fsm_cs = READY else mem_rdata;
-  cache_WriteMask <= cpu_wmask when fsm_cs = READY else (others => '0');
+  cache_Address   <= std_logic_vector(cpu_addr);
+  cache_LineIn    <= mem_rdata when fsm_cs = READING_MEM else cpu_wdata;
 
-  cpu_rdata <= mem_rdata when fsm_cs = READING_MEM else
-							 cache_LineOut; -- when READY or ACCESS_MEM
-  cpu_rstb  <= cpu_rstb_r or  -- after read from cache
-							 mem_rstb;      -- when reading from memory
+  cpu_rdata <= cache_LineOut;
 
-	mem_write <= cpu_write_r;
-	mem_addr  <= cpu_addr_r;
-	mem_wdata <= cpu_wdata_r;
-	mem_wmask <= cpu_wmask_r;
-
-	process(clk)
-	begin
-		-- save request when FSM is ready
-		if rising_edge(clk) then
-			if fsm_cs = READY then
-				cpu_write_r <= cpu_write;
-				cpu_addr_r  <= cpu_addr;
-				cpu_wdata_r <= cpu_wdata;
-				cpu_wmask_r <= cpu_wmask;
-			end if;
-		end if;
-	end process;
+	-- These registers can be fed from buffer registers, but this is not
+	-- neccessary because the cpu_* signals will typically be connected to a
+	-- pipeline register. And even if this pipeline register is omitted, then the
+	-- cache tag comparison will dominate the critical path.
+	mem_write <= cpu_write;
+	mem_addr  <= cpu_addr;
+	mem_wdata <= cpu_wdata;
+	mem_wmask <= cpu_wmask;
 
 	-- FSM
 	-- ===========================================================================
-	process(fsm_cs, cpu_req, cpu_write, cache_Hit, cache_Miss, cpu_write_r,
-					mem_rdy, mem_rstb)
+	process(fsm_cs, cpu_req, cpu_write, cpu_wmask, cache_Hit, cache_Miss, mem_rdy, mem_rstb)
 	begin
 		-- Update state registers
-		fsm_ns			 <= fsm_cs;
-		cpu_rstb_nxt <= '0';
+		fsm_ns <= fsm_cs;
 
 		-- Control signals for cache access
 		cache_Request		 <= '0';
 		cache_ReadWrite	 <= '-';
 		cache_Invalidate <= '-';
 		cache_Replace		 <= '0';
+		cache_WriteMask  <= cpu_wmask;
 
 		-- Control / status signals for CPU and MEM side
-		cpu_rdy <= '0';
+		cpu_got <= '0';
 		mem_req <= '0';
 
 		case fsm_cs is
 			when READY =>
 				-- Ready for a new cache access.
 				-- -----------------------------
-				cpu_rdy <= '1';
-
 				cache_Request		 <= to_x01(cpu_req);
 				cache_ReadWrite	 <= to_x01(cpu_write); -- doesn't care if no request
 				cache_Invalidate <= '0';
 
-				cpu_rstb_nxt <= cache_Hit and not cpu_write; -- read successful
-
 				case ((cache_Hit and cpu_write) or cache_Miss) is
 					when '1' =>	-- write successfull but write-through, or cache miss
 						fsm_ns <= ACCESS_MEM;
-					when '0' => -- read successfull
-						null;
+					when '0' => -- read successfull, or no request
+						cpu_got <= to_x01(cpu_req);
 					when others => -- invalid input
 						fsm_ns <= UNKNOWN;
 				end case;
@@ -276,8 +306,8 @@ begin  -- architecture rtl
 				mem_req <= '1';
 				case to_x01(mem_rdy) is
 					when '1' => -- access granted
-						case to_x01(cpu_write_r) is
-							when '1'    => fsm_ns <= READY; -- write
+						case to_x01(cpu_write) is
+							when '1'    => fsm_ns <= READY; cpu_got <= '1'; -- write
 							when '0'    => fsm_ns <= READING_MEM; -- read
 							when others => fsm_ns <= UNKNOWN; -- invalid input
 						end case;
@@ -290,13 +320,17 @@ begin  -- architecture rtl
       when READING_MEM =>
         -- Wait for incoming read data and write it to cache.
 				-- --------------------------------------------------
-				cache_Replace   <= to_x01(mem_rstb);
 				cache_ReadWrite <= '1';
+				cache_WriteMask <= (others => '0'); -- write all bytes!
 
 				case to_x01(mem_rstb) is
 					when '1' => -- read data available
-						-- read data is directly passed to CPU in datapath above
-						fsm_ns <= READY;
+						fsm_ns        <= READY;
+						cpu_got       <= '1'; -- cache access is complete now
+						cache_Replace <= '1'; -- replace cache line
+						-- The new data will be available on cache_LineOut in the following
+						-- clock cycle.
+
 					when '0' => null;-- still waiting
 					when others => fsm_ns <= UNKNOWN; -- invalid input
 				end case;
@@ -305,13 +339,12 @@ begin  -- architecture rtl
 			when UNKNOWN =>
 				-- Catches invalid state transitions.
 				-- ----------------------------------
-				fsm_ns			 <= UNKNOWN;
-				cpu_rstb_nxt <= 'X';
-
-				cache_Request		 <= 'X';
+				fsm_ns           <= UNKNOWN;
+				cpu_got          <= 'X';
+				cache_Request    <= 'X';
 				cache_ReadWrite	 <= 'X';
 				cache_Invalidate <= 'X';
-				cache_Replace		 <= 'X';
+				cache_Replace    <= 'X';
 		end case;
 	end process;
 
@@ -320,14 +353,11 @@ begin  -- architecture rtl
 		if rising_edge(clk) then
 			case to_x01(rst) is
 				when '1' =>
-					fsm_cs		 <= READY;
-					cpu_rstb_r <= '0';
+					fsm_cs <= READY;
 				when '0' =>
-					fsm_cs		 <= fsm_ns;
-					cpu_rstb_r <= cpu_rstb_nxt;
+					fsm_cs <= fsm_ns;
 				when others =>
-					fsm_cs		 <= UNKNOWN;
-					cpu_rstb_r <= 'X';
+					fsm_cs <= UNKNOWN;
 			end case;
 		end if;
 	end process;

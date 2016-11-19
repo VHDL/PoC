@@ -1,32 +1,57 @@
 .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
             :scale: 40
-            :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_mem.vhdl
+            :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_cpu.vhdl
             :alt: Source Code on GitHub
 .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
             :scale: 40
-            :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/cache/cache_mem_tb.vhdl
+            :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/cache/cache_cpu_tb.vhdl
             :alt: Source Code on GitHub
 
 .. sidebar:: GitHub Links
 
-   * |gh-src| :pocsrc:`Sourcecode <cache/cache_mem.vhdl>`
-   * |gh-tb| :poctb:`Testbench <cache/cache_mem_tb.vhdl>`
+   * |gh-src| :pocsrc:`Sourcecode <cache/cache_cpu.vhdl>`
+   * |gh-tb| :poctb:`Testbench <cache/cache_cpu_tb.vhdl>`
 
-.. _IP:cache_mem:
+.. _IP:cache_cpu:
 
-cache_mem
+cache_cpu
 #########
 
 This unit provides a cache (:ref:`IP:cache_par2`) together
 with a cache controller which reads / writes cache lines from / to memory.
-It has two :ref:`INT:PoC.Mem` interfaces:
+The memory is accessed using a :ref:`INT:PoC.Mem` interfaces, the related
+ports and parameters are prefixed with ``mem_``.
 
-* one for the "CPU" side  (ports with prefix ``cpu_``), and
-* one for the memory side (ports with prefix ``mem_``).
+The CPU side (prefix ``cpu_``) has a modified PoC.Mem interface, so that
+this unit can be easily integrated into processor pipelines. For example,
+let's have a pipeline where a load/store instruction is executed in 3
+stages (after fetching, decoding, ...):
 
-Thus, this unit can be placed into an already available memory path between
-the CPU and the memory (controller). If you want to plugin a cache into a
-CPU pipeline, see :ref:`IP:cache_cpu`.
+1. Execute (EX) for address calculation,
+2. Load/Store 1 (LS1) for the cache access,
+3. Load/Store 2 (LS2) where the cache returns the read data.
+
+The read data is always returned one cycle after the cache access completes,
+so there is conceptually a pipeline register within this unit. The stage LS2
+can be merged with a write-back stage if the clock period allows so.
+
+The stage LS1 and thus EX and LS2 must stall, until the cache access is
+completed, i.e., the EX/LS1 pipeline register must hold the cache request
+until it is acknowledged by the cache. This is signaled by ``cpu_got`` as
+described in Section Operation below. The pipeline moves forward (is
+enabled) when::
+
+  pipeline_enable <= (not cpu_req) or cpu_got;
+
+If the pipeline can stall due to other reasons, care must be taken to not
+unintentionally executing the cache access twice or missing the read data.
+
+Of course, the EX/LS1 pipeline register can be omitted and the CPU side
+directly fed by the address caculator. But be aware of the high setup time
+of this unit and high propate time for ``cpu_got``.
+
+This unit supports only outstanding CPU request. More outstanding request
+are provided by :ref:`IP:cache_mem`.
 
 
 Configuration
@@ -68,6 +93,9 @@ The write policy is: write-through, no-write-allocate.
 Operation
 *********
 
+Alignment of Cache / Memory Accesses
+++++++++++++++++++++++++++++++++++++
+
 Memory accesses are always aligned to a word boundary. Each memory word
 (and each cache line) consists of MEM_DATA_BITS bits.
 For example if MEM_DATA_BITS=128:
@@ -85,24 +113,55 @@ consists of CPU_DATA_BITS bits. For example if CPU_DATA_BITS=32:
 * CPU address 4 selects the bits   0.. 31 in memory word 1,
 * CPU address 5 selects the bits  32.. 63 in memory word 1, and so on.
 
+
+Shared and Memory Side Interface
+++++++++++++++++++++++++++++++++
+
 A synchronous reset must be applied even on a FPGA.
 
-The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
+The memory side interface is documented in detail :ref:`here <INT:PoC.Mem>`.
+
+
+CPU Side Interface
+++++++++++++++++++
+
+The CPU (pipeline stage LS1, see above) issues a request by setting
+``cpu_req``, ``cpu_write``, ``cpu_addr``, ``cpu_wdata`` and ``cpu_wmask`` as
+in the :ref:`INT:PoC.Mem` interface. The cache acknowledges the request by
+setting ``cpu_got`` to '1'. If the request is not acknowledged (``cpu_got =
+'0'``) in the current clock cycle, then the request must be repeated in the
+following clock cycle(s) until it is acknowledged, i.e., the pipeline must
+stall.
+
+A cache access is completed when it is acknowledged. A new request can be
+issued in the following clock cycle.
+
+Of course, ``cpu_got`` may be asserted in the same clock cycle where the
+request was issued if a read hit occurs. This allows a throughput of one
+(read) request per clock cycle, but the drawback is, that ``cpu_got`` has a
+high propagation delay. Thus, this output should only control a simple
+pipeline enable logic.
+
+When ``cpu_got`` is asserted for a read access, then the read data will be
+available in the following clock cycle.
+
+Due to the write-through policy, a write will always take several clock
+cycles and acknowledged when the data has been issued to the memory.
 
 
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/cache/cache_mem.vhdl
+.. literalinclude:: ../../../src/cache/cache_cpu.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 111-144
+   :lines: 170-202
 
-Source file: :pocsrc:`cache/cache_mem.vhdl <cache/cache_mem.vhdl>`
+Source file: :pocsrc:`cache/cache_cpu.vhdl <cache/cache_cpu.vhdl>`
 
 .. seealso::
 
-     :ref:`IP:cache_cpu`
+     :ref:`IP:cache_mem`
 
 
