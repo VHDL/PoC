@@ -41,6 +41,7 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 library poc;
+use poc.utils.all;
 use poc.physical.all;
 -- simulation only packages
 use poc.sim_types.all;
@@ -53,21 +54,39 @@ end entity cache_mem_tb;
 architecture sim of cache_mem_tb is
 	constant CLOCK_FREQ : FREQ := 100 MHz;
 
-	-- Cache / Memory configuration
+	-- Cache configuration
   constant REPLACEMENT_POLICY : string   := "LRU";
   constant CACHE_LINES        : positive := 32;
   constant ASSOCIATIVITY      : positive := 4;
-  constant ADDR_BITS          : positive := 6;
-  constant DATA_BITS          : positive := 32;
-	constant MEMORY_WORDS       : positive := 2**ADDR_BITS;
-	constant BYTES_PER_WORD     : positive := DATA_BITS/8;
+
+	-- Memory configuration
+  constant MEM_ADDR_BITS      : positive := 6;
+  constant MEM_DATA_BITS      : positive := 32;
 
 	-- NOTE:
-	-- Cache accesses are always aligned to a word boundary. A memory word and a
-	-- cache line consist of DATA_BITS bits. For example if DATA_BITS=16:
+	-- Memory accesses are always aligned to a word boundary. Each memory word
+	-- (and each cache line) consists of MEM_DATA_BITS bits.
+	-- For example if MEM_DATA_BITS=128:
 	--
-	-- * address 0 selects the bits  0..15 in memory,
-	-- * address 1 selects the bits 16..31 in memory, and so on.
+	-- * memory address 0 selects the bits   0..127 in memory,
+	-- * memory address 1 selects the bits 128..256 in memory, and so on.
+
+	-- CPU configuration
+  constant CPU_DATA_BITS      : positive := 32;
+  constant CPU_ADDR_BITS      : positive := log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS;
+	constant MEMORY_WORDS       : positive := 2**CPU_ADDR_BITS;
+	constant BYTES_PER_WORD     : positive := CPU_DATA_BITS/8;
+
+	-- NOTE:
+	-- Cache accesses are always aligned to a CPU word boundary. Each CPU word
+	-- consists of CPU_DATA_BITS bits. For example if CPU_DATA_BITS=32:
+	--
+	-- * CPU address 0 selects the bits   0.. 31 in memory word 0,
+	-- * CPU address 2 selects the bits  32.. 63 in memory word 0,
+	-- * CPU address 3 selects the bits  64.. 95 in memory word 0,
+	-- * CPU address 4 selects the bits  96..127 in memory word 0,
+	-- * CPU address 5 selects the bits   0.. 31 in memory word 1,
+	-- * CPU address 6 selects the bits  32.. 63 in memory word 1, and so on.
 
 	-- Global signals
   signal clk : std_logic := '1';
@@ -76,37 +95,37 @@ architecture sim of cache_mem_tb is
 	-- Request from CPU
   signal cpu_req   : std_logic;
   signal cpu_write : std_logic;
-  signal cpu_addr  : unsigned(ADDR_BITS-1 downto 0);
-  signal cpu_wdata : std_logic_vector(DATA_BITS-1 downto 0);
-  signal cpu_wmask : std_logic_vector(DATA_BITS/8-1 downto 0);
+  signal cpu_addr  : unsigned(CPU_ADDR_BITS-1 downto 0);
+  signal cpu_wdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
+  signal cpu_wmask : std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
 
 	-- Bus between CPU and Cache
 	-- write / addr / wdata are directly connected to the CPU
   signal cache_req   : std_logic;
   signal cache_rdy   : std_logic;
   signal cache_rstb  : std_logic;
-  signal cache_rdata : std_logic_vector(DATA_BITS-1 downto 0);
+  signal cache_rdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 
 	-- Bus between Cache and 1st Memory
   signal mem1_req   : std_logic;
   signal mem1_write : std_logic;
-  signal mem1_addr  : unsigned(ADDR_BITS-1 downto 0);
-  signal mem1_wdata : std_logic_vector(DATA_BITS-1 downto 0);
-  signal mem1_wmask : std_logic_vector(DATA_BITS/8-1 downto 0);
+  signal mem1_addr  : unsigned(MEM_ADDR_BITS-1 downto 0);
+  signal mem1_wdata : std_logic_vector(MEM_DATA_BITS-1 downto 0);
+  signal mem1_wmask : std_logic_vector(MEM_DATA_BITS/8-1 downto 0);
   signal mem1_rdy   : std_logic;
   signal mem1_rstb  : std_logic;
-  signal mem1_rdata : std_logic_vector(DATA_BITS-1 downto 0);
+  signal mem1_rdata : std_logic_vector(MEM_DATA_BITS-1 downto 0);
 
 	-- Bus between CPU and 2nd Memory
 	-- write / addr / wdata are directly connected to the CPU
   signal mem2_req   : std_logic;
   signal mem2_rdy   : std_logic;
   signal mem2_rstb  : std_logic;
-  signal mem2_rdata : std_logic_vector(DATA_BITS-1 downto 0);
+  signal mem2_rdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 
 	-- Write-Data Generator
 	signal wdata_got : std_logic;
-	signal wdata_val : std_logic_vector(DATA_BITS-1 downto 0);
+	signal wdata_val : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 
 	-- Control signals between Request Generator and Checker of CPU
 	signal finished : boolean := false;
@@ -123,8 +142,9 @@ begin
       REPLACEMENT_POLICY => REPLACEMENT_POLICY,
       CACHE_LINES        => CACHE_LINES,
       ASSOCIATIVITY      => ASSOCIATIVITY,
-      ADDR_BITS          => ADDR_BITS,
-      DATA_BITS          => DATA_BITS)
+      CPU_DATA_BITS      => CPU_DATA_BITS,
+      MEM_ADDR_BITS      => MEM_ADDR_BITS,
+      MEM_DATA_BITS      => MEM_DATA_BITS)
     port map (
       clk       => clk,
       rst       => rst,
@@ -151,8 +171,8 @@ begin
 	-- The 1st Memory
 	memory1: entity work.mem_model
 		generic map (
-			A_BITS	=> ADDR_BITS,
-			D_BITS	=> DATA_BITS)
+			A_BITS	=> MEM_ADDR_BITS,
+			D_BITS	=> MEM_DATA_BITS)
 		port map (
 			clk       => clk,
 			rst       => rst,
@@ -168,8 +188,8 @@ begin
 	-- The 2nd Memory
 	memory2: entity work.mem_model
 		generic map (
-			A_BITS	=> ADDR_BITS,
-			D_BITS	=> DATA_BITS)
+			A_BITS	=> CPU_ADDR_BITS,
+			D_BITS	=> CPU_DATA_BITS)
 		port map (
 			clk       => clk,
 			rst       => rst,
@@ -187,7 +207,7 @@ begin
 
 	-- The Write-Data Generator of the CPU
 	wdata_prng: entity poc.arith_prng
-    generic map (BITS => DATA_BITS)
+    generic map (BITS => CPU_DATA_BITS)
     port map (
       clk => clk,
       rst => rst,
@@ -221,7 +241,7 @@ begin
 			-- apply request (will be ignored if not ready)
 			cpu_req   <= '1';
 			cpu_write <= '1';
-			cpu_addr  <= to_unsigned(addr, ADDR_BITS);
+			cpu_addr  <= to_unsigned(addr, CPU_ADDR_BITS);
 			cpu_wmask <= wmask;
 			while true loop
 				wait until rising_edge(clk);
@@ -249,7 +269,7 @@ begin
 			-- apply request (will be ignored if not ready)
 			cpu_req   <= '1';
 			cpu_write <= '0';
-			cpu_addr  <= to_unsigned(addr, ADDR_BITS);
+			cpu_addr  <= to_unsigned(addr, CPU_ADDR_BITS);
 			cpu_wmask <= (others => '-');
 			while true loop
 				wait until rising_edge(clk);
@@ -396,7 +416,7 @@ begin
 	-- The Checker of the CPU
 	CPU_Checker: process
  		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("CPU Checker");
-		variable saved_rdata  : std_logic_vector(DATA_BITS-1 downto 0);
+		variable saved_rdata  : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 	begin
 		-- wait until reset completes
 		wait until rising_edge(clk) and rst = '0';

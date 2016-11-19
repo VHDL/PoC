@@ -5,7 +5,7 @@
 -- Authors:					Patrick Lehmann
 --									Martin Zabel
 --
--- Entity:					Cache with PoC's "mem" interface.
+-- Entity:					Cache with the PoC.Mem interface on the "CPU" side.
 --
 -- Description:
 -- -------------------------------------
@@ -19,30 +19,60 @@
 -- Thus, this unit can be placed into an already available memory path between
 -- the CPU and the memory (controller).
 --
+--
 -- Configuration
 -- *************
 --
--- +--------------------+----------------------------------------------------+
--- | Parameter          | Description                                        |
--- +====================+====================================================+
--- | REPLACEMENT_POLICY | Replacement policy of embedded cache. For supported|
--- |                    | values see PoC.cache_replacement_policy.           |
--- +--------------------+----------------------------------------------------+
--- | CACHE_LINES        | Number of cache lines.                             |
--- +--------------------+----------------------------------------------------+
--- | ASSOCIATIVITY      | Associativity of embedded cache.                   |
--- +--------------------+----------------------------------------------------+
--- | ADDR_BITS          | Number of bits of full memory address, including   |
--- |                    | byte address bits.                                 |
--- +--------------------+----------------------------------------------------+
--- | DATA_BITS          | Size of a cache line in bits. Equals also the size |
--- |                    | of the read and write data ports of the CPU and    |
--- |                    | memory side. DATA_BITS must be divisible by 8.     |
--- +--------------------+----------------------------------------------------+
+-- +--------------------+-----------------------------------------------------+
+-- | Parameter          | Description                                         |
+-- +====================+=====================================================+
+-- | REPLACEMENT_POLICY | Replacement policy of embedded cache. For supported |
+-- |                    | values see PoC.cache_replacement_policy.            |
+-- +--------------------+-----------------------------------------------------+
+-- | CACHE_LINES        | Number of cache lines.                              |
+-- +--------------------+-----------------------------------------------------+
+-- | ASSOCIATIVITY      | Associativity of embedded cache.                    |
+-- +--------------------+-----------------------------------------------------+
+-- | CPU_ADDR_BITS      | Number of address bits on the CPU side. Each address|
+-- |                    | identifies one memory word as seen from the CPU.    |
+-- |                    | Calculated from other parameters as described below.|
+-- +--------------------+-----------------------------------------------------+
+-- | CPU_DATA_BITS      | Width of the data bus (in bits) on the CPU side.    |
+-- |                    | CPU_DATA_BITS must be divisible by 8.               |
+-- +--------------------+-----------------------------------------------------+
+-- | MEM_ADDR_BITS      | Number of address bits on the memory side. Each     |
+-- |                    | address identifies one word in the memory.          |
+-- +--------------------+-----------------------------------------------------+
+-- | MEM_DATA_BITS      | Width of a memory word and of a cache line in bits. |
+-- |                    | MEM_DATA_BITS must be divisible by CPU_DATA_BITS.   |
+-- +--------------------+-----------------------------------------------------+
+--
+-- If the CPU data-bus width is smaller than the memory data-bus width, then
+-- the CPU needs additional address bits to identify one CPU data word inside a
+-- memory word. Thus, the CPU address-bus width is calculated from:
+-- 
+--   ``CPU_ADDR_BITS=log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS``
 --
 --
 -- Operation
 -- *********
+--
+-- Memory accesses are always aligned to a word boundary. Each memory word
+-- (and each cache line) consists of MEM_DATA_BITS bits.
+-- For example if MEM_DATA_BITS=128:
+--
+-- * memory address 0 selects the bits   0..127 in memory,
+-- * memory address 1 selects the bits 128..256 in memory, and so on.
+--
+-- Cache accesses are always aligned to a CPU word boundary. Each CPU word
+-- consists of CPU_DATA_BITS bits. For example if CPU_DATA_BITS=32:
+--
+-- * CPU address 0 selects the bits   0.. 31 in memory word 0,
+-- * CPU address 2 selects the bits  32.. 63 in memory word 0,
+-- * CPU address 3 selects the bits  64.. 95 in memory word 0,
+-- * CPU address 4 selects the bits  96..127 in memory word 0,
+-- * CPU address 5 selects the bits   0.. 31 in memory word 1,
+-- * CPU address 6 selects the bits  32.. 63 in memory word 1, and so on.
 --
 -- A synchronous reset must be applied even on a FPGA.
 --
@@ -72,13 +102,17 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library poc;
+use poc.utils.all;
+
 entity cache_mem is
 	generic (
 		REPLACEMENT_POLICY : string		:= "LRU";
-		CACHE_LINES				 : positive := 32;
-		ASSOCIATIVITY			 : positive := 32;
-		ADDR_BITS	      	 : positive := 8;
-		DATA_BITS					 : positive := 8
+		CACHE_LINES        : positive;
+		ASSOCIATIVITY      : positive;
+		CPU_DATA_BITS      : positive;
+		MEM_ADDR_BITS      : positive;
+		MEM_DATA_BITS      : positive
 	);
 	port (
     clk : in std_logic; -- clock
@@ -87,22 +121,22 @@ entity cache_mem is
     -- "CPU" side
     cpu_req   : in  std_logic;
     cpu_write : in  std_logic;
-    cpu_addr  : in  unsigned(ADDR_BITS-1 downto 0);
-    cpu_wdata : in  std_logic_vector(DATA_BITS-1 downto 0);
-    cpu_wmask : in  std_logic_vector(DATA_BITS/8-1 downto 0);
+    cpu_addr  : in  unsigned(log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS-1 downto 0);
+    cpu_wdata : in  std_logic_vector(CPU_DATA_BITS-1 downto 0);
+    cpu_wmask : in  std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
     cpu_rdy   : out std_logic;
     cpu_rstb  : out std_logic;
-    cpu_rdata : out std_logic_vector(DATA_BITS-1 downto 0);
+    cpu_rdata : out std_logic_vector(CPU_DATA_BITS-1 downto 0);
 
 		-- Memory side
 		mem_req		: out std_logic;
 		mem_write : out std_logic;
-		mem_addr	: out unsigned(ADDR_BITS-1 downto 0);
-		mem_wdata : out std_logic_vector(DATA_BITS-1 downto 0);
-		mem_wmask : out std_logic_vector(DATA_BITS/8-1 downto 0);
+		mem_addr	: out unsigned(MEM_ADDR_BITS-1 downto 0);
+		mem_wdata : out std_logic_vector(MEM_DATA_BITS-1 downto 0);
+		mem_wmask : out std_logic_vector(MEM_DATA_BITS/8-1 downto 0);
 		mem_rdy		: in	std_logic;
 		mem_rstb	: in	std_logic;
-		mem_rdata : in	std_logic_vector(DATA_BITS-1 downto 0)
+		mem_rdata : in	std_logic_vector(MEM_DATA_BITS-1 downto 0)
     );
 end entity;
 
@@ -110,12 +144,12 @@ architecture rtl of cache_mem is
 	-- Interface to Cache instance.
 	signal cache_Request		: std_logic;
 	signal cache_ReadWrite	: std_logic;
-	signal cache_Writemask	: std_logic_vector(DATA_BITS/8-1 downto 0);
+	signal cache_Writemask	: std_logic_vector(MEM_DATA_BITS/8-1 downto 0);
 	signal cache_Invalidate : std_logic;
 	signal cache_Replace		: std_logic;
-	signal cache_Address		: std_logic_vector(ADDR_BITS-1 downto 0);
-	signal cache_LineIn			: std_logic_vector(DATA_BITS-1 downto 0);
-	signal cache_LineOut		: std_logic_vector(DATA_BITS-1 downto 0);
+	signal cache_Address		: std_logic_vector(MEM_ADDR_BITS-1 downto 0);
+	signal cache_LineIn			: std_logic_vector(MEM_DATA_BITS-1 downto 0);
+	signal cache_LineOut		: std_logic_vector(MEM_DATA_BITS-1 downto 0);
 	signal cache_Hit				: std_logic;
 	signal cache_Miss				: std_logic;
 
@@ -144,8 +178,8 @@ begin  -- architecture rtl
 			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 			CACHE_LINES        => CACHE_LINES,
 			ASSOCIATIVITY      => ASSOCIATIVITY,
-			ADDR_BITS          => ADDR_BITS,
-			DATA_BITS          => DATA_BITS,
+			ADDR_BITS          => MEM_ADDR_BITS,
+			DATA_BITS          => MEM_DATA_BITS,
 			HIT_MISS_REG       => false)
     port map (
 			Clock        => clk,
