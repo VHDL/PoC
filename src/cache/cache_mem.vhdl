@@ -8,9 +8,9 @@
 --
 -- Description:
 -- -------------------------------------
--- This unit provides a cache (:doc:`PoC.cache.par2 <cache_par2>`) together
+-- This unit provides a cache (:ref:`IP:cache_par2`) together
 -- with a cache controller which reads / writes cache lines from / to memory.
--- It has two :doc:`PoC.Mem </Interfaces/Memory>` interfaces:
+-- It has two :ref:`INT:PoC.Mem` interfaces:
 --
 -- * one for the "CPU" side  (ports with prefix ``cpu_``), and
 -- * one for the memory side (ports with prefix ``mem_``).
@@ -75,7 +75,7 @@
 --
 -- A synchronous reset must be applied even on a FPGA.
 --
--- The interface is documented in detail :doc:`here </Interfaces/Memory>`.
+-- The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
 --
 -- The write policy is: write-through, no-write-allocate.
 --

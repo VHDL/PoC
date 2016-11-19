@@ -1,10 +1,25 @@
+.. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+            :scale: 40
+            :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_mem.vhdl
+            :alt: Source Code on GitHub
+.. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+            :scale: 40
+            :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/cache/cache_mem_tb.vhdl
+            :alt: Source Code on GitHub
+
+.. sidebar:: GitHub Links
+
+   * |gh-src| :pocsrc:`Sourcecode <cache/cache_mem.vhdl>`
+   * |gh-tb| :poctb:`Testbench <cache/cache_mem_tb.vhdl>`
+
+.. _IP:cache_mem:
 
 cache_mem
 #########
 
-This unit provides a cache (:doc:`PoC.cache.par2 <cache_par2>`) together
+This unit provides a cache (:ref:`IP:cache_par2`) together
 with a cache controller which reads / writes cache lines from / to memory.
-It has two :doc:`PoC.Mem </Interfaces/Memory>` interfaces:
+It has two :ref:`INT:PoC.Mem` interfaces:
 
 * one for the "CPU" side  (ports with prefix ``cpu_``), and
 * one for the memory side (ports with prefix ``mem_``).
@@ -69,7 +84,7 @@ consists of CPU_DATA_BITS bits. For example if CPU_DATA_BITS=32:
 
 A synchronous reset must be applied even on a FPGA.
 
-The interface is documented in detail :doc:`here </Interfaces/Memory>`.
+The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
 
 The write policy is: write-through, no-write-allocate.
 
@@ -83,7 +98,6 @@ The write policy is: write-through, no-write-allocate.
    :linenos:
    :lines: 107-140
 
-Source file: `cache/cache_mem.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_mem.vhdl>`_
-
+Source file: :pocsrc:`cache/cache_mem.vhdl <cache/cache_mem.vhdl>`
 
 

@@ -10,7 +10,7 @@
 -- Description:
 -- -------------------------------------
 -- Cache with parallel tag-unit and data memory. For the data memory,
--- :doc:`PoC.mem.ocram.sp <../mem/ocram/ocram_sp>` is used.
+-- :ref:`IP:ocram_sp` is used.
 --
 -- Configuration
 -- *************
