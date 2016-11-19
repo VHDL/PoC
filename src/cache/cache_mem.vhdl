@@ -67,11 +67,11 @@
 -- consists of CPU_DATA_BITS bits. For example if CPU_DATA_BITS=32:
 --
 -- * CPU address 0 selects the bits   0.. 31 in memory word 0,
--- * CPU address 2 selects the bits  32.. 63 in memory word 0,
--- * CPU address 3 selects the bits  64.. 95 in memory word 0,
--- * CPU address 4 selects the bits  96..127 in memory word 0,
--- * CPU address 5 selects the bits   0.. 31 in memory word 1,
--- * CPU address 6 selects the bits  32.. 63 in memory word 1, and so on.
+-- * CPU address 1 selects the bits  32.. 63 in memory word 0,
+-- * CPU address 2 selects the bits  64.. 95 in memory word 0,
+-- * CPU address 3 selects the bits  96..127 in memory word 0,
+-- * CPU address 4 selects the bits   0.. 31 in memory word 1,
+-- * CPU address 5 selects the bits  32.. 63 in memory word 1, and so on.
 --
 -- A synchronous reset must be applied even on a FPGA.
 --
