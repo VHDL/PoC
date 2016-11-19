@@ -8,5 +8,5 @@
 include       "src/common/common.files"                   # load common packages
 
 # PoC.cache
-include       "src/cache/cache_par2.files"                # Embedded Cache
-vhdl		poc		"src/cache/cache_mem.vhdl"                  # Top Level
+include       "src/cache/cache_cpu.files"                 # Embedded CPU Cache
+vhdl    poc   "src/cache/cache_mem.vhdl"                  # Top Level

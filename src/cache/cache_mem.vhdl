@@ -144,192 +144,99 @@ entity cache_mem is
 end entity;
 
 architecture rtl of cache_mem is
-	-- Interface to Cache instance.
-	signal cache_Request		: std_logic;
-	signal cache_ReadWrite	: std_logic;
-	signal cache_Writemask	: std_logic_vector(MEM_DATA_BITS/8-1 downto 0);
-	signal cache_Invalidate : std_logic;
-	signal cache_Replace		: std_logic;
-	signal cache_Address		: std_logic_vector(MEM_ADDR_BITS-1 downto 0);
-	signal cache_LineIn			: std_logic_vector(MEM_DATA_BITS-1 downto 0);
-	signal cache_LineOut		: std_logic_vector(MEM_DATA_BITS-1 downto 0);
-	signal cache_Hit				: std_logic;
-	signal cache_Miss				: std_logic;
+	-- signals to internal cache_cpu
+	signal int_req   : std_logic;
+	signal int_write : std_logic;
+	signal int_addr  : unsigned(log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS-1 downto 0);
+	signal int_wdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
+	signal int_wmask : std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
+	signal int_got   : std_logic;
+	signal int_rdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 
-	-- Address and data path
-	signal cpu_write_r : std_logic;
-	signal cpu_addr_r  : unsigned(cpu_addr'range);
-	signal cpu_wdata_r : std_logic_vector(cpu_wdata'range);
-	signal cpu_wmask_r : std_logic_vector(cpu_wmask'range);
+begin
 
-  -- FSM and other state registers
-  type T_FSM is (READY, ACCESS_MEM, READING_MEM, UNKNOWN);
-  signal fsm_cs : T_FSM -- current state
-		-- synthesis translate_off
-		:= UNKNOWN
-		-- synthesis translate_on
-		;
-  signal fsm_ns : T_FSM;-- next state
-
-	signal cpu_rstb_r		: std_logic;
-	signal cpu_rstb_nxt : std_logic;
-
-begin  -- architecture rtl
-
-  cache_inst: entity work.cache_par2
-    generic map (
+	cache_cpu_inst: entity work.cache_cpu
+		generic map (
 			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 			CACHE_LINES        => CACHE_LINES,
 			ASSOCIATIVITY      => ASSOCIATIVITY,
-			ADDR_BITS          => MEM_ADDR_BITS,
-			DATA_BITS          => MEM_DATA_BITS,
-			HIT_MISS_REG       => false)
-    port map (
-			Clock        => clk,
-			Reset        => rst,
-			Request      => cache_Request,
-			ReadWrite    => cache_ReadWrite,
-			WriteMask    => cache_WriteMask,
-			Invalidate   => cache_Invalidate,
-			Replace      => cache_Replace,
-			Address      => cache_Address,
-			CacheLineIn  => cache_LineIn,
-			CacheLineOut => cache_LineOut,
-			CacheHit     => cache_Hit,
-			CacheMiss    => cache_Miss,
-			OldAddress   => open);
+			CPU_DATA_BITS      => CPU_DATA_BITS,
+			MEM_ADDR_BITS      => MEM_ADDR_BITS,
+			MEM_DATA_BITS      => MEM_DATA_BITS)
+		port map (
+			clk       => clk,
+			rst       => rst,
+			cpu_req   => int_req,
+			cpu_write => int_write,
+			cpu_addr  => int_addr,
+			cpu_wdata => int_wdata,
+			cpu_wmask => int_wmask,
+			cpu_got   => int_got,
+			cpu_rdata => int_rdata,
+			mem_req   => mem_req,
+			mem_write => mem_write,
+			mem_addr  => mem_addr,
+			mem_wdata => mem_wdata,
+			mem_wmask => mem_wmask,
+			mem_rdy   => mem_rdy,
+			mem_rstb  => mem_rstb,
+			mem_rdata => mem_rdata);
 
-  -- Address and Data path
-  -- ===========================================================================
-  cache_Address   <= std_logic_vector(cpu_addr) when fsm_cs = READY else
-									   std_logic_vector(cpu_addr_r);
-  cache_LineIn    <= cpu_wdata when fsm_cs = READY else mem_rdata;
-  cache_WriteMask <= cpu_wmask when fsm_cs = READY else (others => '0');
-
-  cpu_rdata <= mem_rdata when fsm_cs = READING_MEM else
-							 cache_LineOut; -- when READY or ACCESS_MEM
-  cpu_rstb  <= cpu_rstb_r or  -- after read from cache
-							 mem_rstb;      -- when reading from memory
-
-	mem_write <= cpu_write_r;
-	mem_addr  <= cpu_addr_r;
-	mem_wdata <= cpu_wdata_r;
-	mem_wmask <= cpu_wmask_r;
-
-	process(clk)
+	g1: block
+    signal cpu_req_r   : std_logic;
+    signal cpu_write_r : std_logic;
+    signal cpu_addr_r  : unsigned(log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS-1 downto 0);
+    signal cpu_wdata_r : std_logic_vector(CPU_DATA_BITS-1 downto 0);
+    signal cpu_wmask_r : std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
+    signal cpu_rdy_r   : std_logic;
+    signal cpu_rstb_r  : std_logic;
+    signal cpu_rdata_r : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 	begin
-		-- save request when FSM is ready
-		if rising_edge(clk) then
-			if fsm_cs = READY then
-				cpu_write_r <= cpu_write;
-				cpu_addr_r  <= cpu_addr;
-				cpu_wdata_r <= cpu_wdata;
-				cpu_wmask_r <= cpu_wmask;
+		-- cpu_rdy should have a short clock-to-output delay, but int_got has a large
+		-- propagation delay. Thus, do not depend cpu_rdy and int_got.
+		-- This single entry FIFO stores a valid request if cpu_req_r = '1',
+		-- otherwise it is empty.
+		process(clk)
+		begin
+			if rising_edge(clk) then
+				-- store new request only if FIFO is empty
+				case to_x01(cpu_req_r) is
+					when '1' => null; -- FIFO is full
+					when '0' =>
+						cpu_write_r <= cpu_write;
+						cpu_addr_r  <= cpu_addr;
+						cpu_wdata_r <= cpu_wdata;
+						cpu_wmask_r <= cpu_wmask;
+
+					when others => -- just for simulation
+						cpu_write_r <= 'X';
+						cpu_addr_r  <= (others => 'X');
+						cpu_wdata_r <= (others => 'X');
+						cpu_wmask_r <= (others => 'X');
+				end case;
+
+				-- FIFO state logic
+				case to_x01(rst) is
+					when '1' =>    cpu_req_r <= '0';
+					when '0' =>	   cpu_req_r <=
+													 (cpu_req_r and not int_got) or -- keep if not yet acknowledged
+													 (not cpu_req_r and cpu_req);   -- or new request when empty
+					when others => cpu_req_r <= 'X';
+				end case;
+
+				-- read data is valid one clock cycle after int_got is asserted
+				cpu_rstb <= (not rst) and (not cpu_write_r) and int_got;
 			end if;
-		end if;
-	end process;
+		end process;
 
-	-- FSM
-	-- ===========================================================================
-	process(fsm_cs, cpu_req, cpu_write, cache_Hit, cache_Miss, cpu_write_r,
-					mem_rdy, mem_rstb)
-	begin
-		-- Update state registers
-		fsm_ns			 <= fsm_cs;
-		cpu_rstb_nxt <= '0';
+		cpu_rdy   <= not cpu_req_r; -- ready when empty
+		cpu_rdata <= int_rdata; -- already delayed by one clock cycle
 
-		-- Control signals for cache access
-		cache_Request		 <= '0';
-		cache_ReadWrite	 <= '-';
-		cache_Invalidate <= '-';
-		cache_Replace		 <= '0';
-
-		-- Control / status signals for CPU and MEM side
-		cpu_rdy <= '0';
-		mem_req <= '0';
-
-		case fsm_cs is
-			when READY =>
-				-- Ready for a new cache access.
-				-- -----------------------------
-				cpu_rdy <= '1';
-
-				cache_Request		 <= to_x01(cpu_req);
-				cache_ReadWrite	 <= to_x01(cpu_write); -- doesn't care if no request
-				cache_Invalidate <= '0';
-
-				cpu_rstb_nxt <= cache_Hit and not cpu_write; -- read successful
-
-				case ((cache_Hit and cpu_write) or cache_Miss) is
-					when '1' =>	-- write successfull but write-through, or cache miss
-						fsm_ns <= ACCESS_MEM;
-					when '0' => -- read successfull
-						null;
-					when others => -- invalid input
-						fsm_ns <= UNKNOWN;
-				end case;
-
-
-			when ACCESS_MEM =>
-				-- Access memory.
-				-- --------------
-				mem_req <= '1';
-				case to_x01(mem_rdy) is
-					when '1' => -- access granted
-						case to_x01(cpu_write_r) is
-							when '1'    => fsm_ns <= READY; -- write
-							when '0'    => fsm_ns <= READING_MEM; -- read
-							when others => fsm_ns <= UNKNOWN; -- invalid input
-						end case;
-
-					when '0' =>	null; -- still waiting
-					when others => fsm_ns <= UNKNOWN; -- invalid input
-				end case;
-
-
-      when READING_MEM =>
-        -- Wait for incoming read data and write it to cache.
-				-- --------------------------------------------------
-				cache_Replace   <= to_x01(mem_rstb);
-				cache_ReadWrite <= '1';
-
-				case to_x01(mem_rstb) is
-					when '1' => -- read data available
-						-- read data is directly passed to CPU in datapath above
-						fsm_ns <= READY;
-					when '0' => null;-- still waiting
-					when others => fsm_ns <= UNKNOWN; -- invalid input
-				end case;
-
-
-			when UNKNOWN =>
-				-- Catches invalid state transitions.
-				-- ----------------------------------
-				fsm_ns			 <= UNKNOWN;
-				cpu_rstb_nxt <= 'X';
-
-				cache_Request		 <= 'X';
-				cache_ReadWrite	 <= 'X';
-				cache_Invalidate <= 'X';
-				cache_Replace		 <= 'X';
-		end case;
-	end process;
-
-	process(clk)
-	begin
-		if rising_edge(clk) then
-			case to_x01(rst) is
-				when '1' =>
-					fsm_cs		 <= READY;
-					cpu_rstb_r <= '0';
-				when '0' =>
-					fsm_cs		 <= fsm_ns;
-					cpu_rstb_r <= cpu_rstb_nxt;
-				when others =>
-					fsm_cs		 <= UNKNOWN;
-					cpu_rstb_r <= 'X';
-			end case;
-		end if;
-	end process;
+		int_req   <= cpu_req_r;
+		int_write <= cpu_write_r;
+		int_addr  <= cpu_addr_r;
+		int_wdata <= cpu_wdata_r;
+		int_wmask <= cpu_wmask_r;
+	end block g1;
 
 end architecture rtl;

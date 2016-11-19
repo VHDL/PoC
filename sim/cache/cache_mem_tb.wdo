@@ -2,30 +2,35 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate -radix hexadecimal /cache_mem_tb/clk
 add wave -noupdate -radix hexadecimal /cache_mem_tb/rst
-add wave -noupdate /cache_mem_tb/cpu_req
-add wave -noupdate /cache_mem_tb/cpu_write
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_req
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_write
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_addr
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_wdata
-add wave -noupdate /cache_mem_tb/cpu_wmask
-add wave -noupdate /cache_mem_tb/UUT/cache_Hit
-add wave -noupdate /cache_mem_tb/UUT/cache_Miss
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_wmask
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cache_rdy
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cache_rstb
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cache_rdata
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_req
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_write
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_addr
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_wdata
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_wmask
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_got
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_rdata
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_req
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_write
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_addr
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_wdata
-add wave -noupdate /cache_mem_tb/mem1_wmask
+add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_wmask
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rdy
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rstb
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rdata
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem2_rdy
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem2_rstb
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem2_rdata
-add wave -noupdate /cache_mem_tb/finished
+add wave -noupdate -radix hexadecimal /cache_mem_tb/finished
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {0 ps} 0}
+WaveRestoreCursors {{Cursor 1} {0 fs} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 225
 configure wave -valuecolwidth 100
@@ -41,4 +46,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 fs} {4402285416 fs}
+WaveRestoreZoom {0 fs} {227964844 fs}
