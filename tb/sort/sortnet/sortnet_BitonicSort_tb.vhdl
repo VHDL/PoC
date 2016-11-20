@@ -163,12 +163,13 @@ begin
 	simGenerateClock(Clock, CLOCK_FREQ);
 
 	procGenerator : process
-		constant simProcessID		: T_SIM_PROCESS_ID		:= simRegisterProcess("Generator");
-		variable RandomVar			: RandomPType;					-- protected type from RandomPkg
+		constant simProcessID			: T_SIM_PROCESS_ID		:= simRegisterProcess("Generator");
+		variable RandomVar				: RandomPType;					-- protected type from RandomPkg
 
-		variable KeyInput				: std_logic_vector(KEY_BITS - 1 downto 0);
-		variable DataInput			: std_logic_vector(DATA_BITS - KEY_BITS - 1 downto 0);
-		variable TagInput				: std_logic_vector(TAG_BITS - 1 downto 0);
+		variable KeyInput					: std_logic_vector(KEY_BITS - 1 downto 0);
+		variable DataInput				: std_logic_vector(DATA_BITS - KEY_BITS - 1 downto 0);
+		variable TagInput					: std_logic_vector(TAG_BITS - 1 downto 0);
+		variable Generator_Input	: T_DATA_VECTOR(INPUTS - 1 downto 0);
 
 		function LessThan(L : std_logic_vector; R : std_logic_vector) return boolean is
 			alias LL is L(KEY_BITS - 1 downto 0);
@@ -213,7 +214,7 @@ begin
 
 		Generator_Valid		<= '0';
 		Generator_IsKey		<= '0';
-		Generator_Data		<= (others => (others => '0'));
+		Generator_Input		:= (others => (others => '0'));
 		Generator_Meta		<= (others => '0');
 		wait until rising_edge(Clock);
 
@@ -229,15 +230,17 @@ begin
 			for j in 0 to INPUTS - 1 loop
 				KeyInput						:= RandomVar.RandSlv(KEY_BITS);
 				DataInput						:= RandomVar.RandSlv(DATA_BITS - KEY_BITS);
-				Generator_Data(j)		<= DataInput & KeyInput;
-				Sorter.Add(Generator_Data(j));
-				-- report "Sorter Count = " & integer'image(Sorter.count) & "  Iteration: " & integer'image(j);
+				Generator_Input(j)	:= DataInput & KeyInput;
+				Sorter.Add(Generator_Input(j));
+				-- report "Data:  " & to_string(Generator_Input(j), 'h') & " Sorter Count = " & integer'image(Sorter.count) & "  Iteration: " & integer'image(j);
 			end loop;
-			ScoreBoardData.Data		:= Generator_Data;
+			-- ScoreBoardData.Data		:= Generator_Input;
 			-- report LF & "================" & LF & "  Sorter Size: " & integer'image(Sorter.count) & LF & "================";
-			-- for j in 0 to INPUTS - 1 loop
-				-- ScoreBoardData.Data(j)	:= Sorter.Get(j);
-			-- end loop;
+			Generator_Data				<= Generator_Input;
+			for j in 0 to INPUTS - 1 loop
+				report "Data:  " & to_string(Sorter.Get(j), 'h') & "  Iteration: " & integer'image(j);
+				ScoreBoardData.Data(j)	:= Sorter.Get(j);
+			end loop;
 			Sorter.erase;
 			ScoreBoard.Push(ScoreBoardData);
 			wait until rising_edge(Clock);
