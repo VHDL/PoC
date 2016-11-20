@@ -61,7 +61,7 @@ architecture sim of cache_mem_tb is
 
 	-- Memory configuration
   constant MEM_ADDR_BITS      : positive := 6;
-  constant MEM_DATA_BITS      : positive := 32;
+  constant MEM_DATA_BITS      : positive := 128;
 
 	-- NOTE:
 	-- Memory accesses are always aligned to a word boundary. Each memory word

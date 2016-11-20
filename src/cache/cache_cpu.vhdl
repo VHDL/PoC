@@ -202,6 +202,16 @@ entity cache_cpu is
 end entity;
 
 architecture rtl of cache_cpu is
+	-- Ratio 1:n between CPU data bus and cache-line size (memory data bus)
+	constant RATIO : positive := MEM_DATA_BITS/CPU_DATA_BITS;
+
+	-- Number of address bits identifying the CPU data word within a cache line (memory word)
+	constant LOWER_ADDR_BITS : natural := log2ceil(RATIO);
+
+	-- Widened CPU data path
+	signal cpu_wdata_wide : std_logic_vector(MEM_DATA_BITS-1 downto 0);
+	signal cpu_wmask_wide : std_logic_vector(MEM_DATA_BITS/8-1 downto 0);
+
 	-- Interface to Cache instance.
 	signal cache_Request		: std_logic;
 	signal cache_ReadWrite	: std_logic;
@@ -250,20 +260,59 @@ begin  -- architecture rtl
 
   -- Address and Data path
   -- ===========================================================================
-  cache_Address   <= std_logic_vector(cpu_addr);
-  cache_LineIn    <= mem_rdata       when fsm_cs = READING_MEM else cpu_wdata;
-	cache_WriteMask <= (others => '0') when fsm_cs = READING_MEM else cpu_wmask;
+	gEqual: if RATIO = 1 generate -- Cache line size equals CPU data bus size
+		cpu_wdata_wide <= cpu_wdata;
+		cpu_wmask_wide <= cpu_wmask;
+		cpu_rdata      <= cache_LineOut;
+	end generate gEqual;
 
-  cpu_rdata <= cache_LineOut;
+	gWider: if RATIO > 1 generate -- Cache line size is greater than CPU data bus size
+		signal lower_addr   : unsigned(LOWER_ADDR_BITS-1 downto 0);
+		signal lower_addr_r : unsigned(LOWER_ADDR_BITS-1 downto 0);
+		type T_ARRAY is array(0 to RATIO-1) of std_logic_vector(CPU_DATA_BITS-1 downto 0);
+		signal cache_LineOut_array : T_ARRAY;
+	begin
+		-- CPU Request Data Path
+		lower_addr <= cpu_addr(LOWER_ADDR_BITS-1 downto 0);
+
+		l0: for i in 0 to RATIO-1 generate
+			cpu_wdata_wide((i+1)*CPU_DATA_BITS-1 downto i*CPU_DATA_BITS) <= cpu_wdata;
+
+			cpu_wmask_wide((i+1)*CPU_DATA_BITS/8-1 downto i*CPU_DATA_BITS/8) <=
+				-- synthesis translate_off
+				(others => 'X') when is_x(lower_addr) else
+				-- synthesis translate_on
+				cpu_wmask when to_integer(lower_addr) = i else
+				(others => '1');
+		end generate l0;
+
+		-- CPU Reply Data Path
+		lower_addr_r <= lower_addr when rising_edge(clk); -- pipeline register
+
+		l1: for i in 0 to RATIO-1 generate
+			cache_LineOut_array(i) <= cache_LineOut((i+1)*CPU_DATA_BITS-1 downto i*CPU_DATA_BITS);
+		end generate l1;
+
+		cpu_rdata <=
+			-- synthesis translate_off
+			(others => 'X') when is_x(lower_addr_r) else
+			-- synthesis translate_on
+			cache_LineOut_array(to_integer(lower_addr_r));
+	end generate gWider;
+
+	-- Cache Request Data Path
+	cache_Address   <= std_logic_vector(cpu_addr(cpu_addr'left downto LOWER_ADDR_BITS));
+	cache_LineIn    <= mem_rdata       when fsm_cs = READING_MEM else cpu_wdata_wide;
+	cache_WriteMask <= (others => '0') when fsm_cs = READING_MEM else cpu_wmask_wide;
 
 	-- These outputs can be fed from buffer registers, but this is not
 	-- neccessary because the cpu_* signals will typically be connected to a
 	-- pipeline register. And even if this pipeline register is omitted, then the
 	-- cache tag comparison will dominate the critical path.
 	mem_write <= cpu_write;
-	mem_addr  <= cpu_addr;
-	mem_wdata <= cpu_wdata;
-	mem_wmask <= cpu_wmask;
+	mem_addr  <= cpu_addr(cpu_addr'left downto LOWER_ADDR_BITS);
+	mem_wdata <= cpu_wdata_wide;
+	mem_wmask <= cpu_wmask_wide;
 
 	-- FSM
 	-- ===========================================================================
