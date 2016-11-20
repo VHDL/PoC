@@ -53,7 +53,7 @@
 -- the CPU needs additional address bits to identify one CPU data word inside a
 -- memory word. Thus, the CPU address-bus width is calculated from::
 --
---   CPU_ADDR_BITS=log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS
+--   CPU_ADDR_BITS=log2ceil(MEM_DATA_BITS/CPU_DATA_BITS)+MEM_ADDR_BITS
 --
 -- The write policy is: write-through, no-write-allocate.
 --
@@ -144,7 +144,7 @@ entity cache_mem is
     -- "CPU" side
     cpu_req   : in  std_logic;
     cpu_write : in  std_logic;
-    cpu_addr  : in  unsigned(log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS-1 downto 0);
+    cpu_addr  : in  unsigned(log2ceil(MEM_DATA_BITS/CPU_DATA_BITS)+MEM_ADDR_BITS-1 downto 0);
     cpu_wdata : in  std_logic_vector(CPU_DATA_BITS-1 downto 0);
     cpu_wmask : in  std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
     cpu_rdy   : out std_logic;
@@ -164,7 +164,7 @@ entity cache_mem is
 end entity;
 
 architecture rtl of cache_mem is
-	constant CPU_ADDR_BITS : positive := log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS;
+	constant CPU_ADDR_BITS : positive := log2ceil(MEM_DATA_BITS/CPU_DATA_BITS)+MEM_ADDR_BITS;
 
 	-- signals to internal cache_cpu
 	signal int_req   : std_logic;

@@ -85,7 +85,7 @@ If the CPU data-bus width is smaller than the memory data-bus width, then
 the CPU needs additional address bits to identify one CPU data word inside a
 memory word. Thus, the CPU address-bus width is calculated from::
 
-  CPU_ADDR_BITS=log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS
+  CPU_ADDR_BITS=log2ceil(MEM_DATA_BITS/CPU_DATA_BITS)+MEM_ADDR_BITS
 
 The write policy is: write-through, no-write-allocate.
 
