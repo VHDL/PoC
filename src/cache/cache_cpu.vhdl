@@ -251,11 +251,12 @@ begin  -- architecture rtl
   -- Address and Data path
   -- ===========================================================================
   cache_Address   <= std_logic_vector(cpu_addr);
-  cache_LineIn    <= mem_rdata when fsm_cs = READING_MEM else cpu_wdata;
+  cache_LineIn    <= mem_rdata       when fsm_cs = READING_MEM else cpu_wdata;
+	cache_WriteMask <= (others => '0') when fsm_cs = READING_MEM else cpu_wmask;
 
   cpu_rdata <= cache_LineOut;
 
-	-- These registers can be fed from buffer registers, but this is not
+	-- These outputs can be fed from buffer registers, but this is not
 	-- neccessary because the cpu_* signals will typically be connected to a
 	-- pipeline register. And even if this pipeline register is omitted, then the
 	-- cache tag comparison will dominate the critical path.
@@ -266,7 +267,7 @@ begin  -- architecture rtl
 
 	-- FSM
 	-- ===========================================================================
-	process(fsm_cs, cpu_req, cpu_write, cpu_wmask, cache_Hit, cache_Miss, mem_rdy, mem_rstb)
+	process(fsm_cs, cpu_req, cpu_write, cache_Hit, cache_Miss, mem_rdy, mem_rstb)
 	begin
 		-- Update state registers
 		fsm_ns <= fsm_cs;
@@ -276,7 +277,6 @@ begin  -- architecture rtl
 		cache_ReadWrite	 <= '-';
 		cache_Invalidate <= '-';
 		cache_Replace		 <= '0';
-		cache_WriteMask  <= cpu_wmask;
 
 		-- Control / status signals for CPU and MEM side
 		cpu_got <= '0';
@@ -321,7 +321,6 @@ begin  -- architecture rtl
         -- Wait for incoming read data and write it to cache.
 				-- --------------------------------------------------
 				cache_ReadWrite <= '1';
-				cache_WriteMask <= (others => '0'); -- write all bytes!
 
 				case to_x01(mem_rstb) is
 					when '1' => -- read data available
