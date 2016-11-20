@@ -7,6 +7,10 @@
 # Common PoC packages for configuration, synthesis and simulation
 include       "src/common/common.files"                   # load common packages
 
+# PoC.fifo
+include       "src/fifo/fifo_glue.files"
+include       "src/fifo/fifo_cc_got.files"
+
 # PoC.cache
 include       "src/cache/cache_cpu.files"                 # Embedded CPU Cache
 vhdl    poc   "src/cache/cache_mem.vhdl"                  # Top Level

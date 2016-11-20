@@ -15,7 +15,7 @@
 --
 -- CPU  ---+--- Cache (UUT) ---- 1st memory
 --         |
---         +--- 2nd memory
+--         +--- 2nd memory with FIFO for read replies
 --
 -- License:
 -- ============================================================================
@@ -76,6 +76,7 @@ architecture sim of cache_mem_tb is
   constant CPU_ADDR_BITS      : positive := log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS;
 	constant MEMORY_WORDS       : positive := 2**CPU_ADDR_BITS;
 	constant BYTES_PER_WORD     : positive := CPU_DATA_BITS/8;
+	constant OUTSTANDING_REQ    : positive := 2;
 
 	-- NOTE:
 	-- Cache accesses are always aligned to a CPU word boundary. Each CPU word
@@ -123,6 +124,9 @@ architecture sim of cache_mem_tb is
   signal mem2_rstb  : std_logic;
   signal mem2_rdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 
+  signal rply2_valid : std_logic;
+  signal rply2_rdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
+
 	-- Write-Data Generator
 	signal wdata_got : std_logic;
 	signal wdata_val : std_logic_vector(CPU_DATA_BITS-1 downto 0);
@@ -144,7 +148,8 @@ begin
       ASSOCIATIVITY      => ASSOCIATIVITY,
       CPU_DATA_BITS      => CPU_DATA_BITS,
       MEM_ADDR_BITS      => MEM_ADDR_BITS,
-      MEM_DATA_BITS      => MEM_DATA_BITS)
+      MEM_DATA_BITS      => MEM_DATA_BITS,
+			OUTSTANDING_REQ    => OUTSTANDING_REQ)
     port map (
       clk       => clk,
       rst       => rst,
@@ -204,6 +209,25 @@ begin
 
 	-- request only if also cache is ready
 	mem2_req <= cpu_req and cache_rdy;
+
+	-- Buffer the replies from 2nd memory for later comparison
+	rply2_fifo: entity poc.fifo_cc_got
+    generic map (
+      D_BITS         => CPU_DATA_BITS,
+      MIN_DEPTH      => imax(OUTSTANDING_REQ, 2),
+      DATA_REG       => OUTSTANDING_REQ <= 2, -- matches cache_mem implementation
+      OUTPUT_REG     => OUTSTANDING_REQ > 2)  -- matches cache_mem implementation
+    port map (
+      rst       => rst,
+      clk       => clk,
+      put       => mem2_rstb,
+      din       => mem2_rdata,
+      full      => open, -- should not overflow
+      estate_wr => open,
+      got       => cache_rstb,
+      dout      => rply2_rdata,
+      valid     => rply2_valid,
+      fstate_rd => open);
 
 	-- The Write-Data Generator of the CPU
 	wdata_prng: entity poc.arith_prng
@@ -416,7 +440,6 @@ begin
 	-- The Checker of the CPU
 	CPU_Checker: process
  		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("CPU Checker");
-		variable saved_rdata  : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 	begin
 		-- wait until reset completes
 		wait until rising_edge(clk) and rst = '0';
@@ -424,19 +447,12 @@ begin
 		-- wait until all requests have been applied
 		while not finished loop
 			wait until rising_edge(clk);
-			simAssertion(not is_x(cache_rstb) and not is_x(mem2_rstb), "Meta-value on rstb.");
-			if mem2_rstb = '1' then
-				saved_rdata := mem2_rdata;
-				-- If cache does not return data in same clock cycle (i.e. cache miss),
-				-- then wait for cache_rstb.
-				while cache_rstb = '0' loop
-					wait until rising_edge(clk);
-					-- No new data from 2nd memory must arrive here.
-					simAssertion(not is_x(cache_rstb) and mem2_rstb = '0',
-											 "Meta-value on rstb or invalid reply from 2nd memory.");
-				end loop;
-
-				simAssertion(cache_rdata = saved_rdata, "Read data differs.");
+			simAssertion(not is_x(cache_rstb) and not is_x(rply2_valid), "Meta-value on rstb or valid.");
+			if cache_rstb = '1' then
+				simAssertion(rply2_valid = '1', "No read data expected.");
+				if rply2_valid = '1' then
+					simAssertion(cache_rdata = rply2_rdata, "Read data differs.");
+				end if;
 			end if;
 		end loop;
 

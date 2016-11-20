@@ -41,8 +41,8 @@
 -- directly fed by the address caculator. But be aware of the high setup time
 -- of this unit and high propate time for ``cpu_got``.
 --
--- This unit supports only outstanding CPU request. More outstanding request
--- are provided by :ref:`IP:cache_mem`.
+-- This unit supports only one outstanding CPU request. More outstanding
+-- requests are provided by :ref:`IP:cache_mem`.
 --
 --
 -- Configuration

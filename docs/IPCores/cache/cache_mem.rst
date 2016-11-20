@@ -55,6 +55,8 @@ Configuration
 | MEM_DATA_BITS      | Width of a memory word and of a cache line in bits. |
 |                    | MEM_DATA_BITS must be divisible by CPU_DATA_BITS.   |
 +--------------------+-----------------------------------------------------+
+| OUTSTANDING_REQ    | Number of oustanding requests, see notes below.     |
++--------------------+-----------------------------------------------------+
 
 If the CPU data-bus width is smaller than the memory data-bus width, then
 the CPU needs additional address bits to identify one CPU data word inside a
@@ -63,6 +65,23 @@ memory word. Thus, the CPU address-bus width is calculated from::
   CPU_ADDR_BITS=log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS
 
 The write policy is: write-through, no-write-allocate.
+
+The maximum throughput is one request per clock cycle, except for
+``OUSTANDING_REQ = 1``.
+
+If ``OUTSTANDING_REQ`` is:
+
+* 1: then 1 request is buffered by a single register. To give a short
+  critical path (clock-to-output delay) for ``cpu_rdy``, the throughput is
+  degraded to one request per 2 clock cycles at maximum.
+
+* 2: then 2 requests are buffered by :ref:`IP:fifo_glue`. This setting has
+  the lowest area requirements without degrading the performance.
+
+* >2: then the requests are buffered by :ref:`IP:fifo_cc_got`. The number of
+  outstanding requests is rounded up to the next suitable value. This setting
+  is useful in applications with out-of-order execution (of other
+  operations). The CPU requests to the cache are always processed in-order.
 
 
 Operation
@@ -97,7 +116,7 @@ The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 111-144
+   :lines: 130-164
 
 Source file: :pocsrc:`cache/cache_mem.vhdl <cache/cache_mem.vhdl>`
 

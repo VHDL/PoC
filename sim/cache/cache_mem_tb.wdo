@@ -10,6 +10,9 @@ add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_wmask
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cache_rdy
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cache_rstb
 add wave -noupdate -radix hexadecimal /cache_mem_tb/cache_rdata
+add wave -noupdate /cache_mem_tb/rply2_valid
+add wave -noupdate -radix hexadecimal /cache_mem_tb/rply2_rdata
+add wave -noupdate -divider {Internal signals of cache_mem}
 add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_req
 add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_write
 add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_addr
@@ -17,6 +20,7 @@ add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_wdata
 add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_wmask
 add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_got
 add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_rdata
+add wave -noupdate -divider {Bus between Cache and Mem1}
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_req
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_write
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_addr
@@ -25,10 +29,6 @@ add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_wmask
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rdy
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rstb
 add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rdata
-add wave -noupdate -radix hexadecimal /cache_mem_tb/mem2_rdy
-add wave -noupdate -radix hexadecimal /cache_mem_tb/mem2_rstb
-add wave -noupdate -radix hexadecimal /cache_mem_tb/mem2_rdata
-add wave -noupdate -radix hexadecimal /cache_mem_tb/finished
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {0 fs} 0}
 quietly wave cursor active 1

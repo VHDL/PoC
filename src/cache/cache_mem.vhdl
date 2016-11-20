@@ -46,6 +46,8 @@
 -- | MEM_DATA_BITS      | Width of a memory word and of a cache line in bits. |
 -- |                    | MEM_DATA_BITS must be divisible by CPU_DATA_BITS.   |
 -- +--------------------+-----------------------------------------------------+
+-- | OUTSTANDING_REQ    | Number of oustanding requests, see notes below.     |
+-- +--------------------+-----------------------------------------------------+
 --
 -- If the CPU data-bus width is smaller than the memory data-bus width, then
 -- the CPU needs additional address bits to identify one CPU data word inside a
@@ -54,6 +56,23 @@
 --   CPU_ADDR_BITS=log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS
 --
 -- The write policy is: write-through, no-write-allocate.
+--
+-- The maximum throughput is one request per clock cycle, except for
+-- ``OUSTANDING_REQ = 1``.
+--
+-- If ``OUTSTANDING_REQ`` is:
+--
+-- * 1: then 1 request is buffered by a single register. To give a short
+--   critical path (clock-to-output delay) for ``cpu_rdy``, the throughput is
+--   degraded to one request per 2 clock cycles at maximum.
+--
+-- * 2: then 2 requests are buffered by :ref:`IP:fifo_glue`. This setting has
+--   the lowest area requirements without degrading the performance.
+--
+-- * >2: then the requests are buffered by :ref:`IP:fifo_cc_got`. The number of
+--   outstanding requests is rounded up to the next suitable value. This setting
+--   is useful in applications with out-of-order execution (of other
+--   operations). The CPU requests to the cache are always processed in-order.
 --
 --
 -- Operation
@@ -115,7 +134,8 @@ entity cache_mem is
 		ASSOCIATIVITY      : positive;
 		CPU_DATA_BITS      : positive;
 		MEM_ADDR_BITS      : positive;
-		MEM_DATA_BITS      : positive
+		MEM_DATA_BITS      : positive;
+		OUTSTANDING_REQ    : positive := 2
 	);
 	port (
     clk : in std_logic; -- clock
@@ -144,10 +164,12 @@ entity cache_mem is
 end entity;
 
 architecture rtl of cache_mem is
+	constant CPU_ADDR_BITS : positive := log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS;
+
 	-- signals to internal cache_cpu
 	signal int_req   : std_logic;
 	signal int_write : std_logic;
-	signal int_addr  : unsigned(log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS-1 downto 0);
+	signal int_addr  : unsigned(CPU_ADDR_BITS-1 downto 0);
 	signal int_wdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 	signal int_wmask : std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
 	signal int_got   : std_logic;
@@ -182,10 +204,16 @@ begin
 			mem_rstb  => mem_rstb,
 			mem_rdata => mem_rdata);
 
-	g1: block
+	-- read data is valid one clock cycle after int_got is asserted
+	cpu_rstb  <= (not rst) and (not int_write) and int_got when rising_edge(clk);
+	cpu_rdata <= int_rdata; -- already delayed by one clock cycle
+
+
+	------------------------------------------------------------------------------
+	g1: if OUTSTANDING_REQ = 1 generate
     signal cpu_req_r   : std_logic;
     signal cpu_write_r : std_logic;
-    signal cpu_addr_r  : unsigned(log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS-1 downto 0);
+    signal cpu_addr_r  : unsigned(CPU_ADDR_BITS-1 downto 0);
     signal cpu_wdata_r : std_logic_vector(CPU_DATA_BITS-1 downto 0);
     signal cpu_wmask_r : std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
     signal cpu_rdy_r   : std_logic;
@@ -223,20 +251,93 @@ begin
 													 (not cpu_req_r and cpu_req);   -- or new request when empty
 					when others => cpu_req_r <= 'X';
 				end case;
-
-				-- read data is valid one clock cycle after int_got is asserted
-				cpu_rstb <= (not rst) and (not cpu_write_r) and int_got;
 			end if;
 		end process;
 
 		cpu_rdy   <= not cpu_req_r; -- ready when empty
-		cpu_rdata <= int_rdata; -- already delayed by one clock cycle
 
 		int_req   <= cpu_req_r;
 		int_write <= cpu_write_r;
 		int_addr  <= cpu_addr_r;
 		int_wdata <= cpu_wdata_r;
 		int_wmask <= cpu_wmask_r;
-	end block g1;
+	end generate g1;
 
+
+	------------------------------------------------------------------------------
+	g2: if OUTSTANDING_REQ = 2 generate
+		constant D_BITS : positive := CPU_DATA_BITS/8+CPU_DATA_BITS+CPU_ADDR_BITS+1;
+
+    signal put   : std_logic;
+    signal din   : std_logic_vector(D_BITS-1 downto 0);
+    signal full  : std_logic;
+    signal valid : std_logic;
+    signal dout  : std_logic_vector(D_BITS-1 downto 0);
+	begin
+		req_fifo: entity work.fifo_glue
+			generic map (
+				D_BITS => D_BITS)
+			port map (
+				clk => clk,
+				rst => rst,
+				put => put,
+				di  => din,
+				ful => full,
+				vld => valid,
+				do  => dout,
+				got => int_got);
+
+		din <= cpu_wmask & cpu_wdata & std_logic_vector(cpu_addr) & (0 downto 0 => cpu_write);
+		put <= cpu_req;
+
+		int_req   <= valid;
+		int_write <= dout(0);
+		int_addr  <= unsigned(dout(CPU_ADDR_BITS+1-1 downto 1));
+		int_wdata <= dout(CPU_DATA_BITS+CPU_ADDR_BITS+1-1 downto CPU_ADDR_BITS+1);
+		int_wmask <= dout(CPU_DATA_BITS/8+CPU_DATA_BITS+CPU_ADDR_BITS+1-1 downto CPU_DATA_BITS+CPU_ADDR_BITS+1);
+
+		cpu_rdy <= not full;
+	end generate g2;
+
+
+	------------------------------------------------------------------------------
+	gt2: if OUTSTANDING_REQ > 2 generate
+		constant D_BITS : positive := CPU_DATA_BITS/8+CPU_DATA_BITS+CPU_ADDR_BITS+1;
+
+    signal put   : std_logic;
+    signal din   : std_logic_vector(D_BITS-1 downto 0);
+    signal full  : std_logic;
+    signal valid : std_logic;
+    signal dout  : std_logic_vector(D_BITS-1 downto 0);
+	begin
+		req_fifo: entity work.fifo_cc_got
+      generic map (
+        D_BITS         => D_BITS,
+        MIN_DEPTH      => OUTSTANDING_REQ,
+        DATA_REG       => false, -- otherwise OUTPUT_REG has no effect
+        STATE_REG      => true,
+        OUTPUT_REG     => true) -- extra register required for optimal synthesis on Altera FPGAs
+      port map (
+        rst       => rst,
+        clk       => clk,
+        put       => put,
+        din       => din,
+        full      => full,
+        estate_wr => open,
+        got       => int_got,
+        dout      => dout,
+        valid     => valid,
+        fstate_rd => open);
+
+		din <= cpu_wmask & cpu_wdata & std_logic_vector(cpu_addr) & (0 downto 0 => cpu_write);
+		put <= cpu_req;
+
+		int_req   <= valid;
+		int_write <= dout(0);
+		int_addr  <= unsigned(dout(CPU_ADDR_BITS+1-1 downto 1));
+		int_wdata <= dout(CPU_DATA_BITS+CPU_ADDR_BITS+1-1 downto CPU_ADDR_BITS+1);
+		int_wmask <= dout(CPU_DATA_BITS/8+CPU_DATA_BITS+CPU_ADDR_BITS+1-1 downto CPU_DATA_BITS+CPU_ADDR_BITS+1);
+
+		cpu_rdy <= not full;
+	end generate gt2;
 end architecture rtl;
