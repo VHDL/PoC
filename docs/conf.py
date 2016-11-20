@@ -51,12 +51,12 @@ extensions = [
 	'sphinxcontrib.actdiag',
 	'sphinxcontrib.seqdiag',
 	'sphinxcontrib.wavedrom',
+	'sphinxcontrib.textstyle',
 	# 'sphinxcontrib.spelling',
 	'autoapi.sphinx',
 	'changelog',
 # local extensions (patched)
 	'autoprogram',	             #'sphinxcontrib.autoprogram',
-	'textstyle',
 # local extensions
 	'DocumentMember',
 	'poc'
