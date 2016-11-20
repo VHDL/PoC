@@ -55,7 +55,7 @@ if ($EnableDebug   -eq $null)  { $EnableDebug =    $false }
 if ($EnableDebug   -eq $true)  { $EnableVerbose =  $true  }
 
 # Display help if no command was selected
-$Help = $Help -or (-not ($all -or $html -or $dirhtml -or $singlehtml -or $pickle -or $linkcheck -or $clean -or $help))
+$Help = $Help -or (-not ($all -or $PoC -or $html -or $dirhtml -or $singlehtml -or $pickle -or $linkcheck -or $clean -or $help))
 
 function Exit-Script
 { <#
@@ -147,7 +147,7 @@ if ($clean)
 }
 
 if ($html)
-{ $expr = "$SphinxBuild -b html $AllSphinxOpts $BuildDir\html"
+{ $expr = "$SphinxBuild -b html -t PoCInternal $AllSphinxOpts $BuildDir\html"
   $EnableVerbose -and (Write-Host "Building target 'html' into '$BuildDir\html'..." -Foreground DarkCyan  ) | Out-Null
 	$EnableDebug   -and (Write-Host "  $expr" -Foreground Cyan ) | Out-Null
 	Invoke-Expression $expr
@@ -204,6 +204,33 @@ if ($linkcheck)
   if ($LastExitCode -ne 0)
   { Exit-Script 1 }
   Write-Host "Link check complete. Look for any errors in the above output or in $BuildDir\linkcheck\output.txt." -Foreground Green
+}
+
+if ($PoC)
+{	cd "$SphinxRootDir"
+	Write-Host "Expanding labels..." -Foreground Yellow
+	py -3 ..\temp\sphinx\inventory.py --file _build\html\objects.inv --rst > ..\temp\sphinx\PoC.inventory.rst
+
+	Write-Host "Stripping file from Python labels..." -Foreground Yellow
+	$strippedFileContent = ""
+	$skip = $false
+	foreach ($line in (cat ..\temp\sphinx\PoC.inventory.rst -Encoding UTF8))
+	{	if ($line -match "^`t:py:(exception|class|classmethod|staticmethod|module|function|method|attribute):\w")
+		{	$skip = $true
+			# Write-Host "$line" -Foreground Gray
+			continue
+		}
+		if ($line -match "^`t`t:Title:`t-")
+		{	$skip = $false
+			# Write-Host "$line" -Foreground DarkCyan
+			continue
+		}
+		if (-not $skip)
+		{	$strippedFileContent += $line + "`r`n"
+		}
+	}
+	$strippedFileContent | Out-File ..\temp\sphinx\PoC.stripped.rst -Encoding UTF8
+	Write-Host "Complete" -Foreground Green
 }
 
 Exit-Script
