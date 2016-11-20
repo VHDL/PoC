@@ -73,7 +73,7 @@ architecture sim of cache_mem_tb is
 
 	-- CPU configuration
   constant CPU_DATA_BITS      : positive := 32;
-  constant CPU_ADDR_BITS      : positive := log2ceil(CPU_DATA_BITS/MEM_DATA_BITS)+MEM_ADDR_BITS;
+  constant CPU_ADDR_BITS      : positive := log2ceil(MEM_DATA_BITS/CPU_DATA_BITS)+MEM_ADDR_BITS;
 	constant MEMORY_WORDS       : positive := 2**CPU_ADDR_BITS;
 	constant BYTES_PER_WORD     : positive := CPU_DATA_BITS/8;
 	constant OUTSTANDING_REQ    : positive := 2;

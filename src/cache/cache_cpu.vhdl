@@ -292,11 +292,12 @@ begin  -- architecture rtl
 
 				case ((cache_Hit and cpu_write) or cache_Miss) is
 					when '1' =>	-- write successfull but write-through, or cache miss
-						fsm_ns <= ACCESS_MEM;
+						fsm_ns  <= ACCESS_MEM;
 					when '0' => -- read successfull, or no request
 						cpu_got <= to_x01(cpu_req);
 					when others => -- invalid input
-						fsm_ns <= UNKNOWN;
+						fsm_ns  <= UNKNOWN;
+						cpu_got <= 'X';
 				end case;
 
 
@@ -307,9 +308,9 @@ begin  -- architecture rtl
 				case to_x01(mem_rdy) is
 					when '1' => -- access granted
 						case to_x01(cpu_write) is
-							when '1'    => fsm_ns <= READY; cpu_got <= '1'; -- write
+							when '1'    => fsm_ns <= READY;   cpu_got <= '1'; -- write
 							when '0'    => fsm_ns <= READING_MEM; -- read
-							when others => fsm_ns <= UNKNOWN; -- invalid input
+							when others => fsm_ns <= UNKNOWN; cpu_got <= 'X'; -- invalid input
 						end case;
 
 					when '0' =>	null; -- still waiting
@@ -331,7 +332,10 @@ begin  -- architecture rtl
 						-- clock cycle.
 
 					when '0' => null;-- still waiting
-					when others => fsm_ns <= UNKNOWN; -- invalid input
+					when others => -- invalid input
+						fsm_ns        <= UNKNOWN;
+						cpu_got       <= 'X';
+						cache_Replace <= 'X';
 				end case;
 
 
