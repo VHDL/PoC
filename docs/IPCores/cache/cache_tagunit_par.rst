@@ -58,6 +58,11 @@ must be a power of 2.
    The port ``NewAddress`` has been removed. Use ``Address`` instead as
    described above.
 
+   If ``Address`` is fed from a register and an Altera FPGA is used, then
+   Quartus Map converts the tag memory from a memory with asynchronous read to a
+   memory with synchronous read by adding a pass-through logic. Quartus Map
+   reports warning 276020 which is intended.
+
 
 
 .. rubric:: Entity Declaration:
@@ -66,7 +71,7 @@ must be a power of 2.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 79-102
+   :lines: 84-107
 
 Source file: :pocsrc:`cache/cache_tagunit_par.vhdl <cache/cache_tagunit_par.vhdl>`
 

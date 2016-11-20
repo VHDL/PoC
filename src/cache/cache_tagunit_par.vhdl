@@ -50,6 +50,11 @@
 --    The port ``NewAddress`` has been removed. Use ``Address`` instead as
 --    described above.
 --
+--    If ``Address`` is fed from a register and an Altera FPGA is used, then
+--    Quartus Map converts the tag memory from a memory with asynchronous read to a
+--    memory with synchronous read by adding a pass-through logic. Quartus Map
+--    reports warning 276020 which is intended.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
