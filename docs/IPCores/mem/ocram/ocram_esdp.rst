@@ -24,7 +24,7 @@ Inferring / instantiating enhanced simple dual-port memory, with:
 
 .. deprecated:: 1.1
 
-   Please use :ref:`<IP:ocram_tdp>` for new designs.
+   Please use :ref:`IP:ocram_tdp` for new designs.
    This component has been provided because older FPGA compilers where not
    able to infer true dual-port memory from an RTL description.
 
