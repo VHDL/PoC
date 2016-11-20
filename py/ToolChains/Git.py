@@ -60,6 +60,34 @@ __api__ = [
 __all__ = __api__
 
 
+__api__ = [
+	'GitException',
+	'Configuration',
+	'GitMixIn',
+	'Git',
+	'GitSCM',
+	'GitRevParse',
+	'GitRevList',
+	'GitDescribe',
+	'GitConfig'
+]
+__all__ = __api__
+
+
+__api__ = [
+	'GitException',
+	'Configuration',
+	'GitMixIn',
+	'Git',
+	'GitSCM',
+	'GitRevParse',
+	'GitRevList',
+	'GitDescribe',
+	'GitConfig'
+]
+__all__ = __api__
+
+
 class GitException(ToolChainException):
 	pass
 

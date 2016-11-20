@@ -120,7 +120,7 @@ This document was generated on |docdate|.
    :caption: Appendix
    :hidden:
 
-   Miscelaneous/ChangeLog
+   ChangeLog/index
    genindex
 
 .. ifconfig:: visibility in ('PoCInternal')

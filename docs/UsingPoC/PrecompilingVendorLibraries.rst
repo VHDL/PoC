@@ -8,9 +8,9 @@ Pre-Compiling Vendor Libraries
    :depth: 2
    :backlinks: entry
 
+
 .. index::
    single: Pre-compilation
-
 
 .. _USING:PreCompile:Over:
 
@@ -33,7 +33,6 @@ are located in ``\tools\precompile\`` and the output is stored in
 .. index::
    pair: Pre-compilation; Supported Simulators
 
-
 .. _USING:PreCompile:Simulators:
 
 Supported Simulators
@@ -41,24 +40,24 @@ Supported Simulators
 
 The current set of pre-compile scripts support these simulators:
 
-+-------------+--------------------------------------+--------------+--------------+---------------+--------------------+
-| Vendor      | Simulator and Edition                | Altera       | Lattice      | Xilinx (ISE)  | Xilinx (Vivado)    |
-+=============+======================================+==============+==============+===============+====================+
-| T. Gingold  | GHDL with ``--std=93c`` |br|         | yes |br|     | yes |br|     | yes |br|      | yes |br|           |
-|             | GHDL with ``--std=08``               | yes          | yes          | yes           | yes                |
-+-------------+--------------------------------------+--------------+--------------+---------------+--------------------+
-| Aldec       | Active-HDL (or Stududent Ed.) |br|   | planned |br| | planned |br| | planned |br|  | planned |br|       |
-|             | Active-HDL Lattice Ed. |br|          | planned |br| | shipped |br| | planned |br|  | planned |br|       |
-|             | Reviera-PRO                          | planned      | planned      | planned       | planned            |
-+-------------+--------------------------------------+--------------+--------------+---------------+--------------------+
-| Mentor      | ModelSim PE (or Stududent Ed.) |br|  | yes |br|     | yes |br|     | yes |br|      | yes |br|           |
-|             | ModelSim SE |br|                     | yes |br|     | yes |br|     | yes |br|      | yes |br|           |
-|             | ModelSim Altera Ed. |br|             | shipped |br| | yes |br|     | yes |br|      | yes |br|           |
-|             | QuestaSim                            | yes          | yes          | yes           | yes                |
-+-------------+--------------------------------------+--------------+--------------+---------------+--------------------+
-| Xilinx      | ISE Simulator |br|                   |              |              | shipped |br|  | not supported |br| |
-|             | Vivado Simulator                     |              |              | not supported | shipped            |
-+-------------+--------------------------------------+--------------+--------------+---------------+--------------------+
++------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
+| Vendor           | Simulator and Edition                | Altera       | Lattice      | Xilinx (ISE)    | Xilinx (Vivado)      |
++==================+======================================+==============+==============+=================+======================+
+| T. Gingold |br|  | GHDL with ``--std=93c`` |br|         | yes |br|     | yes |br|     | yes |br|        | yes |br|             |
+|                  | GHDL with ``--std=08``               | yes          | yes          | yes             | yes                  |
++------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
+| Aldec |br|       | Active-HDL (or Stududent Ed.) |br|   | planned |br| | planned |br| | planned |br|    | planned |br|         |
+| |br|             | Active-HDL Lattice Ed. |br|          | planned |br| | shipped |br| | planned |br|    | planned |br|         |
+|                  | Reviera-PRO                          | planned      | planned      | planned         | planned              |
++------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
+| Mentor |br|      | ModelSim PE (or Stududent Ed.) |br|  | yes |br|     | yes |br|     | yes |br|        | yes |br|             |
+| |br|             | ModelSim SE |br|                     | yes |br|     | yes |br|     | yes |br|        | yes |br|             |
+| |br|             | ModelSim Altera Ed. |br|             | shipped |br| | yes |br|     | yes |br|        | yes |br|             |
+|                  | QuestaSim                            | yes          | yes          | yes             | yes                  |
++------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
+| Xilinx |br|      | ISE Simulator |br|                   |              |              | shipped |br|    | not supported |br|   |
+|                  | Vivado Simulator                     |              |              | not supported   | shipped              |
++------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
 
 
 .. index::
@@ -67,8 +66,9 @@ The current set of pre-compile scripts support these simulators:
 .. _USING:PreCompile:Primitives:
 
 FPGA Vendor's Primitive Libraries
-*********************************
+****************************************************************************************************************************************************************
 
+.. # ===========================================================================================================================================================
 .. index::
    pair: Pre-compilation; Altera
 
@@ -135,9 +135,14 @@ On Windows
 
 **List of command line arguments:**
 
-.. |c-altera-ps-h| replace:: :option:`-h <compile-altera.ps1 -h>`
-.. |c-altera-ps-c| replace:: :option:`-c <compile-altera.ps1 -c>`
-.. |c-altera-ps-a| replace:: :option:`-a <compile-altera.ps1 -a>`
+.. |c-altera-ps-h| replace:: ``-h``
+.. |c-altera-ps-c| replace:: ``-c``
+.. |c-altera-ps-a| replace:: ``-a``
+
+.. # |c-altera-ps-h| replace:: :option:`-h <compile-altera.ps1 -h>`
+.. # |c-altera-ps-c| replace:: :option:`-c <compile-altera.ps1 -c>`
+.. # |c-altera-ps-a| replace:: :option:`-a <compile-altera.ps1 -a>`
+
 .. |c-altera-ps-help| replace:: :option:`-Help <compile-altera.ps1 -Help>`
 .. |c-altera-ps-clean| replace:: :option:`-Clean <compile-altera.ps1 -Clean>`
 .. |c-altera-ps-all| replace:: :option:`-All <compile-altera.ps1 -All>`
@@ -164,7 +169,7 @@ On Windows
 |                  | |c-altera-ps-vhdl08|  | GHDL only: Compile only for VHDL-2008.                                    |
 +------------------+-----------------------+---------------------------------------------------------------------------+
 
-
+.. # ===========================================================================================================================================================
 .. index::
    pair: Pre-compilation; Lattice
 
@@ -231,9 +236,14 @@ On Windows
 
 **List of command line arguments:**
 
-.. |c-lattice-ps-h| replace:: :option:`-h <compile-lattice.ps1 -h>`
-.. |c-lattice-ps-c| replace:: :option:`-c <compile-lattice.ps1 -c>`
-.. |c-lattice-ps-a| replace:: :option:`-a <compile-lattice.ps1 -a>`
+.. |c-lattice-ps-h| replace:: ``-h``
+.. |c-lattice-ps-c| replace:: ``-c``
+.. |c-lattice-ps-a| replace:: ``-a``
+
+.. # |c-lattice-ps-h| replace:: :option:`-h <compile-lattice.ps1 -h>`
+.. # |c-lattice-ps-c| replace:: :option:`-c <compile-lattice.ps1 -c>`
+.. # |c-lattice-ps-a| replace:: :option:`-a <compile-lattice.ps1 -a>`
+
 .. |c-lattice-ps-help| replace:: :option:`-Help <compile-lattice.ps1 -Help>`
 .. |c-lattice-ps-clean| replace:: :option:`-Clean <compile-lattice.ps1 -Clean>`
 .. |c-lattice-ps-all| replace:: :option:`-All <compile-lattice.ps1 -All>`
@@ -260,7 +270,7 @@ On Windows
 |                   | |c-lattice-ps-vhdl08|  | GHDL only: Compile only for VHDL-2008.                                  |
 +-------------------+------------------------+-------------------------------------------------------------------------+
 
-
+.. # ===========================================================================================================================================================
 .. index::
    pair: Pre-compilation; Xilinx ISE
 
@@ -327,9 +337,14 @@ On Windows
 
 **List of command line arguments:**
 
-.. |c-ise-ps-h| replace:: :option:`-h <compile-xilinx-ise.ps1 -h>`
-.. |c-ise-ps-c| replace:: :option:`-c <compile-xilinx-ise.ps1 -c>`
-.. |c-ise-ps-a| replace:: :option:`-a <compile-xilinx-ise.ps1 -a>`
+.. |c-ise-ps-h| replace:: ``-h``
+.. |c-ise-ps-c| replace:: ``-c``
+.. |c-ise-ps-a| replace:: ``-a``
+
+.. # |c-ise-ps-h| replace:: :option:`-h <compile-xilinx-ise.ps1 -h>`
+.. # |c-ise-ps-c| replace:: :option:`-c <compile-xilinx-ise.ps1 -c>`
+.. # |c-ise-ps-a| replace:: :option:`-a <compile-xilinx-ise.ps1 -a>`
+
 .. |c-ise-ps-help| replace:: :option:`-Help <compile-xilinx-ise.ps1 -Help>`
 .. |c-ise-ps-clean| replace:: :option:`-Clean <compile-xilinx-ise.ps1 -Clean>`
 .. |c-ise-ps-all| replace:: :option:`-All <compile-xilinx-ise.ps1 -All>`
@@ -356,7 +371,7 @@ On Windows
 |               | |c-ise-ps-vhdl08|  | GHDL only: Compile only for VHDL-2008.                                          |
 +---------------+--------------------+---------------------------------------------------------------------------------+
 
-
+.. # ===========================================================================================================================================================
 .. index::
    pair: Pre-compilation; Xilinx Vivado
 
@@ -423,9 +438,14 @@ On Windows
 
 **List of command line arguments:**
 
-.. |c-vivado-ps-h| replace:: :option:`-h <compile-xilinx-vivado.ps1 -h>`
-.. |c-vivado-ps-c| replace:: :option:`-c <compile-xilinx-vivado.ps1 -c>`
-.. |c-vivado-ps-a| replace:: :option:`-a <compile-xilinx-vivado.ps1 -a>`
+.. |c-vivado-ps-h| replace:: ``-h``
+.. |c-vivado-ps-c| replace:: ``-c``
+.. |c-vivado-ps-a| replace:: ``-a``
+
+.. # |c-vivado-ps-h| replace:: :option:`-h <compile-xilinx-vivado.ps1 -h>`
+.. # |c-vivado-ps-c| replace:: :option:`-c <compile-xilinx-vivado.ps1 -c>`
+.. # |c-vivado-ps-a| replace:: :option:`-a <compile-xilinx-vivado.ps1 -a>`
+
 .. |c-vivado-ps-help| replace:: :option:`-Help <compile-xilinx-vivado.ps1 -Help>`
 .. |c-vivado-ps-clean| replace:: :option:`-Clean <compile-xilinx-vivado.ps1 -Clean>`
 .. |c-vivado-ps-all| replace:: :option:`-All <compile-xilinx-vivado.ps1 -All>`
@@ -452,15 +472,16 @@ On Windows
 |                  | |c-vivado-ps-vhdl08|  | GHDL only: Compile only for VHDL-2008.                                    |
 +------------------+-----------------------+---------------------------------------------------------------------------+
 
-
+.. # ===========================================================================================================================================================
 .. index::
    pair: Pre-compilation; Third-Party Libraries
 
 .. _USING:PreCompile:ThirdParty:
 
 Third-Party Libraries
-*********************
+****************************************************************************************************************************************************************
 
+.. # ===========================================================================================================================================================
 .. index::
    pair: Pre-compilation; OSVVM
 
@@ -517,9 +538,14 @@ On Windows
 
 **List of command line arguments:**
 
-.. |c-osvvm-ps-h| replace:: :option:`-h <compile-osvvm.ps1 -h>`
-.. |c-osvvm-ps-c| replace:: :option:`-c <compile-osvvm.ps1 -c>`
-.. |c-osvvm-ps-a| replace:: :option:`-a <compile-osvvm.ps1 -a>`
+.. |c-osvvm-ps-h| replace:: ``-h``
+.. |c-osvvm-ps-c| replace:: ``-c``
+.. |c-osvvm-ps-a| replace:: ``-a``
+
+.. # |c-osvvm-ps-h| replace:: :option:`-h <compile-osvvm.ps1 -h>`
+.. # |c-osvvm-ps-c| replace:: :option:`-c <compile-osvvm.ps1 -c>`
+.. # |c-osvvm-ps-a| replace:: :option:`-a <compile-osvvm.ps1 -a>`
+
 .. |c-osvvm-ps-help| replace:: :option:`-Help <compile-osvvm.ps1 -Help>`
 .. |c-osvvm-ps-clean| replace:: :option:`-Clean <compile-osvvm.ps1 -Clean>`
 .. |c-osvvm-ps-all| replace:: :option:`-All <compile-osvvm.ps1 -All>`
@@ -540,7 +566,7 @@ On Windows
 |                 | |c-osvvm-ps-questa|  | Compile for QuestaSim.                                                      |
 +-----------------+----------------------+-----------------------------------------------------------------------------+
 
-
+.. # ===========================================================================================================================================================
 .. index::
    pair: Pre-compilation; UVVM
 
@@ -597,9 +623,14 @@ On Windows
 
 **List of command line arguments:**
 
-.. |c-uvvm-ps-h| replace:: :option:`-h <compile-uvvm.ps1 -h>`
-.. |c-uvvm-ps-c| replace:: :option:`-c <compile-uvvm.ps1 -c>`
-.. |c-uvvm-ps-a| replace:: :option:`-a <compile-uvvm.ps1 -a>`
+.. |c-uvvm-ps-h| replace:: ``-h``
+.. |c-uvvm-ps-c| replace:: ``-c``
+.. |c-uvvm-ps-a| replace:: ``-a``
+
+.. # |c-uvvm-ps-h| replace:: :option:`-h <compile-uvvm.ps1 -h>`
+.. # |c-uvvm-ps-c| replace:: :option:`-c <compile-uvvm.ps1 -c>`
+.. # |c-uvvm-ps-a| replace:: :option:`-a <compile-uvvm.ps1 -a>`
+
 .. |c-uvvm-ps-help| replace:: :option:`-Help <compile-uvvm.ps1 -Help>`
 .. |c-uvvm-ps-clean| replace:: :option:`-Clean <compile-uvvm.ps1 -Clean>`
 .. |c-uvvm-ps-all| replace:: :option:`-All <compile-uvvm.ps1 -All>`
@@ -620,14 +651,99 @@ On Windows
 |                | |c-uvvm-ps-questa|  | Compile for QuestaSim.                                                        |
 +----------------+---------------------+-------------------------------------------------------------------------------+
 
+.. # ===========================================================================================================================================================
+.. index::
+   pair: Pre-compilation; VUnit
 
+.. _USING:PreCompile:ThirdParty:VUnit:
+
+VUnit
+=====
+
+On Linux
+--------
+
+.. code-block:: Bash
+
+   # Example 1 - Compile for all Simulators
+   ./tools/precompile/compile-vunit.sh --all
+   # Example 2 - Compile only for GHDL
+   ./tools/precompile/compile-vunit.sh --ghdl
+
+**List of command line arguments:**
+
+.. |c-vunit-sh-h| replace:: :option:`-h <compile-vunit.sh -h>`
+.. |c-vunit-sh-c| replace:: :option:`-c <compile-vunit.sh -c>`
+.. |c-vunit-sh-a| replace:: :option:`-a <compile-vunit.sh -a>`
+.. |c-vunit-sh-help| replace:: :option:`--help <compile-vunit.sh --help>`
+.. |c-vunit-sh-clean| replace:: :option:`--clean <compile-vunit.sh --clean>`
+.. |c-vunit-sh-all| replace:: :option:`--all <compile-vunit.sh --all>`
+.. |c-vunit-sh-ghdl| replace:: :option:`--ghdl <compile-vunit.sh --ghdl>`
+.. |c-vunit-sh-questa| replace:: :option:`--questa <compile-vunit.sh --questa>`
+
++----------------------------------------+-----------------------------------------------------------------------------+
+| Common Option                          | Parameter Description                                                       |
++=================+======================+=============================================================================+
+| |c-vunit-sh-h|  | |c-vunit-sh-help|    | Print embedded help page(s).                                                |
++-----------------+----------------------+-----------------------------------------------------------------------------+
+| |c-vunit-sh-c|  | |c-vunit-sh-clean|   | Clean-up directories.                                                       |
++-----------------+----------------------+-----------------------------------------------------------------------------+
+| |c-vunit-sh-a|  | |c-vunit-sh-all|     | Compile for all simulators.                                                 |
++-----------------+----------------------+-----------------------------------------------------------------------------+
+|                 | |c-vunit-sh-ghdl|    | Compile for GHDL.                                                           |
++-----------------+----------------------+-----------------------------------------------------------------------------+
+|                 | |c-vunit-sh-questa|  | Compile for QuestaSim.                                                      |
++-----------------+----------------------+-----------------------------------------------------------------------------+
+
+
+On Windows
+----------
+
+.. code-block:: PowerShell
+
+   # Example 1 - Compile for all Simulators
+   .\tools\precompile\compile-vunit.ps1 -All
+   # Example 2 - Compile only for GHDL
+   .\tools\precompile\compile-vunit.ps1 -GHDL
+
+**List of command line arguments:**
+
+.. |c-vunit-ps-h| replace:: ``-h``
+.. |c-vunit-ps-c| replace:: ``-c``
+.. |c-vunit-ps-a| replace:: ``-a``
+
+.. # |c-vunit-ps-h| replace:: :option:`-h <compile-vunit.ps1 -h>`
+.. # |c-vunit-ps-c| replace:: :option:`-c <compile-vunit.ps1 -c>`
+.. # |c-vunit-ps-a| replace:: :option:`-a <compile-vunit.ps1 -a>`
+
+.. |c-vunit-ps-help| replace:: :option:`-Help <compile-vunit.ps1 -Help>`
+.. |c-vunit-ps-clean| replace:: :option:`-Clean <compile-vunit.ps1 -Clean>`
+.. |c-vunit-ps-all| replace:: :option:`-All <compile-vunit.ps1 -All>`
+.. |c-vunit-ps-ghdl| replace:: :option:`-GHDL <compile-vunit.ps1 -GHDL>`
+.. |c-vunit-ps-questa| replace:: :option:`-Questa <compile-vunit.ps1 -Questa>`
+
++----------------------------------------+-------------------------------------------------------------------------------+
+| Common Option                          | Parameter Description                                                         |
++=================+======================+===============================================================================+
+| |c-vunit-ps-h|  | |c-vunit-ps-help|    | Print embedded help page(s).                                                  |
++-----------------+----------------------+-------------------------------------------------------------------------------+
+| |c-vunit-ps-c|  | |c-vunit-ps-clean|   | Clean-up directories.                                                         |
++-----------------+----------------------+-------------------------------------------------------------------------------+
+| |c-vunit-ps-a|  | |c-vunit-ps-all|     | Compile for all simulators.                                                   |
++-----------------+----------------------+-------------------------------------------------------------------------------+
+|                 | |c-vunit-ps-ghdl|    | Compile for GHDL.                                                             |
++-----------------+----------------------+-------------------------------------------------------------------------------+
+|                 | |c-vunit-ps-questa|  | Compile for QuestaSim.                                                        |
++-----------------+----------------------+-------------------------------------------------------------------------------+
+
+.. # ===========================================================================================================================================================
 .. index::
    pair: Pre-compilation; Simulator Adapters
 
 .. _USING:PreCompile:Adapter:
 
 Simulator Adapters
-******************
+****************************************************************************************************************************************************************
 
 .. index::
    pair: Pre-compilation; Cocotb
@@ -691,9 +807,14 @@ On Windows
 
 **List of command line arguments:**
 
-.. |c-cocotb-ps-h| replace:: :option:`-h <compile-cocotb.ps1 -h>`
-.. |c-cocotb-ps-c| replace:: :option:`-c <compile-cocotb.ps1 -c>`
-.. |c-cocotb-ps-a| replace:: :option:`-a <compile-cocotb.ps1 -a>`
+.. |c-cocotb-ps-h| replace:: ``-h``
+.. |c-cocotb-ps-c| replace:: ``-c``
+.. |c-cocotb-ps-a| replace:: ``-a``
+
+.. # |c-cocotb-ps-h| replace:: :option:`-h <compile-cocotb.ps1 -h>`
+.. # |c-cocotb-ps-c| replace:: :option:`-c <compile-cocotb.ps1 -c>`
+.. # |c-cocotb-ps-a| replace:: :option:`-a <compile-cocotb.ps1 -a>`
+
 .. |c-cocotb-ps-help| replace:: :option:`-Help <compile-cocotb.ps1 -Help>`
 .. |c-cocotb-ps-clean| replace:: :option:`-Clean <compile-cocotb.ps1 -Clean>`
 .. |c-cocotb-ps-all| replace:: :option:`-All <compile-cocotb.ps1 -All>`

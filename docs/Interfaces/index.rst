@@ -3,6 +3,8 @@
 IP Core Interfaces
 ##################
 
+PoC defines a set of on-chip interfaces described in the next sections.
+
 .. toctree::
    :maxdepth: 1
 
