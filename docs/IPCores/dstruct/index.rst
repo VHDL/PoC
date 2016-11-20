@@ -1,10 +1,17 @@
+.. _NS:dstruct:
 
-dstruct
-#######
+PoC.dstruct
+===========
 
 These are data structure entities....
 
 .. toctree::
+   :hidden:
 
-   dstruct_deque
-   dstruct_stack
+   Package <dstruct.pkg>
+
+.. toctree::
+   :hidden:
+
+   dstruct_deque <dstruct_deque>
+   dstruct_stack <dstruct_stack>

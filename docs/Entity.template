@@ -1,3 +1,18 @@
+.. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+            :scale: 40
+            :target: https://github.com/VLSI-EDA/PoC/blob/master/src/{SourceRelPath}
+            :alt: Source Code on GitHub
+.. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+            :scale: 40
+            :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/{TestbenchRelPath}
+            :alt: Source Code on GitHub
+
+.. sidebar:: GitHub Links
+
+   * |gh-src| :pocsrc:`Sourcecode <{SourceRelPath}>`
+   * |gh-tb| :poctb:`Testbench <{TestbenchRelPath}>`
+
+.. _IP:{EntityName}:
 
 {EntityName}
 {EntityNameUnderline}
@@ -12,7 +27,6 @@
    :linenos:
    :lines: {EntityDeclarationFromTo}
 
-Source file: {GitHubSourceFile}
+Source file: :pocsrc:`{SourceRelPath} <{SourceRelPath}>`
 
 {SeeAlsoBox}
-

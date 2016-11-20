@@ -1,3 +1,18 @@
+.. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+            :scale: 40
+            :target: https://github.com/VLSI-EDA/PoC/blob/master/src/mem/sdram/sdram_ctrl_de0.vhdl
+            :alt: Source Code on GitHub
+.. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+            :scale: 40
+            :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/mem/sdram/sdram_ctrl_de0_tb.vhdl
+            :alt: Source Code on GitHub
+
+.. sidebar:: GitHub Links
+
+   * |gh-src| :pocsrc:`Sourcecode <mem/sdram/sdram_ctrl_de0.vhdl>`
+   * |gh-tb| :poctb:`Testbench <mem/sdram/sdram_ctrl_de0_tb.vhdl>`
+
+.. _IP:sdram_ctrl_de0:
 
 sdram_ctrl_de0
 ##############
@@ -30,7 +45,7 @@ Command, address and write data is sampled with ``clk``.
 Read data is also aligned with ``clk``.
 
 For description on ``clkout`` see
-:doc:`sdram_ctrl_phy_de0 <sdram_ctrl_phy_de0>`.
+:ref:`sdram_ctrl_phy_de0 <IP:sdram_ctrl_phy_de0>`.
 
 Synchronous resets are used.
 
@@ -42,9 +57,8 @@ Synchronous resets are used.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 88-120
+   :lines: 68-100
 
-Source file: `mem/sdram/sdram_ctrl_de0.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/sdram/sdram_ctrl_de0.vhdl>`_
-
+Source file: :pocsrc:`mem/sdram/sdram_ctrl_de0.vhdl <mem/sdram/sdram_ctrl_de0.vhdl>`
 
 

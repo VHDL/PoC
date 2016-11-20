@@ -1,3 +1,18 @@
+.. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+            :scale: 40
+            :target: https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ocram/ocram_esdp.vhdl
+            :alt: Source Code on GitHub
+.. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+            :scale: 40
+            :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/mem/ocram/ocram_esdp_tb.vhdl
+            :alt: Source Code on GitHub
+
+.. sidebar:: GitHub Links
+
+   * |gh-src| :pocsrc:`Sourcecode <mem/ocram/ocram_esdp.vhdl>`
+   * |gh-tb| :poctb:`Testbench <mem/ocram/ocram_esdp_tb.vhdl>`
+
+.. _IP:ocram_esdp:
 
 ocram_esdp
 ##########
@@ -7,9 +22,9 @@ Inferring / instantiating enhanced simple dual-port memory, with:
 * dual clock, clock enable,
 * 1 read/write port (1st port) plus 1 read port (2nd port).
 
-.. NOTE::
-   This component is **deprecated**.
-   Please use :doc:`PoC.mem.ocram.tdp <ocram_tdp>` for new designs.
+.. deprecated:: 1.1
+
+   Please use :ref:`<IP:ocram_tdp>` for new designs.
    This component has been provided because older FPGA compilers where not
    able to infer true dual-port memory from an RTL description.
 
@@ -68,7 +83,6 @@ Mixed-Port Read-During-Write
    :linenos:
    :lines: 101-119
 
-Source file: `mem/ocram/ocram_esdp.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ocram/ocram_esdp.vhdl>`_
-
+Source file: :pocsrc:`mem/ocram/ocram_esdp.vhdl <mem/ocram/ocram_esdp.vhdl>`
 
 
