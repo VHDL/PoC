@@ -52,8 +52,8 @@ __all__ = __api__
 class Simulator(BaseSimulator):
 	"""This class encapsulates the GHDL simulator."""
 
-	_TOOL_CHAIN =            ToolChain.GHDL_GTKWave
-	_TOOL =                  Tool.GHDL
+	TOOL_CHAIN =      ToolChain.GHDL_GTKWave
+	TOOL =            Tool.GHDL
 
 	class __Directories__(BaseSimulator.__Directories__):
 		GTKWBinary = None
@@ -61,9 +61,6 @@ class Simulator(BaseSimulator):
 	def __init__(self, host, dryRun, simulationSteps):
 		"""Constructor"""
 		super().__init__(host, dryRun, simulationSteps)
-
-		self._vhdlGenerics =  None
-		self._toolChain =     None
 
 		ghdlFilesDirectoryName =        host.PoCConfig['CONFIG.DirectoryNames']['GHDLFiles']
 		self.Directories.Working =      host.Directories.Temp / ghdlFilesDirectoryName

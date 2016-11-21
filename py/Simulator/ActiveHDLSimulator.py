@@ -46,15 +46,11 @@ __all__ = __api__
 
 
 class Simulator(BaseSimulator):
-	_TOOL_CHAIN =            ToolChain.Aldec_ActiveHDL
-	_TOOL =                  Tool.Aldec_aSim
+	TOOL_CHAIN =      ToolChain.Aldec_ActiveHDL
+	TOOL =            Tool.Aldec_aSim
 
 	def __init__(self, host, dryRun, simulationSteps):
 		super().__init__(host, dryRun, simulationSteps)
-
-		self._vhdlVersion =   None
-		self._vhdlGenerics =  None
-		self._toolChain =     None
 
 		activeHDLFilesDirectoryName =   host.PoCConfig['CONFIG.DirectoryNames']['ActiveHDLFiles']
 		self.Directories.Working =      host.Directories.Temp / activeHDLFilesDirectoryName

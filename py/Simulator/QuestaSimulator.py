@@ -48,17 +48,13 @@ __all__ = __api__
 
 
 class Simulator(BaseSimulator):
-	_TOOL_CHAIN =            ToolChain.Mentor_QuestaSim
-	_TOOL =                  Tool.Mentor_vSim
+	TOOL_CHAIN =      ToolChain.Mentor_QuestaSim
+	TOOL =            Tool.Mentor_vSim
 
 	def __init__(self, host, dryRun, simulationSteps):
 		# A separate elaboration step is not implemented in QuestaSim
 		simulationSteps &= ~SimulationSteps.Elaborate
 		super().__init__(host, dryRun, simulationSteps)
-
-		self._vhdlVersion =   None
-		self._vhdlGenerics =  None
-		self._toolChain =     None
 
 		vSimSimulatorFiles =            host.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
 		self.Directories.Working =      host.Directories.Temp / vSimSimulatorFiles

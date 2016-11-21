@@ -6,9 +6,3 @@ README.md
 
 # Package
 __init__.py
-
-# Modules
-Mentor.py
-# PrecisionRTL.py
-ModelSimPE.py
-QuestaSim.py
