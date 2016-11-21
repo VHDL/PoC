@@ -24,9 +24,9 @@ Inferring / instantiating enhanced simple dual-port memory, with:
 
 .. deprecated:: 1.1
 
-   Please use :ref:`<IP:ocram_tdp>` for new designs.
+   :color:`Please use <Maroon>` :ref:`IP:ocram_tdp` :color:`for new designs.
    This component has been provided because older FPGA compilers where not
-   able to infer true dual-port memory from an RTL description.
+   able to infer true dual-port memory from an RTL description. <Maroon>`
 
 Command truth table for port 1:
 
