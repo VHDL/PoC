@@ -338,6 +338,22 @@ begin
 			signal TagMemory	 : T_TAG_LINE_VECTOR(CACHE_SETS-1 downto 0);
 			signal ValidMemory : std_logic_vector(CACHE_SETS-1 downto 0) := (others => '0');
 
+			-- If Address is fed from a register, then:
+			--
+			--  * the TagMemory must be implemented as distributed RAM on Xilinx
+			--    FPGAs because only this RAM has the intended mixed-port
+			--    read-during-write behavior.
+			--
+			--  * Mapping the TagMemory to block RAM is however possible on Altera
+			--    FPGAs because Quartus adds the neccessary bypass logic.
+			--
+			-- If Address is not fed from a register, then:
+			--
+			--  * distributed RAM will be used on Xilinx FPGAs anyway,
+			--  * LUTs and FFs are used on Altera FPGAs.
+			attribute ram_style              : string;  -- XST specific
+			attribute ram_style of TagMemory : signal is "distributed";
+			
 			signal Tag   : T_TAG_LINE; -- read tag from memory
 			signal Valid : std_logic;  -- read valid from memory
 		begin
