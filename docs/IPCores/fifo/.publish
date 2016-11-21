@@ -2,9 +2,4 @@
 .gitempty
 
 # Documentation
-README.md
-
-# Sphinx documentation
-*/
-*/
-*.rst
+README.mdv
