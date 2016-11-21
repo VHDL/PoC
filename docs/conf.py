@@ -48,13 +48,13 @@ extensions = [
 	'sphinx.ext.viewcode',
 	# 'sphinx.ext.githubpages',
 # SphinxContrib extensions
-	'sphinxcontrib.actdiag',
-	'sphinxcontrib.seqdiag',
+	# 'sphinxcontrib.actdiag',
+	# 'sphinxcontrib.seqdiag',
 	'sphinxcontrib.wavedrom',
 	'sphinxcontrib.textstyle',
 	# 'sphinxcontrib.spelling',
 	'autoapi.sphinx',
-	'changelog',
+	# 'changelog',
 # local extensions (patched)
 	'autoprogram',	             #'sphinxcontrib.autoprogram',
 # local extensions
