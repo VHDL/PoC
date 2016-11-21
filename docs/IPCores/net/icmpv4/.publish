@@ -4,7 +4,8 @@
 # Documentation
 README.md
 
+# sub-directories
+*/
+
 # Sphinx documentation
-*/
-*/
 *.rst
