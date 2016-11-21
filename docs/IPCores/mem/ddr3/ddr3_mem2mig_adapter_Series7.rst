@@ -49,7 +49,7 @@ Containts only combinational logic.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 61-96
+   :lines: 61-97
 
 Source file: :pocsrc:`mem/ddr3/ddr3_mem2mig_adapter_Series7.vhdl <mem/ddr3/ddr3_mem2mig_adapter_Series7.vhdl>`
 

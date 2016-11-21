@@ -49,7 +49,7 @@ Containts only combinational logic.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 61-95
+   :lines: 61-96
 
 Source file: :pocsrc:`mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl <mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl>`
 
