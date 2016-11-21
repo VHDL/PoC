@@ -138,28 +138,28 @@ entity cache_mem is
 		OUTSTANDING_REQ    : positive := 2
 	);
 	port (
-    clk : in std_logic; -- clock
-    rst : in std_logic; -- reset
+		clk : in std_logic; -- clock
+		rst : in std_logic; -- reset
 
-    -- "CPU" side
-    cpu_req   : in  std_logic;
-    cpu_write : in  std_logic;
-    cpu_addr  : in  unsigned(log2ceil(MEM_DATA_BITS/CPU_DATA_BITS)+MEM_ADDR_BITS-1 downto 0);
-    cpu_wdata : in  std_logic_vector(CPU_DATA_BITS-1 downto 0);
-    cpu_wmask : in  std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
-    cpu_rdy   : out std_logic;
-    cpu_rstb  : out std_logic;
-    cpu_rdata : out std_logic_vector(CPU_DATA_BITS-1 downto 0);
+		-- "CPU" side
+		cpu_req   : in  std_logic;
+		cpu_write : in  std_logic;
+		cpu_addr  : in  unsigned(log2ceil(MEM_DATA_BITS/CPU_DATA_BITS)+MEM_ADDR_BITS-1 downto 0);
+		cpu_wdata : in  std_logic_vector(CPU_DATA_BITS-1 downto 0);
+		cpu_wmask : in  std_logic_vector(CPU_DATA_BITS/8-1 downto 0) := (others => '0');
+		cpu_rdy   : out std_logic;
+		cpu_rstb  : out std_logic;
+		cpu_rdata : out std_logic_vector(CPU_DATA_BITS-1 downto 0);
 
 		-- Memory side
-		mem_req		: out std_logic;
+		mem_req   : out std_logic;
 		mem_write : out std_logic;
-		mem_addr	: out unsigned(MEM_ADDR_BITS-1 downto 0);
+		mem_addr  : out unsigned(MEM_ADDR_BITS-1 downto 0);
 		mem_wdata : out std_logic_vector(MEM_DATA_BITS-1 downto 0);
 		mem_wmask : out std_logic_vector(MEM_DATA_BITS/8-1 downto 0);
-		mem_rdy		: in	std_logic;
-		mem_rstb	: in	std_logic;
-		mem_rdata : in	std_logic_vector(MEM_DATA_BITS-1 downto 0)
+		mem_rdy   : in  std_logic;
+		mem_rstb  : in  std_logic;
+		mem_rdata : in  std_logic_vector(MEM_DATA_BITS-1 downto 0)
     );
 end entity;
 
