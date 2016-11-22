@@ -1,16 +1,19 @@
-.. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
-            :scale: 40
-            :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_cpu.vhdl
-            :alt: Source Code on GitHub
-.. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
-            :scale: 40
-            :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/cache/cache_cpu_tb.vhdl
-            :alt: Source Code on GitHub
+.. only:: html
 
-.. sidebar:: GitHub Links
+   .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_cpu.vhdl
+               :alt: Source Code on GitHub
+   .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/cache/cache_cpu_tb.vhdl
+               :alt: Source Code on GitHub
 
-   * |gh-src| :pocsrc:`Sourcecode <cache/cache_cpu.vhdl>`
-   * |gh-tb| :poctb:`Testbench <cache/cache_cpu_tb.vhdl>`
+   .. sidebar:: GitHub Links
+
+      * |gh-src| :pocsrc:`Sourcecode <cache/cache_cpu.vhdl>`
+      * |gh-tb| :poctb:`Testbench <cache/cache_cpu_tb.vhdl>`
+
 
 .. _IP:cache_cpu:
 
@@ -158,10 +161,12 @@ cycles and acknowledged when the data has been issued to the memory.
    :linenos:
    :lines: 170-202
 
-Source file: :pocsrc:`cache/cache_cpu.vhdl <cache/cache_cpu.vhdl>`
-
 .. seealso::
 
      :ref:`IP:cache_mem`
 
 
+
+.. only:: latex
+
+   Source file: :pocsrc:`cache/cache_cpu.vhdl <cache/cache_cpu.vhdl>`

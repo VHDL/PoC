@@ -1,16 +1,19 @@
-.. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
-            :scale: 40
-            :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_mem.vhdl
-            :alt: Source Code on GitHub
-.. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
-            :scale: 40
-            :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/cache/cache_mem_tb.vhdl
-            :alt: Source Code on GitHub
+.. only:: html
 
-.. sidebar:: GitHub Links
+   .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_mem.vhdl
+               :alt: Source Code on GitHub
+   .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/cache/cache_mem_tb.vhdl
+               :alt: Source Code on GitHub
 
-   * |gh-src| :pocsrc:`Sourcecode <cache/cache_mem.vhdl>`
-   * |gh-tb| :poctb:`Testbench <cache/cache_mem_tb.vhdl>`
+   .. sidebar:: GitHub Links
+
+      * |gh-src| :pocsrc:`Sourcecode <cache/cache_mem.vhdl>`
+      * |gh-tb| :poctb:`Testbench <cache/cache_mem_tb.vhdl>`
+
 
 .. _IP:cache_mem:
 
@@ -118,10 +121,12 @@ The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
    :linenos:
    :lines: 130-164
 
-Source file: :pocsrc:`cache/cache_mem.vhdl <cache/cache_mem.vhdl>`
-
 .. seealso::
 
      :ref:`IP:cache_cpu`
 
 
+
+.. only:: latex
+
+   Source file: :pocsrc:`cache/cache_mem.vhdl <cache/cache_mem.vhdl>`
