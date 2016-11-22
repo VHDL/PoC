@@ -297,7 +297,7 @@ begin
     Address_Index    <= unsigned(Address(INDEX_BITS-1 downto 0));
 
 		-- Access tag / valid memory and compare tags.
- 		Tag   <= (others => 'X') when contains_x(Address_Index) else
+		Tag   <= (others => 'X') when contains_x(Address_Index) else
 					   TagMemory  (to_integer(Address_Index));
 		Valid <= 'X' when contains_x(Address_Index) else
 						 ValidMemory(to_integer(Address_Index));

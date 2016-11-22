@@ -243,7 +243,7 @@ begin
 
 	-- The Request Generator of the CPU
   CPU_RequestGen: process
- 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("CPU RequestGen");
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("CPU RequestGen");
 
 		-- no operation
 		procedure nop is
@@ -439,7 +439,7 @@ begin
 
 	-- The Checker of the CPU
 	CPU_Checker: process
- 		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("CPU Checker");
+		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("CPU Checker");
 	begin
 		-- wait until reset completes
 		wait until rising_edge(clk) and rst = '0';
