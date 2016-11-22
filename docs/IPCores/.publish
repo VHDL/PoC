@@ -11,12 +11,12 @@ bus/
 cache/
 comm/
 common/
+dstrcut/
 fifo/
 io/
 mem/
 misc/
 net/
-# sata/ DON'T PUBLISH SATA
 sim/
 sort/
 xil/

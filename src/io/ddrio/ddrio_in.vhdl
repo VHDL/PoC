@@ -17,15 +17,33 @@
 -- the falling edge directly before this rising edge. Thus sampling starts with
 -- the falling edge of the clock as depicted in the following waveform.
 --
--- .. code-block:: none
+-- .. wavedrom::
 --
---                 __      ____      ____      __
---    Clock          |____|    |____|    |____|
---    Pad          < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >
---    DataIn_low      ... >< 0      >< 2      ><
---    DataIn_high     ... >< 1      >< 3      ><
+--    { signal: [
+--        {name: 'clk',             wave: 'H.L.H.L.H.L.H.L.H'},
+--        {name: 'pad',             wave: 'x2.3.4.5.2.3.x...', data: ['0', '1', '2', '3', '4', '5'], node: '.a.b.c.d.e.f...'},
+--        {name: 'DataIn_low',    wave: 'x...2...4...2...x', data: ['0',      '2',      '4'],      node: '....k...m...o..'},
+--        {name: 'DataIn_high',   wave: 'x...3...5...3...x', data: ['1',      '3',      '5'],      node: '....l...n...p..'}
+--      ],
+--      edge: ['a|->k', 'b|->l', 'c|->m', 'd|->n', 'e|->o', 'f|->p'],
+--      foot: {
+--        text: ['tspan',
+--          ['tspan', {'font-weight': 'bold'}, 'PoC.io.ddrio.in'],
+--          ' -- DDR Data Input sampled from pad.'
+--        ]
+--      }
+--    }
 --
---    < i > is the value of the i-th data bit on the line.
+-- .. only:: latex
+--
+--    .. code-block:: none
+--                    __      ____      ____      __
+--       Clock          |____|    |____|    |____|
+--       Pad          < 0 >< 1 >< 2 >< 3 >< 4 >< 5 >
+--       DataIn_low      ... >< 0      >< 2      ><
+--       DataIn_high     ... >< 1      >< 3      ><
+--
+--       < i > is the value of the i-th data bit on the line.
 --
 -- After power-up, the output ports ``DataIn_high`` and ``DataIn_low`` both equal
 -- INIT_VALUE.
@@ -35,7 +53,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");

@@ -31,6 +31,9 @@ param(
   [switch]$dirhtml =    $false,
   # Make a single large HTML file
   [switch]$singlehtml = $false,
+  # Make a PDF file
+  [switch]$latex =			$false,
+  [switch]$pdf =				$false,
   # Make pickle files
   [switch]$pickle =     $false,
   # Make json files
@@ -55,7 +58,7 @@ if ($EnableDebug   -eq $null)  { $EnableDebug =    $false }
 if ($EnableDebug   -eq $true)  { $EnableVerbose =  $true  }
 
 # Display help if no command was selected
-$Help = $Help -or (-not ($all -or $html -or $dirhtml -or $singlehtml -or $pickle -or $linkcheck -or $clean -or $help))
+$Help = $Help -or (-not ($all -or $PoC -or $html -or $dirhtml -or $singlehtml -or $latex -or $pdf -or $pickle -or $linkcheck -or $clean -or $help))
 
 function Exit-Script
 { <#
@@ -147,7 +150,7 @@ if ($clean)
 }
 
 if ($html)
-{ $expr = "$SphinxBuild -b html $AllSphinxOpts $BuildDir\html"
+{ $expr = "$SphinxBuild -b html -t PoCInternal $AllSphinxOpts $BuildDir\html"
   $EnableVerbose -and (Write-Host "Building target 'html' into '$BuildDir\html'..." -Foreground DarkCyan  ) | Out-Null
 	$EnableDebug   -and (Write-Host "  $expr" -Foreground Cyan ) | Out-Null
 	Invoke-Expression $expr
@@ -173,7 +176,57 @@ if ($singlehtml)
   Invoke-Expression $expr
   if ($LastExitCode -ne 0)
   { Exit-Script 1 }
-  Write-Host "Build finished. The HTML page are in $BuildDir\singlehtml." -Foreground Green
+  Write-Host "Build finished. The HTML file is in $BuildDir\singlehtml." -Foreground Green
+}
+
+if ($latex)
+{ $expr = "$SphinxBuild -b latex $AllSphinxOpts $BuildDir\pdf"
+  $EnableVerbose -and (Write-Host "Building target 'latex' into '$BuildDir\pdf'..." -Foreground DarkCyan  ) | Out-Null
+	$EnableDebug   -and (Write-Host "  $expr" -Foreground Cyan ) | Out-Null
+  Invoke-Expression $expr
+  if ($LastExitCode -ne 0)
+  { Exit-Script 1 }
+  Write-Host "Build finished. The LaTeX sources are in $BuildDir\pdf." -Foreground Green
+}
+if ($pdf)
+{	cd "$BuildDir\pdf"
+
+	# Write-Host "Patching LaTeX file..." -Foreground Yellow
+	# $strippedFileContent = ""
+	# $state = 0
+	# foreach ($line in (cat "$BuildDir\pdf\ThePoC-Library.tex" -Encoding UTF8))
+	# {	if ($state -lt 3)
+		# {	if ($line.StartsWith("\ifPDFTeX"))
+			# {	$state = 1
+				# $strippedFileContent += "\usepackage[utf8]{inputenc}`r`n\ifdefined\DeclareUnicodeCharacter`r`n  \DeclareUnicodeCharacter{00A0}{\nobreakspace}`r`n  \DeclareUnicodeCharacter{2265}{$\geq$}`r`n  \DeclareUnicodeCharacter{21D2}{$\Rightarrow$}`r`n\fi`r`n"
+				# continue
+			# }
+			# elseif ($line.StartsWith("\fi"))
+			# {	$state += 1
+				# continue
+			# }
+			# if ($state -eq 0)
+			# {	$strippedFileContent += $line + "`r`n"	}
+		# }
+		# else
+		# {	$strippedFileContent += $line + "`r`n"		}
+	# }
+	# $strippedFileContent | Out-File "$BuildDir\pdf\The-PoC-Library.tex" -Encoding UTF8
+  # Write-Host "Patching finished. The new LaTeX file is in $BuildDir\pdf." -Foreground Green
+
+	cp "$BuildDir\pdf\ThePoC-Library.tex" "$BuildDir\pdf\The-PoC-Library.tex"
+
+	$expr = "pdflatex.exe $BuildDir\pdf\The-PoC-Library.tex"
+	$EnableVerbose -and (Write-Host "Building target 'pdf' into '$BuildDir\pdf'..." -Foreground DarkCyan  ) | Out-Null
+	$EnableDebug   -and (Write-Host "  $expr" -Foreground Cyan ) | Out-Null
+  Invoke-Expression $expr
+  if ($LastExitCode -ne 0)
+  { Exit-Script 1 }
+	$EnableVerbose -and (Write-Host "Building target 'pdf' into '$BuildDir\pdf'..." -Foreground DarkCyan  ) | Out-Null
+  Invoke-Expression $expr
+  if ($LastExitCode -ne 0)
+  { Exit-Script 1 }
+  Write-Host "Build finished. The PDF file is in $BuildDir\pdf." -Foreground Green
 }
 
 if ($pickle)
@@ -204,6 +257,33 @@ if ($linkcheck)
   if ($LastExitCode -ne 0)
   { Exit-Script 1 }
   Write-Host "Link check complete. Look for any errors in the above output or in $BuildDir\linkcheck\output.txt." -Foreground Green
+}
+
+if ($PoC)
+{	cd "$SphinxRootDir"
+	Write-Host "Expanding labels..." -Foreground Yellow
+	py -3 ..\temp\sphinx\inventory.py --file _build\html\objects.inv --rst > ..\temp\sphinx\PoC.inventory.rst
+
+	Write-Host "Stripping file from Python labels..." -Foreground Yellow
+	$strippedFileContent = ""
+	$skip = $false
+	foreach ($line in (cat ..\temp\sphinx\PoC.inventory.rst -Encoding UTF8))
+	{	if ($line -match "^`t:py:(exception|class|classmethod|staticmethod|module|function|method|attribute):\w")
+		{	$skip = $true
+			# Write-Host "$line" -Foreground Gray
+			continue
+		}
+		if ($line -match "^`t`t:Title:`t-")
+		{	$skip = $false
+			# Write-Host "$line" -Foreground DarkCyan
+			continue
+		}
+		if (-not $skip)
+		{	$strippedFileContent += $line + "`r`n"
+		}
+	}
+	$strippedFileContent | Out-File ..\temp\sphinx\PoC.stripped.rst -Encoding UTF8
+	Write-Host "Complete" -Foreground Green
 }
 
 Exit-Script

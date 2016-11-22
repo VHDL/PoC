@@ -10,6 +10,7 @@ CCLA.md
 
 # Sphinx documentation
 conf.py
+_extensions/
 _static/
 _templates/
 _themes/
@@ -21,5 +22,6 @@ PoCSphinx.py
 
 poc.py
 
-# make.bat
+# Batch files
+# make.ps1
 # Makefile

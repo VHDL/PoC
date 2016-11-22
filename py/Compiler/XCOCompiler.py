@@ -52,13 +52,11 @@ __all__ = __api__
 
 
 class Compiler(BaseCompiler):
-	_TOOL_CHAIN =     ToolChain.Xilinx_ISE
-	_TOOL =           Tool.Xilinx_CoreGen
+	TOOL_CHAIN =      ToolChain.Xilinx_ISE
+	TOOL =            Tool.Xilinx_CoreGen
 
 	def __init__(self, host, dryRun, noCleanUp):
 		super().__init__(host, dryRun, noCleanUp)
-
-		self._toolChain =    None
 
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working = host.Directories.Temp / configSection['ISECoreGeneratorFiles']

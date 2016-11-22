@@ -12,6 +12,5 @@ Xilinx/
 fifo/
 misc/
 net/
-# sata/ DON'T PUBLISH SATA
 
 *.rst

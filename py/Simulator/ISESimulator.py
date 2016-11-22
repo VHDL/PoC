@@ -48,15 +48,12 @@ __all__ = __api__
 
 
 class Simulator(BaseSimulator, XilinxProjectExportMixIn):
-	_TOOL_CHAIN =            ToolChain.Xilinx_ISE
-	_TOOL =                  Tool.Xilinx_iSim
+	TOOL_CHAIN =      ToolChain.Xilinx_ISE
+	TOOL =            Tool.Xilinx_iSim
 
 	def __init__(self, host, dryRun, simulationSteps):
 		super().__init__(host, dryRun, simulationSteps)
 		XilinxProjectExportMixIn.__init__(self)
-
-		self._vhdlGenerics =  None
-		self._toolChain =     None
 
 		iseFilesDirectoryName =         host.PoCConfig['CONFIG.DirectoryNames']['ISESimulatorFiles']
 		self.Directories.Working =      host.Directories.Temp / iseFilesDirectoryName

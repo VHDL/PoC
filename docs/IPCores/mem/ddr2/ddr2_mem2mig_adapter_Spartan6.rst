@@ -1,23 +1,26 @@
-.. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
-            :scale: 40
-            :target: https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl
-            :alt: Source Code on GitHub
-.. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
-            :scale: 40
-            :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/mem/ddr2/ddr2_mem2mig_adapter_Spartan6_tb.vhdl
-            :alt: Source Code on GitHub
+.. only:: html
 
-.. sidebar:: GitHub Links
+   .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl
+               :alt: Source Code on GitHub
+   .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/mem/ddr2/ddr2_mem2mig_adapter_Spartan6_tb.vhdl
+               :alt: Source Code on GitHub
 
-   * |gh-src| :pocsrc:`Sourcecode <mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl>`
-   * |gh-tb| :poctb:`Testbench <mem/ddr2/ddr2_mem2mig_adapter_Spartan6_tb.vhdl>`
+   .. sidebar:: GitHub Links
+
+      * |gh-src| :pocsrc:`Sourcecode <mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl>`
+      * |gh-tb| :poctb:`Testbench <mem/ddr2/ddr2_mem2mig_adapter_Spartan6_tb.vhdl>`
+
 
 .. _IP:ddr2_mem2mig_adapter_Spartan6:
 
 ddr2_mem2mig_adapter_Spartan6
 #############################
 
-Adapter between the :doc:`PoC.Mem </Interfaces/Memory>`
+Adapter between the :ref:`PoC.Mem <INT:PoC.Mem>`
 interface and the User Interface of the Xilinx MIG IP core for the
 Spartan-6 FPGA Memory Controller Block (MCB). The MCB can be configured to
 have multiple ports. One instance of this adapter is required for every
@@ -28,7 +31,7 @@ Simplifies the User Interface ("user") of the Xilinx MIG IP core (UG388).
 The PoC.Mem interface provides single-cycle fully pipelined read/write access
 to the memory. All accesses are word-aligned. Always all bytes of a word are
 written to the memory. More details can be found
-:doc:`here </Interfaces/Memory>`.
+:ref:`here <INT:PoC.Mem>`.
 
 Generic parameters:
 
@@ -51,6 +54,8 @@ Containts only combinational logic.
    :linenos:
    :lines: 61-96
 
-Source file: :pocsrc:`mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl <mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl>`
 
 
+.. only:: latex
+
+   Source file: :pocsrc:`mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl <mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl>`

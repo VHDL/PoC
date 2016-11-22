@@ -31,15 +31,12 @@
 # ==============================================================================
 #
 # load dependencies
-from datetime import datetime
 from pathlib                      import Path
 from textwrap import dedent
 
-from lib.Functions                import Init
 from Base.Exceptions              import NotConfiguredException
 from Base.Project                 import FileTypes, ToolChain, Tool
-from Base.Simulator               import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException, SimulationState, SimulationResult, \
-	SimulationSteps
+from Base.Simulator               import SimulatorException, Simulator as BaseSimulator, VHDL_TESTBENCH_LIBRARY_NAME, SkipableSimulatorException, SimulationSteps
 from DataBase.Config              import Vendors
 from ToolChains.Mentor.QuestaSim  import QuestaSim, QuestaSimException
 
@@ -51,17 +48,13 @@ __all__ = __api__
 
 
 class Simulator(BaseSimulator):
-	_TOOL_CHAIN =            ToolChain.Mentor_QuestaSim
-	_TOOL =                  Tool.Mentor_vSim
+	TOOL_CHAIN =      ToolChain.Mentor_QuestaSim
+	TOOL =            Tool.Mentor_vSim
 
 	def __init__(self, host, dryRun, simulationSteps):
 		# A separate elaboration step is not implemented in QuestaSim
 		simulationSteps &= ~SimulationSteps.Elaborate
 		super().__init__(host, dryRun, simulationSteps)
-
-		self._vhdlVersion =   None
-		self._vhdlGenerics =  None
-		self._toolChain =     None
 
 		vSimSimulatorFiles =            host.PoCConfig['CONFIG.DirectoryNames']['QuestaSimFiles']
 		self.Directories.Working =      host.Directories.Temp / vSimSimulatorFiles
@@ -77,12 +70,12 @@ class Simulator(BaseSimulator):
 	def _PrepareSimulator(self):
 		# create the QuestaSim executable factory
 		self.LogVerbose("Preparing Mentor simulator.")
-		for sectionName in ['INSTALL.Mentor.QuestaSim', 'INSTALL.Altera.ModelSim']:
+		for sectionName in ['INSTALL.Mentor.QuestaSim', 'INSTALL.Mentor.ModelSimPE', 'INSTALL.Altera.ModelSim']:
 			if (len(self.Host.PoCConfig.options(sectionName)) != 0):
 				break
 		else:
 			raise NotConfiguredException(
-				"Neither Mentor Graphics QuestaSim nor ModelSim Altera-Edition are configured on this system.")
+				"Neither Mentor Graphics QuestaSim, ModelSim PE nor ModelSim Altera-Edition are configured on this system.")
 
 		questaSection = self.Host.PoCConfig[sectionName]
 		binaryPath = Path(questaSection['BinaryDirectory'])
@@ -276,7 +269,7 @@ class Simulator(BaseSimulator):
 			puts "Loading run script '{runScript}'..."
 			do {runScript}
 			""").format(
-			recompileScript=recompileScriptPath.as_posix(),
+				recompileScript=recompileScriptPath.as_posix(),
 				runScript=vsimRunScript
 			)
 
