@@ -99,6 +99,11 @@
 --
 -- The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
 --
+-- .. WARNING::
+--
+--    If the design is synthesized with Xilinx ISE / XST, then the synthesis
+--    option "Keep Hierarchy" must be set to SOFT or TRUE.
+--
 -- SeeAlso:
 --   :ref:`IP:cache_cpu`
 --

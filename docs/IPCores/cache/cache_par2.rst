@@ -99,6 +99,11 @@ Replacing a cache line requires two steps, both with ``Replace = '1'``:
    ``WriteMask = 0``. The new cache line content will be outputed
    again on ``CacheLineOut`` in the next clock cycle (latency = 1).
 
+.. WARNING::
+
+   If the design is synthesized with Xilinx ISE / XST, then the synthesis
+   option "Keep Hierarchy" must be set to SOFT or TRUE.
+
 
 
 .. rubric:: Entity Declaration:
@@ -107,7 +112,7 @@ Replacing a cache line requires two steps, both with ``Replace = '1'``:
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 118-144
+   :lines: 123-149
 
 
 

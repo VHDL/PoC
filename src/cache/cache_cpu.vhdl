@@ -139,6 +139,11 @@
 -- Due to the write-through policy, a write will always take several clock
 -- cycles and acknowledged when the data has been issued to the memory.
 --
+-- .. WARNING::
+--
+--    If the design is synthesized with Xilinx ISE / XST, then the synthesis
+--    option "Keep Hierarchy" must be set to SOFT or TRUE.
+--
 -- SeeAlso:
 --   :ref:`IP:cache_mem`
 --

@@ -91,6 +91,11 @@ must be a power of 2.
    memory with synchronous read by adding a pass-through logic. Quartus Map
    reports warning 276020 which is intended.
 
+.. WARNING::
+
+   If the design is synthesized with Xilinx ISE / XST, then the synthesis
+   option "Keep Hierarchy" must be set to SOFT or TRUE.
+
 
 
 .. rubric:: Entity Declaration:
@@ -99,7 +104,7 @@ must be a power of 2.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 109-132
+   :lines: 114-137
 
 
 

@@ -80,6 +80,11 @@
 --    memory with synchronous read by adding a pass-through logic. Quartus Map
 --    reports warning 276020 which is intended.
 --
+-- .. WARNING::
+--
+--    If the design is synthesized with Xilinx ISE / XST, then the synthesis
+--    option "Keep Hierarchy" must be set to SOFT or TRUE.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany

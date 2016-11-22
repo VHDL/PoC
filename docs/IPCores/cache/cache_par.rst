@@ -67,6 +67,11 @@ Upon replacing a cache line, the new content is given by ``CacheLineIn``. The
 old content is outputed on ``CacheLineOut`` and the old tag on ``OldAddress``,
 both with a latency of one clock cycle.
 
+.. WARNING::
+
+   If the design is synthesized with Xilinx ISE / XST, then the synthesis
+   option "Keep Hierarchy" must be set to SOFT or TRUE.
+
 
 
 .. rubric:: Entity Declaration:
@@ -75,7 +80,7 @@ both with a latency of one clock cycle.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 86-110
+   :lines: 91-115
 
 
 

@@ -56,6 +56,11 @@
 -- old content is outputed on ``CacheLineOut`` and the old tag on ``OldAddress``,
 -- both with a latency of one clock cycle.
 --
+-- .. WARNING::
+--
+--    If the design is synthesized with Xilinx ISE / XST, then the synthesis
+--    option "Keep Hierarchy" must be set to SOFT or TRUE.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany

@@ -88,6 +88,11 @@
 --    ``WriteMask = 0``. The new cache line content will be outputed
 --    again on ``CacheLineOut`` in the next clock cycle (latency = 1).
 --
+-- .. WARNING::
+--
+--    If the design is synthesized with Xilinx ISE / XST, then the synthesis
+--    option "Keep Hierarchy" must be set to SOFT or TRUE.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany

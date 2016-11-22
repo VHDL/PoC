@@ -151,6 +151,11 @@ available in the following clock cycle.
 Due to the write-through policy, a write will always take several clock
 cycles and acknowledged when the data has been issued to the memory.
 
+.. WARNING::
+
+   If the design is synthesized with Xilinx ISE / XST, then the synthesis
+   option "Keep Hierarchy" must be set to SOFT or TRUE.
+
 
 
 .. rubric:: Entity Declaration:
@@ -159,7 +164,7 @@ cycles and acknowledged when the data has been issued to the memory.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 170-202
+   :lines: 175-207
 
 .. seealso::
 
