@@ -164,7 +164,7 @@ class Testbench(object):
 	def __init__(self, dut):
 		self.dut = dut
 		self.stopped = False
-		self.address_bits = dut.ADDR_BITS.value - dut.BYTE_ADDR_BITS.value
+		self.address_bits = dut.ADDR_BITS.value
 		self.data_bits = dut.DATA_BITS.value
 
 		cache_lines = dut.CACHE_LINES.value      # total number of cache lines
