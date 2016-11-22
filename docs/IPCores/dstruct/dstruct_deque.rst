@@ -1,16 +1,19 @@
-.. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
-            :scale: 40
-            :target: https://github.com/VLSI-EDA/PoC/blob/master/src/dstruct/dstruct_deque.vhdl
-            :alt: Source Code on GitHub
-.. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
-            :scale: 40
-            :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/dstruct/dstruct_deque_tb.vhdl
-            :alt: Source Code on GitHub
+.. only:: html
 
-.. sidebar:: GitHub Links
+   .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/dstruct/dstruct_deque.vhdl
+               :alt: Source Code on GitHub
+   .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/dstruct/dstruct_deque_tb.vhdl
+               :alt: Source Code on GitHub
 
-   * |gh-src| :pocsrc:`Sourcecode <dstruct/dstruct_deque.vhdl>`
-   * |gh-tb| :poctb:`Testbench <dstruct/dstruct_deque_tb.vhdl>`
+   .. sidebar:: GitHub Links
+
+      * |gh-src| :pocsrc:`Sourcecode <dstruct/dstruct_deque.vhdl>`
+      * |gh-tb| :poctb:`Testbench <dstruct/dstruct_deque_tb.vhdl>`
+
 
 .. _IP:dstruct_deque:
 
@@ -31,6 +34,8 @@ still being able to unqueue untaken ones in LIFO fashion.
    :linenos:
    :lines: 37-62
 
-Source file: :pocsrc:`dstruct/dstruct_deque.vhdl <dstruct/dstruct_deque.vhdl>`
 
 
+.. only:: latex
+
+   Source file: :pocsrc:`dstruct/dstruct_deque.vhdl <dstruct/dstruct_deque.vhdl>`

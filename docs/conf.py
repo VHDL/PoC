@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.abspath('_extensions'))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.4.8'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -48,15 +48,15 @@ extensions = [
 	'sphinx.ext.viewcode',
 	# 'sphinx.ext.githubpages',
 # SphinxContrib extensions
-	'sphinxcontrib.actdiag',
-	'sphinxcontrib.seqdiag',
+	# 'sphinxcontrib.actdiag',
+	# 'sphinxcontrib.seqdiag',
 	'sphinxcontrib.wavedrom',
+	# 'sphinxcontrib.textstyle',
 	# 'sphinxcontrib.spelling',
 	'autoapi.sphinx',
-	'changelog',
+	# 'changelog',
 # local extensions (patched)
 	'autoprogram',	             #'sphinxcontrib.autoprogram',
-	'textstyle',
 # local extensions
 	'DocumentMember',
 	'poc'
@@ -246,7 +246,7 @@ html_last_updated_fmt = "%b %d, %Y"
 #html_use_index = True
 
 # If true, the index is split into individual pages for each letter.
-#html_split_index = False
+# html_split_index = True
 
 # If true, links to the reST sources are added to the pages.
 #html_show_sourcelink = True
@@ -313,7 +313,7 @@ latex_documents = [
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
-#latex_use_parts = False
+# latex_use_parts = True
 
 # If true, show page references after internal links.
 #latex_show_pagerefs = False

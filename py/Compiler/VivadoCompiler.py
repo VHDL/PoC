@@ -48,14 +48,11 @@ __all__ = __api__
 
 
 class Compiler(BaseCompiler):
-	_TOOL_CHAIN =  ToolChain.Xilinx_Vivado
-	_TOOL =        Tool.Xilinx_Synth
+	TOOL_CHAIN =      ToolChain.Xilinx_Vivado
+	TOOL =            Tool.Xilinx_Synth
 
 	def __init__(self, host, dryRun, noCleanUp):
 		super().__init__(host, dryRun, noCleanUp)
-
-		self._device =      None
-		self._toolChain =   None
 
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working =  host.Directories.Temp / configSection['VivadoSynthesisFiles']
