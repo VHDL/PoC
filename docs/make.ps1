@@ -31,6 +31,9 @@ param(
   [switch]$dirhtml =    $false,
   # Make a single large HTML file
   [switch]$singlehtml = $false,
+  # Make a PDF file
+  [switch]$latex =			$false,
+  [switch]$pdf =				$false,
   # Make pickle files
   [switch]$pickle =     $false,
   # Make json files
@@ -55,7 +58,7 @@ if ($EnableDebug   -eq $null)  { $EnableDebug =    $false }
 if ($EnableDebug   -eq $true)  { $EnableVerbose =  $true  }
 
 # Display help if no command was selected
-$Help = $Help -or (-not ($all -or $PoC -or $html -or $dirhtml -or $singlehtml -or $pickle -or $linkcheck -or $clean -or $help))
+$Help = $Help -or (-not ($all -or $PoC -or $html -or $dirhtml -or $singlehtml -or $latex -or $pdf -or $pickle -or $linkcheck -or $clean -or $help))
 
 function Exit-Script
 { <#
@@ -173,7 +176,57 @@ if ($singlehtml)
   Invoke-Expression $expr
   if ($LastExitCode -ne 0)
   { Exit-Script 1 }
-  Write-Host "Build finished. The HTML page are in $BuildDir\singlehtml." -Foreground Green
+  Write-Host "Build finished. The HTML file is in $BuildDir\singlehtml." -Foreground Green
+}
+
+if ($latex)
+{ $expr = "$SphinxBuild -b latex $AllSphinxOpts $BuildDir\pdf"
+  $EnableVerbose -and (Write-Host "Building target 'latex' into '$BuildDir\pdf'..." -Foreground DarkCyan  ) | Out-Null
+	$EnableDebug   -and (Write-Host "  $expr" -Foreground Cyan ) | Out-Null
+  Invoke-Expression $expr
+  if ($LastExitCode -ne 0)
+  { Exit-Script 1 }
+  Write-Host "Build finished. The LaTeX sources are in $BuildDir\pdf." -Foreground Green
+}
+if ($pdf)
+{	cd "$BuildDir\pdf"
+
+	# Write-Host "Patching LaTeX file..." -Foreground Yellow
+	# $strippedFileContent = ""
+	# $state = 0
+	# foreach ($line in (cat "$BuildDir\pdf\ThePoC-Library.tex" -Encoding UTF8))
+	# {	if ($state -lt 3)
+		# {	if ($line.StartsWith("\ifPDFTeX"))
+			# {	$state = 1
+				# $strippedFileContent += "\usepackage[utf8]{inputenc}`r`n\ifdefined\DeclareUnicodeCharacter`r`n  \DeclareUnicodeCharacter{00A0}{\nobreakspace}`r`n  \DeclareUnicodeCharacter{2265}{$\geq$}`r`n  \DeclareUnicodeCharacter{21D2}{$\Rightarrow$}`r`n\fi`r`n"
+				# continue
+			# }
+			# elseif ($line.StartsWith("\fi"))
+			# {	$state += 1
+				# continue
+			# }
+			# if ($state -eq 0)
+			# {	$strippedFileContent += $line + "`r`n"	}
+		# }
+		# else
+		# {	$strippedFileContent += $line + "`r`n"		}
+	# }
+	# $strippedFileContent | Out-File "$BuildDir\pdf\The-PoC-Library.tex" -Encoding UTF8
+  # Write-Host "Patching finished. The new LaTeX file is in $BuildDir\pdf." -Foreground Green
+
+	cp "$BuildDir\pdf\ThePoC-Library.tex" "$BuildDir\pdf\The-PoC-Library.tex"
+
+	$expr = "pdflatex.exe $BuildDir\pdf\The-PoC-Library.tex"
+	$EnableVerbose -and (Write-Host "Building target 'pdf' into '$BuildDir\pdf'..." -Foreground DarkCyan  ) | Out-Null
+	$EnableDebug   -and (Write-Host "  $expr" -Foreground Cyan ) | Out-Null
+  Invoke-Expression $expr
+  if ($LastExitCode -ne 0)
+  { Exit-Script 1 }
+	$EnableVerbose -and (Write-Host "Building target 'pdf' into '$BuildDir\pdf'..." -Foreground DarkCyan  ) | Out-Null
+  Invoke-Expression $expr
+  if ($LastExitCode -ne 0)
+  { Exit-Script 1 }
+  Write-Host "Build finished. The PDF file is in $BuildDir\pdf." -Foreground Green
 }
 
 if ($pickle)
