@@ -12,6 +12,8 @@ ocram_esdp.files
 ocram_esdp.vhdl
 ocram_sdp.files
 ocram_sdp.vhdl
+ocram_sdp_wf.files
+ocram_sdp_wf.vhdl
 ocram_sp.files
 ocram_sp.vhdl
 ocram_tdp.files
