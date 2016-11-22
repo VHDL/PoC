@@ -9,9 +9,28 @@
 --
 -- Description:
 -- -------------------------------------
--- All inputs are synchronous to the rising-edge of the clock ``clock``.
+-- Tag-unit with fully-parallel compare of tag.
 --
--- **Command thruth table:**
+-- Configuration
+-- *************
+--
+-- +--------------------+----------------------------------------------------+
+-- | Parameter          | Description                                        |
+-- +====================+====================================================+
+-- | REPLACEMENT_POLICY | Replacement policy. For supported policies see     |
+-- |                    | PoC.cache_replacement_policy.                      |
+-- +--------------------+----------------------------------------------------+
+-- | CACHE_LINES        | Number of cache lines.                             |
+-- +--------------------+----------------------------------------------------+
+-- | ASSOCIATIVITY      | Associativity of the cache.                        |
+-- +--------------------+----------------------------------------------------+
+-- | ADDRESS_BITS       | Number of address bits. Each address identifies    |
+-- |                    | exactly one cache line in memory.                  |
+-- +--------------------+----------------------------------------------------+
+--
+--
+-- Command truth table
+-- *******************
 --
 -- +---------+-----------+-------------+---------+----------------------------------+
 -- | Request | ReadWrite | Invalidate  | Replace | Command                          |
@@ -28,6 +47,12 @@
 -- +---------+-----------+-------------+---------+----------------------------------+
 -- |   0     |           |    0        |    1    | Replace cache line.              |
 -- +---------+-----------+-------------+---------+----------------------------------+
+--
+--
+-- Operation
+-- *********
+--
+-- All inputs are synchronous to the rising-edge of the clock `clock`.
 --
 -- All commands use ``Address`` to lookup (request) or replace a cache line.
 -- Each command is completed within one clock cycle.
@@ -86,7 +111,7 @@ entity cache_tagunit_par is
 		REPLACEMENT_POLICY : string		:= "LRU";
 		CACHE_LINES				 : positive := 32;
 		ASSOCIATIVITY			 : positive := 32;
-		ADDRESS_BITS					 : positive := 8
+		ADDRESS_BITS			 : positive := 8
 	);
 	port (
 		Clock : in std_logic;
@@ -239,7 +264,9 @@ begin
 		--
 		--  * the TagMemory must be implemented as distributed RAM on Xilinx
 		--    FPGAs because only this RAM has the intended mixed-port
-		--    read-during-write behavior.
+		--    read-during-write behavior. But even if ``ram_style`` is set,
+		--    synthesis sometimes generates a wrong netlist if KEEP_HIERARCHY is
+		--    set to off (default).
 		--
 		--  * Mapping the TagMemory to block RAM is however possible on Altera
 		--    FPGAs because Quartus adds the neccessary bypass logic.
@@ -358,7 +385,9 @@ begin
 			--
 			--  * the TagMemory must be implemented as distributed RAM on Xilinx
 			--    FPGAs because only this RAM has the intended mixed-port
-			--    read-during-write behavior.
+			--    read-during-write behavior. But even if ``ram_style`` is set,
+			--    synthesis sometimes generates a wrong netlist if KEEP_HIERARCHY is
+			--    set to off (default).
 			--
 			--  * Mapping the TagMemory to block RAM is however possible on Altera
 			--    FPGAs because Quartus adds the neccessary bypass logic.

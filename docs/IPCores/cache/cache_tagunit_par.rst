@@ -20,9 +20,28 @@
 cache_tagunit_par
 #################
 
-All inputs are synchronous to the rising-edge of the clock ``clock``.
+Tag-unit with fully-parallel compare of tag.
 
-**Command thruth table:**
+Configuration
+*************
+
++--------------------+----------------------------------------------------+
+| Parameter          | Description                                        |
++====================+====================================================+
+| REPLACEMENT_POLICY | Replacement policy. For supported policies see     |
+|                    | PoC.cache_replacement_policy.                      |
++--------------------+----------------------------------------------------+
+| CACHE_LINES        | Number of cache lines.                             |
++--------------------+----------------------------------------------------+
+| ASSOCIATIVITY      | Associativity of the cache.                        |
++--------------------+----------------------------------------------------+
+| ADDRESS_BITS       | Number of address bits. Each address identifies    |
+|                    | exactly one cache line in memory.                  |
++--------------------+----------------------------------------------------+
+
+
+Command truth table
+*******************
 
 +---------+-----------+-------------+---------+----------------------------------+
 | Request | ReadWrite | Invalidate  | Replace | Command                          |
@@ -39,6 +58,12 @@ All inputs are synchronous to the rising-edge of the clock ``clock``.
 +---------+-----------+-------------+---------+----------------------------------+
 |   0     |           |    0        |    1    | Replace cache line.              |
 +---------+-----------+-------------+---------+----------------------------------+
+
+
+Operation
+*********
+
+All inputs are synchronous to the rising-edge of the clock `clock`.
 
 All commands use ``Address`` to lookup (request) or replace a cache line.
 Each command is completed within one clock cycle.
@@ -74,7 +99,7 @@ must be a power of 2.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 84-107
+   :lines: 109-132
 
 
 
