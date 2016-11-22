@@ -218,11 +218,21 @@ if ($pdf)
 
 	$expr = "pdflatex.exe $BuildDir\pdf\The-PoC-Library.tex"
 	$EnableVerbose -and (Write-Host "Building target 'pdf' into '$BuildDir\pdf'..." -Foreground DarkCyan  ) | Out-Null
+	Write-Host "Compiling with pdflatex.exe..." -Foreground Yellow
 	$EnableDebug   -and (Write-Host "  $expr" -Foreground Cyan ) | Out-Null
   Invoke-Expression $expr
   if ($LastExitCode -ne 0)
   { Exit-Script 1 }
-	$EnableVerbose -and (Write-Host "Building target 'pdf' into '$BuildDir\pdf'..." -Foreground DarkCyan  ) | Out-Null
+
+	$expr = "makeindex.exe .\The-PoC-Library.idx"
+	Write-Host "Creating index with makeindex.exe..." -Foreground Yellow
+	$EnableDebug   -and (Write-Host "  $expr" -Foreground Cyan ) | Out-Null
+  Invoke-Expression $expr
+  if ($LastExitCode -ne 0)
+  { Exit-Script 1 }
+
+	$expr = "pdflatex.exe $BuildDir\pdf\The-PoC-Library.tex"
+	Write-Host "Compiling with pdflatex.exe..." -Foreground Yellow
   Invoke-Expression $expr
   if ($LastExitCode -ne 0)
   { Exit-Script 1 }
