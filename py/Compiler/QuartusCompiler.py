@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,33 +32,28 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
-
-
 # load dependencies
 from datetime                   import datetime
 from pathlib                    import Path
 
 from Base.Project               import ToolChain, Tool
 from Base.Compiler              import Compiler as BaseCompiler, CompilerException, SkipableCompilerException, CompileState
-from PoC.Entity                 import WildCard
+from DataBase.Entity                 import WildCard
 from ToolChains.Altera.Quartus  import QuartusException, Quartus, QuartusSettings, QuartusProjectFile
 
 
+__api__ = [
+	'Compiler'
+]
+__all__ = __api__
+
+
 class Compiler(BaseCompiler):
-	_TOOL_CHAIN =  ToolChain.Altera_Quartus
-	_TOOL =        Tool.Altera_Quartus_Map
+	TOOL_CHAIN =      ToolChain.Altera_Quartus
+	TOOL =            Tool.Altera_Quartus_Map
 
 	def __init__(self, host, dryRun, noCleanUp):
 		super().__init__(host, dryRun, noCleanUp)
-
-		self._toolChain =      None
 
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
 		self.Directories.Working = host.Directories.Temp / configSection['QuartusSynthesisFiles']

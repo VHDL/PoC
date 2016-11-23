@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,15 +32,7 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Altera.Quartus")
-
-
+# load dependencies
 from collections                import OrderedDict
 from subprocess                 import check_output, STDOUT
 
@@ -50,7 +42,24 @@ from Base.Logging                import Severity, LogEntry
 from Base.Executable            import Executable, CommandLineArgumentList
 from Base.Executable            import ExecutableArgument, ShortValuedFlagArgument, LongValuedFlagArgument, StringArgument, ShortFlagArgument
 from Base.Project                import Project as BaseProject, ProjectFile, FileTypes, SettingsFile
+from ToolChains import ToolMixIn
 from ToolChains.Altera.Altera    import AlteraException
+
+
+__api__ = [
+	'QuartusException',
+	'Configuration',
+	'ToolMixIn',
+	'Quartus',
+	'Map',
+	'TclShell',
+	'MapFilter',
+	'QuartusSession',
+	'QuartusProject',
+	'QuartusSettings',
+	'QuartusProjectFile'
+]
+__all__ = __api__
 
 
 class QuartusException(AlteraException):
@@ -110,34 +119,24 @@ class Configuration(BaseConfiguration):
 			raise ConfigurationException("Quartus version mismatch. Expected version {0}.".format(version))
 
 
-class QuartusMixIn:
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		self._platform =            platform
-		self._dryrun =              dryrun
-		self._binaryDirectoryPath = binaryDirectoryPath
-		self._version =             version
-		self._Logger =              logger
-
-
-class Quartus(QuartusMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		QuartusMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
-
+class Quartus(ToolMixIn):
 	def GetMap(self):
-		return Map(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
+		return Map(self)
 
 	def GetTclShell(self):
-		return TclShell(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
+		return TclShell(self)
 
 
-class Map(Executable, QuartusMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		QuartusMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
+class Map(Executable, ToolMixIn):
+	def __init__(self, toolchain : ToolMixIn):
+		ToolMixIn.__init__(
+			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
+			toolchain._Logger)
 
-		if (platform == "Windows") :      executablePath = binaryDirectoryPath / "quartus_map.exe"
-		elif (platform == "Linux") :      executablePath = binaryDirectoryPath / "quartus_map"
-		else :                            raise PlatformNotSupportedException(platform)
-		Executable.__init__(self, platform, dryrun, executablePath, logger=logger)
+		if (self._platform == "Windows") :      executablePath = self._binaryDirectoryPath / "quartus_map.exe"
+		elif (self._platform == "Linux") :      executablePath = self._binaryDirectoryPath / "quartus_map"
+		else :                            raise PlatformNotSupportedException(self._platform)
+		Executable.__init__(self, self._platform, self._dryrun, executablePath, logger=self._Logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -211,14 +210,17 @@ class Map(Executable, QuartusMixIn):
 			if self._hasOutput:
 				self.LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
-class TclShell(Executable, QuartusMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		QuartusMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
 
-		if (platform == "Windows") :      executablePath = binaryDirectoryPath / "quartus_sh.exe"
-		elif (platform == "Linux") :      executablePath = binaryDirectoryPath / "quartus_sh"
-		else :                            raise PlatformNotSupportedException(platform)
-		super().__init__(platform, dryrun, executablePath, logger=logger)
+class TclShell(Executable, ToolMixIn):
+	def __init__(self, toolchain : ToolMixIn):
+		ToolMixIn.__init__(
+			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
+			toolchain._Logger)
+
+		if (self._platform == "Windows") :      executablePath = self._binaryDirectoryPath / "quartus_sh.exe"
+		elif (self._platform == "Linux") :      executablePath = self._binaryDirectoryPath / "quartus_sh"
+		else :                            raise PlatformNotSupportedException(self._platform)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -232,6 +234,7 @@ class TclShell(Executable, QuartusMixIn):
 			Executable,
 			SwitchShell
 	)
+
 
 def MapFilter(gen):
 	iterator = iter(gen)
@@ -250,6 +253,8 @@ def MapFilter(gen):
 		elif line.startswith("Warning ("):
 			yield LogEntry(line, Severity.Warning)
 		elif line.startswith("    Info ("):
+			yield LogEntry(line, Severity.Verbose)
+		elif line.startswith("        Info ("):
 			yield LogEntry(line, Severity.Verbose)
 		elif line.startswith("Info:"):
 			yield LogEntry(line, Severity.Info)

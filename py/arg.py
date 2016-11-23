@@ -137,18 +137,20 @@ class LibrarySwitch(metaclass=StringArgument):
 # print("repr: " + repr(LibrarySwitch))
 
 
-args = CommandLineArgumentList(VerboseFlag, LibrarySwitch)
-args[VerboseFlag] =    True
-args[LibrarySwitch] =  "poc"
+# entry point
+if __name__ == "__main__":
+	args = CommandLineArgumentList(VerboseFlag, LibrarySwitch)
+	args[VerboseFlag] =    True
+	args[LibrarySwitch] =  "poc"
 
-print("Verbose: " + str(args[VerboseFlag]))
-print("'" + ("' '".join(args.ToArgumentList())) + "'")
+	print("Verbose: " + str(args[VerboseFlag]))
+	print("'" + ("' '".join(args.ToArgumentList())) + "'")
 
-args[LibrarySwitch] =  "test"
-print("'" + ("' '".join(args.ToArgumentList())) + "'")
+	args[LibrarySwitch] =  "test"
+	print("'" + ("' '".join(args.ToArgumentList())) + "'")
 
-args[LibrarySwitch] =  None
-print("'" + ("' '".join(args.ToArgumentList())) + "'")
+	args[LibrarySwitch] =  None
+	print("'" + ("' '".join(args.ToArgumentList())) + "'")
 
-args[VerboseFlag] =    False
-print("'" + ("' '".join(args.ToArgumentList())) + "'")
+	args[VerboseFlag] =    False
+	print("'" + ("' '".join(args.ToArgumentList())) + "'")

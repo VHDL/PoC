@@ -15,7 +15,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,10 +30,19 @@
 # limitations under the License.
 # ==============================================================================
 #
-
+# load dependencies
 from functools  import reduce
 from operator    import or_
 from sys        import version_info
+
+
+__api__ = [
+	'merge', 'merge_with',
+	'CallByRefParam',
+	'Init',
+	'Exit'
+]
+__all__ = __api__
 
 
 def merge(*dicts):
@@ -48,8 +57,9 @@ class CallByRefParam:
 	def __init__(self, value=None):
 		self.value = value
 
-	def __lshift__(self, other):
+	def __ilshift__(self, other):
 		self.value = other
+		return self
 
 	def __eq__(self, other):  return self.value == other
 	def __ne__(self, other):  return self.value != other
@@ -175,4 +185,3 @@ class Exit:
 		print("{RED}ERROR:{NOCOLOR} {message}".format(message=ex.message, **Init.Foreground))
 		print("  Please run {YELLOW}'poc.[sh/ps1] configure'{NOCOLOR} in PoC root directory.".format(**Init.Foreground))
 		Exit.exit(1)
-

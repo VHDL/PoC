@@ -1,0 +1,11 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Sphinx extensions
+autoprogram.py
+# railroaddiagram.py
+
+DocumentMember.py

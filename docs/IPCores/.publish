@@ -1,0 +1,24 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+Sphinx documentation
+alt/
+arith/
+bus/
+cache/
+comm/
+common/
+dstrcut/
+fifo/
+io/
+mem/
+misc/
+net/
+sim/
+sort/
+xil/
+
+*.rst

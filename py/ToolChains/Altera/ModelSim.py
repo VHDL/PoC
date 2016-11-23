@@ -18,7 +18,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,30 +33,30 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Altera.ModelSim")
+# load dependencies
+from re                           import compile as RegExpCompile
+from subprocess                   import check_output
+
+from Base.Configuration           import ConfigurationException
+from ToolChains.Mentor.ModelSimPE import Configuration as ModelSimPE_Configuration
+from ToolChains.Altera.Altera     import AlteraException
 
 
-from re                      import compile as RegExpCompile
-from subprocess             import check_output
-
-from Base.Configuration import Configuration as BaseConfiguration, ConfigurationException
-from ToolChains.Altera.Altera import AlteraException
+__api__ = [
+	'ModelSimException',
+	'Configuration'
+]
+__all__ = __api__
 
 
 class ModelSimException(AlteraException):
 	pass
 
 
-class Configuration(BaseConfiguration):
+class Configuration(ModelSimPE_Configuration):
 	_vendor =    "Altera"
 	_toolName =  "ModelSim Altera Edition"
-	_section =  "INSTALL.Altera.ModelSim"
+	_section =   "INSTALL.Altera.ModelSim"
 	_template = {
 		"Windows": {
 			_section: {

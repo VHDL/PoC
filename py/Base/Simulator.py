@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,40 +32,84 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	pass
-	# place library initialization code here
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Simulator.Base")
-
-
 # load dependencies
 from datetime           import datetime
 from enum               import Enum, unique
 
+from flags import Flags
+
+from lib.Decorators import MethodAlias
 from lib.Functions      import Init
 from Base.Exceptions    import ExceptionBase, SkipableException
 from Base.Logging       import LogEntry
 from Base.Project       import Environment, VHDLVersion
 from Base.Shared        import Shared, to_time
-from PoC.Entity         import WildCard
-from PoC.TestCase       import TestCase, SimulationStatus, TestSuite
+from DataBase.Entity    import WildCard
+from DataBase.TestCase  import TestCase, SimulationStatus, TestSuite
+
+
+# required for autoapi.sphinx
+from lib.SphinxExtensions import DocumentMemberAttribute
+
+
+__api__ = [
+	'SimulatorException',
+	'SkipableSimulatorException',
+	'PoCSimulationResultNotFoundException',
+	'SimulationSteps',
+	'SimulationState',
+	'SimulationResult',
+	'Simulator',
+	'PoCSimulationResultFilter'
+]
+__all__ = __api__
 
 
 VHDL_TESTBENCH_LIBRARY_NAME = "test"
 
 
 class SimulatorException(ExceptionBase):
-	pass
+	"""Base class for all SimulatorException classes. It is raised while running
+	simulation tasks in PoC.
+	"""
 
 class SkipableSimulatorException(SimulatorException, SkipableException):
-	pass
+	"""``SkipableSimulatorException`` is a :py:exc:`SimulatorException`, which
+	can be skipped.
+	"""
+
+class PoCSimulationResultNotFoundException(SkipableSimulatorException):
+	"""This exception is raised if the expected PoC simulation result string was
+	not found in the simulator's output.
+	"""
 
 
 @unique
+class SimulationSteps(Flags):
+	"""Simulation step enumeration."""
+	Prepare =        1 << 0
+	CleanUpBefore =  1 << 1
+	CleanUpAfter =   1 << 2
+	Analyze =        1 << 5
+	Elaborate =      1 << 6
+	# Compile =        1 << 7
+	# Optimize =       1 << 8
+	Simulate =       1 << 9
+	ShowWaveform =   1 << 10
+	ShowReport =     1 << 15
+	Recompile =      1 << 25
+	Resimulate =     1 << 26
+	# Review =         1 << 27
+
+	def __and__(self, other):
+		if isinstance(other, bool):
+			return self if other else self.__class__.no_flags
+		else:
+			return super().__and__(other)
+
+@unique
 class SimulationState(Enum):
+	"""Simulation state enumeration."""
 	Prepare =     0
 	Analyze =     1
 	Elaborate =   2
@@ -75,41 +119,64 @@ class SimulationState(Enum):
 
 @unique
 class SimulationResult(Enum):
+	"""Simulation result enumeration."""
 	NotRun =      0
 	Error =       1
 	Failed =      2
 	NoAsserts =   3
 	Passed =      4
+	GUIRun =      5
 
 
 class Simulator(Shared):
-	_ENVIRONMENT =    Environment.Simulation
-	_vhdlVersion =    VHDLVersion.VHDL2008
+	"""Base class for all Simulator classes."""
+
+	ENVIRONMENT =     Environment.Simulation
+	VHDL_VERSION =    VHDLVersion.VHDL2008
 
 	class __Directories__(Shared.__Directories__):
 		PreCompiled = None
 
-	def __init__(self, host, dryRun):
+	@DocumentMemberAttribute()
+	def __init__(self, host, dryRun, simulationSteps : SimulationSteps):
+		"""Class initializer
+
+		:type  host:            object
+		:param host:            The hosting instance for this instance.
+		:type  dryRun:          bool
+		:param dryRun:          Enable dry-run mode
+		:type  simulationSteps: SimulationSteps
+		:param simulationSteps: A set of simulation step to precess.
+		"""
 		super().__init__(host, dryRun)
 
+		self._vhdlVersion =     None
+		self._vhdlGenerics =    None
+		self._toolChain =       None
+
+		self._simulationSteps = simulationSteps
 		self._testSuite =       TestSuite()  # TODO: This includes not the read ini files phases ...
 		self._state =           SimulationState.Prepare
 		self._analyzeTime =     None
 		self._elaborationTime = None
 		self._simulationTime =  None
 
-
 	# class properties
 	# ============================================================================
 	@property
 	def TestSuite(self):      return self._testSuite
 
-	def _PrepareSimulator(self):
-		self._Prepare()
-
 	def _PrepareSimulationEnvironment(self):
 		self.LogNormal("Preparing simulation environment...")
 		self._PrepareEnvironment()
+
+	def _PrepareEnvironment_PurgeDirectory(self):
+		if (SimulationSteps.CleanUpBefore in self._simulationSteps):
+			super()._PrepareEnvironment_PurgeDirectory()
+
+	@MethodAlias(Shared._Prepare)
+	def _PrepareSimulator(self):
+		pass
 
 	def RunAll(self, fqnList, *args, **kwargs):
 		"""Run a list of testbenches. Expand wildcards to all selected testbenches."""
@@ -130,7 +197,8 @@ class Simulator(Shared):
 		finally:
 			self._testSuite.StopTimer()
 
-		self.PrintOverallSimulationReport()
+		if (SimulationSteps.ShowReport in self._simulationSteps):
+			self.PrintOverallSimulationReport()
 
 		return self._testSuite.IsAllPassed
 
@@ -140,7 +208,7 @@ class Simulator(Shared):
 			SimulationState.Prepare:   SimulationStatus.InternalError,
 			SimulationState.Analyze:   SimulationStatus.AnalyzeError,
 			SimulationState.Elaborate: SimulationStatus.ElaborationError,
-			SimulationState.Optimize:  SimulationStatus.ElaborationError,
+			# SimulationState.Optimize:  SimulationStatus.ElaborationError,
 			SimulationState.Simulate:  SimulationStatus.SimulationError
 		}
 
@@ -170,9 +238,11 @@ class Simulator(Shared):
 		finally:
 			testCase.StopTimer()
 
-	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None, guiMode=False):
+	def Run(self, testbench, board, vhdlVersion, vhdlGenerics=None):
 		"""Write the Testbench message line, create a PoCProject and add the first *.files file to it."""
 		self.LogQuiet("{CYAN}Testbench: {0!s}{NOCOLOR}".format(testbench.Parent, **Init.Foreground))
+
+		testbench.Result = SimulationResult.NotRun
 
 		self._vhdlVersion =  vhdlVersion
 		self._vhdlGenerics = vhdlGenerics
@@ -183,22 +253,34 @@ class Simulator(Shared):
 
 		self._prepareTime = self._GetTimeDeltaSinceLastEvent()
 
-		self.LogNormal("Running analysis for every vhdl file...")
-		self._state = SimulationState.Analyze
-		self._RunAnalysis(testbench)
-		self._analyzeTime = self._GetTimeDeltaSinceLastEvent()
+		if self._simulationSteps.CleanUpBefore:
+			pass
 
-		self.LogNormal("Running elaboration...")
-		self._state = SimulationState.Elaborate
-		self._RunElaboration(testbench)
-		self._elaborationTime = self._GetTimeDeltaSinceLastEvent()
+		if self._simulationSteps.Prepare:
+			pass
 
-		self.LogNormal("Running simulation...")
-		self._state = SimulationState.Simulate
-		self._RunSimulation(testbench)
-		self._simulationTime = self._GetTimeDeltaSinceLastEvent()
+		if self._simulationSteps.Analyze:
+			self.LogNormal("Running analysis for every vhdl file...")
+			self._state = SimulationState.Analyze
+			self._RunAnalysis(testbench)
+			self._analyzeTime = self._GetTimeDeltaSinceLastEvent()
 
-		if (guiMode is True):
+		if self._simulationSteps.Elaborate:
+			self.LogNormal("Running elaboration...")
+			self._state = SimulationState.Elaborate
+			self._RunElaboration(testbench)
+			self._elaborationTime = self._GetTimeDeltaSinceLastEvent()
+
+		# if self._simulationSteps.Optimize:
+		# 	pass
+
+		if self._simulationSteps.Simulate:
+			self.LogNormal("Running simulation...")
+			self._state = SimulationState.Simulate
+			self._RunSimulation(testbench)
+			self._simulationTime = self._GetTimeDeltaSinceLastEvent()
+
+		if self._simulationSteps.ShowWaveform:
 			self.LogNormal("Executing waveform viewer...")
 			self._state = SimulationState.View
 			self._RunView(testbench)
@@ -246,7 +328,8 @@ class Simulator(Shared):
 		SimulationStatus.SimulationError:     "RED",
 		SimulationStatus.SimulationFailed:    "RED",
 		SimulationStatus.SimulationNoAsserts: "YELLOW",
-		SimulationStatus.SimulationSuccess:   "GREEN"
+		SimulationStatus.SimulationSuccess:   "GREEN",
+		SimulationStatus.SimulationGUIRun:    "YELLOW"
 	}
 
 	__SIMULATION_REPORT_STATUS_TEXT_TABLE__ = {
@@ -258,7 +341,8 @@ class Simulator(Shared):
 		SimulationStatus.SimulationError:     "SIM. ERROR",
 		SimulationStatus.SimulationFailed:    "FAILED",
 		SimulationStatus.SimulationNoAsserts: "NO ASSERTS",
-		SimulationStatus.SimulationSuccess:   "PASSED"
+		SimulationStatus.SimulationSuccess:   "PASSED",
+		SimulationStatus.SimulationGUIRun:    "GUI RUN"
 	}
 
 	def PrintSimulationReportLine(self, testObject, indent, nameColumnWidth):
@@ -307,4 +391,4 @@ def PoCSimulationResultFilter(gen, simulationResult):
 
 		yield line
 
-	if (state != 6):    raise SkipableSimulatorException("No PoC Testbench Report in simulator output found.")
+	if (state != 6):    raise PoCSimulationResultNotFoundException("No PoC Testbench Report in simulator output found.")

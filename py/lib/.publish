@@ -7,15 +7,18 @@ README.md
 # Package
 __init__.py
 
-# Patches for the Python Standard Library
-ConfigParser.py
+# ExtendedConfigParser
+ExtendedConfigParser/
+
+# pyAttributes
+pyAttribute/
+
+# SphinxExtensions
+SphinxExtensions/
 
 # Modules
 Decorators.py
 Functions.py
-
-# pyAttributes
-pyAttribute/
 
 # Parser and Code Document Object Model (CodeDOM)
 Parser.py

@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,17 +32,10 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
+# load dependencies
 from subprocess import check_output
 
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Xilinx.Vivado")
-
-
+from ToolChains import ToolMixIn
 from lib.Functions              import CallByRefParam
 from Base.Exceptions            import PlatformNotSupportedException
 from Base.Logging                import LogEntry, Severity
@@ -52,6 +45,24 @@ from Base.Simulator              import SimulationResult, PoCSimulationResultFil
 from Base.Executable            import Executable
 from Base.Executable            import ExecutableArgument, ShortFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, StringArgument, CommandLineArgumentList
 from ToolChains.Xilinx.Xilinx    import XilinxException
+
+
+__api__ = [
+	'VivadoException',
+	'Configuration',
+	'ToolMixIn',
+	'Vivado',
+	'XElab',
+	'XSim',
+	'Synth',
+	'ElaborationFilter',
+	'SimulatorFilter',
+	'CompilerFilter',
+	'VivadoProject',
+	'VivadoProjectFile',
+	'XilinxDesignConstraintFile'
+]
+__all__ = __api__
 
 
 class VivadoException(XilinxException):
@@ -110,36 +121,27 @@ class Configuration(BaseConfiguration):
 			raise ConfigurationException("Vivado version mismatch. Expected version {0}.".format(version))
 
 
-class VivadoMixIn:
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		self._platform =            platform
-		self._dryrun =              dryrun
-		self._binaryDirectoryPath = binaryDirectoryPath
-		self._version =             version
-		self._Logger =              logger
-
-
-class Vivado(VivadoMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		VivadoMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
-
+class Vivado(ToolMixIn):
 	def GetElaborator(self):
-		return XElab(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
+		return XElab(self)
 
 	def GetSimulator(self):
-		return XSim(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
+		return XSim(self)
 
 	def GetSynthesizer(self):
-		return Synth(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
+		return Synth(self)
 
 
-class XElab(Executable, VivadoMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		VivadoMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
-		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "xelab.bat"
-		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "xelab"
+class XElab(Executable, ToolMixIn):
+	def __init__(self, toolchain : ToolMixIn):
+		ToolMixIn.__init__(
+			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
+			toolchain._Logger)
+
+		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "xelab.bat"
+		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "xelab"
 		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, dryrun, executablePath, logger=logger)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -260,13 +262,16 @@ class XElab(Executable, VivadoMixIn):
 				self.LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
-class XSim(Executable, VivadoMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		VivadoMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
-		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "xsim.bat"
-		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "xsim"
+class XSim(Executable, ToolMixIn):
+	def __init__(self, toolchain : ToolMixIn):
+		ToolMixIn.__init__(
+			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
+			toolchain._Logger)
+
+		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "xsim.bat"
+		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "xsim"
 		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, dryrun, executablePath, logger=logger)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -355,13 +360,16 @@ class XSim(Executable, VivadoMixIn):
 		return simulationResult.value
 
 
-class Synth(Executable, VivadoMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		VivadoMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
-		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vivado.bat"
-		elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vivado"
+class Synth(Executable, ToolMixIn):
+	def __init__(self, toolchain : ToolMixIn):
+		ToolMixIn.__init__(
+			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
+			toolchain._Logger)
+
+		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vivado.bat"
+		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "vivado"
 		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, dryrun, executablePath, logger=logger)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
 
 		self.Parameters[self.Executable] = executablePath
 

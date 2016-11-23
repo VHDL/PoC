@@ -13,7 +13,7 @@ interresting project, please send us feedback or get listed on our
 If you are more familiar with PoC and it's components, you might start asking
 youself how components internally work. Please read our more advanced topics in
 the online help, read our inline source code comments or start a discussion on
-`Gitter <#discuss-with-us-on-gitter>`_ to ask us directly.
+`Gitter <#talk-to-us-on-gitter>`_ to ask us directly.
 
 Now you should be very familiar with our work and you might be interessted in
 developing own components and contribute them to the main repository. See the
@@ -67,7 +67,7 @@ Contributers License Agreement
 We require all contributers to sign a Contributor License Agreement (CLA). If
 you don't know whatfore a CLA is needed and how it prevents legal issues on both
 sides, read `this short blog <https://www.clahub.com/pages/why_cla>`_ post.PoC
-uses the :doc:`Apache Contributor License Agreement </References/Licenses/ICLA>`
+uses the :doc:`Apache Contributor License Agreement </References/Licenses/ApacheLicense2.0_ICLA>`
 to match the :doc:`Apache License 2.0 </References/Licenses/ApacheLicense2.0>`.
 
 So to get started, `sign the Contributor License Agreement (CLA) <https://www.clahub.com/agreements/VLSI-EDA/PoC>`_
@@ -212,7 +212,7 @@ Commit your porposed changes to your feature branch and push all changes to GitH
    :target: https://github.com/VLSI-EDA/PoC/pulls
 
 Go to your forked repository and klick on "Compare and Pull-Request" or go to
-our PoC repository and create a new `pull request <https://github.com/VLSI-EDA/PoC/pullrequest>`_.
+our PoC repository and create a new `pull request <https://github.com/VLSI-EDA/PoC/pulls>`_.
 
 If this is your first Pull-Request, you need to sign our Contributers License
 Agreement (CLA).
@@ -233,5 +233,21 @@ story on how you use PoC.
 List of Contributers
 ********************
 
-.. include:: ./Authors.rst
+=========================  ============================================================
+Contributor [#f1]_         Contact E-Mail
+=========================  ============================================================
+Genßler, Paul              paul.genssler@tu-dresden.de
+Köhler, Steffen            steffen.koehler@tu-dresden.de
+Lehmann, Patrick [#f2]_    patrick.lehmann@tu-dresden.de; paebbels@gmail.com
+Preußer, Thomas B. [#f2]_  thomas.preusser@tu-dresden.de; thomas.preusser@utexas.edu
+Reichel, Peter             peter.reichel@eas.iis.fraunhofer.de; peter@peterreichel.info
+Schirok, Jan               janschirok@gmx.net
+Voß, Jens                  jens.voss@mailbox.tu-dresden.de
+Zabel, Martin [#f2]_       martin.zabel@tu-dresden.de
+=========================  ============================================================
 
+
+.. rubric:: Footnotes
+
+.. [#f1] In alphabetical order.
+.. [#f2] Maintainer.

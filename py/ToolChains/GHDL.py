@@ -18,7 +18,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,19 +33,12 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.GHDL")
-
-
+# load dependencies
 from pathlib                import Path
 from re                     import compile as re_compile
 from subprocess             import check_output, CalledProcessError
 
+from lib.Functions          import CallByRefParam
 from Base.Configuration     import Configuration as BaseConfiguration, ConfigurationException
 from Base.Exceptions        import PlatformNotSupportedException
 from Base.Executable        import Executable, LongValuedFlagArgument
@@ -54,7 +47,22 @@ from Base.Executable        import ShortFlagArgument, LongFlagArgument, CommandL
 from Base.Logging           import LogEntry, Severity
 from Base.Simulator         import PoCSimulationResultFilter, SimulationResult
 from Base.ToolChain         import ToolChainException
-from lib.Functions          import CallByRefParam
+from ToolChains             import ToolMixIn
+
+
+__api__ = [
+	'GHDLException',
+	'GHDLReanalyzeException',
+	'Configuration',
+	'GHDL',
+	'GHDLAnalyze',
+	'GHDLElaborate',
+	'GHDLRun',
+	'GHDLAnalyzeFilter',
+	'GHDLElaborateFilter',
+	'GHDLRunFilter'
+]
+__all__ = __api__
 
 
 class GHDLException(ToolChainException):
@@ -172,8 +180,10 @@ class Configuration(BaseConfiguration):
 		self._host.PoCConfig[self._section]['Backend'] = backend
 
 
-class GHDL(Executable):
+class GHDL(Executable, ToolMixIn):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, backend, logger=None):
+		ToolMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger=logger)
+
 		if (platform == "Windows"):     executablePath = binaryDirectoryPath / "ghdl.exe"
 		elif (platform == "Linux"):     executablePath = binaryDirectoryPath / "ghdl"
 		elif (platform == "Darwin"):    executablePath = binaryDirectoryPath / "ghdl"
@@ -184,7 +194,7 @@ class GHDL(Executable):
 		#self.Parameters[self.Executable] = executablePath
 
 		if (platform == "Windows"):
-			if (backend not in ["mcode"]):                raise GHDLException("GHDL for Windows does not support backend '{0}'.".format(backend))
+			if (backend not in ["llvm", "mcode"]):        raise GHDLException("GHDL for Windows does not support backend '{0}'.".format(backend))
 		elif (platform == "Linux"):
 			if (backend not in ["gcc", "llvm", "mcode"]): raise GHDLException("GHDL for Linux does not support backend '{0}'.".format(backend))
 		elif (platform == "Darwin"):
@@ -309,8 +319,8 @@ class GHDL(Executable):
 	class SwitchGHDLWaveform(metaclass=LongValuedFlagArgument):
 		_name =     "wave"
 
-	class SwitchWaveformSelect(metaclass=LongValuedFlagArgument):
-		_name =     "wave-opt-file"		# requires GHDL update
+	class SwitchWaveformOptionFile(metaclass=LongValuedFlagArgument):
+		_name =     "read-wave-opt"		# requires GHDL update
 
 	RunOptions = CommandLineArgumentList(
 		SwitchIEEEAsserts,
@@ -318,7 +328,7 @@ class GHDL(Executable):
 		SwitchVCDGZWaveform,
 		SwitchFastWaveform,
 		SwitchGHDLWaveform,
-		SwitchWaveformSelect
+		SwitchWaveformOptionFile
 	)
 
 	def GetGHDLAnalyze(self):
@@ -389,6 +399,7 @@ class GHDLAnalyze(GHDL):
 			if self._hasOutput:
 				self.LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
+
 class GHDLElaborate(GHDL):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, backend, logger=None):
 		super().__init__(platform, dryrun, binaryDirectoryPath, version, backend, logger=logger)
@@ -435,6 +446,7 @@ class GHDLElaborate(GHDL):
 		finally:
 			if self._hasOutput:
 				self.LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
+
 
 class GHDLRun(GHDL):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, backend, logger=None):

@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,17 +33,9 @@
 # ==============================================================================
 #
 # entry point
-from subprocess import check_output
+from subprocess             import check_output
 
-
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.Aldec.ActiveHDL")
-
-
+from ToolChains import ToolMixIn
 from lib.Functions          import CallByRefParam
 from Base.Exceptions        import PlatformNotSupportedException
 from Base.Logging           import LogEntry, Severity
@@ -53,6 +45,21 @@ from Base.Executable        import ExecutableArgument, PathArgument, StringArgum
 from Base.Executable        import LongFlagArgument, ShortValuedFlagArgument, ShortTupleArgument, CommandLineArgumentList
 from Base.Configuration     import Configuration as BaseConfiguration, ConfigurationException
 from ToolChains.Aldec.Aldec import AldecException
+
+
+__api__ = [
+	'ActiveHDLException',
+	'Configuration',
+	'ActiveHDL',
+	'VHDLCompiler',
+	'StandaloneSimulator',
+	'Simulator',
+	'ActiveHDLVHDLLibraryTool',
+	'VHDLCompilerFilter',
+	'SimulatorFilter',
+	'VHDLLibraryToolFilter'
+]
+__all__ = __api__
 
 
 class ActiveHDLException(AldecException):
@@ -112,36 +119,26 @@ class Configuration(BaseConfiguration):
 			raise ConfigurationException("Active-HDL version mismatch. Expected version {0}.".format(version))
 
 
-class ActiveHDLMixIn:
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		self._platform =            platform
-		self._dryrun =              dryrun
-		self._binaryDirectoryPath = binaryDirectoryPath
-		self._version =             version
-		self._Logger =              logger
-
-
-class ActiveHDL(ActiveHDLMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		ActiveHDLMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger)
-
+class ActiveHDL(ToolMixIn):
 	def GetVHDLLibraryTool(self):
-		return ActiveHDLVHDLLibraryTool(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
+		return ActiveHDLVHDLLibraryTool(self)
 
 	def GetVHDLCompiler(self):
-		return VHDLCompiler(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
+		return VHDLCompiler(self)
 
 	def GetSimulator(self):
-		return StandaloneSimulator(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
+		return StandaloneSimulator(self)
 
 
-class VHDLCompiler(Executable, ActiveHDLMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		ActiveHDLMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger=logger)
-		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vcom.exe"
-		# elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vcom"
-		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, dryrun, executablePath, logger=logger)
+class VHDLCompiler(Executable, ToolMixIn):
+	def __init__(self, toolchain : ToolMixIn):
+		ToolMixIn.__init__(
+			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
+			toolchain._Logger)
+
+		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vcom.exe"
+		else:                                raise PlatformNotSupportedException(self._platform)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
 
 		self._hasOutput =    False
 		self._hasWarnings =  False
@@ -232,13 +229,15 @@ class VHDLCompiler(Executable, ActiveHDLMixIn):
 				self.LogNormal("  " + ("-" * (78 - self.Logger.BaseIndent*2)))
 
 
-class StandaloneSimulator(Executable, ActiveHDLMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		ActiveHDLMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger=logger)
-		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vsimsa.exe"
-		# elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vsimsa"
-		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, dryrun, executablePath, logger=logger)
+class StandaloneSimulator(Executable, ToolMixIn):
+	def __init__(self, toolchain : ToolMixIn):
+		ToolMixIn.__init__(
+			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
+			toolchain._Logger)
+
+		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vsimsa.exe"
+		else:                                raise PlatformNotSupportedException(self._platform)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
 
 		self._hasOutput =    False
 		self._hasWarnings =  False
@@ -305,9 +304,9 @@ class StandaloneSimulator(Executable, ActiveHDLMixIn):
 		return simulationResult.value
 
 
-class Simulator(Executable, ActiveHDLMixIn):
+class Simulator(Executable, ToolMixIn):
 	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		ActiveHDLMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger=logger)
+		ToolMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger=logger)
 		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vsimsa.exe"
 		# elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vsimsa"
 		else:                                            raise PlatformNotSupportedException(self._platform)
@@ -371,13 +370,15 @@ class Simulator(Executable, ActiveHDLMixIn):
 		print(_indent + "-" * 80)
 
 
-class ActiveHDLVHDLLibraryTool(Executable, ActiveHDLMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, version, logger=None):
-		ActiveHDLMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, version, logger=logger)
-		if (self._platform == "Windows"):    executablePath = binaryDirectoryPath / "vlib.exe"
-		# elif (self._platform == "Linux"):    executablePath = binaryDirectoryPath / "vlib"
-		else:                                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(platform, dryrun, executablePath, logger=logger)
+class ActiveHDLVHDLLibraryTool(Executable, ToolMixIn):
+	def __init__(self, toolchain : ToolMixIn):
+		ToolMixIn.__init__(
+			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
+			toolchain._Logger)
+
+		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vlib.exe"
+		else:                                raise PlatformNotSupportedException(self._platform)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
 
 		self._hasOutput =    False
 		self._hasWarnings =  False

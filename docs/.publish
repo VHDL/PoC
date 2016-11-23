@@ -10,12 +10,18 @@ CCLA.md
 
 # Sphinx documentation
 conf.py
+_extensions/
 _static/
 _templates/
 _themes/
 */
 *.rst
 
+# Introspection file for sphinxcontrib-autoprogram
+PoCSphinx.py
+
 poc.py
-# make.bat
+
+# Batch files
+# make.ps1
 # Makefile

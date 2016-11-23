@@ -281,27 +281,30 @@ class Class2(Class0, metaclass=Meta):
 		Flag6
 	)
 
-c0 = Class1("fuse.exe")
-c0.Parameters[c0.Executable] =  "xsim.exe"
+
+
+# entry point
+if __name__ == "__main__":
+	c0 = Class1("fuse.exe")
+	c0.Parameters[c0.Executable] =  "xsim.exe"
 
 
 
-c1 = Class1("asim.exe")
-c1.Parameters[c1.Flag1] =      True
-c1.Parameters[c1.Flag5] =      True
+	c1 = Class1("asim.exe")
+	c1.Parameters[c1.Flag1] =      True
+	c1.Parameters[c1.Flag5] =      True
 
-print()
-print(c0.Parameters.ToArgumentList())
-print(c1.Parameters.ToArgumentList())
+	print()
+	print(c0.Parameters.ToArgumentList())
+	print(c1.Parameters.ToArgumentList())
 
-c2 = Class2("vsim.exe")
-# c2.Parameters[t.Executable] =  "vsim.exe"
-c2.Parameters[c2.Flag3] =      True
-c2.Parameters[c2.Flag6] =      True
+	c2 = Class2("vsim.exe")
+	# c2.Parameters[t.Executable] =  "vsim.exe"
+	c2.Parameters[c2.Flag3] =      True
+	c2.Parameters[c2.Flag6] =      True
 
 
-print()
-print(c0.Parameters.ToArgumentList())
-print(c1.Parameters.ToArgumentList())
-print(c2.Parameters.ToArgumentList())
-
+	print()
+	print(c0.Parameters.ToArgumentList())
+	print(c1.Parameters.ToArgumentList())
+	print(c2.Parameters.ToArgumentList())

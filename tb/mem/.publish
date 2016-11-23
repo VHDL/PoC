@@ -9,4 +9,5 @@ lut/
 ocram/
 ocrom/
 
-# --------------------------------------
+# Entities
+mem_model.vhdl

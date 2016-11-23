@@ -14,11 +14,11 @@
 -- * dual clock, clock enable,
 -- * 1 read/write port (1st port) plus 1 read port (2nd port).
 --
--- .. NOTE::
---    This component is **deprecated**.
---    Please use :doc:`PoC.mem.ocram.tdp <ocram_tdp>` for new designs.
+-- .. deprecated:: 1.1
+--
+--    **Please use** :ref:`IP:ocram_tdp` **for new designs.
 --    This component has been provided because older FPGA compilers where not
---    able to infer true dual-port memory from an RTL description.
+--    able to infer true dual-port memory from an RTL description.**
 --
 -- Command truth table for port 1:
 --
@@ -67,7 +67,7 @@
 -- License:
 -- =============================================================================
 -- Copyright 2008-2016 Technische Universitaet Dresden - Germany
---										 Chair for VLSI-Design, Diagnostics and Architecture
+--										 Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
