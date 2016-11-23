@@ -51,4 +51,9 @@ The package PoC.mem.ocram holds all component declarations for this namespace.
 .. toctree::
    :hidden:
 
+   ocram_tdp_sim <ocram_tdp_sim>
+
+.. toctree::
+   :hidden:
+
    ocram_esdp <ocram_esdp>
