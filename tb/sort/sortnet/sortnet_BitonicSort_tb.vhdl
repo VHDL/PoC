@@ -33,6 +33,9 @@ library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
+library OSVVM;
+use			OSVVM.RandomPkg.all;
+
 library PoC;
 use			PoC.math.all;
 use			PoC.utils.all;
@@ -44,8 +47,7 @@ use			PoC.sim_types.all;
 use			PoC.simulation.all;
 use			PoC.waveform.all;
 
-library OSVVM;
-use			OSVVM.RandomPkg.all;
+library Test;
 
 
 entity sortnet_BitonicSort_tb is
@@ -53,7 +55,6 @@ end entity;
 
 
 architecture tb of sortnet_BitonicSort_tb is
-
 	constant TAG_BITS								: positive	:= 4;
 
 	constant INPUTS									: positive	:= 64;
@@ -69,69 +70,13 @@ architecture tb of sortnet_BitonicSort_tb is
 	constant STAGES									: positive	:= triangularNumber(log2ceil(INPUTS));
 	constant DELAY									: natural		:= STAGES / PIPELINE_STAGE_AFTER;
 
-	subtype T_DATA				is std_logic_vector(DATA_BITS - 1 downto 0);
-	type T_DATA_VECTOR		is array(natural range <>) of T_DATA;
-
-	type T_SCOREBOARD_DATA is record
-		IsKey : std_logic;
-		Meta  : std_logic_vector(META_BITS - 1 downto 0);
-		Data  : T_DATA_VECTOR(INPUTS - 1 downto 0);
-	end record;
-
-	function match(expected : T_SCOREBOARD_DATA; actual : T_SCOREBOARD_DATA) return boolean is
-		variable good : boolean;
-	begin
-		good :=						(expected.IsKey = actual.IsKey);
-		good := good and	(expected.Meta = actual.Meta);
-		if (expected.IsKey = '1') then
-			for i in expected.Data'range loop
-				good := good and	(expected.Data(i) = actual.Data(i));
-				exit when (good = FALSE);
-			end loop;
-		end if;
-		return good;
-	end function;
-
-	function to_string(dataset : T_SCOREBOARD_DATA) return string is
-		variable KeyMarker : string(1 to 2);
-	begin
-		KeyMarker := ite((dataset.IsKey = '1'), "* ", "  ");
-		-- for i in 0 to 0 loop --dataset.Key'range loop
-			return	"Data: " & to_string(dataset.Data(0), 'h') & KeyMarker &
-						"  Meta: " & to_string(dataset.Meta, 'h');
-		-- end loop;
-	end function;
-
-	package P_Scoreboard is new osvvm.ScoreboardGenericPkg
+	package P_SORTNET_TB is new Test.sortnet_tb
 		generic map (
-			ExpectedType        => T_SCOREBOARD_DATA,
-			ActualType          => T_SCOREBOARD_DATA,
-			Match               => match,
-			expected_to_string  => to_string, --[T_SCOREBOARD_DATA return string],
-			actual_to_string    => to_string
+			META_BITS		=> META_BITS,
+			DATA_BITS		=> DATA_BITS,
+			INPUTS			=> INPUTS
 		);
-
-	function to_dv(slm : T_SLM) return T_DATA_VECTOR is
-		variable Result	: T_DATA_VECTOR(slm'range(1));
-	begin
-		for i in slm'high(1) downto slm'low(1) loop
-			for j in T_DATA'range loop
-				Result(i)(j)	:= slm(i, j);
-			end loop;
-		end loop;
-		return Result;
-	end function;
-
-	function to_slm(dv : T_DATA_VECTOR) return T_SLM is
-		variable Result	: T_SLM(dv'range, T_DATA'range);
-	begin
-		for i in dv'range loop
-			for j in T_DATA'range loop
-				Result(i, j)	:= dv(i)(j);
-			end loop;
-		end loop;
-		return Result;
-	end function;
+	use P_SORTNET_TB.all;
 
 	constant CLOCK_FREQ					: FREQ																			:= 100 MHz;
 	signal Clock								: std_logic																	:= '1';
@@ -149,7 +94,7 @@ architecture tb of sortnet_BitonicSort_tb is
 	signal DataInputMatrix			: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 	signal DataOutputMatrix			: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 
-	shared variable ScoreBoard	: P_Scoreboard.ScoreBoardPType;
+	shared variable ScoreBoard	: PT_SCOREBOARD;
 
 begin
 	-- initialize global simulation status
@@ -202,32 +147,23 @@ begin
 			DataInput							:= RandomVar.RandSlv(DATA_BITS - KEY_BITS);
 			Generator_Input(0)		:= DataInput & KeyInput;
 			ScoreBoardData.Data(0):= Generator_Input(0);
-			-- report "==================================================" & LF & "Generator_Input(0):  " & to_string(Generator_Input(0), 'h');
 
 			loop_j: for j in 1 to INPUTS - 1 loop
 				KeyInput						:= RandomVar.RandSlv(KEY_BITS);
 				DataInput						:= RandomVar.RandSlv(DATA_BITS - KEY_BITS);
 				Generator_Input(j)	:= DataInput & KeyInput;
 
-				-- report "==================================================" & LF & "Generator_Input(" & integer'image(j) & "):  " & to_string(Generator_Input(j), 'h');
 				for k in j downto 1 loop
 					if GreaterThan(ScoreBoardData.Data(k - 1), Generator_Input(j)) then
 						ScoreBoardData.Data(k)	:= ScoreBoardData.Data(k - 1);
-						-- report "move right: " & integer'image(k-1) & " -> " & integer'image(k) & "  k: " & to_string(ScoreBoardData.Data(k), 'h');
 					else
 						ScoreBoardData.Data(k)	:= Generator_Input(j);
-						-- report "save " & to_string(ScoreBoardData.Data(k), 'h') & " at " & integer'image(k);
 						next loop_j;
 					end if;
 				end loop;
 				ScoreBoardData.Data(0)	:= Generator_Input(j);
-				-- report "store " & to_string(ScoreBoardData.Data(0), 'h') & " at 0";
 			end loop;
-			-- report "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
-			-- for j in 0 to INPUTS - 1 loop
-				-- report "ScoreBoardData.Data(" & integer'image(j) & "):  " & to_string(ScoreBoardData.Data(j), 'h');
-			-- end loop;
-			-- report "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
+
 			Generator_Data				<= Generator_Input;
 			ScoreBoard.Push(ScoreBoardData);
 			wait until rising_edge(Clock);
