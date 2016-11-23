@@ -132,7 +132,7 @@ begin
 		for i in 8 to 15 loop
 			simWaitUntilRisingEdge(clk, 1);
 			ce    <= '1';
-			we1		<= '1';
+			we1		<= not we1;
 			a1		<= to_unsigned(i, A_BITS);
 			d1		<= std_logic_vector(to_unsigned(i, D_BITS));
 		end loop;
@@ -200,6 +200,7 @@ begin
 	-- ===========================================================================
 	Stimuli2: process
 		constant simProcessID : T_SIM_PROCESS_ID := simRegisterProcess("Stimuli2");
+		variable re2 : boolean;
 	begin
 		-- No operation on first rising clock edge
 		a2    <= (others => '-');
@@ -223,13 +224,19 @@ begin
 		-------------------------------------------------------------------------
 		simWaitUntilRisingEdge(clk, 1);
 		-- first write on port 1 here
+		re2   := false;
 		a2		<= (others => '-');
 		rd_d2 <= (others => '-');
 
 		for i in 8 to 15 loop
 			simWaitUntilRisingEdge(clk, 1);
+			re2   := not re2; -- only compare read result every second cycle
 			a2		<= to_unsigned(i, A_BITS);
-			rd_d2 <= std_logic_vector(to_unsigned(i, D_BITS));
+			if re2 then
+				rd_d2 <= std_logic_vector(to_unsigned(i, D_BITS));
+			else
+				rd_d2 <= (others => '-');
+			end if;
 		end loop;
 
 		-- Read in 8 consecutive clock cycles on port 2, write one cycle later on
