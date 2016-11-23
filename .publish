@@ -5,9 +5,10 @@
 #.gitmodules
 
 # *.yml files
+.appveyor.yml
 .landscape.yml
-.travis.yml
 .readthedocs.yml
+.travis.yml
 
 # Python 3 - package requirements
 requirements.txt
