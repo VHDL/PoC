@@ -59,8 +59,8 @@ architecture tb of sortnet_BitonicSort_tb is
 	constant INPUTS									: positive	:= 64;
 	constant DATA_COLUMNS						: positive	:= 2;
 
-	constant KEY_BITS								: positive	:= 8;
-	constant DATA_BITS							: positive	:= 32;
+	constant KEY_BITS								: positive	:= 32;
+	constant DATA_BITS							: positive	:= 64;
 	constant META_BITS							: positive	:= TAG_BITS;
 	constant PIPELINE_STAGE_AFTER		: natural		:= 2;
 
@@ -72,25 +72,34 @@ architecture tb of sortnet_BitonicSort_tb is
 	subtype T_DATA				is std_logic_vector(DATA_BITS - 1 downto 0);
 	type T_DATA_VECTOR		is array(natural range <>) of T_DATA;
 
-	type T_SB_KEY_VECTOR		is array(natural range <>) of std_logic_vector(KEY_BITS - 1 downto 0);
-	type T_SB_DATA_VECTOR		is array(natural range <>) of std_logic_vector((DATA_BITS - KEY_BITS) - 1 downto 0);
-
 	type T_SCOREBOARD_DATA is record
 		IsKey : std_logic;
 		Meta  : std_logic_vector(META_BITS - 1 downto 0);
-		Key   : T_SB_KEY_VECTOR(INPUTS - 1 downto 0);
-		Data  : T_SB_DATA_VECTOR(INPUTS - 1 downto 0);
+		Data  : T_DATA_VECTOR(INPUTS - 1 downto 0);
 	end record;
 
 	function match(expected : T_SCOREBOARD_DATA; actual : T_SCOREBOARD_DATA) return boolean is
+		variable good : boolean;
 	begin
-		report "checking: "; -- & to_string(expected.Meta) severity note;
-		return TRUE;
+		good :=						(expected.IsKey = actual.IsKey);
+		good := good and	(expected.Meta = actual.Meta);
+		if (expected.IsKey = '1') then
+			for i in expected.Data'range loop
+				good := good and	(expected.Data(i) = actual.Data(i));
+				exit when (good = FALSE);
+			end loop;
+		end if;
+		return good;
 	end function;
 
-	function to_string(vector : T_SCOREBOARD_DATA) return string is
+	function to_string(dataset : T_SCOREBOARD_DATA) return string is
+		variable KeyMarker : string(1 to 2);
 	begin
-		return "to_string";
+		KeyMarker := ite((dataset.IsKey = '1'), "* ", "  ");
+		-- for i in 0 to 0 loop --dataset.Key'range loop
+			return	"Data: " & to_string(dataset.Data(0), 'h') & KeyMarker &
+						"  Meta: " & to_string(dataset.Meta, 'h');
+		-- end loop;
 	end function;
 
 	package P_Scoreboard is new osvvm.ScoreboardGenericPkg
@@ -101,7 +110,6 @@ architecture tb of sortnet_BitonicSort_tb is
 			expected_to_string  => to_string, --[T_SCOREBOARD_DATA return string],
 			actual_to_string    => to_string
 		);
-	alias T_SCOREBOARD is P_Scoreboard.ScoreBoardPType;
 
 	function to_dv(slm : T_SLM) return T_DATA_VECTOR is
 		variable Result	: T_DATA_VECTOR(slm'range(1));
@@ -141,7 +149,7 @@ architecture tb of sortnet_BitonicSort_tb is
 	signal DataInputMatrix			: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 	signal DataOutputMatrix			: T_SLM(INPUTS - 1 downto 0, DATA_BITS - 1 downto 0);
 
-	shared variable ScoreBoard	: T_SCOREBOARD;
+	shared variable ScoreBoard	: P_Scoreboard.ScoreBoardPType;
 
 begin
 	-- initialize global simulation status
@@ -156,20 +164,28 @@ begin
 	simGenerateClock(Clock, CLOCK_FREQ);
 
 	procGenerator : process
-		constant simProcessID		: T_SIM_PROCESS_ID		:= simRegisterProcess("Generator");
-		variable RandomVar			: RandomPType;					-- protected type from RandomPkg
+		constant simProcessID			: T_SIM_PROCESS_ID		:= simRegisterProcess("Generator");
+		variable RandomVar				: RandomPType;					-- protected type from RandomPkg
 
-		variable KeyInput				: std_logic_vector(KEY_BITS - 1 downto 0);
-		variable DataInput			: std_logic_vector(DATA_BITS - KEY_BITS - 1 downto 0);
-		variable TagInput				: std_logic_vector(TAG_BITS - 1 downto 0);
+		variable KeyInput					: std_logic_vector(KEY_BITS - 1 downto 0);
+		variable DataInput				: std_logic_vector(DATA_BITS - KEY_BITS - 1 downto 0);
+		variable TagInput					: std_logic_vector(TAG_BITS - 1 downto 0);
+		variable Generator_Input	: T_DATA_VECTOR(INPUTS - 1 downto 0);
 
-		variable ScoreBoardData : T_SCOREBOARD_DATA;
+		function GreaterThan(L : std_logic_vector; R : std_logic_vector) return boolean is
+			alias LL is L(KEY_BITS - 1 downto 0);
+			alias RR is R(KEY_BITS - 1 downto 0);
+		begin
+			return unsigned(LL) > unsigned(RR);
+		end function;
+
+		variable ScoreBoardData	: T_SCOREBOARD_DATA;
 	begin
 		RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
 
 		Generator_Valid		<= '0';
 		Generator_IsKey		<= '0';
-		Generator_Data		<= (others => (others => '0'));
+		Generator_Input		:= (others => (others => '0'));
 		Generator_Meta		<= (others => '0');
 		wait until rising_edge(Clock);
 
@@ -179,18 +195,41 @@ begin
 
 			ScoreBoardData.IsKey	:= to_sl(i mod DATA_COLUMNS = 0);
 			ScoreBoardData.Meta		:= resize(TagInput, META_BITS);
-			for j in 0 to INPUTS - 1 loop
+			Generator_IsKey				<= ScoreBoardData.IsKey;
+			Generator_Meta				<= ScoreBoardData.Meta;
+
+			KeyInput							:= RandomVar.RandSlv(KEY_BITS);
+			DataInput							:= RandomVar.RandSlv(DATA_BITS - KEY_BITS);
+			Generator_Input(0)		:= DataInput & KeyInput;
+			ScoreBoardData.Data(0):= Generator_Input(0);
+			-- report "==================================================" & LF & "Generator_Input(0):  " & to_string(Generator_Input(0), 'h');
+
+			loop_j: for j in 1 to INPUTS - 1 loop
 				KeyInput						:= RandomVar.RandSlv(KEY_BITS);
 				DataInput						:= RandomVar.RandSlv(DATA_BITS - KEY_BITS);
+				Generator_Input(j)	:= DataInput & KeyInput;
 
-				ScoreBoardData.Key(j)		:= KeyInput;
-				ScoreBoardData.Data(j)	:= DataInput;
-				Generator_Data(j)				<= DataInput & KeyInput;
+				-- report "==================================================" & LF & "Generator_Input(" & integer'image(j) & "):  " & to_string(Generator_Input(j), 'h');
+				for k in j downto 1 loop
+					if GreaterThan(ScoreBoardData.Data(k - 1), Generator_Input(j)) then
+						ScoreBoardData.Data(k)	:= ScoreBoardData.Data(k - 1);
+						-- report "move right: " & integer'image(k-1) & " -> " & integer'image(k) & "  k: " & to_string(ScoreBoardData.Data(k), 'h');
+					else
+						ScoreBoardData.Data(k)	:= Generator_Input(j);
+						-- report "save " & to_string(ScoreBoardData.Data(k), 'h') & " at " & integer'image(k);
+						next loop_j;
+					end if;
+				end loop;
+				ScoreBoardData.Data(0)	:= Generator_Input(j);
+				-- report "store " & to_string(ScoreBoardData.Data(0), 'h') & " at 0";
 			end loop;
+			-- report "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
+			-- for j in 0 to INPUTS - 1 loop
+				-- report "ScoreBoardData.Data(" & integer'image(j) & "):  " & to_string(ScoreBoardData.Data(j), 'h');
+			-- end loop;
+			-- report "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
+			Generator_Data				<= Generator_Input;
 			ScoreBoard.Push(ScoreBoardData);
-
-			Generator_IsKey			<= ScoreBoardData.IsKey;
-			Generator_Meta			<= ScoreBoardData.Meta;
 			wait until rising_edge(Clock);
 		end loop;
 
@@ -245,25 +284,10 @@ begin
 			Check		:= TRUE;
 			ScoreBoardData.IsKey	:= Sort_IsKey;
 			ScoreBoardData.Meta		:= Sort_Meta;
-			for j in 0 to INPUTS - 1 loop
-				ScoreBoardData.Key(j)		:= Sort_Data(j)(KEY_BITS - 1 downto 0);
-				ScoreBoardData.Data(j)	:= Sort_Data(j)(DATA_BITS - 1 downto KEY_BITS);
-			end loop;
-
-			if (Sort_IsKey = '1') then
-				LastValue	:= (others => '0');
-				for j in 0 to INPUTS - 1 loop
-					CurValue	:= unsigned(Sort_Data(j)(KEY_BITS - 1 downto 0));
-					Check			:= Check and (LastValue <= CurValue);
-					LastValue	:= CurValue;
-				end loop;
-				simAssertion(Check, "Result is not monotonic." & raw_format_slv_hex(std_logic_vector(LastValue)));
-			else
-				-- no routine implemented to check if sorting network is switched as in the previous cycles
-			end if;
-
+			ScoreBoardData.Data		:= Sort_Data;
 			ScoreBoard.Check(ScoreBoardData);
 		end loop;
+		-- simAssertion(Check, "Result is not monotonic." & raw_format_slv_hex(std_logic_vector(LastValue)));
 
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
