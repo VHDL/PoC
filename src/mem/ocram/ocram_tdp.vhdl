@@ -34,10 +34,7 @@
 -- Same-Port Read-During-Write
 --   When writing data through port 1, the read output of the same port
 --   (``q1``) will output the new data (``d1``, in the following clock cycle)
---   which is aka. "write-first behavior". This behavior also applies to Altera
---   M20K memory blocks as described in the Altera: "Stratix 5 Device Handbook"
---   (S5-5V1). The documentation in the Altera: "Embedded Memory User Guide"
---   (UG-01068) is wrong.
+--   which is aka. "write-first behavior".
 --
 --   Same applies to port 2.
 --
