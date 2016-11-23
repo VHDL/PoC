@@ -154,7 +154,7 @@ class Synth(Executable, ToolMixIn):
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "synthesis.exe"
 		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "synthesis"
 		else:                          raise PlatformNotSupportedException(self._platform)
-		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._logger)
 
 		self.Parameters[self.Executable] = executablePath
 

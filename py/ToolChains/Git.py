@@ -358,7 +358,7 @@ class GitSCM(Executable, ToolMixIn):
 		elif (self._platform == "Linux"):     executablePath = self._binaryDirectoryPath / "git"
 		elif (self._platform == "Darwin"):    executablePath = self._binaryDirectoryPath / "git"
 		else:                           raise PlatformNotSupportedException(self._platform)
-		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._logger)
 
 		self.Parameters[self.Executable] = executablePath
 

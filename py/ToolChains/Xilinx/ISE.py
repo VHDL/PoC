@@ -148,7 +148,7 @@ class Fuse(Executable, ToolMixIn):
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "fuse.exe"
 		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "fuse"
 		else:                          raise PlatformNotSupportedException(self._platform)
-		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -329,7 +329,7 @@ class Xst(Executable, ToolMixIn):
 		if (self._platform == "Windows"):      executablePath = self._binaryDirectoryPath / "xst.exe"
 		elif (self._platform == "Linux"):      executablePath = self._binaryDirectoryPath / "xst"
 		else:                            raise PlatformNotSupportedException(self._platform)
-		Executable.__init__(self, self._platform, self._dryrun, executablePath, logger=self._Logger)
+		Executable.__init__(self, self._platform, self._dryrun, executablePath, logger=self._logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -412,7 +412,7 @@ class CoreGenerator(Executable, ToolMixIn):
 		if (self._platform == "Windows"):      executablePath = self._binaryDirectoryPath / "coregen.exe"
 		elif (self._platform == "Linux"):      executablePath = self._binaryDirectoryPath / "coregen"
 		else:                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._logger)
 
 		self.Parameters[self.Executable] = executablePath
 

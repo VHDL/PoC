@@ -136,7 +136,7 @@ class Map(Executable, ToolMixIn):
 		if (self._platform == "Windows") :      executablePath = self._binaryDirectoryPath / "quartus_map.exe"
 		elif (self._platform == "Linux") :      executablePath = self._binaryDirectoryPath / "quartus_map"
 		else :                            raise PlatformNotSupportedException(self._platform)
-		Executable.__init__(self, self._platform, self._dryrun, executablePath, logger=self._Logger)
+		Executable.__init__(self, self._platform, self._dryrun, executablePath, logger=self._logger)
 
 		self.Parameters[self.Executable] = executablePath
 
@@ -220,7 +220,7 @@ class TclShell(Executable, ToolMixIn):
 		if (self._platform == "Windows") :      executablePath = self._binaryDirectoryPath / "quartus_sh.exe"
 		elif (self._platform == "Linux") :      executablePath = self._binaryDirectoryPath / "quartus_sh"
 		else :                            raise PlatformNotSupportedException(self._platform)
-		super().__init__(self._platform, self._dryrun, executablePath, logger=self._Logger)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._logger)
 
 		self.Parameters[self.Executable] = executablePath
 
