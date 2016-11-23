@@ -1,0 +1,15 @@
+# git files
+.gitempty
+
+# Documentation
+README.md
+
+# Scripts for the AppVeyor flow
+
+
+# Python 3 - package requirements
+requirements.txt
+
+# PoC configuration files
+config.private.ini
+my_project.vhdl
