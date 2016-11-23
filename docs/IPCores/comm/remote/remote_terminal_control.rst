@@ -1,3 +1,8 @@
+.. _IP:remote_terminal_control:
+
+PoC.comm.remote.terminal_control
+################################
+
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
@@ -13,12 +18,6 @@
 
       * |gh-src| :pocsrc:`Sourcecode <comm/remote/remote_terminal_control.vhdl>`
       * |gh-tb| :poctb:`Testbench <comm/remote/remote_terminal_control_tb.vhdl>`
-
-
-.. _IP:remote_terminal_control:
-
-remote_terminal_control
-#######################
 
 
 

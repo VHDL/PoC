@@ -1,3 +1,8 @@
+.. _IP:dstruct_stack:
+
+PoC.dstruct.stack
+#################
+
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
@@ -13,12 +18,6 @@
 
       * |gh-src| :pocsrc:`Sourcecode <dstruct/dstruct_stack.vhdl>`
       * |gh-tb| :poctb:`Testbench <dstruct/dstruct_stack_tb.vhdl>`
-
-
-.. _IP:dstruct_stack:
-
-dstruct_stack
-#############
 
 Implements a stack, a LIFO storage abstraction.
 

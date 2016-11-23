@@ -1,3 +1,8 @@
+.. _IP:dstruct_deque:
+
+PoC.dstruct.deque
+#################
+
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
@@ -13,12 +18,6 @@
 
       * |gh-src| :pocsrc:`Sourcecode <dstruct/dstruct_deque.vhdl>`
       * |gh-tb| :poctb:`Testbench <dstruct/dstruct_deque_tb.vhdl>`
-
-
-.. _IP:dstruct_deque:
-
-dstruct_deque
-#############
 
 Implements a deque (double-ended queue). This data structure allows two
 acting entities to queue data elements for the consumption by the other while
