@@ -96,12 +96,6 @@ other/diamond/.spreadsheet_view.ini
 /other/vivado/**/*.sim
 /other/vivado/**/*.ip_user_files
 
-#ignore ModelSim files
-/other/vsim/**/poc
-/other/vsim/**/work
-/other/vsim/**/*.mti
-/other/vsim/**/vsim.wlf
-
 # general whitelist
 !.git*
 !.publish
