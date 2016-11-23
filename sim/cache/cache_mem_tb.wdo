@@ -1,0 +1,49 @@
+onerror {resume}
+quietly WaveActivateNextPane {} 0
+add wave -noupdate -radix hexadecimal /cache_mem_tb/clk
+add wave -noupdate -radix hexadecimal /cache_mem_tb/rst
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_req
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_write
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_addr
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_wdata
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cpu_wmask
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cache_rdy
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cache_rstb
+add wave -noupdate -radix hexadecimal /cache_mem_tb/cache_rdata
+add wave -noupdate /cache_mem_tb/rply2_valid
+add wave -noupdate -radix hexadecimal /cache_mem_tb/rply2_rdata
+add wave -noupdate -divider {Internal signals of cache_mem}
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_req
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_write
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_addr
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_wdata
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_wmask
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_got
+add wave -noupdate -radix hexadecimal /cache_mem_tb/UUT/int_rdata
+add wave -noupdate -divider {Bus between Cache and Mem1}
+add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_req
+add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_write
+add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_addr
+add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_wdata
+add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_wmask
+add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rdy
+add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rstb
+add wave -noupdate -radix hexadecimal /cache_mem_tb/mem1_rdata
+TreeUpdate [SetDefaultTree]
+WaveRestoreCursors {{Cursor 1} {0 fs} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 225
+configure wave -valuecolwidth 100
+configure wave -justifyvalue left
+configure wave -signalnamewidth 2
+configure wave -snapdistance 10
+configure wave -datasetprefix 0
+configure wave -rowmargin 4
+configure wave -childrowmargin 2
+configure wave -gridoffset 0
+configure wave -gridperiod 1
+configure wave -griddelta 40
+configure wave -timeline 0
+configure wave -timelineunits ps
+update
+WaveRestoreZoom {0 fs} {227964844 fs}

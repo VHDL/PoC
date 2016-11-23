@@ -18,6 +18,11 @@ ocram_sp.files
 ocram_sp.vhdl
 ocram_tdp.files
 ocram_tdp.vhdl
+ocram_tdp_wf.files
+ocram_tdp_wf.vhdl
+
+# Simulation helper
+ocram_tdp_sim.vhdl
 
 # Altera specific
 altera/
