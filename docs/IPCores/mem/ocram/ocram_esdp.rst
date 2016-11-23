@@ -72,9 +72,8 @@ Mixed-Port Read-During-Write
   rising-edge of the write clock (``clk1``) and (in the worst case) extends
   until the next rising-edge of the write clock.
 
-.. WARNING::
-   The simulated behavior on RT-level is too optimistic. When reading
-   at the write address always the new data will be returned.
+For simulation, always our dedicated simulation model :ref:`IP:ocram_tdp_sim`
+is used.
 
 
 
@@ -84,7 +83,7 @@ Mixed-Port Read-During-Write
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 101-119
+   :lines: 100-118
 
 
 

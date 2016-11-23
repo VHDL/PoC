@@ -35,6 +35,10 @@ ce1 we1 Command
 1   1   Write to memory
 === === ================
 
+Both reading and writing are synchronous to the rising-edge of the clock.
+Thus, when reading, the memory data will be outputted after the
+clock edge, i.e, in the following clock cycle.
+
 The generalized behavior across Altera and Xilinx FPGAs since
 Stratix/Cyclone and Spartan-3/Virtex-5, respectively, is as follows:
 
@@ -55,11 +59,8 @@ Mixed-Port Read-During-Write
   rising-edge of the write clock and (in the worst case) extends
   until the next rising-edge of that write clock.
 
-.. WARNING::
-   The simulated behavior on RT-level is too optimistic. When reading
-   at the write address always the new data will be returned.
-
-.. TODO:: Implement correct behavior for RT-level simulation.
+For simulation, always our dedicated simulation model :ref:`IP:ocram_tdp_sim`
+is used.
 
 
 
@@ -69,7 +70,7 @@ Mixed-Port Read-During-Write
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 84-104
+   :lines: 85-105
 
 
 

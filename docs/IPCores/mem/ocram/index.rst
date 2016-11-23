@@ -23,6 +23,10 @@ The package PoC.mem.ocram holds all component declarations for this namespace.
    interface and write-first behavior.
  * :ref:`IP:ocram_tdp` - An on-chip RAM with a true dual port interface.
 
+**Simulation Helper**
+
+ * :ref:`IP:ocram_tdp_sim` - Simulation model of on-chip RAM with a true dual port interface.
+
 **Deprecated Entities**
 
  * :ref:`IP:ocram_esdp` - An on-chip RAM with an extended simple dual port interface.

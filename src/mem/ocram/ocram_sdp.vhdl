@@ -15,6 +15,10 @@
 -- * dual clock, clock enable,
 -- * 1 read port plus 1 write port.
 --
+-- Both reading and writing are synchronous to the rising-edge of the clock.
+-- Thus, when reading, the memory data will be outputted after the
+-- clock edge, i.e, in the following clock cycle.
+--
 -- The generalized behavior across Altera and Xilinx FPGAs since
 -- Stratix/Cyclone and Spartan-3/Virtex-5, respectively, is as follows:
 --
@@ -25,7 +29,7 @@
 --   rising-edge of the write clock and (in the worst case) extends until the
 --   next rising-edge of the write clock.
 --
--- For simulation, always our dedicated simulation model PoC.mem.ocram.tdp_sim
+-- For simulation, always our dedicated simulation model :ref:`IP:ocram_tdp_sim`
 -- is used.
 --
 -- License:

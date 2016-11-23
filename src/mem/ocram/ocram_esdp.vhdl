@@ -61,7 +61,7 @@
 --   rising-edge of the write clock (``clk1``) and (in the worst case) extends
 --   until the next rising-edge of the write clock.
 --
--- For simulation, always our dedicated simulation model PoC.mem.ocram.tdp_sim
+-- For simulation, always our dedicated simulation model :ref:`IP:ocram_tdp_sim`
 -- is used.
 --
 -- License:
