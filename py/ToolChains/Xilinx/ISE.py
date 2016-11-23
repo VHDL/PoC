@@ -127,7 +127,7 @@ class Configuration(BaseConfiguration):
 class ISE(ToolMixIn):
 	def GetVHDLCompiler(self):
 		raise NotImplementedError("ISE.GetVHDLCompiler")
-		# return ISEVHDLCompiler(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._Logger)
+		# return ISEVHDLCompiler(self._platform, self._dryrun, self._binaryDirectoryPath, self._version, logger=self._logger)
 
 	def GetFuse(self):
 		return Fuse(self)
@@ -143,7 +143,7 @@ class Fuse(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "fuse.exe"
 		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "fuse"
@@ -324,7 +324,7 @@ class Xst(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):      executablePath = self._binaryDirectoryPath / "xst.exe"
 		elif (self._platform == "Linux"):      executablePath = self._binaryDirectoryPath / "xst"
@@ -407,7 +407,7 @@ class CoreGenerator(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):      executablePath = self._binaryDirectoryPath / "coregen.exe"
 		elif (self._platform == "Linux"):      executablePath = self._binaryDirectoryPath / "coregen"

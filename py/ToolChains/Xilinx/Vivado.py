@@ -136,7 +136,7 @@ class XElab(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "xelab.bat"
 		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "xelab"
@@ -266,7 +266,7 @@ class XSim(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "xsim.bat"
 		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "xsim"
@@ -364,7 +364,7 @@ class Synth(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vivado.bat"
 		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "vivado"

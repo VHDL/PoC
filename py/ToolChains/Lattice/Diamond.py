@@ -149,7 +149,7 @@ class Synth(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "synthesis.exe"
 		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "synthesis"

@@ -154,7 +154,7 @@ class QuestaVHDLCompiler(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vcom.exe"
 		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "vcom"
@@ -275,7 +275,7 @@ class QuestaSimulator(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vsim.exe"
 		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "vsim"
@@ -418,7 +418,7 @@ class QuestaVHDLLibraryTool(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vlib.exe"
 		elif (self._platform == "Linux"):    executablePath = self._binaryDirectoryPath / "vlib"

@@ -131,7 +131,7 @@ class Map(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows") :      executablePath = self._binaryDirectoryPath / "quartus_map.exe"
 		elif (self._platform == "Linux") :      executablePath = self._binaryDirectoryPath / "quartus_map"
@@ -215,7 +215,7 @@ class TclShell(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows") :      executablePath = self._binaryDirectoryPath / "quartus_sh.exe"
 		elif (self._platform == "Linux") :      executablePath = self._binaryDirectoryPath / "quartus_sh"

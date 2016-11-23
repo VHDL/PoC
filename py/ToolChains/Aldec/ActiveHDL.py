@@ -134,7 +134,7 @@ class VHDLCompiler(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vcom.exe"
 		else:                                raise PlatformNotSupportedException(self._platform)
@@ -233,7 +233,7 @@ class StandaloneSimulator(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vsimsa.exe"
 		else:                                raise PlatformNotSupportedException(self._platform)
@@ -374,7 +374,7 @@ class ActiveHDLVHDLLibraryTool(Executable, ToolMixIn):
 	def __init__(self, toolchain : ToolMixIn):
 		ToolMixIn.__init__(
 			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
-			toolchain._Logger)
+			toolchain._logger)
 
 		if (self._platform == "Windows"):    executablePath = self._binaryDirectoryPath / "vlib.exe"
 		else:                                raise PlatformNotSupportedException(self._platform)
