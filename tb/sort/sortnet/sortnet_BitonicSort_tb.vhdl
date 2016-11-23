@@ -46,7 +46,6 @@ use			PoC.waveform.all;
 
 library OSVVM;
 use			OSVVM.RandomPkg.all;
-use			OSVVM.SortListPkg.all;
 
 
 entity sortnet_BitonicSort_tb is
@@ -60,12 +59,12 @@ architecture tb of sortnet_BitonicSort_tb is
 	constant INPUTS									: positive	:= 64;
 	constant DATA_COLUMNS						: positive	:= 2;
 
-	constant KEY_BITS								: positive	:= 8;
-	constant DATA_BITS							: positive	:= 32;
+	constant KEY_BITS								: positive	:= 32;
+	constant DATA_BITS							: positive	:= 64;
 	constant META_BITS							: positive	:= TAG_BITS;
 	constant PIPELINE_STAGE_AFTER		: natural		:= 2;
 
-	constant LOOP_COUNT							: positive	:= 8;	--1024;
+	constant LOOP_COUNT							: positive	:= 1024;
 
 	constant STAGES									: positive	:= triangularNumber(log2ceil(INPUTS));
 	constant DELAY									: natural		:= STAGES / PIPELINE_STAGE_AFTER;
@@ -84,10 +83,12 @@ architecture tb of sortnet_BitonicSort_tb is
 	begin
 		good :=						(expected.IsKey = actual.IsKey);
 		good := good and	(expected.Meta = actual.Meta);
-		for i in expected.Data'range loop
-			good := good and	(expected.Data(i) = actual.Data(i));
-			exit when (good = FALSE);
-		end loop;
+		if (expected.IsKey = '1') then
+			for i in expected.Data'range loop
+				good := good and	(expected.Data(i) = actual.Data(i));
+				exit when (good = FALSE);
+			end loop;
+		end if;
 		return good;
 	end function;
 
@@ -171,43 +172,13 @@ begin
 		variable TagInput					: std_logic_vector(TAG_BITS - 1 downto 0);
 		variable Generator_Input	: T_DATA_VECTOR(INPUTS - 1 downto 0);
 
-		function LessThan(L : std_logic_vector; R : std_logic_vector) return boolean is
+		function GreaterThan(L : std_logic_vector; R : std_logic_vector) return boolean is
 			alias LL is L(KEY_BITS - 1 downto 0);
 			alias RR is R(KEY_BITS - 1 downto 0);
 		begin
-			return unsigned(LL) < unsigned(RR);
+			return unsigned(LL) > unsigned(RR);
 		end function;
 
-		function LessEqual(L : std_logic_vector; R : std_logic_vector) return boolean is
-			alias LL is L(KEY_BITS - 1 downto 0);
-			alias RR is R(KEY_BITS - 1 downto 0);
-		begin
-			return unsigned(LL) <= unsigned(RR);
-		end function;
-
-		function GreaterEqual(L : std_logic_vector; R : std_logic_vector) return boolean is
-			alias LL is L(KEY_BITS - 1 downto 0);
-			alias RR is R(KEY_BITS - 1 downto 0);
-		begin
-			return unsigned(LL) >= unsigned(RR);
-		end function;
-
-		function to_string2(val : std_logic_vector) return string is
-		begin
-			return to_string(val, 'h');
-		end function;
-
-		package SortListPkg_SB_Data is new OSVVM.SortListGenericPkg
-			generic map (
-				ElementType		=> std_logic_vector(DATA_BITS - 1 downto 0),
-				"<"						=> LessThan,
-				"<="					=> LessEqual,
-				">="					=> GreaterEqual,
-				to_string			=> to_string2,
-				element_left	=> (DATA_BITS - 1 downto 0 => '0')
-			);
-
-		variable Sorter					: SortListPkg_SB_Data.SortListPType;
 		variable ScoreBoardData	: T_SCOREBOARD_DATA;
 	begin
 		RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
@@ -227,21 +198,37 @@ begin
 			Generator_IsKey				<= ScoreBoardData.IsKey;
 			Generator_Meta				<= ScoreBoardData.Meta;
 
-			for j in 0 to INPUTS - 1 loop
+			KeyInput							:= RandomVar.RandSlv(KEY_BITS);
+			DataInput							:= RandomVar.RandSlv(DATA_BITS - KEY_BITS);
+			Generator_Input(0)		:= DataInput & KeyInput;
+			ScoreBoardData.Data(0):= Generator_Input(0);
+			-- report "==================================================" & LF & "Generator_Input(0):  " & to_string(Generator_Input(0), 'h');
+
+			loop_j: for j in 1 to INPUTS - 1 loop
 				KeyInput						:= RandomVar.RandSlv(KEY_BITS);
 				DataInput						:= RandomVar.RandSlv(DATA_BITS - KEY_BITS);
 				Generator_Input(j)	:= DataInput & KeyInput;
-				Sorter.Add(Generator_Input(j));
-				-- report "Data:  " & to_string(Generator_Input(j), 'h') & " Sorter Count = " & integer'image(Sorter.count) & "  Iteration: " & integer'image(j);
+
+				-- report "==================================================" & LF & "Generator_Input(" & integer'image(j) & "):  " & to_string(Generator_Input(j), 'h');
+				for k in j downto 1 loop
+					if GreaterThan(ScoreBoardData.Data(k - 1), Generator_Input(j)) then
+						ScoreBoardData.Data(k)	:= ScoreBoardData.Data(k - 1);
+						-- report "move right: " & integer'image(k-1) & " -> " & integer'image(k) & "  k: " & to_string(ScoreBoardData.Data(k), 'h');
+					else
+						ScoreBoardData.Data(k)	:= Generator_Input(j);
+						-- report "save " & to_string(ScoreBoardData.Data(k), 'h') & " at " & integer'image(k);
+						next loop_j;
+					end if;
+				end loop;
+				ScoreBoardData.Data(0)	:= Generator_Input(j);
+				-- report "store " & to_string(ScoreBoardData.Data(0), 'h') & " at 0";
 			end loop;
-			-- ScoreBoardData.Data		:= Generator_Input;
-			-- report LF & "================" & LF & "  Sorter Size: " & integer'image(Sorter.count) & LF & "================";
+			-- report "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
+			-- for j in 0 to INPUTS - 1 loop
+				-- report "ScoreBoardData.Data(" & integer'image(j) & "):  " & to_string(ScoreBoardData.Data(j), 'h');
+			-- end loop;
+			-- report "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%";
 			Generator_Data				<= Generator_Input;
-			for j in 0 to INPUTS - 1 loop
-				report "Data:  " & to_string(Sorter.Get(j), 'h') & "  Iteration: " & integer'image(j);
-				ScoreBoardData.Data(j)	:= Sorter.Get(j);
-			end loop;
-			Sorter.erase;
 			ScoreBoard.Push(ScoreBoardData);
 			wait until rising_edge(Clock);
 		end loop;
