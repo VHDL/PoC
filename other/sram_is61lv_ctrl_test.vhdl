@@ -10,7 +10,7 @@
 -- -------------------------------------
 -- Synthesis test for sram_is61lv_ctrl.
 --
--- Synthesis results (with and with out wrapper):
+-- Synthesis results (with and without wrapper):
 --
 -- * Xilinx ISE (KEEP_HIERARCHY = SOFT): generates logic as expected. If device
 --   has 6-input LUTs, then the CE of the ctrl/wdata_r is not used. Instead the
@@ -20,7 +20,7 @@
 --
 -- * Xilinx Vivado: generates logic as expected.
 --
--- * Altera Quartus 13.0: issues warnings about connectivity warnings (12241
+-- * Altera Quartus 13.0: issues warnings about connectivity (warnings 12241
 --   and 13034). RTL netlist view looks ugly. Post-Mapping netlist looks good.
 --
 -- * Lattice Diamond 3.7.0: No warnings. Netlist view looks ugly. Some
