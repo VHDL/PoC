@@ -34,6 +34,7 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library PoC;
+use			PoC.config.all;
 use			PoC.utils.all;
 use			PoC.physical.all;
 
@@ -174,7 +175,10 @@ package body io is
 		for k in pad'range loop
 			pad(k)        <= ite((tristate(k).t = '1'), 'Z', tristate(k).o);
 			tristate(k).i <= pad(k);
-			if SIMULATION then
+			if SIMULATION or not(SYNTHESIS_TOOL = SYNTHESIS_TOOL_ALTERA_QUARTUS2 or SYNTHESIS_TOOL = SYNTHESIS_TOOL_LATTICE_LSE) then
+			  -- Altera Quartus-II and Lattice Synthesis Engine: RTL / Netlist view is unreadable due to meaningless 'Z' drivers
+			  -- Altera Quartus-II reports warnings about these meaningless 'Z' drivers, but synthesis result is as expected.
+			  -- Lattice Synthesis Engine: synthesis result is not optimal if these 'Z' drivers are present.
 				tristate(k).t <= 'Z';     -- drive all record members
 				tristate(k).o <= 'Z';     -- drive all record members
 			end if;

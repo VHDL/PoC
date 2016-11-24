@@ -95,6 +95,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library poc;
+use poc.config.all;
 use poc.utils.all;
 use poc.io.all;
 
@@ -323,7 +324,10 @@ begin
 	l1: for i in 0 to D_BITS-1 generate
 		sram_data(i).o <= wdata_r(i);
 		sram_data(i).t <= own_oe_r_n(i); -- driven when '0', otherwise high-z
-		g1: if SIMULATION generate
+		g1: if SIMULATION or not(SYNTHESIS_TOOL = SYNTHESIS_TOOL_ALTERA_QUARTUS2 or SYNTHESIS_TOOL = SYNTHESIS_TOOL_LATTICE_LSE) generate
+		  -- Altera Quartus-II and Lattice Synthesis Engine: RTL / Netlist view is unreadable due to meaningless 'Z' drivers
+		  -- Altera Quartus-II reports warnings about these meaningless 'Z' drivers, but synthesis result is as expected.
+		  -- Lattice Synthesis Engine: synthesis result is not optimal if these 'Z' drivers are present.
 			sram_data(i).i <= 'Z';           -- drive all record members
 		end generate;
 	end generate l1;
