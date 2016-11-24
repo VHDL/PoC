@@ -10,7 +10,7 @@
 -- -------------------------------------
 -- Synthesis test for sram_is61lv_ctrl.
 --
--- Synthesis results:
+-- Synthesis results (with and with out wrapper):
 --
 -- * Xilinx ISE (KEEP_HIERARCHY = SOFT): generates logic as expected. If device
 --   has 6-input LUTs, then the CE of the ctrl/wdata_r is not used. Instead the
@@ -25,7 +25,8 @@
 --
 -- * Lattice Diamond 3.7.0: No warnings. Netlist view looks ugly. Some
 --   unnecessary LUTs are synthesized for sram_data_tristate.o. Signal naming
---   in physical view is confusing.
+--   in physical view is confusing. Duplicate registers for ctrl/own_oe_r
+--   (driving t of IOB) are removed.
 --
 -- License:
 -- =============================================================================
@@ -64,6 +65,64 @@
 -- internal version of output port: "*_i"
 -- tristate internal signal "*_z"
 -------------------------------------------------------------------------------
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+library poc;
+use poc.io.all;
+
+entity sram_is61lv_ctrl_wrapper is
+
+  generic (
+    A_BITS   : positive;
+    D_BITS   : positive;
+    SDIN_REG : boolean := true);
+
+  port (
+    clk       : in    std_logic;
+    rst       : in    std_logic;
+    req       : in    std_logic;
+    write     : in    std_logic;
+    addr      : in    unsigned(A_BITS-1 downto 0);
+    wdata     : in    std_logic_vector(D_BITS-1 downto 0);
+    wmask     : in    std_logic_vector(D_BITS/8 -1 downto 0);
+    rdy       : out   std_logic;
+    rstb      : out   std_logic;
+    rdata     : out   std_logic_vector(D_BITS-1 downto 0);
+    sram_be_n : out   std_logic_vector(D_BITS/8 -1 downto 0);
+    sram_oe_n : out   std_logic;
+    sram_we_n : out   std_logic;
+    sram_addr : out   unsigned(A_BITS-1 downto 0);
+    sram_data : inout T_IO_TRISTATE_VECTOR(D_BITS-1 downto 0));
+
+end entity sram_is61lv_ctrl_wrapper;
+
+architecture rtl of sram_is61lv_ctrl_wrapper is
+begin
+	ctrl: entity poc.sram_is61lv_ctrl
+    generic map (
+      A_BITS   => A_BITS,
+      D_BITS   => D_BITS,
+      SDIN_REG => SDIN_REG)
+    port map (
+      clk       => clk,
+      rst       => rst,
+      req       => req,
+      write     => write,
+      addr      => addr,
+      wdata     => wdata,
+      wmask     => wmask,
+      rdy       => rdy,
+      rstb      => rstb,
+      rdata     => rdata,
+      sram_be_n => sram_be_n,
+      sram_oe_n => sram_oe_n,
+      sram_we_n => sram_we_n,
+      sram_addr => sram_addr,
+      sram_data => sram_data);
+end rtl;
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -125,7 +184,7 @@ begin
 	rstb    <= rstb_i  when rising_edge(clk);
 	rdata   <= rdata_i when rising_edge(clk);
 
-	ctrl: entity poc.sram_is61lv_ctrl
+	wrapper: entity work.sram_is61lv_ctrl_wrapper
 		generic map (
 			A_BITS   => A_BITS,
 			D_BITS   => D_BITS,
