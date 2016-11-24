@@ -15,6 +15,7 @@ implementations.
  * :ref:`NS:ocram` - On-Chip RAM abstraction layer
  * :ref:`NS:ocrom` - On-Chip ROM abstraction layer
  * :ref:`NS:sdram` - SDRAM controllers
+ * :ref:`NS:sram` - SRAM controllers
 
 **Package**
 
@@ -35,4 +36,4 @@ implementations.
    ocram <ocram/index>
    ocrom <ocrom/index>
    sdram <sdram/index>
-
+   sram <sram/index>

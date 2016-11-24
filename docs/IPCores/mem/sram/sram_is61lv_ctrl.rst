@@ -1,6 +1,23 @@
+.. _IP:sram_is61lv_ctrl:
 
-sram_is61lv_ctrl
-################
+PoC.mem.sram.is61lv_ctrl
+########################
+
+.. only:: html
+
+   .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/mem/sram/sram_is61lv_ctrl.vhdl
+               :alt: Source Code on GitHub
+   .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/mem/sram/sram_is61lv_ctrl_tb.vhdl
+               :alt: Source Code on GitHub
+
+   .. sidebar:: GitHub Links
+
+      * |gh-src| :pocsrc:`Sourcecode <mem/sram/sram_is61lv_ctrl.vhdl>`
+      * |gh-tb| :poctb:`Testbench <mem/sram/sram_is61lv_ctrl_tb.vhdl>`
 
 Controller for IS61LV Asynchronous SRAM.
 
@@ -36,10 +53,13 @@ Operation
 Regarding the user application interface, more details can be found
 :doc:`here </References/Interfaces/Memory>`.
 
-The outer design must connect GND ('0') to the SRAM chip enable ``ce_n``.
+The system top-level must connect GND ('0') to the SRAM chip enable ``ce_n``.
 
 When using an IS61LV25616: the SRAM byte enables ``lb_n`` and ``ub_n`` must be
 connected to ``sram_be_n(0)`` and ``sram_be_n(1)``, respectively.
+
+The system top-level must instantiate the appropriate tri-state driver for
+``sram_data``.
 
 Synchronous reset is used.
 
@@ -51,9 +71,10 @@ Synchronous reset is used.
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 97-123
-
-Source file: `mem/sram/sram_is61lv_ctrl.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/mem/sram/sram_is61lv_ctrl.vhdl>`_
+   :lines: 100-126
 
 
 
+.. only:: latex
+
+   Source file: :pocsrc:`mem/sram/sram_is61lv_ctrl.vhdl <mem/sram/sram_is61lv_ctrl.vhdl>`
