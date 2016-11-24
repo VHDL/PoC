@@ -10,6 +10,23 @@
 -- -------------------------------------
 -- Synthesis test for sram_is61lv_ctrl.
 --
+-- Synthesis results:
+--
+-- * Xilinx ISE (KEEP_HIERARCHY = SOFT): generates logic as expected. If device
+--   has 6-input LUTs, then the CE of the ctrl/wdata_r is not used. Instead the
+--   designated output (sram_wdata) is fed back to a LUT (which is not possible
+--   in hardware) to keep the old state. Some intended duplicate control
+--   registers are removed if Virtex-5 is selected, attribute KEEP is ignored.
+--
+-- * Xilinx Vivado: generates logic as expected.
+--
+-- * Altera Quartus 13.0: issues warnings about connectivity warnings (12241
+--   and 13034). RTL netlist view looks ugly. Post-Mapping netlist looks good.
+--
+-- * Lattice Diamond 3.7.0: No warnings. Netlist view looks ugly. Some
+--   unnecessary LUTs are synthesized for sram_data_tristate.o. Signal naming
+--   in physical view is confusing.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2016-2016 Technische Universitaet Dresden - Germany,
