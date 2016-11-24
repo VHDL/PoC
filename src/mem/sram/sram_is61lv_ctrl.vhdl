@@ -110,9 +110,9 @@ entity sram_is61lv_ctrl is
 		rst   : in  std_logic;
 		req   : in  std_logic;
 		write : in  std_logic;
-		mask  : in  std_logic_vector(D_BITS/8 -1 downto 0);
 		addr  : in  unsigned(A_BITS-1 downto 0);
 		wdata : in  std_logic_vector(D_BITS-1 downto 0);
+		wmask : in  std_logic_vector(D_BITS/8 -1 downto 0) := (others => '0');
 		rdy   : out std_logic;
 		rstb  : out std_logic;
 		rdata : out std_logic_vector(D_BITS-1 downto 0);
@@ -185,7 +185,7 @@ begin
 	-------------------------------------------------------------------------
 	-- Datapath not depending on FSM
 	-------------------------------------------------------------------------
-	be_nxt_n  <= mask when write = '1' else
+	be_nxt_n  <= wmask when write = '1' else
 							 (others => '0'); -- all bytes must be enabled when reading
 	addr_nxt  <= addr;
 	wdata_nxt <= wdata;

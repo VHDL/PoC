@@ -94,9 +94,9 @@ architecture sim of sram_is61lv_ctrl_tb is
   signal rst       : std_logic;
   signal req       : std_logic;
   signal write     : std_logic;
-  signal mask      : std_logic_vector(D_BITS/8 -1 downto 0);
   signal addr      : unsigned(A_BITS-1 downto 0);
   signal wdata     : std_logic_vector(D_BITS-1 downto 0);
+  signal wmask     : std_logic_vector(D_BITS/8 -1 downto 0);
   signal rdy       : std_logic;
   signal rstb      : std_logic;
   signal rdata     : std_logic_vector(D_BITS-1 downto 0);
@@ -124,9 +124,9 @@ begin  -- architecture sim
       rst       => rst,
       req       => req,
       write     => write,
-      mask      => mask,
       addr      => addr,
       wdata     => wdata,
+      wmask     => wmask,
       rdy       => rdy,
       rstb      => rstb,
       rdata     => rdata,
@@ -151,51 +151,51 @@ begin  -- architecture sim
 
     req   <= '0';
     write <= '-';
-    mask  <= (others => '-');
     addr  <= (others => '-');
     wdata <= (others => '-');
+    wmask <= (others => '-');
     simWaitUntilRisingEdge(clk, 1);
 
     req   <= '1';
     write <= '1';
-    mask  <= (others => '0');
     addr  <= x"00";
     wdata <= x"0F0F";
+    wmask <= (others => '0');
     simWaitUntilRisingEdge(clk, 1);
 
     req   <= '0';
     write <= '-';
-    mask  <= (others => '-');
     addr  <= (others => '-');
     wdata <= (others => '-');
+    wmask <= (others => '-');
     simWaitUntilRisingEdge(clk, 1);
 
     req   <= '1';
     write <= '0';
-    mask  <= (others => '-');
     addr  <= x"00";
     wdata <= (others => '-');
+    wmask <= (others => '-');
     simWaitUntilRisingEdge(clk, 1);
 
     req   <= '1';
     write <= '1';
-    mask  <= (others => '0');
     addr  <= x"00";
     wdata <= x"F0F0";
+    wmask <= (others => '0');
     simWaitUntilRisingEdge(clk, 1);
 
     req   <= '0';
     write <= '-';
-    mask  <= (others => '-');
     addr  <= (others => '-');
     wdata <= (others => '-');
+    wmask <= (others => '-');
     simWaitUntilRisingEdge(clk, 1);
 
     req   <= '0';
     write <= '-';
-    mask  <= (others => '-');
     addr  <= (others => '-');
     wdata <= (others => '-');
+    wmask <= (others => '-');
     simWaitUntilRisingEdge(clk, 1);
 
     -- This process is finished
