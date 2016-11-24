@@ -8,14 +8,14 @@
 --
 -- Description:
 -- -------------------------------------
--- Wrapper module for :doc:`PoC.io.uart.rx </PoC/io/uart/uart_rx>` and
--- :doc:`PoC.io.uart.tx </PoC/io/uart/uart_tx>` to support the Wishbone
+-- Wrapper module for :doc:`PoC.io.uart.rx </IPCores/io/uart/uart_rx>` and
+-- :doc:`PoC.io.uart.tx </IPCores/io/uart/uart_tx>` to support the Wishbone
 -- interface. Synchronized reset is used.
 --
 -- License:
 -- =============================================================================
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
---										 Chair for VLSI-Design, Diagnostics and Architecture
+--										 Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.

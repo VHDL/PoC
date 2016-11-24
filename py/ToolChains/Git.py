@@ -18,7 +18,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,15 +33,7 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.PoC")
-
-
+# load dependencies
 from pathlib              import Path
 from re                   import compile as re_compile
 from subprocess           import check_output, CalledProcessError
@@ -50,9 +42,23 @@ from shutil               import copy as shutil_copy
 
 from Base.Exceptions      import PlatformNotSupportedException, CommonException
 from Base.Configuration   import Configuration as BaseConfiguration, ConfigurationException, SkipConfigurationException
-from Base.Executable      import Executable, ExecutableArgument, CommandLineArgumentList, CommandArgument, LongFlagArgument, ValuedFlagArgument, StringArgument, \
-	LongValuedFlagArgument, LongTupleArgument
+from Base.Executable      import Executable, ExecutableArgument, CommandLineArgumentList
+from Base.Executable      import CommandArgument, LongFlagArgument, ValuedFlagArgument, StringArgument, LongValuedFlagArgument, LongTupleArgument
 from Base.ToolChain       import ToolChainException
+from ToolChains           import ToolMixIn
+
+
+__api__ = [
+	'GitException',
+	'Configuration',
+	'Git',
+	'GitSCM',
+	'GitRevParse',
+	'GitRevList',
+	'GitDescribe',
+	'GitConfig'
+]
+__all__ = __api__
 
 
 class GitException(ToolChainException):
@@ -104,7 +110,7 @@ class Configuration(BaseConfiguration):
 
 		try:
 			binaryDirectoryPath = binPath
-			self._git = Git(self._host.Platform, self._host.DryRun, binaryDirectoryPath, logger=self._host.Logger)
+			self._git = Git(self._host.Platform, self._host.DryRun, binaryDirectoryPath, "", logger=self._host.Logger)
 		except Exception as ex:
 			self._host.LogWarning(str(ex))
 
@@ -312,54 +318,47 @@ class Configuration(BaseConfiguration):
 		return gitDirectoryPath
 
 
-class GitMixIn:
-	def __init__(self, platform, dryrun, binaryDirectoryPath, logger=None):
-		self._platform =            platform
-		self._dryrun =              dryrun
-		self._binaryDirectoryPath = binaryDirectoryPath
-		# self._version =             version
-		self._Logger =              logger
-
-
-class Git(GitMixIn):
+class Git(ToolMixIn):
 	def GetGitRevParse(self):
-		git = GitRevParse(self._platform, self._dryrun, self._binaryDirectoryPath, logger=self._Logger)
+		git = GitRevParse(self)
 		git.Clear()
 		git.RevParseParameters[GitRevParse.Command] = True
 
 		return git
 
 	def GetGitRevList(self):
-		git = GitRevList(self._platform, self._dryrun, self._binaryDirectoryPath, logger=self._Logger)
+		git = GitRevList(self)
 		git.Clear()
 		git.RevListParameters[GitRevList.Command] = True
 
 		return git
 
 	def GetGitDescribe(self):
-		git = GitDescribe(self._platform, self._dryrun, self._binaryDirectoryPath, logger=self._Logger)
+		git = GitDescribe(self)
 		git.Clear()
 		git.DescribeParameters[GitDescribe.Command] = True
 
 		return git
 
 	def GetGitConfig(self):
-		git = GitConfig(self._platform, self._dryrun, self._binaryDirectoryPath, logger=self._Logger)
+		git = GitConfig(self)
 		git.Clear()
 		git.ConfigParameters[GitConfig.Command] = True
 
 		return git
 
 
-class GitSCM(Executable, GitMixIn):
-	def __init__(self, platform, dryrun, binaryDirectoryPath, logger=None):
-		GitMixIn.__init__(self, platform, dryrun, binaryDirectoryPath, logger=logger)
+class GitSCM(Executable, ToolMixIn):
+	def __init__(self, toolchain : ToolMixIn):
+		ToolMixIn.__init__(
+			self, toolchain._platform, toolchain._dryrun, toolchain._binaryDirectoryPath, toolchain._version,
+			toolchain._logger)
 
-		if (platform == "Windows"):     executablePath = binaryDirectoryPath / "git.exe"
-		elif (platform == "Linux"):     executablePath = binaryDirectoryPath / "git"
-		elif (platform == "Darwin"):    executablePath = binaryDirectoryPath / "git"
-		else:                           raise PlatformNotSupportedException(platform)
-		super().__init__(platform, dryrun, executablePath, logger=logger)
+		if (self._platform == "Windows"):     executablePath = self._binaryDirectoryPath / "git.exe"
+		elif (self._platform == "Linux"):     executablePath = self._binaryDirectoryPath / "git"
+		elif (self._platform == "Darwin"):    executablePath = self._binaryDirectoryPath / "git"
+		else:                           raise PlatformNotSupportedException(self._platform)
+		super().__init__(self._platform, self._dryrun, executablePath, logger=self._logger)
 
 		self.Parameters[self.Executable] = executablePath
 

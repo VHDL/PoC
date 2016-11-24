@@ -15,7 +15,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,26 +30,33 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Base.Configuration")
-
-
+# load dependencies
 from collections          import OrderedDict
 from pathlib              import Path
 
 from Base.Exceptions      import ExceptionBase
 
 
+__api__ = [
+	'ConfigurationException',
+	'SkipConfigurationException',
+	'Configuration'
+]
+__all__ = __api__
+
+
 class ConfigurationException(ExceptionBase):
-	pass
+	"""``ConfigurationException`` is raise while running configuration or database
+	tasks in PoC
+	"""
 
 class SkipConfigurationException(ExceptionBase):
-	pass
+	"""``SkipConfigurationException`` is a :py:exc:`ConfigurationException`,
+	which can be skipped.
+	"""
+
+
+
 
 # class RegisterSubClassesMeta(type):
 # 	def __new__(mcs, name, bases, members):
@@ -77,6 +84,7 @@ class SkipConfigurationException(ExceptionBase):
 # 		return self._subclasses
 
 class Configuration:    #(ISubClassRegistration):
+	"""base class for all Configuration classes."""
 	_vendor =       "Unknown"
 	_toolName =     "Unknown"
 	_section =      "ERROR"
@@ -229,7 +237,9 @@ class Configuration:    #(ISubClassRegistration):
 		return self._template[self._host.Platform][self._section]['Version']
 
 	def _ConfigureBinaryDirectory(self):
-		"""Updates section with value from _template and returns directory as Path object."""
+		"""Updates section with value from :attr:`_template` and returns directory
+		as :class:`Path <pathlib.Path>` object.
+		"""
 		unresolved = self._template[self._host.Platform][self._section]['BinaryDirectory']
 		self._host.PoCConfig[self._section]['BinaryDirectory'] = unresolved # create entry
 		defaultPath = Path(self._host.PoCConfig[self._section]['BinaryDirectory'])  # resolve entry
@@ -243,5 +253,5 @@ class Configuration:    #(ISubClassRegistration):
 		return binPath
 
 	def RunPostConfigurationTasks(self):
-		"""Virtual method. Overwrite to execute post-configuration tasks"""
+		"""Virtual method. Overwrite to execute post-configuration tasks."""
 		pass

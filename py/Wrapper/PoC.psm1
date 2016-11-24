@@ -15,7 +15,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#											Chair for VLSI-Design, Diagnostics and Architecture
+#											Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -154,6 +154,12 @@ $PoC_Environments =	@{
 				"PSModule" =			"Mentor.PrecisionRTL.psm1";
 				"PreHookFile" =		"Mentor.PrecisionRTL.pre.ps1";
 				"PostHookFile" =	"Mentor.PrecisionRTL.post.ps1"};
+			"ModelSimPE" =		@{
+				"Load" =				$false;
+				"Commands" =		@("vsim", "msim");
+				"PSModule" =			"Mentor.ModelSimPE.psm1";
+				"PreHookFile" =		"Mentor.ModelSimPE.pre.ps1";
+				"PostHookFile" =	"Mentor.ModelSimPE.post.ps1"};
 			"QuestaSim" =			@{
 				"Load" =				$false;
 				"Commands" =		@("vsim", "qsim");
@@ -205,7 +211,22 @@ $PoC_Environments =	@{
 		} # Tools
 	}	# Xilinx
 }
+# ==============================================================================
+function Invoke-BatchFile
+{	param(
+		[string]$Path,
+		[string]$Parameters
+	)
+	$environmentVariables = cmd.exe /c " `"$Path`" $Parameters && set "
+	foreach ($line in $environmentVariables)
+	{	if ($_ -match "^(.*?)=(.*)$")
+		{	Set-Content "env:\$($matches[1])" $matches[2]		}
+		else
+		{	$_																							}
+	}
+}
 
+# ==============================================================================
 function Get-PoCEnvironmentArray
 {	<#
 		.SYNOPSIS

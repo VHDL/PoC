@@ -17,7 +17,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,15 +32,6 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module Compiler.XSTCompiler")
-
-
 # load dependencies
 from datetime                 import datetime
 from pathlib                  import Path
@@ -52,9 +43,15 @@ from ToolChains.Xilinx.Xilinx import XilinxProjectExportMixIn
 from ToolChains.Xilinx.ISE    import ISE, ISEException
 
 
+__api__ = [
+	'Compiler'
+]
+__all__ = __api__
+
+
 class Compiler(BaseCompiler, XilinxProjectExportMixIn):
-	_TOOL_CHAIN =  ToolChain.Xilinx_ISE
-	_TOOL =        Tool.Xilinx_XST
+	TOOL_CHAIN =      ToolChain.Xilinx_ISE
+	TOOL =            Tool.Xilinx_XST
 
 	class __Directories__(BaseCompiler.__Directories__):
 		XSTFiles =    None
@@ -63,12 +60,10 @@ class Compiler(BaseCompiler, XilinxProjectExportMixIn):
 		super().__init__(host, dryRun, noCleanUp)
 		XilinxProjectExportMixIn.__init__(self)
 
-		self._toolChain =    None
-
 		configSection = host.PoCConfig['CONFIG.DirectoryNames']
-		self.Directories.Working = host.Directories.Temp / configSection['ISESynthesisFiles']
+		self.Directories.Working =  host.Directories.Temp / configSection['ISESynthesisFiles']
 		self.Directories.XSTFiles = host.Directories.Root / configSection['ISESynthesisFiles']
-		self.Directories.Netlist = host.Directories.Root / configSection['NetlistFiles']
+		self.Directories.Netlist =  host.Directories.Root / configSection['NetlistFiles']
 
 		self._PrepareCompiler()
 

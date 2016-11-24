@@ -1,8 +1,13 @@
+.. _CmdRef:
 
 Command Reference
 #################
 
-.. contents:: Contents of this Page
+This is the command line option reference for all provided scripts
+(Bash, PowerShell, Perl) and programs (Python) shipped with PoC.
 
-.. autoprogram:: PoCSphinx:parser
-   :prog: PoC.py
+.. toctree::
+
+   CmdRefs/Wrapper
+   Main Program <CmdRefs/PoC>
+   CmdRefs/Compile

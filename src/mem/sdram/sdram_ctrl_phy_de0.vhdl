@@ -8,7 +8,7 @@
 --
 -- Description:
 -- -------------------------------------
--- Physical layer used by module :doc:`sdram_ctrl_de0 <sdram_ctrl_de0>`.
+-- Physical layer used by module :ref:`sdram_ctrl_de0 <IP:sdram_ctrl_de0>`.
 --
 -- Instantiates input and output buffer components and adjusts the timing for
 -- the Altera DE0 board.
@@ -44,8 +44,8 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
---										 Chair for VLSI-Design, Diagnostics and Architecture
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
+--										 Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.

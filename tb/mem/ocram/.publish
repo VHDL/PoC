@@ -8,6 +8,8 @@ README.md
 # --------------------------------------
 ocram_sp_tb.*
 ocram_sdp_tb.*
+ocram_sdp_wf_tb.*
 ocram_esdp_tb.*
 ocram_tdp_tb.*
+ocram_tdp_wf_tb.*
 #ocram_chain_tb.*

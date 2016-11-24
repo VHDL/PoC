@@ -15,7 +15,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2015 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,4 +43,3 @@ else:
 
 __POC_SOLUTION_KEYWORD__ =  "Solution"
 __POC_PROJECT_KEYWORD__ =    "Project"
-

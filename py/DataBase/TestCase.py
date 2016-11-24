@@ -14,7 +14,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,18 +29,21 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("The PoC-Library - Python Module PoC.Query")
-
-
+#
+# load dependencies
 from collections      import OrderedDict
 from datetime         import datetime
 from enum             import Enum, unique
+
+
+__api__ = [
+	'SimulationStatus', 'CompileStatus',
+	'ElementBase',
+	'GroupBase', 'TestGroup', 'SynthesisGroup',
+	'SuiteMixIn', 'TestSuite', 'SynthesisSuite',
+	'TestBase', 'TestCase', 'Synthesis'
+]
+__all__ = __api__
 
 
 @unique
@@ -54,6 +57,7 @@ class SimulationStatus(Enum):
 	SimulationFailed =    10
 	SimulationNoAsserts = 15
 	SimulationSuccess =   20
+	SimulationGUIRun =    30
 
 @unique
 class CompileStatus(Enum):
@@ -282,14 +286,14 @@ class TestCase(TestBase):
 	@property
 	def Testbench(self):      return self._test
 
-
 	def UpdateStatus(self, testResult):
 		if (testResult is testResult.NotRun):       self._status = SimulationStatus.Unknown
 		elif (testResult is testResult.Error):      self._status = SimulationStatus.SimulationError
 		elif (testResult is testResult.Failed):     self._status = SimulationStatus.SimulationFailed
 		elif (testResult is testResult.NoAsserts):  self._status = SimulationStatus.SimulationNoAsserts
 		elif (testResult is testResult.Passed):     self._status = SimulationStatus.SimulationSuccess
-		else:                                       raise IndentationError("Wuhu1")
+		elif (testResult is testResult.GUIRun):     self._status = SimulationStatus.SimulationGUIRun
+		else:                                       raise ValueError("Unsupported value in 'testResult'.")
 
 
 class Synthesis(TestBase):

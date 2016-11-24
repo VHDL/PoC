@@ -14,7 +14,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ from sys import path as sys_path
 
 sys_path.append("../py")
 
-from PoC import PoC
+from PoC import PileOfCores
 
 # entry point
-parser = PoC(False, False, False, True, sphinx=True).MainParser
+parser = PileOfCores(False, False, False, True, sphinx=True).MainParser

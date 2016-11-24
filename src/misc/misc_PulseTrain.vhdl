@@ -8,13 +8,13 @@
 --
 -- Description:
 -- -------------------------------------
---		This module generates pulse trains. This module was written as a answer for
---		a StackOverflow question: http://stackoverflow.com/questions/25783320
+-- This module generates pulse trains. This module was written as a answer for
+-- a StackOverflow question: http://stackoverflow.com/questions/25783320
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair for VLSI-Design, Diagnostics and Architecture
+--										 Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.

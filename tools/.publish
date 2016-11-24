@@ -17,7 +17,8 @@ precompile/
 # scripts and configuration files for the ReadTheDocs flow
 ReadTheDocs/
 
-# scripts and configuration files for the Travis-CI flow
+# scripts and configuration files for Continuous Integration flows
+AppVeyor/
 Travis-CI/
 
 # the publish scripts

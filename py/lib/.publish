@@ -13,6 +13,9 @@ ExtendedConfigParser/
 # pyAttributes
 pyAttribute/
 
+# SphinxExtensions
+SphinxExtensions/
+
 # Modules
 Decorators.py
 Functions.py

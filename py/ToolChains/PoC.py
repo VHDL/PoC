@@ -18,7 +18,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,21 +33,20 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module ToolChains.PoC")
-
-
+# load dependencies
 from os                   import environ
 from pathlib              import Path
 from subprocess           import check_output, check_call, CalledProcessError
 
 from Base.Configuration   import Configuration as BaseConfiguration
 from ToolChains.Git       import Git
+
+
+__api__ = [
+	'Configuration'
+]
+__all__ = __api__
+
 
 
 class Configuration(BaseConfiguration):
@@ -68,7 +67,7 @@ class Configuration(BaseConfiguration):
 		if (len(self._host.PoCConfig['INSTALL.Git']) != 0):
 			try:
 				binaryDirectoryPath = Path(self._host.PoCConfig['INSTALL.Git']['BinaryDirectory'])
-				git = Git(self._host.Platform, self._host.DryRun, binaryDirectoryPath, logger=self._host.Logger)
+				git = Git(self._host.Platform, self._host.DryRun, binaryDirectoryPath, "", logger=self._host.Logger)
 				gitRevList = git.GetGitRevList()
 				gitRevList.RevListParameters[gitRevList.SwitchTags] = True
 				gitRevList.RevListParameters[gitRevList.SwitchMaxCount] = 1

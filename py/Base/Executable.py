@@ -16,7 +16,7 @@
 # License:
 # ==============================================================================
 # Copyright 2007-2016 Technische Universitaet Dresden - Germany
-#                     Chair for VLSI-Design, Diagnostics and Architecture
+#                     Chair of VLSI-Design, Diagnostics and Architecture
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,28 +31,40 @@
 # limitations under the License.
 # ==============================================================================
 #
-# entry point
-if __name__ != "__main__":
-	# place library initialization code here
-	pass
-else:
-	from lib.Functions import Exit
-	Exit.printThisIsNoExecutableFile("PoC Library - Python Module Base.Executable")
-
 # load dependencies
 from pathlib                import Path
-from subprocess              import Popen				as Subprocess_Popen
-from subprocess              import PIPE					as Subprocess_Pipe
-from subprocess              import STDOUT				as Subprocess_StdOut
+from subprocess             import Popen				as Subprocess_Popen
+from subprocess             import PIPE					as Subprocess_Pipe
+from subprocess             import STDOUT				as Subprocess_StdOut
 
-from Base.Exceptions        import CommonException
-from Base.Logging            import ILogable
+from Base.Exceptions        import CommonException, ExceptionBase
+from Base.Logging           import ILogable
 
 
-class ExecutableException(BaseException):
+__api__ = [
+	'ExecutableException',
+	'CommandLineArgument',
+	'ExecutableArgument',
+	'NamedCommandLineArgument',
+	'CommandArgument',        'ShortCommandArgument',         'LongCommandArgument',        'WindowsCommandArgument',
+	'StringArgument',
+	'StringListArgument',
+	'PathArgument',
+	'FlagArgument',           'ShortFlagArgument',            'LongFlagArgument',           'WindowsFlagArgument',
+	'ValuedFlagArgument',     'ShortValuedFlagArgument',      'LongValuedFlagArgument',
+	'ValuedFlagListArgument', 'ShortValuedFlagListArgument',  'LongValuedFlagListArgument',
+	'TupleArgument',          'ShortTupleArgument',           'LongTupleArgument',
+	'CommandLineArgumentList',
+	'Executable'
+]
+__all__ = __api__
+
+
+class ExecutableException(ExceptionBase):
 	def __init__(self, message=""):
 		super().__init__(message)
 		self.message = message
+
 
 class CommandLineArgument(type):
 	_value = None
@@ -60,6 +72,7 @@ class CommandLineArgument(type):
 	# def __new__(mcls, name, bases, nmspc):
 	# 	print("CommandLineArgument.new: %s - %s" % (name, nmspc))
 	# 	return super(CommandLineArgument, mcls).__new__(mcls, name, bases, nmspc)
+
 
 class ExecutableArgument(CommandLineArgument):
 	@property
