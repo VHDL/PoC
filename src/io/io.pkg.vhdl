@@ -174,8 +174,10 @@ package body io is
 		for k in pad'range loop
 			pad(k)        <= ite((tristate(k).t = '1'), 'Z', tristate(k).o);
 			tristate(k).i <= pad(k);
-			tristate(k).t <= 'Z';     -- drive all record members
-			tristate(k).o <= 'Z';     -- drive all record members
+			if SIMULATION then
+				tristate(k).t <= 'Z';     -- drive all record members
+				tristate(k).o <= 'Z';     -- drive all record members
+			end if;
 		end loop;
 	end procedure;
 
