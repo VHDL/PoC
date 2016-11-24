@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="3.2" title="PoC" device="LFE5U-45F-6BG381C" default_implementation="ocram_esdp">
+<BaliProject version="3.2" title="PoC" device="LFE5U-45F-6BG381C" default_implementation="sram_is61lv_ctrl">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
@@ -298,6 +298,51 @@
         </Source>
         <Source name="../ocram_tdp_test3.vhdl" type="VHDL" type_short="VHDL">
             <Options top_module="ocram_tdp_test3"/>
+        </Source>
+        <Source name="PoC.lpf" type="Logic Preference" type_short="LPF">
+            <Options/>
+        </Source>
+    </Implementation>
+    <Implementation title="sram_is61lv_ctrl" dir="sram_is61lv_ctrl" description="sram_is61lv_ctrl" synthesis="lse" default_strategy="Area">
+        <Options def_top="sram_is61lv_ctrl_test"/>
+        <Source name="../../src/common/config.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/math.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/physical.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/strings.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/utils.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/common/vectors.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_config_ECP5Versa.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../tb/common/my_project.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/ocram/ocram.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/mem/mem.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="PoC"/>
+        </Source>
+        <Source name="../../src/io/io.pkg.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="poc"/>
+        </Source>
+        <Source name="../../src/mem/sram/sram_is61lv_ctrl.vhdl" type="VHDL" type_short="VHDL">
+            <Options lib="poc"/>
+        </Source>
+        <Source name="../sram_is61lv_ctrl_test.vhdl" type="VHDL" type_short="VHDL" syn_sim="SynOnly">
+            <Options top_module="sram_is61lv_ctrl_test"/>
         </Source>
         <Source name="PoC.lpf" type="Logic Preference" type_short="LPF">
             <Options/>
