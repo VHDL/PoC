@@ -23,10 +23,13 @@
 -- * Altera Quartus 13.0: issues warnings about connectivity (warnings 12241
 --   and 13034). RTL netlist view looks ugly. Post-Mapping netlist looks good.
 --
--- * Lattice Diamond 3.7.0: No warnings. Netlist view looks ugly. Some
+-- * Lattice Diamond 3.8.0 (LSE): No warnings. Netlist view looks ugly. Some
 --   unnecessary LUTs are synthesized for sram_data_tristate.o. Signal naming
 --   in physical view is confusing. Duplicate registers for ctrl/own_oe_r
 --   (driving t of IOB) are removed.
+--
+-- * Lattice Diamond 3.8.0 (Synplify): generates logic as expected. no netlist
+--   view available.
 --
 -- License:
 -- =============================================================================
