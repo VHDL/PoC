@@ -320,6 +320,7 @@ begin
 	l1: for i in 0 to D_BITS-1 generate
 		sram_data(i).o <= wdata_r(i);
 		sram_data(i).t <= own_oe_r_n(i); -- driven when '0', otherwise high-z
+		sram_data(i).i <= 'Z';           -- drive all record members
 	end generate l1;
 
 	sram_oe_n <= sram_oe_r_n;
