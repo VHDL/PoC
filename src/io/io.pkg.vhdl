@@ -176,9 +176,17 @@ package body io is
 			pad(k)        <= ite((tristate(k).t = '1'), 'Z', tristate(k).o);
 			tristate(k).i <= pad(k);
 			if SIMULATION or not(SYNTHESIS_TOOL = SYNTHESIS_TOOL_ALTERA_QUARTUS2 or SYNTHESIS_TOOL = SYNTHESIS_TOOL_LATTICE_LSE) then
-			  -- Altera Quartus-II and Lattice Synthesis Engine: RTL / Netlist view is unreadable due to meaningless 'Z' drivers
-			  -- Altera Quartus-II reports warnings about these meaningless 'Z' drivers, but synthesis result is as expected.
-			  -- Lattice Synthesis Engine: synthesis result is not optimal if these 'Z' drivers are present.
+				-- As defined in IEEE Std. 1076-2008 para. 2.1.1.2: "a subprogram
+				-- contains a driver for each formal signal parameter of mode out or inout".
+				-- This driver will drive 'U' if the following 'Z' drivers are missed.
+				-- Driving 'U' would lead to incorrect results.
+				--
+				-- But:
+				--
+				-- * Altera Quartus-II and Lattice Synthesis Engine: RTL / Netlist view is unreadable due to meaningless 'Z' drivers.
+				-- * Altera Quartus-II reports warnings about these meaningless 'Z' drivers, but synthesis result is as expected.
+				-- * Lattice Synthesis Engine: synthesis result is not optimal if these 'Z' drivers are present, additional LUTs are synthesized.
+				--
 				tristate(k).t <= 'Z';     -- drive all record members
 				tristate(k).o <= 'Z';     -- drive all record members
 			end if;
