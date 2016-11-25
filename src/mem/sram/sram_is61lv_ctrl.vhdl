@@ -328,12 +328,18 @@ begin
 			-- If the following 'Z' driver is omitted, then the driving value of the
 			-- subelement ``i`` would be the default value which is 'U', see IEEE
 			-- Std. 1076-2008 para. 12.6.1. After resolution, the effective value
-			-- of the subelement ``i`` would be 'U' which is not desired.
+			-- of the subelement ``i`` would be 'U' which is not intended.
 			--
 			-- But:
-			-- * Altera Quartus-II and Lattice Synthesis Engine: RTL / Netlist view is unreadable due to meaningless 'Z' drivers
-			-- * Altera Quartus-II reports warnings about these meaningless 'Z' drivers, but synthesis result is as expected.
-			-- * Lattice Synthesis Engine: synthesis result is not optimal if these 'Z' drivers are, additional LUTs are synthesized.
+			--
+			-- * Altera Quartus-II and Lattice Synthesis Engine: RTL / Netlist view
+			--   is unreadable due to meaningless 'Z' drivers.
+			--
+			-- * Altera Quartus-II reports warnings about these meaningless 'Z'
+			--   drivers, but synthesis result is as expected.
+			--
+			-- * Lattice Synthesis Engine: synthesis result is not optimal. If
+			--   these 'Z' drivers are present, additional LUTs are synthesized.
 			--
 			-- Note: Simulation with ModelSim show correct output when 'Z' driver is
 			-- omitted, but a warning is reported.

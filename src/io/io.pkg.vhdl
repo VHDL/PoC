@@ -179,13 +179,21 @@ package body io is
 				-- As defined in IEEE Std. 1076-2008 para. 2.1.1.2: "a subprogram
 				-- contains a driver for each formal signal parameter of mode out or inout".
 				-- This driver will drive 'U' if the following 'Z' drivers are missed.
-				-- Driving 'U' would lead to incorrect results.
+				-- Driving 'U' would lead to an effective value of 'U' which is not intended.
 				--
 				-- But:
 				--
-				-- * Altera Quartus-II and Lattice Synthesis Engine: RTL / Netlist view is unreadable due to meaningless 'Z' drivers.
-				-- * Altera Quartus-II reports warnings about these meaningless 'Z' drivers, but synthesis result is as expected.
-				-- * Lattice Synthesis Engine: synthesis result is not optimal if these 'Z' drivers are present, additional LUTs are synthesized.
+				-- * Altera Quartus-II and Lattice Synthesis Engine: RTL / Netlist view
+				--   is unreadable due to meaningless 'Z' drivers.
+				--
+				-- * Altera Quartus-II reports warnings about these meaningless 'Z'
+				--   drivers, but synthesis result is as expected.
+				--
+				-- * Lattice Synthesis Engine: synthesis result is not optimal. The
+				--   entity which has the corresponding inout port of type
+				--   T_IO_TRISTATE_VECTOR would require 'Z' drivers for the
+				--   ``i`` subelements instead. But if these 'Z' drivers are present,
+				--   additional LUTs are synthesized.
 				--
 				tristate(k).t <= 'Z';     -- drive all record members
 				tristate(k).o <= 'Z';     -- drive all record members
