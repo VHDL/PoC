@@ -68,6 +68,7 @@ architecture rtl of comm_scramble is
     end loop;
     report "Cannot use absolute constant as generator."
       severity failure;
+		return "0";
   end normalize;
 
   -- Normalized Generator
