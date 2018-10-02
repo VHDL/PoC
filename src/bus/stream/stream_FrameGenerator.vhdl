@@ -35,6 +35,7 @@ use			ieee.numeric_std.all;
 library	PoC;
 use			PoC.utils.all;
 use			PoC.vectors.all;
+use			PoC.stream.all;
 
 
 entity stream_FrameGenerator is
