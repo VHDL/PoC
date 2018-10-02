@@ -147,7 +147,9 @@ package body config_private is
 	constant C_BOARD_ETH_EMPTY                  : T_BOARD_ETHERNET_DESC := brd_CreateEthernet("",     "",     "",               x"00", "",      "");
 	constant C_BOARD_ETH_SOFT_GMII_88E1111      : T_BOARD_ETHERNET_DESC := brd_CreateEthernet("SOFT", "GMII", "MARVEL_88E1111", x"07", "GMII",  "MDIO");
 	constant C_BOARD_ETH_HARD_GMII_88E1111      : T_BOARD_ETHERNET_DESC := brd_CreateEthernet("HARD", "GMII", "MARVEL_88E1111", x"07", "GMII",  "MDIO");
-	constant C_BOARD_ETH_SOFT_SGMII_88E1111     : T_BOARD_ETHERNET_DESC := brd_CreateEthernet("SOFT", "GMII", "MARVEL_88E1111", x"07", "SGMII", "MDIO_OVER_IIC");
+	constant C_BOARD_ETH_SOFT_SGMII_88E1111_IIC		: T_BOARD_ETHERNET_DESC		:= brd_CreateEthernet("SOFT", "GMII", "MARVEL_88E1111", x"07", "SGMII", "MDIO_OVER_IIC");
+	constant C_BOARD_ETH_SOFT_SGMII_88E1111_MDIO	: T_BOARD_ETHERNET_DESC		:= brd_CreateEthernet("SOFT", "GMII", "MARVEL_88E1111", x"07", "SGMII", "MDIO");
+
 	constant C_BOARD_ETH_SOFT_MII_LAN8720A      : T_BOARD_ETHERNET_DESC := brd_CreateEthernet("SOFT", "MII",  "SMSC_LAN8720A",  x"01", "MII",   "MDIO");
 	constant C_BOARD_ETH_SOFT_MII_DP83848J      : T_BOARD_ETHERNET_DESC := brd_CreateEthernet("SOFT", "MII",  "TI_DP83848J",    x"01", "MII",   "MDIO");
 	constant C_BOARD_ETH_SOFT_RGMII_RTL8211E_VL : T_BOARD_ETHERNET_DESC := brd_CreateEthernet("SOFT", "MII",  "RTL8211E-VL",    x"01", "RGMII", "MDIO");
@@ -300,7 +302,7 @@ package body config_private is
 			FPGADevice =>     conf("XC7K325T-2FFG900C"),            -- XC7K325T-2FFG900C
       UART =>           C_BOARD_UART_DTE_921600_NONE,
 			Ethernet => (
-				0 =>            C_BOARD_ETH_SOFT_GMII_88E1111,
+				0 =>            C_BOARD_ETH_SOFT_SGMII_88E1111_MDIO,--C_BOARD_ETH_SOFT_GMII_88E1111,--
 				others =>       C_BOARD_ETH_EMPTY),
 			EthernetCount =>  1
     ),(
@@ -348,7 +350,7 @@ package body config_private is
 			FPGADevice =>     conf("XC7VX485T-2FFG1761C"),          -- XC7VX485T-2FFG1761C
       UART =>           C_BOARD_UART_DTE_921600_NONE,
 			Ethernet => (
-				0 =>            C_BOARD_ETH_SOFT_SGMII_88E1111,
+				0 =>            C_BOARD_ETH_SOFT_SGMII_88E1111_IIC,
 				others =>       C_BOARD_ETH_EMPTY),
 			EthernetCount =>  1
     ),(
@@ -554,34 +556,40 @@ package config is
 		LUT_FanIn       : positive;
 	end record;
 
-  -- Functions extracting board and PCB properties from "MY_BOARD"
-  -- which is declared in package "my_config".
-  -- ===========================================================================
-	function BOARD(BoardConfig : string := C_BOARD_STRING_EMPTY)                return natural;
-	function BOARD_INFO(BoardConfig : string := C_BOARD_STRING_EMPTY)           return T_BOARD_INFO;
-	function BOARD_NAME(BoardConfig : string := C_BOARD_STRING_EMPTY)           return string;
-	function BOARD_DEVICE(BoardConfig : string := C_BOARD_STRING_EMPTY)         return string;
-	function BOARD_UART_BAUDRATE(BoardConfig : string := C_BOARD_STRING_EMPTY)  return string;
+	-- Functions extracting board and PCB properties from "MY_BOARD"
+	-- which is declared in package "my_config".
+	-- ===========================================================================
+	function BOARD															(BoardConfig : string := C_BOARD_STRING_EMPTY)												return natural;
+	function BOARD_INFO													(BoardConfig : string := C_BOARD_STRING_EMPTY)												return T_BOARD_INFO;
+	function BOARD_NAME													(BoardConfig : string := C_BOARD_STRING_EMPTY) 												return string;
+	function BOARD_DEVICE												(BoardConfig : string := C_BOARD_STRING_EMPTY) 												return string;
+	function BOARD_UART_BAUDRATE								(BoardConfig : string := C_BOARD_STRING_EMPTY)												return string;
+	function BOARD_ETH_IPStyle									(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
+	function BOARD_ETH_RS_DataInterface					(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
+	function BOARD_ETH_PHY_Device								(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
+	function BOARD_ETH_PHY_DeviceAddress				(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return std_logic_vector;
+	function BOARD_ETH_PHY_DataInterface				(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
+	function BOARD_ETH_PHY_ManagementInterface	(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
 
-  -- Functions extracting device and architecture properties from "MY_DEVICE"
-  -- which is declared in package "my_config".
-  -- ===========================================================================
-	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY)             return T_VENDOR;
-	function SYNTHESIS_TOOL(DeviceString : string := C_DEVICE_STRING_EMPTY)     return T_SYNTHESIS_TOOL;
-	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY)             return T_DEVICE;
-	function DEVICE_FAMILY(DeviceString : string := C_DEVICE_STRING_EMPTY)      return T_DEVICE_FAMILY;
-	function DEVICE_SUBTYPE(DeviceString : string := C_DEVICE_STRING_EMPTY)     return T_DEVICE_SUBTYPE;
-	function DEVICE_SERIES(DeviceString : string := C_DEVICE_STRING_EMPTY)      return T_DEVICE_SERIES;
-	function DEVICE_GENERATION(DeviceString : string := C_DEVICE_STRING_EMPTY)  return natural;
-	function DEVICE_NUMBER(DeviceString : string := C_DEVICE_STRING_EMPTY)      return natural;
+	-- Functions extracting device and architecture properties from "MY_DEVICE"
+	-- which is declared in package "my_config".
+	-- ===========================================================================
+	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY)							return T_VENDOR;
+	function SYNTHESIS_TOOL(DeviceString : string := C_DEVICE_STRING_EMPTY)			return T_SYNTHESIS_TOOL;
+	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY)							return T_DEVICE;
+	function DEVICE_FAMILY(DeviceString : string := C_DEVICE_STRING_EMPTY)			return T_DEVICE_FAMILY;
+	function DEVICE_SUBTYPE(DeviceString : string := C_DEVICE_STRING_EMPTY)			return T_DEVICE_SUBTYPE;
+	function DEVICE_SERIES(DeviceString : string := C_DEVICE_STRING_EMPTY)			return T_DEVICE_SERIES;
+	function DEVICE_GENERATION(DeviceString : string := C_DEVICE_STRING_EMPTY)	return natural;
+	function DEVICE_NUMBER(DeviceString : string := C_DEVICE_STRING_EMPTY)			return natural;
 
-	function TRANSCEIVER_TYPE(DeviceString : string := C_DEVICE_STRING_EMPTY)   return T_TRANSCEIVER;
-	function LUT_FANIN(DeviceString : string := C_DEVICE_STRING_EMPTY)          return positive;
+	function TRANSCEIVER_TYPE(DeviceString : string := C_DEVICE_STRING_EMPTY)		return T_TRANSCEIVER;
+	function LUT_FANIN(DeviceString : string := C_DEVICE_STRING_EMPTY)					return positive;
 
-	function DEVICE_INFO(DeviceString : string := C_DEVICE_STRING_EMPTY)        return T_DEVICE_INFO;
+	function DEVICE_INFO(DeviceString : string := C_DEVICE_STRING_EMPTY)				return T_DEVICE_INFO;
 
-  -- Convert T_DEVICE to string representation as required by "altera_mf" library
-  -- ===========================================================================
+	-- Convert T_DEVICE to string representation as required by "altera_mf" library
+	-- ===========================================================================
 	function getAlteraDeviceName (device : T_DEVICE) return string;
 
   -- force FSM to predefined encoding in debug mode
@@ -781,18 +789,54 @@ package body config is
   begin
     return str_trim(C_BOARD_INFO_LIST(BRD).UART.BaudRate);
 	end function;
+	
+	function BOARD_ETH_IPStyle									(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string is
+		constant BRD	: natural := BOARD(BoardConfig);
+	begin
+		return str_trim(C_BOARD_INFO_LIST(BRD).Ethernet(EthID).IPStyle);
+	end function;
+	
+	function BOARD_ETH_RS_DataInterface					(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string is
+		constant BRD	: natural := BOARD(BoardConfig);
+	begin
+		return str_trim(C_BOARD_INFO_LIST(BRD).Ethernet(EthID).RS_DataInterface);
+	end function;
+	
+	function BOARD_ETH_PHY_Device								(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string is
+		constant BRD	: natural := BOARD(BoardConfig);
+	begin
+		return str_trim(C_BOARD_INFO_LIST(BRD).Ethernet(EthID).PHY_Device);
+	end function;
+	
+	function BOARD_ETH_PHY_DeviceAddress				(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return std_logic_vector is
+		constant BRD	: natural := BOARD(BoardConfig);
+	begin
+		return C_BOARD_INFO_LIST(BRD).Ethernet(EthID).PHY_DeviceAddress;
+	end function;
+	
+	function BOARD_ETH_PHY_DataInterface		(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)			return string is
+		constant BRD	: natural := BOARD(BoardConfig);
+	begin
+		return str_trim(C_BOARD_INFO_LIST(BRD).Ethernet(EthID).PHY_DataInterface);
+	end function;
+	
+	function BOARD_ETH_PHY_ManagementInterface	(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string is
+		constant BRD	: natural := BOARD(BoardConfig);
+	begin
+		return str_trim(C_BOARD_INFO_LIST(BRD).Ethernet(EthID).PHY_ManagementInterface);
+	end function;
 
-  -- purpose: extract vendor from MY_DEVICE
-  function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_VENDOR is
-    constant MY_DEV    : string(1 to 32)  := getLocalDeviceString(DeviceString);
-		constant VEN_STR2  : string(1 to 2)  := MY_DEV(1 to 2);	    -- TODO: test if alias declarations also work out on all platforms
-    constant VEN_STR3  : string(1 to 3)  := MY_DEV(1 to 3);	    -- TODO: test if alias declarations also work out on all platforms
-  begin
-    case VEN_STR2 is
-      when "GE" =>  return VENDOR_GENERIC;
-			when "EP" =>  return VENDOR_ALTERA;
-			when "XC" =>  return VENDOR_XILINX;
-			when others =>  null;
+	-- purpose: extract vendor from MY_DEVICE
+	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_VENDOR is
+		constant MY_DEV		: string(1 to 32)	:= getLocalDeviceString(DeviceString);
+		constant VEN_STR2	: string(1 to 2)  := MY_DEV(1 to 2);			-- TODO: test if alias declarations also work out on all platforms
+		constant VEN_STR3	: string(1 to 3)  := MY_DEV(1 to 3);			-- TODO: test if alias declarations also work out on all platforms
+	begin
+		case VEN_STR2 is
+			when "GE" =>		return VENDOR_GENERIC;
+			when "EP" =>		return VENDOR_ALTERA;
+			when "XC" =>		return VENDOR_XILINX;
+			when others =>	null;
 		end case;
 		case VEN_STR3 is
       when "MPF" =>  return VENDOR_MICROSEMI;  -- PolarFire devices
@@ -1187,7 +1231,7 @@ package body config is
 					when others =>                return TRANSCEIVER_GTXE2;
 				end case;
 
-			when others =>                    report "Unknown device." severity failure;
+			when others => report "Unknown device." severity failure;
 		end case;
 		return TRANSCEIVER_NONE;
 	end function;

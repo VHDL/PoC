@@ -95,7 +95,7 @@ package physical is
 	type		T_MEMVEC						is array(natural range <>) of MEMORY;
 
 	-- if true: TimingToCycles reports difference between expected and actual result
-	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: boolean		:= TRUE;
+	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: boolean		:= true;
 
 	-- conversion functions
 	function to_time(f : FREQ)	return time; -- can be used by testbenches without restrictions
