@@ -126,7 +126,7 @@ architecture rtl of mac_RX_DestMAC_Switch is
 	signal Out_Meta_DestMACAddress_nxt_i	: std_logic;
 
 begin
-	assert FALSE report "RX_DestMAC_Switch:  ports=" & integer'image(PORTS)					severity NOTE;
+	assert not DEBUG report "RX_DestMAC_Switch:  ports=" & integer'image(PORTS)					severity NOTE;
 
 	In_Ack				<= In_Ack_i;
 	Is_DataFlow		<= In_Valid and In_Ack_i;
