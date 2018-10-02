@@ -47,13 +47,15 @@ package net is
 		NET_ETH_PHY_DATA_INTERFACE_MII,
 		NET_ETH_PHY_DATA_INTERFACE_GMII,
 		NET_ETH_PHY_DATA_INTERFACE_RGMII,
-		NET_ETH_PHY_DATA_INTERFACE_SGMII
+		NET_ETH_PHY_DATA_INTERFACE_SGMII,
+		NET_ETH_PHY_DATA_INTERFACE_EMPTY
 	);
 
 	type T_NET_ETH_PHY_MANAGEMENT_INTERFACE is (
 		NET_ETH_PHY_MANAGEMENT_INTERFACE_NONE,
 		NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO,
-		NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO_OVER_IIC
+		NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO_OVER_IIC,
+		NET_ETH_PHY_MANAGEMENT_INTERFACE_EMPTY
 	);
 
 	type T_NET_ETH_PCSCORE is (
@@ -63,7 +65,8 @@ package net is
 	);
 
 	type T_NET_ETH_PHY_DEVICE is (
-		NET_ETH_PHY_DEVICE_MARVEL_88E1111
+		NET_ETH_PHY_DEVICE_MARVEL_88E1111,
+		NET_ETH_PHY_DEVICE_EMPTY
 	);
 
 	subtype T_NET_ETH_PHY_DEVICE_ADDRESS is T_SLV_8;
@@ -71,6 +74,7 @@ package net is
 	type T_NET_ETH_PHYCONTROLLER_COMMAND is (
 		NET_ETH_PHYC_CMD_NONE,
 		NET_ETH_PHYC_CMD_HARD_RESET,
+		NET_ETH_PHYC_CMD_READ,
 		NET_ETH_PHYC_CMD_SOFT_RESET
 	);
 
@@ -79,6 +83,7 @@ package net is
 		NET_ETH_PHYC_STATUS_RESETING,
 		NET_ETH_PHYC_STATUS_CONNECTING,
 		NET_ETH_PHYC_STATUS_CONNECTED,
+		NET_ETH_PHYC_STATUS_READING,
 		NET_ETH_PHYC_STATUS_DISCONNECTING,
 		NET_ETH_PHYC_STATUS_DISCONNECTED,
 		NET_ETH_PHYC_STATUS_ERROR
@@ -86,7 +91,8 @@ package net is
 
 	type T_NET_ETH_PHYCONTROLLER_ERROR is (
 		NET_ETH_PHYC_ERROR_NONE,
-		NET_ETH_PHYC_ERROR_NO_CABLE
+		NET_ETH_PHYC_ERROR_NO_MATCH_DEVICE_ID,
+		NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR
 	);
 
 	-- FPGA <=> PHY physical interface: GMII (Gigabit Media Independant Interface)
@@ -153,6 +159,53 @@ package net is
 		Common								: T_NET_ETH_PHY_INTERFACE_COMMON;
 	end record;
 
+	constant C_NET_ETH_PHY_INTERFACE_GMII_INIT : T_NET_ETH_PHY_INTERFACE_GMII := (
+		RX_RefClock				=> 'Z',
+		TX_Clock					=> 'Z',
+		TX_Valid					=> 'Z',
+		TX_Data						=> (others => 'Z'),
+		TX_Error					=> 'Z',
+		RX_Clock					=> 'Z',
+		RX_Valid					=> 'Z',
+		RX_Data						=> (others => 'Z'),
+		RX_Error					=> 'Z'
+	);
+	constant C_NET_ETH_PHY_INTERFACE_RGMII_INIT : T_NET_ETH_PHY_INTERFACE_RGMII := (
+		RX_RefClock				=> 'Z',
+		TX_Clock					=> 'Z',
+		TX_Data						=> (others => 'Z'),
+		TX_Control				=> 'Z',
+		RX_Clock					=> 'Z',
+		RX_Data						=> (others => 'Z'),
+		RX_Control				=> 'Z'
+	);
+	constant C_NET_ETH_PHY_INTERFACE_SGMII_INIT : T_NET_ETH_PHY_INTERFACE_SGMII := (
+		DGB_SystemClock_In		=> 'Z',
+		DGB_AutoNeg_Restart		=> 'Z',
+		SGMII_RefClock_In			=> 'Z',
+		SGMII_TXRefClock_Out	=> 'Z',
+		SGMII_RXRefClock_Out	=> 'Z',
+		TX_n									=> 'Z',
+		TX_p									=> 'Z',
+		RX_n									=> 'Z',
+		RX_p									=> 'Z'
+	);
+	constant C_NET_ETH_PHY_INTERFACE_MDIO_INIT : T_NET_ETH_PHY_INTERFACE_MDIO := (
+		Clock_ts	=> (I => 'Z', O => 'Z', T => 'Z'),
+		Data_ts		=> (I => 'Z', O => 'Z', T => 'Z')
+	);
+	constant C_NET_ETH_PHY_INTERFACE_COMMON_INIT : T_NET_ETH_PHY_INTERFACE_COMMON := (
+		Reset							=> 'Z',
+		Interrupt					=> 'Z'
+	);
+	constant C_NET_ETH_PHY_INTERFACES_INIT : T_NET_ETH_PHY_INTERFACES := (
+		GMII									=> C_NET_ETH_PHY_INTERFACE_GMII_INIT,
+		RGMII									=> C_NET_ETH_PHY_INTERFACE_RGMII_INIT,
+		SGMII									=> C_NET_ETH_PHY_INTERFACE_SGMII_INIT,
+		MDIO									=> C_NET_ETH_PHY_INTERFACE_MDIO_INIT,
+		Common								=> C_NET_ETH_PHY_INTERFACE_COMMON_INIT
+	);
+
 	-- ==========================================================================================================================================================
 	-- Ethernet: physical coding sublayer (PCS)
 	-- ==========================================================================================================================================================
@@ -175,7 +228,8 @@ package net is
 	type T_NET_ETH_RS_DATA_INTERFACE is (
 		NET_ETH_RS_DATA_INTERFACE_MII,
 		NET_ETH_RS_DATA_INTERFACE_GMII,
-		NET_ETH_RS_DATA_INTERFACE_TRANSCEIVER
+		NET_ETH_RS_DATA_INTERFACE_TRANSCEIVER,
+		NET_ETH_RS_DATA_INTERFACE_EMPTY
 	);
 
 	-- ==========================================================================================================================================================
@@ -183,6 +237,7 @@ package net is
 	-- ==========================================================================================================================================================
 	type T_NET_ETH_COMMAND is (
 		NET_ETH_CMD_NONE,
+		NET_ETH_CMD_READ,
 		NET_ETH_CMD_HARD_RESET,
 		NET_ETH_CMD_SOFT_RESET--,
 --		NET_ETH_CMD_POWER_DOWN,
@@ -194,6 +249,7 @@ package net is
 		NET_ETH_STATUS_RESETING,
 		NET_ETH_STATUS_CONNECTING,
 		NET_ETH_STATUS_CONNECTED,
+		NET_ETH_STATUS_READING,
 		NET_ETH_STATUS_DISCONNECTING,
 		NET_ETH_STATUS_DISCONNECTED,
 		NET_ETH_STATUS_ERROR
@@ -266,7 +322,7 @@ package net is
 
 	type T_NET_MAC_INTERFACE_VECTOR is array(natural range <>) of T_NET_MAC_INTERFACE;
 
-	constant C_NET_MAC_SOURCEFILTER_NONE	: T_NET_MAC_INTERFACE	:= (Address => to_net_mac_address("00:00:00:00:00:01"), Mask => C_NET_MAC_MASK_EMPTY);
+	constant C_NET_MAC_SOURCEFILTER_NONE	: T_NET_MAC_INTERFACE	:= (Address => to_net_mac_address(string'("00:00:00:00:00:01")), Mask => C_NET_MAC_MASK_EMPTY);
 
 	type T_NET_MAC_CONFIGURATION is record
 		Interface						: T_NET_MAC_INTERFACE;
@@ -388,12 +444,24 @@ package net is
 		NET_ARP_ARPCACHE_CMD_ADD
 --		NET_ARP_ARPCACHE_CMD_INVALIDATE
 	);
+	
+	type T_NET_ARP_RECEIVER_COMMAND is (
+		NET_ARP_RECEIVER_CMD_NONE,
+		NET_ARP_RECEIVER_CMD_CLEAR
+	);
 
 	-- status
 	type T_NET_ARP_ARPCACHE_STATUS is (
 		NET_ARP_ARPCACHE_STATUS_IDLE,
 		NET_ARP_ARPCACHE_STATUS_UPDATING,
 		NET_ARP_ARPCACHE_STATUS_UPDATE_COMPLETE
+	);
+	
+	type T_NET_ARP_RECEIVER_STATUS is (
+		NET_ARP_RECEIVER_STATUS_IDLE,
+		NET_ARP_RECEIVER_STATUS_RequestReceived,
+		NET_ARP_RECEIVER_STATUS_AnswerReceived,
+		NET_ARP_RECEIVER_STATUS_ERROR
 	);
 
 	type T_NET_ARP_IPPOOL_COMMAND is (
@@ -677,44 +745,65 @@ end package;
 
 package body net is
 
+	function str_low(str : string) return integer is
+	begin
+		return str'low;
+	end function;
+
 	function to_net_eth_RSDataInterface(str : string) return T_NET_ETH_RS_DATA_INTERFACE is
 	begin
-		for i in T_NET_ETH_RS_DATA_INTERFACE'pos(T_NET_ETH_RS_DATA_INTERFACE'low) to T_NET_ETH_RS_DATA_INTERFACE'pos(T_NET_ETH_RS_DATA_INTERFACE'high) loop
-			if str_match(str_toUpper(str), str_toUpper(T_NET_ETH_RS_DATA_INTERFACE'image(T_NET_ETH_RS_DATA_INTERFACE'val(i)))) then
-				return T_NET_ETH_RS_DATA_INTERFACE'val(i);
+		for i in T_NET_ETH_RS_DATA_INTERFACE loop
+			--report "Trimmed RS_DATA_INTERFACE: '" & T_NET_ETH_RS_DATA_INTERFACE'image(i)(27 to str_length(T_NET_ETH_RS_DATA_INTERFACE'image(i))) & "'" severity warning;	--test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_RS_DATA_INTERFACE'image(i)))
+			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_RS_DATA_INTERFACE'image(i)(str_low(T_NET_ETH_RS_DATA_INTERFACE'image(i))+26 to str_low(T_NET_ETH_RS_DATA_INTERFACE'image(i))+str_length(T_NET_ETH_RS_DATA_INTERFACE'image(i))-1))) then		 --start from char 26 to get rid of prefix
+				--report "RS_DATA_INTERFACE: '" & T_NET_ETH_RS_DATA_INTERFACE'image(i) & "'" severity warning;	--test
+				return i;
 			end if;
 		end loop;
-		report "Unknown RS_DATA_INTERFACE: " & str severity FAILURE;
+		report "Unknown RS_DATA_INTERFACE: '" & str & "'" severity FAILURE;
+		return NET_ETH_RS_DATA_INTERFACE_EMPTY;
 	end function;
 
 	function to_net_eth_PHYDataInterface(str : string) return T_NET_ETH_PHY_DATA_INTERFACE is
 	begin
-		for i in T_NET_ETH_PHY_DATA_INTERFACE'pos(T_NET_ETH_PHY_DATA_INTERFACE'low) to T_NET_ETH_PHY_DATA_INTERFACE'pos(T_NET_ETH_PHY_DATA_INTERFACE'high) loop
-			if str_match(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DATA_INTERFACE'image(T_NET_ETH_PHY_DATA_INTERFACE'val(i)))) then
-				return T_NET_ETH_PHY_DATA_INTERFACE'val(i);
+		for i in T_NET_ETH_PHY_DATA_INTERFACE loop
+			--report "Trimmed PHY_DATA_INTERFACE: '" & T_NET_ETH_PHY_DATA_INTERFACE'image(i)(28 to str_length(T_NET_ETH_PHY_DATA_INTERFACE'image(i))) & "'" severity warning;	--test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DATA_INTERFACE'image(i)))	
+			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DATA_INTERFACE'image(i)(str_low(T_NET_ETH_PHY_DATA_INTERFACE'image(i))+27 to str_low(T_NET_ETH_PHY_DATA_INTERFACE'image(i))+str_length(T_NET_ETH_PHY_DATA_INTERFACE'image(i))-1))) then	--start from char 27 to get rid of prefix
+				--report "PHY_DATA_INTERFACE: '" & T_NET_ETH_PHY_DATA_INTERFACE'image(i) & "'" severity warning;	--test
+				return i;
 			end if;
 		end loop;
-		report "Unknown PHY_DATA_INTERFACE: " & str severity FAILURE;
+		report "Unknown PHY_DATA_INTERFACE: '" & str & "'" severity FAILURE;
+		return NET_ETH_PHY_DATA_INTERFACE_EMPTY;
 	end function;
 
 	function to_net_eth_PHYManagementInterface(str : string) return T_NET_ETH_PHY_MANAGEMENT_INTERFACE is
 	begin
-		for i in T_NET_ETH_PHY_MANAGEMENT_INTERFACE'pos(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'low) to T_NET_ETH_PHY_MANAGEMENT_INTERFACE'pos(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'high) loop
-			if str_match(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'val(i)))) then
-				return T_NET_ETH_PHY_MANAGEMENT_INTERFACE'val(i);
+		for i in T_NET_ETH_PHY_MANAGEMENT_INTERFACE loop
+			--report "Trimmed PHY_MANAGEMENT_INTERFACE: '" & T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)(34 to str_length(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))) & "'" severity warning;	--test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)))	
+			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)(str_low(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))+33 to str_low(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))+str_length(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))-1))) then	--start from char 33 to get rid of prefix
+				--report "PHY_MANAGEMENT_INTERFACE: '" & T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i) & "'" severity warning;	--test
+				return i;
 			end if;
 		end loop;
-		report "Unknown PHY_MANAGEMENT_INTERFACE: " & str severity FAILURE;
+		report "Unknown PHY_MANAGEMENT_INTERFACE: '" & str & "'" severity FAILURE;
+		return NET_ETH_PHY_MANAGEMENT_INTERFACE_EMPTY;
 	end function;
-
+	
 	function to_net_eth_PHYDevice(str : string) return T_NET_ETH_PHY_DEVICE is
 	begin
-		for i in T_NET_ETH_PHY_DEVICE'pos(T_NET_ETH_PHY_DEVICE'low) to T_NET_ETH_PHY_DEVICE'pos(T_NET_ETH_PHY_DEVICE'high) loop
-			if str_match(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DEVICE'image(T_NET_ETH_PHY_DEVICE'val(i)))) then
-				return T_NET_ETH_PHY_DEVICE'val(i);
+		for i in T_NET_ETH_PHY_DEVICE loop
+			--report "Trimmed PHY_DEVICE: '" & T_NET_ETH_PHY_DEVICE'image(i)(20 to str_length(T_NET_ETH_PHY_DEVICE'image(i))) & "'" severity warning;	--test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DEVICE'image(i)))	
+			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DEVICE'image(i)(str_low(T_NET_ETH_PHY_DEVICE'image(i))+19 to str_low(T_NET_ETH_PHY_DEVICE'image(i))+str_length(T_NET_ETH_PHY_DEVICE'image(i))-1))) then	--start from char 19 to get rid of prefix
+				--report "PHY_DEVICE: '" & T_NET_ETH_PHY_DEVICE'image(i) & "'" severity warning;	--test
+				return i;
 			end if;
 		end loop;
-		report "Unknown PHY_DEVICE: " & str severity FAILURE;
+		report "Unknown PHY_DEVICE: '" & str & "'" severity FAILURE;
+		return NET_ETH_PHY_DEVICE_EMPTY;
 	end function;
 
 
@@ -849,23 +938,33 @@ package body net is
 
 	function to_string(EthType : T_NET_MAC_ETHERNETTYPE) return string is
 	begin
-		-- TODO: replace this case-statement by substring(image(EthType), 10,0)
-		case to_slv(EthType) is
-			when to_slv(C_NET_MAC_ETHERNETTYPE_EMPTY) =>				return "Empty";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_ARP) =>					return "ARP";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_IPV4) =>					return "IPv4";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_IPV6) =>					return "IPv6";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_JUMBOFRAMES) =>	return "Jumbo";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_MACCONTROL) =>		return "MACControl";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_QINQ) =>					return "QinQ";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_SNMP) =>					return "SNMP";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_VLAN) =>					return "VLAN";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_WOL) =>					return "WOL";
-
-			when to_slv(C_NET_MAC_ETHERNETTYPE_SWAP) =>					return "Swap";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_LOOPBACK) =>			return "LoopBack";
-			when others =>																			return "0x" & to_string(to_slv(EthType), 'h');
-		end case;
+		if EthType = C_NET_MAC_ETHERNETTYPE_EMPTY then
+			return "Empty";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_ARP then
+			return "ARP";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_IPV4 then
+			return "IPv4";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_IPV6 then
+			return "IPv6";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_JUMBOFRAMES then
+			return "Jumbo";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_MACCONTROL then
+			return "MACControl";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_QINQ then
+			return "QinQ";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_SNMP then
+			return "SNMP";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_VLAN then
+			return "VLAN";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_WOL then
+			return "WOL";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_SWAP then
+			return "Swap";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_LOOPBACK then
+			return "LoopBack";
+		else 
+			return "0x" & to_string(to_slv(EthType), 'h');
+		end if;
 	end function;
 
 	-- ==========================================================================================================================================================
