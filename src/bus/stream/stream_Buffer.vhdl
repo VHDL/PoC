@@ -235,8 +235,9 @@ begin
 					end if;
 				end if;
 			end process;
-
-			MetaReg_DataOut		<= MetaReg_d;
+			
+			Meta_rst(i)     <= '1';
+			MetaReg_DataOut <= MetaReg_d;
 			Out_Meta_Data(high(META_BITS, i) downto low(META_BITS, i))	<= MetaReg_DataOut;
 		end generate;	-- META_FIFO_DEPTH(i) = 1
 		genFIFO : if META_FIFO_DEPTH(i) > 1 generate
