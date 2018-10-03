@@ -218,29 +218,28 @@ begin
 	genMeta : for i in 0 to META_BITS'length - 1 generate
 
 	begin
-		genReg : if META_FIFO_DEPTH(i) = 1 generate
-			signal MetaReg_DataIn				: std_logic_vector(META_BITS(i) - 1 downto 0);
-			signal MetaReg_d						: std_logic_vector(META_BITS(i) - 1 downto 0)		:= (others => '0');
-			signal MetaReg_DataOut			: std_logic_vector(META_BITS(i) - 1 downto 0);
-		begin
-			MetaReg_DataIn		<= In_Meta_Data(high(META_BITS, i) downto low(META_BITS, i));
+--		genReg : if META_FIFO_DEPTH(i) = 1 generate
+--			signal MetaReg_DataIn				: std_logic_vector(META_BITS(i) - 1 downto 0);
+--			signal MetaReg_d						: std_logic_vector(META_BITS(i) - 1 downto 0)		:= (others => '0');
+--			signal MetaReg_DataOut			: std_logic_vector(META_BITS(i) - 1 downto 0);
+--		begin
+--			MetaReg_DataIn		<= In_Meta_Data(high(META_BITS, i) downto low(META_BITS, i));
 
-			process(Clock)
-			begin
-				if rising_edge(Clock) then
-					if (Reset = '1') then
-						MetaReg_d			<= (others => '0');
-					elsif ((In_Valid and In_SOF) = '1') then
-						MetaReg_d			<= MetaReg_DataIn;
-					end if;
-				end if;
-			end process;
-			
-			Meta_rst(i)     <= '1';
-			MetaReg_DataOut <= MetaReg_d;
-			Out_Meta_Data(high(META_BITS, i) downto low(META_BITS, i))	<= MetaReg_DataOut;
-		end generate;	-- META_FIFO_DEPTH(i) = 1
-		genFIFO : if META_FIFO_DEPTH(i) > 1 generate
+--			process(Clock)
+--			begin
+--				if rising_edge(Clock) then
+--					if (Reset = '1') then
+--						MetaReg_d			<= (others => '0');
+--					elsif ((In_Valid and In_SOF) = '1') then
+--						MetaReg_d			<= MetaReg_DataIn;
+--					end if;
+--				end if;
+--			end process;
+
+--			MetaReg_DataOut		<= MetaReg_d;
+--			Out_Meta_Data(high(META_BITS, i) downto low(META_BITS, i))	<= MetaReg_DataOut;
+--		end generate;	-- META_FIFO_DEPTH(i) = 1
+		genFIFO : if META_FIFO_DEPTH(i) >= 1 generate
 			signal MetaFIFO_put								: std_logic;
 			signal MetaFIFO_DataIn						: std_logic_vector(META_BITS(i) - 1 downto 0);
 			signal MetaFIFO_Full							: std_logic;

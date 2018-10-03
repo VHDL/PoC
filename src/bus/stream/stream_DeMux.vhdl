@@ -121,7 +121,7 @@ begin
 	begin
 		NextState									<= State;
 
-		ChannelPointer_rst				<= Is_EOF;
+		ChannelPointer_rst				<= Is_EOF and In_Ack_i;
 		ChannelPointer_en					<= '0';
 		ChannelPointer						<= ChannelPointer_d;
 
@@ -151,7 +151,7 @@ begin
 				Out_Valid_i							<= In_Valid;
 				ChannelPointer					<= ChannelPointer_d;
 
-				if (Is_EOF = '1') then
+				if (Is_EOF = '1') and (In_Ack_i = '1') then
 					NextState							<= ST_IDLE;
 				end if;
 
