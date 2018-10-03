@@ -559,34 +559,34 @@ package config is
 	-- Functions extracting board and PCB properties from "MY_BOARD"
 	-- which is declared in package "my_config".
 	-- ===========================================================================
-	function BOARD															(BoardConfig : string := C_BOARD_STRING_EMPTY)												return natural;
-	function BOARD_INFO													(BoardConfig : string := C_BOARD_STRING_EMPTY)												return T_BOARD_INFO;
-	function BOARD_NAME													(BoardConfig : string := C_BOARD_STRING_EMPTY) 												return string;
-	function BOARD_DEVICE												(BoardConfig : string := C_BOARD_STRING_EMPTY) 												return string;
-	function BOARD_UART_BAUDRATE								(BoardConfig : string := C_BOARD_STRING_EMPTY)												return string;
-	function BOARD_ETH_IPStyle									(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
-	function BOARD_ETH_RS_DataInterface					(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
-	function BOARD_ETH_PHY_Device								(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
-	function BOARD_ETH_PHY_DeviceAddress				(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return std_logic_vector;
-	function BOARD_ETH_PHY_DataInterface				(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
-	function BOARD_ETH_PHY_ManagementInterface	(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
+	function BOARD                             (BoardConfig : string := C_BOARD_STRING_EMPTY)                       return natural;
+	function BOARD_INFO                        (BoardConfig : string := C_BOARD_STRING_EMPTY)                       return T_BOARD_INFO;
+	function BOARD_NAME                        (BoardConfig : string := C_BOARD_STRING_EMPTY)                       return string;
+	function BOARD_DEVICE                      (BoardConfig : string := C_BOARD_STRING_EMPTY)                       return string;
+	function BOARD_UART_BAUDRATE               (BoardConfig : string := C_BOARD_STRING_EMPTY)                       return string;
+	function BOARD_ETH_IPStyle                 (EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
+	function BOARD_ETH_RS_DataInterface        (EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
+	function BOARD_ETH_PHY_Device              (EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
+	function BOARD_ETH_PHY_DeviceAddress       (EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return std_logic_vector;
+	function BOARD_ETH_PHY_DataInterface       (EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
+	function BOARD_ETH_PHY_ManagementInterface (EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)	return string;
 
 	-- Functions extracting device and architecture properties from "MY_DEVICE"
 	-- which is declared in package "my_config".
 	-- ===========================================================================
-	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY)							return T_VENDOR;
-	function SYNTHESIS_TOOL(DeviceString : string := C_DEVICE_STRING_EMPTY)			return T_SYNTHESIS_TOOL;
-	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY)							return T_DEVICE;
-	function DEVICE_FAMILY(DeviceString : string := C_DEVICE_STRING_EMPTY)			return T_DEVICE_FAMILY;
-	function DEVICE_SUBTYPE(DeviceString : string := C_DEVICE_STRING_EMPTY)			return T_DEVICE_SUBTYPE;
-	function DEVICE_SERIES(DeviceString : string := C_DEVICE_STRING_EMPTY)			return T_DEVICE_SERIES;
-	function DEVICE_GENERATION(DeviceString : string := C_DEVICE_STRING_EMPTY)	return natural;
-	function DEVICE_NUMBER(DeviceString : string := C_DEVICE_STRING_EMPTY)			return natural;
+	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY)             return T_VENDOR;
+	function SYNTHESIS_TOOL(DeviceString : string := C_DEVICE_STRING_EMPTY)     return T_SYNTHESIS_TOOL;
+	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY)             return T_DEVICE;
+	function DEVICE_FAMILY(DeviceString : string := C_DEVICE_STRING_EMPTY)      return T_DEVICE_FAMILY;
+	function DEVICE_SUBTYPE(DeviceString : string := C_DEVICE_STRING_EMPTY)     return T_DEVICE_SUBTYPE;
+	function DEVICE_SERIES(DeviceString : string := C_DEVICE_STRING_EMPTY)      return T_DEVICE_SERIES;
+	function DEVICE_GENERATION(DeviceString : string := C_DEVICE_STRING_EMPTY)  return natural;
+	function DEVICE_NUMBER(DeviceString : string := C_DEVICE_STRING_EMPTY)      return natural;
 
-	function TRANSCEIVER_TYPE(DeviceString : string := C_DEVICE_STRING_EMPTY)		return T_TRANSCEIVER;
-	function LUT_FANIN(DeviceString : string := C_DEVICE_STRING_EMPTY)					return positive;
+	function TRANSCEIVER_TYPE(DeviceString : string := C_DEVICE_STRING_EMPTY)   return T_TRANSCEIVER;
+	function LUT_FANIN(DeviceString : string := C_DEVICE_STRING_EMPTY)          return positive;
 
-	function DEVICE_INFO(DeviceString : string := C_DEVICE_STRING_EMPTY)				return T_DEVICE_INFO;
+	function DEVICE_INFO(DeviceString : string := C_DEVICE_STRING_EMPTY)        return T_DEVICE_INFO;
 
 	-- Convert T_DEVICE to string representation as required by "altera_mf" library
 	-- ===========================================================================
@@ -599,85 +599,92 @@ end package;
 
 
 package body config is
-  -- inlined function from PoC.utils, to break dependency
-  -- ===========================================================================
-	function ite(cond : boolean; value1 : string; value2 : string) return string is begin
-    if cond then  return value1;	else  return value2;	end if;
+    -- inlined function from PoC.utils, to break dependency
+    -- ===========================================================================
+    function ite(cond : boolean; value1 : string; value2 : string) return string is
+    begin
+        if cond then
+            return value1;
+        else
+            return value2;
+        end if;
 	end function;
 
-  -- chr_is* function
-  function chr_isDigit(chr : character) return boolean is
-  begin
-    return ((character'pos('0') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('9')));
+    -- chr_is* function
+    function chr_isDigit(chr : character) return boolean is
+    begin
+        return ((character'pos('0') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('9')));
 	end function;
 
 	function chr_isAlpha(chr : character) return boolean is
-  begin
+    begin
     return (((character'pos('a') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('z'))) or
         ((character'pos('A') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('Z'))));
 	end function;
 
 	function str_length(str : string) return natural is
-  begin
-    for i in str'range loop
-      if str(i) = C_POC_NUL then
-        return i - str'low;
-			end if;
+    begin
+        for i in str'range loop
+            if str(i) = C_POC_NUL then
+                return i - str'low;
+		    end if;
 		end loop;
 		return str'length;
 	end function;
 
 	function str_trim(str : string) return string is
-  begin
-    for i in str'range loop
-      if str(i) = C_POC_NUL then
-        return str(str'low to i-1);
+    begin
+        for i in str'range loop
+            if str(i) = C_POC_NUL then
+                return str(str'low to i-1);
 			end if;
 		end loop;
 		return str;
 	end function;
 
 	function str_imatch(str1 : string; str2 : string) return boolean is
-    constant len    : natural     := imin(str1'length, str2'length);
+        constant len    : natural     := imin(str1'length, str2'length);
 		variable chr1    : character;
 		variable chr2    : character;
 	begin
-    -- if both strings are empty
-    if ((str1'length = 0 ) and (str2'length = 0)) then    return TRUE;	end if;
-    -- compare char by char
-    for i in 0 to len-1 loop
-      chr1  := str1(str1'low + i);
+        -- if both strings are empty
+        if ((str1'length = 0 ) and (str2'length = 0)) then
+            return TRUE;
+        end if;
+        -- compare char by char
+        for i in 0 to len-1 loop
+            chr1  := str1(str1'low + i);
 			chr2  := str2(str2'low + i);
 			if (character'pos('A') <= CHARACTER'pos(chr1)) and (character'pos(chr1) <= CHARACTER'pos('Z')) then
-        chr1  := character'val(CHARACTER'pos(chr1) - character'pos('A') + CHARACTER'pos('a'));
+                chr1  := character'val(CHARACTER'pos(chr1) - character'pos('A') + CHARACTER'pos('a'));
 			end if;
 			if (character'pos('A') <= CHARACTER'pos(chr2)) and (character'pos(chr2) <= CHARACTER'pos('Z')) then
-        chr2  := character'val(CHARACTER'pos(chr2) - character'pos('A') + CHARACTER'pos('a'));
+                chr2  := character'val(CHARACTER'pos(chr2) - character'pos('A') + CHARACTER'pos('a'));
 			end if;
 			if chr1 /= chr2 then
-        return FALSE;
+                return FALSE;
 			elsif (chr1 = C_POC_NUL) xor (chr2 = C_POC_NUL) then
-        return FALSE;
+                return FALSE;
 			elsif (chr1 = C_POC_NUL) and (chr2 = C_POC_NUL) then
-        return TRUE;
+                return TRUE;
 			end if;
 		end loop;
-    -- check special cases,
+        -- check special cases,
 		if ((str1'length = len) and (str2'length = len)) then   -- both strings are fully consumed and equal
-      return TRUE;
+            return TRUE;
 		elsif (str1'length > len) then
-      return (str1(str1'low + len) = C_POC_NUL);				    -- str1 is longer, but str_length equals len
-    else
-      return (str2(str2'low + len) = C_POC_NUL);				    -- str2 is longer, but str_length equals len
-    end if;
+            return (str1(str1'low + len) = C_POC_NUL);				    -- str1 is longer, but str_length equals len
+        else
+            return (str2(str2'low + len) = C_POC_NUL);				    -- str2 is longer, but str_length equals len
+        end if;
 	end function;
 
 	function str_find(str : string; pattern : string; start : natural := 0) return boolean is
-  begin
-    for i in imax(str'low, start) to (str'high - pattern'length + 1) loop
-      exit when (str(i) = C_POC_NUL);
+    begin
+        for i in imax(str'low, start) to (str'high - pattern'length + 1) loop
+            exit when (str(i) = C_POC_NUL);
 			if (str(i to i + pattern'length - 1) = pattern) then
-        return TRUE;
+                return TRUE;
 			end if;
 		end loop;
 		return FALSE;
@@ -691,20 +698,20 @@ package body config is
 		constant MY_DEVICE_STR  : string                := BOARD_DEVICE;
 		variable Result          : string(1 to T_DEVICE_STRING'length);
 	begin
-    Result := (others => C_POC_NUL);
-    -- report DeviceString for debugging
-    if POC_VERBOSE then
-      report "getLocalDeviceString: DeviceString='" & str_trim(DeviceString) & "' MY_DEVICE='" & str_trim(MY_DEVICE) & "' MY_DEVICE_STR='" & str_trim(MY_DEVICE_STR) & "'"  severity NOTE;
+        Result := (others => C_POC_NUL);
+        -- report DeviceString for debugging
+        if POC_VERBOSE then
+            report "getLocalDeviceString: DeviceString='" & str_trim(DeviceString) & "' MY_DEVICE='" & str_trim(MY_DEVICE) & "' MY_DEVICE_STR='" & str_trim(MY_DEVICE_STR) & "'"  severity NOTE;
 		end if;
-    -- if DeviceString is populated
-    if (str_length(DeviceString) /= 0) and not str_imatch(DeviceString, "None") then
-      Result(1 to bound(T_DEVICE_STRING'length, 1, DeviceString'length))  := ite((DeviceString'length > 0), DeviceString(1 to imin(T_DEVICE_STRING'length, DeviceString'length)), ConstNUL);
-    -- if MY_DEVICE is set, prefer it
-    elsif (str_length(MY_DEVICE) /= 0) and not str_imatch(MY_DEVICE, "None") then
-      Result(1 to bound(T_DEVICE_STRING'length, 1, MY_DEVICE'length))      := ite((MY_DEVICE'length > 0), MY_DEVICE(1 to imin(T_DEVICE_STRING'length, MY_DEVICE'length)), ConstNUL);
-    -- otherwise use MY_BOARD
-    else
-      Result(1 to bound(T_DEVICE_STRING'length, 1, MY_DEVICE_STR'length))  := ite((MY_DEVICE_STR'length > 0), MY_DEVICE_STR(1 to imin(T_DEVICE_STRING'length, MY_DEVICE_STR'length)), ConstNUL);
+        -- if DeviceString is populated
+        if (str_length(DeviceString) /= 0) and not str_imatch(DeviceString, "None") then
+            Result(1 to bound(T_DEVICE_STRING'length, 1, DeviceString'length))  := ite((DeviceString'length > 0), DeviceString(1 to imin(T_DEVICE_STRING'length, DeviceString'length)), ConstNUL);
+        -- if MY_DEVICE is set, prefer it
+        elsif (str_length(MY_DEVICE) /= 0) and not str_imatch(MY_DEVICE, "None") then
+            Result(1 to bound(T_DEVICE_STRING'length, 1, MY_DEVICE'length))      := ite((MY_DEVICE'length > 0), MY_DEVICE(1 to imin(T_DEVICE_STRING'length, MY_DEVICE'length)), ConstNUL);
+        -- otherwise use MY_BOARD
+        else
+            Result(1 to bound(T_DEVICE_STRING'length, 1, MY_DEVICE_STR'length))  := ite((MY_DEVICE_STR'length > 0), MY_DEVICE_STR(1 to imin(T_DEVICE_STRING'length, MY_DEVICE_STR'length)), ConstNUL);
 		end if;
 		return Result;
 	end function;
