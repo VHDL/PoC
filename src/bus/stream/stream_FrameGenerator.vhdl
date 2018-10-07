@@ -40,9 +40,7 @@ use			PoC.vectors.all;
 entity stream_FrameGenerator is
   generic (
     DATA_BITS					: positive														:= 8;
-		WORD_BITS					: positive														:= 16;
-		APPEND						: T_FRAMEGEN_APPEND										:= FRAMEGEN_APP_NONE;
-		FRAMEGROUPS				: T_FRAMEGEN_FRAMEGROUP_VECTOR_8			:= (0 => C_FRAMEGEN_FRAMEGROUP_EMPTY)
+		WORD_BITS					: positive														:= 16
   );
 	port (
 		Clock							: in	std_logic;
