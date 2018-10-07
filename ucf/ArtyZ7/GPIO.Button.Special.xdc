@@ -1,26 +1,22 @@
 ## =============================================================================================================================================================
 ## Xilinx Design Constraint File (XDC)
 ## =============================================================================================================================================================
-##	Board:					Digilent - Arty
-##	FPGA:						Xilinx Artix-7
-##		Device:				XC7A35T
-##		Package:			CSG324
-##		Speedgrade:		-1
-##
+## Board:         Digilent - ArtyZ7
+## FPGA:          Xilinx Zynq 7000
 ## =============================================================================================================================================================
-## Clock Sources
+## General Purpose I/O 
 ## =============================================================================================================================================================
-##
-## System Clock
+## Special Button
+## =============================================================================================================================================================
 ## -----------------------------------------------------------------------------
-##		Bank:						35
-##			VCCO:					3.3V (VCC3V3)
-##		Location:				IC2 (ASEM1)
-##			Vendor:				Abracon Corp.
-##			Device:				ASEM1-100.000Mhz-LC-T - 1 to 150 MHz Ultra Miniature Pure Silicon Clock Oscillator
-##			Frequency:		100 MHz, 50ppm
-set_property PACKAGE_PIN    E3        [ get_ports Arty_SystemClock_100MHz ]
+##	Bank:				Bank500			
+##	VCCO:				VCC1V8,VCC3V3		
+##	Location:			BTNR 		
+## -----------------------------------------------------------------------------
+
+## {IN}		BTNR; low-active; external 10k pullup resistor
+set_property PACKAGE_PIN  D9       	[ get_ports ArtyZ7_GPIO_Button_CPU_Reset_n ]
 # set I/O standard
-set_property IOSTANDARD     LVCMOS33  [ get_ports Arty_SystemClock_100MHz ]
-# specify a 100 MHz clock
-create_clock -period 10.000 -name PIN_SystemClock_100MHz [ get_ports Arty_SystemClock_100MHz ]
+set_property IOSTANDARD   LVCMOS33  [ get_ports ArtyZ7_GPIO_Button_CPU_Reset_n ]
+# Ignore timings on async I/O pins
+set_false_path						-from [ get_ports ArtyZ7_GPIO_Button_CPU_Reset_n ]
