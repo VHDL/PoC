@@ -759,10 +759,26 @@ package body strings is
 				return TRUE;
 			end if;
 		end loop;
-		-- check special cases,
-		return (((str1'length = len) and (str2'length = len)) or									-- both strings are fully consumed and equal
-						((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or		-- str1 is longer, but str_length equals len
-						((str2'length > len) and (str2(str2'low + len) = C_POC_NUL)));		-- str2 is longer, but str_length equals len
+		
+		-- WORKAROUND: for Xilinx Vivado
+		--	Version:	2017.4
+		--	Issue:
+		--		Expressions in a RETURN statement are not obeying to the short-circuit
+		--		operator evaluation rules of VHDL.
+		--	Solution:
+		--		But, the evaluation of expressions is handled correctly in IF statements.
+		
+		-- check special cases
+		if (((str1'length = len) and (str2'length = len)) or										-- both strings are fully consumed and equal
+				((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or			-- str1 is longer, but str_length equals len
+				((str2'length > len) and (str2(str2'low + len) = C_POC_NUL))) then	-- str2 is longer, but str_length equals len
+			return true;
+		else
+			return false;
+		end if;
+--		return (((str1'length = len) and (str2'length = len)) or									-- both strings are fully consumed and equal
+--						((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or		-- str1 is longer, but str_length equals len
+--						((str2'length > len) and (str2(str2'low + len) = C_POC_NUL)));		-- str2 is longer, but str_length equals len
 	end function;
 
 	-- compare two POC_NUL terminated STRINGs; case insentitve
