@@ -40,6 +40,23 @@ use			PoC.strings.all;
 
 
 package stream is
+	--types for stream_FrameGenerator
+	type T_FRAMEGEN_COMMAND is (
+		FRAMEGEN_CMD_NONE,
+		FRAMEGEN_CMD_SEQUENCE,
+		FRAMEGEN_CMD_RANDOM,
+		FRAMEGEN_CMD_SINGLE_FRAME,
+		FRAMEGEN_CMD_SINGLE_FRAMEGROUP,
+		FRAMEGEN_CMD_ALL_FRAMES
+	);
+	
+	type T_FRAMEGEN_STATUS is (
+		FRAMEGEN_STATUS_IDLE,
+		FRAMEGEN_STATUS_GENERATING,
+		FRAMEGEN_STATUS_COMPLETE,
+		FRAMEGEN_STATUS_ERROR
+	);
+
 	-- single dataword for TestRAM
 	type T_SIM_STREAM_WORD_8 is record
 		Valid			: std_logic;
