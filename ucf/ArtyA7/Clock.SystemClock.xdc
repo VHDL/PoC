@@ -1,0 +1,26 @@
+## =============================================================================================================================================================
+## Xilinx Design Constraint File (XDC)
+## =============================================================================================================================================================
+##	Board:					Digilent - ArtyA7
+##	FPGA:						Xilinx Artix-7
+##		Device:				XC7A35T
+##		Package:			CSG324
+##		Speedgrade:		-1
+##
+## =============================================================================================================================================================
+## Clock Sources
+## =============================================================================================================================================================
+##
+## System Clock
+## -----------------------------------------------------------------------------
+##		Bank:						35
+##			VCCO:					3.3V (VCC3V3)
+##		Location:				IC2 (ASEM1)
+##			Vendor:				Abracon Corp.
+##			Device:				ASEM1-100.000Mhz-LC-T - 1 to 150 MHz Ultra Miniature Pure Silicon Clock Oscillator
+##			Frequency:		100 MHz, 50ppm
+set_property PACKAGE_PIN    E3        [ get_ports ArtyA7_SystemClock_100MHz ]
+# set I/O standard
+set_property IOSTANDARD     LVCMOS33  [ get_ports ArtyA7_SystemClock_100MHz ]
+# specify a 100 MHz clock
+create_clock -name PIN_SystemClock_100MHz -period 10.000 [ get_ports ArtyA7_SystemClock_100MHz ]
