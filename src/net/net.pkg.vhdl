@@ -44,6 +44,7 @@ package net is
 	-- Ethernet: physical layer (PHY)
 	-- ==========================================================================================================================================================
 	type T_NET_ETH_PHY_DATA_INTERFACE is (
+		NET_ETH_PHY_DATA_INTERFACE_EMPTY,
 		NET_ETH_PHY_DATA_INTERFACE_MII,
 		NET_ETH_PHY_DATA_INTERFACE_GMII,
 		NET_ETH_PHY_DATA_INTERFACE_RGMII,
@@ -51,6 +52,7 @@ package net is
 	);
 
 	type T_NET_ETH_PHY_MANAGEMENT_INTERFACE is (
+		NET_ETH_PHY_MANAGEMENT_INTERFACE_EMPTY,
 		NET_ETH_PHY_MANAGEMENT_INTERFACE_NONE,
 		NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO,
 		NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO_OVER_IIC
@@ -63,6 +65,7 @@ package net is
 	);
 
 	type T_NET_ETH_PHY_DEVICE is (
+		NET_ETH_PHY_DEVICE_EMPTY,
 		NET_ETH_PHY_DEVICE_MARVEL_88E1111
 	);
 
@@ -71,12 +74,14 @@ package net is
 	type T_NET_ETH_PHYCONTROLLER_COMMAND is (
 		NET_ETH_PHYC_CMD_NONE,
 		NET_ETH_PHYC_CMD_HARD_RESET,
-		NET_ETH_PHYC_CMD_SOFT_RESET
+		NET_ETH_PHYC_CMD_SOFT_RESET,
+		NET_ETH_PHYC_CMD_READ
 	);
 
 	type T_NET_ETH_PHYCONTROLLER_STATUS is (
 		NET_ETH_PHYC_STATUS_POWER_DOWN,
 		NET_ETH_PHYC_STATUS_RESETING,
+		NET_ETH_PHYC_STATUS_READING,
 		NET_ETH_PHYC_STATUS_CONNECTING,
 		NET_ETH_PHYC_STATUS_CONNECTED,
 		NET_ETH_PHYC_STATUS_DISCONNECTING,
@@ -86,7 +91,8 @@ package net is
 
 	type T_NET_ETH_PHYCONTROLLER_ERROR is (
 		NET_ETH_PHYC_ERROR_NONE,
-		NET_ETH_PHYC_ERROR_NO_CABLE
+		NET_ETH_PHYC_ERROR_NO_MATCH_DEVICE_ID,
+		NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR
 	);
 
 	-- FPGA <=> PHY physical interface: GMII (Gigabit Media Independant Interface)
@@ -173,6 +179,7 @@ package net is
 	-- Ethernet: reconcilation sublayer (RS)
 	-- ==========================================================================================================================================================
 	type T_NET_ETH_RS_DATA_INTERFACE is (
+		NET_ETH_RS_DATA_INTERFACE_EMPTY,
 		NET_ETH_RS_DATA_INTERFACE_MII,
 		NET_ETH_RS_DATA_INTERFACE_GMII,
 		NET_ETH_RS_DATA_INTERFACE_TRANSCEIVER
@@ -183,15 +190,17 @@ package net is
 	-- ==========================================================================================================================================================
 	type T_NET_ETH_COMMAND is (
 		NET_ETH_CMD_NONE,
-		NET_ETH_CMD_HARD_RESET,
-		NET_ETH_CMD_SOFT_RESET--,
 --		NET_ETH_CMD_POWER_DOWN,
 --		NET_ETH_CMD_POWER_UP
+		NET_ETH_CMD_HARD_RESET,
+		NET_ETH_CMD_SOFT_RESET,
+		NET_ETH_CMD_READ
 	);
 
 	type T_NET_ETH_STATUS is (
 		NET_ETH_STATUS_POWER_DOWN,
 		NET_ETH_STATUS_RESETING,
+		NET_ETH_STATUS_READING,
 		NET_ETH_STATUS_CONNECTING,
 		NET_ETH_STATUS_CONNECTED,
 		NET_ETH_STATUS_DISCONNECTING,
@@ -266,7 +275,7 @@ package net is
 
 	type T_NET_MAC_INTERFACE_VECTOR is array(natural range <>) of T_NET_MAC_INTERFACE;
 
-	constant C_NET_MAC_SOURCEFILTER_NONE	: T_NET_MAC_INTERFACE	:= (Address => to_net_mac_address("00:00:00:00:00:01"), Mask => C_NET_MAC_MASK_EMPTY);
+	constant C_NET_MAC_SOURCEFILTER_NONE	: T_NET_MAC_INTERFACE	:= (Address => to_net_mac_address(string'("00:00:00:00:00:01")), Mask => C_NET_MAC_MASK_EMPTY);
 
 	type T_NET_MAC_CONFIGURATION is record
 		Interface						: T_NET_MAC_INTERFACE;
@@ -388,12 +397,24 @@ package net is
 		NET_ARP_ARPCACHE_CMD_ADD
 --		NET_ARP_ARPCACHE_CMD_INVALIDATE
 	);
+	
+	type T_NET_ARP_RECEIVER_COMMAND is (
+		NET_ARP_RECEIVER_CMD_NONE,
+		NET_ARP_RECEIVER_CMD_CLEAR
+	);
 
 	-- status
 	type T_NET_ARP_ARPCACHE_STATUS is (
 		NET_ARP_ARPCACHE_STATUS_IDLE,
 		NET_ARP_ARPCACHE_STATUS_UPDATING,
 		NET_ARP_ARPCACHE_STATUS_UPDATE_COMPLETE
+	);
+	
+	type T_NET_ARP_RECEIVER_STATUS is (
+		NET_ARP_RECEIVER_STATUS_IDLE,
+		NET_ARP_RECEIVER_STATUS_REQUEST_RECEIVED,
+		NET_ARP_RECEIVER_STATUS_ANSWER_RECEIVED,
+		NET_ARP_RECEIVER_STATUS_ERROR
 	);
 
 	type T_NET_ARP_IPPOOL_COMMAND is (
