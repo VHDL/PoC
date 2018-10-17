@@ -63,7 +63,6 @@ entity arp_BroadCast_Receiver is
 		Command											: in  T_NET_ARP_RECEIVER_COMMAND;
 		Status											: out T_NET_ARP_RECEIVER_STATUS;
 
-		--AnswerReceived							: out	std_logic;
 		Address_rst									: in	std_logic;
 		SenderMACAddress_nxt				: in	std_logic;
 		SenderMACAddress_Data				: out	T_SLV_8;

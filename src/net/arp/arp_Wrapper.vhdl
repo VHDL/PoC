@@ -266,6 +266,8 @@ architecture rtl of arp_Wrapper is
 
 	constant IPV4_ADDRESS_COUNT									  : positive := INITIAL_IPV4ADDRESSES'length;
 	signal IPv4_Address_Counter										: unsigned (log2ceilnz(IPV4_ADDRESS_COUNT) - 1 downto 0) := (others => '0');
+	signal IPv4_Address_Counter_en								: std_logic;
+	signal IPv4_Address_Counter_rst								: std_logic;
 
 begin
 	-- latched inputs (high-active)
@@ -335,10 +337,6 @@ begin
 	begin
 		FSMPool_NextState											<= FSMPool_State;
 
---		FSMPool_Command						<= NET_ARP_CACHE_CMD_NONE;
---		FSMPool_NewIPv4Address_Data		<= UCRcv_SenderIPv4Address_Data;
---		FSMPool_NewMACAddress_Data			<= UCRcv_SenderMACAddress_Data;
-
 		IPPool_Announced_i										<= '0';
 
 		FSMPool_MACSeq1_SenderMACAddress_rst	<= '0';
@@ -359,6 +357,9 @@ begin
 
 		FSMPool_UCRsp_SendResponse						<= '0';
 		FSMPool_UCRsp_SenderMACAddress_Data		<= MACSeq1_SenderMACAddress_Data;
+		
+		IPv4_Address_Counter_en					<= '0';
+		IPv4_Address_Counter_rst				<= '0';
 		
 		if FSMPool_State /= ST_SEND_ANNOUNCE then
 			FSMPool_UCRsp_SenderIPv4Address_Data	<= BCRcv_TargetIPv4Address_Data;
@@ -420,11 +421,11 @@ begin
 				FSMPool_IPSeq1_SenderIPv4Address_nxt		<= UCRsp_SenderIPv4Address_nxt;
 				if (UCRsp_Complete = '1') then
 					if (IPv4_Address_Counter < (IPv4_Address_Length - 1)) then
-						IPv4_Address_Counter                <= IPv4_Address_Counter + 1;
+						IPv4_Address_Counter_en				<= '1';
 					else
-						IPPool_Announced_i									<= '1';
-
-						IPv4_Address_Counter								<= (others => '0');
+						IPPool_Announced_i					<= '1';
+						IPv4_Address_Counter_rst			<= '1';
+						
 					end if;
 
 					FSMPool_NextState											<= ST_IDLE;
@@ -434,6 +435,17 @@ begin
 				null;
 
 		end case;
+	end process;
+	
+	IPv4_Address_counter_proc : process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if IPv4_Address_Counter_rst = '1' then
+				IPv4_Address_Counter				<= (others => '0');
+			elsif IPv4_Address_Counter_en = '1' then
+				IPv4_Address_Counter                <= IPv4_Address_Counter + 1;
+			end if;
+		end if;
 	end process;
 
 	BCRcv : entity PoC.arp_BroadCast_Receiver
