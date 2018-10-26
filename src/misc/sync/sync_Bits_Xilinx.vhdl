@@ -97,8 +97,8 @@ entity sync_Bit_Xilinx is
   );
   port (
     Clock         : in  std_logic;                                  -- <Clock>  output clock domain
-    Input         : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
-    Output        : out std_logic_vector(BITS - 1 downto 0)         -- @Clock:  output bits
+    Input         : in  std_logic;        							-- @async:  input bits
+    Output        : out std_logic         							-- @Clock:  output bits
   );
 end entity;
 
