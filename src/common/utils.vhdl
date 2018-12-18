@@ -833,8 +833,8 @@ package body utils is
   
   function ifind(vec : T_NATVEC; nat : natural; falseNum : integer := -1) return integer is
   begin
-    for i in T_NATVEC'low to T_NATVEC'high loop
-      if T_NATVEC(i) = nat then
+    for i in vec'low to vec'high loop
+      if vec(i) = nat then
         return i;
       end if;
     end loop;

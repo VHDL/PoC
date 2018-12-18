@@ -111,31 +111,26 @@ package body math is
   
   -- calculate fraction of positive float and give out as vector of integers
   function fract(F : real; maxDenominator : natural := 1000; maxError : real := 1.0E-9) return T_NATVEC is
+    constant fulls        : natural := integer(trunc(F));
+    constant remainder    : real    := F - trunc(F);
     variable numerator    : natural := 0;
     variable denominator  : natural := 1;
-    variable fulls        : natural := integer(trunc(F));
     variable newFraction  : real    := 0.0;
-    variable remainder    : real    := F - trunc(F);
-    variable Error        : real    := F - trunc(F);
+    variable Error        : real    := remainder;
     variable result       : T_NATVEC (0 to 2) := (others => 0);
-    variable bestError    : real    := F - trunc(F);
+    variable bestError    : real    := remainder;
   begin
     result(0)  := fulls;
     while (Error > maxError) and (denominator < maxDenominator) loop
       if newFraction > remainder then
         denominator := denominator +1;
         numerator   := numerator -1;
---        assert false report "Increasing denominator and decreasing numerator!" severity warning;
       elsif (numerator +1) = denominator then
         denominator := denominator +1;
---        assert false report "Increasing denominator!" severity warning;
       else
         numerator   := numerator +1;
---        assert false report "Increasing numerator!" severity warning;
       end if;
---      assert false report "denominator=" & integer'image(denominator) severity warning;
---      assert false report "numerator=" & integer'image(numerator) severity warning;
-      
+       
       newFraction := real(numerator) / real(denominator);
       Error := REALMAX(remainder, newFraction) - REALMIN(remainder, newFraction);
       if Error < bestError then
@@ -143,7 +138,6 @@ package body math is
         result(1) := numerator;
         result(2) := denominator;
       end if;
---      assert false report "Error=" & real'image(Error);
     end loop;
     assert (bestError < maxError) report "Didn't find suitable fraction for F=" & real'image(F) & "! Target Error=" & real'image(maxError) & " Actual Error=" & real'image(bestError) & "!" severity failure;
     return result;
@@ -157,8 +151,6 @@ package body math is
     variable remainder       : real  := real(numerator) / real(denominator);
     variable result          : T_NATVEC(0 to numerator -1) := (others => 0);
   begin
-    assert false report "numerator=" & integer'image(numerator) & ", denominator=" & integer'image(denominator)  severity warning;
-    assert false report "remainder=" & real'image(remainder) & ", actualNumerator=" & integer'image(actualNumerator) & ", tab=" & integer'image(tab) severity warning;
     while actualNumerator <= denominator -1 loop
       if remainder  >= 1.0 then
         result(tab) := actualNumerator;
@@ -169,7 +161,6 @@ package body math is
         remainder   := remainder +increment;
         actualNumerator := actualNumerator +1;
       end if;
-      assert false report "remainder=" & real'image(remainder) & ", actualNumerator=" & integer'image(actualNumerator) & ", tab=" & integer'image(tab) severity warning;
     end loop;   
     result(result'high) := denominator;
     return result;
