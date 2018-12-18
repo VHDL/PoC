@@ -172,6 +172,9 @@ package utils is
 	function isum(vec : T_POSVEC) return natural;										-- Calculates: sum(vec) for a positive vector
 	function isum(vec : T_INTVEC) return integer; 									-- Calculates: sum(vec) of integer vector
 	function rsum(vec : T_REALVEC) return real;	       							-- Calculates: sum(vec) of real vector
+  
+  
+  function ifind(vec : T_NATVEC; nat : natural; falseNum : integer := -1) return integer;
 
 	--+ Conversions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -826,6 +829,17 @@ package body utils is
 		end loop;
 		return  Result;
 	end function;
+  
+  
+  function ifind(vec : T_NATVEC; nat : natural; falseNum : integer := -1) return integer is
+  begin
+    for i in T_NATVEC'low to T_NATVEC'high loop
+      if T_NATVEC(i) = nat then
+        return i;
+      end if;
+    end loop;
+    return falseNum;
+  end function;
 
 	-- Vector aggregate functions: slv_*
 	-- ==========================================================================
