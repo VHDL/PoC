@@ -173,8 +173,11 @@ package utils is
 	function isum(vec : T_INTVEC) return integer; 									-- Calculates: sum(vec) of integer vector
 	function rsum(vec : T_REALVEC) return real;	       							-- Calculates: sum(vec) of real vector
   
-  
-  function ifind(vec : T_NATVEC; nat : natural; falseNum : integer := -1) return integer;
+  --+ Find index in array +++++++++++++++++++++++++++++++++++++++++++++++++++
+  function indexof(vec : T_INTVEC;  comp : integer;  falseNum : integer := -1) return integer;
+  function indexof(vec : T_NATVEC;  comp : natural;  falseNum : integer := -1) return integer;
+  function indexof(vec : T_POSVEC;  comp : positive; falseNum : integer := -1) return integer;
+  function indexof(vec : T_REALVEC; comp : real;     falseNum : integer := -1; epsilon : real := 1.0E-6) return integer;
 
 	--+ Conversions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -830,11 +833,44 @@ package body utils is
 		return  Result;
 	end function;
   
-  
-  function ifind(vec : T_NATVEC; nat : natural; falseNum : integer := -1) return integer is
+  -- Find Index in array
+  --=============================================================================
+  function indexof(vec : T_NATVEC; comp : natural; falseNum : integer := -1) return integer is
   begin
-    for i in vec'low to vec'high loop
-      if vec(i) = nat then
+    for i in vec'range loop
+      if vec(i) = comp then
+        return i;
+      end if;
+    end loop;
+    return falseNum;
+  end function;  
+  
+  function indexof(vec : T_INTVEC; comp : integer; falseNum : integer := -1) return integer is
+  begin
+    for i in vec'range loop
+      if vec(i) = comp then
+        return i;
+      end if;
+    end loop;
+    return falseNum;
+  end function;  
+  
+  function indexof(vec : T_POSVEC; comp : positive; falseNum : integer := -1) return integer is
+  begin
+    for i in vec'range loop
+      if vec(i) = comp then
+        return i;
+      end if;
+    end loop;
+    return falseNum;
+  end function; 
+   
+  function indexof(vec : T_REALVEC; comp : real; falseNum : integer := -1; epsilon : real := 1.0E-6) return integer is
+    constant upper : real := comp + (comp * epsilon);
+    constant lower : real := comp - (comp * epsilon);
+  begin
+    for i in vec'range loop
+      if (vec(i) >= lower) and (vec(i) <= upper) then
         return i;
       end if;
     end loop;
