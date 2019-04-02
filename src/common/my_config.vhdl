@@ -3,7 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- 
 -- =============================================================================
--- Authors:         Patrick Lehmann
+-- Authors:         Thomas B. Preusser
+--                  Martin Zabel
+--                  Patrick Lehmann
 --
 -- Package:					Project specific configuration.
 -- 
@@ -11,12 +13,13 @@
 -- ------------------------------------
 --		This is a template file. 
 --		
---		TODO
+--		The global packages common/config and common/board evaluate the settings
+--		declared in this file.
 --
 --		USAGE:
 --			1) Copy this file into your project's source directory and rename it to
---				 "my_project.vhdl".
---			2) Add file to library "poc" in your synthesis tool.
+--				 "my_config.vhdl".
+--			2) Add file to library "PoC" in your synthesis tool.
 --			3) Change setup appropriately.
 --
 -- License:
@@ -40,8 +43,11 @@
 library PoC;
 
 
-package my_project is
+package my_config is
 	-- Change these lines to setup configuration.
-	constant MY_PROJECT_DIR				: string	:= "CHANGE THIS";		-- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
-	constant MY_OPERATING_SYSTEM	: string	:= "CHANGE THIS";		-- e.g. "WINDOWS", "LINUX"
+	constant MY_BOARD		: string	:= "Custom"; -- e.g. Custom, ML505, KC705, Atlys
+	constant MY_DEVICE	: string	:= "xczu11eg-ffvf1517-1-e"; -- e.g. None, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
+	
+	-- For internal use only
+	constant MY_VERBOSE	: boolean	:= FALSE;					-- activate detailed report statements in functions and procedures
 end package;
