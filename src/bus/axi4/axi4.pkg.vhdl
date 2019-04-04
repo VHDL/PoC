@@ -2,7 +2,7 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:				 	Patrick Lehmann; Stefan Unrein
 --
 -- Entity:				 	Generic AMBA AXI4 bus description
 --
@@ -11,6 +11,7 @@
 -- This package implements a generic AMBA AXI4 description for:
 --
 -- * AXI4 Lite
+-- * AXI4 Full
 --
 -- License:
 -- =============================================================================
