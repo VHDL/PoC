@@ -512,7 +512,7 @@ package body AXI4 is
       RLast   => 'Z',
       RUser   => (UserBits - 1 downto 0 => 'Z')
     );
-
+  end function;
   -- --------------INIT
   -- function Initialize_AXI4Lite_Bus(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus is
   -- begin
