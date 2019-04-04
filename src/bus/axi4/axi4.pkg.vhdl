@@ -82,154 +82,175 @@ package AXI4 is
   -- Bit 2: 0 Data access           1 Instruction access
   constant C_AXI4_PROTECT_INIT : T_AXI4_Protect := "ZZZ"; 
 
-  ------- Write Address Channel
-	-- AXI4-Lite 
-  type T_AXI4Lite_WriteAddress_Bus is record
-		AWValid     : std_logic; 
-		AWReady     : std_logic;
-		AWAddr      : unsigned; 
-    AWCache     : T_AXI4_Cache;
-		AWProt      : T_AXI4_Protect;
-	end record; 	
-  -- AXI4
-  type T_AXI4_WriteAddress_Bus is record
-    AWID        : unsigned; 
-		AWAddr      : unsigned; 
-    AWLen       : unsigned(7 downto 0); 
-    AWSize      : T_AXI4_Size; 
-    AWBurst     : T_AXI4_Burst; 
-    AWLock      : std_logic; 
-    AWQOS       : T_AXI4_QoS;
-    AWRegion    : T_AXI4_Region;
-    AWUser      : std_logic_vector;
-		AWValid     : std_logic; 
-		AWReady     : std_logic;
-    AWCache     : T_AXI4_Cache;
-		AWProt      : T_AXI4_Protect;
-	end record; 
+  -- ------- Write Address Channel
+	-- -- AXI4-Lite 
+  -- type T_AXI4Lite_WriteAddress_Bus is record
+		-- AWValid     : std_logic; 
+		-- AWReady     : std_logic;
+		-- AWAddr      : unsigned; 
+    -- AWCache     : T_AXI4_Cache;
+		-- AWProt      : T_AXI4_Protect;
+	-- end record; 	
+  -- -- AXI4
+  -- type T_AXI4_WriteAddress_Bus is record
+    -- AWID        : unsigned; 
+		-- AWAddr      : unsigned; 
+    -- AWLen       : unsigned(7 downto 0); 
+    -- AWSize      : T_AXI4_Size; 
+    -- AWBurst     : T_AXI4_Burst; 
+    -- AWLock      : std_logic; 
+    -- AWQOS       : T_AXI4_QoS;
+    -- AWRegion    : T_AXI4_Region;
+    -- AWUser      : std_logic_vector;
+		-- AWValid     : std_logic; 
+		-- AWReady     : std_logic;
+    -- AWCache     : T_AXI4_Cache;
+		-- AWProt      : T_AXI4_Protect;
+	-- end record; 
 
-	function Initialize_AXI4Lite_WriteAddress_Bus(AddressBits : natural) return T_AXI4Lite_WriteAddress_Bus;
-	function Initialize_AXI4_WriteAddress_Bus(AddressBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_WriteAddress_Bus;
+	-- function Initialize_AXI4Lite_WriteAddress_Bus(AddressBits : natural) return T_AXI4Lite_WriteAddress_Bus;
+	-- function Initialize_AXI4_WriteAddress_Bus(AddressBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_WriteAddress_Bus;
 
-  ------- Write Data Channel
-	-- AXI4-Lite 
-	type T_AXI4Lite_WriteData_Bus is record
-		WValid      : std_logic;
+  -- ------- Write Data Channel
+	-- -- AXI4-Lite 
+	-- type T_AXI4Lite_WriteData_Bus is record
+		-- WValid      : std_logic;
+		-- WReady      : std_logic;
+		-- WData       : std_logic_vector;
+		-- WStrb       : std_logic_vector;
+	-- end record;
+	-- -- AXI4
+	-- type T_AXI4_WriteData_Bus is record
+		-- WValid      : std_logic;
+		-- WReady      : std_logic;
+    -- WLast       : std_logic;
+    -- WUser       : std_logic_vector;
+		-- WData       : std_logic_vector;
+		-- WStrb       : std_logic_vector;
+	-- end record;
+
+	-- function Initialize_AXI4Lite_WriteData_Bus(DataBits : natural) return T_AXI4Lite_WriteData_Bus;
+	-- function Initialize_AXI4_WriteData_Bus(DataBits : natural; UserBits : natural := 0) return T_AXI4_WriteData_Bus;
+
+  -- -------- Write Response Channel
+	-- -- AXI4-Lite 
+	-- type T_AXI4Lite_WriteResponse_Bus is record
+		-- BValid      : std_logic;
+		-- BReady      : std_logic;
+		-- BResp       : T_AXI4_Response; 
+	-- end record; 
+	-- -- AXI4
+	-- type T_AXI4_WriteResponse_Bus is record
+		-- BValid      : std_logic;
+		-- BReady      : std_logic;
+		-- BResp       : T_AXI4_Response; 
+    -- BID         : unsigned; 
+    -- BUser       : std_logic_vector;
+	-- end record; 
+
+	-- function Initialize_AXI4Lite_WriteResponse_Bus return T_AXI4Lite_WriteResponse_Bus;
+	-- function Initialize_AXI4_WriteResponse_Bus(UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_WriteResponse_Bus;
+
+  -- ------ Read Address Channel
+	-- -- AXI4-Lite 
+	-- type T_AXI4Lite_ReadAddress_Bus is record
+		-- ARValid     : std_logic;
+		-- ARReady     : std_logic;
+		-- ARAddr      : unsigned;
+    -- ARCache     : T_AXI4_Cache;
+		-- ARProt      : T_AXI4_Protect;
+	-- end record;
+	-- -- AXI4
+	-- type T_AXI4_ReadAddress_Bus is record
+		-- ARValid     : std_logic;
+		-- ARReady     : std_logic;
+		-- ARAddr      : unsigned;
+    -- ARCache     : T_AXI4_Cache;
+		-- ARProt      : T_AXI4_Protect;
+    -- ARID        : unsigned;
+    -- ARLen       : unsigned(7 downto 0);
+    -- ARSize      : T_AXI4_Size;
+    -- ARBurst     : T_AXI4_Burst;
+    -- ARLock      : std_logic;
+    -- ARQOS       : T_AXI4_QoS;
+    -- ARRegion    : T_AXI4_Region;
+    -- ARUser      : std_logic_vector;
+	-- end record;
+
+	-- function Initialize_AXI4Lite_ReadAddress_Bus(AddressBits : natural) return T_AXI4Lite_ReadAddress_Bus;
+	-- function Initialize_AXI4_ReadAddress_Bus(AddressBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_ReadAddress_Bus;
+
+  -- ------- Read Data Channel
+	-- -- AXI4-Lite 
+	-- type T_AXI4Lite_ReadData_Bus is record
+		-- RValid      : std_logic;
+		-- RReady      : std_logic;
+		-- RData       : std_logic_vector;
+		-- RResp       : T_AXI4_Response;
+	-- end record;
+	-- -- AXI4
+	-- type T_AXI4_ReadData_Bus is record
+		-- RValid      : std_logic;
+		-- RReady      : std_logic;
+		-- RData       : std_logic_vector;
+		-- RResp       : T_AXI4_Response;
+    -- RID         : unsigned;
+    -- RLast       : std_logic;
+    -- RUser       : std_logic_vector;
+	-- end record;
+  
+	-- function Initialize_AXI4Lite_ReadData_Bus(DataBits : natural ) return T_AXI4Lite_ReadData_Bus;
+	-- function Initialize_AXI4_ReadData_Bus(DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_ReadData_Bus;
+
+
+	type T_AXI4Lite_Bus_S2M is record
 		WReady      : std_logic;
-		WData       : std_logic_vector;
-		WStrb       : std_logic_vector;
-	end record;
-	-- AXI4
-	type T_AXI4_WriteData_Bus is record
-		WValid      : std_logic;
-		WReady      : std_logic;
-    WLast       : std_logic;
-    WUser       : std_logic_vector;
-		WData       : std_logic_vector;
-		WStrb       : std_logic_vector;
-	end record;
-
-	function Initialize_AXI4Lite_WriteData_Bus(DataBits : natural) return T_AXI4Lite_WriteData_Bus;
-	function Initialize_AXI4_WriteData_Bus(DataBits : natural; UserBits : natural := 0) return T_AXI4_WriteData_Bus;
-
-  -------- Write Response Channel
-	-- AXI4-Lite 
-	type T_AXI4Lite_WriteResponse_Bus is record
 		BValid      : std_logic;
-		BReady      : std_logic;
 		BResp       : T_AXI4_Response; 
-	end record; 
-	-- AXI4
-	type T_AXI4_WriteResponse_Bus is record
-		BValid      : std_logic;
-		BReady      : std_logic;
-		BResp       : T_AXI4_Response; 
-    BID         : unsigned; 
-    BUser       : std_logic_vector;
-	end record; 
-
-	function Initialize_AXI4Lite_WriteResponse_Bus return T_AXI4Lite_WriteResponse_Bus;
-	function Initialize_AXI4_WriteResponse_Bus(UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_WriteResponse_Bus;
-
-  ------ Read Address Channel
-	-- AXI4-Lite 
-	type T_AXI4Lite_ReadAddress_Bus is record
-		ARValid     : std_logic;
 		ARReady     : std_logic;
-		ARAddr      : unsigned;
-    ARCache     : T_AXI4_Cache;
-		ARProt      : T_AXI4_Protect;
-	end record;
-	-- AXI4
-	type T_AXI4_ReadAddress_Bus is record
-		ARValid     : std_logic;
-		ARReady     : std_logic;
-		ARAddr      : unsigned;
-    ARCache     : T_AXI4_Cache;
-		ARProt      : T_AXI4_Protect;
-    ARID        : unsigned;
-    ARLen       : unsigned(7 downto 0);
-    ARSize      : T_AXI4_Size;
-    ARBurst     : T_AXI4_Burst;
-    ARLock      : std_logic;
-    ARQOS       : T_AXI4_QoS;
-    ARRegion    : T_AXI4_Region;
-    ARUser      : std_logic_vector;
-	end record;
-
-	function Initialize_AXI4Lite_ReadAddress_Bus(AddressBits : natural) return T_AXI4Lite_ReadAddress_Bus;
-	function Initialize_AXI4_ReadAddress_Bus(AddressBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_ReadAddress_Bus;
-
-  ------- Read Data Channel
-	-- AXI4-Lite 
-	type T_AXI4Lite_ReadData_Bus is record
+		AWReady     : std_logic;
 		RValid      : std_logic;
-		RReady      : std_logic;
 		RData       : std_logic_vector;
 		RResp       : T_AXI4_Response;
 	end record;
-	-- AXI4
-	type T_AXI4_ReadData_Bus is record
-		RValid      : std_logic;
+	type T_AXI4Lite_Bus_M2S is record
+    AClk        : std_logic;
+    AResetN     : std_logic;
+		AWValid     : std_logic; 
+		AWAddr      : unsigned; 
+    AWCache     : T_AXI4_Cache;
+		AWProt      : T_AXI4_Protect;
+		WValid      : std_logic;
+		WData       : std_logic_vector;
+		WStrb       : std_logic_vector;
+		BReady      : std_logic;
+		ARValid     : std_logic;
+		ARAddr      : unsigned;
+    ARCache     : T_AXI4_Cache;
+		ARProt      : T_AXI4_Protect;
 		RReady      : std_logic;
+	end record;
+  type T_AXI4Lite_Bus is record
+    M2S   : T_AXI4Lite_Bus_M2S;
+    S2M   : T_AXI4Lite_Bus_S2M;
+  end record;
+
+	type T_AXI4_Bus_S2M is record
+		AWReady     : std_logic;
+		WReady      : std_logic;
+		BValid      : std_logic;
+		BResp       : T_AXI4_Response; 
+    BID         : unsigned; 
+    BUser       : std_logic_vector;
+		ARReady     : std_logic;
+		RValid      : std_logic;
 		RData       : std_logic_vector;
 		RResp       : T_AXI4_Response;
     RID         : unsigned;
     RLast       : std_logic;
     RUser       : std_logic_vector;
 	end record;
-  
-	function Initialize_AXI4Lite_ReadData_Bus(DataBits : natural ) return T_AXI4Lite_ReadData_Bus;
-	function Initialize_AXI4_ReadData_Bus(DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_ReadData_Bus;
-
-
-	type T_AXI4Lite_Bus is record
-    AClk        : std_logic;
-    AResetN     : std_logic;
-		AWValid     : std_logic; 
-		AWReady     : std_logic;
-		AWAddr      : unsigned; 
-    AWCache     : T_AXI4_Cache;
-		AWProt      : T_AXI4_Protect;
-		WValid      : std_logic;
-		WReady      : std_logic;
-		WData       : std_logic_vector;
-		WStrb       : std_logic_vector;
-		BValid      : std_logic;
-		BReady      : std_logic;
-		BResp       : T_AXI4_Response; 
-		ARValid     : std_logic;
-		ARReady     : std_logic;
-		ARAddr      : unsigned;
-    ARCache     : T_AXI4_Cache;
-		ARProt      : T_AXI4_Protect;
-		RValid      : std_logic;
-		RReady      : std_logic;
-		RData       : std_logic_vector;
-		RResp       : T_AXI4_Response;
-	end record;
-
-	type T_AXI4_Bus is record
+	type T_AXI4_Bus_M2S is record
     AClk        : std_logic;
     AResetN     : std_logic;
 		AWID        : unsigned; 
@@ -242,22 +263,15 @@ package AXI4 is
     AWRegion    : T_AXI4_Region;
     AWUser      : std_logic_vector;
 		AWValid     : std_logic; 
-		AWReady     : std_logic;
     AWCache     : T_AXI4_Cache;
 		AWProt      : T_AXI4_Protect;
 		WValid      : std_logic;
-		WReady      : std_logic;
     WLast       : std_logic;
     WUser       : std_logic_vector;
 		WData       : std_logic_vector;
 		WStrb       : std_logic_vector;
-		BValid      : std_logic;
 		BReady      : std_logic;
-		BResp       : T_AXI4_Response; 
-    BID         : unsigned; 
-    BUser       : std_logic_vector;
 		ARValid     : std_logic;
-		ARReady     : std_logic;
 		ARAddr      : unsigned;
     ARCache     : T_AXI4_Cache;
 		ARProt      : T_AXI4_Protect;
@@ -269,14 +283,23 @@ package AXI4 is
     ARQOS       : T_AXI4_QoS;
     ARRegion    : T_AXI4_Region;
     ARUser      : std_logic_vector;
-		RValid      : std_logic;
 		RReady      : std_logic;
-		RData       : std_logic_vector;
-		RResp       : T_AXI4_Response;
-    RID         : unsigned;
-    RLast       : std_logic;
-    RUser       : std_logic_vector;
 	end record;
+  
+  type T_AXI4Lite_Bus_S2M_VECTOR is array(natural range <>) of T_AXI4Lite_Bus_S2M;
+  type T_AXI4_Bus_S2M_VECTOR is array(natural range <>) of T_AXI4_Bus_S2M;  
+  type T_AXI4Lite_Bus_M2S_VECTOR is array(natural range <>) of T_AXI4Lite_Bus_M2S;
+  type T_AXI4_Bus_M2S_VECTOR is array(natural range <>) of T_AXI4_Bus_M2S;
+	
+	function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus_S2M;
+	function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_S2M;
+	function Initialize_AXI4Lite_Bus_M2S(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus_M2S;
+	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_M2S;
+  
+  type T_AXI4_Bus is record
+    M2S   : T_AXI4_Bus_M2S;
+    S2M   : T_AXI4_Bus_S2M;
+  end record;
 
 
 	-- type T_AXI4Lite_Bus is record
@@ -308,123 +331,190 @@ end package;
 
 
 package body AXI4 is 
-  -----------Wirte Address
-  function Initialize_AXI4Lite_WriteAddress_Bus(AddressBits : natural) return T_AXI4Lite_WriteAddress_Bus is
-  begin
-    return (
-      AWValid => 'Z',
-      AWReady => 'Z',
-      AWCache => C_AXI4_CACHE_INIT,
-      AWAddr  => (AddressBits-1 downto 0 => 'Z'), 
-      AWProt  => C_AXI4_PROTECT_INIT
-    );
-  end function;
-  function Initialize_AXI4_WriteAddress_Bus(AddressBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_WriteAddress_Bus is
-  begin
-    return (
-      AWValid => 'Z',
-      AWReady => 'Z',
-      AWCache => C_AXI4_CACHE_INIT,
-      AWAddr  => (AddressBits-1 downto 0 => 'Z'), 
-      AWProt  => C_AXI4_PROTECT_INIT,
-      AWID    => (IDBits-1 downto 0 => 'Z'), 
-      AWLen   => (others => 'Z'),
-      AWSize  => C_AXI4_SIZE_INIT,
-      AWBurst => C_AXI4_BURST_INIT,
-      AWLock  => 'Z',
-      AWQOS   => C_AXI4_QOS_INIT,
-      AWRegion=> C_AXI4_REGION_INIT,
-      AWUser  => (UserBits-1 downto 0 => 'Z')
-    );
-  end function;
+--  -----------Wirte Address
+--  function Initialize_AXI4Lite_WriteAddress_Bus(AddressBits : natural) return T_AXI4Lite_WriteAddress_Bus is
+--  begin
+--    return (
+--      AWValid => 'Z',
+--      AWReady => 'Z',
+--      AWCache => C_AXI4_CACHE_INIT,
+--      AWAddr  => (AddressBits-1 downto 0 => 'Z'), 
+--      AWProt  => C_AXI4_PROTECT_INIT
+--    );
+--  end function;
+--  function Initialize_AXI4_WriteAddress_Bus(AddressBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_WriteAddress_Bus is
+--  begin
+--    return (
+--      AWValid => 'Z',
+--      AWReady => 'Z',
+--      AWCache => C_AXI4_CACHE_INIT,
+--      AWAddr  => (AddressBits-1 downto 0 => 'Z'), 
+--      AWProt  => C_AXI4_PROTECT_INIT,
+--      AWID    => (IDBits-1 downto 0 => 'Z'), 
+--      AWLen   => (others => 'Z'),
+--      AWSize  => C_AXI4_SIZE_INIT,
+--      AWBurst => C_AXI4_BURST_INIT,
+--      AWLock  => 'Z',
+--      AWQOS   => C_AXI4_QOS_INIT,
+--      AWRegion=> C_AXI4_REGION_INIT,
+--      AWUser  => (UserBits-1 downto 0 => 'Z')
+--    );
+--  end function;
   
-  -----------Write Data
-  function Initialize_AXI4Lite_WriteData_Bus(DataBits : natural) return T_AXI4Lite_WriteData_Bus is
-  begin
-    return (
-      WValid  => 'Z',
-      WReady  => 'Z',
-      WData   => (DataBits - 1 downto 0 => 'Z'),
-      WStrb   => ((DataBits / 8) - 1 downto 0 => 'Z') 
-    );
-  end function;
-  function Initialize_AXI4_WriteData_Bus(DataBits : natural; UserBits : natural := 0) return T_AXI4_WriteData_Bus is
-  begin
-    return (
-      WValid  => 'Z',
-      WReady  => 'Z',
-      WData   => (DataBits - 1 downto 0 => 'Z'),
-      WStrb   => ((DataBits / 8) - 1 downto 0 => 'Z'),
-      WLast   => 'Z',
-      WUser   => (UserBits - 1 downto 0 => 'Z')
-    );
-  end function;
+--  -----------Write Data
+--  function Initialize_AXI4Lite_WriteData_Bus(DataBits : natural) return T_AXI4Lite_WriteData_Bus is
+--  begin
+--    return (
+--      WValid  => 'Z',
+--      WReady  => 'Z',
+--      WData   => (DataBits - 1 downto 0 => 'Z'),
+--      WStrb   => ((DataBits / 8) - 1 downto 0 => 'Z') 
+--    );
+--  end function;
+--  function Initialize_AXI4_WriteData_Bus(DataBits : natural; UserBits : natural := 0) return T_AXI4_WriteData_Bus is
+--  begin
+--    return (
+--      WValid  => 'Z',
+--      WReady  => 'Z',
+--      WData   => (DataBits - 1 downto 0 => 'Z'),
+--      WStrb   => ((DataBits / 8) - 1 downto 0 => 'Z'),
+--      WLast   => 'Z',
+--      WUser   => (UserBits - 1 downto 0 => 'Z')
+--    );
+--  end function;
 
-  -----------Write Response
-  function Initialize_AXI4Lite_WriteResponse_Bus return T_AXI4Lite_WriteResponse_Bus is
-  begin
-    return (
+--  -----------Write Response
+--  function Initialize_AXI4Lite_WriteResponse_Bus return T_AXI4Lite_WriteResponse_Bus is
+--  begin
+--    return (
+--      BValid  => 'Z',
+--      BReady  => 'Z',
+--      BResp   => C_AXI4_RESPONSE_INIT  
+--    );
+--  end function;
+--  function Initialize_AXI4_WriteResponse_Bus(UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_WriteResponse_Bus is
+--  begin
+--    return (
+--      BValid  => 'Z',
+--      BReady  => 'Z',
+--      BResp   => C_AXI4_RESPONSE_INIT,
+--      BID     => (IDBits - 1 downto 0 => 'Z'),
+--      BUser   => (UserBits - 1 downto 0 => 'Z')
+--    );
+--  end function;
+
+--  -------------Read Address
+--  function Initialize_AXI4Lite_ReadAddress_Bus(AddressBits : natural) return T_AXI4Lite_ReadAddress_Bus is
+--  begin
+--    return (
+--      ARValid => 'Z',
+--      ARReady => 'Z',
+--      ARCache => C_AXI4_CACHE_INIT,
+--      ARAddr  => (AddressBits - 1 downto 0 => 'Z'),
+--      ARProt  => C_AXI4_PROTECT_INIT
+--    );
+--  end function;
+--  function Initialize_AXI4_ReadAddress_Bus(AddressBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_ReadAddress_Bus is
+--  begin
+--    return (
+--      ARValid => 'Z',
+--      ARReady => 'Z',
+--      ARCache => C_AXI4_CACHE_INIT,
+--      ARAddr  => (AddressBits - 1 downto 0 => 'Z'),
+--      ARProt  => C_AXI4_PROTECT_INIT,
+--      ARID    => (IDBits - 1 downto 0 => 'Z'),
+--      ARLen   => (others => 'Z'),
+--      ARSize  => C_AXI4_SIZE_INIT,
+--      ARBurst => C_AXI4_BURST_INIT,
+--      ARLock  => 'Z',
+--      ARQOS   => C_AXI4_QOS_INIT,
+--      ARRegion=> C_AXI4_REGION_INIT,
+--      ARUser  => (UserBits - 1 downto 0 => 'Z')
+--    );
+--  end function;
+
+--  -----------------Read Data
+--  function Initialize_AXI4Lite_ReadData_Bus(DataBits : natural) return T_AXI4Lite_ReadData_Bus is
+--  begin
+--    return (
+--      RValid  => 'Z',
+--      RReady  => 'Z',
+--      RData   => (DataBits - 1 downto 0 => 'Z'),
+--      RResp   => C_AXI4_RESPONSE_INIT
+--    );
+--  end function;
+--  function Initialize_AXI4_ReadData_Bus(DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_ReadData_Bus is
+--  begin
+--    return (
+--      RValid  => 'Z',
+--      RReady  => 'Z',
+--      RData   => (DataBits - 1 downto 0 => 'Z'),
+--      RResp   => C_AXI4_RESPONSE_INIT,
+--      RID     => (IDBits - 1 downto 0 => 'Z'),
+--      RLast   => 'Z',
+--      RUser   => (UserBits - 1 downto 0 => 'Z')
+--    );
+--  end function;
+
+  --------------INIT
+  function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus_S2M is
+    variable var : T_AXI4Lite_Bus_S2M(RData(DataBits -1 downto 0)) :=(
+      AWReady => 'Z',
+      WReady  => 'Z',
       BValid  => 'Z',
-      BReady  => 'Z',
-      BResp   => C_AXI4_RESPONSE_INIT  
-    );
-  end function;
-  function Initialize_AXI4_WriteResponse_Bus(UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_WriteResponse_Bus is
-  begin
-    return (
-      BValid  => 'Z',
-      BReady  => 'Z',
       BResp   => C_AXI4_RESPONSE_INIT,
-      BID     => (IDBits - 1 downto 0 => 'Z'),
-      BUser   => (UserBits - 1 downto 0 => 'Z')
-    );
-  end function;
-
-  -------------Read Address
-  function Initialize_AXI4Lite_ReadAddress_Bus(AddressBits : natural) return T_AXI4Lite_ReadAddress_Bus is
-  begin
-    return (
-      ARValid => 'Z',
       ARReady => 'Z',
-      ARCache => C_AXI4_CACHE_INIT,
-      ARAddr  => (AddressBits - 1 downto 0 => 'Z'),
-      ARProt  => C_AXI4_PROTECT_INIT
-    );
-  end function;
-  function Initialize_AXI4_ReadAddress_Bus(AddressBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_ReadAddress_Bus is
-  begin
-    return (
-      ARValid => 'Z',
-      ARReady => 'Z',
-      ARCache => C_AXI4_CACHE_INIT,
-      ARAddr  => (AddressBits - 1 downto 0 => 'Z'),
-      ARProt  => C_AXI4_PROTECT_INIT,
-      ARID    => (IDBits - 1 downto 0 => 'Z'),
-      ARLen   => (others => 'Z'),
-      ARSize  => C_AXI4_SIZE_INIT,
-      ARBurst => C_AXI4_BURST_INIT,
-      ARLock  => 'Z',
-      ARQOS   => C_AXI4_QOS_INIT,
-      ARRegion=> C_AXI4_REGION_INIT,
-      ARUser  => (UserBits - 1 downto 0 => 'Z')
-    );
-  end function;
-
-  -----------------Read Data
-  function Initialize_AXI4Lite_ReadData_Bus(DataBits : natural) return T_AXI4Lite_ReadData_Bus is
-  begin
-    return (
       RValid  => 'Z',
-      RReady  => 'Z',
       RData   => (DataBits - 1 downto 0 => 'Z'),
       RResp   => C_AXI4_RESPONSE_INIT
     );
-  end function;
-  function Initialize_AXI4_ReadData_Bus(DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_ReadData_Bus is
   begin
-    return (
+    return var;
+  end function;
+  function Initialize_AXI4Lite_Bus_M2S(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus_M2S is
+    variable var : T_AXI4Lite_Bus_M2S(
+      AWAddr(AddressBits -1 downto 0), WData(DataBits -1 downto 0), 
+      WStrb((DataBits /8) -1 downto 0), ARAddr(AddressBits -1 downto 0)) :=(
+        AClk    => 'Z',
+        AResetN => 'Z',
+        AWValid => 'Z',
+        AWCache => C_AXI4_CACHE_INIT,
+        AWAddr  => (AddressBits-1 downto 0 => 'Z'), 
+        AWProt  => C_AXI4_PROTECT_INIT,
+        WValid  => 'Z',
+        WData   => (DataBits - 1 downto 0 => 'Z'),
+        WStrb   => ((DataBits / 8) - 1 downto 0 => 'Z'),
+        BReady  => 'Z',
+        ARValid => 'Z',
+        ARCache => C_AXI4_CACHE_INIT,
+        ARAddr  => (AddressBits - 1 downto 0 => 'Z'),
+        ARProt  => C_AXI4_PROTECT_INIT,
+        RReady  => 'Z'
+      );
+  begin
+    return var;
+  end function;
+
+  function Initialize_AXI4Lite_Bus(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus is
+  begin
+    return ( 
+      M2S => Initialize_AXI4Lite_Bus_M2S(AddressBits, DataBits),
+      S2M => Initialize_AXI4Lite_Bus_S2M(AddressBits, DataBits)
+    );
+  end function; 
+  
+  
+  function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_S2M is
+  begin
+    return ( 
+      AWReady => 'Z',
+      WReady  => 'Z',
+      BValid  => 'Z',
+      BResp   => C_AXI4_RESPONSE_INIT,
+      BID     => (IDBits - 1 downto 0 => 'Z'),
+      BUser   => (UserBits - 1 downto 0 => 'Z'),
+      ARReady => 'Z',
       RValid  => 'Z',
-      RReady  => 'Z',
       RData   => (DataBits - 1 downto 0 => 'Z'),
       RResp   => C_AXI4_RESPONSE_INIT,
       RID     => (IDBits - 1 downto 0 => 'Z'),
@@ -432,43 +522,13 @@ package body AXI4 is
       RUser   => (UserBits - 1 downto 0 => 'Z')
     );
   end function;
-
-  --------------INIT
-  function Initialize_AXI4Lite_Bus(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus is
+	
+	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_M2S is
   begin
     return ( 
       AClk    => 'Z',
       AResetN => 'Z',
       AWValid => 'Z',
-      AWReady => 'Z',
-      AWCache => C_AXI4_CACHE_INIT,
-      AWAddr  => (AddressBits-1 downto 0 => 'Z'), 
-      AWProt  => C_AXI4_PROTECT_INIT,
-      WValid  => 'Z',
-      WReady  => 'Z',
-      WData   => (DataBits - 1 downto 0 => 'Z'),
-      WStrb   => ((DataBits / 8) - 1 downto 0 => 'Z'),
-      BValid  => 'Z',
-      BReady  => 'Z',
-      BResp   => C_AXI4_RESPONSE_INIT,
-      ARValid => 'Z',
-      ARReady => 'Z',
-      ARCache => C_AXI4_CACHE_INIT,
-      ARAddr  => (AddressBits - 1 downto 0 => 'Z'),
-      ARProt  => C_AXI4_PROTECT_INIT,
-      RValid  => 'Z',
-      RReady  => 'Z',
-      RData   => (DataBits - 1 downto 0 => 'Z'),
-      RResp   => C_AXI4_RESPONSE_INIT
-    );
-  end function; 
-  function Initialize_AXI4_Bus(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus is
-  begin
-    return ( 
-      AClk    => 'Z',
-      AResetN => 'Z',
-      AWValid => 'Z',
-      AWReady => 'Z',
       AWCache => C_AXI4_CACHE_INIT,
       AWAddr  => (AddressBits-1 downto 0 => 'Z'), 
       AWProt  => C_AXI4_PROTECT_INIT,
@@ -481,18 +541,12 @@ package body AXI4 is
       AWRegion=> C_AXI4_REGION_INIT,
       AWUser  => (UserBits-1 downto 0 => 'Z'),
       WValid  => 'Z',
-      WReady  => 'Z',
       WData   => (DataBits - 1 downto 0 => 'Z'),
       WStrb   => ((DataBits / 8) - 1 downto 0 => 'Z'),
       WLast   => 'Z',
       WUser   => (UserBits - 1 downto 0 => 'Z'),
-      BValid  => 'Z',
       BReady  => 'Z',
-      BResp   => C_AXI4_RESPONSE_INIT,
-      BID     => (IDBits - 1 downto 0 => 'Z'),
-      BUser   => (UserBits - 1 downto 0 => 'Z'),
       ARValid => 'Z',
-      ARReady => 'Z',
       ARCache => C_AXI4_CACHE_INIT,
       ARAddr  => (AddressBits - 1 downto 0 => 'Z'),
       ARProt  => C_AXI4_PROTECT_INIT,
@@ -504,15 +558,22 @@ package body AXI4 is
       ARQOS   => C_AXI4_QOS_INIT,
       ARRegion=> C_AXI4_REGION_INIT,
       ARUser  => (UserBits - 1 downto 0 => 'Z'),
-      RValid  => 'Z',
-      RReady  => 'Z',
-      RData   => (DataBits - 1 downto 0 => 'Z'),
-      RResp   => C_AXI4_RESPONSE_INIT,
-      RID     => (IDBits - 1 downto 0 => 'Z'),
-      RLast   => 'Z',
-      RUser   => (UserBits - 1 downto 0 => 'Z')
+      RReady  => 'Z'
     );
-  end function;
+  end function;  
+  
+  
+  
+  
+  
+  function Initialize_AXI4_Bus(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus is
+  begin
+    return ( 
+      M2S => Initialize_AXI4_Bus_M2S(AddressBits, DataBits, UserBits, IDBits),
+      S2M => Initialize_AXI4_Bus_S2M(AddressBits, DataBits, UserBits, IDBits)
+    );
+  end function;  
+  
   -- --------------INIT
   -- function Initialize_AXI4Lite_Bus(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus is
   -- begin
