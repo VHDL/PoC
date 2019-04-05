@@ -251,8 +251,6 @@ package AXI4 is
     RUser       : std_logic_vector;
 	end record;
 	type T_AXI4_Bus_M2S is record
-    AClk        : std_logic;
-    AResetN     : std_logic;
 		AWID        : unsigned; 
 		AWAddr      : unsigned; 
     AWLen       : unsigned(7 downto 0); 
