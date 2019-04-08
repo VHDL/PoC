@@ -45,11 +45,17 @@ set_property IOSTANDARD     LVCMOS18       [get_ports -regexp {HTG_Z920_SystemCl
 
 
 
-#TODO Timing?
+#Timing:
+#Ignore timing on control signals (reset and sync)
+set_false_path                      -from     [get_ports -regexp {HTG_Z920_SystemClock_ctrl_*} ]
+
+
 #TODO #FIXIT Check LVPECL is correct !!!
+#TODO #FIXIT Check no timing needed on sync !!!
 
 
-
+# # specify a XXX MHz clock
+# create_clock -period XXXXX -name PIN_SystemClock_XXXMHz [get_ports HTG_Z920_SystemClock_UserClock_p]
 
 
 
