@@ -43,14 +43,14 @@
 ##          Location:           Connector J8
 
 ## { OUT }  U53 - Pin 22 - I2C_SCL_PL - wired together with MIO14_I2C0_SCL(level shifter inbetween)
-set_property PACKAGE_PIN    C3              [get_ports HTG_Z920_IIC_SerialClock]
+set_property PACKAGE_PIN    C3              [ get_ports HTG_Z920_IIC_SerialClock ]
 ## {INOUT}  U53 - Pin 23 - I2C_SDA_PL - wired together with MIO15_I2C0_SDA(level shifter inbetween)
-set_property PACKAGE_PIN    B3              [get_ports HTG_Z920_IIC_SerialData]
+set_property PACKAGE_PIN    B3              [ get_ports HTG_Z920_IIC_SerialData ]
 ## { OUT }  U53 - Pin  2 - I2C_RST_N_PL
-set_property PACKAGE_PIN    C4              [get_ports HTG_Z920_IIC_Switch_Reset_n]
+set_property PACKAGE_PIN    C4              [ get_ports HTG_Z920_IIC_Switch_Reset_n ]
 
 
 ## set I/O standard
-set_property IOSTANDARD     LVCMOS33        [get_ports -regexp {HTG_Z920_IIC_.*}]
-set_false_path                              -to     [get_ports -regexp {HTG_Z920_IIC_.*}]
-set_false_path                              -from   [get_ports -regexp {HTG_Z920_IIC_SerialData}]
+set_property IOSTANDARD     LVCMOS33        [ get_ports -regexp {HTG_Z920_IIC_.*} ]
+set_false_path              -to             [ get_ports -regexp {HTG_Z920_IIC_.*} ]
+set_false_path              -from           [ get_ports -regexp {HTG_Z920_IIC_SerialData} ]
