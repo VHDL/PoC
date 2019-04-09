@@ -19,26 +19,26 @@ set_property PACKAGE_PIN    AK12            [ get_ports HTG_Z920_BUS_PCIe_CLK_p 
 ## { IN  }  Bank 224 PCIE_CLK0_MGT0_N
 set_property PACKAGE_PIN    AK11            [ get_ports HTG_Z920_BUS_PCIe_CLK_n ]
 
-## ## { IN  }  Bank 227 PCIE_CLK0_MGT1_N
-## set_property PACKAGE_PIN    AC9             [ get_ports HTG_Z920_BUS_PCIe_PCIE_CLK_N ]
-## ## { IN  }  Bank 227 PCIE_CLK0_MGT1_P
-## set_property PACKAGE_PIN    AC10            [ get_ports HTG_Z920_BUS_PCIe_PCIE_CLK_P ]
-## 
-## ## { IN  }  Bank 226 PCIE_CLK1_MGT_N
-## set_property PACKAGE_PIN    AF11            [ get_ports HTG_Z920_BUS_PCIe_PCIE_CLK_N ]
-## ## { IN  }  Bank 226 PCIE_CLK1_MGT_P
-## set_property PACKAGE_PIN    AF12            [ get_ports HTG_Z920_BUS_PCIe_PCIE_CLK_P ]
-## 
-## ## { IN  }  Bank 227 PCIE_CLK2_MGT_N
-## set_property PACKAGE_PIN    AD11            [ get_ports HTG_Z920_BUS_PCIe_PCIE_CLK_N ]
-## ## { IN  }  Bank 227 PCIE_CLK2_MGT_P
-## set_property PACKAGE_PIN    AD12            [ get_ports HTG_Z920_BUS_PCIe_PCIE_CLK_P ]
-## 
-## ## { IN  }  Bank 225 PCIE_CLK3_MGT_N
-## set_property PACKAGE_PIN    AH11            [ get_ports HTG_Z920_BUS_PCIe_PCIE_CLK_N ]
-## ## { IN  }  Bank 225 PCIE_CLK3_MGT_P
-## set_property PACKAGE_PIN    AH12            [ get_ports HTG_Z920_BUS_PCIe_PCIE_CLK_P ]
-## 
+## { IN  }  Bank 227 PCIE_CLK0_MGT1_N
+set_property PACKAGE_PIN    AC9             [ get_ports HTG_Z920_BUS_PCIe_GTH_227_CLK_n ]
+## { IN  }  Bank 227 PCIE_CLK0_MGT1_P
+set_property PACKAGE_PIN    AC10            [ get_ports HTG_Z920_BUS_PCIe_GTH_227_CLK_p ]
+
+## { IN  }  Bank 226 PCIE_CLK1_MGT_N
+set_property PACKAGE_PIN    AF11            [ get_ports HTG_Z920_BUS_PCIe_GTH_226_CLK_n ]
+## { IN  }  Bank 226 PCIE_CLK1_MGT_P
+set_property PACKAGE_PIN    AF12            [ get_ports HTG_Z920_BUS_PCIe_GTH_226_CLK_p ]
+
+## { IN  }  Bank 227 PCIE_CLK2_MGT_N
+set_property PACKAGE_PIN    AD11            [ get_ports HTG_Z920_BUS_PCIe_GTH_227_CLK_n ]
+## { IN  }  Bank 227 PCIE_CLK2_MGT_P
+set_property PACKAGE_PIN    AD12            [ get_ports HTG_Z920_BUS_PCIe_GTH_227_CLK_p ]
+
+## { IN  }  Bank 225 PCIE_CLK3_MGT_N
+set_property PACKAGE_PIN    AH11            [ get_ports HTG_Z920_BUS_PCIe_GTH_225_CLK_n ]
+## { IN  }  Bank 225 PCIE_CLK3_MGT_P
+set_property PACKAGE_PIN    AH12            [ get_ports HTG_Z920_BUS_PCIe_GTH_225_CLK_p ]
+
 
 ##------------
 ##PCIe RX:
@@ -205,10 +205,10 @@ set_property PACKAGE_PIN    D2              [ get_ports HTG_Z920_BUS_PCIe_PERST_
 
 
 ## set I/O standard
-set_property IOSTANDARD     LVCMOS33        [get_ports HTG_Z920_BUS_PCIe_WAKE]
-set_property IOSTANDARD     LVCMOS33        [get_ports HTG_Z920_BUS_PCIe_PERST_n]
+set_property IOSTANDARD     LVCMOS33        [ get_ports HTG_Z920_BUS_PCIe_WAKE ]
+set_property IOSTANDARD     LVCMOS33        [ get_ports HTG_Z920_BUS_PCIe_PERST_n ]
 
 #Timing
-set_false_path                      -from     [get_ports HTG_Z920_BUS_PCIe_WAKE]
-set_false_path                      -from     [get_ports HTG_Z920_BUS_PCIe_PERST_n]
+set_false_path              -from           [ get_ports HTG_Z920_BUS_PCIe_WAKE ]
+set_false_path              -from           [ get_ports HTG_Z920_BUS_PCIe_PERST_n ]
 
