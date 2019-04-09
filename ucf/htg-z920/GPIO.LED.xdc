@@ -24,8 +24,8 @@ set_property PACKAGE_PIN    A5              [ get_ports HTG_Z920_GPIO_LED[3] ]
 
 
 ## set I/O standard
-set_property IOSTANDARD     LVCMOS33        [get_ports -regexp {HTG_Z920_GPIO_LED\[0-3]}]
+set_property IOSTANDARD     LVCMOS33        [ get_ports -regexp {HTG_Z920_GPIO_LED\[0-3]} ]
 
 ## Ignore timings on async I/O pins
-set_false_path                      -from     [get_ports -regexp {HTG_Z920_GPIO_LED\[\d\]} ]
+set_false_path              -from           [ get_ports -regexp {HTG_Z920_GPIO_LED\[\d\]} ]
 

@@ -18,7 +18,7 @@ set_property PACKAGE_PIN    D8              [ get_ports HTG_Z920_GPIO_Button_Use
 
 
 ## set I/O standard
-set_property IOSTANDARD     LVCMOS33        [get_ports -regexp {HTG_Z920_GPIO_Button_.*}]
+set_property IOSTANDARD     LVCMOS33        [ get_ports -regexp {HTG_Z920_GPIO_Button_.*} ]
 
 ## Ignore timings on async I/O pins
-set_false_path                      -from     [get_ports -regexp {HTG_Z920_GPIO_Button_User\[\d\]} ]
+set_false_path              -from           [ get_ports -regexp {HTG_Z920_GPIO_Button_User\[\d\]} ]
