@@ -289,10 +289,10 @@ package AXI4 is
   type T_AXI4Lite_Bus_M2S_VECTOR is array(natural range <>) of T_AXI4Lite_Bus_M2S;
   type T_AXI4_Bus_M2S_VECTOR is array(natural range <>) of T_AXI4_Bus_M2S;
 	
-	function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus_S2M;
-	function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_S2M;
-	function Initialize_AXI4Lite_Bus_M2S(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus_M2S;
-	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_M2S;
+	function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_S2M;
+	function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M;
+	function Initialize_AXI4Lite_Bus_M2S(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_M2S;
+	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_M2S;
   
   type T_AXI4_Bus is record
     M2S   : T_AXI4_Bus_M2S;
@@ -455,39 +455,39 @@ package body AXI4 is
 --  end function;
 
   --------------INIT
-  function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus_S2M is
+  function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_S2M is
     variable var : T_AXI4Lite_Bus_S2M(RData(DataBits -1 downto 0)) :=(
-      AWReady => 'Z',
-      WReady  => 'Z',
-      BValid  => 'Z',
+      AWReady => Value,
+      WReady  => Value,
+      BValid  => Value,
       BResp   => C_AXI4_RESPONSE_INIT,
-      ARReady => 'Z',
-      RValid  => 'Z',
+      ARReady => Value,
+      RValid  => Value,
       RData   => (DataBits - 1 downto 0 => 'Z'),
       RResp   => C_AXI4_RESPONSE_INIT
     );
   begin
     return var;
   end function;
-  function Initialize_AXI4Lite_Bus_M2S(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus_M2S is
+  function Initialize_AXI4Lite_Bus_M2S(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_M2S is
     variable var : T_AXI4Lite_Bus_M2S(
       AWAddr(AddressBits -1 downto 0), WData(DataBits -1 downto 0), 
       WStrb((DataBits /8) -1 downto 0), ARAddr(AddressBits -1 downto 0)) :=(
-        AClk    => 'Z',
-        AResetN => 'Z',
-        AWValid => 'Z',
+        AClk    => Value,
+        AResetN => Value,
+        AWValid => Value,
         AWCache => C_AXI4_CACHE_INIT,
-        AWAddr  => (AddressBits-1 downto 0 => 'Z'), 
+        AWAddr  => (AddressBits-1 downto 0 => Value), 
         AWProt  => C_AXI4_PROTECT_INIT,
-        WValid  => 'Z',
-        WData   => (DataBits - 1 downto 0 => 'Z'),
-        WStrb   => ((DataBits / 8) - 1 downto 0 => 'Z'),
-        BReady  => 'Z',
-        ARValid => 'Z',
+        WValid  => Value,
+        WData   => (DataBits - 1 downto 0 => Value),
+        WStrb   => ((DataBits / 8) - 1 downto 0 => Value),
+        BReady  => Value,
+        ARValid => Value,
         ARCache => C_AXI4_CACHE_INIT,
-        ARAddr  => (AddressBits - 1 downto 0 => 'Z'),
+        ARAddr  => (AddressBits - 1 downto 0 => Value),
         ARProt  => C_AXI4_PROTECT_INIT,
-        RReady  => 'Z'
+        RReady  => Value
       );
   begin
     return var;
@@ -502,68 +502,68 @@ package body AXI4 is
   end function; 
   
   
-  function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_S2M is
+  function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M is
     variable var : T_AXI4_Bus_S2M(
       BID(IDBits - 1 downto 0), RID(IDBits - 1 downto 0),
       BUser(UserBits - 1 downto 0), RUser(UserBits - 1 downto 0),
       RData(DataBits - 1 downto 0)
     ) := (
-      AWReady => 'Z',
-      WReady  => 'Z',
-      BValid  => 'Z',
+      AWReady => Value,
+      WReady  => Value,
+      BValid  => Value,
       BResp   => C_AXI4_RESPONSE_INIT,
-      BID     => (IDBits - 1 downto 0 => 'Z'),
-      BUser   => (UserBits - 1 downto 0 => 'Z'),
-      ARReady => 'Z',
-      RValid  => 'Z',
-      RData   => (DataBits - 1 downto 0 => 'Z'),
+      BID     => (IDBits - 1 downto 0 => Value),
+      BUser   => (UserBits - 1 downto 0 => Value),
+      ARReady => Value,
+      RValid  => Value,
+      RData   => (DataBits - 1 downto 0 => Value),
       RResp   => C_AXI4_RESPONSE_INIT,
-      RID     => (IDBits - 1 downto 0 => 'Z'),
-      RLast   => 'Z',
-      RUser   => (UserBits - 1 downto 0 => 'Z')
+      RID     => (IDBits - 1 downto 0 => Value),
+      RLast   => Value,
+      RUser   => (UserBits - 1 downto 0 => Value)
     );
   begin
     return var;
   end function;
 	
-  function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_M2S is
+  function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_M2S is
     variable var : T_AXI4_Bus_M2S(
       AWID(IDBits - 1 downto 0), ARID(IDBits - 1 downto 0),
       AWUser(UserBits - 1 downto 0), ARUser(UserBits - 1 downto 0), WUser(UserBits - 1 downto 0),
       WData(DataBits - 1 downto 0), WStrb((DataBits / 8) - 1 downto 0),
       AWAddr(AddressBits-1 downto 0), ARAddr(AddressBits - 1 downto 0)
     ) := (
-      AWValid => 'Z',
+      AWValid => Value,
       AWCache => C_AXI4_CACHE_INIT,
-      AWAddr  => (AddressBits-1 downto 0 => 'Z'), 
+      AWAddr  => (AddressBits-1 downto 0 => Value), 
       AWProt  => C_AXI4_PROTECT_INIT,
-      AWID    => (IDBits-1 downto 0 => 'Z'), 
-      AWLen   => (others => 'Z'),
+      AWID    => (IDBits-1 downto 0 => Value), 
+      AWLen   => (others => Value),
       AWSize  => C_AXI4_SIZE_INIT,
       AWBurst => C_AXI4_BURST_INIT,
-      AWLock  => 'Z',
+      AWLock  => Value,
       AWQOS   => C_AXI4_QOS_INIT,
       AWRegion=> C_AXI4_REGION_INIT,
-      AWUser  => (UserBits-1 downto 0 => 'Z'),
-      WValid  => 'Z',
-      WData   => (DataBits - 1 downto 0 => 'Z'),
-      WStrb   => ((DataBits / 8) - 1 downto 0 => 'Z'),
-      WLast   => 'Z',
-      WUser   => (UserBits - 1 downto 0 => 'Z'),
-      BReady  => 'Z',
-      ARValid => 'Z',
+      AWUser  => (UserBits-1 downto 0 => Value),
+      WValid  => Value,
+      WData   => (DataBits - 1 downto 0 => Value),
+      WStrb   => ((DataBits / 8) - 1 downto 0 => Value),
+      WLast   => Value,
+      WUser   => (UserBits - 1 downto 0 => Value),
+      BReady  => Value,
+      ARValid => Value,
       ARCache => C_AXI4_CACHE_INIT,
-      ARAddr  => (AddressBits - 1 downto 0 => 'Z'),
+      ARAddr  => (AddressBits - 1 downto 0 => Value),
       ARProt  => C_AXI4_PROTECT_INIT,
-      ARID    => (IDBits - 1 downto 0 => 'Z'),
-      ARLen   => (others => 'Z'),
+      ARID    => (IDBits - 1 downto 0 => Value),
+      ARLen   => (others => Value),
       ARSize  => C_AXI4_SIZE_INIT,
       ARBurst => C_AXI4_BURST_INIT,
-      ARLock  => 'Z',
+      ARLock  => Value,
       ARQOS   => C_AXI4_QOS_INIT,
       ARRegion=> C_AXI4_REGION_INIT,
-      ARUser  => (UserBits - 1 downto 0 => 'Z'),
-      RReady  => 'Z'
+      ARUser  => (UserBits - 1 downto 0 => Value),
+      RReady  => Value
     );
   begin
     return var;
