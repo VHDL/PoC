@@ -503,8 +503,11 @@ package body AXI4 is
   
   
   function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_S2M is
-  begin
-    return ( 
+    variable var : T_AXI4_Bus_S2M(
+      BID(IDBits - 1 downto 0), RID(IDBits - 1 downto 0),
+      BUser(UserBits - 1 downto 0), RUser(UserBits - 1 downto 0),
+      RData(DataBits - 1 downto 0)
+    ) := (
       AWReady => 'Z',
       WReady  => 'Z',
       BValid  => 'Z',
@@ -519,13 +522,17 @@ package body AXI4 is
       RLast   => 'Z',
       RUser   => (UserBits - 1 downto 0 => 'Z')
     );
+  begin
+    return var;
   end function;
 	
-	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_M2S is
-  begin
-    return ( 
-      AClk    => 'Z',
-      AResetN => 'Z',
+  function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus_M2S is
+    variable var : T_AXI4_Bus_M2S(
+      AWID(IDBits - 1 downto 0), ARID(IDBits - 1 downto 0),
+      AWUser(UserBits - 1 downto 0), ARUser(UserBits - 1 downto 0), WUser(UserBits - 1 downto 0),
+      WData(DataBits - 1 downto 0), WStrb((DataBits / 8) - 1 downto 0),
+      AWAddr(AddressBits-1 downto 0), ARAddr(AddressBits - 1 downto 0)
+    ) := (
       AWValid => 'Z',
       AWCache => C_AXI4_CACHE_INIT,
       AWAddr  => (AddressBits-1 downto 0 => 'Z'), 
@@ -558,6 +565,8 @@ package body AXI4 is
       ARUser  => (UserBits - 1 downto 0 => 'Z'),
       RReady  => 'Z'
     );
+  begin
+    return var;
   end function;  
   
   
