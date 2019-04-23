@@ -616,6 +616,11 @@ package body config is
     return (((character'pos('a') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('z'))) or
         ((character'pos('A') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('Z'))));
 	end function;
+	
+	function chr_isLowerAlpha(chr : character) return boolean is
+	begin
+		return (character'pos('a') <= character'pos(chr)) and (character'pos(chr) <= character'pos('z'));
+	end function;
 
 	function str_length(str : string) return natural is
 	begin
@@ -682,6 +687,24 @@ package body config is
 		end loop;
 		return FALSE;
 	end function;
+  
+  function chr_toUpper(chr : character) return character is
+	begin
+		if chr_isLowerAlpha(chr) then
+			return character'val(character'pos(chr) - character'pos('a') + character'pos('A'));
+		else
+			return chr;
+		end if;
+	end function;
+  
+  function str_toUpper(str : string) return string is
+		variable Result		: string(str'range);
+	begin
+		for i in str'range loop
+			Result(i)	:= chr_toUpper(str(i));
+		end loop;
+		return Result;
+	end function;
 
   -- private functions required by board description
   -- ModelSim requires that this functions is defined before it is used below.
@@ -701,7 +724,7 @@ package body config is
       Result(1 to bound(T_DEVICE_STRING'length, 1, DeviceString'length))  := ite((DeviceString'length > 0), DeviceString(1 to imin(T_DEVICE_STRING'length, DeviceString'length)), ConstNUL);
     -- if MY_DEVICE is set, prefer it
     elsif (str_length(MY_DEVICE) /= 0) and not str_imatch(MY_DEVICE, "None") then
-      Result(1 to bound(T_DEVICE_STRING'length, 1, MY_DEVICE'length))      := ite((MY_DEVICE'length > 0), MY_DEVICE(1 to imin(T_DEVICE_STRING'length, MY_DEVICE'length)), ConstNUL);
+      Result(1 to bound(T_DEVICE_STRING'length, 1, MY_DEVICE'length))      := ite((MY_DEVICE'length > 0), str_toUpper(MY_DEVICE)(1 to imin(T_DEVICE_STRING'length, MY_DEVICE'length)), ConstNUL);
     -- otherwise use MY_BOARD
     else
       Result(1 to bound(T_DEVICE_STRING'length, 1, MY_DEVICE_STR'length))  := ite((MY_DEVICE_STR'length > 0), MY_DEVICE_STR(1 to imin(T_DEVICE_STRING'length, MY_DEVICE_STR'length)), ConstNUL);
@@ -750,7 +773,7 @@ package body config is
   -- ===========================================================================
   -- TODO: comment
 	function BOARD(BoardConfig : string := C_BOARD_STRING_EMPTY) return natural is
-		constant MY_BRD      : T_BOARD_CONFIG_STRING  := ite((BoardConfig /= C_BOARD_STRING_EMPTY), conf(BoardConfig), conf(MY_BOARD));
+		constant MY_BRD      : T_BOARD_CONFIG_STRING  := ite((BoardConfig /= C_BOARD_STRING_EMPTY), conf(BoardConfig), conf(str_toUpper(MY_BOARD)));
 		constant BOARD_NAME  : string                := str_trim(MY_BRD);
 	begin
     if POC_VERBOSE then  report "PoC configuration: Used board is '" & BOARD_NAME & "'" severity NOTE;		end if;
@@ -924,7 +947,9 @@ package body config is
 					when "7V"	 =>    return DEVICE_VIRTEX7;
 					when "VU"	 =>    return DEVICE_VIRTEX_ULTRA;
 					when "7Z"	 =>    return DEVICE_ZYNQ7;
-					when others =>  report "Unknown Xilinx device in MY_DEVICE = '" & MY_DEV & "'" severity failure;
+					when "ZU"  =>    return DEVICE_ZYNQ_ULTRA_PLUS;
+					-- TODO: Add DEVICE_KINTEX_ULTRA_PLUS,  DEVICE_VIRTEX_ULTRA_PLUS  
+					when others =>  report "Unknown Xilinx device in MY_DEVICE = '" & MY_DEV & "'" severity failure;            
 				end case;
 
 			when others => report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
