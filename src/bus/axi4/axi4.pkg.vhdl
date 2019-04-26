@@ -34,6 +34,9 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
+library PoC;
+use PoC.utils.all;
+
   
   -- Generic
 --    axi_addr_width   : natural := 32;
@@ -43,6 +46,31 @@ use     IEEE.numeric_std.all;
 
 
 package AXI4 is
+  -------Define AXI Register structure-------------
+  type T_AXI4_Register is record
+    Address : unsigned;
+    Data    : std_logic_vector;
+    Mask    : std_logic_vector;
+  end record;
+  
+  function to_AXI4_Register(Address : unsigned; Data : std_logic_vector; Mask : std_logic_vector; AddressBits : natural; DataBits : natural) return T_AXI4_Register;
+  function Initialize_AXI4_register(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4_Register;
+  
+  type T_AXI4_Register_Vector is array (natural range <>) of T_AXI4_Register;
+  
+  type T_AXI4_Register_Set is record
+    AXI4_Register  : T_AXI4_Register_Vector;
+    Last_Index     : natural;
+  end record;
+  
+  type T_AXI4_Register_Set_VECTOR is array (natural range <>) of T_AXI4_Register_Set;
+  
+  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set;
+  
+  ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  
+  
+  
   subtype  T_AXI4_Response is std_logic_vector(1 downto 0);
 	constant C_AXI4_RESPONSE_OKAY         : T_AXI4_Response := "00";
 	constant C_AXI4_RESPONSE_EX_OKAY      : T_AXI4_Response := "01";
@@ -52,6 +80,7 @@ package AXI4 is
   
   subtype  T_AXI4_Cache    is std_logic_vector(3 downto 0);
   constant C_AXI4_CACHE_INIT : T_AXI4_Cache := "ZZZZ";  
+  constant C_AXI4_CACHE      : T_AXI4_Cache := "0011";  
   
   subtype  T_AXI4_QoS    is std_logic_vector(3 downto 0);
   constant C_AXI4_QOS_INIT : T_AXI4_QoS := "ZZZZ";  
@@ -81,16 +110,17 @@ package AXI4 is
   -- Bit 1: 0 Secure access         1 Non-secure access
   -- Bit 2: 0 Data access           1 Instruction access
   constant C_AXI4_PROTECT_INIT : T_AXI4_Protect := "ZZZ"; 
+  constant C_AXI4_PROTECT      : T_AXI4_Protect := "000"; 
 
   -- ------- Write Address Channel
 	-- -- AXI4-Lite 
-  -- type T_AXI4Lite_WriteAddress_Bus is record
-		-- AWValid     : std_logic; 
-		-- AWReady     : std_logic;
-		-- AWAddr      : unsigned; 
-    -- AWCache     : T_AXI4_Cache;
-		-- AWProt      : T_AXI4_Protect;
-	-- end record; 	
+   type T_AXI4Lite_WriteAddress_Bus is record
+		 AWValid     : std_logic; 
+		 AWReady     : std_logic;
+		 AWAddr      : unsigned; 
+     AWCache     : T_AXI4_Cache;
+		 AWProt      : T_AXI4_Protect;
+	 end record; 	
   -- -- AXI4
   -- type T_AXI4_WriteAddress_Bus is record
     -- AWID        : unsigned; 
@@ -113,12 +143,12 @@ package AXI4 is
 
   -- ------- Write Data Channel
 	-- -- AXI4-Lite 
-	-- type T_AXI4Lite_WriteData_Bus is record
-		-- WValid      : std_logic;
-		-- WReady      : std_logic;
-		-- WData       : std_logic_vector;
-		-- WStrb       : std_logic_vector;
-	-- end record;
+	 type T_AXI4Lite_WriteData_Bus is record
+		 WValid      : std_logic;
+		 WReady      : std_logic;
+		 WData       : std_logic_vector;
+		 WStrb       : std_logic_vector;
+	 end record;
 	-- -- AXI4
 	-- type T_AXI4_WriteData_Bus is record
 		-- WValid      : std_logic;
@@ -134,11 +164,11 @@ package AXI4 is
 
   -- -------- Write Response Channel
 	-- -- AXI4-Lite 
-	-- type T_AXI4Lite_WriteResponse_Bus is record
-		-- BValid      : std_logic;
-		-- BReady      : std_logic;
-		-- BResp       : T_AXI4_Response; 
-	-- end record; 
+	 type T_AXI4Lite_WriteResponse_Bus is record
+		 BValid      : std_logic;
+		 BReady      : std_logic;
+		 BResp       : T_AXI4_Response; 
+	 end record; 
 	-- -- AXI4
 	-- type T_AXI4_WriteResponse_Bus is record
 		-- BValid      : std_logic;
@@ -153,13 +183,13 @@ package AXI4 is
 
   -- ------ Read Address Channel
 	-- -- AXI4-Lite 
-	-- type T_AXI4Lite_ReadAddress_Bus is record
-		-- ARValid     : std_logic;
-		-- ARReady     : std_logic;
-		-- ARAddr      : unsigned;
-    -- ARCache     : T_AXI4_Cache;
-		-- ARProt      : T_AXI4_Protect;
-	-- end record;
+	 type T_AXI4Lite_ReadAddress_Bus is record
+		 ARValid     : std_logic;
+		 ARReady     : std_logic;
+		 ARAddr      : unsigned;
+     ARCache     : T_AXI4_Cache;
+		 ARProt      : T_AXI4_Protect;
+	 end record;
 	-- -- AXI4
 	-- type T_AXI4_ReadAddress_Bus is record
 		-- ARValid     : std_logic;
@@ -182,12 +212,12 @@ package AXI4 is
 
   -- ------- Read Data Channel
 	-- -- AXI4-Lite 
-	-- type T_AXI4Lite_ReadData_Bus is record
-		-- RValid      : std_logic;
-		-- RReady      : std_logic;
-		-- RData       : std_logic_vector;
-		-- RResp       : T_AXI4_Response;
-	-- end record;
+	 type T_AXI4Lite_ReadData_Bus is record
+		 RValid      : std_logic;
+		 RReady      : std_logic;
+		 RData       : std_logic_vector;
+		 RResp       : T_AXI4_Response;
+	 end record;
 	-- -- AXI4
 	-- type T_AXI4_ReadData_Bus is record
 		-- RValid      : std_logic;
@@ -214,8 +244,8 @@ package AXI4 is
 		RResp       : T_AXI4_Response;
 	end record;
 	type T_AXI4Lite_Bus_M2S is record
-    AClk        : std_logic;
-    AResetN     : std_logic;
+--    AClk        : std_logic;
+--    AResetN     : std_logic;
 		AWValid     : std_logic; 
 		AWAddr      : unsigned; 
     AWCache     : T_AXI4_Cache;
@@ -325,10 +355,75 @@ package AXI4 is
 	
 	function Initialize_AXI4Lite_Bus(AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus;
 	function Initialize_AXI4_Bus(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus;
+	
+	
+	
 end package;
 
 
 package body AXI4 is 
+  -------Define AXI Register structure-------------
+  function to_AXI4_Register(Address : unsigned; Data : std_logic_vector; Mask : std_logic_vector; AddressBits : natural; DataBits : natural) return T_AXI4_Register is
+--    variable temp : T_AXI4_Register(Address(Address'range),Data(Data'range),Mask(Mask'range)) ;--:= (
+   --   Address => Address,
+  --    Data    => Data,
+  --    Mask    => Mask
+  --  );
+  variable temp : T_AXI4_Register(
+      Address(AddressBits -1 downto 0),
+      Data(DataBits -1 downto 0),
+      Mask(DataBits -1 downto 0)) := (
+        Address => Address,
+        Data    => Data,
+        Mask    => Mask
+      );
+  begin
+    return temp;
+  end function;
+  
+  function Initialize_AXI4_register(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4_Register is
+    variable temp : T_AXI4_Register(
+      Address(AddressBits -1 downto 0),
+      Data(DataBits -1 downto 0),
+      Mask(DataBits -1 downto 0)):= 
+      to_AXI4_Register(
+        Address => (AddressBits -1 downto 0 => Value), 
+        Data => (DataBits -1 downto 0 => Value), 
+        Mask => (DataBits -1 downto 0 => Value),
+        AddressBits => AddressBits,
+        DataBits    => DataBits
+      );
+  begin
+    return temp;
+  end function;
+-------------------------------------------------------------------------------------------------------------
+
+  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set is
+    variable temp : T_AXI4_Register_Set(AXI4_Register(0 to size -1)(
+      Address(reg_vec(reg_vec'left).Address'range),
+      Data(reg_vec(reg_vec'left).Data'range),
+      Mask(reg_vec(reg_vec'left).Mask'range)
+    )--) := (
+--      AXI4_Register => 
+--        (others => Initialize_AXI4_register(reg_vec(reg_vec'left).Address'length, reg_vec(reg_vec'left).Data'length)),
+--      Last_Index => 0
+    );
+
+  begin
+    temp.AXI4_Register(reg_vec'range) := reg_vec;
+    temp.Last_Index := reg_vec'length -1;
+    return temp;
+  end function;
+  
+--  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector) return T_AXI4_Register_Set is
+--    variable temp : T_AXI4_Register_Set(AXI4_Register(reg_vec'length -1 downto 0), Last_Index(log2ceilnz(reg_vec'length) -1 downto 0)) := (
+--      AXI4_Register => reg_vec,
+--      Last_Index    => to_unsigned(reg_vec'length, log2ceilnz(reg_vec'length))
+--    );
+--  begin
+--    return temp;
+--  end function;
+  
 --  -----------Wirte Address
 --  function Initialize_AXI4Lite_WriteAddress_Bus(AddressBits : natural) return T_AXI4Lite_WriteAddress_Bus is
 --  begin
@@ -460,11 +555,11 @@ package body AXI4 is
       AWReady => Value,
       WReady  => Value,
       BValid  => Value,
-      BResp   => C_AXI4_RESPONSE_INIT,
+      BResp   => (others => Value),
       ARReady => Value,
       RValid  => Value,
       RData   => (DataBits - 1 downto 0 => 'Z'),
-      RResp   => C_AXI4_RESPONSE_INIT
+      RResp   => (others => Value)
     );
   begin
     return var;
@@ -473,20 +568,20 @@ package body AXI4 is
     variable var : T_AXI4Lite_Bus_M2S(
       AWAddr(AddressBits -1 downto 0), WData(DataBits -1 downto 0), 
       WStrb((DataBits /8) -1 downto 0), ARAddr(AddressBits -1 downto 0)) :=(
-        AClk    => Value,
-        AResetN => Value,
+--        AClk    => Value,
+--        AResetN => Value,
         AWValid => Value,
-        AWCache => C_AXI4_CACHE_INIT,
+        AWCache => (others => Value),
         AWAddr  => (AddressBits-1 downto 0 => Value), 
-        AWProt  => C_AXI4_PROTECT_INIT,
+        AWProt  => (others => Value),
         WValid  => Value,
         WData   => (DataBits - 1 downto 0 => Value),
         WStrb   => ((DataBits / 8) - 1 downto 0 => Value),
         BReady  => Value,
         ARValid => Value,
-        ARCache => C_AXI4_CACHE_INIT,
+        ARCache => (others => Value),
         ARAddr  => (AddressBits - 1 downto 0 => Value),
-        ARProt  => C_AXI4_PROTECT_INIT,
+        ARProt  => (others => Value),
         RReady  => Value
       );
   begin
@@ -511,13 +606,13 @@ package body AXI4 is
       AWReady => Value,
       WReady  => Value,
       BValid  => Value,
-      BResp   => C_AXI4_RESPONSE_INIT,
+      BResp   => (others => Value),
       BID     => (IDBits - 1 downto 0 => Value),
       BUser   => (UserBits - 1 downto 0 => Value),
       ARReady => Value,
       RValid  => Value,
       RData   => (DataBits - 1 downto 0 => Value),
-      RResp   => C_AXI4_RESPONSE_INIT,
+      RResp   => (others => Value),
       RID     => (IDBits - 1 downto 0 => Value),
       RLast   => Value,
       RUser   => (UserBits - 1 downto 0 => Value)
@@ -534,16 +629,16 @@ package body AXI4 is
       AWAddr(AddressBits-1 downto 0), ARAddr(AddressBits - 1 downto 0)
     ) := (
       AWValid => Value,
-      AWCache => C_AXI4_CACHE_INIT,
+      AWCache => (others => Value),
       AWAddr  => (AddressBits-1 downto 0 => Value), 
-      AWProt  => C_AXI4_PROTECT_INIT,
+      AWProt  => (others => Value),
       AWID    => (IDBits-1 downto 0 => Value), 
       AWLen   => (others => Value),
-      AWSize  => C_AXI4_SIZE_INIT,
-      AWBurst => C_AXI4_BURST_INIT,
+      AWSize  => (others => Value),
+      AWBurst => (others => Value),
       AWLock  => Value,
-      AWQOS   => C_AXI4_QOS_INIT,
-      AWRegion=> C_AXI4_REGION_INIT,
+      AWQOS   => (others => Value),
+      AWRegion=> (others => Value),
       AWUser  => (UserBits-1 downto 0 => Value),
       WValid  => Value,
       WData   => (DataBits - 1 downto 0 => Value),
@@ -552,16 +647,16 @@ package body AXI4 is
       WUser   => (UserBits - 1 downto 0 => Value),
       BReady  => Value,
       ARValid => Value,
-      ARCache => C_AXI4_CACHE_INIT,
+      ARCache => (others => Value),
       ARAddr  => (AddressBits - 1 downto 0 => Value),
-      ARProt  => C_AXI4_PROTECT_INIT,
+      ARProt  => (others => Value),
       ARID    => (IDBits - 1 downto 0 => Value),
       ARLen   => (others => Value),
-      ARSize  => C_AXI4_SIZE_INIT,
-      ARBurst => C_AXI4_BURST_INIT,
+      ARSize  => (others => Value),
+      ARBurst => (others => Value),
       ARLock  => Value,
-      ARQOS   => C_AXI4_QOS_INIT,
-      ARRegion=> C_AXI4_REGION_INIT,
+      ARQOS   => (others => Value),
+      ARRegion=> (others => Value),
       ARUser  => (UserBits - 1 downto 0 => Value),
       RReady  => Value
     );
