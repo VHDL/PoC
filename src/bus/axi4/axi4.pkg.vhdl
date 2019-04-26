@@ -47,14 +47,23 @@ use PoC.utils.all;
 
 package AXI4 is
   -------Define AXI Register structure-------------
+  constant Address_Width  : natural := 32;
+  constant Data_Width  : natural := 32;
+--  type T_AXI4_Register is record
+--    Address : unsigned;
+--    Data    : std_logic_vector;
+--    Mask    : std_logic_vector;
+--  end record;
   type T_AXI4_Register is record
-    Address : unsigned;
-    Data    : std_logic_vector;
-    Mask    : std_logic_vector;
+    Address : unsigned(Address_Width -1 downto 0);
+    Data    : std_logic_vector(Data_Width -1 downto 0);
+    Mask    : std_logic_vector(Data_Width -1 downto 0);
   end record;
   
-  function to_AXI4_Register(Address : unsigned; Data : std_logic_vector; Mask : std_logic_vector; AddressBits : natural; DataBits : natural) return T_AXI4_Register;
-  function Initialize_AXI4_register(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4_Register;
+--  function to_AXI4_Register(Address : unsigned; Data : std_logic_vector; Mask : std_logic_vector; AddressBits : natural; DataBits : natural) return T_AXI4_Register;
+  function to_AXI4_Register(Address : unsigned(Address_Width -1 downto 0); Data : std_logic_vector(Data_Width -1 downto 0); Mask : std_logic_vector(Data_Width -1 downto 0)) return T_AXI4_Register;
+--  function Initialize_AXI4_register(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4_Register;
+  function Initialize_AXI4_register(Value : std_logic := 'Z') return T_AXI4_Register;
   
   type T_AXI4_Register_Vector is array (natural range <>) of T_AXI4_Register;
   
@@ -363,16 +372,21 @@ end package;
 
 package body AXI4 is 
   -------Define AXI Register structure-------------
-  function to_AXI4_Register(Address : unsigned; Data : std_logic_vector; Mask : std_logic_vector; AddressBits : natural; DataBits : natural) return T_AXI4_Register is
---    variable temp : T_AXI4_Register(Address(Address'range),Data(Data'range),Mask(Mask'range)) ;--:= (
-   --   Address => Address,
-  --    Data    => Data,
-  --    Mask    => Mask
-  --  );
-  variable temp : T_AXI4_Register(
-      Address(AddressBits -1 downto 0),
-      Data(DataBits -1 downto 0),
-      Mask(DataBits -1 downto 0)) := (
+--  function to_AXI4_Register(Address : unsigned; Data : std_logic_vector; Mask : std_logic_vector; AddressBits : natural; DataBits : natural) return T_AXI4_Register is
+--    variable temp : T_AXI4_Register(
+--      Address(AddressBits -1 downto 0),
+--      Data(DataBits -1 downto 0),
+--      Mask(DataBits -1 downto 0)) := (
+--        Address => Address,
+--        Data    => Data,
+--        Mask    => Mask
+--      );
+--  begin
+--    return temp;
+--  end function;
+
+  function to_AXI4_Register(Address : unsigned(Address_Width -1 downto 0); Data : std_logic_vector(Data_Width -1 downto 0); Mask : std_logic_vector(Data_Width -1 downto 0)) return T_AXI4_Register is
+    variable temp : T_AXI4_Register := (
         Address => Address,
         Data    => Data,
         Mask    => Mask
@@ -381,32 +395,53 @@ package body AXI4 is
     return temp;
   end function;
   
-  function Initialize_AXI4_register(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4_Register is
-    variable temp : T_AXI4_Register(
-      Address(AddressBits -1 downto 0),
-      Data(DataBits -1 downto 0),
-      Mask(DataBits -1 downto 0)):= 
+--  function Initialize_AXI4_register(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4_Register is
+--    variable temp : T_AXI4_Register(
+--      Address(AddressBits -1 downto 0),
+--      Data(DataBits -1 downto 0),
+--      Mask(DataBits -1 downto 0)):= 
+--      to_AXI4_Register(
+--        Address => (AddressBits -1 downto 0 => Value), 
+--        Data => (DataBits -1 downto 0 => Value), 
+--        Mask => (DataBits -1 downto 0 => Value),
+--        AddressBits => AddressBits,
+--        DataBits    => DataBits
+--      );
+--  begin
+--    return temp;
+--  end function;
+  function Initialize_AXI4_register(Value : std_logic := 'Z') return T_AXI4_Register is
+    variable temp : T_AXI4_Register := 
       to_AXI4_Register(
-        Address => (AddressBits -1 downto 0 => Value), 
-        Data => (DataBits -1 downto 0 => Value), 
-        Mask => (DataBits -1 downto 0 => Value),
-        AddressBits => AddressBits,
-        DataBits    => DataBits
+        Address => (Address_Width -1 downto 0 => Value), 
+        Data => (Data_Width -1 downto 0 => Value), 
+        Mask => (Data_Width -1 downto 0 => Value)
       );
   begin
     return temp;
   end function;
 -------------------------------------------------------------------------------------------------------------
 
+--  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set is
+--    variable temp : T_AXI4_Register_Set(AXI4_Register(0 to size -1)(
+--      Address(reg_vec(reg_vec'left).Address'range),
+--      Data(reg_vec(reg_vec'left).Data'range),
+--      Mask(reg_vec(reg_vec'left).Mask'range)
+--    )--) := (
+----      AXI4_Register => 
+----        (others => Initialize_AXI4_register(reg_vec(reg_vec'left).Address'length, reg_vec(reg_vec'left).Data'length)),
+----      Last_Index => 0
+--    );
+
+--  begin
+--    temp.AXI4_Register(reg_vec'range) := reg_vec;
+--    temp.Last_Index := reg_vec'length -1;
+--    return temp;
+--  end function;
   function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set is
-    variable temp : T_AXI4_Register_Set(AXI4_Register(0 to size -1)(
-      Address(reg_vec(reg_vec'left).Address'range),
-      Data(reg_vec(reg_vec'left).Data'range),
-      Mask(reg_vec(reg_vec'left).Mask'range)
-    )--) := (
---      AXI4_Register => 
---        (others => Initialize_AXI4_register(reg_vec(reg_vec'left).Address'length, reg_vec(reg_vec'left).Data'length)),
---      Last_Index => 0
+    variable temp : T_AXI4_Register_Set(AXI4_Register(0 to size -1)) := (
+      AXI4_Register => (others => Initialize_AXI4_register),
+      Last_Index    => 0
     );
 
   begin
