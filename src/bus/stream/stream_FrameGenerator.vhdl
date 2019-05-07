@@ -50,9 +50,9 @@ entity stream_FrameGenerator is
 		Command						: in	T_FRAMEGEN_COMMAND;
 		Status						: out	T_FRAMEGEN_STATUS;
 		-- Control interface
-		Pause							: in	T_SLV_16;
-		FrameGroupIndex		: in	T_SLV_8;
-		FrameIndex				: in	T_SLV_8;
+--		Pause							: in	T_SLV_16;
+--		FrameGroupIndex		: in	T_SLV_8;
+--		FrameIndex				: in	T_SLV_8;
 		Sequences					: in	T_SLV_16;
 		FrameLength				: in	T_SLV_16;
 		-- OUT Port
@@ -68,8 +68,8 @@ end entity;
 architecture rtl of stream_FrameGenerator is
 	type T_STATE is (
 		ST_IDLE,
-			ST_SEQUENCE_SOF,	ST_SEQUENCE_DATA,	ST_SEQUENCE_EOF,
-			ST_RANDOM_SOF,		ST_RANDOM_DATA,		ST_RANDOM_EOF,
+			ST_SEQUENCE_SOF, ST_SEQUENCE_SOF_D,	ST_SEQUENCE_DATA,	ST_SEQUENCE_EOF,
+			ST_RANDOM_SOF, ST_RANDOM_SOF_D,		ST_RANDOM_DATA,		ST_RANDOM_EOF,
 		ST_ERROR
 	);
 
@@ -202,10 +202,12 @@ begin
 						Status										<= FRAMEGEN_STATUS_COMPLETE;
 						NextState									<= ST_IDLE;
 					else
-						NextState									<= ST_SEQUENCE_SOF;
+						NextState									<= ST_SEQUENCE_SOF_D;
 					end if;
 --					end if;
 				end if;
+      when ST_SEQUENCE_SOF_D =>
+        NextState									<= ST_SEQUENCE_SOF;
 
 			-- generate random numbers
 			-- ----------------------------------------------------------------------
@@ -238,12 +240,22 @@ begin
 				Out_Data									<= PRNG_Data;
 				Out_EOF										<= '1';
 
-				FrameLengthCounter_rst		<= '1';
-
 				if (Out_Ack	 = '1') then
+				  SequencesCounter_en			<= '1';
+				  FrameLengthCounter_rst  <= '1';
+				  
 					PRNG_rst								<= '1';
-					NextState								<= ST_IDLE;
+					
+					if SequencesCounter_us = (unsigned(Sequences) - 1) then
+						Status										<= FRAMEGEN_STATUS_COMPLETE;
+						NextState									<= ST_IDLE;
+					else
+						NextState									<= ST_RANDOM_SOF_D;
+					end if;
 				end if;
+				
+      when ST_RANDOM_SOF_D =>
+        NextState									<= ST_RANDOM_SOF;
 
 			when ST_ERROR =>
 				Status										<= FRAMEGEN_STATUS_ERROR;
@@ -287,7 +299,8 @@ begin
 
 	PRNG : entity PoC.arith_prng
     generic map (
-      BITS		=> DATA_BITS
+      BITS		=> DATA_BITS,
+      SEED    => "10101010101010101010101010101011010101010"
 		)
     port map (
       clk			=> Clock,
