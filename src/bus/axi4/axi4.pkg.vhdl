@@ -295,7 +295,7 @@ package AXI4 is
     AWLen       : unsigned(7 downto 0); 
     AWSize      : T_AXI4_Size; 
     AWBurst     : T_AXI4_Burst; 
-    AWLock      : std_logic; 
+    AWLock      : std_logic_vector(0 to 0); 
     AWQOS       : T_AXI4_QoS;
     AWRegion    : T_AXI4_Region;
     AWUser      : std_logic_vector;
@@ -316,7 +316,7 @@ package AXI4 is
     ARLen       : unsigned(7 downto 0);
     ARSize      : T_AXI4_Size;
     ARBurst     : T_AXI4_Burst;
-    ARLock      : std_logic;
+    ARLock      : std_logic_vector(0 to 0);
     ARQOS       : T_AXI4_QoS;
     ARRegion    : T_AXI4_Region;
     ARUser      : std_logic_vector;
@@ -671,7 +671,7 @@ package body AXI4 is
       AWLen   => (others => Value),
       AWSize  => (others => Value),
       AWBurst => (others => Value),
-      AWLock  => Value,
+      AWLock  => (others => Value),
       AWQOS   => (others => Value),
       AWRegion=> (others => Value),
       AWUser  => (UserBits-1 downto 0 => Value),
@@ -689,7 +689,7 @@ package body AXI4 is
       ARLen   => (others => Value),
       ARSize  => (others => Value),
       ARBurst => (others => Value),
-      ARLock  => Value,
+      ARLock  => (others => Value),
       ARQOS   => (others => Value),
       ARRegion=> (others => Value),
       ARUser  => (UserBits - 1 downto 0 => Value),
