@@ -24,7 +24,7 @@ set_property PACKAGE_PIN    AW9             [ get_ports HTG_Z920_GPIO_Switches[3
 
 
 ## set I/O standard
-set_property IOSTANDARD     LVCMOS18        [ get_ports -regexp {HTG_Z920_GPIO_Switches\[0-3]} ]
+set_property IOSTANDARD     LVCMOS18        [ get_ports -regexp {HTG_Z920_GPIO_Switches*} ]
 
 ## Ignore timings on async I/O pins
 set_false_path              -from           [ get_ports -regexp {HTG_Z920_GPIO_Switches\[\d\]} ]
