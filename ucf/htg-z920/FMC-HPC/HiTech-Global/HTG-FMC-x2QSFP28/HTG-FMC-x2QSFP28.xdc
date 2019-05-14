@@ -68,4 +68,31 @@ set_property PACKAGE_PIN W36	[ get_ports HTG_Z920_HPC_QSFP2_TX_P[1]       ];
 set_property PACKAGE_PIN U36	[ get_ports HTG_Z920_HPC_QSFP2_TX_P[2]       ];
 set_property PACKAGE_PIN Y34	[ get_ports HTG_Z920_HPC_QSFP2_TX_P[3]       ];
 
+set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_I2C_RST_N_F ]
+#set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_QSFP1_IntL_F ]
+#set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_QSFP2_IntL_F ]
+set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_QSFP1_ModPrsL_F ]
+set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_QSFP2_ModPrsL_F ]
+set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_QSFP1_RESET_N_F ]
+set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_QSFP2_RESET_N_F ]
+
+
+#set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_CLK_GTY_RST_N_F ]
+#set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_CLK_GTY_LOS_X_N_F ]
+#set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_CLK_GTY_LOL_N_F ]
+#set_property IOSTANDARD     LVCMOS18        [ get_ports HTG_Z920_HPC_CLK_GTY_INTR_N_F ]
+
+set_false_path              -to          [ get_ports HTG_Z920_HPC_I2C_RST_N_F ]
+#set_false_path              -from        [ get_ports HTG_Z920_HPC_QSFP1_IntL_F ]
+#set_false_path              -from        [ get_ports HTG_Z920_HPC_QSFP2_IntL_F ]
+set_false_path              -from        [ get_ports HTG_Z920_HPC_QSFP1_ModPrsL_F ]
+set_false_path              -from        [ get_ports HTG_Z920_HPC_QSFP2_ModPrsL_F ]
+set_false_path              -to          [ get_ports HTG_Z920_HPC_QSFP1_RESET_N_F ]
+set_false_path              -to          [ get_ports HTG_Z920_HPC_QSFP2_RESET_N_F ]
+
+#set_false_path              -from        [ get_ports HTG_Z920_HPC_CLK_GTY_RST_N_F ]
+#set_false_path              -from        [ get_ports HTG_Z920_HPC_CLK_GTY_LOS_X_N_F ]
+#set_false_path              -from        [ get_ports HTG_Z920_HPC_CLK_GTY_LOL_N_F ]
+#set_false_path              -from        [ get_ports HTG_Z920_HPC_CLK_GTY_INTR_N_F ]
+
 
