@@ -49,8 +49,8 @@ set_property IOSTANDARD     LVCMOS33        [ get_ports -regexp {HTG_Z920_USB_UA
 ## Ignore timings on async I/O pins
 set_false_path              -to             [ get_ports HTG_Z920_USB_UART_RX ]
 set_false_path              -from           [ get_ports HTG_Z920_USB_UART_TX ]
-set_false_path              -to             [ get_ports HTG_Z920_USB_UART_CTS_n ]
-set_false_path              -from           [ get_ports HTG_Z920_USB_UART_RTS_n ]
+set_false_path              -from             [ get_ports HTG_Z920_USB_UART_CTS_n ]
+set_false_path              -to           [ get_ports HTG_Z920_USB_UART_RTS_n ]
 set_false_path              -to             [ get_ports HTG_Z920_USB_UART_RST_n ]
 set_false_path              -to             [ get_ports HTG_Z920_USB_UART_SUSPEND_n ]
 set_false_path              -from           [ get_ports HTG_Z920_USB_UART_PERI_PWR ]
