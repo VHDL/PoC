@@ -126,7 +126,7 @@ package AXI4 is
    type T_AXI4Lite_WriteAddress_Bus is record
 		 AWValid     : std_logic; 
 		 AWReady     : std_logic;
-		 AWAddr      : unsigned; 
+		 AWAddr      : std_logic_vector; 
      AWCache     : T_AXI4_Cache;
 		 AWProt      : T_AXI4_Protect;
 	 end record; 	
@@ -195,7 +195,7 @@ package AXI4 is
 	 type T_AXI4Lite_ReadAddress_Bus is record
 		 ARValid     : std_logic;
 		 ARReady     : std_logic;
-		 ARAddr      : unsigned;
+		 ARAddr      : std_logic_vector;
      ARCache     : T_AXI4_Cache;
 		 ARProt      : T_AXI4_Protect;
 	 end record;
@@ -256,7 +256,7 @@ package AXI4 is
 --    AClk        : std_logic;
 --    AResetN     : std_logic;
 		AWValid     : std_logic; 
-		AWAddr      : unsigned; 
+		AWAddr      : std_logic_vector; 
     AWCache     : T_AXI4_Cache;
 		AWProt      : T_AXI4_Protect;
 		WValid      : std_logic;
@@ -264,7 +264,7 @@ package AXI4 is
 		WStrb       : std_logic_vector;
 		BReady      : std_logic;
 		ARValid     : std_logic;
-		ARAddr      : unsigned;
+		ARAddr      : std_logic_vector;
     ARCache     : T_AXI4_Cache;
 		ARProt      : T_AXI4_Protect;
 		RReady      : std_logic;
@@ -279,20 +279,20 @@ package AXI4 is
 		WReady      : std_logic;
 		BValid      : std_logic;
 		BResp       : T_AXI4_Response; 
-    BID         : unsigned; 
+    BID         : std_logic_vector; 
     BUser       : std_logic_vector;
 		ARReady     : std_logic;
 		RValid      : std_logic;
 		RData       : std_logic_vector;
 		RResp       : T_AXI4_Response;
-    RID         : unsigned;
+    RID         : std_logic_vector;
     RLast       : std_logic;
     RUser       : std_logic_vector;
 	end record;
 	type T_AXI4_Bus_M2S is record
-		AWID        : unsigned; 
-		AWAddr      : unsigned; 
-    AWLen       : unsigned(7 downto 0); 
+		AWID        : std_logic_vector; 
+		AWAddr      : std_logic_vector; 
+    AWLen       : std_logic_vector(7 downto 0); 
     AWSize      : T_AXI4_Size; 
     AWBurst     : T_AXI4_Burst; 
     AWLock      : std_logic_vector(0 to 0); 
@@ -309,11 +309,11 @@ package AXI4 is
 		WStrb       : std_logic_vector;
 		BReady      : std_logic;
 		ARValid     : std_logic;
-		ARAddr      : unsigned;
+		ARAddr      : std_logic_vector;
     ARCache     : T_AXI4_Cache;
 		ARProt      : T_AXI4_Protect;
-    ARID        : unsigned;
-    ARLen       : unsigned(7 downto 0);
+    ARID        : std_logic_vector;
+    ARLen       : std_logic_vector(7 downto 0);
     ARSize      : T_AXI4_Size;
     ARBurst     : T_AXI4_Burst;
     ARLock      : std_logic_vector(0 to 0);
