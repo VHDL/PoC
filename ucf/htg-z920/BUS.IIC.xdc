@@ -51,6 +51,6 @@ set_property PACKAGE_PIN    C4              [ get_ports HTG_Z920_IIC_Switch_Rese
 
 
 ## set I/O standard
-set_property IOSTANDARD     LVCMOS33        [ get_ports -regexp {HTG_Z920_IIC_.*} ]
-set_false_path              -to             [ get_ports -regexp {HTG_Z920_IIC_.*} ]
+set_property IOSTANDARD     LVCMOS33        [ get_ports -regexp {HTG_Z920_IIC_*} ]
+set_false_path              -to             [ get_ports -regexp {HTG_Z920_IIC_*} ]
 set_false_path              -from           [ get_ports -regexp {HTG_Z920_IIC_SerialData} ]
