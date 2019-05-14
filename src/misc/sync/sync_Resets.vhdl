@@ -85,16 +85,17 @@ begin
     
   sync : for i in 0 to NUM_CLOCKS -1 generate
   begin
-    clock_sync : entity poc.sync_Bit_Xilinx
+    clock_sync : entity poc.sync_Bits_Xilinx
     generic map(
-      INIT          => '1'
+      INIT          => "1"
     )
     port map(
       Clock         => Clocks(i),
-      Input         => Slow_Reset_sync,
-      Output        => Output_Resets(i)
+      Input(0)         => Slow_Reset_sync,
+      Output(0)        => Output_Resets(i)
     );
-    
+
+
     fast_reset : entity poc.sync_Reset
     port map(
       Clock         => Clocks(i),
