@@ -3,7 +3,6 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-library Eth10G;
 library PoC;
 use PoC.utils.all;
 use PoC.axi4.all;
@@ -77,7 +76,7 @@ begin
 		AXI4Lite_S2M  => AXI4Lite_S2M
 	);
 	
-	Reg : entity work.AXI4Lite_Register 
+	Reg : entity PoC.AXI4Lite_Register 
 	Generic map(
 		ADDRESS_BITS  => ADDRESS_BITS,
 		DATA_BITS     => DATA_BITS,
