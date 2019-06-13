@@ -152,11 +152,11 @@ begin
         if rising_edge(S_AXI_ACLK) then 
             if (S_AXI_ARESETN = '0') then
                 axi_bvalid  <= '0';
-                axi_bresp   <= "00";
+                axi_bresp   <= C_AXI4_RESPONSE_OKAY;
             else
                 if (axi_bvalid = '0' and axi_awready = '1' and axi_wready = '1' and S_AXI_WVALID = '1' and S_AXI_AWVALID = '1') then
                     axi_bvalid  <= '1';
-                    axi_bresp   <= "00";
+                    axi_bresp   <= C_AXI4_RESPONSE_OKAY;
                 elsif (S_AXI_BREADY = '1' and axi_bvalid = '1') then
                     axi_bvalid <= '0';     
                 end if;
@@ -190,10 +190,10 @@ begin
         if rising_edge(S_AXI_ACLK) then 
             if (S_AXI_ARESETN = '0') then
                 axi_rvalid <= '0';
-                axi_rresp  <= "00";
+                axi_rresp  <= C_AXI4_RESPONSE_OKAY;
             elsif (axi_rvalid = '0' and S_AXI_ARVALID = '1' and axi_arready = '1') then
                 axi_rvalid <= '1';
-                axi_rresp  <= "00";
+                axi_rresp  <= C_AXI4_RESPONSE_OKAY;
             else
                 axi_rvalid <= '0';
             end if;
