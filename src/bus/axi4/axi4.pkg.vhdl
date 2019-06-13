@@ -76,6 +76,22 @@ package AXI4 is
   
   function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set;
   
+
+  type T_AXI4_Register_Description is record
+		Address             : unsigned(Address_Width-1 downto 0);
+		Writeable           : boolean;
+		Init_Value          : std_logic_vector(Data_Width-1 downto 0);
+		Auto_Clear_Mask     : std_logic_vector(Data_Width-1 downto 0);
+  end record;
+  
+  type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
+  
+  function to_AXI4_Register_Description(	Address : unsigned(Address_Width -1 downto 0); 
+  																				Writeable : boolean := true; 
+  																				Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
+  																				Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
+																				) return T_AXI4_Register_Description;
+  
   ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   
   
@@ -449,6 +465,22 @@ package body AXI4 is
     temp.Last_Index := reg_vec'length -1;
     return temp;
   end function;
+  
+	function to_AXI4_Register_Description(	Address : unsigned(Address_Width -1 downto 0); 
+  																				Writeable : boolean := true; 
+  																				Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
+  																				Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
+																				) return T_AXI4_Register_Description is
+																				
+		variable temp : T_AXI4_Register_Description := (
+			Address         => Address,
+			Writeable       => Writeable,
+			Init_Value      => Init_Value,
+			Auto_Clear_Mask	=> Auto_Clear_Mask
+		);
+	begin
+		return temp;
+	end function;
   
 --  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector) return T_AXI4_Register_Set is
 --    variable temp : T_AXI4_Register_Set(AXI4_Register(reg_vec'length -1 downto 0), Last_Index(log2ceilnz(reg_vec'length) -1 downto 0)) := (
