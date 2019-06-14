@@ -219,9 +219,11 @@ begin
         
         process(mux, axi_araddr)
         begin
+        		reg_data_out  <= (others => '0');
             for i in CONFIG'range loop
                 if(axi_araddr = std_logic_vector(CONFIG(i).address)) then
                     reg_data_out <= mux(i);
+                    exit;
                 end if;
             end loop;
         end process;
