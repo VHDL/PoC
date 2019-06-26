@@ -96,45 +96,42 @@ begin
 				b_set(i) <= '0';
 				
 				if reset = '1' then
-					state  <= IDLE;
+					state      <= IDLE;
+					wait_count <= cycles -1;
 				else
 					case state is
 						when IDLE => 
+							wait_count <= cycles -1;
 							if a_level(i) = '0' then 
-								state  <= ST_A;
+								state      <= ST_A;
+								b_set(i)   <= '1';
 							end if;
 							if b_level(i) = '0' then 
-								state  <= ST_B;
+								state    <= ST_B;
+								a_set(i) <= '1';
 							end if;
 							
 						when ST_A => 
 							b_set(i) <= '1';
-							if a_level(i) = '1' then 
-								state  <= ST_A_WAIT;
-								wait_count <= cycles -1;
-							end if;
-		
-						when ST_A_WAIT => 
 							if wait_count = 0 then 
-								state  <= IDLE;
+								if a_level(i) = '1' then 
+									state  <= IDLE;
+								end if;
 							else 
 								wait_count <= wait_count -1;
 							end if;
-		
+
+							
 						when ST_B => 
 							a_set(i) <= '1';
-							if b_level(i) = '1' then 
-								state  <= ST_B_WAIT;
-								wait_count   <= cycles -1;
-							end if;
-		
-						when ST_B_WAIT => 
 							if wait_count = 0 then 
-								state  <= IDLE;
+								if b_level(i) = '1' then 
+									state  <= IDLE;
+								end if;
 							else 
-								wait_count <= wait_count - 1;
+								wait_count <= wait_count -1;
 							end if;
-							
+
 					end case;
 				end if;
 			end if;
