@@ -72,12 +72,12 @@ begin
   port map(
     Clock         => clock,
     Input(0)      => port_a.data.I,
-    Output(0)     => a_level(c_data),
     Input(1)      => port_b.data.I,
-    Output(1)     => b_level(c_data),
     Input(2)      => port_a.clock.I,
-    Output(2)     => a_level(c_clock),
     Input(3)      => port_b.clock.I,
+    Output(0)     => a_level(c_data),
+    Output(1)     => b_level(c_data),
+    Output(2)     => a_level(c_clock),
     Output(3)     => b_level(c_clock)
   );
 
