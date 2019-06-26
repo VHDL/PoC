@@ -23,6 +23,6 @@ architecture rtl of AXI4_Termination_Master is
   constant DataBits : natural := AXI4_M2S.WData'length;
 begin
 
-  T_AXI4_Bus_M2S <= Initialize_AXI4_Bus_M2S(AddrBits, DataBits, UserBits, IDBits, VALUE);
+  AXI4_M2S <= Initialize_AXI4_Bus_M2S(AddrBits, DataBits, UserBits, IDBits, VALUE);
 
 end architecture;
