@@ -28,7 +28,7 @@ end entity;
 
 architecture rtl of iic_passthrough is
 	constant cycles  : natural := TimingToCycles(DEBOUNCE_TIME, CLOCK_FREQ);
-	constant c_data  : natural := 0;
+	constant c_data  : natural := 1;
 	constant c_clock : natural := 0;
   
   signal debug_level     : std_logic_vector(1 downto 0);
