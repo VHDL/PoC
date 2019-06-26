@@ -39,7 +39,7 @@ architecture rtl of iic_passthrough is
 	signal b_set           : std_logic_vector(1 downto 0) := (others => '0');
   
 
-  type t_state is (IDLE, ST_A, ST_A_WAIT, ST_B, ST_B_WAIT);
+  type t_state is (IDLE, ST_A, ST_B);
 
 
 
