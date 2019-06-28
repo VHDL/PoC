@@ -36,7 +36,7 @@ architecture rtl of AXI4Stream_To_Stream is
 
 begin
 
-  started     <= ffrs(q => started, r => ((In_tValid and In_tLast) or Reset), s => (In_tValid)) when rising_edge(Clock);
+  started     <= ffrs(q => started, rst => ((In_tValid and In_tLast) or Reset), set => (In_tValid)) when rising_edge(Clock);
   
   Out_Valid   <= In_tValid;
   Out_Data    <= In_tData;
