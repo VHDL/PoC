@@ -17,6 +17,10 @@ package axi4Lite_Version is
   constant Address_Width  : natural := 32;
   constant Data_Width  : natural := 32;
   
+  constant Reg_Length_Common : natural := 8;
+  constant Reg_Length_Top    : natural := 56;
+  constant Reg_Length_Module : natural := 16;
+  
 
   type T_AXI4_Version_Register_Common is record
     BuildDate_Day          : std_logic_vector(7 downto 0);
@@ -68,16 +72,23 @@ package axi4Lite_Version is
   end record;
   
   type T_AXI4_Version_Register_Module_Vector is array (natural range <>) of T_AXI4_Version_Register_Module;
+  
+  function get_num_Version_register(numModules : natural := 0) return natural;
  
-  function to_AXI4_Register_Description_Vector_Common       (data : T_AXI4_Version_Register_Common)        return T_AXI4_Register_Description_Vector;
-  function to_AXI4_Register_Description_Vector_Top          (data : T_AXI4_Version_Register_Top)           return T_AXI4_Register_Description_Vector;
-  function to_AXI4_Register_Description_Vector_Module       (data : T_AXI4_Version_Register_Module)        return T_AXI4_Register_Description_Vector;
+  function to_SLVV_32_Common       (data : T_AXI4_Version_Register_Common)        return T_SLVV_32;
+  function to_SLVV_32_Top          (data : T_AXI4_Version_Register_Top)           return T_SLVV_32;
+  function to_SLVV_32_Module       (data : T_AXI4_Version_Register_Module)        return T_SLVV_32;
   -- function to_AXI4_Register_Description_Vector_Module_Vector(data : T_AXI4_Version_Register_Module_Vector) return T_AXI4_Register_Description_Vector;
 	function get_Dummy_Descriptor(len : natural) return T_AXI4_Register_Description_Vector;
 end package;
 
 
 package body axi4Lite_Version is 
+
+  function get_num_Version_register(numModules : natural := 0) return natural is
+  begin
+   return Reg_Length_Common + Reg_Length_Top + (Reg_Length_Module * numModules);
+  end function;
 
   function get_Dummy_Descriptor(len : natural) return T_AXI4_Register_Description_Vector is
     variable descriptor : T_AXI4_Register_Description_Vector(0 to len -1);
@@ -91,10 +102,9 @@ package body axi4Lite_Version is
   end function;
   
   
-  function to_AXI4_Register_Description_Vector_Common(data : T_AXI4_Version_Register_Common) return T_AXI4_Register_Description_Vector is
+  function to_SLVV_32_Common(data : T_AXI4_Version_Register_Common) return T_SLVV_32 is
     variable temp : T_SLVV_32(0 to 7) := (others => (others => '0'));
     variable name : T_SLVV_32(4 downto 0) := to_slvv_32(data.ProjektName);
-    variable descriptor : T_AXI4_Register_Description_Vector(temp'range);
   begin
     temp(0) := data.BuildDate_Day & data.BuildDate_Month & data.BuildDate_Year;
     temp(1) := data.NumberModule & data.VersionOfVersionReg;
@@ -103,18 +113,11 @@ package body axi4Lite_Version is
       temp(i +3) := name(i);
     end loop;
     
-    for i in temp'range loop
-      descriptor(i) := to_AXI4_Register_Description(
-        Address => to_unsigned(i,Address_Width), 
-        Writeable => false, 
-        Init_Value => temp(i));
-    end loop;
-    
-    return descriptor;
+    return temp;
   end function;
 
 
-  function to_AXI4_Register_Description_Vector_Top(data : T_AXI4_Version_Register_Top) return T_AXI4_Register_Description_Vector is
+  function to_SLVV_32_Top(data : T_AXI4_Version_Register_Top) return T_SLVV_32 is
     variable temp : T_SLVV_32(0 to 55)     := (others => (others => '0'));
     
     variable hash : T_SLVV_32(4 downto 0)  := to_slvv_32(data.GitHash);
@@ -122,8 +125,6 @@ package body axi4Lite_Version is
     variable url  : T_SLVV_32(31 downto 0) := to_slvv_32(data.GitURL);
     
     variable idx  : natural := 0;
-    
-    variable descriptor : T_AXI4_Register_Description_Vector(temp'range);
   begin
     temp(0) := data.Version_Major & data.Version_Minor & data.Version_Release & data.Version_Flags;
     idx := idx +1;
@@ -134,7 +135,7 @@ package body axi4Lite_Version is
     end loop;
     
     temp(idx) := data.GitDate_Day & data.GitDate_Month & data.GitDate_Year;
-    idx := idx +1;
+    idx := idx +2;
     
     for i in name'reverse_range loop
       temp(idx) := name(i);
@@ -145,27 +146,18 @@ package body axi4Lite_Version is
       temp(idx) := url(i);
       idx := idx +1;
     end loop;
-
-    for i in temp'range loop
-      descriptor(i) := to_AXI4_Register_Description(
-        Address => to_unsigned(i,Address_Width), 
-        Writeable => false, 
-        Init_Value => temp(i));
-    end loop;
     
-    return descriptor;
+    return temp;
   end function;
   
 
-  function to_AXI4_Register_Description_Vector_Module(data : T_AXI4_Version_Register_Module) return T_AXI4_Register_Description_Vector is
+  function to_SLVV_32_Module(data : T_AXI4_Version_Register_Module) return T_SLVV_32 is
     variable temp : T_SLVV_32(0 to 15)     := (others => (others => '0'));
     
     variable hash : T_SLVV_32(4 downto 0)  := to_slvv_32(data.GitHash);
     variable name : T_SLVV_32(4 downto 0) := to_slvv_32(data.ModuleName);
     
     variable idx  : natural := 0;
-    
-    variable descriptor : T_AXI4_Register_Description_Vector(temp'range);
   begin
     for i in name'reverse_range loop
       temp(idx) := name(i);
@@ -181,19 +173,8 @@ package body axi4Lite_Version is
     end loop;
 
     temp(idx) := data.GitDate_Day & data.GitDate_Month & data.GitDate_Year;
-    idx := idx +1;
 
-    for i in temp'range loop
-      descriptor(i) := to_AXI4_Register_Description(
-        Address => to_unsigned(i,Address_Width), 
-        Writeable => false, 
-        Init_Value => temp(i));
-    end loop;
-    
-    return descriptor;
+    return temp;
   end function;
   
-
- 
-
 end package body;

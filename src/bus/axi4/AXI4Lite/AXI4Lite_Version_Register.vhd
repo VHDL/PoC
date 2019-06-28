@@ -23,18 +23,31 @@ end entity;
 architecture Behavioral of AXI4Lite_Version_Register is
 	constant ADDRESS_BITS  : natural                 := 32;
 	constant DATA_BITS     : natural                 := 32;
+	
+	constant num_Version_register : natural          := get_num_Version_register;
   
-  constant CONFIG     :   T_AXI4_Register_Description_Vector(0 to 63) := (
-  		0 to 7 => to_AXI4_Register_Description_Vector_Common(C_HW_BUILD_VERSION_COMMON),
-  		8 to 63 => to_AXI4_Register_Description_Vector_Top(C_HW_BUILD_VERSION_TOP)
+  constant CONFIG     :   T_AXI4_Register_Description_Vector(0 to num_Version_register -1) := get_Dummy_Descriptor(num_Version_register);
+	
+	constant VersionData           : T_SLVV_32(0 to num_Version_register -1) := (
+			0                 to Reg_Length_Common -1                  => to_SLVV_32_Common(C_HW_BUILD_VERSION_COMMON),
+			Reg_Length_Common to Reg_Length_Common + Reg_Length_Top -1 => to_SLVV_32_Top(C_HW_BUILD_VERSION_TOP)
 		);
+		
+	function to_slvv(data : T_SLVV_32) return T_SLVV is
+		variable temp : T_SLVV(VersionData'range)(DATA_BITS -1 downto 0) := (others => (others => '0'));
+	begin
+		for i in VersionData'range loop
+			temp(i) := data(i);
+		end loop;
+		return temp;
+	end function;
 
-
-  signal RegisterFile_ReadPort   : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS -1 downto 0) := (others => (others => '0'));
-  signal RegisterFile_WritePort  : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS -1 downto 0) := (others => (others => '0'));
+  signal   RegisterFile_ReadPort   : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS -1 downto 0) := (others => (others => '0'));
+  constant RegisterFile_WritePort  : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS -1 downto 0) := to_slvv(VersionData);
   
 begin
-
+	
+	
   version_reg : entity poc.AXI4Lite_Register
 	Generic map(
 	 	CONFIG        => CONFIG
