@@ -95,7 +95,7 @@ package body axi4Lite_Version is
   begin
     for i in descriptor'range loop
       descriptor(i) := to_AXI4_Register_Description(
-        Address => to_unsigned(i,Address_Width), 
+        Address => to_unsigned(i *4,Address_Width), 
         Writeable => false);
     end loop;
     return descriptor;
