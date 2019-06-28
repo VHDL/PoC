@@ -14,9 +14,9 @@ entity AXI4Lite_Register is
 		DATA_BITS     : natural                 := 32;
 	 	CONFIG        : T_AXI4_Register_Description_Vector  := (
 				0 => to_AXI4_Register_Description(Address => to_unsigned(0,ADDRESS_BITS)),--, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000"),
-				1 => to_AXI4_Register_Description(Address => to_unsigned(1,ADDRESS_BITS)),--, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000"),
-				2 => to_AXI4_Register_Description(Address => to_unsigned(2,ADDRESS_BITS)),--, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000"),
-				3 => to_AXI4_Register_Description(Address => to_unsigned(3,ADDRESS_BITS)) --, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000")
+				1 => to_AXI4_Register_Description(Address => to_unsigned(4,ADDRESS_BITS)),--, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000"),
+				2 => to_AXI4_Register_Description(Address => to_unsigned(8,ADDRESS_BITS)),--, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000"),
+				3 => to_AXI4_Register_Description(Address => to_unsigned(12,ADDRESS_BITS)) --, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000")
 			)
 	);
 	Port (
@@ -30,50 +30,32 @@ entity AXI4Lite_Register is
 end AXI4Lite_Register;
 
 architecture Behavioral of AXI4Lite_Register is
-    signal S_AXI_AWADDR    : std_logic_vector(ADDRESS_BITS-1 downto 0);
-    signal S_AXI_AWPROT    : std_logic_vector(2 downto 0);
-    signal S_AXI_AWVALID   : std_logic;
-    signal S_AXI_WDATA     : std_logic_vector(DATA_BITS-1 downto 0);
-    signal S_AXI_WSTRB     : std_logic_vector((DATA_BITS/8)-1 downto 0);
-    signal S_AXI_WVALID    : std_logic;
-    signal S_AXI_BREADY    : std_logic;
-    signal S_AXI_ARADDR    : std_logic_vector(ADDRESS_BITS-1 downto 0);
-    signal S_AXI_ARPROT    : std_logic_vector(2 downto 0);
-    signal S_AXI_ARVALID   : std_logic;
-    signal S_AXI_RREADY    : std_logic;
+	-- Example-specific design signals
+	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
+	-- ADDR_LSB is used for addressing 32/64 bit registers/memories
+	-- ADDR_LSB = 2 for 32 bits (n downto 2)
+	-- ADDR_LSB = 3 for 64 bits (n downto 3)
+	constant ADDR_LSB           : positive  := (DATA_BITS/32) + 1;
+	
+	-- AXI4LITE signals
+	signal axi_awaddr      : std_logic_vector(ADDRESS_BITS -1 -ADDR_LSB downto 0)   := (others => '0');
+	signal axi_awready     : std_logic := '0';
+	signal axi_wready      : std_logic := '0';
+	signal axi_bresp       : std_logic_vector(1 downto 0)  := "00";
+	signal axi_bvalid      : std_logic := '0';
+	signal axi_araddr      : std_logic_vector(ADDRESS_BITS -1 -ADDR_LSB downto 0)   := (others => '0');
+	signal axi_arready     : std_logic := '0';
+	signal axi_rdata       : std_logic_vector(DATA_BITS -1 downto 0)   := (others => '0');
+	signal axi_rresp       : std_logic_vector(1 downto 0)  := "00";
+	signal axi_rvalid      : std_logic := '0';
 
-    -- AXI4LITE signals
-    signal axi_awaddr      : std_logic_vector(ADDRESS_BITS-1 downto 0)   := (others => '0');
-    signal axi_awready     : std_logic := '0';
-    signal axi_wready      : std_logic := '0';
-    signal axi_bresp       : std_logic_vector(1 downto 0)  := "00";
-    signal axi_bvalid      : std_logic := '0';
-    signal axi_araddr      : std_logic_vector(ADDRESS_BITS-1 downto 0)   := (others => '0');
-    signal axi_arready     : std_logic := '0';
-    signal axi_rdata       : std_logic_vector(DATA_BITS-1 downto 0)   := (others => '0');
-    signal axi_rresp       : std_logic_vector(1 downto 0)  := "00";
-    signal axi_rvalid      : std_logic := '0';
-
-
-    signal RegisterFile    : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS -1 downto 0);
-    
-    signal slv_reg_rden    : std_logic;
-    signal slv_reg_wren    : std_logic;
-    signal reg_data_out    : std_logic_vector(DATA_BITS-1 downto 0);
+	signal RegisterFile    : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS -1 downto 0);
+	
+	signal slv_reg_rden    : std_logic;
+	signal slv_reg_wren    : std_logic;
+	signal reg_data_out    : std_logic_vector(DATA_BITS -1 downto 0);
     
 begin
-    --wire record to signals and vise versa
-    S_AXI_AWADDR       <= S_AXI_m2s.AWAddr;
-    S_AXI_AWPROT       <= S_AXI_m2s.AWProt;
-    S_AXI_AWVALID      <= S_AXI_m2s.AWValid;
-    S_AXI_WDATA        <= S_AXI_m2s.WData;
-    S_AXI_WSTRB        <= S_AXI_m2s.WStrb;
-    S_AXI_WVALID       <= S_AXI_m2s.WValid;
-    S_AXI_BREADY       <= S_AXI_m2s.BReady;
-    S_AXI_ARADDR       <= S_AXI_m2s.ARAddr;
-    S_AXI_ARPROT       <= S_AXI_m2s.ARProt;
-    S_AXI_ARVALID      <= S_AXI_m2s.ARValid;
-    S_AXI_RREADY       <= S_AXI_m2s.RReady;
 
     S_AXI_s2m.AWReady  <= axi_awready;
     S_AXI_s2m.WReady   <= axi_wready; 
@@ -94,10 +76,10 @@ begin
             if (S_AXI_ARESETN = '0') then
                 axi_awready <= '0';
                 axi_awaddr <= (others => '0');
-            elsif (axi_awready = '0' and S_AXI_AWVALID = '1' and S_AXI_WVALID = '1') then
+            elsif (axi_awready = '0' and S_AXI_m2s.AWValid = '1' and S_AXI_m2s.WValid = '1') then
                 axi_awready <= '1';
                 -- Write Address latching
-                axi_awaddr <= S_AXI_AWADDR;
+                axi_awaddr <= S_AXI_m2s.AWAddr(S_AXI_m2s.AWAddr'high downto ADDR_LSB);
             else
                 axi_awready <= '0';
             end if;
@@ -110,7 +92,7 @@ begin
         if rising_edge(S_AXI_ACLK) then 
             if (S_AXI_ARESETN = '0') then
                 axi_wready <= '0';
-            elsif (axi_wready = '0' and S_AXI_AWVALID = '1' and S_AXI_WVALID = '1') then
+            elsif (axi_wready = '0' and S_AXI_m2s.AWValid = '1' and S_AXI_m2s.WValid = '1') then
                 axi_wready <= '1';
             else
                 axi_wready <= '0';
@@ -119,6 +101,7 @@ begin
     end process;
     
     process(S_AXI_ACLK)
+    	variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
     begin
         if rising_edge(S_AXI_ACLK) then
             if ((S_AXI_ARESETN = '0')) then
@@ -128,11 +111,12 @@ begin
             else
                 if (slv_reg_wren = '1') then
                     for i in CONFIG'range loop
-                        if ((axi_awaddr = std_logic_vector(CONFIG(i).address)) and (CONFIG(i).writeable)) then -- found fitting register and it is writable
-                            for ii in S_AXI_WSTRB'reverse_range loop
+                    		trunc_addr := std_logic_vector(CONFIG(i).address);
+                        if ((axi_awaddr = trunc_addr(CONFIG(i).address'length downto ADDR_LSB)) and (CONFIG(i).writeable)) then -- found fitting register and it is writable
+                            for ii in S_AXI_m2s.WStrb'reverse_range loop
                                 -- Respective byte enables are asserted as per write strobes  
-                                if (S_AXI_WSTRB(ii) = '1' ) then
-                                    RegisterFile(i)(ii * 8 + 7 downto ii * 8) <= S_AXI_WDATA(8 * ii + 7 downto 8 * ii);
+                                if (S_AXI_m2s.WStrb(ii) = '1' ) then
+                                    RegisterFile(i)(ii * 8 + 7 downto ii * 8) <= S_AXI_m2s.WData(8 * ii + 7 downto 8 * ii);
                                 end if;
                             end loop;
                         end if;
@@ -154,17 +138,17 @@ begin
                 axi_bvalid  <= '0';
                 axi_bresp   <= C_AXI4_RESPONSE_OKAY;
             else
-                if (axi_bvalid = '0' and axi_awready = '1' and axi_wready = '1' and S_AXI_WVALID = '1' and S_AXI_AWVALID = '1') then
+                if (axi_bvalid = '0' and axi_awready = '1' and axi_wready = '1' and S_AXI_m2s.WValid = '1' and S_AXI_m2s.AWValid = '1') then
                     axi_bvalid  <= '1';
                     axi_bresp   <= C_AXI4_RESPONSE_OKAY;
-                elsif (S_AXI_BREADY = '1' and axi_bvalid = '1') then
+                elsif (S_AXI_m2s.BReady = '1' and axi_bvalid = '1') then
                     axi_bvalid <= '0';     
                 end if;
             end if;
         end if;
     end process;
     
-    slv_reg_wren    <= axi_wready and axi_awready and S_AXI_AWVALID and S_AXI_WVALID;        
+    slv_reg_wren    <= axi_wready and axi_awready and S_AXI_m2s.AWValid and S_AXI_m2s.WValid;        
     
     RegisterFile_ReadPort <= RegisterFile;
     
@@ -176,9 +160,9 @@ begin
             if (S_AXI_ARESETN = '0') then
                 axi_arready <= '0';
                 axi_araddr  <= (others => '1');
-            elsif (axi_arready = '0' and S_AXI_ARVALID = '1') then
+            elsif (axi_arready = '0' and S_AXI_m2s.ARValid = '1') then
                 axi_arready <= '1';
-                axi_araddr  <= S_AXI_ARADDR;
+                axi_araddr  <= S_AXI_m2s.ARAddr(S_AXI_m2s.ARAddr'high downto ADDR_LSB);
             else
                 axi_arready <= '0';
             end if;
@@ -191,7 +175,7 @@ begin
             if (S_AXI_ARESETN = '0') then
                 axi_rvalid <= '0';
                 axi_rresp  <= C_AXI4_RESPONSE_OKAY;
-            elsif (axi_rvalid = '0' and S_AXI_ARVALID = '1' and axi_arready = '1') then
+            elsif (axi_rvalid = '0' and S_AXI_m2s.ARValid = '1' and axi_arready = '1') then
                 axi_rvalid <= '1';
                 axi_rresp  <= C_AXI4_RESPONSE_OKAY;
             else
@@ -200,7 +184,7 @@ begin
         end if;
     end process;
     
-    slv_reg_rden    <=  S_AXI_ARVALID and axi_arready and (not axi_rvalid);   
+    slv_reg_rden    <=  S_AXI_m2s.ARValid and axi_arready and (not axi_rvalid);   
 
 
     --todo
@@ -218,10 +202,12 @@ begin
         end generate;
         
         process(mux, axi_araddr)
+        	variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
         begin
         		reg_data_out  <= (others => '0');
             for i in CONFIG'range loop
-                if(axi_araddr = std_logic_vector(CONFIG(i).address)) then
+            		trunc_addr := std_logic_vector(CONFIG(i).address);
+                if(axi_araddr = trunc_addr(CONFIG(i).address'length downto ADDR_LSB)) then
                     reg_data_out <= mux(i);
                     exit;
                 end if;
@@ -237,7 +223,7 @@ begin
             if  (S_AXI_ARESETN = '0')  then
                 axi_rdata  <= (others => '0');
             elsif (slv_reg_rden = '1') then
-                -- When there is a valid read address (S_AXI_ARVALID) with 
+                -- When there is a valid read address (S_AXI_m2s.ARValid) with 
                 -- acceptance of read address by the slave (axi_arready), 
                 -- output the read data 
                 -- Read address mux
