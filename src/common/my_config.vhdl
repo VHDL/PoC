@@ -46,7 +46,7 @@ library PoC;
 package my_config is
 	-- Change these lines to setup configuration.
 	constant MY_BOARD		: string	:= "Custom"; -- e.g. Custom, ML505, KC705, Atlys
-	constant MY_DEVICE	: string	:= "xczu11eg-ffvf1517-1-e"; -- e.g. None, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
+	constant MY_DEVICE	: string	:= "XCZU11EG-FFVF1517-1-E"; -- e.g. None, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
 	
 	-- For internal use only
 	constant MY_VERBOSE	: boolean	:= FALSE;					-- activate detailed report statements in functions and procedures
