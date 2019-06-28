@@ -395,8 +395,8 @@ package AXI4 is
 	type T_AXI4Stream_M2S_VECTOR is array(natural range <>) of T_AXI4Stream_M2S;
 	type T_AXI4Stream_S2M_VECTOR is array(natural range <>) of T_AXI4Stream_S2M;
 
-	function Initialize_T_AXI4Stream_M2S(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_M2S;
-	function Initialize_T_AXI4Stream_S2M(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_S2M;
+	function Initialize_AXI4Stream_M2S(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_M2S;
+	function Initialize_AXI4Stream_S2M(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_S2M;
 
 end package;
 
@@ -786,7 +786,7 @@ package body AXI4 is
   
   
 
-	function Initialize_T_AXI4Stream_M2S(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_M2S is
+	function Initialize_AXI4Stream_M2S(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_M2S is
 		variable temp : T_AXI4Stream_M2S(Data(DataBits -1 downto 0), User(UserBits -1 downto 0)) := (
 				Valid => Value,
 				Data  => (others => Value),
@@ -797,7 +797,7 @@ package body AXI4 is
 		return temp;
 	end function;
 	
-	function Initialize_T_AXI4Stream_S2M(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_S2M is
+	function Initialize_AXI4Stream_S2M(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_S2M is
 		variable temp : T_AXI4Stream_S2M := (Ready => Value);
 	begin
 		return temp;
