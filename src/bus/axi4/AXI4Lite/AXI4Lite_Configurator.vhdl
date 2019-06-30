@@ -1,44 +1,74 @@
-library IEEE;
-use     IEEE.std_logic_1164.all;
-use     IEEE.numeric_std.all;
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- =============================================================================
+-- Authors:				 	Stefan Unrein
+--
+-- Entity:				 	A AXI4-Lite master to configure AXI4-Lite slaves.
+--
+-- Description:
+-- -------------------------------------
+-- .. TODO:: No documentation available.
+--
+-- License:
+-- =============================================================================
+-- Copyright 2018-2019 PLC2 Design GmbH, Germany
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--		http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
 
-library PoC;
-use PoC.utils.all;
-use PoC.axi4.all;
+library IEEE;
+use	    IEEE.std_logic_1164.all;
+use	    IEEE.numeric_std.all;
+
+use     work.utils.all;
+use     work.axi4lite.all;
+
 
 entity AXI4Lite_Configurator is
-    Generic (
-      MAX_CONFIG  : natural         := 4;
-      ADDRESS_BITS  : natural                 := 32;
-      DATA_BITS     : natural                 := 32;
---      CONFIG        : T_AXI4_Register_Set_VECTOR  := (0 => to_AXI4_Register_Set((0 => Initialize_AXI4_register(32, 32, '0'))))
-      CONFIG        : T_AXI4_Register_Set_VECTOR  := (
-        0 => to_AXI4_Register_Set((
-            0 => to_AXI4_Register(Address => to_unsigned(2,ADDRESS_BITS), Data => x"ABCDEF01", Mask => x"FFFF0000"),
-            1 => to_AXI4_Register(Address => to_unsigned(1,ADDRESS_BITS), Data => x"BCDEF012", Mask => x"FFFFFF00"),
-            2 => to_AXI4_Register(Address => to_unsigned(0,ADDRESS_BITS), Data => x"CDEF0123", Mask => x"00000000"),
-            3 => to_AXI4_Register(Address => to_unsigned(5,ADDRESS_BITS), Data => x"F0123456", Mask => x"00FFFF00")
-          ), MAX_CONFIG),
-        1 => to_AXI4_Register_Set((
-            0 => to_AXI4_Register(Address => to_unsigned(2,ADDRESS_BITS), Data => x"12345678", Mask => x"00FFFF00"),
-            1 => to_AXI4_Register(Address => to_unsigned(1,ADDRESS_BITS), Data => x"3456789A", Mask => x"FFF000F0"),
-            2 => to_AXI4_Register(Address => to_unsigned(0,ADDRESS_BITS), Data => x"56789ABC", Mask => x"F000000F")
-          ), MAX_CONFIG)
-      )
-    );
-    Port ( 
-      Clock         : in STD_LOGIC;
-      Reset         : in STD_LOGIC;
-      
-      Reconfig      : in STD_LOGIC;
-      ReconfigDone  : out STD_LOGIC;
-      Error         : out std_logic;
-      ConfigSelect  : in unsigned(log2ceilnz(CONFIG'length) - 1 downto 0);
-      
-      AXI4Lite_M2S  : out T_AXI4Lite_Bus_M2S  ;--:= Initialize_AXI4Lite_Bus_M2S(ADDRESS_BITS, DATA_BITS);
-      AXI4Lite_S2M  : in  T_AXI4Lite_Bus_S2M  --:= Initialize_AXI4Lite_Bus_S2M(ADDRESS_BITS, DATA_BITS)
-    );
+	generic (
+	  MAX_CONFIG    : natural   := 4;
+	  ADDRESS_BITS  : natural   := 32;
+	  DATA_BITS	    : natural   := 32;
+--	  CONFIG : T_AXI4_Register_Set_VECTOR  := (0 => to_AXI4_Register_Set((0 => Initialize_AXI4_register(32, 32, '0'))))
+	  CONFIG : T_AXI4_Register_Set_VECTOR  := (
+		0 => to_AXI4_Register_Set((
+			0 => to_AXI4_Register(Address => to_unsigned(2,ADDRESS_BITS), Data => x"ABCDEF01", Mask => x"FFFF0000"),
+			1 => to_AXI4_Register(Address => to_unsigned(1,ADDRESS_BITS), Data => x"BCDEF012", Mask => x"FFFFFF00"),
+			2 => to_AXI4_Register(Address => to_unsigned(0,ADDRESS_BITS), Data => x"CDEF0123", Mask => x"00000000"),
+			3 => to_AXI4_Register(Address => to_unsigned(5,ADDRESS_BITS), Data => x"F0123456", Mask => x"00FFFF00")
+		  ), MAX_CONFIG),
+		1 => to_AXI4_Register_Set((
+			0 => to_AXI4_Register(Address => to_unsigned(2,ADDRESS_BITS), Data => x"12345678", Mask => x"00FFFF00"),
+			1 => to_AXI4_Register(Address => to_unsigned(1,ADDRESS_BITS), Data => x"3456789A", Mask => x"FFF000F0"),
+			2 => to_AXI4_Register(Address => to_unsigned(0,ADDRESS_BITS), Data => x"56789ABC", Mask => x"F000000F")
+		  ), MAX_CONFIG)
+	  )
+	);
+	port ( 
+	  Clock         : in  STD_LOGIC;
+	  Reset         : in  STD_LOGIC;
+	  
+	  Reconfig      : in  STD_LOGIC;
+	  ReconfigDone  : out STD_LOGIC;
+	  Error         : out std_logic;
+	  ConfigSelect  : in  unsigned(log2ceilnz(CONFIG'length) - 1 downto 0);
+	  
+	  AXI4Lite_M2S  : out T_AXI4Lite_Bus_M2S  ;--:= Initialize_AXI4Lite_Bus_M2S(ADDRESS_BITS, DATA_BITS);
+	  AXI4Lite_S2M  : in  T_AXI4Lite_Bus_S2M  --:= Initialize_AXI4Lite_Bus_S2M(ADDRESS_BITS, DATA_BITS)
+	);
 end entity;
+
 
 architecture rtl of AXI4Lite_Configurator is
   subtype MAX_CONFIG_RANGE is integer range 0 to MAX_CONFIG -1;
@@ -59,12 +89,12 @@ architecture rtl of AXI4Lite_Configurator is
 	
 	signal ROM_Entry									: T_AXI4_Register;
 --	signal ROM_Entry									: T_AXI4_Register(
---	                                     Address(CONFIG(CONFIG'left).AXI4_Register(CONFIG(CONFIG'left).AXI4_Register'left).Address'range), 
---	                                     Data(CONFIG(CONFIG'left).AXI4_Register(CONFIG(CONFIG'left).AXI4_Register'left).Data'range), 
---	                                     Mask(CONFIG(CONFIG'left).AXI4_Register(CONFIG(CONFIG'left).AXI4_Register'left).Mask'range));
+--	Address(CONFIG(CONFIG'left).AXI4_Register(CONFIG(CONFIG'left).AXI4_Register'left).Address'range), 
+--	Data(CONFIG(CONFIG'left).AXI4_Register(CONFIG(CONFIG'left).AXI4_Register'left).Data'range), 
+--	Mask(CONFIG(CONFIG'left).AXI4_Register(CONFIG(CONFIG'left).AXI4_Register'left).Mask'range));
 
 	signal ROM_LastConfigWord					: std_logic;
---	signal ROM_EmptyConfig     				: std_logic;
+--	signal ROM_EmptyConfig  				: std_logic;
 
 	signal ConfigSelect_d 						: unsigned(ConfigSelect'range);
 
@@ -73,23 +103,21 @@ architecture rtl of AXI4Lite_Configurator is
 	signal ConfigIndex_en							: std_logic;
 	signal ConfigIndex_us							: unsigned(CONFIGINDEX_BITS - 1 downto 0);
 	
-  signal Reader_Strobe        : STD_LOGIC;
-  signal Reader_Address       : unsigned(ADDRESS_BITS -1 downto 0);
-  signal Reader_Ready         : std_logic;
-  signal Reader_Data          : std_logic_vector(DATA_BITS -1 downto 0);
-  signal Reader_Done          : STD_LOGIC;
-  signal Reader_Error         : STD_LOGIC;	
-  signal Writer_Strobe        : STD_LOGIC;
-  signal Writer_Address       : unsigned(ADDRESS_BITS -1 downto 0);
-  signal Writer_Ready         : std_logic;
-  signal Writer_Data          : std_logic_vector(DATA_BITS -1 downto 0)	:= (others => '0');
-  signal Writer_Done          : STD_LOGIC;
-  signal Writer_Error         : STD_LOGIC;
-
+  signal Reader_Strobe     : STD_LOGIC;
+  signal Reader_Address    : unsigned(ADDRESS_BITS -1 downto 0);
+  signal Reader_Ready      : std_logic;
+  signal Reader_Data       : std_logic_vector(DATA_BITS -1 downto 0);
+  signal Reader_Done       : STD_LOGIC;
+  signal Reader_Error      : STD_LOGIC;	
+  signal Writer_Strobe     : STD_LOGIC;
+  signal Writer_Address    : unsigned(ADDRESS_BITS -1 downto 0);
+  signal Writer_Ready      : std_logic;
+  signal Writer_Data       : std_logic_vector(DATA_BITS -1 downto 0)	:= (others => '0');
+  signal Writer_Done       : STD_LOGIC;
+  signal Writer_Error      : STD_LOGIC;
 
 begin
-
--- configuration ROM
+	-- configuration ROM
 	blkCONFIG_ROM : block
 		signal SetIndex 						: integer range 0 to CONFIG'high;
 		signal RowIndex 						: MAX_CONFIG_RANGE;
@@ -148,7 +176,7 @@ begin
 
 	process(State, Reconfig, ROM_LastConfigWord, ROM_Entry, Reader_Ready, Writer_Ready, Reader_Done, Reader_Error, Writer_Done, Writer_Error)
 	begin
-		NextState								<= State;
+		NextState               <= State;
 
 		ReconfigDone						<= '0';
 		Error                   <= '0';
@@ -160,128 +188,126 @@ begin
 		-- internal modules
 		ConfigIndex_rst					<= '0';
 		ConfigIndex_en					<= '0';
-		DataBuffer_en_write	    <= '1';
+		DataBuffer_en_write     <= '1';
 		DataBuffer_en_read      <= '1';
 
 		case State is
 			when ST_IDLE =>
 				if (Reconfig = '1') then
-				  ConfigIndex_rst		<= '1';
-					NextState					<= ST_PRECHECK;
+				  ConfigIndex_rst   <= '1';
+					NextState         <= ST_PRECHECK;
 				end if;
-      
-      when ST_PRECHECK =>
-        if Reader_Ready = '1' and Writer_Ready = '1' then
-					NextState					<= ST_CHECK;
-        end if;
-      
-      when ST_CHECK =>
-        if unsigned(not ROM_Entry.Mask) = 0 then
-          DataBuffer_en_write	<= '1';
-          NextState					  <= ST_WRITE_BEGIN;
-        elsif unsigned(ROM_Entry.Mask) = 0 then
-          if ROM_LastConfigWord = '1' then
-						NextState				<= ST_DONE;
+	  
+	  when ST_PRECHECK =>
+		if Reader_Ready = '1' and Writer_Ready = '1' then
+			NextState             <= ST_CHECK;
+		end if;
+	  
+	  when ST_CHECK =>
+		if unsigned(not ROM_Entry.Mask) = 0 then
+		  DataBuffer_en_write   <= '1';
+		  NextState             <= ST_WRITE_BEGIN;
+		elsif unsigned(ROM_Entry.Mask) = 0 then
+		  if ROM_LastConfigWord = '1' then
+						NextState       <= ST_DONE;
 					else
-						ConfigIndex_en	<= '1';
-						NextState				<= ST_PRECHECK;
+						ConfigIndex_en  <= '1';
+						NextState       <= ST_PRECHECK;
 					end if;
-        else
-          NextState					  <= ST_READ_BEGIN;
-        end if;
+		else
+		  NextState             <= ST_READ_BEGIN;
+		end if;
 
 			when ST_READ_BEGIN =>
-        Reader_Strobe       <= '1';
-				NextState						<= ST_READ_WAIT;
+		Reader_Strobe           <= '1';
+				NextState           <= ST_READ_WAIT;
 
 			when ST_READ_WAIT =>
 				if Reader_Done = '1' then
 					DataBuffer_en_read <= '1';
 					NextState					 <= ST_WRITE_BEGIN;
-        elsif Reader_Error = '1' then
-          Error             <= '1';
-          NextState					<= ST_PRECHECK;
+		elsif Reader_Error = '1' then
+		  Error                  <= '1';
+		  NextState              <= ST_PRECHECK;
 				end if;
 
 			when ST_WRITE_BEGIN =>
 			  Writer_Strobe       <= '1';
-				NextState						<= ST_WRITE_WAIT;
+				NextState           <= ST_WRITE_WAIT;
 
 			when ST_WRITE_WAIT =>
 				if Writer_Done = '1' then
 					if ROM_LastConfigWord = '1' then
-						NextState				<= ST_DONE;
+						NextState       <= ST_DONE;
 					else
-						ConfigIndex_en	<= '1';
-						NextState				<= ST_PRECHECK;
+						ConfigIndex_en  <= '1';
+						NextState       <= ST_PRECHECK;
 					end if;
-        elsif Writer_Error = '1' then
-          Error             <= '1';
-          NextState					<= ST_PRECHECK;
-        end if;
+		elsif Writer_Error = '1' then
+		  Error                 <= '1';
+		  NextState             <= ST_PRECHECK;
+		end if;
 
 			when ST_DONE =>
 			  if Reader_Ready = '1' and Writer_Ready = '1' then
-          ReconfigDone				<= '1';
-          NextState						<= ST_IDLE;
-        end if;
+		  ReconfigDone          <= '1';
+		  NextState             <= ST_IDLE;
+		end if;
 
 		end case;
 	end process;
 
 	
-	Reader : entity PoC.AXI4Lite_Reader
-    Port map( 
-      Clock         => Clock,
-      Reset         => Reset,
-      
-      Strobe        => Reader_Strobe ,
-      Address       => Reader_Address,
-      Ready         => Reader_Ready  ,
-                                     
-      Data          => Reader_Data   ,
-      Done          => Reader_Done   ,
-      Error         => Reader_Error  ,
-      
-      ARValid       => AXI4Lite_M2S.ARValid,
-      ARReady       => AXI4Lite_S2M.ARReady,
-      std_logic_vector(ARAddr)        => AXI4Lite_M2S.ARAddr,
-      ARCache       => AXI4Lite_M2S.ARCache,
-      ARProt        => AXI4Lite_M2S.ARProt,
-      
-      RValid        => AXI4Lite_S2M.RValid,
-      RReady        => AXI4Lite_M2S.RReady,
-      RData         => AXI4Lite_S2M.RData,
-      RResp         => AXI4Lite_S2M.RResp
-    );
-    
-  Writer : entity PoC.AXI4Lite_Writer
-    Port map( 
-      Clock       => Clock,
-      Reset       => Reset,
-      
-      Strobe      => Writer_Strobe ,
-      Address     => Writer_Address,
-      Data        => Writer_Data   ,
-      Ready       => Writer_Ready  ,
-      Done        => Writer_Done   ,
-      Error       => Writer_Error  ,
-      
-      AWValid     => AXI4Lite_M2S.AWValid,
-      AWReady     => AXI4Lite_S2M.AWReady,
-      std_logic_vector(AWAddr)      => AXI4Lite_M2S.AWAddr,
-      AWCache     => AXI4Lite_M2S.AWCache,
-      AWProt      => AXI4Lite_M2S.AWProt,
-       
-      WValid      => AXI4Lite_M2S.WValid,
-      WReady      => AXI4Lite_S2M.WReady,
-      WData       => AXI4Lite_M2S.WData,
-      WStrb       => AXI4Lite_M2S.WStrb,
-     
-      BValid      => AXI4Lite_S2M.BValid,
-      BReady      => AXI4Lite_M2S.BReady,
-      BResp       => AXI4Lite_S2M.BResp
-      
-    );
+	Reader : entity work.AXI4Lite_Reader
+	port map( 
+	  Clock    => Clock,
+	  Reset    => Reset,
+	  
+	  Strobe   => Reader_Strobe ,
+	  Address  => Reader_Address,
+	  Ready    => Reader_Ready  ,
 
+	  Data     => Reader_Data   ,
+	  Done     => Reader_Done   ,
+	  Error    => Reader_Error  ,
+	  
+	  ARValid  => AXI4Lite_M2S.ARValid,
+	  ARReady  => AXI4Lite_S2M.ARReady,
+	  std_logic_vector(ARAddr) => AXI4Lite_M2S.ARAddr,
+	  ARCache  => AXI4Lite_M2S.ARCache,
+	  ARProt   => AXI4Lite_M2S.ARProt,
+	  
+	  RValid   => AXI4Lite_S2M.RValid,
+	  RReady   => AXI4Lite_M2S.RReady,
+	  RData    => AXI4Lite_S2M.RData,
+	  RResp    => AXI4Lite_S2M.RResp
+	);
+	
+  Writer : entity work.AXI4Lite_Writer
+	port map( 
+	  Clock    => Clock,
+	  Reset    => Reset,
+	  
+	  Strobe   => Writer_Strobe ,
+	  Address  => Writer_Address,
+	  Data     => Writer_Data   ,
+	  Ready    => Writer_Ready  ,
+	  Done     => Writer_Done   ,
+	  Error    => Writer_Error  ,
+	  
+	  AWValid  => AXI4Lite_M2S.AWValid,
+	  AWReady  => AXI4Lite_S2M.AWReady,
+	  std_logic_vector(AWAddr)    => AXI4Lite_M2S.AWAddr,
+	  AWCache  => AXI4Lite_M2S.AWCache,
+	  AWProt   => AXI4Lite_M2S.AWProt,
+	   
+	  WValid   => AXI4Lite_M2S.WValid,
+	  WReady   => AXI4Lite_S2M.WReady,
+	  WData    => AXI4Lite_M2S.WData,
+	  WStrb    => AXI4Lite_M2S.WStrb,
+	 
+	  BValid   => AXI4Lite_S2M.BValid,
+	  BReady   => AXI4Lite_M2S.BReady,
+	  BResp    => AXI4Lite_S2M.BResp
+	);
 end architecture;
