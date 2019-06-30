@@ -10,12 +10,14 @@
 -- -------------------------------------
 -- This package implements a generic AMBA AXI4 description for:
 --
--- * AXI4 Lite
--- * AXI4 Full
+-- * AXI4 (full)
+-- * AXI4-Lite
+-- * AXI4-Stream
 --
 -- License:
 -- =============================================================================
--- Copyright 2017-2018 Patrick Lehmann - Bötzingen, Germany
+-- Copyright 2018-2019 PLC2 Design GmbH, Germany
+-- Copyright 2017-2019 Patrick Lehmann - Bötzingen, Germany
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.

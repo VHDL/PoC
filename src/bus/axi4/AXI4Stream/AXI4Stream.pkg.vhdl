@@ -12,7 +12,6 @@
 -- -------------------------------------
 -- This package implements a generic AMBA AXI4-Stream description.
 --
---
 -- License:
 -- =============================================================================
 -- Copyright 2018-2019 PLC2 Design GmbH, Germany

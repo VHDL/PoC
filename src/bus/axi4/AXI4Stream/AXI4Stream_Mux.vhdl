@@ -1,68 +1,93 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- =============================================================================
+-- Authors:				 	Patrick Lehmann
+--                  Stefan Unrein
+--
+-- Entity:				 	A generic AXI4-Stream multiplexer.
+--
+-- Description:
+-- -------------------------------------
+-- .. TODO:: No documentation available.
+--
+-- License:
+-- =============================================================================
+-- Copyright 2018-2019 PLC2 Design GmbH, Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--										 Chair of VLSI-Design, Diagnostics and Architecture
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--		http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.axi4.all;
-use			PoC.vectors.all;
+use			work.utils.all;
+use			work.vectors.all;
+use			work.axi4stream.all;
 
 
 entity AXI4Stream_Mux is
 	generic (
-		USE_CONTROL_VECTOR : boolean := false
+		USE_CONTROL_VECTOR  : boolean := false
 	);
 	port (
-		Clock							: in	std_logic;
-		Reset							: in	std_logic;
+		Clock							  : in	std_logic;
+		Reset							  : in	std_logic;
 		-- Control interface
-		MuxControl			: in	std_logic_vector;
+		MuxControl			    : in	std_logic_vector;
 		-- IN Port
-		In_M2S            : in T_AXI4Stream_M2S_VECTOR;
-		In_S2M            : out T_AXI4Stream_S2M_VECTOR;
+		In_M2S              : in  T_AXI4Stream_M2S_VECTOR;
+		In_S2M              : out T_AXI4Stream_S2M_VECTOR;
 		-- OUT Ports
-    Out_M2S           : out T_AXI4Stream_M2S;
-		Out_S2M           : in T_AXI4Stream_S2M
+    Out_M2S             : out T_AXI4Stream_M2S;
+		Out_S2M             : in  T_AXI4Stream_S2M
 	);
 end entity;
 
 
 architecture rtl of AXI4Stream_Mux is
-
-  constant PORTS							: positive									:= In_M2S'length;
-	constant DATA_BITS					: positive									:= In_M2S(0).Data'length;
-  
-	attribute KEEP										: boolean;
-	attribute FSM_ENCODING						: string;
+  constant PORTS						: positive									:= In_M2S'length;
+	constant DATA_BITS				: positive									:= In_M2S(0).Data'length;
 
 	subtype T_CHANNEL_INDEX is natural range 0 to PORTS - 1;
 
 	type T_STATE is (ST_IDLE, ST_DATAFLOW);
 
-	signal State											: T_STATE					:= ST_IDLE;
-	signal NextState									: T_STATE;
+	signal State							: T_STATE					:= ST_IDLE;
+	signal NextState					: T_STATE;
 
-	signal FSM_Dataflow_en						: std_logic;
+	signal FSM_Dataflow_en		: std_logic;
 
-	signal RequestVector							: std_logic_vector(PORTS - 1 downto 0);
-	signal RequestWithSelf						: std_logic;
-	signal RequestWithoutSelf					: std_logic;
+	signal RequestVector			: std_logic_vector(PORTS - 1 downto 0);
+	signal RequestWithSelf		: std_logic;
+	signal RequestWithoutSelf	: std_logic;
 
-	signal RequestLeft								: unsigned(PORTS - 1 downto 0);
-	signal SelectLeft									: unsigned(PORTS - 1 downto 0);
-	signal SelectRight								: unsigned(PORTS - 1 downto 0);
+	signal RequestLeft				: unsigned(PORTS - 1 downto 0);
+	signal SelectLeft					: unsigned(PORTS - 1 downto 0);
+	signal SelectRight				: unsigned(PORTS - 1 downto 0);
 
-	signal ChannelPointer_en					: std_logic;
-	signal ChannelPointer							: std_logic_vector(PORTS - 1 downto 0);
-	signal ChannelPointer_d						: std_logic_vector(PORTS - 1 downto 0)						:= to_slv(2 ** (PORTS - 1), PORTS);
-	signal ChannelPointer_nxt					: std_logic_vector(PORTS - 1 downto 0);
-	signal ChannelPointer_bin					: unsigned(log2ceilnz(PORTS) - 1 downto 0);
+	signal ChannelPointer_en	: std_logic;
+	signal ChannelPointer			: std_logic_vector(PORTS - 1 downto 0);
+	signal ChannelPointer_d		: std_logic_vector(PORTS - 1 downto 0)						:= to_slv(2 ** (PORTS - 1), PORTS);
+	signal ChannelPointer_nxt	: std_logic_vector(PORTS - 1 downto 0);
+	signal ChannelPointer_bin	: unsigned(log2ceilnz(PORTS) - 1 downto 0);
 
-	signal idx												: T_CHANNEL_INDEX;
+	signal idx								: T_CHANNEL_INDEX;
 
-	signal Out_Last_i									: std_logic;
+	signal Out_Last_i					: std_logic;
 
 begin
 	RequestWithSelf			<= slv_or(RequestVector);
@@ -140,8 +165,4 @@ begin
   
 	Out_M2S.Valid				<= In_M2S(to_integer(ChannelPointer_bin)).Valid and FSM_Dataflow_en;
 	Out_M2S.Last				<= Out_Last_i;
-
-	
-
-
 end architecture;

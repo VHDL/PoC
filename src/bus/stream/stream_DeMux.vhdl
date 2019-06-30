@@ -4,7 +4,7 @@
 -- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
--- Entity:				 	A generic buffer module for the PoC.Stream protocol.
+-- Entity:				 	A generic de-multiplexer module for the PoC.Stream protocol.
 --
 -- Description:
 -- -------------------------------------
@@ -12,6 +12,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2017-2019 Patrick Lehmann - Bötzingen, Germany
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --										 Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -29,13 +30,11 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
+use			work.utils.all;
+use			work.vectors.all;
 
 
 entity stream_DeMux is
@@ -71,9 +70,6 @@ end entity;
 
 
 architecture rtl of stream_DeMux is
-	attribute KEEP										: boolean;
-	attribute FSM_ENCODING						: string;
-
 	subtype T_CHANNEL_INDEX is natural range 0 to PORTS - 1;
 
 	type T_STATE		is (ST_IDLE, ST_DATAFLOW, ST_DISCARD_FRAME);

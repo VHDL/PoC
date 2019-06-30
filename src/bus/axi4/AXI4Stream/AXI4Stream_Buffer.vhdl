@@ -1,14 +1,40 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- =============================================================================
+-- Authors:				 	Stefan Unrein
+--
+-- Entity:				 	A generic AXI4-Stream buffer (FIFO).
+--
+-- Description:
+-- -------------------------------------
+-- .. TODO:: No documentation available.
+--
+-- License:
+-- =============================================================================
+-- Copyright 2018-2019 PLC2 Design GmbH, Germany
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--		http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.axi4.all;
-use			PoC.components.all;
-use			PoC.vectors.all;
+use			work.utils.all;
+use			work.vectors.all;
+use			work.components.all;
+use			work.axi4.all;
 
 
 entity AXI4Stream_Buffer is
@@ -20,11 +46,11 @@ entity AXI4Stream_Buffer is
 		Clock							: in	std_logic;
 		Reset							: in	std_logic;
 		-- IN Port
-		In_M2S            : in T_AXI4Stream_M2S := Initialize_AXI4Stream_M2S(32,8);
-		In_S2M            : out T_AXI4Stream_S2M := Initialize_AXI4Stream_S2M(32,8);
+		In_M2S            : in  T_AXI4Stream_M2S;
+		In_S2M            : out T_AXI4Stream_S2M;
 		-- OUT Port
-		Out_M2S           : out T_AXI4Stream_M2S := Initialize_AXI4Stream_M2S(32,8);
-		Out_S2M           : in T_AXI4Stream_S2M := Initialize_AXI4Stream_S2M(32,8)
+		Out_M2S           : out T_AXI4Stream_M2S;
+		Out_S2M           : in  T_AXI4Stream_S2M
 	);
 end entity;
 
@@ -33,8 +59,6 @@ architecture rtl of AXI4Stream_Buffer is
   constant META_BITS					: natural						:= In_M2S.User'length;
 	constant DATA_BITS					: positive					:= In_M2S.Data'length;
   
-	attribute FSM_ENCODING						: string;
-
 	type T_WRITER_STATE is (ST_IDLE, ST_FRAME);
 	type T_READER_STATE is (ST_IDLE, ST_FRAME);
 
@@ -62,7 +86,6 @@ architecture rtl of AXI4Stream_Buffer is
   signal Out_M2S_i                  : T_AXI4Stream_M2S(Data(DATA_BITS -1 downto 0), User(META_BITS -1 downto 0));
   
 begin
-  
   In_SOF      <= In_M2S.Valid and not started;
   started     <= ffrs(q => started, rst => ((In_M2S.Valid and In_M2S.Last) or Reset), set => (In_M2S.Valid)) when rising_edge(Clock);
   
@@ -145,7 +168,7 @@ begin
 		end case;
 	end process;
 
-	DataFIFO : entity PoC.fifo_cc_got
+	DataFIFO : entity work.fifo_cc_got
 		generic map (
 			D_BITS							=> DATA_BITS + 1,								-- Data Width
 			MIN_DEPTH						=> (MAX_PACKET_DEPTH * FRAMES),	-- Minimum FIFO Depth
@@ -178,8 +201,7 @@ begin
   Out_M2S     <= Out_M2S_i;
 
 	genMeta : if META_BITS > 0 generate
-  
-    MetaFIFO : entity PoC.fifo_cc_got
+    MetaFIFO : entity work.fifo_cc_got
       generic map (
         D_BITS							=> META_BITS,								-- Data Width
         MIN_DEPTH						=> (META_BITS * FRAMES),	-- Minimum FIFO Depth
@@ -206,7 +228,6 @@ begin
         valid								=> open,
         fstate_rd						=> open
       );
-
 	end generate;
 
 end architecture;

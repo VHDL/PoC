@@ -3,6 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:				 	Stefan Unrein
+--                  Patrick Lehmann
 --
 -- Entity:				 	I2C passthrough module for an FPGA with debug/sniffing outputs
 --
