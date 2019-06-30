@@ -97,8 +97,8 @@ package AXI4Lite is
   end record;
   type T_AXI4Lite_Bus_VECTOR is array(natural range <>) of T_AXI4Lite_Bus;
 	
-	function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_S2M;
 	function Initialize_AXI4Lite_Bus_M2S(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_M2S;
+	function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_S2M;
 	function Initialize_AXI4Lite_Bus(    AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus;
 
 
@@ -208,20 +208,6 @@ end package;
 
 
 package body AXI4Lite is
-  function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_S2M is
-    variable var : T_AXI4Lite_Bus_S2M(RData(DataBits -1 downto 0)) :=(
-      AWReady => Value,
-      WReady  => Value,
-      BValid  => Value,
-      BResp   => (others => Value),
-      ARReady => Value,
-      RValid  => Value,
-      RData   => (DataBits - 1 downto 0 => 'Z'),
-      RResp   => (others => Value)
-    );
-  begin
-    return var;
-  end function;
   function Initialize_AXI4Lite_Bus_M2S(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_M2S is
     variable var : T_AXI4Lite_Bus_M2S(
       AWAddr(AddressBits -1 downto 0), WData(DataBits -1 downto 0), 
@@ -242,6 +228,21 @@ package body AXI4Lite is
         ARProt  => (others => Value),
         RReady  => Value
       );
+  begin
+    return var;
+  end function;
+
+  function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_S2M is
+    variable var : T_AXI4Lite_Bus_S2M(RData(DataBits -1 downto 0)) :=(
+      AWReady => Value,
+      WReady  => Value,
+      BValid  => Value,
+      BResp   => (others => Value),
+      ARReady => Value,
+      RValid  => Value,
+      RData   => (DataBits - 1 downto 0 => 'Z'),
+      RResp   => (others => Value)
+    );
   begin
     return var;
   end function;

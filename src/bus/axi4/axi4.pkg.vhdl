@@ -140,31 +140,31 @@ package AXI4 is
 
 
 	-- AXI4 (full)
-	alias T_AXI4_Bus_M2S  is work.AXI4_Full.T_AXI4_Bus_M2S;
-	alias T_AXI4_Bus_S2M  is work.AXI4_Full.T_AXI4_Bus_S2M;
-  alias T_AXI4_Bus      is work.AXI4_Full.T_AXI4_Bus;
+	alias T_AXI4_Bus_M2S           is work.AXI4_Full.T_AXI4_Bus_M2S;
+	alias T_AXI4_Bus_S2M           is work.AXI4_Full.T_AXI4_Bus_S2M;
+  alias T_AXI4_Bus               is work.AXI4_Full.T_AXI4_Bus;
 	
-  alias T_AXI4_Bus_M2S_VECTOR is work.AXI4_Full.T_AXI4_Bus_M2S_VECTOR;
-  alias T_AXI4_Bus_S2M_VECTOR is work.AXI4_Full.T_AXI4_Bus_S2M_VECTOR;
-  alias T_AXI4_Bus_VECTOR     is work.AXI4_Full.T_AXI4_Bus_VECTOR;
+  alias T_AXI4_Bus_M2S_VECTOR    is work.AXI4_Full.T_AXI4_Bus_M2S_VECTOR;
+  alias T_AXI4_Bus_S2M_VECTOR    is work.AXI4_Full.T_AXI4_Bus_S2M_VECTOR;
+  alias T_AXI4_Bus_VECTOR        is work.AXI4_Full.T_AXI4_Bus_VECTOR;
 	
-	alias Initialize_AXI4_Bus_S2M is work.AXI4_Full.Initialize_AXI4_Bus_S2M;
-	alias Initialize_AXI4_Bus_M2S is work.AXI4_Full.Initialize_AXI4_Bus_M2S;
-	alias Initialize_AXI4_Bus     is work.AXI4_Full.Initialize_AXI4_Bus;
+	alias Initialize_AXI4_Bus_M2S  is work.AXI4_Full.Initialize_AXI4_Bus_M2S[natural, natural, natural, natural, std_logic return T_AXI4_Bus_M2S];
+	alias Initialize_AXI4_Bus_S2M  is work.AXI4_Full.Initialize_AXI4_Bus_S2M[natural, natural, natural, natural, std_logic return T_AXI4_Bus_S2M];
+	alias Initialize_AXI4_Bus      is work.AXI4_Full.Initialize_AXI4_Bus    [natural, natural, natural, natural return T_AXI4_Bus];
   
 	
 	-- AXI4-Lite
-	alias T_AXI4Lite_Bus_M2S        is work.AXI4Lite.T_AXI4Lite_Bus_M2S;
-	alias T_AXI4Lite_Bus_S2M        is work.AXI4Lite.T_AXI4Lite_Bus_S2M;
-  alias T_AXI4Lite_Bus            is work.AXI4Lite.T_AXI4Lite_Bus;
+	alias T_AXI4Lite_Bus_M2S           is work.AXI4Lite.T_AXI4Lite_Bus_M2S;
+	alias T_AXI4Lite_Bus_S2M           is work.AXI4Lite.T_AXI4Lite_Bus_S2M;
+  alias T_AXI4Lite_Bus               is work.AXI4Lite.T_AXI4Lite_Bus;
 
-  alias T_AXI4Lite_Bus_M2S_VECTOR is work.AXI4Lite.T_AXI4Lite_Bus_M2S_VECTOR;
-  alias T_AXI4Lite_Bus_S2M_VECTOR is work.AXI4Lite.T_AXI4Lite_Bus_S2M_VECTOR;
-  alias T_AXI4Lite_Bus_VECTOR     is work.AXI4Lite.T_AXI4Lite_Bus_VECTOR;
+  alias T_AXI4Lite_Bus_M2S_VECTOR    is work.AXI4Lite.T_AXI4Lite_Bus_M2S_VECTOR;
+  alias T_AXI4Lite_Bus_S2M_VECTOR    is work.AXI4Lite.T_AXI4Lite_Bus_S2M_VECTOR;
+  alias T_AXI4Lite_Bus_VECTOR        is work.AXI4Lite.T_AXI4Lite_Bus_VECTOR;
 
-	alias Initialize_AXI4Lite_Bus_M2S is work.AXI4Lite.Initialize_AXI4Lite_Bus_M2S;
-	alias Initialize_AXI4Lite_Bus_S2M is work.AXI4Lite.Initialize_AXI4Lite_Bus_S2M;
-	alias Initialize_AXI4Lite_Bus     is work.AXI4Lite.Initialize_AXI4Lite_Bus;
+	alias Initialize_AXI4Lite_Bus_M2S  is work.AXI4Lite.Initialize_AXI4Lite_Bus_M2S[natural, natural, std_logic return T_AXI4Lite_Bus_M2S];
+	alias Initialize_AXI4Lite_Bus_S2M  is work.AXI4Lite.Initialize_AXI4Lite_Bus_S2M[natural, natural, std_logic return T_AXI4Lite_Bus_S2M];
+	alias Initialize_AXI4Lite_Bus      is work.AXI4Lite.Initialize_AXI4Lite_Bus    [natural, natural return T_AXI4Lite_Bus];
 
 	
 	-- AXI4-Stream
@@ -174,8 +174,8 @@ package AXI4 is
 	alias T_AXI4Stream_M2S_VECTOR is work.AXI4Stream.T_AXI4Stream_M2S_VECTOR;
 	alias T_AXI4Stream_S2M_VECTOR is work.AXI4Stream.T_AXI4Stream_S2M_VECTOR;
 
-	alias Initialize_AXI4Stream_M2S is work.AXI4Stream.Initialize_AXI4Stream_M2S;
-	alias Initialize_AXI4Stream_S2M is work.AXI4Stream.Initialize_AXI4Stream_S2M;
+	alias Initialize_AXI4Stream_M2S is work.AXI4Stream.Initialize_AXI4Stream_M2S[natural, natural, std_logic return T_AXI4Stream_M2S];
+	alias Initialize_AXI4Stream_S2M is work.AXI4Stream.Initialize_AXI4Stream_S2M[         natural, std_logic return T_AXI4Stream_S2M];
 end package;
 
 
