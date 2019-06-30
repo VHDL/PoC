@@ -1,28 +1,25 @@
-
 library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-library PoC;
-use PoC.utils.all;
-use PoC.vectors.all;
-use PoC.axi4.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.axi4.all;
 
 
-
-package axi4Lite_Version is
+package GitVersionRegister is
   -------Define AXI Register structure-------------
   constant Version_of_VersionReg : std_logic_vector(7 downto 0) := x"00";
   
   constant Address_Width  : natural := 32;
-  constant Data_Width  : natural := 32;
+  constant Data_Width     : natural := 32;
   
   constant Reg_Length_Common : natural := 8;
   constant Reg_Length_Top    : natural := 56;
   constant Reg_Length_Module : natural := 16;
   
 
-  type T_AXI4_Version_Register_Common is record
+  type T_Version_Register_Common is record
     BuildDate_Day          : std_logic_vector(7 downto 0);
     BuildDate_Month        : std_logic_vector(7 downto 0);
     BuildDate_Year         : std_logic_vector(15 downto 0);
@@ -37,7 +34,7 @@ package axi4Lite_Version is
     ProjektName            : std_logic_vector(159 downto 0);
   end record;
   
-  type T_AXI4_Version_Register_Top is record
+  type T_Version_Register_Top is record
     Version_Major          : std_logic_vector(7 downto 0);
     Version_Minor          : std_logic_vector(7 downto 0);
     Version_Release        : std_logic_vector(7 downto 0);
@@ -54,7 +51,7 @@ package axi4Lite_Version is
     GitURL                 : std_logic_vector(1023 downto 0);
   end record;
   
-  type T_AXI4_Version_Register_Module is record
+  type T_Version_Register_Module is record
     ModuleName             : std_logic_vector(159 downto 0);
     
     Version_Major          : std_logic_vector(7 downto 0);
@@ -71,27 +68,26 @@ package axi4Lite_Version is
     Dummy                  : std_logic_vector(127 downto 0);
   end record;
   
-  type T_AXI4_Version_Register_Module_Vector is array (natural range <>) of T_AXI4_Version_Register_Module;
+  type T_Version_Register_Module_Vector is array (natural range <>) of T_Version_Register_Module;
   
   function get_num_Version_register(numModules : natural := 0) return natural;
  
-  function to_SLVV_32_Common       (data : T_AXI4_Version_Register_Common)        return T_SLVV_32;
-  function to_SLVV_32_Top          (data : T_AXI4_Version_Register_Top)           return T_SLVV_32;
-  function to_SLVV_32_Module       (data : T_AXI4_Version_Register_Module)        return T_SLVV_32;
-  -- function to_AXI4_Register_Description_Vector_Module_Vector(data : T_AXI4_Version_Register_Module_Vector) return T_AXI4_Register_Description_Vector;
-	function get_Dummy_Descriptor(len : natural) return T_AXI4_Register_Description_Vector;
+  function to_SLVV_32_Common       (data : T_Version_Register_Common)        return T_SLVV_32;
+  function to_SLVV_32_Top          (data : T_Version_Register_Top)           return T_SLVV_32;
+  function to_SLVV_32_Module       (data : T_Version_Register_Module)        return T_SLVV_32;
+  -- function to_AXI4_Register_Description_Vector_Module_Vector(data : T_Version_Register_Module_Vector) return T_Register_Description_Vector;
+	function get_Dummy_Descriptor(len : natural) return T_Register_Description_Vector;
 end package;
 
 
-package body axi4Lite_Version is 
-
+package body GitVersionRegister is 
   function get_num_Version_register(numModules : natural := 0) return natural is
   begin
    return Reg_Length_Common + Reg_Length_Top + (Reg_Length_Module * numModules);
   end function;
 
-  function get_Dummy_Descriptor(len : natural) return T_AXI4_Register_Description_Vector is
-    variable descriptor : T_AXI4_Register_Description_Vector(0 to len -1);
+  function get_Dummy_Descriptor(len : natural) return T_Register_Description_Vector is
+    variable descriptor : T_Register_Description_Vector(0 to len -1);
   begin
     for i in descriptor'range loop
       descriptor(i) := to_AXI4_Register_Description(
@@ -101,8 +97,7 @@ package body axi4Lite_Version is
     return descriptor;
   end function;
   
-  
-  function to_SLVV_32_Common(data : T_AXI4_Version_Register_Common) return T_SLVV_32 is
+  function to_SLVV_32_Common(data : T_Version_Register_Common) return T_SLVV_32 is
     variable temp : T_SLVV_32(0 to 7) := (others => (others => '0'));
     variable name : T_SLVV_32(4 downto 0) := to_slvv_32(data.ProjektName);
   begin
@@ -116,8 +111,7 @@ package body axi4Lite_Version is
     return temp;
   end function;
 
-
-  function to_SLVV_32_Top(data : T_AXI4_Version_Register_Top) return T_SLVV_32 is
+  function to_SLVV_32_Top(data : T_Version_Register_Top) return T_SLVV_32 is
     variable temp : T_SLVV_32(0 to 55)     := (others => (others => '0'));
     
     variable hash : T_SLVV_32(4 downto 0)  := to_slvv_32(data.GitHash);
@@ -151,7 +145,7 @@ package body axi4Lite_Version is
   end function;
   
 
-  function to_SLVV_32_Module(data : T_AXI4_Version_Register_Module) return T_SLVV_32 is
+  function to_SLVV_32_Module(data : T_Version_Register_Module) return T_SLVV_32 is
     variable temp : T_SLVV_32(0 to 15)     := (others => (others => '0'));
     
     variable hash : T_SLVV_32(4 downto 0)  := to_slvv_32(data.GitHash);
@@ -176,5 +170,4 @@ package body axi4Lite_Version is
 
     return temp;
   end function;
-  
 end package body;
