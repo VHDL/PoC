@@ -4,7 +4,7 @@ use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.vectors.all;
-use     work.axi4.all;
+use     work.axi4lite.all;
 
 
 package GitVersionRegister is
@@ -76,7 +76,7 @@ package GitVersionRegister is
   function to_SLVV_32_Top          (data : T_Version_Register_Top)           return T_SLVV_32;
   function to_SLVV_32_Module       (data : T_Version_Register_Module)        return T_SLVV_32;
   -- function to_AXI4_Register_Description_Vector_Module_Vector(data : T_Version_Register_Module_Vector) return T_Register_Description_Vector;
-	function get_Dummy_Descriptor(len : natural) return T_Register_Description_Vector;
+	function get_Dummy_Descriptor(len : natural) return T_AXI4_Register_Description_Vector;
 end package;
 
 
@@ -86,8 +86,8 @@ package body GitVersionRegister is
    return Reg_Length_Common + Reg_Length_Top + (Reg_Length_Module * numModules);
   end function;
 
-  function get_Dummy_Descriptor(len : natural) return T_Register_Description_Vector is
-    variable descriptor : T_Register_Description_Vector(0 to len -1);
+  function get_Dummy_Descriptor(len : natural) return T_AXI4_Register_Description_Vector is
+    variable descriptor : T_AXI4_Register_Description_Vector(0 to len -1);
   begin
     for i in descriptor'range loop
       descriptor(i) := to_AXI4_Register_Description(

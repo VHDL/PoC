@@ -35,7 +35,7 @@ use     IEEE.numeric_std.all;
 use     work.utils.all;
 use     work.vectors.all;
 use     work.strings.all;
-use     work.axi4.all;
+use     work.axi4lite.all;
 
 use     work.GitVersionRegister.all;
 use     work.BuildVersion.all;
@@ -57,7 +57,7 @@ architecture rtl of AXI4Lite_GitVersionRegister is
 	
 	constant num_Version_register : natural          := get_num_Version_register;
   
-  constant CONFIG      : T_Register_Description_Vector(0 to num_Version_register -1) := get_Dummy_Descriptor(num_Version_register);
+  constant CONFIG      : T_AXI4_Register_Description_Vector(0 to num_Version_register -1) := get_Dummy_Descriptor(num_Version_register);
 	
 	constant VersionData : T_SLVV_32(0 to num_Version_register -1) := (
 			0                 to Reg_Length_Common -1                  => to_SLVV_32_Common(C_HW_BUILD_VERSION_COMMON),
