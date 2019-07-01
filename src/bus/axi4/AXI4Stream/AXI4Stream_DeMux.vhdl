@@ -36,6 +36,7 @@ use			IEEE.numeric_std.all;
 
 use			work.utils.all;
 use			work.vectors.all;
+use			work.components.all;
 use			work.axi4stream.all;
 
 
