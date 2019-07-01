@@ -140,7 +140,7 @@ begin
 				if (slv_reg_wren = '1') then
 					for i in CONFIG'range loop
 							trunc_addr := std_logic_vector(CONFIG(i).address);
-						if ((axi_awaddr = trunc_addr(CONFIG(i).address'length downto ADDR_LSB)) and (CONFIG(i).writeable)) then -- found fitting register and it is writable
+						if ((axi_awaddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) and (CONFIG(i).writeable)) then -- found fitting register and it is writable
 							for ii in S_AXI_m2s.WStrb'reverse_range loop
 								-- Respective byte enables are asserted as per write strobes
 								if (S_AXI_m2s.WStrb(ii) = '1' ) then
@@ -234,7 +234,7 @@ begin
 				reg_data_out  <= (others => '0');
 			for i in CONFIG'range loop
 					trunc_addr := std_logic_vector(CONFIG(i).address);
-				if(axi_araddr = trunc_addr(CONFIG(i).address'length downto ADDR_LSB)) then
+				if(axi_araddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) then
 					reg_data_out <= mux(i);
 					exit;
 				end if;
