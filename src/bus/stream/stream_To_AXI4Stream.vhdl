@@ -6,6 +6,7 @@ use			IEEE.NUMERIC_STD.all;
 library PoC;
 use			PoC.config.all;
 use			PoC.utils.all;
+use			PoC.components.all;
 use			PoC.vectors.all;
 
 
@@ -26,7 +27,7 @@ entity Stream_To_AXI4Stream is
 		Out_tValid				: out	std_logic;
 		Out_tData					: out	std_logic_vector(DATA_BITS - 1 downto 0);
 		Out_tLast					: out	std_logic;
-		Out_tReady				: in	std_logic;
+		Out_tReady				: in	std_logic
 	);
 end entity;
 
