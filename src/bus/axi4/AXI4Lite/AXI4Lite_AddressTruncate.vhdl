@@ -4,7 +4,7 @@
 -- =============================================================================
 -- Authors:				 	Stefan Unrein
 --
--- Entity:				 	Mask address bits in an AXI4-Lite bus.
+-- Entity:				 	Truncate address bits in an AXI4-Lite bus.
 --
 -- Description:
 -- -------------------------------------
@@ -36,10 +36,11 @@ use     work.axi4lite.all;
 
 entity AXI4Lite_AddressTruncate is
 	port (
-    M_AXI_m2s               : out T_AXI4Lite_BUS_M2S;
-    M_AXI_s2m               : in  T_AXI4Lite_BUS_S2M;
 		S_AXI_m2s               : in  T_AXI4Lite_BUS_M2S;
-		S_AXI_s2m               : out T_AXI4Lite_BUS_S2M
+		S_AXI_s2m               : out T_AXI4Lite_BUS_S2M;
+		
+    M_AXI_m2s               : out T_AXI4Lite_BUS_M2S;
+    M_AXI_s2m               : in  T_AXI4Lite_BUS_S2M
 	);
 end entity;
 
@@ -62,8 +63,8 @@ begin
 	--MASTER
 	M_AXI_m2s.AWValid    <= S_AXI_m2s.AWValid ;
 	M_AXI_m2s.AWAddr     <= ite(    ADDR_OUT_BITS > ADDR_IN_BITS, 
-                                  ADDR_IN_BITS - ADDR_OUT_BITS - 1 downto 0 => '0' & S_AXI_m2s.AWAddr, 
-                                  S_AXI_m2s.AWAddr(ADDR_OUT_BITS - 1 downto 0);
+                                  (ADDR_IN_BITS - ADDR_OUT_BITS - 1 downto 0 => '0') & S_AXI_m2s.AWAddr, 
+                                  S_AXI_m2s.AWAddr(ADDR_OUT_BITS - 1 downto 0));
   M_AXI_m2s.AWCache    <= S_AXI_m2s.AWCache ;
 	M_AXI_m2s.AWProt     <= S_AXI_m2s.AWProt  ;
 	M_AXI_m2s.WValid     <= S_AXI_m2s.WValid  ;
@@ -72,8 +73,8 @@ begin
 	M_AXI_m2s.BReady     <= S_AXI_m2s.BReady  ;
 	M_AXI_m2s.ARValid    <= S_AXI_m2s.ARValid ;
 	M_AXI_m2s.ARAddr     <= ite(    ADDR_OUT_BITS > ADDR_IN_BITS, 
-                                  ADDR_IN_BITS - ADDR_OUT_BITS - 1 downto 0 => '0' & S_AXI_m2s.AWAddr, 
-                                  S_AXI_m2s.AWAddr(ADDR_OUT_BITS - 1 downto 0);
+                                  (ADDR_IN_BITS - ADDR_OUT_BITS - 1 downto 0 => '0') & S_AXI_m2s.AWAddr, 
+                                  S_AXI_m2s.AWAddr(ADDR_OUT_BITS - 1 downto 0));
   M_AXI_m2s.ARCache    <= S_AXI_m2s.ARCache ;
 	M_AXI_m2s.ARProt     <= S_AXI_m2s.ARProt  ;
 	M_AXI_m2s.RReady     <= S_AXI_m2s.RReady  ;
