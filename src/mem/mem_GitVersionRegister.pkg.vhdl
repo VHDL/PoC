@@ -46,6 +46,11 @@ package GitVersionRegister is
     GitDate_Month          : std_logic_vector(7 downto 0);
     GitDate_Year           : std_logic_vector(15 downto 0);
     
+    GitTime_Hour           : std_logic_vector(7 downto 0);
+    GitTime_Min            : std_logic_vector(7 downto 0);
+    GitTime_Sec            : std_logic_vector(7 downto 0);
+    GitTime_Zone           : std_logic_vector(7 downto 0);
+    
     BranchName_Tag         : std_logic_vector(511 downto 0);
     
     GitURL                 : std_logic_vector(1023 downto 0);
