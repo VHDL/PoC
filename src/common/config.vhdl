@@ -961,7 +961,7 @@ package body config is
 	function DEVICE_FAMILY(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_DEVICE_FAMILY is
 		constant MY_DEV    : string(1 to 32)  := getLocalDeviceString(DeviceString);
 		constant VEN      : T_VENDOR        := VENDOR(DeviceString);
-		constant FAM_CHAR  : character        := MY_DEV(4);
+		constant FAM_CHAR  : character        := MY_DEV(3);
 	begin
     case VEN is
       when VENDOR_GENERIC =>  return DEVICE_FAMILY_GENERIC;
@@ -1255,6 +1255,7 @@ package body config is
 					when 15 =>                    return TRANSCEIVER_GTPE2;
 					when others =>                return TRANSCEIVER_GTXE2;
 				end case;
+			when DEVICE_ZYNQ_ULTRA_PLUS =>    return TRANSCEIVER_NONE;
 
 			when others => report "Unknown device." severity failure;
 		end case;
