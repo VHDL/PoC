@@ -134,7 +134,9 @@ package body GitVersionRegister is
     end loop;
     
     temp(idx) := data.GitDate_Day & data.GitDate_Month & data.GitDate_Year;
-    idx := idx +2;
+    idx := idx +1;
+    temp(idx) := data.GitTime_Hour & data.GitTime_Min & data.GitTime_Sec & data.GitTime_Zone;
+    idx := idx +1;
     
     for i in name'reverse_range loop
       temp(idx) := name(i);
