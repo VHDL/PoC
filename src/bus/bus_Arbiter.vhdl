@@ -35,8 +35,7 @@ library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
+use			work.utils.all;
 
 
 entity bus_Arbiter is
