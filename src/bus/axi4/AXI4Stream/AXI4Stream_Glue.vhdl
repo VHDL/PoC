@@ -48,15 +48,17 @@ end entity;
 
 
 architecture rtl of AXI4Stream_Glue is
-
-	constant FIFO_BITS      : positive := In_M2S.User'length + 1 + In_M2S.Data'length; -- Data Width (+ 1 is Last-bit)
+    
+	constant DATA_BITS      : positive := In_M2S.Data'length;
+	constant USER_BITS      : natural  := In_M2S.User'length;
+	constant FIFO_BITS      : positive := DATA_BITS + 1 + USER_BITS; -- Data Width (+ 1 is Last-bit)
 	signal   FIFO_full      : std_logic;
 	signal   FIFO_data_in   : std_logic_vector(FIFO_BITS - 1 downto 0);
 	signal   FIFO_data_out  : std_logic_vector(FIFO_BITS - 1 downto 0);
 
 begin
 
-	FIFO_data_in        <= (In_M2S.User, In_M2S.Last, In_M2S.Data);
+	FIFO_data_in        <= In_M2S.User & In_M2S.Last & In_M2S.Data;
 	In_S2M.Ready        <= FIFO_full;
 
 	FIFO : entity work.fifo_glue
@@ -79,6 +81,8 @@ begin
 			got                     => Out_S2M.Ready
 		);
 
-	(Out_M2S.User, Out_M2S.Last, Out_M2S.Data) <= FIFO_data_out;
+	Out_M2S.User  <= FIFO_data_out(FIFO_data_out'high downto DATA_BITS + 1);
+	Out_M2S.Last  <= FIFO_data_out(DATA_BITS);
+	Out_M2S.Data  <= FIFO_data_out(DATA_BITS - 1 downto 0);
 
 end architecture;
