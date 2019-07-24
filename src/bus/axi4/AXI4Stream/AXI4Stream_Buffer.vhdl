@@ -168,7 +168,11 @@ begin
 		end case;
 	end process;
 
-	DataFIFO : entity work.fifo_cc_got
+    ----------------------------------------------------------------------------
+  gen_DataFIFO : if FRAMES > 2 generate
+  begin
+    
+    inst_cc_got : entity work.fifo_cc_got
 		generic map (
 			D_BITS							=> DATA_BITS + 1,								-- Data Width
 			MIN_DEPTH						=> (MAX_PACKET_DEPTH * FRAMES),	-- Minimum FIFO Depth
@@ -195,13 +199,40 @@ begin
 			valid								=> DataFIFO_Valid,
 			fstate_rd						=> open
 		);
+  else generate
+  
+    inst_glue : entity work.fifo_glue
+    generic map(
+      D_BITS  => DATA_BITS + 1
+    )
+    port map(
+      -- Control
+      clk     => Clock,
+      rst     => Reset,
+
+      -- Input
+      put     => DataFIFO_put,
+      di      => DataFIFO_DataIn,
+      ful     => DataFIFO_Full,
+
+      -- Output
+      vld     => DataFIFO_Valid,
+      do      => DataFIFO_DataOut,
+      got     => DataFIFO_got
+    );
+
+  end generate;
+  -------------------------------------------------------------------
 
 	FrameCommit		<= DataFIFO_Valid and DataFIFO_DataOut(Last_BIT) and Out_S2M.Ready;
     
   Out_M2S     <= Out_M2S_i;
 
 	genMeta : if META_BITS > 0 generate
-    MetaFIFO : entity work.fifo_cc_got
+    gen_cc_got : if FRAMES > 2 generate
+    begin
+    
+      MetaFIFO : entity work.fifo_cc_got
       generic map (
         D_BITS							=> META_BITS,								-- Data Width
         MIN_DEPTH						=> (META_BITS * FRAMES),	-- Minimum FIFO Depth
@@ -228,6 +259,29 @@ begin
         valid								=> open,
         fstate_rd						=> open
       );
+    else generate
+    
+      inst_glue : entity work.fifo_glue
+      generic map(
+        D_BITS  => META_BITS
+      )
+      port map(
+        -- Control
+        clk     => Clock,
+        rst     => Reset,
+
+        -- Input
+        put     => In_SOF,
+        di      => In_M2S.User,
+        ful     => MetaFIFO_Full,
+
+        -- Output
+        vld     => open,
+        do      => Out_M2S_i.User,
+        got     => Out_M2S_i.Valid and Out_M2S_i.Last and Out_S2M.Ready
+      );
+
+    end generate;
 	end generate;
 
 end architecture;
