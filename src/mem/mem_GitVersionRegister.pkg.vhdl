@@ -1,10 +1,15 @@
+library STD;
+use			STD.TextIO.all;
+
 library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
+use     IEEE.std_logic_textio.all;
 
 use     work.utils.all;
 use     work.vectors.all;
 use     work.axi4lite.all;
+use     work.strings.all;
 
 
 package GitVersionRegister is
@@ -82,6 +87,8 @@ package GitVersionRegister is
   function to_SLVV_32_Module       (data : T_Version_Register_Module)        return T_SLVV_32;
   -- function to_AXI4_Register_Description_Vector_Module_Vector(data : T_Version_Register_Module_Vector) return T_Register_Description_Vector;
 	function get_Dummy_Descriptor(len : natural) return T_AXI4_Register_Description_Vector;
+	
+	impure function read_Version_from_mem(FileName : string) return T_SLVV_32;
 end package;
 
 
@@ -176,5 +183,118 @@ package body GitVersionRegister is
     temp(idx) := data.GitDate_Day & data.GitDate_Month & data.GitDate_Year;
 
     return temp;
+  end function;
+  
+
+  
+  impure function read_Version_from_mem(FileName : string) return T_SLVV_32 is
+  	constant MemoryLines : positive := Reg_Length_Common + Reg_Length_Top;
+  	variable HW_BUILD_VERSION_COMMON : T_Version_Register_Common;
+  	variable HW_BUILD_VERSION_TOP : T_Version_Register_Top;
+  	
+  	file     FileHandle		: TEXT open READ_MODE is FileName;
+  	variable CurrentLine	: LINE;
+		variable TempWord			: string;
+		variable Good					: boolean;
+		
+		variable temp_signed : signed(7 downto 0);
+		variable temp : T_SLVV_32(0 to MemoryLines -1)     := (others => (others => '0'));
+		
+		impure function get_string return string is
+			variable result : string;
+			variable CurrentLine	: LINE;
+			variable Good					: boolean;
+		begin
+			readline(FileHandle, CurrentLine);
+			read(CurrentLine, result, Good);
+			if not Good then
+				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
+				return result;
+			end if;
+			return result;
+		end function;
+		
+		impure function get_slv_h return std_logic_vector is
+			variable result : std_logic_vector;
+			variable CurrentLine	: LINE;
+			variable Good					: boolean;
+		begin
+			readline(FileHandle, CurrentLine);
+			hread(CurrentLine, result, Good);
+			if not Good then
+				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
+				return result;
+			end if;
+			return result;
+		end function;
+		
+		impure function get_slv_d(length : natural) return std_logic_vector is
+			variable result : string;
+			variable CurrentLine	: LINE;
+			variable Good					: boolean;
+		begin
+			readline(FileHandle, CurrentLine);
+			read(CurrentLine, result, Good);
+			if not Good then
+				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
+				return std_logic_vector(to_unsigned(to_natural_dec(result), length));
+			end if;
+			return std_logic_vector(to_unsigned(to_natural_dec(result), length));
+		end function;
+
+  begin
+--		readline(FileHandle, CurrentLine);
+--		read(CurrentLine, TempWord, Good);
+		HW_BUILD_VERSION_COMMON.BuildDate_Day            := get_slv_d(8);
+		HW_BUILD_VERSION_COMMON.BuildDate_Month          := get_slv_d(8);
+		HW_BUILD_VERSION_COMMON.BuildDate_Year           := get_slv_d(16);
+                                                               
+		HW_BUILD_VERSION_COMMON.NumberModule             := get_slv_d(24);
+		HW_BUILD_VERSION_COMMON.VersionOfVersionReg      := get_slv_d(8);
+                                                               
+		HW_BUILD_VERSION_COMMON.VivadoVersion_Year       := get_slv_d(16);
+		HW_BUILD_VERSION_COMMON.VivadoVersion_Release    := get_slv_d(8);
+		HW_BUILD_VERSION_COMMON.VivadoVersion_SubRelease := get_slv_d(8);
+                             
+		HW_BUILD_VERSION_COMMON.ProjektName              := to_slv(to_RawString(resize(get_string, 20, NUL)));
+
+
+		HW_BUILD_VERSION_TOP.Version_Major               := get_slv_d(8);
+		HW_BUILD_VERSION_TOP.Version_Minor               := get_slv_d(8);
+		HW_BUILD_VERSION_TOP.Version_Release             := get_slv_d(8);
+		HW_BUILD_VERSION_TOP.Version_Flags               := get_slv_d(6) & get_slv_d(1) & get_slv_d(1);
+                                            
+		HW_BUILD_VERSION_TOP.GitHash                     := get_slv_h;
+                                              
+		HW_BUILD_VERSION_TOP.GitDate_Day                 := get_slv_d(8);
+		HW_BUILD_VERSION_TOP.GitDate_Month               := get_slv_d(8);
+		HW_BUILD_VERSION_TOP.GitDate_Year                := get_slv_d(16);
+                                            
+		HW_BUILD_VERSION_TOP.GitTime_Hour                := get_slv_d(8);
+		HW_BUILD_VERSION_TOP.GitTime_Min                 := get_slv_d(8);
+		HW_BUILD_VERSION_TOP.GitTime_Sec                 := get_slv_d(8);
+		
+		readline(FileHandle, CurrentLine);
+		read(CurrentLine, TempWord, Good);
+		if not Good then
+			report "Error while reading memory file '" & FileName & "'." severity FAILURE;
+			return temp;
+		end if;
+		if TempWord(1) = '-' then
+			temp_signed := to_signed(-1* to_natural_dec(TempWord(2 to TempWord'high)),8);
+		else
+			temp_signed := to_signed(to_natural_dec(TempWord),8);
+		end if;
+		HW_BUILD_VERSION_TOP.GitTime_Zone                := std_logic_vector(temp_signed);
+                                               
+		HW_BUILD_VERSION_TOP.BranchName_Tag              := to_slv(to_RawString(resize(get_string, 64, NUL)));
+                                               
+		HW_BUILD_VERSION_TOP.GitURL                      := to_slv(to_RawString(resize(get_string, 128, NUL)));
+
+
+		temp :=	(0 to Reg_Length_Common -1 => to_SLVV_32_Common(HW_BUILD_VERSION_COMMON),
+			       Reg_Length_Common to Reg_Length_Common + Reg_Length_Top -1 => to_SLVV_32_Top(HW_BUILD_VERSION_TOP));
+  	
+  	return temp;
   end function;
 end package body;
