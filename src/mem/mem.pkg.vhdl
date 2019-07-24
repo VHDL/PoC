@@ -50,6 +50,7 @@ use			STD.TextIO.all;
 library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
+use     IEEE.std_logic_textio.all;
 
 library PoC;
 use			PoC.config.all;
@@ -147,7 +148,8 @@ package body mem is
 
 			readline(FileHandle, CurrentLine);
 --			report CurrentLine.all severity NOTE;
-			ReadHex(CurrentLine, TempWord, Good);
+--			ReadHex(CurrentLine, TempWord, Good);
+			hread(CurrentLine, TempWord, Good);
 			if not Good then
 				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
 				return Result;
