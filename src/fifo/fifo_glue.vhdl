@@ -58,10 +58,12 @@ end entity fifo_glue;
 architecture rtl of fifo_glue is
 
   -- Data Buffer Registers
-  signal A, B : std_logic_vector(D_BITS-1 downto 0);
+  signal A : std_logic_vector(D_BITS-1 downto 0) := (others => '0');
+  signal B : std_logic_vector(D_BITS-1 downto 0) := (others => '0');
 
   -- State Registers
-  signal Full, Avail : std_logic := '0';
+  signal Avail : std_logic := '0';
+  signal Full  : std_logic := '0';
 
 begin
 
@@ -69,8 +71,8 @@ begin
   begin
     if rising_edge(clk) then
       if rst = '1' then
-        A <= (others => '-');
-        B <= (others => '-');
+        A <= (others => '0');
+        B <= (others => '0');
 
         Full  <= '0';
         Avail <= '0';
