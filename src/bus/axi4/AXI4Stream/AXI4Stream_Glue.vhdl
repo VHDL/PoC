@@ -60,7 +60,7 @@ architecture rtl of AXI4Stream_Glue is
 begin
 
 	FIFO_data_in        <= (In_M2S.User, In_M2S.Last, In_M2S.Data);
-	FIFO_put            <= In_M2S.Valid and In_S2M.Ready;
+	FIFO_put            <= In_M2S.Valid;
 	In_S2M.Ready        <= not FIFO_full;
 
 	FIFO : entity work.fifo_glue
