@@ -80,7 +80,16 @@ architecture rtl of AXI4Lite_Register is
 	signal axi_rresp    : std_logic_vector(1 downto 0)  := "00";
 	signal axi_rvalid   : std_logic := '0';
 
-	signal RegisterFile : T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
+	function Register_init(Config : T_AXI4_Register_Description_Vector) return T_SLVV is
+		variable Result : T_SLVV(0 to Config'Length - 1)(DATA_BITS - 1 downto 0);
+	begin
+		for i in 0 to Config'Length - 1 loop
+			Result(i) := Config(i).init_value;
+		end loop;
+		return Result;
+	end function;
+
+	signal RegisterFile : T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0) := Register_init(CONFIG);
 	
 	signal slv_reg_rden : std_logic;
 	signal slv_reg_wren : std_logic;
@@ -133,9 +142,7 @@ begin
 	begin
 		if rising_edge(S_AXI_ACLK) then
 			if ((S_AXI_ARESETN = '0')) then
-				for i in CONFIG'range loop
-					RegisterFile(i) <= CONFIG(i).init_value;
-				end loop;
+				-- RegisterFile <= Register_init(CONFIG);
 			else
 				if (slv_reg_wren = '1') then
 					for i in CONFIG'range loop

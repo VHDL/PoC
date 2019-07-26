@@ -48,18 +48,20 @@ end entity;
 
 
 architecture rtl of AXI4Stream_Glue is
-    
+
 	constant DATA_BITS      : positive := In_M2S.Data'length;
 	constant USER_BITS      : natural  := In_M2S.User'length;
 	constant FIFO_BITS      : positive := DATA_BITS + 1 + USER_BITS; -- Data Width (+ 1 is Last-bit)
 	signal   FIFO_full      : std_logic;
+	signal   FIFO_put       : std_logic;
 	signal   FIFO_data_in   : std_logic_vector(FIFO_BITS - 1 downto 0);
 	signal   FIFO_data_out  : std_logic_vector(FIFO_BITS - 1 downto 0);
 
 begin
 
-	FIFO_data_in        <= In_M2S.User & In_M2S.Last & In_M2S.Data;
-	In_S2M.Ready        <= FIFO_full;
+	FIFO_data_in        <= (In_M2S.User, In_M2S.Last, In_M2S.Data);
+	FIFO_put            <= In_M2S.Valid;
+	In_S2M.Ready        <= not FIFO_full;
 
 	FIFO : entity work.fifo_glue
 		generic map (
@@ -71,7 +73,7 @@ begin
 			rst                     => Reset,
 
 			-- Writing Interface
-			put                     => In_M2S.Valid,
+			put                     => FIFO_put,
 			di                      => FIFO_data_in,
 			ful                     => FIFO_full,
 
