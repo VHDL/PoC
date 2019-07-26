@@ -37,25 +37,27 @@ use			work.components.all;
 use			work.axi4.all;
 
 
-entity AXI4Stream_Buffer is
+entity AXI4Stream_Buffer_CDC is
 	generic (
 		FRAMES						: positive								:= 2;
 		MAX_PACKET_DEPTH  : positive								:= 8
 	);
 	port (
-		Clock							: in	std_logic;
-		Reset							: in	std_logic;
 		-- IN Port
+    In_Clock          : in	std_logic;
+    In_Reset          : in	std_logic;
 		In_M2S            : in  T_AXI4Stream_M2S;
 		In_S2M            : out T_AXI4Stream_S2M;
 		-- OUT Port
+    Out_Clock         : in	std_logic;
+    Out_Reset         : in	std_logic;
 		Out_M2S           : out T_AXI4Stream_M2S;
 		Out_S2M           : in  T_AXI4Stream_S2M
 	);
 end entity;
 
 
-architecture rtl of AXI4Stream_Buffer is
+architecture rtl of AXI4Stream_Buffer_CDC is
   constant META_BITS					: natural						:= In_M2S.User'length;
 	constant DATA_BITS					: positive					:= In_M2S.Data'length;
   
@@ -87,16 +89,25 @@ architecture rtl of AXI4Stream_Buffer is
   
 begin
   In_SOF      <= In_M2S.Valid and not started;
-  started     <= ffrs(q => started, rst => ((In_M2S.Valid and In_M2S.Last) or Reset), set => (In_M2S.Valid)) when rising_edge(Clock);
+  started     <= ffrs(q => started, rst => ((In_M2S.Valid and In_M2S.Last) or In_Reset), set => (In_M2S.Valid)) when rising_edge(In_Clock);
   
-	process(Clock)
+	process(In_Clock)
 	begin
-		if rising_edge(Clock) then
-			if (Reset = '1') then
+		if rising_edge(In_Clock) then
+			if (In_Reset = '1') then
 				Writer_State					<= ST_IDLE;
-				Reader_State					<= ST_IDLE;
 			else
 				Writer_State					<= Writer_NextState;
+			end if;
+		end if;
+	end process;  
+  
+	process(Out_Clock)
+	begin
+		if rising_edge(Out_Clock) then
+			if (Out_Reset = '1') then
+				Reader_State					<= ST_IDLE;
+			else
 				Reader_State					<= Reader_NextState;
 			end if;
 		end if;
@@ -168,120 +179,66 @@ begin
 		end case;
 	end process;
 
-    ----------------------------------------------------------------------------
-  gen_DataFIFO : if FRAMES > 2 generate
-  begin
-    
-    inst_cc_got : entity work.fifo_cc_got
+	DataFIFO : entity work.fifo_ic_got
 		generic map (
 			D_BITS							=> DATA_BITS + 1,								-- Data Width
 			MIN_DEPTH						=> (MAX_PACKET_DEPTH * FRAMES),	-- Minimum FIFO Depth
 			DATA_REG						=> ((MAX_PACKET_DEPTH * FRAMES) <= 128),											-- Store Data Content in Registers
-			STATE_REG						=> TRUE,												-- Registered Full/Empty Indicators
+			-- STATE_REG						=> TRUE,												-- Registered Full/Empty Indicators
 			OUTPUT_REG					=> FALSE,												-- Registered FIFO Output
 			ESTATE_WR_BITS			=> 0,														-- Empty State Bits
 			FSTATE_RD_BITS			=> 0														-- Full State Bits
 		)
 		port map (
-			-- Global Reset and Clock
-			clk									=> Clock,
-			rst									=> Reset,
-
 			-- Writing Interface
+      clk_wr              => In_Clock,
+      rst_wr              => In_Reset,
 			put									=> DataFIFO_put,
 			din									=> DataFIFO_DataIn,
 			full								=> DataFIFO_Full,
 			estate_wr						=> open,
 
 			-- Reading Interface
+      clk_rd              => Out_Clock,
+      rst_rd              => Out_Reset,
 			got									=> DataFIFO_got,
 			dout								=> DataFIFO_DataOut,
 			valid								=> DataFIFO_Valid,
 			fstate_rd						=> open
 		);
-  else generate
-  
-    inst_glue : entity work.fifo_glue
-    generic map(
-      D_BITS  => DATA_BITS + 1
-    )
-    port map(
-      -- Control
-      clk     => Clock,
-      rst     => Reset,
-
-      -- Input
-      put     => DataFIFO_put,
-      di      => DataFIFO_DataIn,
-      ful     => DataFIFO_Full,
-
-      -- Output
-      vld     => DataFIFO_Valid,
-      do      => DataFIFO_DataOut,
-      got     => DataFIFO_got
-    );
-
-  end generate;
-  -------------------------------------------------------------------
 
 	FrameCommit		<= DataFIFO_Valid and DataFIFO_DataOut(Last_BIT) and Out_S2M.Ready;
     
   Out_M2S     <= Out_M2S_i;
 
 	genMeta : if META_BITS > 0 generate
-    gen_cc_got : if FRAMES > 2 generate
-    begin
-    
-      MetaFIFO : entity work.fifo_cc_got
+    MetaFIFO : entity work.fifo_ic_got
       generic map (
         D_BITS							=> META_BITS,								-- Data Width
         MIN_DEPTH						=> (META_BITS * FRAMES),	-- Minimum FIFO Depth
         DATA_REG						=> ((META_BITS * FRAMES) <= 128),											-- Store Data Content in Registers
-        STATE_REG						=> TRUE,												-- Registered Full/Empty Indicators
+        -- STATE_REG						=> TRUE,												-- Registered Full/Empty Indicators
         OUTPUT_REG					=> FALSE,												-- Registered FIFO Output
         ESTATE_WR_BITS			=> 0,														-- Empty State Bits
         FSTATE_RD_BITS			=> 0														-- Full State Bits
       )
       port map (
-        -- Global Reset and Clock
-        clk									=> Clock,
-        rst									=> Reset,
-
         -- Writing Interface
+        clk_wr              => In_Clock,
+        rst_wr              => In_Reset,
         put									=> In_SOF,
         din									=> In_M2S.User,
         full								=> MetaFIFO_Full,
         estate_wr						=> open,
 
         -- Reading Interface
+        clk_rd              => Out_Clock,
+        rst_rd              => Out_Reset,
         got									=> Out_M2S_i.Valid and Out_M2S_i.Last and Out_S2M.Ready,
         dout								=> Out_M2S_i.User,
         valid								=> open,
         fstate_rd						=> open
       );
-    else generate
-    
-      inst_glue : entity work.fifo_glue
-      generic map(
-        D_BITS  => META_BITS
-      )
-      port map(
-        -- Control
-        clk     => Clock,
-        rst     => Reset,
-
-        -- Input
-        put     => In_SOF,
-        di      => In_M2S.User,
-        ful     => MetaFIFO_Full,
-
-        -- Output
-        vld     => open,
-        do      => Out_M2S_i.User,
-        got     => Out_M2S_i.Valid and Out_M2S_i.Last and Out_S2M.Ready
-      );
-
-    end generate;
 	end generate;
 
 end architecture;

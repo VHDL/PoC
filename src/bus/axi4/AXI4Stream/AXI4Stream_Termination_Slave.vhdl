@@ -49,10 +49,10 @@ end entity;
 
 
 architecture rtl of AXI4Stream_Termination_Slave is
-  constant DataBits : natural := In_S2M.Data'length;
-  constant UserBits : natural := In_S2M.User'length;
+  constant DataBits : natural := In_M2S.Data'length;
+  constant UserBits : natural := In_M2S.User'length;
 begin
 
-	In_S2M <= Initialize_AXI4Stream_S2M(DataBits, UserBits, VALUE);
+	In_S2M <= Initialize_AXI4Stream_S2M(UserBits, VALUE);
 
 end architecture;
