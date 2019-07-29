@@ -7,9 +7,9 @@ use     work.components.all;
 
 entity sync_Resets is
 	generic (
-    SNYC_MODE     : T_SYNC_MODE         := SYNC_MODE_STRICTLY_ORDERED; --SYNC_MODE_UNORDERED, SYNC_MODE_ORDERED, SYNC_MODE_STRICTLY_ORDERED
-		SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low +2;        -- generate SYNC_DEPTH many stages, at least 2
-    NUM_CLOCKS    : natural             := 4
+    SNYC_MODE     : T_SYNC_MODE         := SYNC_MODE_ORDERED; --SYNC_MODE_UNORDERED, SYNC_MODE_ORDERED, SYNC_MODE_STRICTLY_ORDERED
+		SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;        -- generate SYNC_DEPTH many stages, at least 2
+    NUM_CLOCKS    : natural             := 2
   );
 	port (
 		Clocks             : in  std_logic_vector(NUM_CLOCKS -1 downto 0);   -- <Clocks> output clock domains
@@ -52,7 +52,7 @@ begin
   
   sync_bits_inst : entity work.sync_Bits
   generic map(
-    SYNC_DEPTH    => 2
+    SYNC_DEPTH    => SYNC_DEPTH
   )
   port map(
     Clock         => Clocks(0),
