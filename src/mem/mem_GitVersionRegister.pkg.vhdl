@@ -194,52 +194,58 @@ package body GitVersionRegister is
   	
   	file     FileHandle		: TEXT open READ_MODE is FileName;
   	variable CurrentLine	: LINE;
-		variable TempWord			: string;
+		variable TempWord			: string(1 to 3);
 		variable Good					: boolean;
 		
 		variable temp_signed : signed(7 downto 0);
 		variable temp : T_SLVV_32(0 to MemoryLines -1)     := (others => (others => '0'));
 		
 		impure function get_string return string is
-			variable result : string;
+			variable result : string(1 to 128);
 			variable CurrentLine	: LINE;
 			variable Good					: boolean;
+			variable Len          : natural;
 		begin
 			readline(FileHandle, CurrentLine);
-			read(CurrentLine, result, Good);
+			Len := CurrentLine'length;
+			read(CurrentLine, result(1 to Len), Good);
 			if not Good then
 				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
-				return result;
+				return result(1 to Len);
 			end if;
-			return result;
+			return result(1 to Len);
 		end function;
 		
 		impure function get_slv_h return std_logic_vector is
-			variable result : std_logic_vector;
+			variable result : std_logic_vector(159 downto 0);
 			variable CurrentLine	: LINE;
 			variable Good					: boolean;
+			variable Len          : natural;
 		begin
 			readline(FileHandle, CurrentLine);
-			hread(CurrentLine, result, Good);
+			Len := CurrentLine'length;
+			hread(CurrentLine, result(Len * 4 -1 downto 0), Good);
 			if not Good then
 				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
-				return result;
+				return result(Len * 4 -1 downto 0);
 			end if;
-			return result;
+			return result(Len * 4 -1 downto 0);
 		end function;
 		
 		impure function get_slv_d(length : natural) return std_logic_vector is
-			variable result : string;
+			variable result       : string(1 to 128);
 			variable CurrentLine	: LINE;
 			variable Good					: boolean;
+			variable Len          : natural;
 		begin
 			readline(FileHandle, CurrentLine);
-			read(CurrentLine, result, Good);
+			Len := CurrentLine'length;
+			read(CurrentLine, result(1 to Len), Good);
 			if not Good then
 				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
-				return std_logic_vector(to_unsigned(to_natural_dec(result), length));
+				return std_logic_vector(to_unsigned(to_natural_dec(result(1 to Len)), length));
 			end if;
-			return std_logic_vector(to_unsigned(to_natural_dec(result), length));
+			return std_logic_vector(to_unsigned(to_natural_dec(result(1 to Len)), length));
 		end function;
 
   begin
@@ -283,7 +289,7 @@ package body GitVersionRegister is
 		if TempWord(1) = '-' then
 			temp_signed := to_signed(-1* to_natural_dec(TempWord(2 to TempWord'high)),8);
 		else
-			temp_signed := to_signed(to_natural_dec(TempWord),8);
+			temp_signed := to_signed(to_natural_dec(TempWord(2 to TempWord'high)),8);
 		end if;
 		HW_BUILD_VERSION_TOP.GitTime_Zone                := std_logic_vector(temp_signed);
                                                
