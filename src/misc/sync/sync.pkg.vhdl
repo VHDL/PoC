@@ -36,6 +36,7 @@ use     IEEE.NUMERIC_STD.all;
 
 package sync is
 	subtype T_MISC_SYNC_DEPTH    is integer range 2 to 16;
+  type    T_SYNC_MODE         is (SYNC_MODE_UNORDERED, SYNC_MODE_ORDERED, SYNC_MODE_STRICTLY_ORDERED);
 
 	component sync_Bits is
 		generic (
