@@ -34,10 +34,9 @@ library IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
-library	PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.arith.all;
+use			work.config.all;
+use			work.utils.all;
+use			work.arith.all;
 
 
 entity arith_carrychain_inc is
@@ -65,7 +64,7 @@ begin
 	end generate;
 
 	genXilinx : if XILINX_FORCE_CARRYCHAIN generate
-		inc : arith_carrychain_inc_xilinx
+		inc : component arith_carrychain_inc_xilinx
 			generic map (
 				BITS		=> BITS
 			)

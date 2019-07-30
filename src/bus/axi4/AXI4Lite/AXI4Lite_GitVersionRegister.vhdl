@@ -73,7 +73,8 @@ architecture rtl of AXI4Lite_GitVersionRegister is
 		return temp;
 	end function;
 
-  constant RegisterFile_WritePort  : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS -1 downto 0) := to_slvv(VersionData);
+	signal   RegisterFile_ReadPort   : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0);
+  constant RegisterFile_WritePort  : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0) := to_slvv(VersionData);
   
 begin
   AXI4LiteReg : entity work.AXI4Lite_Register
@@ -87,7 +88,7 @@ begin
 		S_AXI_m2s               => S_AXI_m2s,
 		S_AXI_s2m               => S_AXI_s2m,
 		
-		RegisterFile_ReadPort   => open,
+		RegisterFile_ReadPort   => RegisterFile_ReadPort,
 		RegisterFile_WritePort  => RegisterFile_WritePort
 	);
 end architecture;

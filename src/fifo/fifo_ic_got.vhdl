@@ -69,9 +69,8 @@ library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
-library	poc;
-use			PoC.utils.all;
-use			poc.ocram.all; -- "all" required by Quartus RTL simulation
+use			work.utils.all;
+use			work.ocram.all; -- "all" required by Quartus RTL simulation
 
 
 entity fifo_ic_got is
@@ -315,7 +314,7 @@ begin
   -- Memory Instantiation
   -----------------------------------------------------------------------------
   gLarge: if not DATA_REG generate
-    ram : entity PoC.ocram_sdp
+    ram : entity work.ocram_sdp
       generic map (
         A_BITS => A_BITS,
         D_BITS => D_BITS

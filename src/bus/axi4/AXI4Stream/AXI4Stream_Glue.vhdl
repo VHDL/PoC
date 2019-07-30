@@ -48,10 +48,10 @@ end entity;
 
 
 architecture rtl of AXI4Stream_Glue is
-
 	constant DATA_BITS      : positive := In_M2S.Data'length;
 	constant USER_BITS      : natural  := In_M2S.User'length;
 	constant FIFO_BITS      : positive := DATA_BITS + 1 + USER_BITS; -- Data Width (+ 1 is Last-bit)
+	
 	signal   FIFO_full      : std_logic;
 	signal   FIFO_put       : std_logic;
 	signal   FIFO_data_in   : std_logic_vector(FIFO_BITS - 1 downto 0);
@@ -59,28 +59,29 @@ architecture rtl of AXI4Stream_Glue is
 
 begin
 
-	FIFO_data_in        <= (In_M2S.User, In_M2S.Last, In_M2S.Data);
-	FIFO_put            <= In_M2S.Valid;
-	In_S2M.Ready        <= not FIFO_full;
+	-- FIFO_data_in  <= (In_M2S.User, In_M2S.Last, In_M2S.Data); -- BUG: broken in Vivado 2018.3
+	FIFO_data_in  <= In_M2S.User & In_M2S.Last & In_M2S.Data;
+	FIFO_put      <= In_M2S.Valid;
+	In_S2M.Ready  <= not FIFO_full;
 
 	FIFO : entity work.fifo_glue
 		generic map (
-			D_BITS                  => FIFO_BITS
+			D_BITS  => FIFO_BITS
 		)
 		port map (
 			-- Global Reset and Clock
-			clk                     => Clock,
-			rst                     => Reset,
+			clk     => Clock,
+			rst     => Reset,
 
 			-- Writing Interface
-			put                     => FIFO_put,
-			di                      => FIFO_data_in,
-			ful                     => FIFO_full,
+			put     => FIFO_put,
+			di      => FIFO_data_in,
+			ful     => FIFO_full,
 
 			-- Reading Interface
-			vld                     => Out_M2S.Valid,
-			do                      => FIFO_data_out,
-			got                     => Out_S2M.Ready
+			vld     => Out_M2S.Valid,
+			do      => FIFO_data_out,
+			got     => Out_S2M.Ready
 		);
 
 	Out_M2S.User  <= FIFO_data_out(FIFO_data_out'high downto DATA_BITS + 1);
