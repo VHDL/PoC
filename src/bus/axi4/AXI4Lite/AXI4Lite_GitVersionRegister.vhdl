@@ -38,16 +38,19 @@ use     work.strings.all;
 use     work.axi4lite.all;
 
 use     work.GitVersionRegister.all;
-use     work.BuildVersion.all;
+--use     work.BuildVersion.all;
 
 
 entity AXI4Lite_GitVersionRegister is
+	Generic (
+		VERSION_FILE_NAME : string := "C:/Projekte/Bosch MHA/Test/PS/project/build_version.mem"
+	);
 	Port (
 		S_AXI_ACLK    : in  std_logic;
 		S_AXI_ARESETN : in  std_logic;
 		
-		S_AXI_m2s     : in  T_AXI4Lite_BUS_M2S;
-		S_AXI_s2m     : out T_AXI4Lite_BUS_S2M
+		S_AXI_m2s     : in  T_AXI4Lite_BUS_M2S(AWAddr(31 downto 0),ARAddr(31 downto 0),WData(31 downto 0),WStrb(3 downto 0));
+		S_AXI_s2m     : out T_AXI4Lite_BUS_S2M(RData(31 downto 0))
 	);
 end entity;
 
@@ -59,10 +62,7 @@ architecture rtl of AXI4Lite_GitVersionRegister is
   
   constant CONFIG      : T_AXI4_Register_Description_Vector(0 to num_Version_register -1) := get_Dummy_Descriptor(num_Version_register);
 	
-	constant VersionData : T_SLVV_32(0 to num_Version_register -1) := (
-			0                 to Reg_Length_Common -1                  => to_SLVV_32_Common(C_HW_BUILD_VERSION_COMMON),
-			Reg_Length_Common to Reg_Length_Common + Reg_Length_Top -1 => to_SLVV_32_Top(C_HW_BUILD_VERSION_TOP)
-		);
+	constant VersionData : T_SLVV_32(0 to num_Version_register -1) := read_Version_from_mem(VERSION_FILE_NAME);
 		
 	function to_slvv(data : T_SLVV_32) return T_SLVV is
 		variable temp : T_SLVV(VersionData'range)(DATA_BITS -1 downto 0) := (others => (others => '0'));

@@ -51,7 +51,7 @@ architecture rtl of AXI4Stream_Glue is
 
 	constant DATA_BITS      : positive := In_M2S.Data'length;
 	constant USER_BITS      : natural  := In_M2S.User'length;
-	constant FIFO_BITS      : positive := DATA_BITS + 1 + USER_BITS; -- Data Width (+ 1 is Last-bit)
+	constant FIFO_BITS      : positive := DATA_BITS + 1 + USER_BITS; -- Width (+ 1 is Last-bit)
 	signal   FIFO_full      : std_logic;
 	signal   FIFO_put       : std_logic;
 	signal   FIFO_data_in   : std_logic_vector(FIFO_BITS - 1 downto 0);
@@ -59,7 +59,7 @@ architecture rtl of AXI4Stream_Glue is
 
 begin
 
-	FIFO_data_in        <= (In_M2S.User, In_M2S.Last, In_M2S.Data);
+	FIFO_data_in        <= In_M2S.User & In_M2S.Last & In_M2S.Data;
 	FIFO_put            <= In_M2S.Valid;
 	In_S2M.Ready        <= not FIFO_full;
 

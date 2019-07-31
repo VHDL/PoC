@@ -64,6 +64,7 @@ entity sync_Reset is
 	port (
 		Clock         : in  std_logic;                                  -- <Clock>  output clock domain
 		Input         : in  std_logic;                                  -- @async:  reset input
+    D             : in  std_logic := '0';
 		Output        : out std_logic                                   -- @Clock:  reset output
 	);
 end entity;
@@ -96,7 +97,7 @@ begin
 				Data_meta    <= '1';
 				Data_sync    <= (others => '1');
 			elsif rising_edge(Clock) then
-				Data_meta    <= '0';
+				Data_meta    <= D;
 				Data_sync    <= Data_sync(Data_sync'high - 1 downto 0) & Data_meta;
 			end if;
 		end process;
