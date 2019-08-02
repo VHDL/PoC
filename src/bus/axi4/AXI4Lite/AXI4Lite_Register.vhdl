@@ -38,14 +38,7 @@ use	    work.axi4lite.all;
 
 entity AXI4Lite_Register is
 	generic (
-		ADDRESS_BITS  : natural        := 32;
-		DATA_BITS     : natural        := 32;
-	 	CONFIG        : T_AXI4_Register_Description_Vector  := (
-			0 => to_AXI4_Register_Description(Address => to_unsigned( 0, ADDRESS_BITS)), --, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000"),
-			1 => to_AXI4_Register_Description(Address => to_unsigned( 4, ADDRESS_BITS)), --, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000"),
-			2 => to_AXI4_Register_Description(Address => to_unsigned( 8, ADDRESS_BITS)), --, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000"),
-			3 => to_AXI4_Register_Description(Address => to_unsigned(12, ADDRESS_BITS))  --, Writeable => true, Init_Value => x"ABCDEF01", Auto_Clear_Mask => x"FFFF0000")
-		)
+	 	CONFIG        : T_AXI4_Register_Description_Vector
 	);
 	port (
 		S_AXI_ACLK              : in  std_logic;
@@ -54,22 +47,25 @@ entity AXI4Lite_Register is
 		S_AXI_m2s               : in  T_AXI4Lite_BUS_M2S;
 		S_AXI_s2m               : out T_AXI4Lite_BUS_S2M;
 		
-		RegisterFile_ReadPort   : out T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
-		RegisterFile_WritePort  : in  T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0)
+		RegisterFile_ReadPort   : out T_SLVV(0 to CONFIG'Length - 1);
+		RegisterFile_WritePort  : in  T_SLVV(0 to CONFIG'Length - 1)
 	);
 end entity;
 
 
 architecture rtl of AXI4Lite_Register is
+	constant ADDRESS_BITS  : positive := S_AXI_m2s.AWAddr'length;
+	constant DATA_BITS     : positive := S_AXI_m2s.WData'length;
+	
 	-- Example-specific design signals
 	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
 	-- ADDR_LSB is used for addressing 32/64 bit registers/memories
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
-	constant ADDR_LSB   : positive  := (DATA_BITS / 32) + 1;
+	constant ADDR_LSB   : positive  := log2ceil(DATA_BITS) - 3;
 	
 	-- AXI4LITE signals
-	signal axi_awaddr   : std_logic_vector(ADDRESS_BITS - 1 -ADDR_LSB downto 0)  := (others => '0');
+	signal axi_awaddr   : std_logic_vector(ADDRESS_BITS - ADDR_LSB - 1 downto 0)  := (others => '0');
 	signal axi_awready  : std_logic := '0';
 	signal axi_wready   : std_logic := '0';
 	signal axi_bresp    : std_logic_vector(1 downto 0)  := "00";

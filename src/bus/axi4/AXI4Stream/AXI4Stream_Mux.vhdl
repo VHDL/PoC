@@ -41,7 +41,8 @@ use			work.axi4stream.all;
 
 entity AXI4Stream_Mux is
 	generic (
-		USE_CONTROL_VECTOR  : boolean := false
+		USE_CONTROL_VECTOR  : boolean   := FALSE;
+		PORTS               : positive  := 2
 	);
 	port (
 		Clock							  : in	std_logic;
@@ -49,17 +50,16 @@ entity AXI4Stream_Mux is
 		-- Control interface
 		MuxControl			    : in	std_logic_vector;
 		-- IN Port
-		In_M2S              : in  T_AXI4Stream_M2S_VECTOR;
-		In_S2M              : out T_AXI4Stream_S2M_VECTOR;
+		In_M2S              : in  T_AXI4STREAM_M2S_VECTOR(PORTS - 1 downto 0);
+		In_S2M              : out T_AXI4STREAM_S2M_VECTOR(PORTS - 1 downto 0);
 		-- OUT Ports
-    Out_M2S             : out T_AXI4Stream_M2S;
-		Out_S2M             : in  T_AXI4Stream_S2M
+    Out_M2S             : out T_AXI4STREAM_M2S;
+		Out_S2M             : in  T_AXI4STREAM_S2M
 	);
 end entity;
 
 
 architecture rtl of AXI4Stream_Mux is
-  constant PORTS						: positive									:= In_M2S'length;
 	constant DATA_BITS				: positive									:= In_M2S(0).Data'length;
 
 	subtype T_CHANNEL_INDEX is natural range 0 to PORTS - 1;
@@ -90,6 +90,10 @@ architecture rtl of AXI4Stream_Mux is
 	signal Out_Last_i					: std_logic;
 
 begin
+	assert (USE_CONTROL_VECTOR and (MuxControl'length = PORTS))
+		report "'MuxControl' needs to provide PORTS-many bits (one-hot-encoding)."
+		severity FAILURE;
+
 	RequestWithSelf			<= slv_or(RequestVector);
 	RequestWithoutSelf	<= slv_or(RequestVector and not ChannelPointer_d);
   

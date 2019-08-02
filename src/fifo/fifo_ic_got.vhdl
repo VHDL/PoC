@@ -69,9 +69,8 @@ library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
-library	poc;
-use			PoC.utils.all;
-use			poc.ocram.all; -- "all" required by Quartus RTL simulation
+use			work.utils.all;
+use			work.ocram.all; -- "all" required by Quartus RTL simulation
 
 
 entity fifo_ic_got is
@@ -291,7 +290,7 @@ begin
   gEstateWr: if ESTATE_WR_BITS >= 1 generate
     signal  d : unsigned(A_BITS-1 downto 0);
   begin
-    d         <= unsigned(gray2bin(OPc(A_BITS-1 downto 0))) + not unsigned(gray2bin(IP0(A_BITS-1 downto 0)));
+    d         <= gray2bin(OPc(A_BITS-1 downto 0)) + not gray2bin(IP0(A_BITS-1 downto 0));
     estate_wr <= (others => '0') when Ful = '1' else
                  std_logic_vector(d(d'left downto d'left-ESTATE_WR_BITS+1));
   end generate gEstateWr;
@@ -303,7 +302,7 @@ begin
   gFstateRd: if FSTATE_RD_BITS >= 1 generate
     signal  d : unsigned(A_BITS-1 downto 0);
   begin
-    d         <= unsigned(gray2bin(IPc(A_BITS-1 downto 0))) + not unsigned(gray2bin(OP0(A_BITS-1 downto 0)));
+    d         <= gray2bin(IPc(A_BITS-1 downto 0)) + not gray2bin(OP0(A_BITS-1 downto 0));
     fstate_rd <= (others => '0') when Avl = '0' else
                  std_logic_vector(d(d'left downto d'left-FSTATE_RD_BITS+1));
   end generate gFstateRd;
@@ -315,7 +314,7 @@ begin
   -- Memory Instantiation
   -----------------------------------------------------------------------------
   gLarge: if not DATA_REG generate
-    ram : entity PoC.ocram_sdp
+    ram : entity work.ocram_sdp
       generic map (
         A_BITS => A_BITS,
         D_BITS => D_BITS

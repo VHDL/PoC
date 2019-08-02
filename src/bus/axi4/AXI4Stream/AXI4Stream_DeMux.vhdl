@@ -41,23 +41,25 @@ use			work.axi4stream.all;
 
 
 entity AXI4Stream_DeMux is
+	generic (
+		PORTS               : positive  := 2
+	);
 	port (
 		Clock							: in	std_logic;
 		Reset							: in	std_logic;
 		-- Control interface
 		DeMuxControl			: in	std_logic_vector;
 		-- IN Port
-		In_M2S            : in  T_AXI4Stream_M2S;
-		In_S2M            : out T_AXI4Stream_S2M;
+		In_M2S            : in  T_AXI4STREAM_M2S;
+		In_S2M            : out T_AXI4STREAM_S2M;
 		-- OUT Ports
-    Out_M2S           : out T_AXI4Stream_M2S_VECTOR;
-		Out_S2M           : in  T_AXI4Stream_S2M_VECTOR
+    Out_M2S           : out T_AXI4STREAM_M2S_VECTOR(PORTS - 1 downto 0);
+		Out_S2M           : in  T_AXI4STREAM_S2M_VECTOR(PORTS - 1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of AXI4Stream_DeMux is
-  constant PORTS							: positive				:= Out_M2S'length;
 	constant DATA_BITS					: positive				:= Out_M2S(0).Data'length;
     
 	subtype T_CHANNEL_INDEX is natural range 0 to PORTS - 1;
@@ -83,7 +85,9 @@ architecture rtl of AXI4Stream_DeMux is
 
   signal Out_Ready						: std_logic_vector(PORTS - 1 downto 0);
 begin
-  assert PORTS = DeMuxControl'length report "Number of Ports needs to be equal to Number of DeMux-Bits!" severity failure;
+	assert (DeMuxControl'length = PORTS)
+		report "'MuxControl' needs to provide PORTS-many bits (one-hot-encoding)."
+		severity FAILURE;
 
   started     <= ffrs(q => started, rst => ((In_M2S.Valid and In_M2S.Last) or Reset), set => (In_M2S.Valid)) when rising_edge(Clock);
   
