@@ -2,9 +2,9 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:				 	Iqbal Asif
 --
--- Entity:				 	A generic buffer module for the PoC.Stream protocol.
+-- Entity:				 	A generic stream Duplicator for the AXI4-Stream protocol.
 --
 -- Description:
 -- -------------------------------------
@@ -12,8 +12,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+-- Copyright 2018-2019 PLC2 Design GmbH, Germany
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -41,18 +40,19 @@ use     PoC.axi4stream.all;
 
 entity AXI4Stream_Mirror is
 	generic (
-		PORTS							: positive									:= 2
+		PORTS        : positive := 2
 	);
 	port (
-		Clock							: in	std_logic;
-		Reset							: in	std_logic;
+		Clock        : in  std_logic;
+		Reset        : in  std_logic;
+
 		-- IN Port
-		In_m2s					: in	T_AXI4STREAM_M2S;
-		In_s2m					: out	T_AXI4STREAM_S2M;
+		In_m2s       : in  T_AXI4STREAM_M2S;
+		In_s2m       : out T_AXI4STREAM_S2M;
 		
 		-- OUT Port
-		Out_M2S					: out	T_AXI4STREAM_M2S_VECTOR;
-		Out_S2M					: in	T_AXI4STREAM_S2M_VECTOR
+		Out_M2S      : out T_AXI4STREAM_M2S_VECTOR;
+		Out_S2M      : in  T_AXI4STREAM_S2M_VECTOR
 	);
 end entity;
 
@@ -66,21 +66,15 @@ architecture rtl of AXI4Stream_Mirror is
 	signal   FIFO_data_in   : std_logic_vector(FIFO_BITS - 1 downto 0);
 	signal   FIFO_data_out  : std_logic_vector(FIFO_BITS - 1 downto 0);
 	
-	signal 	 Out_Ready						: std_logic_vector(PORTS - 1 downto 0);
-	signal 	 FIFOGlue_Valid				: std_logic;
-	signal   FIFOGlue_got					: std_logic;
+	signal 	 Out_Ready      : std_logic_vector(PORTS - 1 downto 0);
+	signal 	 FIFOGlue_Valid : std_logic;
+	signal   FIFOGlue_got   : std_logic;
 
-	signal Ready_i							: std_logic;
-	signal Mask_r								: std_logic_vector(PORTS - 1 downto 0)	:= (others => '1');
-
-	signal MetaOut_rst					: std_logic_vector(PORTS - 1 downto 0);
-
-	signal Out_Data_i						: T_SLM(PORTS - 1 downto 0, DATA_BITS - 1 downto 0)						:= (others => (others => 'Z'));
+	signal Ready_i          : std_logic;
+	signal Mask_r           : std_logic_vector(PORTS - 1 downto 0)	:= (others => '1');
 
 begin
 
-	-- Data path
-	-- ==========================================================================================================================================================
 	FIFO_data_in        <= In_M2S.User & In_M2S.Last & In_M2S.Data;
 	FIFO_put            <= In_M2S.Valid;
 	In_S2M.Ready        <= not FIFO_full;
@@ -109,14 +103,14 @@ begin
 		Out_Ready(i) <= Out_S2M(i).Ready;	
 	end generate;
 	
-	Ready_i							<= 	slv_and(Out_Ready) or slv_and(not Mask_r or Out_Ready);
-	FIFOGlue_got			  <=  Ready_i;
+	Ready_i        <= slv_and(Out_Ready) or slv_and(not Mask_r or Out_Ready);
+	FIFOGlue_got   <= Ready_i;
 	
 	genOutput : for i in 0 to PORTS - 1 generate
-		Out_M2S(i).Valid		<= FIFOGlue_Valid;
+		Out_M2S(i).Valid	<= FIFOGlue_Valid;
 		Out_M2S(i).Data     <= FIFO_data_out(DATA_BITS - 1 downto 0);
+		Out_M2S(i).Last		<= FIFO_data_out(DATA_BITS);
 		Out_M2S(i).User     <= FIFO_data_out(FIFO_data_out'high downto DATA_BITS + 1);
-		Out_M2S(i).Last			<= FIFO_data_out(DATA_BITS);
 	end generate;
 	
 end architecture;
