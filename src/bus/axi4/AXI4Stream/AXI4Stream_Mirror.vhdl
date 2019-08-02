@@ -33,10 +33,10 @@ use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
 library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use         PoC.axi4stream.all;
+use     PoC.config.all;
+use     PoC.utils.all;
+use     PoC.vectors.all;
+use     PoC.axi4stream.all;
 
 
 entity AXI4Stream_Mirror is
