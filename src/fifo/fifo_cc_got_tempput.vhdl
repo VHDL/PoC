@@ -110,7 +110,7 @@ entity fifo_cc_got_tempput is
     valid     : out std_logic;
     fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS-1) downto 0)
   );
-end entity fifo_cc_got_tempput;
+end entity;
 
 
 architecture rtl of fifo_cc_got_tempput is
