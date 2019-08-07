@@ -38,10 +38,11 @@ entity AXI4Lite_AddressMask is
     ADDRESS_MASK  : std_logic_vector
   );
 	port (
-    M_AXI_m2s     : out T_AXI4Lite_BUS_M2S;
-    M_AXI_s2m     : in  T_AXI4Lite_BUS_S2M;
 		S_AXI_m2s     : in  T_AXI4Lite_BUS_M2S;
-		S_AXI_s2m     : out T_AXI4Lite_BUS_S2M
+		S_AXI_s2m     : out T_AXI4Lite_BUS_S2M;
+		
+    M_AXI_m2s     : out T_AXI4Lite_BUS_M2S;
+    M_AXI_s2m     : in  T_AXI4Lite_BUS_S2M
 	);
 end entity;
 
