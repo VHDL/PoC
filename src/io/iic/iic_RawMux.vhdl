@@ -8,25 +8,29 @@ use     work.iic.all;
 
 entity iic_RawMultiplexer is
 	generic (
-		PORTS : positive
+		PORTS : positive := 2
 	);
 	port (
 		sel    :	in    unsigned(log2ceilnz(PORTS) - 1 downto 0);
-		input  : 	inout T_IO_IIC_SERIAL_VECTOR(PORTS - 1 downto 0);
+--		input  : 	inout T_IO_IIC_SERIAL_VECTOR(PORTS - 1 downto 0) := (others => (others => (others => 'Z')));
+		Input_m2s : in  T_IO_IIC_SERIAL_OUT_VECTOR(PORTS - 1 downto 0);
+		Input_s2m : out T_IO_IIC_SERIAL_IN_VECTOR(PORTS - 1 downto 0);
 			
-		output :	inout T_IO_IIC_SERIAL
+--		output :	inout T_IO_IIC_SERIAL := (others => (others => 'Z'))
+		Output_m2s : out T_IO_IIC_SERIAL_OUT;
+		Output_s2m : in  T_IO_IIC_SERIAL_IN
 	);
 end entity;
 
 architecture rtl of iic_RawMultiplexer is
 begin
 	gen: for i in 0 to PORTS - 1 generate
-		input(i).Clock.I <= output.Clock.I when sel = i else '0';
-		input(i).Data.I  <= output.Data.I when sel = i else '0';
+		Input_s2m(i).Clock <= Output_s2m.Clock when sel = i else '0';
+		Input_s2m(i).Data  <= Output_s2m.Data when sel = i else '0';
 	end generate;
 	
-	output.Clock.O <= input(to_index(sel)).Clock.O;
-	output.Clock.T <= input(to_index(sel)).Clock.T;
-	output.Data.O  <= input(to_index(sel)).Data.O;
-	output.Data.T  <= input(to_index(sel)).Data.T;
+	Output_m2s.Clock_O <= Input_m2s(to_index(sel)).Clock_O;
+	Output_m2s.Clock_T <= Input_m2s(to_index(sel)).Clock_T;
+	Output_m2s.Data_O  <= Input_m2s(to_index(sel)).Data_O;
+	Output_m2s.Data_T  <= Input_m2s(to_index(sel)).Data_T;
 end architecture;
