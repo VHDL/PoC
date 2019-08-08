@@ -72,7 +72,7 @@ architecture rtl of fifo_cc_got_commit is
   signal CP : T_Pointer_vec(0 to NUM_FRAMES -1) := (others => (others => '0'));  
   signal NumC : unsigned(C_BITS-1 downto 0):= (others => '0');
   
-  function drop_Commit(CP : T_Pointer_vec(0 to NUM_FRAMES -1)) return T_Pointer_vec(0 to NUM_FRAMES -1) is
+  function drop_Commit(CP : T_Pointer_vec(0 to NUM_FRAMES -1)) return T_Pointer_vec is
    variable temp : T_Pointer_vec(0 to NUM_FRAMES -1) := (others => (others => '0'));
   begin
     for i in 1 to NUM_FRAMES -1 loop
@@ -81,9 +81,10 @@ architecture rtl of fifo_cc_got_commit is
     return temp;
   end function;  
   
-  function drop_Commit(NumC : unsigned(C_BITS-1 downto 0)) return unsigned(C_BITS-1 downto 0) is
+  function drop_Commit(NumC : unsigned(C_BITS-1 downto 0)) return unsigned is
+  	variable temp : unsigned(C_BITS-1 downto 0) := ite(to_integer(NumC) = 0, (C_BITS-1 downto 0 => '0'), NumC -1);
   begin
-    return ite(NumC = 0, 0, NumC -1);
+    return temp;
   end function;
 
 
@@ -171,9 +172,9 @@ begin
         if save = '1' and IP0 /= CP(to_integer(NumC)) then
           NumC_tmp := NumC_tmp +1;
           if we = '1' then
-            CP_tmp(to_integer(NumC_tmp)) <= IP1;
+            CP_tmp(to_integer(NumC_tmp)) := IP1;
           else
-            CP_tmp(to_integer(NumC_tmp)) <= IP0;
+            CP_tmp(to_integer(NumC_tmp)) := IP0;
           end if;
         end if;
         
@@ -192,7 +193,7 @@ begin
   ra <= OP0;
 
   -- Fill State Computation (soft indicators)
-  process(fulli, IP0, IPm, OP0, OPm)
+  process(fulli, IP0, OP0, CP, NumC)
     variable  d : std_logic_vector(A_BITS-1 downto 0);
   begin
 
@@ -215,7 +216,7 @@ begin
       if fulli = '1' then
         d := (others => '1');              -- true number minus one when full
       else
-        d := std_logic_vector(CP(Numc) - OP0);  -- true number of valid entries
+        d := std_logic_vector(CP(to_integer(NumC)) - OP0);  -- true number of valid entries
       end if;
       fstate_rd <= d(d'left downto d'left-FSTATE_RD_BITS+1);
     else
