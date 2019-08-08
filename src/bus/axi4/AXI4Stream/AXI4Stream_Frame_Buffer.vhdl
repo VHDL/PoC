@@ -175,7 +175,7 @@ begin
   inst_cc_got_commit : entity work.fifo_cc_got_commit
   generic map (
     D_BITS							=> DATA_BITS + 1,								-- Data Width
-    FRAMES              => FRAMES +1,
+    NUM_FRAMES          => FRAMES +1,
     MIN_DEPTH						=> (MAX_PACKET_DEPTH * FRAMES),	-- Minimum FIFO Depth
     DATA_REG						=> ((MAX_PACKET_DEPTH * FRAMES) <= 128),											-- Store Data Content in Registers
     STATE_REG						=> TRUE,												-- Registered Full/Empty Indicators
@@ -218,7 +218,7 @@ begin
     MetaFIFO : entity work.fifo_cc_got_commit
     generic map (
       D_BITS							=> META_BITS,								-- Data Width
-      FRAMES              => FRAMES +1,
+      NUM_FRAMES          => FRAMES +1,
       MIN_DEPTH						=> (META_BITS * FRAMES),	-- Minimum FIFO Depth
       DATA_REG						=> ((META_BITS * FRAMES) <= 128),											-- Store Data Content in Registers
       STATE_REG						=> TRUE,												-- Registered Full/Empty Indicators
