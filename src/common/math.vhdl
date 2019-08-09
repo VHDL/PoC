@@ -62,7 +62,7 @@ package math is
   -- ReturnValue.whole        -> the real's integer part
   -- ReturnValue.numerator    -> numerator of the real's fractional part
   -- ReturnValue.denominator  -> denominator of the real's fractional part
-  function fract(F : real; maxDenominator : natural := 1000; maxError : real := 1.0E-9) return T_FRACTIONAL;
+  function fract(F : real; maxDenominator : natural := 1000; maxError : real := 1.0E-6) return T_FRACTIONAL;
   -- calculate time increments to met fraction
   function fract2timing(numerator : natural; denominator : natural) return T_NATVEC;
   function fract2timing(fractional : T_FRACTIONAL)                  return T_NATVEC;
