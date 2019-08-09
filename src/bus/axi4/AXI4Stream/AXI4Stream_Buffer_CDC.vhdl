@@ -34,7 +34,7 @@ use			IEEE.numeric_std.all;
 use			work.utils.all;
 use			work.vectors.all;
 use			work.components.all;
-use			work.axi4.all;
+use			work.axi4Stream.all;
 
 
 entity AXI4Stream_Buffer_CDC is
