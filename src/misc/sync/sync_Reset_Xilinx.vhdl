@@ -3,6 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:           Patrick Lehmann
+--                    Stefan Unrein
 --
 -- Entity:           sync_Reset_Xilinx
 --
@@ -25,6 +26,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2018-2019 PLC2 Design GmbH, Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -58,6 +60,7 @@ entity sync_Reset_Xilinx is
 	port (
 		Clock         : in  std_logic;                                  -- <Clock>  output clock domain
 		Input         : in  std_logic;                                  -- @async:  reset input
+		D             : in  std_logic := '0';                           -- @Clock:  data input
 		Output        : out std_logic                                   -- @Clock:  reset output
 	);
 end entity;
@@ -96,7 +99,7 @@ begin
 		port map (
 			C        => Clock,
 			PRE      => Reset_async,
-			D        => '0',
+			D        => D,
 			Q        => Reset_meta
 	);
 

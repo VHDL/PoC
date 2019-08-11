@@ -76,10 +76,9 @@ library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
-library	poc;
-use			poc.config.all;
-use			poc.utils.all;
-use			poc.ocram.ocram_sdp;
+use			work.config.all;
+use			work.utils.all;
+use			work.ocram.ocram_sdp;
 
 
 entity fifo_cc_got_tempput is
@@ -111,7 +110,7 @@ entity fifo_cc_got_tempput is
     valid     : out std_logic;
     fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS-1) downto 0)
   );
-end entity fifo_cc_got_tempput;
+end entity;
 
 
 architecture rtl of fifo_cc_got_tempput is
@@ -164,7 +163,7 @@ begin
 		IP0_slv	<= std_logic_vector(IP0);
 		OP0_slv	<= std_logic_vector(OP0);
 
-		incIP : entity PoC.arith_carrychain_inc
+		incIP : entity work.arith_carrychain_inc
 			generic map (
 				BITS		=> A_BITS
 			)
@@ -173,7 +172,7 @@ begin
 				Y				=> IP1_slv
 			);
 
-		incOP : entity PoC.arith_carrychain_inc
+		incOP : entity work.arith_carrychain_inc
 			generic map (
 				BITS		=> A_BITS
 			)
@@ -315,7 +314,7 @@ begin
   begin
 
     -- Backing Memory
-    ram : entity PoC.ocram_sdp
+    ram : entity work.ocram_sdp
       generic map (
         A_BITS => A_BITS,
         D_BITS => D_BITS

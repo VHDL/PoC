@@ -58,9 +58,17 @@ package vectors is
 	subtype T_SLV_128						is std_logic_vector(127 downto 0);
 	subtype T_SLV_256						is std_logic_vector(255 downto 0);
 	subtype T_SLV_512						is std_logic_vector(511 downto 0);
+	
+  -- Data BE Vector
+  type T_DATA_BE is record
+    be        : std_logic_vector;
+    data      : std_logic_vector;
+  end record;
+  
+  type T_DATA_BE_VECTOR	is array(natural range <>) of T_DATA_BE;
 
 	-- STD_LOGIC_VECTOR_VECTORs
-	--	type		T_SLVV							is array(NATURAL range <>) of STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
+  type		T_SLVV							is array(NATURAL range <>) of STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	type		T_SLVV_2						is array(natural range <>) of T_SLV_2;
 	type		T_SLVV_3						is array(natural range <>) of T_SLV_3;
 	type		T_SLVV_4						is array(natural range <>) of T_SLV_4;
@@ -130,6 +138,7 @@ package vectors is
 	function get_row(slm : T_SLM; RowIndex : natural; High : natural; Low : natural) return std_logic_vector;		-- get a sub vector of a matrix row at high:low
 
 	-- Convert to vector: to_slv
+	function to_slv(slvv : T_SLVV)							  return std_logic_vector;								-- convert vector-vector to flatten vector
 	function to_slv(slvv : T_SLVV_2)							return std_logic_vector;								-- convert vector-vector to flatten vector
 	function to_slv(slvv : T_SLVV_4)							return std_logic_vector;								-- ...
 	function to_slv(slvv : T_SLVV_8)							return std_logic_vector;								-- ...
@@ -142,6 +151,7 @@ package vectors is
 	function to_slv(slm : T_SLM)									return std_logic_vector;								-- convert matrix to flatten vector
 
 	-- Convert flat vector to avector-vector: to_slvv_*
+	function to_slvv(slv : std_logic_vector; sub_element_length : natural)		  return T_SLVV;				--
 	function to_slvv_4(slv : std_logic_vector)		return T_SLVV_4;												--
 	function to_slvv_8(slv : std_logic_vector)		return T_SLVV_8;												--
 	function to_slvv_12(slv : std_logic_vector)		return T_SLVV_12;												--
@@ -153,6 +163,7 @@ package vectors is
 	function to_slvv_512(slv : std_logic_vector)	return T_SLVV_512;											--
 
 	-- Convert matrix to avector-vector: to_slvv_*
+	function to_slvv(slm : T_SLM)		  return T_SLVV;																		  --
 	function to_slvv_4(slm : T_SLM)		return T_SLVV_4;																		--
 	function to_slvv_8(slm : T_SLM)		return T_SLVV_8;																		--
 	function to_slvv_12(slm : T_SLM)	return T_SLVV_12;																		--
@@ -165,6 +176,7 @@ package vectors is
 
 	-- Convert vector-vector to matrix: to_slm
 	function to_slm(slv : std_logic_vector; ROWS : positive; COLS : positive) return T_SLM;	-- create matrix from vector
+	function to_slm(slvv : T_SLVV) return T_SLM;																					-- create matrix from vector-vector
 	function to_slm(slvv : T_SLVV_4) return T_SLM;																					-- create matrix from vector-vector
 	function to_slm(slvv : T_SLVV_8) return T_SLM;																					-- create matrix from vector-vector
 	function to_slm(slvv : T_SLVV_12) return T_SLM;																					-- create matrix from vector-vector
@@ -433,6 +445,17 @@ package body vectors is
 	-- Convert to vector: to_slv
 	-- ==========================================================================
 	-- convert vector-vector to flatten vector
+	function to_slv(slvv : T_SLVV) return std_logic_vector is
+	  constant first_len  : natural := slvv'length;
+	  constant second_len : natural := slvv(slvv'left)'length;
+		variable slv			  : std_logic_vector((first_len * second_len) - 1 downto 0);
+	begin
+		for i in slvv'range loop
+			slv((i * second_len) + second_len -1 downto (i * second_len))		:= slvv(i);
+		end loop;
+		return slv;
+	end function;
+	
 	function to_slv(slvv : T_SLVV_2) return std_logic_vector is
 		variable slv			: std_logic_vector((slvv'length * 2) - 1 downto 0);
 	begin
@@ -529,6 +552,18 @@ package body vectors is
 
 	-- Convert flat vector to a vector-vector: to_slvv_*
 	-- ==========================================================================
+	-- create vector-vector from vector
+	function to_slvv(slv : std_logic_vector; sub_element_length : natural) return T_SLVV is
+		variable Result		: T_SLVV((slv'length / sub_element_length) - 1 downto 0)(sub_element_length -1 downto 0);
+	begin
+		if ((slv'length mod sub_element_length) /= 0) then	report "to_slvv: width mismatch - slv'length is no multiple of sub_element_length (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;	end if;
+
+		for i in Result'range loop
+			Result(i)	:= slv((i * sub_element_length) + sub_element_length -1 downto (i * sub_element_length));
+		end loop;
+		return Result;
+	end function;
+	
 	-- create vector-vector from vector (4 bit)
 	function to_slvv_4(slv : std_logic_vector) return T_SLVV_4 is
 		variable Result		: T_SLVV_4((slv'length / 4) - 1 downto 0);
@@ -639,6 +674,16 @@ package body vectors is
 
 	-- Convert matrix to avector-vector: to_slvv_*
 	-- ==========================================================================
+	-- create vector-vector from matrix
+	function to_slvv(slm : T_SLM) return T_SLVV is
+		variable Result		: T_SLVV(slm'length(1) -1 downto 0)(slm'length(2) -1 downto 0);
+	begin
+		for i in slm'range(1) loop
+			Result(i)	:= get_row(slm, i);
+		end loop;
+		return Result;
+	end function;
+	
 	-- create vector-vector from matrix (4 bit)
 	function to_slvv_4(slm : T_SLM) return T_SLVV_4 is
 		variable Result		: T_SLVV_4(slm'range(1));
@@ -762,6 +807,17 @@ package body vectors is
 	end function;
 
 	-- create matrix from vector-vector
+	function to_slm(slvv : T_SLVV) return T_SLM is
+		variable slm		: T_SLM(slvv'range, slvv(slvv'left)'range);
+	begin
+		for i in slvv'range loop
+			for j in slvv(slvv'left)'range loop
+				slm(i, j)		:= slvv(i)(j);
+			end loop;
+		end loop;
+		return slm;
+	end function;
+	
 	function to_slm(slvv : T_SLVV_4) return T_SLM is
 		variable slm		: T_SLM(slvv'range, 3 downto 0);
 	begin

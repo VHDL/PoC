@@ -30,16 +30,17 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use			IEEE.std_logic_1164.all;
+use			IEEE.numeric_std.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.physical.all;
-use			PoC.io.all;
+use			work.utils.all;
+use			work.physical.all;
+use			work.io.all;
 
 
 package iic is
+	alias T_IO_TRISTATE is work.io.T_IO_TRISTATE;
+
 	type T_IO_IIC_SERIAL is record
 		Clock : T_IO_TRISTATE;
 		Data  : T_IO_TRISTATE;
@@ -49,6 +50,8 @@ package iic is
 		Clock : std_logic;
 		Data  : std_logic;
 	end record;
+
+	constant C_IO_IIC_SERIAL_PCB_INIT : T_IO_IIC_SERIAL_PCB := ('Z', 'Z');
 
 	type T_IO_IIC_SERIAL_VECTOR     is array(natural range <>) of T_IO_IIC_SERIAL;
 	type T_IO_IIC_SERIAL_PCB_VECTOR is array(natural range <>) of T_IO_IIC_SERIAL_PCB;

@@ -59,11 +59,10 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.std_logic_1164.all;
 
-library PoC;
-use     PoC.utils.all;
-use     PoC.sync.all;
+use     work.utils.all;
+use     work.sync.all;
 
 
 entity sync_Bits_Xilinx is
@@ -81,13 +80,12 @@ end entity;
 
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.std_logic_1164.all;
 
 library UniSim;
 use     UniSim.vComponents.all;
 
-library PoC;
-use     PoC.sync.all;
+use     work.sync.all;
 
 
 entity sync_Bit_Xilinx is
@@ -107,7 +105,7 @@ architecture rtl of sync_Bits_Xilinx is
 	constant INIT_I            : bit_vector    := to_bitvector(resize(descend(INIT), BITS));
 begin
 	gen : for i in 0 to BITS - 1 generate
-		Sync : entity PoC.sync_Bit_Xilinx
+		Sync : entity work.sync_Bit_Xilinx
 			generic map (
 				INIT        => INIT_I(i),
 				SYNC_DEPTH  => SYNC_DEPTH
@@ -122,13 +120,13 @@ end architecture;
 
 
 architecture rtl of sync_Bit_Xilinx is
-	attribute ASYNC_REG        : string;
-	attribute SHREG_EXTRACT    : string;
-	attribute RLOC            : string;
+	attribute ASYNC_REG     : string;
+	attribute SHREG_EXTRACT : string;
+	attribute RLOC          : string;
 
-	signal Data_async        : std_logic;
+	signal Data_async       : std_logic;
 	signal Data_meta        : std_logic;
-	signal Data_sync        : std_logic;
+	signal Data_sync        : std_logic_vector(SYNC_DEPTH - 1 downto 0);
 
 	-- Mark register Data_async's input as asynchronous
 	attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
@@ -142,8 +140,6 @@ architecture rtl of sync_Bit_Xilinx is
 	attribute RLOC of Data_sync            : signal is "X0Y0";
 
 begin
-	assert (SYNC_DEPTH = 2) report "Xilinx synchronizer supports only 2 stages. It could be extended to 4 or 8 on new FPGA series." severity WARNING;
-
 	Data_async  <= Input;
 
 	FF1_METASTABILITY_FFS : FD
@@ -156,15 +152,19 @@ begin
 			Q        => Data_meta
 		);
 
-	FF2 : FD
-		generic map (
-			INIT    => INIT
-		)
-		port map (
-			C        => Clock,
-			D        => Data_meta,
-			Q        => Data_sync
-		);
+	Data_sync(0) <= Data_meta;
+	
+	gen: for i in 0 to SYNC_DEPTH - 2 generate
+		FF : FD
+			generic map (
+				INIT    => INIT
+			)
+			port map (
+				C        => Clock,
+				D        => Data_sync(i),
+				Q        => Data_sync(i + 1)
+			);
+		end generate;
 
-	Output  <= Data_sync;
+	Output  <= Data_sync(Data_sync'high);
 end architecture;

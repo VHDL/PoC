@@ -39,6 +39,7 @@ use			PoC.physical.all;
 
 
 package io is
+  
 	-- Do not use this type for ``inout`` ports of synthesizable IP cores to drive
 	-- values in both directions, see also
 	-- :ref:`ISSUES:General:inout_records`.
@@ -47,6 +48,8 @@ package io is
 		O			: std_logic;					-- output / from FPGA to device
 		T			: std_logic;					-- output disable / tristate enable
 	end record;
+
+	constant C_IO_TRISTATE_INIT : T_IO_TRISTATE := ('Z', 'Z', 'Z');
 
 	type T_IO_LVDS is record
 		P			: std_logic;
