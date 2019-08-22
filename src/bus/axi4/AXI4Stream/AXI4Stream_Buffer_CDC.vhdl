@@ -39,8 +39,8 @@ use			work.axi4Stream.all;
 
 entity AXI4Stream_Buffer_CDC is
 	generic (
-		FRAMES						: positive								:= 2;
-		MAX_PACKET_DEPTH  : positive								:= 8
+		FRAMES						: positive;
+		MAX_PACKET_DEPTH  : positive
 	);
 	port (
 		-- IN Port
@@ -61,127 +61,132 @@ architecture rtl of AXI4Stream_Buffer_CDC is
   constant META_BITS					: natural						:= In_M2S.User'length;
 	constant DATA_BITS					: positive					:= In_M2S.Data'length;
   
-	type T_WRITER_STATE is (ST_IDLE, ST_FRAME);
-	type T_READER_STATE is (ST_IDLE, ST_FRAME);
+--	type T_WRITER_STATE is (ST_IDLE, ST_FRAME);
+--	type T_READER_STATE is (ST_IDLE, ST_FRAME);
 
-	signal Writer_State								: T_WRITER_STATE																			:= ST_IDLE;
-	signal Writer_NextState						: T_WRITER_STATE;
-	signal Reader_State								: T_READER_STATE																			:= ST_IDLE;
-	signal Reader_NextState						: T_READER_STATE;
+--	signal Writer_State								: T_WRITER_STATE																			:= ST_IDLE;
+--	signal Writer_NextState						: T_WRITER_STATE;
+--	signal Reader_State								: T_READER_STATE																			:= ST_IDLE;
+--	signal Reader_NextState						: T_READER_STATE;
 
-	constant Last_BIT									: natural																							:= DATA_BITS;
+--	constant Last_BIT									: natural																							:= DATA_BITS;
 
-	signal DataFIFO_put								: std_logic;
-	signal DataFIFO_DataIn						: std_logic_vector(DATA_BITS downto 0);
+--	signal DataFIFO_put								: std_logic;
+	signal DataFIFO_DataIn						: std_logic_vector(META_BITS + DATA_BITS downto 0);
 	signal DataFIFO_Full							: std_logic;
-	signal MetaFIFO_Full							: std_logic;
+--	signal MetaFIFO_Full							: std_logic;
 
-	signal DataFIFO_got								: std_logic;
+--	signal DataFIFO_got								: std_logic;
 	signal DataFIFO_DataOut						: std_logic_vector(DataFIFO_DataIn'range);
-	signal DataFIFO_Valid							: std_logic;
+--	signal DataFIFO_Valid							: std_logic;
 
-	signal FrameCommit								: std_logic;
+--	signal FrameCommit								: std_logic;
   
-  signal In_SOF                     : std_logic;
-  signal started                    : std_logic := '0';
+--  signal In_SOF                     : std_logic;
+--  signal started                    : std_logic := '0';
   
-  signal Out_M2S_i                  : T_AXI4Stream_M2S(Data(DATA_BITS -1 downto 0), User(META_BITS -1 downto 0));
+--  signal Out_M2S_i                  : T_AXI4Stream_M2S(Data(DATA_BITS -1 downto 0), User(META_BITS -1 downto 0));
   
 begin
-  In_SOF      <= In_M2S.Valid and not started;
-  started     <= ffrs(q => started, rst => ((In_M2S.Valid and In_M2S.Last) or In_Reset), set => (In_M2S.Valid)) when rising_edge(In_Clock);
+--  In_SOF      <= In_M2S.Valid and not started;
+--  started     <= ffrs(q => started, rst => ((In_M2S.Valid and In_M2S.Last) or In_Reset), set => (In_M2S.Valid)) when rising_edge(In_Clock);
   
-	process(In_Clock)
-	begin
-		if rising_edge(In_Clock) then
-			if (In_Reset = '1') then
-				Writer_State					<= ST_IDLE;
-			else
-				Writer_State					<= Writer_NextState;
-			end if;
-		end if;
-	end process;  
+--	process(In_Clock)
+--	begin
+--		if rising_edge(In_Clock) then
+--			if (In_Reset = '1') then
+--				Writer_State					<= ST_IDLE;
+--			else
+--				Writer_State					<= Writer_NextState;
+--			end if;
+--		end if;
+--	end process;  
   
-	process(Out_Clock)
-	begin
-		if rising_edge(Out_Clock) then
-			if (Out_Reset = '1') then
-				Reader_State					<= ST_IDLE;
-			else
-				Reader_State					<= Reader_NextState;
-			end if;
-		end if;
-	end process;
+--	process(Out_Clock)
+--	begin
+--		if rising_edge(Out_Clock) then
+--			if (Out_Reset = '1') then
+--				Reader_State					<= ST_IDLE;
+--			else
+--				Reader_State					<= Reader_NextState;
+--			end if;
+--		end if;
+--	end process;
 
-	process(Writer_State,
-					In_M2S.Valid, In_M2S.Data, In_SOF, In_M2S.Last,
-					DataFIFO_Full, MetaFIFO_Full)
-	begin
-		Writer_NextState									<= Writer_State;
+--	process(Writer_State,
+--					In_M2S.Valid, In_M2S.Data, In_SOF, In_M2S.Last,
+--					DataFIFO_Full, MetaFIFO_Full)
+--	begin
+--		Writer_NextState									<= Writer_State;
 
-		In_S2M.Ready											<= '0';
+--		In_S2M.Ready											<= '0';
 
-		DataFIFO_put											<= '0';
-		DataFIFO_DataIn(In_M2S.Data'range)<= In_M2S.Data;
-		DataFIFO_DataIn(Last_BIT)					<= In_M2S.Last;
+--		DataFIFO_put											<= '0';
+--		DataFIFO_DataIn(In_M2S.Data'range)<= In_M2S.Data;
+--		DataFIFO_DataIn(Last_BIT)					<= In_M2S.Last;
 
-		case Writer_State is
-			when ST_IDLE =>
-				In_S2M.Ready									<= not DataFIFO_Full and not MetaFIFO_Full;
-				DataFIFO_put									<= In_M2S.Valid and not MetaFIFO_Full;
+--		case Writer_State is
+--			when ST_IDLE =>
+--				In_S2M.Ready									<= not DataFIFO_Full and not MetaFIFO_Full;
+--				DataFIFO_put									<= In_M2S.Valid and not MetaFIFO_Full;
 
-				if ((In_M2S.Valid and In_SOF and not In_M2S.Last and not MetaFIFO_Full) = '1') then
+--				if ((In_M2S.Valid and In_SOF and not In_M2S.Last and not MetaFIFO_Full) = '1') then
 
-					Writer_NextState						<= ST_FRAME;
-				end if;
+--					Writer_NextState						<= ST_FRAME;
+--				end if;
 
-			when ST_FRAME =>
-				In_S2M.Ready									<= not DataFIFO_Full;
-				DataFIFO_put									<= In_M2S.Valid;
+--			when ST_FRAME =>
+--				In_S2M.Ready									<= not DataFIFO_Full;
+--				DataFIFO_put									<= In_M2S.Valid;
 
-				if ((In_M2S.Valid and In_M2S.Last and not DataFIFO_Full) = '1') then
+--				if ((In_M2S.Valid and In_M2S.Last and not DataFIFO_Full) = '1') then
 
-					Writer_NextState						<= ST_IDLE;
-				end if;
-		end case;
-	end process;
+--					Writer_NextState						<= ST_IDLE;
+--				end if;
+--		end case;
+--	end process;
 
 
-	process(Reader_State,
-					Out_S2M.Ready,
-					DataFIFO_Valid, DataFIFO_DataOut)
-	begin
-		Reader_NextState								<= Reader_State;
+--	process(Reader_State,
+--					Out_S2M.Ready,
+--					DataFIFO_Valid, DataFIFO_DataOut)
+--	begin
+--		Reader_NextState								<= Reader_State;
 
-		Out_M2S_i.Valid									<= '0';
-		Out_M2S_i.Data									<= DataFIFO_DataOut(Out_M2S_i.Data'range);
-		Out_M2S_i.Last									<= DataFIFO_DataOut(Last_BIT);
+--		Out_M2S_i.Valid									<= '0';
+--		Out_M2S_i.Data									<= DataFIFO_DataOut(Out_M2S_i.Data'range);
+--		Out_M2S_i.Last									<= DataFIFO_DataOut(Last_BIT);
 
-		DataFIFO_got										<= '0';
+--		DataFIFO_got										<= '0';
 
-		case Reader_State is
-			when ST_IDLE =>
-				Out_M2S_i.Valid							<= DataFIFO_Valid;
-				DataFIFO_got								<= Out_S2M.Ready;
+--		case Reader_State is
+--			when ST_IDLE =>
+--				Out_M2S_i.Valid							<= DataFIFO_Valid;
+--				DataFIFO_got								<= Out_S2M.Ready;
 
-				if ((DataFIFO_Valid and not DataFIFO_DataOut(Last_BIT) and Out_S2M.Ready) = '1') then
-					Reader_NextState					<= ST_FRAME;
-				end if;
+--				if ((DataFIFO_Valid and not DataFIFO_DataOut(Last_BIT) and Out_S2M.Ready) = '1') then
+--					Reader_NextState					<= ST_FRAME;
+--				end if;
 
-			when ST_FRAME =>
-				Out_M2S_i.Valid										<= DataFIFO_Valid;
-				DataFIFO_got								<= Out_S2M.Ready;
+--			when ST_FRAME =>
+--				Out_M2S_i.Valid										<= DataFIFO_Valid;
+--				DataFIFO_got								<= Out_S2M.Ready;
 
-				if ((DataFIFO_Valid and DataFIFO_DataOut(Last_BIT) and Out_S2M.Ready) = '1') then
-					Reader_NextState					<= ST_IDLE;
-				end if;
+--				if ((DataFIFO_Valid and DataFIFO_DataOut(Last_BIT) and Out_S2M.Ready) = '1') then
+--					Reader_NextState					<= ST_IDLE;
+--				end if;
 
-		end case;
-	end process;
+--		end case;
+--	end process;
+
+	DataFIFO_DataIn(In_M2S.Data'range)  <= In_M2S.Data;
+	DataFIFO_DataIn(In_M2S.Data'length) <= In_M2S.Last;
+	DataFIFO_DataIn(In_M2S.User'high + In_M2S.Data'length + 1 downto In_M2S.User'low + In_M2S.Data'length + 1) <= In_M2S.User;
+	In_S2M.Ready                        <= not DataFIFO_Full;
 
 	DataFIFO : entity work.fifo_ic_got
 		generic map (
-			D_BITS							=> DATA_BITS + 1,								-- Data Width
+			D_BITS							=> META_BITS + 1 + DATA_BITS,	  -- Data Width
 			MIN_DEPTH						=> (MAX_PACKET_DEPTH * FRAMES),	-- Minimum FIFO Depth
 			DATA_REG						=> ((MAX_PACKET_DEPTH * FRAMES) <= 128),											-- Store Data Content in Registers
 			-- STATE_REG						=> TRUE,												-- Registered Full/Empty Indicators
@@ -193,7 +198,7 @@ begin
 			-- Writing Interface
       clk_wr              => In_Clock,
       rst_wr              => In_Reset,
-			put									=> DataFIFO_put,
+			put									=> In_M2S.Valid, -- DataFIFO_put,
 			din									=> DataFIFO_DataIn,
 			full								=> DataFIFO_Full,
 			estate_wr						=> open,
@@ -201,44 +206,48 @@ begin
 			-- Reading Interface
       clk_rd              => Out_Clock,
       rst_rd              => Out_Reset,
-			got									=> DataFIFO_got,
+			got									=> Out_S2M.Ready, -- DataFIFO_got,
 			dout								=> DataFIFO_DataOut,
-			valid								=> DataFIFO_Valid,
+			valid								=> Out_M2S.Valid, -- DataFIFO_Valid,
 			fstate_rd						=> open
 		);
 
-	FrameCommit		<= DataFIFO_Valid and DataFIFO_DataOut(Last_BIT) and Out_S2M.Ready;
+	Out_M2S.Data <= DataFIFO_DataOut(Out_M2S.Data'range);
+	Out_M2S.Last <= DataFIFO_DataOut(Out_M2S.Data'length);
+	Out_M2S.User <= DataFIFO_DataOut(Out_M2S.User'high + Out_M2S.Data'length + 1 downto Out_M2S.User'low + Out_M2S.Data'length + 1);
+
+--	FrameCommit		<= DataFIFO_Valid and DataFIFO_DataOut(Last_BIT) and Out_S2M.Ready;
     
-  Out_M2S     <= Out_M2S_i;
+--  Out_M2S     <= Out_M2S_i;
 
-	genMeta : if META_BITS > 0 generate
-    MetaFIFO : entity work.fifo_ic_got
-      generic map (
-        D_BITS							=> META_BITS,								-- Data Width
-        MIN_DEPTH						=> (META_BITS * FRAMES),	-- Minimum FIFO Depth
-        DATA_REG						=> ((META_BITS * FRAMES) <= 128),											-- Store Data Content in Registers
-        -- STATE_REG						=> TRUE,												-- Registered Full/Empty Indicators
-        OUTPUT_REG					=> FALSE,												-- Registered FIFO Output
-        ESTATE_WR_BITS			=> 0,														-- Empty State Bits
-        FSTATE_RD_BITS			=> 0														-- Full State Bits
-      )
-      port map (
-        -- Writing Interface
-        clk_wr              => In_Clock,
-        rst_wr              => In_Reset,
-        put									=> In_SOF,
-        din									=> In_M2S.User,
-        full								=> MetaFIFO_Full,
-        estate_wr						=> open,
+--	genMeta : if META_BITS > 0 generate
+--    MetaFIFO : entity work.fifo_ic_got
+--      generic map (
+--        D_BITS							=> META_BITS,								-- Data Width
+--        MIN_DEPTH						=> (META_BITS * FRAMES),	-- Minimum FIFO Depth
+--        DATA_REG						=> ((META_BITS * FRAMES) <= 128),											-- Store Data Content in Registers
+--        -- STATE_REG						=> TRUE,												-- Registered Full/Empty Indicators
+--        OUTPUT_REG					=> FALSE,												-- Registered FIFO Output
+--        ESTATE_WR_BITS			=> 0,														-- Empty State Bits
+--        FSTATE_RD_BITS			=> 0														-- Full State Bits
+--      )
+--      port map (
+--        -- Writing Interface
+--        clk_wr              => In_Clock,
+--        rst_wr              => In_Reset,
+--        put									=> In_SOF,
+--        din									=> In_M2S.User,
+--        full								=> MetaFIFO_Full,
+--        estate_wr						=> open,
 
-        -- Reading Interface
-        clk_rd              => Out_Clock,
-        rst_rd              => Out_Reset,
-        got									=> Out_M2S_i.Valid and Out_M2S_i.Last and Out_S2M.Ready,
-        dout								=> Out_M2S_i.User,
-        valid								=> open,
-        fstate_rd						=> open
-      );
-	end generate;
+--        -- Reading Interface
+--        clk_rd              => Out_Clock,
+--        rst_rd              => Out_Reset,
+--        got									=> Out_M2S_i.Valid and Out_M2S_i.Last and Out_S2M.Ready,
+--        dout								=> Out_M2S_i.User,
+--        valid								=> open,
+--        fstate_rd						=> open
+--      );
+--	end generate;
 
 end architecture;
