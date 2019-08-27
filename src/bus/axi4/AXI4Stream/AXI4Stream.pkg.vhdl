@@ -32,7 +32,7 @@
 library IEEE;
 use     IEEE.std_logic_1164.all;
 
-  
+
 package AXI4Stream is
 	type T_AXI4Stream_M2S is record
 		Valid : std_logic;
