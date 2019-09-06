@@ -31,7 +31,10 @@
 
 library IEEE;
 use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
+use     work.utils.all;
+use     work.vectors.all;
 use     work.axi4.all;
 
 
@@ -159,10 +162,10 @@ begin
 		-- AXI4_M2S_i.ARUser  
 
   
-  AXI4_S2M_i.RData(high(Split(WBurst_Pos)) downto low(Split(WBurst_Pos))) <= std_logic_vector(WBurst_Count);
-  AXI4_S2M_i.RData(high(Split(WData_Pos))  downto low(Split(WData_Pos)))  <= std_logic_vector(WData_Count);
-  AXI4_S2M_i.RData(high(Split(RBurst_Pos)) downto low(Split(RBurst_Pos))) <= std_logic_vector(RBurst_Count);
-  AXI4_S2M_i.RData(high(Split(RData_Pos))  downto low(Split(RData_Pos)))  <= std_logic_vector(RData_Count);
+  AXI4_S2M_i.RData(high(Split,WBurst_Pos) downto low(Split,WBurst_Pos)) <= std_logic_vector(WBurst_Count);
+  AXI4_S2M_i.RData(high(Split,WData_Pos)  downto low(Split,WData_Pos))  <= std_logic_vector(WData_Count);
+  AXI4_S2M_i.RData(high(Split,RBurst_Pos) downto low(Split,RBurst_Pos)) <= std_logic_vector(RBurst_Count);
+  AXI4_S2M_i.RData(high(Split,RData_Pos)  downto low(Split,RData_Pos))  <= std_logic_vector(RData_Count);
   
   WData_inc   <= Is_WriteData and AXI4_S2M_i.WReady and AXI4_M2S_i.WValid;
   WTransf_Inc <= WData_inc;
@@ -179,7 +182,7 @@ begin
   ARLen_d <= AXI4_M2S.ARLen when rising_edge(Clock) and (AXI4_M2S_i.ARValid and AXI4_S2M_i.ARReady) = '1';
   ARLen   <= AXI4_M2S.ARLen when (AXI4_M2S_i.ARValid and AXI4_S2M_i.ARReady) = '1' else ARLen_d;
   
-  AXI4_S2M_i.RLast <= '1' when ARLen = RTransf_count else '0';
+  AXI4_S2M_i.RLast <= '1' when unsigned(ARLen) = RTransf_count else '0';
   
   AWID_d  <= AXI4_M2S.AWID when rising_edge(Clock) and (AXI4_M2S_i.AWValid and AXI4_S2M_i.AWReady) = '1';
   AWID    <= AXI4_M2S.AWID when (AXI4_M2S_i.AWValid and AXI4_S2M_i.AWReady) = '1' else AWID_d;
@@ -214,7 +217,7 @@ begin
         end if;
         
       when Write_data =>
-        if (WTransf_count = AWLen) and (AXI4_S2M_i.WReady and AXI4_M2S_i.WValid and AXI4_M2S_i.WLast) = '1' then
+        if (WTransf_count = unsigned(AWLen)) and (AXI4_S2M_i.WReady and AXI4_M2S_i.WValid and AXI4_M2S_i.WLast) = '1' then
           nxt_wstate          <= Write_resp_OK;
         elsif (AXI4_S2M_i.WReady and AXI4_M2S_i.WValid and AXI4_M2S_i.WLast) = '1' then
           nxt_wstate          <= Write_resp_Error;
