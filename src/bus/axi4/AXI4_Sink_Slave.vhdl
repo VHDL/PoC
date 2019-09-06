@@ -111,57 +111,6 @@ begin
   AXI4_S2M_i.RUser   <= (others => '0');
   AXI4_S2M_i.BUser   <= (others => '0');
   
-  -- AXI4_S2M_i.AWReady 
-  
-  -- AXI4_S2M_i.WReady  
-  
-  -- AXI4_S2M_i.BValid  
-  -- AXI4_S2M_i.BResp   
-  -- AXI4_S2M_i.BID     
-  
-  -- AXI4_S2M_i.ARReady 
-  
-  -- AXI4_S2M_i.RValid  
-  -- AXI4_S2M_i.RData   
-  -- AXI4_S2M_i.RResp   
-  -- AXI4_S2M_i.RID     
-  -- AXI4_S2M_i.RLast   
-  
-  
-  -- AXI4_M2S_i.AWID  
-  -- AXI4_M2S_i.AWLen   
-  -- AXI4_M2S_i.AWValid   
-  -- AXI4_M2S_i.WValid  
-  -- AXI4_M2S_i.WLast   
-  -- AXI4_M2S_i.BReady  
-  -- AXI4_M2S_i.ARValid 
-  -- AXI4_M2S_i.ARID    
-  -- AXI4_M2S_i.ARLen   
-  -- AXI4_M2S_i.RReady  
-    
-		-- AXI4_M2S_i.AWAddr  
-		-- AXI4_M2S_i.AWSize  
-		-- AXI4_M2S_i.AWBurst 
-		-- AXI4_M2S_i.AWLock  
-		-- AXI4_M2S_i.AWQOS   
-		-- AXI4_M2S_i.AWRegion
-		-- AXI4_M2S_i.AWUser  
-		-- AXI4_M2S_i.AWCache 
-		-- AXI4_M2S_i.AWProt  
-		-- AXI4_M2S_i.WUser   
-		-- AXI4_M2S_i.WData   
-		-- AXI4_M2S_i.WStrb   
-		-- AXI4_M2S_i.ARAddr  
-		-- AXI4_M2S_i.ARCache 
-		-- AXI4_M2S_i.ARProt  
-		-- AXI4_M2S_i.ARSize  
-		-- AXI4_M2S_i.ARBurst 
-		-- AXI4_M2S_i.ARLock  
-		-- AXI4_M2S_i.ARQOS   
-		-- AXI4_M2S_i.ARRegion
-		-- AXI4_M2S_i.ARUser  
-
-  
   AXI4_S2M_i.RData(high(Split,WBurst_Pos) downto low(Split,WBurst_Pos)) <= std_logic_vector(WBurst_Count);
   AXI4_S2M_i.RData(high(Split,WData_Pos)  downto low(Split,WData_Pos))  <= std_logic_vector(WData_Count);
   AXI4_S2M_i.RData(high(Split,RBurst_Pos) downto low(Split,RBurst_Pos)) <= std_logic_vector(RBurst_Count);
