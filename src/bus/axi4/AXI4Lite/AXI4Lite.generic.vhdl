@@ -3,8 +3,8 @@ use work.AXI4Stream.all;
 
 package AXI4Stream_Sized is
 	generic (
-		DATA_BITS     : positive;
-		USER_BITS     : positive := 0
+		DATA_BITS     : natural;
+		USER_BITS     : natural := 0
 	);
 
 	subtype SIZED_M2S is T_AXI4STREAM_M2S(
@@ -26,8 +26,8 @@ use work.AXI4Lite.all;
 
 package AXI4Lite_Sized is
 	generic (
-		ADDRESS_BITS  : positive;
-		DATA_BITS     : positive
+		ADDRESS_BITS  : natural;
+		DATA_BITS     : natural
 	);
 	
 	subtype SIZED_M2S is T_AXI4LITE_BUS_M2S(
@@ -56,10 +56,10 @@ use work.AXI4_Full.all;
 
 package AXI4Full_Sized is
 	generic (
-		ADDRESS_BITS  : positive;
-		DATA_BITS     : positive;
-		USER_BITS     : positive := 0;
-		ID_BITS       : positive := 0
+		ADDRESS_BITS  : natural;
+		DATA_BITS     : natural;
+		USER_BITS     : natural := 0;
+		ID_BITS       : natural := 0
 	);
 
 	subtype SIZED_M2S is T_AXI4_BUS_M2S(
