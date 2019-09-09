@@ -59,7 +59,6 @@ end entity;
 architecture rtl of AXI4Lite_GitVersionRegister is
 	constant DATA_BITS            : natural          := 32;
 	
-
 	constant num_Version_register : natural          := get_num_Version_register;
   
   constant CONFIG      : T_AXI4_Register_Description_Vector       := get_Dummy_Descriptor(num_Version_register);
@@ -77,8 +76,12 @@ architecture rtl of AXI4Lite_GitVersionRegister is
 	signal   RegisterFile_ReadPort   : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0);
   constant RegisterFile_WritePort  : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0) := to_slvv(VersionData);
   
-	signal AddressTrunc_m2s : T_AXI4LITE_BUS_M2S := Initialize_AXI4Lite_Bus_M2S(log2ceil(CONFIG'Length) + log2ceil(DATA_BITS), DATA_BITS);
-	signal AddressTrunc_s2m : T_AXI4LITE_BUS_S2M := Initialize_AXI4Lite_Bus_S2M(log2ceil(CONFIG'Length) + log2ceil(DATA_BITS), DATA_BITS);
+  constant Address_Bits : natural := log2ceil(CONFIG'Length) + log2ceil(DATA_BITS);
+  
+	signal AddressTrunc_m2s : T_AXI4LITE_BUS_M2S(
+      AWAddr(Address_Bits -1 downto 0), WData(DATA_BITS -1 downto 0), 
+      WStrb((DATA_BITS /8) -1 downto 0), ARAddr(Address_Bits -1 downto 0))    := Initialize_AXI4Lite_Bus_M2S(Address_Bits, DATA_BITS);
+	signal AddressTrunc_s2m : T_AXI4LITE_BUS_S2M(RData(DATA_BITS -1 downto 0)) := Initialize_AXI4Lite_Bus_S2M(Address_Bits, DATA_BITS);
   
 begin
 	AXI4Lite_AdrTrunc : entity work.AXI4Lite_AddressTruncate
