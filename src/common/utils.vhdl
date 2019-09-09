@@ -521,7 +521,7 @@ package body utils is
 		variable log : natural  := 1;
 	begin
 		if arg = 1 then	return 0; end if;
-		while arg >= tmp loop
+		while arg > tmp loop
 			tmp := tmp * 2;
 			log := log + 1;
 		end loop;
@@ -540,7 +540,7 @@ package body utils is
 		variable log : natural  := 1;
 	begin
 		if arg = 1 then	return 0; end if;
-		while arg >= tmp loop
+		while arg > tmp loop
 			tmp := tmp * 10;
 			log := log + 1;
 		end loop;
