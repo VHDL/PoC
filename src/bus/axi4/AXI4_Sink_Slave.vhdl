@@ -49,7 +49,7 @@ end entity;
 
 
 architecture rtl of AXI4_Sink_Slave is
-	constant AddrBits     : natural := AXI4_M2S.AWAddr'length;
+	constant AddressBits  : natural := AXI4_M2S.AWAddr'length;
 	constant IDBits       : natural := AXI4_M2S.AWID'length;
 	constant UserBits     : natural := AXI4_M2S.AWUser'length;
 	constant DataBits     : natural := AXI4_M2S.WData'length;
@@ -64,8 +64,17 @@ architecture rtl of AXI4_Sink_Slave is
     RBurst_Pos  => DataBits - ( 3* (DataBits / 4))
   );
 
-	signal AXI4_M2S_i     : T_AXI4_Bus_M2S := Initialize_AXI4_Bus_M2S(AddrBits, DataBits, UserBits, IDBits, 'Z');
-	signal AXI4_S2M_i     : T_AXI4_Bus_S2M := Initialize_AXI4_Bus_S2M(AddrBits, DataBits, UserBits, IDBits, 'Z');
+	signal AXI4_M2S_i     : T_AXI4_Bus_M2S (
+			AWID(IDBits - 1 downto 0), ARID(IDBits - 1 downto 0),
+			AWUser(UserBits - 1 downto 0), ARUser(UserBits - 1 downto 0), WUser(UserBits - 1 downto 0),
+			WData(DataBits - 1 downto 0), WStrb((DataBits / 8) - 1 downto 0),
+			AWAddr(AddressBits-1 downto 0), ARAddr(AddressBits - 1 downto 0)
+		);
+	signal AXI4_S2M_i     : T_AXI4_Bus_S2M (
+			BID(IDBits - 1 downto 0), RID(IDBits - 1 downto 0),
+			BUser(UserBits - 1 downto 0), RUser(UserBits - 1 downto 0),
+			RData(DataBits - 1 downto 0)
+		);
     
   signal WData_inc      : std_logic;
   signal WBurst_inc     : std_logic;
@@ -96,10 +105,10 @@ architecture rtl of AXI4_Sink_Slave is
   signal AWLen          : std_logic_vector(7 downto 0); 
   signal ARLen_d        : std_logic_vector(7 downto 0); 
   signal ARLen          : std_logic_vector(7 downto 0); 
-  signal AWID_d         : std_logic_vector(7 downto 0); 
-  signal AWID           : std_logic_vector(7 downto 0); 
-  signal ARID_d         : std_logic_vector(7 downto 0); 
-  signal ARID           : std_logic_vector(7 downto 0); 
+  signal AWID_d         : std_logic_vector(IDBits-1 downto 0); 
+  signal AWID           : std_logic_vector(IDBits-1 downto 0); 
+  signal ARID_d         : std_logic_vector(IDBits-1 downto 0); 
+  signal ARID           : std_logic_vector(IDBits-1 downto 0); 
   
   signal Is_WriteData   : std_logic;
   signal Is_ReadData    : std_logic;
