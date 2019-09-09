@@ -218,9 +218,9 @@ begin
 	slv_reg_rden <=  S_AXI_m2s.ARValid and axi_arready and (not axi_rvalid);   
 
 
-	-- TODO: 
 	blockReadMux: block
 		signal mux : T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
+		signal hit : std_logic_vector(CONFIG'Length - 1 downto 0);
 	begin
 		--only wire out register if read only
 		genMux: for i in CONFIG'range generate
@@ -231,17 +231,20 @@ begin
 			end generate;
 		end generate;
 
-		process(mux, axi_araddr)
+		hit_gen : for i in hit'range generate
+			signal config_addr : unsigned(axi_araddr'range);
+		begin
+			config_addr <= CONFIG(i).address(config_addr'high + ADDR_LSB downto ADDR_LSB);
+			hit(i) <= '1' when std_logic_vector(config_addr) = axi_araddr else '0';
+		end generate;
+
+		process(mux, hit)
 			variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
 		begin
-				reg_data_out  <= (others => '0');
-			for i in CONFIG'range loop
-					trunc_addr := std_logic_vector(CONFIG(i).address);
-				if(axi_araddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) then
-					reg_data_out <= mux(i);
-					exit;
-				end if;
-			end loop;
+			reg_data_out  <= (others => '0');
+			if unsigned(hit) /= 0 then
+				reg_data_out <= mux(lssb_idx(hit));
+			end if;
 		end process;
 		
 	end block;
