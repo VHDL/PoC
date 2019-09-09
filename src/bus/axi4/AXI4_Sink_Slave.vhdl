@@ -244,6 +244,9 @@ begin
         if AXI4_M2S_i.BReady  = '1' then
           nxt_wstate          <= Idle;
         end if;
+        
+      when others =>  nxt_wstate  <= Idle; 
+        
     end case;
   end process;  
   
@@ -265,6 +268,7 @@ begin
           nxt_rstate             <= Idle;
         end if;
       
+      when others =>  nxt_rstate  <= Idle;
     end case;
   end process;
   
