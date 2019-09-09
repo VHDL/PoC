@@ -46,8 +46,8 @@ end entity;
 
 
 architecture rtl of AXI4Lite_AddressTruncate is
-  constant ADDR_OUT_BITS : positive := M_AXI_m2s.AWAddr'length;
   constant ADDR_IN_BITS  : positive := S_AXI_m2s.AWAddr'length;
+  constant ADDR_OUT_BITS : positive := M_AXI_m2s.AWAddr'length;
 
 begin
   --SLAVE

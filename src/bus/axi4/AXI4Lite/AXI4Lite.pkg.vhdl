@@ -60,19 +60,7 @@ package AXI4Lite is
   alias C_AXI4_PROTECT_INIT           is work.AXI4_Common.C_AXI4_PROTECT_INIT;
   alias C_AXI4_PROTECT                is work.AXI4_Common.C_AXI4_PROTECT;
 
-	type T_AXI4Lite_Bus_S2M is record
-		WReady      : std_logic;
-		BValid      : std_logic;
-		BResp       : T_AXI4_Response; 
-		ARReady     : std_logic;
-		AWReady     : std_logic;
-		RValid      : std_logic;
-		RData       : std_logic_vector;
-		RResp       : T_AXI4_Response;
-	end record;
-  type T_AXI4Lite_Bus_S2M_VECTOR is array(natural range <>) of T_AXI4Lite_Bus_S2M;
-
-	type T_AXI4Lite_Bus_M2S is record
+	type T_AXI4LITE_BUS_M2S is record
 		AWValid     : std_logic; 
 		AWAddr      : std_logic_vector; 
     AWCache     : T_AXI4_Cache;
@@ -87,18 +75,31 @@ package AXI4Lite is
 		ARProt      : T_AXI4_Protect;
 		RReady      : std_logic;
 	end record;
-  type T_AXI4Lite_Bus_M2S_VECTOR is array(natural range <>) of T_AXI4Lite_Bus_M2S;	
-	
+  type T_AXI4LITE_BUS_M2S_VECTOR is array(natural range <>) of T_AXI4LITE_BUS_M2S;	
+
+	type T_AXI4LITE_BUS_S2M is record
+		WReady      : std_logic;
+		BValid      : std_logic;
+		BResp       : T_AXI4_Response; 
+		ARReady     : std_logic;
+		AWReady     : std_logic;
+		RValid      : std_logic;
+		RData       : std_logic_vector;
+		RResp       : T_AXI4_Response;
+	end record;
+  type T_AXI4LITE_BUS_S2M_VECTOR is array(natural range <>) of T_AXI4LITE_BUS_S2M;
+
+
   type T_AXI4Lite_Bus is record
 --    AClk        : std_logic;
 --    AResetN     : std_logic;
-    M2S   : T_AXI4Lite_Bus_M2S;
-    S2M   : T_AXI4Lite_Bus_S2M;
+    M2S   : T_AXI4LITE_BUS_M2S;
+    S2M   : T_AXI4LITE_BUS_S2M;
   end record;
   type T_AXI4Lite_Bus_VECTOR is array(natural range <>) of T_AXI4Lite_Bus;
 	
-	function Initialize_AXI4Lite_Bus_M2S(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_M2S;
-	function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4Lite_Bus_S2M;
+	function Initialize_AXI4Lite_Bus_M2S(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4LITE_BUS_M2S;
+	function Initialize_AXI4Lite_Bus_S2M(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4LITE_BUS_S2M;
 	function Initialize_AXI4Lite_Bus(    AddressBits : natural; DataBits : natural) return T_AXI4Lite_Bus;
 
 

@@ -392,7 +392,7 @@ package body strings is
 		constant s				: REAL		:= sign(Value);
 		constant val			: REAL		:= Value * s;
 		constant int			: integer	:= integer(floor(val));
-		constant frac			: integer	:= integer(round((val - real(int)) * 10.0**precision));
+		constant frac			: integer	:= integer(round((val - real(int)) * real(10**precision)));
 		constant overflow : boolean := frac >= 10**precision;
 		constant int2     : integer := ite(overflow, int+1, int);
 		constant frac2    : integer := ite(overflow, frac-10**precision, frac);

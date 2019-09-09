@@ -49,6 +49,8 @@ package io is
 		T			: std_logic;					-- output disable / tristate enable
 	end record;
 
+	constant C_IO_TRISTATE_INIT : T_IO_TRISTATE := ('Z', 'Z', 'Z');
+
 	type T_IO_LVDS is record
 		P			: std_logic;
 		N			: std_logic;

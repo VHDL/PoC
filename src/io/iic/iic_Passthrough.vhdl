@@ -50,8 +50,12 @@ entity iic_Passthrough is
 		Clock   : in    std_logic;
 		Reset   : in    std_logic;
 		
-  	Port_a  : inout T_IO_IIC_SERIAL;
-		Port_b  : inout T_IO_IIC_SERIAL;
+--  	Port_a  : inout T_IO_IIC_SERIAL := (others => (others => 'Z'));
+  	Port_a_in  : in  T_IO_IIC_SERIAL_IN;
+  	Port_a_out : out T_IO_IIC_SERIAL_OUT;
+--		Port_b  : inout T_IO_IIC_SERIAL := (others => (others => 'Z'));
+		Port_b_in  : in  T_IO_IIC_SERIAL_IN;
+		Port_b_out : out T_IO_IIC_SERIAL_OUT;
 		
 		Debug   : out   T_IO_IIC_SERIAL_PCB
 	);
@@ -74,20 +78,20 @@ architecture rtl of iic_Passthrough is
 
 begin
 	--SCL
-	port_a.clock.O    <= '0';
-	port_a.clock.T    <= not a_set(c_clock);
+	port_a_out.clock_O    <= '0';
+	port_a_out.clock_T    <= not a_set(c_clock);
 
-	port_b.clock.O    <= '0';
-	port_b.clock.T    <= not b_set(c_clock);
+	port_b_out.clock_O    <= '0';
+	port_b_out.clock_T    <= not b_set(c_clock);
 
 	debug.clock       <= debug_level(c_clock);
 
 	--SDA
-	port_a.data.O     <= '0';
-	port_a.data.T     <= not a_set(c_data);
+	port_a_out.data_O     <= '0';
+	port_a_out.data_T     <= not a_set(c_data);
 
-	port_b.data.O     <= '0';
-	port_b.data.T     <= not b_set(c_data);
+	port_b_out.data_O     <= '0';
+	port_b_out.data_T     <= not b_set(c_data);
 
 	debug.data        <= debug_level(c_data);
 
@@ -100,10 +104,10 @@ begin
   )
   port map(
     Clock         => clock,
-    Input(0)      => port_a.data.I,
-    Input(1)      => port_b.data.I,
-    Input(2)      => port_a.clock.I,
-    Input(3)      => port_b.clock.I,
+    Input(0)      => port_a_in.data,
+    Input(1)      => port_b_in.data,
+    Input(2)      => port_a_in.clock,
+    Input(3)      => port_b_in.clock,
     Output(0)     => a_level(c_data),
     Output(1)     => b_level(c_data),
     Output(2)     => a_level(c_clock),

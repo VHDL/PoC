@@ -32,6 +32,7 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
+use     work.my_project.MY_PROJECT_DIR;
 use     work.utils.all;
 use     work.vectors.all;
 use     work.strings.all;
@@ -43,14 +44,14 @@ use     work.GitVersionRegister.all;
 
 entity AXI4Lite_GitVersionRegister is
 	Generic (
-		VERSION_FILE_NAME : string := "C:/Projekte/Bosch MHA/Test/PS/project/build_version.mem"
+		VERSION_FILE_NAME : string
 	);
 	Port (
-		S_AXI_ACLK    : in  std_logic;
-		S_AXI_ARESETN : in  std_logic;
+		Clock     : in  std_logic;
+		Reset     : in  std_logic;
 		
-		S_AXI_m2s     : in  T_AXI4Lite_BUS_M2S(AWAddr(31 downto 0),ARAddr(31 downto 0),WData(31 downto 0),WStrb(3 downto 0));
-		S_AXI_s2m     : out T_AXI4Lite_BUS_S2M(RData(31 downto 0))
+		S_AXI_m2s : in  T_AXI4Lite_BUS_M2S;
+		S_AXI_s2m : out T_AXI4Lite_BUS_S2M
 	);
 end entity;
 
@@ -58,11 +59,11 @@ end entity;
 architecture rtl of AXI4Lite_GitVersionRegister is
 	constant DATA_BITS            : natural          := 32;
 	
+
 	constant num_Version_register : natural          := get_num_Version_register;
   
-  constant CONFIG      : T_AXI4_Register_Description_Vector(0 to num_Version_register -1) := get_Dummy_Descriptor(num_Version_register);
-	
-	constant VersionData : T_SLVV_32(0 to num_Version_register -1) := read_Version_from_mem(VERSION_FILE_NAME);
+  constant CONFIG      : T_AXI4_Register_Description_Vector       := get_Dummy_Descriptor(num_Version_register);
+	constant VersionData : T_SLVV_32(0 to num_Version_register - 1) := read_Version_from_mem(MY_PROJECT_DIR & "/" & VERSION_FILE_NAME);
 		
 	function to_slvv(data : T_SLVV_32) return T_SLVV is
 		variable temp : T_SLVV(VersionData'range)(DATA_BITS -1 downto 0) := (others => (others => '0'));
@@ -73,21 +74,34 @@ architecture rtl of AXI4Lite_GitVersionRegister is
 		return temp;
 	end function;
 
-  constant RegisterFile_WritePort  : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS -1 downto 0) := to_slvv(VersionData);
+	signal   RegisterFile_ReadPort   : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0);
+  constant RegisterFile_WritePort  : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0) := to_slvv(VersionData);
+  
+	signal AddressTrunc_m2s : T_AXI4LITE_BUS_M2S := Initialize_AXI4Lite_Bus_M2S(log2ceil(CONFIG'Length) + log2ceil(DATA_BITS), DATA_BITS);
+	signal AddressTrunc_s2m : T_AXI4LITE_BUS_S2M := Initialize_AXI4Lite_Bus_S2M(log2ceil(CONFIG'Length) + log2ceil(DATA_BITS), DATA_BITS);
   
 begin
+	AXI4Lite_AdrTrunc : entity work.AXI4Lite_AddressTruncate
+		port map (
+			S_AXI_m2s               => S_AXI_m2s,
+			S_AXI_s2m               => S_AXI_s2m,
+			
+			M_AXI_m2s               => AddressTrunc_m2s,
+			M_AXI_s2m               => AddressTrunc_s2m
+		);
+
   AXI4LiteReg : entity work.AXI4Lite_Register
-	generic map(
-	 	CONFIG        => CONFIG
-	)
-	port map(
-		S_AXI_ACLK              => S_AXI_ACLK,
-		S_AXI_ARESETN           => S_AXI_ARESETN,
-		
-		S_AXI_m2s               => S_AXI_m2s,
-		S_AXI_s2m               => S_AXI_s2m,
-		
-		RegisterFile_ReadPort   => open,
-		RegisterFile_WritePort  => RegisterFile_WritePort
-	);
+		generic map(
+			CONFIG                  => CONFIG
+		)
+		port map(
+			S_AXI_ACLK              => Clock,
+			S_AXI_ARESETN           => not Reset,
+			
+			S_AXI_m2s               => AddressTrunc_m2s,
+			S_AXI_s2m               => AddressTrunc_s2m,
+			
+			RegisterFile_ReadPort   => RegisterFile_ReadPort,
+			RegisterFile_WritePort  => RegisterFile_WritePort
+		);
 end architecture;

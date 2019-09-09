@@ -201,7 +201,7 @@ package body GitVersionRegister is
 		variable temp : T_SLVV_32(0 to MemoryLines -1)     := (others => (others => '0'));
 		
 		impure function get_string return string is
-			variable result : string(1 to 128);
+			variable result : string(1 to 128) := (others => NUL);
 			variable CurrentLine	: LINE;
 			variable Good					: boolean;
 			variable Len          : natural;
@@ -225,6 +225,7 @@ package body GitVersionRegister is
 			readline(FileHandle, CurrentLine);
 			Len := CurrentLine'length;
 			hread(CurrentLine, result(Len * 4 -1 downto 0), Good);
+			report "get_slv_h: " & integer'image(Len) severity NOTE;
 			if not Good then
 				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
 				return result(Len * 4 -1 downto 0);
@@ -233,7 +234,7 @@ package body GitVersionRegister is
 		end function;
 		
 		impure function get_slv_d(length : natural) return std_logic_vector is
-			variable result       : string(1 to 128);
+			variable result       : string(1 to 128) := (others => NUL);
 			variable CurrentLine	: LINE;
 			variable Good					: boolean;
 			variable Len          : natural;
@@ -241,6 +242,7 @@ package body GitVersionRegister is
 			readline(FileHandle, CurrentLine);
 			Len := CurrentLine'length;
 			read(CurrentLine, result(1 to Len), Good);
+			report "get_slv_d(" & integer'image(length) & "): " & Result(1 to Len) severity NOTE;
 			if not Good then
 				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
 				return std_logic_vector(to_unsigned(to_natural_dec(result(1 to Len)), length));

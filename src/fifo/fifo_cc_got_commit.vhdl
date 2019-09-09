@@ -1,139 +1,92 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
--- =============================================================================
--- Authors:					Thomas B. Preusser
---									Steffen Koehler
---									Martin Zabel
---									Patrick Lehmann
---
--- Entity:					FIFO, common clock (cc), pipelined interface, writes only become effective after explicit commit
---
--- Description:
--- -------------------------------------
--- The specified depth (``MIN_DEPTH``) is rounded up to the next suitable value.
---
--- As uncommitted writes populate FIFO space that is not yet available for
--- reading, an instance of this FIFO can, indeed, report ``full`` and ``not vld``
--- at the same time. While a ``commit`` would eventually make data available for
--- reading (``vld``), a ``rollback`` would free the space for subsequent writing
--- (``not ful``).
---
--- ``commit`` and ``rollback`` are inclusive and apply to all writes (``put``) since
--- the previous 'commit' or 'rollback' up to and including a potentially
--- simultaneous write.
---
--- The FIFO state upon a simultaneous assertion of ``commit`` and ``rollback`` is
--- *undefined*.
---
--- ``*STATE_*_BITS`` defines the granularity of the fill state indicator
--- ``*state_*``. ``fstate_rd`` is associated with the read clock domain and outputs
--- the guaranteed number of words available in the FIFO. ``estate_wr`` is
--- associated with the write clock domain and outputs the number of words that
--- is guaranteed to be accepted by the FIFO without a capacity overflow. Note
--- that both these indicators cannot replace the ``full`` or ``valid`` outputs as
--- they may be implemented as giving pessimistic bounds that are minimally off
--- the true fill state.
---
--- If a fill state is not of interest, set ``*STATE_*_BITS = 0``.
---
--- ``fstate_rd`` and ``estate_wr`` are combinatorial outputs and include an address
--- comparator (subtractor) in their path.
---
--- **Examples:**
---
--- * FSTATE_RD_BITS = 1:
---
---   * fstate_rd == 0 => 0/2 full
---   * fstate_rd == 1 => 1/2 full (half full)
---
--- * FSTATE_RD_BITS = 2:
---
---   * fstate_rd == 0 => 0/4 full
---   * fstate_rd == 1 => 1/4 full
---   * fstate_rd == 2 => 2/4 full
---   * fstate_rd == 3 => 3/4 full
---
--- License:
--- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
---										 Chair of VLSI-Design, Diagnostics and Architecture
---
--- Licensed under the Apache License, Version 2.0 (the "License");
--- you may not use this file except in compliance with the License.
--- You may obtain a copy of the License at
---
---		http://www.apache.org/licenses/LICENSE-2.0
---
--- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
--- limitations under the License.
--- =============================================================================
 
 library	IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
 
-use			work.config.all;
-use			work.utils.all;
-use			work.ocram.ocram_sdp;
+library	poc;
+use			poc.config.all;
+use			poc.utils.all;
+use			poc.ocram.ocram_sdp;
 
 
-entity fifo_cc_got_tempput is
+entity fifo_cc_got_commit is
   generic (
     D_BITS         : positive;          -- Data Width
+    NUM_FRAMES     : positive;          -- Number of Frames in FIFO
     MIN_DEPTH      : positive;          -- Minimum FIFO Depth
-    DATA_REG       : boolean := false;  -- Store Data Content in Registers
-    STATE_REG      : boolean := false;  -- Registered Full/Empty Indicators
-    OUTPUT_REG     : boolean := false;  -- Registered FIFO Output
-    ESTATE_WR_BITS : natural := 0;      -- Empty State Bits
-    FSTATE_RD_BITS : natural := 0       -- Full State Bits
+    DATA_REG       : boolean  := false;  -- Store Data Content in Registers
+    STATE_REG      : boolean  := false;  -- Registered Full/Empty Indicators
+    OUTPUT_REG     : boolean  := false;  -- Registered FIFO Output
+    ESTATE_WR_BITS : positive := 1;      -- Empty State Bits
+    FSTATE_RD_BITS : positive := 1       -- Full State Bits
   );
   port (
     -- Global Reset and Clock
-    rst, clk : in  std_logic;
+    rst, clk     : in  std_logic;
 
     -- Writing Interface
-    put       : in  std_logic;                            -- Write Request
-    din       : in  std_logic_vector(D_BITS-1 downto 0);  -- Input Data
-    full      : out std_logic;
-    estate_wr : out std_logic_vector(imax(0, ESTATE_WR_BITS-1) downto 0);
+    put          : in  std_logic;                            -- Write Request
+    din          : in  std_logic_vector(D_BITS-1 downto 0);  -- Input Data
+    full         : out std_logic;
+    estate_wr    : out std_logic_vector(ESTATE_WR_BITS-1 downto 0);
 
-    commit    : in  std_logic;
-    rollback  : in  std_logic;
+    save         : in  std_logic;
+    drop         : in  std_logic;
 
     -- Reading Interface
-    got       : in  std_logic;                            -- Read Completed
-    dout      : out std_logic_vector(D_BITS-1 downto 0);  -- Output Data
-    valid     : out std_logic;
-    fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS-1) downto 0)
+    got          : in  std_logic;                            -- Read Completed
+    dout         : out std_logic_vector(D_BITS-1 downto 0);  -- Output Data
+    valid        : out std_logic;
+    last         : out std_logic;
+    fstate_rd    : out std_logic_vector(FSTATE_RD_BITS-1 downto 0);
+
+    commit       : in  std_logic;
+    rollback     : in  std_logic
   );
 end entity;
 
 
-architecture rtl of fifo_cc_got_tempput is
+architecture rtl of fifo_cc_got_commit is
 
   -- Address Width
   constant A_BITS : natural := log2ceil(MIN_DEPTH);
+  constant C_BITS : natural := log2ceil(NUM_FRAMES);
 
   -- Force Carry-Chain Use for Pointer Increments on Xilinx Architectures
   constant FORCE_XILCY : boolean := (not SIMULATION) and (VENDOR = VENDOR_XILINX) and STATE_REG and (A_BITS > 4);
 
   -----------------------------------------------------------------------------
   -- Memory Pointers
+  subtype T_Pointer is unsigned(A_BITS-1 downto 0);
+  type    T_Pointer_vec is array (natural range <>) of T_Pointer;
 
   -- Actual Input and Output Pointers
-  signal IP0 : unsigned(A_BITS-1 downto 0) := (others => '0');
-  signal OP0 : unsigned(A_BITS-1 downto 0) := (others => '0');
+  signal IP0 : T_Pointer := (others => '0');
+  signal OP0 : T_Pointer := (others => '0');
 
   -- Incremented Input and Output Pointers
-  signal IP1 : unsigned(A_BITS-1 downto 0);
-  signal OP1 : unsigned(A_BITS-1 downto 0);
+  signal IP1 : T_Pointer;
+  signal OP1 : T_Pointer;
 
-  -- Committed Write Pointer (Commit Marker)
-  signal IPm : unsigned(A_BITS-1 downto 0) := (others => '0');
+  -- Committed Pointer (Commit Marker)
+  signal CP : T_Pointer_vec(0 to NUM_FRAMES -1) := (others => (others => '0'));  
+  signal NumC : unsigned(C_BITS-1 downto 0):= (others => '0');
+  
+  function drop_Commit(CP : T_Pointer_vec(0 to NUM_FRAMES -1)) return T_Pointer_vec is
+   variable temp : T_Pointer_vec(0 to NUM_FRAMES -1) := (others => (others => '0'));
+  begin
+    for i in 1 to NUM_FRAMES -1 loop
+      temp(i -1) := CP(i);
+    end loop;
+    return temp;
+  end function;  
+  
+  function drop_Commit(NumC : unsigned(C_BITS-1 downto 0)) return unsigned is
+  	variable temp : unsigned(C_BITS-1 downto 0) := ite(to_integer(NumC) = 0, (C_BITS-1 downto 0 => '0'), NumC -1);
+  begin
+    return temp;
+  end function;
+
 
   -----------------------------------------------------------------------------
   -- Backing Memory Connectivity
@@ -149,6 +102,7 @@ architecture rtl of fifo_cc_got_tempput is
   -- Internal full and empty indicators
   signal fulli : std_logic;
   signal empti : std_logic;
+  signal emptc : std_logic;
 
 begin
 
@@ -163,7 +117,7 @@ begin
 		IP0_slv	<= std_logic_vector(IP0);
 		OP0_slv	<= std_logic_vector(OP0);
 
-		incIP : entity work.arith_carrychain_inc
+		incIP : entity PoC.arith_carrychain_inc
 			generic map (
 				BITS		=> A_BITS
 			)
@@ -172,7 +126,7 @@ begin
 				Y				=> IP1_slv
 			);
 
-		incOP : entity work.arith_carrychain_inc
+		incOP : entity PoC.arith_carrychain_inc
 			generic map (
 				BITS		=> A_BITS
 			)
@@ -185,43 +139,61 @@ begin
 		OP1			<= unsigned(OP1_slv);
 	end block;
 
+
   process(clk)
+    variable CP_tmp    : T_Pointer_vec(0 to NUM_FRAMES -1);
+    variable NumC_tmp  : unsigned(C_BITS-1 downto 0);
   begin
     if rising_edge(clk) then
       if rst = '1' then
-        IP0 <= (others => '0');
-        IPm <= (others => '0');
-        OP0 <= (others => '0');
+        IP0  <= (others => '0');
+        OP0  <= (others => '0');
+        CP   <= (others => (others => '0'));   
+        NumC <= (others => '0');  
       else
+        CP_tmp   := CP;
+        NumC_tmp := NumC;
+        
         -- Update Input Pointer upon Write
-        if rollback = '1' then
-          IP0 <= IPm;
+        if drop = '1' then
+          IP0 <= CP(to_integer(NumC));
         elsif we = '1' then
           IP0 <= IP1;
         end if;
-
-        -- Update Commit Marker
-        if commit = '1' then
-          if we = '1' then
-            IPm <= IP1;
-          else
-            IPm <= IP0;
-          end if;
-        end if;
-
-        -- Update Output Pointer upon Read
-        if re = '1' then
+   
+        -- Update Output Pointer upon Read or Rollback     
+        if rollback = '1' then
+          OP0 <= CP(0);
+        elsif re = '1' then
           OP0 <= OP1;
         end if;
 
+        -- Update Commit Marker
+        if save = '1' and IP0 /= CP(to_integer(NumC)) then
+          NumC_tmp := NumC_tmp +1;
+          if we = '1' then
+            CP_tmp(to_integer(NumC_tmp)) := IP1;
+          else
+            CP_tmp(to_integer(NumC_tmp)) := IP0;
+          end if;
+        end if;
+        
+        if commit = '1' and to_integer(NumC) > 0 then
+          CP_tmp   := drop_Commit(CP_tmp);
+          NumC_tmp := drop_Commit(NumC_tmp);
+        end if;
+        
+        CP   <= CP_tmp;
+        NumC <= NumC_tmp;
       end if;
     end if;
   end process;
+  
   wa <= IP0;
   ra <= OP0;
 
   -- Fill State Computation (soft indicators)
-  process(fulli, IP0, IPm, OP0)
+  process(fulli, IP0, OP0, CP, NumC)
     variable  d : std_logic_vector(A_BITS-1 downto 0);
   begin
 
@@ -231,7 +203,7 @@ begin
       if fulli = '1' then
         d := (others => '1');              -- true number minus one when full
       else
-        d := std_logic_vector(IP0 - OP0);  -- true number of valid entries
+        d := std_logic_vector(IP0 - CP(0));  -- true number of valid entries
       end if;
       estate_wr <= not d(d'left downto d'left-ESTATE_WR_BITS+1);
     else
@@ -244,7 +216,7 @@ begin
       if fulli = '1' then
         d := (others => '1');              -- true number minus one when full
       else
-        d := std_logic_vector(IPm - OP0);  -- true number of valid entries
+        d := std_logic_vector(CP(to_integer(NumC)) - OP0);  -- true number of valid entries
       end if;
       fstate_rd <= d(d'left downto d'left-FSTATE_RD_BITS+1);
     else
@@ -260,46 +232,38 @@ begin
   -- needed to compare OP with IPm (empty) and IP with OP (full) anyways.
   -- So the register implementation is always used.
   blkState: block
-    signal Ful : std_logic := '0';
-    signal Pnd : std_logic := '0';
-    signal Avl : std_logic := '0';
+    signal Ful     : std_logic := '0';
+    signal Avl     : std_logic := '0';
+    signal fullc   : std_logic;
   begin
     process(clk)
     begin
       if rising_edge(clk) then
         if rst = '1' then
-          Ful <= '0';
-          Pnd <= '0';
-          Avl <= '0';
+          Ful     <= '0';
+          Avl     <= '0';
         else
-
-          -- Pending Indicator for uncommitted Data
-          if commit = '1' or rollback = '1' then
-            Pnd <= '0';
-          elsif we = '1' then
-            Pnd <= '1';
-          end if;
+          Ful <= '0';
+          Avl <= '0';
 
           -- Update Full Indicator
-          if re = '1' or (rollback = '1' and Pnd = '1') then
-            Ful <= '0';
-          elsif we = '1' and re = '0' and IP1 = OP0 then
+          if IP1 = CP(0) or fullc = '1' then
             Ful <= '1';
           end if;
 
           -- Update Empty Indicator
-          if commit = '1' and (we = '1' or Pnd = '1') then
+          if NumC > 0 and OP1 /= CP(to_integer(NumC)) then
             Avl <= '1';
-          elsif re = '1' and OP1 = IPm then
-            Avl <= '0';
           end if;
 
         end if;
       end if;
     end process;
-    fulli <= Ful;
+    fulli <= Ful and fullc;
     empti <= not Avl;
+    fullc <= '1' when NumC = NUM_FRAMES -1 else '0';
   end block;
+
 
   -----------------------------------------------------------------------------
   -- Memory Access
@@ -314,7 +278,7 @@ begin
   begin
 
     -- Backing Memory
-    ram : entity work.ocram_sdp
+    ram : entity PoC.ocram_sdp
       generic map (
         A_BITS => A_BITS,
         D_BITS => D_BITS
@@ -350,6 +314,16 @@ begin
       re    <= (not Vld or got) and not empti;
       dout  <= do;
       valid <= Vld;
+      
+      process(OP0, CP, NumC)
+      begin
+        last <= '0';
+        for i in 0 to to_integer(NumC) loop
+          if CP(i) = OP0 then
+            last <= '1';
+          end if;
+        end loop;
+      end process;
     end generate genOutputCmb;
 
     genOutputReg: if OUTPUT_REG generate
@@ -371,6 +345,13 @@ begin
             if Vld(1) = '0' or got = '1' then
               Buf <= do;
             end if;
+            
+            last <= '0';
+            for i in 0 to to_integer(NumC) loop
+              if CP(i) = OP0 then
+                last <= '1';
+              end if;
+            end loop;
           end if;
         end if;
       end process;
@@ -419,6 +400,16 @@ begin
     dout  <= (others => 'X') when Is_X(std_logic_vector(ra)) else
              regfile(to_integer(ra));
     valid <= not empti;
+    
+    process(OP0, CP, NumC)
+    begin
+      last <= '0';
+      for i in 0 to to_integer(NumC) loop
+        if CP(i) = OP0 then
+          last <= '1';
+        end if;
+      end loop;
+    end process;
 
   end generate genSmall;
 

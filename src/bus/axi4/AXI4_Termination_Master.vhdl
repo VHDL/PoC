@@ -32,7 +32,7 @@
 library IEEE;
 use     IEEE.std_logic_1164.all;
 
-use     work.axi4.all;
+use     work.axi4_full.all;
 
 
 entity AXI4_Termination_Master is
