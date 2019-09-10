@@ -310,12 +310,12 @@ begin
         end if;
         if WTransf_Rst = '1' then
           WTransf_count <= (others => '0');
-        elsif WTransf_Inc = '1' and (not WTransf_count = 0) then
+        elsif WTransf_Inc = '1' then
           WTransf_count <= WTransf_count +1;
         end if;
         if RTransf_Rst = '1' then
           RTransf_count <= (others => '0');
-        elsif RTransf_Inc = '1' and (not RTransf_count = 0) then
+        elsif RTransf_Inc = '1' then
           RTransf_count <= RTransf_count +1;
         end if;
       end if;
