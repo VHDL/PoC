@@ -49,7 +49,7 @@ end entity;
 
 
 architecture rtl of AXI4_Sink_Slave is
-	constant AddrBits     : natural := AXI4_M2S.AWAddr'length;
+	constant AddressBits  : natural := AXI4_M2S.AWAddr'length;
 	constant IDBits       : natural := AXI4_M2S.AWID'length;
 	constant UserBits     : natural := AXI4_M2S.AWUser'length;
 	constant DataBits     : natural := AXI4_M2S.WData'length;
@@ -64,8 +64,17 @@ architecture rtl of AXI4_Sink_Slave is
     RBurst_Pos  => DataBits - ( 3* (DataBits / 4))
   );
 
-	signal AXI4_M2S_i     : T_AXI4_Bus_M2S := Initialize_AXI4_Bus_M2S(AddrBits, DataBits, UserBits, IDBits, 'Z');
-	signal AXI4_S2M_i     : T_AXI4_Bus_S2M := Initialize_AXI4_Bus_S2M(AddrBits, DataBits, UserBits, IDBits, 'Z');
+	signal AXI4_M2S_i     : T_AXI4_Bus_M2S (
+			AWID(IDBits - 1 downto 0), ARID(IDBits - 1 downto 0),
+			AWUser(UserBits - 1 downto 0), ARUser(UserBits - 1 downto 0), WUser(UserBits - 1 downto 0),
+			WData(DataBits - 1 downto 0), WStrb((DataBits / 8) - 1 downto 0),
+			AWAddr(AddressBits-1 downto 0), ARAddr(AddressBits - 1 downto 0)
+		);
+	signal AXI4_S2M_i     : T_AXI4_Bus_S2M (
+			BID(IDBits - 1 downto 0), RID(IDBits - 1 downto 0),
+			BUser(UserBits - 1 downto 0), RUser(UserBits - 1 downto 0),
+			RData(DataBits - 1 downto 0)
+		);
     
   signal WData_inc      : std_logic;
   signal WBurst_inc     : std_logic;
@@ -96,10 +105,10 @@ architecture rtl of AXI4_Sink_Slave is
   signal AWLen          : std_logic_vector(7 downto 0); 
   signal ARLen_d        : std_logic_vector(7 downto 0); 
   signal ARLen          : std_logic_vector(7 downto 0); 
-  signal AWID_d         : std_logic_vector(7 downto 0); 
-  signal AWID           : std_logic_vector(7 downto 0); 
-  signal ARID_d         : std_logic_vector(7 downto 0); 
-  signal ARID           : std_logic_vector(7 downto 0); 
+  signal AWID_d         : std_logic_vector(IDBits-1 downto 0); 
+  signal AWID           : std_logic_vector(IDBits-1 downto 0); 
+  signal ARID_d         : std_logic_vector(IDBits-1 downto 0); 
+  signal ARID           : std_logic_vector(IDBits-1 downto 0); 
   
   signal Is_WriteData   : std_logic;
   signal Is_ReadData    : std_logic;
@@ -184,6 +193,9 @@ begin
         if AXI4_M2S_i.BReady  = '1' then
           nxt_wstate          <= Idle;
         end if;
+        
+      when others =>  nxt_wstate  <= Idle; 
+        
     end case;
   end process;  
   
@@ -205,6 +217,7 @@ begin
           nxt_rstate             <= Idle;
         end if;
       
+      when others =>  nxt_rstate  <= Idle;
     end case;
   end process;
   
@@ -246,12 +259,12 @@ begin
         end if;
         if WTransf_Rst = '1' then
           WTransf_count <= (others => '0');
-        elsif WTransf_Inc = '1' and (not WTransf_count = 0) then
+        elsif WTransf_Inc = '1' then
           WTransf_count <= WTransf_count +1;
         end if;
         if RTransf_Rst = '1' then
           RTransf_count <= (others => '0');
-        elsif RTransf_Inc = '1' and (not RTransf_count = 0) then
+        elsif RTransf_Inc = '1' then
           RTransf_count <= RTransf_count +1;
         end if;
       end if;
