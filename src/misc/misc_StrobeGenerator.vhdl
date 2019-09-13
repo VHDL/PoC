@@ -54,7 +54,7 @@ end entity;
 
 
 architecture rtl of misc_StrobeGenerator is
-	signal Counter_s						: signed(COUNTER_BITS downto 0)		:= ite(INITIAL_STROBE, (others => '0'), ('0' & (COUNTER_BITS -1 downto 0 => '1')));
+	signal Counter_s						: signed(COUNTER_BITS downto 0)		:= ite(INITIAL_STROBE, (COUNTER_BITS downto 0 => '0'), ('0' & (COUNTER_BITS -1 downto 0 => '1')));
 	signal Counter_neg					: std_logic;
 
 begin
@@ -65,7 +65,7 @@ begin
       if Reset = '1' and INITIAL_STROBE then
         Counter_s <= (others => '0');
       else
-        Counter_s		<= downcounter_next(cnt => Counter_s, rst => (Counter_neg or Reset), en => Enable, init => (Strobe_Period_Cylces -1));
+        Counter_s		<= downcounter_next(cnt => Counter_s, rst => (Counter_neg or Reset), en => Enable, init => (Strobe_Period_Cylces -2));
       end if;
     end if;
   end process;
