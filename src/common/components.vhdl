@@ -62,6 +62,7 @@ package components is
 	-- counter
 	function upcounter_next(cnt : unsigned; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : natural := 0) return unsigned;
 	function upcounter_equal(cnt : unsigned; value : natural) return std_logic;
+	function downcounter_next(cnt : signed; init : unsigned; rst : std_logic := '0'; en : std_logic := '1') return signed;
 	function downcounter_next(cnt : signed; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : integer := 0) return signed;
 	function downcounter_equal(cnt : signed; value : integer) return std_logic;
 	function downcounter_neg(cnt : signed) return std_logic;
@@ -196,6 +197,17 @@ package body components is
 	end function;
 
 	-- down-counter
+	function downcounter_next(cnt : signed; init : unsigned; rst : std_logic := '0'; en : std_logic := '1') return signed is
+	begin
+		if (rst = '1') then
+			return signed('0' & init);
+		elsif (en = '1') then
+			return cnt - 1;
+		else
+			return cnt;
+		end if;
+	end function;
+  
 	function downcounter_next(cnt : signed; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : integer := 0) return signed is
 	begin
 		if (rst = '1') then
