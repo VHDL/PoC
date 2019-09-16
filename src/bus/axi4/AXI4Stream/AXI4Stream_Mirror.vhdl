@@ -2,9 +2,9 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:				 	Iqbal Asif
+-- Authors:  Iqbal Asif
 --
--- Entity:				 	A generic stream Duplicator for the AXI4-Stream protocol.
+-- Entity:   A generic stream Duplicator for the AXI4-Stream protocol.
 --
 -- Description:
 -- -------------------------------------
@@ -47,8 +47,8 @@ entity AXI4Stream_Mirror is
 		Reset        : in  std_logic;
 
 		-- IN Port
-		In_m2s       : in  T_AXI4STREAM_M2S;
-		In_s2m       : out T_AXI4STREAM_S2M;
+		In_M2S       : in  T_AXI4STREAM_M2S;
+		In_S2M       : out T_AXI4STREAM_S2M;
 		
 		-- OUT Port
 		Out_M2S      : out T_AXI4STREAM_M2S_VECTOR;
@@ -66,18 +66,18 @@ architecture rtl of AXI4Stream_Mirror is
 	signal   FIFO_data_in   : std_logic_vector(FIFO_BITS - 1 downto 0);
 	signal   FIFO_data_out  : std_logic_vector(FIFO_BITS - 1 downto 0);
 	
-	signal 	 Out_Ready      : std_logic_vector(PORTS - 1 downto 0);
-	signal 	 FIFOGlue_Valid : std_logic;
+	signal   Out_Ready      : std_logic_vector(PORTS - 1 downto 0);
+	signal   FIFOGlue_Valid : std_logic;
 	signal   FIFOGlue_got   : std_logic;
 
-	signal Ready_i          : std_logic;
-	signal Mask_r           : std_logic_vector(PORTS - 1 downto 0)	:= (others => '1');
+	signal   Ready_i        : std_logic;
+	signal   Mask_r         : std_logic_vector(PORTS - 1 downto 0) := (others => '1');
 
 begin
 
-	FIFO_data_in        <= In_M2S.User & In_M2S.Last & In_M2S.Data;
-	FIFO_put            <= In_M2S.Valid;
-	In_S2M.Ready        <= not FIFO_full;
+	FIFO_data_in <= In_M2S.User & In_M2S.Last & In_M2S.Data;
+	FIFO_put     <= In_M2S.Valid;
+	In_S2M.Ready <= not FIFO_full;
 
 	FIFO : entity work.fifo_glue
 		generic map (
@@ -100,16 +100,16 @@ begin
 		);
 	
 	gen:for i in 0 to PORTS - 1 generate
-		Out_Ready(i) <= Out_S2M(i).Ready;	
+		Out_Ready(i) <= Out_S2M(i).Ready;
 	end generate;
 	
 	Ready_i        <= slv_and(Out_Ready) or slv_and(not Mask_r or Out_Ready);
 	FIFOGlue_got   <= Ready_i;
 	
 	genOutput : for i in 0 to PORTS - 1 generate
-		Out_M2S(i).Valid	<= FIFOGlue_Valid;
+		Out_M2S(i).Valid    <= FIFOGlue_Valid;
 		Out_M2S(i).Data     <= FIFO_data_out(DATA_BITS - 1 downto 0);
-		Out_M2S(i).Last		<= FIFO_data_out(DATA_BITS);
+		Out_M2S(i).Last     <= FIFO_data_out(DATA_BITS);
 		Out_M2S(i).User     <= FIFO_data_out(FIFO_data_out'high downto DATA_BITS + 1);
 	end generate;
 	
