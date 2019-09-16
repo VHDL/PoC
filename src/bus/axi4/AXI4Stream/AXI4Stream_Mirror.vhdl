@@ -39,25 +39,27 @@ use     PoC.axi4stream.all;
 
 
 entity AXI4Stream_Mirror is
-	generic (
-		PORTS        : positive := 2
-	);
 	port (
-		Clock        : in  std_logic;
-		Reset        : in  std_logic;
+		Clock                 : in  std_logic;
+		Reset                 : in  std_logic;
+
+		--config:
+		ready_mask            : in  std_logic_vector;
+		mask_transaction_lost : out std_logic_vector;
 
 		-- IN Port
-		In_M2S       : in  T_AXI4STREAM_M2S;
-		In_S2M       : out T_AXI4STREAM_S2M;
+		In_M2S                : in  T_AXI4STREAM_M2S;
+		In_S2M                : out T_AXI4STREAM_S2M;
 		
 		-- OUT Port
-		Out_M2S      : out T_AXI4STREAM_M2S_VECTOR;
-		Out_S2M      : in  T_AXI4STREAM_S2M_VECTOR
+		Out_M2S               : out T_AXI4STREAM_M2S_VECTOR;
+		Out_S2M               : in  T_AXI4STREAM_S2M_VECTOR
 	);
 end entity;
 
 
 architecture rtl of AXI4Stream_Mirror is
+	constant PORTS          : positive := Out_M2S'length;
 	constant DATA_BITS      : positive := In_M2S.Data'length;
 	constant USER_BITS      : natural  := In_M2S.User'length;
 	constant FIFO_BITS      : positive := DATA_BITS + 1 + USER_BITS; -- Width (+ 1 is Last-bit)
@@ -103,8 +105,16 @@ begin
 		Out_Ready(i) <= Out_S2M(i).Ready;
 	end generate;
 	
-	Ready_i        <= slv_and(Out_Ready) or slv_and(not Mask_r or Out_Ready);
+	Ready_i        <= slv_and(Out_Ready) or slv_and(not ready_mask or Out_Ready);
 	FIFOGlue_got   <= Ready_i;
+
+	-- missed transaction indication:
+	gen:for i in 0 to PORTS - 1 generate
+		-- transaction is considered lost when:
+		-- the master transaction (towards the fifo) has happend and the current slave is not ready
+		mask_transaction_lost(i) <= (Ready_i and Out_M2S(i).Valid) and (not Out_S2M(i).Ready);
+	end generate;
+
 	
 	genOutput : for i in 0 to PORTS - 1 generate
 		Out_M2S(i).Valid    <= FIFOGlue_Valid;
