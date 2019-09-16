@@ -43,7 +43,7 @@ entity AXI4Stream_Mirror is
 		Clock                 : in  std_logic;
 		Reset                 : in  std_logic;
 
-		--config:
+		-- Mask Configuration:
 		ready_mask            : in  std_logic_vector;
 		mask_transaction_lost : out std_logic_vector;
 
