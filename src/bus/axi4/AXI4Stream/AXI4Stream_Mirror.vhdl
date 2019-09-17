@@ -124,7 +124,7 @@ begin
 	FIFOGlue_got   <= Ready_i;
 
 	-- missed transaction indication:
-	gen:for i in 0 to PORTS - 1 generate
+	gen_lost:for i in 0 to PORTS - 1 generate
 		-- transaction is considered lost when:
 		-- the master transaction (towards the fifo) has happend and the current slave is not ready
 		mask_transaction_lost(i) <= (Ready_i and Out_M2S(i).Valid) and (not Out_S2M(i).Ready);
