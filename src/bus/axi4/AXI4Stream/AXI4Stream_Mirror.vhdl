@@ -116,7 +116,7 @@ begin
 			got                     => FIFOGlue_got
 		);
 	
-	gen:for i in 0 to PORTS - 1 generate
+	Out_gen:for i in 0 to PORTS - 1 generate
 		Out_Ready(i) <= Out_S2M(i).Ready;
 	end generate;
 	
