@@ -67,12 +67,12 @@ architecture rtl of AXI4Stream_Mirror is
 	--constant KEEP_BITS      : natural  := In_M2S.Keep'length; 
 	constant FIFO_BITS      : positive := DATA_BITS + 1 + USER_BITS; -- Width (+ 1 is Last-bit) -- KEEP_BITS +
 
-	constant Bit_Vec : T_INT_VEC (0 to 3) := (
-		Data_Pos => DATA_BITS,
-		Last_Pos => 1,
-		User_pos => USER_BITS
-		--Keep_Pos => KEEP_BITS
-	);
+	--constant Bit_Vec : T_INT_VEC (0 to 2) := (
+	--	Data_Pos => DATA_BITS,
+	--	Last_Pos => 1,
+	--	User_pos => USER_BITS
+	--	--Keep_Pos => KEEP_BITS
+	--);
 	signal   FIFO_full      : std_logic;
 	signal   FIFO_put       : std_logic;
 	signal   FIFO_data_in   : std_logic_vector(FIFO_BITS - 1 downto 0);
@@ -86,10 +86,12 @@ architecture rtl of AXI4Stream_Mirror is
 	signal   Mask_r         : std_logic_vector(PORTS - 1 downto 0) := (others => '1');
 
 begin
-	FIFO_data_in(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos)) <= In_M2S.Data;
-	FIFO_data_in(high(Bit_Vec, Last_Pos))                               <= In_M2S.Last;
-	FIFO_data_in(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos)) <= In_M2S.User;
+	--FIFO_data_in(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos)) <= In_M2S.Data;
+	--FIFO_data_in(high(Bit_Vec, Last_Pos))                               <= In_M2S.Last;
+	--FIFO_data_in(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos)) <= In_M2S.User;
 	--FIFO_data_in(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos)) <= In_M2S.Keep;
+	--TODO Fix with above:
+	FIFO_data_in <= In_M2S.User & In_M2S.Last & In_M2S.Data;
 
 	FIFO_put     <= In_M2S.Valid;
 	In_S2M.Ready <= not FIFO_full;
@@ -131,10 +133,15 @@ begin
 	
 	genOutput : for i in 0 to PORTS - 1 generate
 		Out_M2S(i).Valid    <= FIFOGlue_Valid;
-		Out_M2S(i).Data     <= FIFO_data_out(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos));
-		Out_M2S(i).Last     <= FIFO_data_out(high(Bit_Vec, Last_Pos));
-		Out_M2S(i).User     <= FIFO_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
+		--Out_M2S(i).Data     <= FIFO_data_out(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos));
+		--Out_M2S(i).Last     <= FIFO_data_out(high(Bit_Vec, Last_Pos));
+		--Out_M2S(i).User     <= FIFO_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
 		--Out_M2S(i).Keep     <= FIFO_data_out(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos));
+		--TODO fix with above:
+		Out_M2S(i).Valid    <= FIFOGlue_Valid;
+		Out_M2S(i).Data     <= FIFO_data_out(DATA_BITS - 1 downto 0);
+		Out_M2S(i).Last     <= FIFO_data_out(DATA_BITS);
+		Out_M2S(i).User     <= FIFO_data_out(FIFO_data_out'high downto DATA_BITS + 1);
 	end generate;
 	
 end architecture;
