@@ -64,14 +64,14 @@ architecture rtl of AXI4Stream_Mirror is
 	constant PORTS          : positive := Out_M2S'length;
 	constant DATA_BITS      : positive := In_M2S.Data'length;
 	constant USER_BITS      : natural  := In_M2S.User'length;
-	constant KEEP_BITS      : natural  := In_M2S.Keep'length; 
+	--constant KEEP_BITS      : natural  := In_M2S.Keep'length; 
 	constant FIFO_BITS      : positive := KEEP_BITS + DATA_BITS + 1 + USER_BITS; -- Width (+ 1 is Last-bit)
 
 	constant Bit_Vec : T_INT_VEC (0 to 3) := (
 		Data_Pos => DATA_BITS,
 		Last_Pos => 1,
-		User_pos => USER_BITS,
-		Keep_Pos => KEEP_BITS
+		User_pos => USER_BITS
+		--Keep_Pos => KEEP_BITS
 	);
 	signal   FIFO_full      : std_logic;
 	signal   FIFO_put       : std_logic;
@@ -89,7 +89,7 @@ begin
 	FIFO_data_in(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos)) <= In_M2S.Data;
 	FIFO_data_in(high(Bit_Vec, Last_Pos))                               <= In_M2S.Last;
 	FIFO_data_in(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos)) <= In_M2S.User;
-	FIFO_data_in(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos)) <= In_M2S.Keep;
+	--FIFO_data_in(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos)) <= In_M2S.Keep;
 
 	FIFO_put     <= In_M2S.Valid;
 	In_S2M.Ready <= not FIFO_full;
@@ -134,7 +134,7 @@ begin
 		Out_M2S(i).Data     <= FIFO_data_out(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos));
 		Out_M2S(i).Last     <= FIFO_data_out(high(Bit_Vec, Last_Pos));
 		Out_M2S(i).User     <= FIFO_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
-		Out_M2S(i).Keep     <= FIFO_data_out(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos));
+		--Out_M2S(i).Keep     <= FIFO_data_out(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos));
 	end generate;
 	
 end architecture;

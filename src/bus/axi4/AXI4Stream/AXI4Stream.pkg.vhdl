@@ -39,7 +39,7 @@ package AXI4Stream is
 		Data  : std_logic_vector;
 		Last  : std_logic;
 		User  : std_logic_vector;
-    	Keep  : std_logic_vector;
+    	--Keep  : std_logic_vector;
     -- Strobe       : std_logic_vector;
     -- Identifier   : std_logic_vector;
     -- Destination  : std_logic_vector;
