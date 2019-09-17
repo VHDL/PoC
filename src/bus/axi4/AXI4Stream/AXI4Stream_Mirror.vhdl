@@ -65,7 +65,7 @@ architecture rtl of AXI4Stream_Mirror is
 	constant DATA_BITS      : positive := In_M2S.Data'length;
 	constant USER_BITS      : natural  := In_M2S.User'length;
 	--constant KEEP_BITS      : natural  := In_M2S.Keep'length; 
-	constant FIFO_BITS      : positive := KEEP_BITS + DATA_BITS + 1 + USER_BITS; -- Width (+ 1 is Last-bit)
+	constant FIFO_BITS      : positive := DATA_BITS + 1 + USER_BITS; -- Width (+ 1 is Last-bit) -- KEEP_BITS +
 
 	constant Bit_Vec : T_INT_VEC (0 to 3) := (
 		Data_Pos => DATA_BITS,
