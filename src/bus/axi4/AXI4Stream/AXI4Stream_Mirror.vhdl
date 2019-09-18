@@ -132,7 +132,8 @@ begin
 
 	
 	genOutput : for i in 0 to PORTS - 1 generate
-		Out_M2S(i).Valid    <= FIFOGlue_Valid;
+		--suppress valid whenever masked and not ready, otherwise transmit through valid as is
+		Out_M2S(i).Valid    <= (FIFOGlue_Valid and not ready_mask(i)) or (FIFOGlue_Valid and Ready_i);
 		--Out_M2S(i).Data     <= FIFO_data_out(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos));
 		--Out_M2S(i).Last     <= FIFO_data_out(high(Bit_Vec, Last_Pos));
 		--Out_M2S(i).User     <= FIFO_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
