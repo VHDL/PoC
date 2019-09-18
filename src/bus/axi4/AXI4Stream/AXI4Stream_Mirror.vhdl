@@ -83,7 +83,6 @@ architecture rtl of AXI4Stream_Mirror is
 	signal   FIFOGlue_got   : std_logic;
 
 	signal   Ready_i        : std_logic;
-	signal   Mask_r         : std_logic_vector(PORTS - 1 downto 0) := (others => '1');
 
 begin
 	--FIFO_data_in(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos)) <= In_M2S.Data;
