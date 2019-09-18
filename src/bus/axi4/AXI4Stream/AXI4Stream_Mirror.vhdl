@@ -139,7 +139,6 @@ begin
 		--Out_M2S(i).User     <= FIFO_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
 		--Out_M2S(i).Keep     <= FIFO_data_out(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos));
 		--TODO fix with above:
-		Out_M2S(i).Valid    <= FIFOGlue_Valid;
 		Out_M2S(i).Data     <= FIFO_data_out(DATA_BITS - 1 downto 0);
 		Out_M2S(i).Last     <= FIFO_data_out(DATA_BITS);
 		Out_M2S(i).User     <= FIFO_data_out(FIFO_data_out'high downto DATA_BITS + 1);
