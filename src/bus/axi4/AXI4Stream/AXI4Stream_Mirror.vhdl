@@ -115,11 +115,12 @@ begin
 			got                     => FIFOGlue_got
 		);
 	
-	Out_gen:for i in 0 to PORTS - 1 generate
-		Out_Ready(i) <= Out_S2M(i).Ready;
+	Ready_gen:for i in 0 to PORTS - 1 generate
+		Out_Ready(i) <= Out_S2M(i).Ready or ready_mask(i);
 	end generate;
 	
-	Ready_i        <= slv_and(Out_Ready) or slv_and(not ready_mask or Out_Ready);
+	Ready_i        <= slv_and(Out_Ready);
+	
 	FIFOGlue_got   <= Ready_i;
 
 	-- missed transaction indication:
