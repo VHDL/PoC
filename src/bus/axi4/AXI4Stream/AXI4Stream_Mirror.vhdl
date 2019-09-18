@@ -83,7 +83,6 @@ architecture rtl of AXI4Stream_Mirror is
 	signal   FIFOGlue_got   : std_logic;
 
 	signal   Ready_i        : std_logic;
-	signal   Mask_r         : std_logic_vector(PORTS - 1 downto 0) := (others => '1');
 
 begin
 	--FIFO_data_in(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos)) <= In_M2S.Data;
@@ -116,11 +115,12 @@ begin
 			got                     => FIFOGlue_got
 		);
 	
-	gen:for i in 0 to PORTS - 1 generate
-		Out_Ready(i) <= Out_S2M(i).Ready;
+	Ready_gen:for i in 0 to PORTS - 1 generate
+		Out_Ready(i) <= Out_S2M(i).Ready or ready_mask(i);
 	end generate;
 	
-	Ready_i        <= slv_and(Out_Ready) or slv_and(not ready_mask or Out_Ready);
+	Ready_i        <= slv_and(Out_Ready);
+	
 	FIFOGlue_got   <= Ready_i;
 
 	-- missed transaction indication:
