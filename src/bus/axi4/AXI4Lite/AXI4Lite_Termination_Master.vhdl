@@ -48,8 +48,10 @@ end entity;
 architecture rtl of AXI4Lite_Termination_Master is
 	constant AddrBits : natural := AXI4Lite_M2S.AWAddr'length;
 	constant DataBits : natural := AXI4Lite_M2S.WData'length;
+	signal S2M_dummy : AXI4Lite_S2M'subtype;
 begin
 
 	AXI4Lite_M2S <= Initialize_AXI4Lite_Bus_M2S(AddrBits, DataBits, VALUE);
-
+	S2M_dummy <= AXI4Lite_S2M;
+	
 end architecture;
