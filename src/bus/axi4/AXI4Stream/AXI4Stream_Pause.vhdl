@@ -2,10 +2,10 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:         Patrick Lehmann
 --                  Stefan Unrein
 --
--- Entity:				 	A generic AXI4-Stream module to pause a stream.
+-- Entity:          A generic AXI4-Stream module to pause a stream.
 --
 -- Description:
 -- -------------------------------------
@@ -15,13 +15,13 @@
 -- =============================================================================
 -- Copyright 2018-2019 PLC2 Design GmbH, Germany
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,11 +54,11 @@ end entity;
 
 architecture rtl of AXI4Stream_Pause is
 begin
-  Out_M2S.Valid <= In_M2S.Valid and not Pause;
-  Out_M2S.Data  <= In_M2S.Data;
-  Out_M2S.Last  <= In_M2S.Last;
-  Out_M2S.User  <= In_M2S.User;
-  
-  In_S2M.Ready  <= Out_S2M.Ready and not Pause;
+	Out_M2S.Valid <= In_M2S.Valid and not Pause;
+	Out_M2S.Data  <= In_M2S.Data;
+	Out_M2S.Last  <= In_M2S.Last;
+	Out_M2S.User  <= In_M2S.User;
+	
+	In_S2M.Ready  <= Out_S2M.Ready and not Pause;
 
 end architecture;
