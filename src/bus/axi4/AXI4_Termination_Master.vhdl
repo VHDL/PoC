@@ -50,8 +50,10 @@ architecture rtl of AXI4_Termination_Master is
 	constant IDBits   : natural := AXI4_M2S.AWID'length;
 	constant UserBits : natural := AXI4_M2S.AWUser'length;
 	constant DataBits : natural := AXI4_M2S.WData'length;
+	signal S2M_dummy : AXI4_S2M'subtype;
 begin
 
 	AXI4_M2S <= Initialize_AXI4_Bus_M2S(AddrBits, DataBits, UserBits, IDBits, VALUE);
+	S2M_dummy <= AXI4_S2M;
 
 end architecture;

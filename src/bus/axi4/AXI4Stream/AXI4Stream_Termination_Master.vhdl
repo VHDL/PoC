@@ -52,8 +52,10 @@ end entity;
 architecture rtl of AXI4Stream_Termination_Master is
 	constant DataBits : natural := Out_M2S.Data'length;
 	constant UserBits : natural := Out_M2S.User'length;
+	signal S2M_dummy : Out_S2M'subtype;
 begin
 
 	Out_M2S <= Initialize_AXI4Stream_M2S(DataBits, UserBits, VALUE);
+	S2M_dummy <= Out_S2M;
 
 end architecture;
