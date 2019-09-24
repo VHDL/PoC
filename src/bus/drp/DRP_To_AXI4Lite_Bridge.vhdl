@@ -71,8 +71,8 @@ architecture rtl of DRP_To_AXI4Lite_Bridge is
   signal AXI4Lite_M2S_i : T_AXI4Lite_constr_M2S := Initialize_AXI4Lite_Bus_M2S(C_AXI_ADDR_BITS, DRP_DATA_BITS);
 	signal AXI4Lite_S2M_i : T_AXI4Lite_constr_S2M := Initialize_AXI4Lite_Bus_S2M(C_AXI_ADDR_BITS, DRP_DATA_BITS);
   
-  signal DRP_M2S_i : T_DRP_Bus_M2S_VECTOR(0 to DRP_COUNT - 1) := (others => Initialize_DRP_Bus_M2S(DRP_ADDR_BITS, DRP_DATA_BITS));
-	signal DRP_S2M_i : T_DRP_Bus_S2M_VECTOR(0 to DRP_COUNT - 1) := (others => Initialize_DRP_Bus_S2M(               DRP_DATA_BITS));
+  signal DRP_M2S_i : T_DRP_Bus_M2S_VECTOR(0 to DRP_COUNT - 1) := (0 to DRP_COUNT - 1 => Initialize_DRP_Bus_M2S(DRP_ADDR_BITS, DRP_DATA_BITS));
+	signal DRP_S2M_i : T_DRP_Bus_S2M_VECTOR(0 to DRP_COUNT - 1) := (0 to DRP_COUNT - 1 => Initialize_DRP_Bus_S2M(               DRP_DATA_BITS));
 
   signal DRP_Enable       : std_logic_vector(0 to DRP_COUNT - 1);
   signal DRP_WriteEnable  : std_logic_vector(0 to DRP_COUNT - 1);

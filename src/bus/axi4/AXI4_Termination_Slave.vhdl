@@ -51,8 +51,10 @@ architecture rtl of AXI4_Termination_Slave is
 	constant IDBits   : natural := AXI4_M2S.AWID'length;
 	constant UserBits : natural := AXI4_M2S.AWUser'length;
 	constant DataBits : natural := AXI4_M2S.WData'length;
+	signal M2S_dummy : AXI4_M2S'subtype;
 begin
 
 	AXI4_S2M <= Initialize_AXI4_Bus_S2M(AddrBits, DataBits, UserBits, IDBits, VALUE);
-
+	M2S_dummy <= AXI4_M2S;
+	
 end architecture;

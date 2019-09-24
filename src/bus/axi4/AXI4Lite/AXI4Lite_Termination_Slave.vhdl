@@ -48,8 +48,10 @@ end entity;
 architecture rtl of AXI4Lite_Termination_Slave is
   constant AddrBits : natural := AXI4Lite_M2S.AWAddr'length;
   constant DataBits : natural := AXI4Lite_M2S.WData'length;
+  signal M2S_dummy : AXI4Lite_M2S'subtype;
 begin
 
 	AXI4Lite_S2M <= Initialize_AXI4Lite_Bus_S2M(AddrBits, DataBits, VALUE);
-
+	M2S_dummy <= AXI4Lite_M2S;
+	
 end architecture;
