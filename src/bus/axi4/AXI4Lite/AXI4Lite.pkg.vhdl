@@ -346,7 +346,7 @@ package body AXI4Lite is
 	end function;
 	
 	function to_AXI4_Register_Description(  Address : unsigned(Address_Width -1 downto 0); 
-	                                        writeable : boolean := true; 
+	                                        writeable : boolean; 
 	                                        Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
 	                                        Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
 	                                    ) return T_AXI4_Register_Description is
@@ -357,7 +357,7 @@ package body AXI4Lite is
 			Auto_Clear_Mask => Auto_Clear_Mask
 		);
 	begin
-		if not Writeable then
+		if not writeable then
 			temp.rw_config := readable;
 		end if; 
 		return temp;
