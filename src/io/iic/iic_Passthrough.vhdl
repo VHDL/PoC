@@ -69,12 +69,12 @@ architecture rtl of iic_Passthrough is
 
   signal debug_level     : std_logic_vector(1 downto 0);
 
-	signal a_level         : std_logic_vector(1 downto 0);
-	signal b_level         : std_logic_vector(1 downto 0);
+	signal a_level_i         : std_logic_vector(1 downto 0);
+	signal b_level_i         : std_logic_vector(1 downto 0);
 	signal a_set           : std_logic_vector(1 downto 0) := (others => '0');
 	signal b_set           : std_logic_vector(1 downto 0) := (others => '0');
 
-  type t_state is (IDLE, ST_A, ST_B);
+  type t_state is (IDLE, ST_A, ST_B, ST_W);
 
 begin
 	--SCL
@@ -96,29 +96,67 @@ begin
 	debug.data        <= debug_level(c_data);
 
 
-  sync : entity work.sync_Bits
+--  sync : entity work.sync_Bits
+--  generic map(
+--    BITS          => 4,
+--    INIT          => x"FFFFFFFF",
+--    SYNC_DEPTH    => SYNC_DEPTH
+--  )
+--  port map(
+--    Clock         => clock,
+--    Input(0)      => port_a_in.data,
+--    Input(1)      => port_b_in.data,
+--    Input(2)      => port_a_in.clock,
+--    Input(3)      => port_b_in.clock,
+--    Output(0)     => a_level(c_data),
+--    Output(1)     => b_level(c_data),
+--    Output(2)     => a_level(c_clock),
+--    Output(3)     => b_level(c_clock)
+--  );
+  Clock_debounce : entity work.sync_Bits
   generic map(
-    BITS          => 4,
-    INIT          => x"FFFFFFFF",
-    SYNC_DEPTH    => SYNC_DEPTH
+    BITS                    => 4
   )
   port map(
-    Clock         => clock,
+    Clock		      => Clock,
     Input(0)      => port_a_in.data,
     Input(1)      => port_b_in.data,
     Input(2)      => port_a_in.clock,
     Input(3)      => port_b_in.clock,
-    Output(0)     => a_level(c_data),
-    Output(1)     => b_level(c_data),
-    Output(2)     => a_level(c_clock),
-    Output(3)     => b_level(c_clock)
+    Output(0)     => a_level_i(c_data),
+    Output(1)     => b_level_i(c_data),
+    Output(2)     => a_level_i(c_clock),
+    Output(3)     => b_level_i(c_clock)
   );
-
 
 	genFSM : for i in 0 to 1 generate
 		signal state      : t_state := IDLE;
-		signal wait_count : integer range 0 to cycles := cycles -1;
+		signal wait_count : integer range 0 to cycles := cycles;
+		signal a_level         : std_logic;
+		signal b_level         : std_logic;
 	begin
+	
+		Glitch_a : entity work.io_GlitchFilter
+		generic map(
+			HIGH_SPIKE_SUPPRESSION_CYCLES			=> cycles /2,
+			LOW_SPIKE_SUPPRESSION_CYCLES			=> cycles /2
+		)
+		port map(
+			Clock		=> Clock,
+			Input		=> a_level_i(i),
+			Output	=> a_level
+		);
+		Glitch_b : entity work.io_GlitchFilter
+		generic map(
+			HIGH_SPIKE_SUPPRESSION_CYCLES			=> cycles /2,
+			LOW_SPIKE_SUPPRESSION_CYCLES			=> cycles /2
+		)
+		port map(
+			Clock		=> Clock,
+			Input		=> b_level_i(i),
+			Output	=> b_level
+		);
+	
 		debug_level(i) <= '0' when state /= IDLE else '1';
 
 		fsm : process(clock)
@@ -129,40 +167,47 @@ begin
 
 				if reset = '1' then
 					state      <= IDLE;
-					wait_count <= cycles -1;
+					wait_count <= cycles;
 				else
 					case state is
 						when IDLE => 
-							wait_count <= cycles -1;
-							if a_level(i) = '0' then 
+							wait_count <= cycles;
+							if a_level = '0' then 
 								state      <= ST_A;
 								b_set(i)   <= '1';
 							end if;
-							if b_level(i) = '0' then 
+							if b_level = '0' then 
 								state    <= ST_B;
 								a_set(i) <= '1';
 							end if;
 
 						when ST_A => 
 							b_set(i) <= '1';
-							if wait_count = 0 then 
-								if a_level(i) = '1' then 
-									state  <= IDLE;
+--							if wait_count = 0 then 
+								if a_level = '1' then 
+									b_set(i) <= '0';
+									state    <= ST_W;
 								end if;
-							else 
-								wait_count <= wait_count -1;
-							end if;
+--							else 
+--								wait_count <= wait_count -1;
+--							end if;
 
 						when ST_B => 
 							a_set(i) <= '1';
-							if wait_count = 0 then 
-								if b_level(i) = '1' then 
-									state  <= IDLE;
+--							if wait_count = 0 then 
+								if b_level = '1' then 
+									a_set(i) <= '0';
+									state  <= ST_W;
 								end if;
-							else 
+--							else 
+--								wait_count <= wait_count -1;
+--							end if;
+						when ST_W => 
+							if wait_count = 0 then 
+								state  <= IDLE;
+							else
 								wait_count <= wait_count -1;
 							end if;
-
 					end case;
 				end if;
 			end if;
