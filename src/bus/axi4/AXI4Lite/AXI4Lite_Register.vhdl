@@ -91,8 +91,8 @@ architecture rtl of AXI4Lite_Register is
 	signal slv_reg_wren : std_logic;
 	signal reg_data_out : std_logic_vector(DATA_BITS - 1 downto 0);
 
-	signal latched      : std_logic_vector(Config'Length-1 downto 0);
-	signal clear_latch  : std_logic_vector(Config'Length-1 downto 0);
+	signal latched      : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
+	signal clear_latch  : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
 	
 begin
 	S_AXI_s2m.AWReady <= axi_awready;
@@ -141,7 +141,9 @@ begin
 	begin
 		if rising_edge(S_AXI_ACLK) then
 			if ((S_AXI_ARESETN = '0')) then
-				-- RegisterFile <= Register_init(CONFIG);
+				RegisterFile <= Register_init(CONFIG);
+				latched      <= (others => '0');
+				clear_latch  <= (others => '0');
 			else
 				clear_latch <= (others => '0');
 				if (slv_reg_wren = '1') then
