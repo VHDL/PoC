@@ -90,6 +90,9 @@ architecture rtl of AXI4Lite_Register is
 	signal slv_reg_rden : std_logic;
 	signal slv_reg_wren : std_logic;
 	signal reg_data_out : std_logic_vector(DATA_BITS - 1 downto 0);
+
+	signal latched      : std_logic_vector(Config'Length-1 downto 0);
+	signal clear_latch  : std_logic_vector(Config'Length-1 downto 0);
 	
 begin
 	S_AXI_s2m.AWReady <= axi_awready;
@@ -140,22 +143,40 @@ begin
 			if ((S_AXI_ARESETN = '0')) then
 				-- RegisterFile <= Register_init(CONFIG);
 			else
+				clear_latch <= (others => '0');
 				if (slv_reg_wren = '1') then
 					for i in CONFIG'range loop
 							trunc_addr := std_logic_vector(CONFIG(i).address);
-						if ((axi_awaddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) and (CONFIG(i).writeable)) then -- found fitting register and it is writable
+						--check for writable register
+						if ((axi_awaddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) and (CONFIG(i).rw_config = readWriteable) then -- found fitting register and it is writable
 							for ii in S_AXI_m2s.WStrb'reverse_range loop
 								-- Respective byte enables are asserted as per write strobes
 								if (S_AXI_m2s.WStrb(ii) = '1' ) then
 									RegisterFile(i)(ii * 8 + 7 downto ii * 8) <= S_AXI_m2s.WData(8 * ii + 7 downto 8 * ii);
 								end if;
 							end loop;
+						--check for register with clearable latch
+						elsif ((axi_awaddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) and (CONFIG(i).rw_config = statusLatch) then
+							clear_latch(i) <= '1';
 						end if;
 					end loop;
 				else
 					--clear where needed, otherwise latch
 					for i in CONFIG'range loop
-						RegisterFile(i) <= RegisterFile(i) and (not CONFIG(i).Auto_Clear_Mask);  
+						if (CONFIG(i).rw_config = statusLatch) then
+							--latch value on change
+							if(latched(i) = '0') then
+								RegisterFile(i) <= RegisterFile_WritePort(i);
+								if (RegisterFile_WritePort(i) = RegisterFile(i)) then
+									latched(i) <= '1';
+								end if;
+							--clear on clear latch command
+							elsif (clear_latch(i) = '1') then;
+								latched(i) <= '0';
+								RegisterFile(i) <= RegisterFile_WritePort(i);
+							end if;
+						else
+							RegisterFile(i) <= RegisterFile(i) and (not CONFIG(i).Auto_Clear_Mask);  
 					end loop;
 				end if;
 			end if;
@@ -224,7 +245,7 @@ begin
 	begin
 		--only wire out register if read only
 		genMux: for i in CONFIG'range generate
-			genPort: if (not(CONFIG(i).writeable)) generate 
+			genPort: if (CONFIG(i).rw_config = readable) generate 
 				mux(i) <= RegisterFile_WritePort(i);
 			else generate
 				mux(i) <= RegisterFile(i);

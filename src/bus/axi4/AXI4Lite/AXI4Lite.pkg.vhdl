@@ -133,18 +133,26 @@ package AXI4Lite is
   
   function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set;
   
+  type T_ReadWrite_Config is (readWriteable, readable, statusLatch);
 
   type T_AXI4_Register_Description is record
 		Address             : unsigned(Address_Width-1 downto 0);
-		Writeable           : boolean;
+		rw_config           : T_ReadWrite_Config;
 		Init_Value          : std_logic_vector(Data_Width-1 downto 0);
 		Auto_Clear_Mask     : std_logic_vector(Data_Width-1 downto 0);
   end record;
   
   type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
+
+  function to_AXI4_Register_Description(  Address : unsigned(Address_Width -1 downto 0); 
+                                          writeable : boolean; 
+                                          Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
+                                          Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
+                                        ) return T_AXI4_Register_Description;
+  
   
   function to_AXI4_Register_Description(	Address : unsigned(Address_Width -1 downto 0); 
-  																				Writeable : boolean := true; 
+  																				rw_config : T_ReadWrite_Config := writeable; 
   																				Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
   																				Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
 																				) return T_AXI4_Register_Description;
@@ -337,22 +345,37 @@ package body AXI4Lite is
     return temp;
   end function;
   
+  function to_AXI4_Register_Description(  Address : unsigned(Address_Width -1 downto 0); 
+                                          Writeable : boolean := true; 
+                                          Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
+                                          Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
+                                        ) return T_AXI4_Register_Description is
+                                        
+    variable temp : T_AXI4_Register_Description := (
+      Address         => Address,
+      rw_config       => readable when not Writeable else readWriteable,
+      Init_Value      => Init_Value,
+      Auto_Clear_Mask => Auto_Clear_Mask
+    );
+  begin
+    return temp;
+  end function;
+  
 	function to_AXI4_Register_Description(	Address : unsigned(Address_Width -1 downto 0); 
-  																				Writeable : boolean := true; 
+                                          rw_config : T_ReadWrite_Config := writeable; 
   																				Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
   																				Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
 																				) return T_AXI4_Register_Description is
 																				
 		variable temp : T_AXI4_Register_Description := (
 			Address         => Address,
-			Writeable       => Writeable,
+			rw_config       => rw_config,
 			Init_Value      => Init_Value,
 			Auto_Clear_Mask	=> Auto_Clear_Mask
 		);
 	begin
 		return temp;
 	end function;
-  
 --  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector) return T_AXI4_Register_Set is
 --    variable temp : T_AXI4_Register_Set(AXI4_Register(reg_vec'length -1 downto 0), Last_Index(log2ceilnz(reg_vec'length) -1 downto 0)) := (
 --      AXI4_Register => reg_vec,
