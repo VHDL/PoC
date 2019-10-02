@@ -119,7 +119,7 @@ begin
 		Out_Ready(i) <= Out_S2M(i).Ready or ready_mask(i);
 	end generate;
 	
-	Ready_i        <= slv_and(Out_Ready);
+	Ready_i        <= slv_and(Out_Ready); --TODO timing loop?
 	
 	FIFOGlue_got   <= Ready_i;
 
