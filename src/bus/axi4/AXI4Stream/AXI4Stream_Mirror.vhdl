@@ -67,6 +67,7 @@ end entity;
 
 
 architecture rtl of AXI4Stream_Mirror is
+
 	constant PORTS            : positive := Out_M2S'length;
 	constant DATA_BITS        : positive := In_M2S.Data'length;
 	constant USER_BITS        : natural  := In_M2S.User'length;
@@ -79,29 +80,23 @@ architecture rtl of AXI4Stream_Mirror is
 	--	User_pos => USER_BITS
 	--	--Keep_Pos => KEEP_BITS
 	--);
-	signal   InGlue_full      : std_logic;
-	signal   InGlue_put       : std_logic;
-	signal   InGlue_data_in   : std_logic_vector(GLUE_BITS - 1 downto 0);
-	signal   InGlue_data_out  : std_logic_vector(GLUE_BITS - 1 downto 0);
-	signal   InGlue_Valid     : std_logic;
-	signal   InGlue_got       : std_logic;
+	signal InGlue_full        : std_logic;
+	signal InGlue_put         : std_logic;
+	signal InGlue_data_in     : std_logic_vector(GLUE_BITS - 1 downto 0);
+	signal InGlue_data_out    : std_logic_vector(GLUE_BITS - 1 downto 0);
+	signal InGlue_Valid       : std_logic;
+	signal InGlue_got         : std_logic;
 	
-	signal   Out_Ready        : std_logic_vector(PORTS - 1 downto 0);
+	signal Out_Ready          : std_logic_vector(PORTS - 1 downto 0);
 
-	signal   Ready_i          : std_logic;
+	signal Ready_i            : std_logic;
 
-	signal internal_M2S       : T_AXI4STREAM_M2S_VECTOR(
+	signal internal_M2S       : T_AXI4STREAM_M2S_VECTOR(PORTS - 1 downto 0)(
 	       Data(DATA_BITS - 1 downto 0),
 	       User(USER_BITS - 1 downto 0)
 	       -- Keep(KEEP_BITS - 1 downto 0)
 		);
-	signal internal_S2M       : T_AXI4STREAM_S2M_VECTOR;
-	signal   OutGlue_full     : std_logic;
-	signal   OutGlue_put      : std_logic;
-	signal   OutGlue_data_in  : std_logic_vector(GLUE_BITS - 1 downto 0);
-	signal   OutGlue_data_out : std_logic_vector(GLUE_BITS - 1 downto 0);
-	signal   OutGlue_Valid    : std_logic;
-	signal   OutGlue_got      : std_logic;
+	signal internal_S2M       : T_AXI4STREAM_S2M_VECTOR(PORTS - 1 downto 0);
 
 begin
 	--InGlue_data_in(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos)) <= In_M2S.Data;
@@ -113,7 +108,7 @@ begin
 	InGlue_put     <= In_M2S.Valid;
 	In_S2M.Ready   <= not InGlue_full;
 
-	FIFO : entity work.InGlue_glue
+	FIFO : entity work.FIFO_glue
 		generic map (
 			D_BITS                  => GLUE_BITS
 		)
@@ -164,10 +159,17 @@ begin
 	
 	gen_outputs : for i in 0 to PORTS - 1 generate
 		gen_glue : if ADD_OUTPUT_GLUE generate
-			OutGlue_data_in <= internal_M2S(i).User & internal_M2S(i).Last & internal_M2S(i).Data;
-			OutGlue_put     <= internal_M2S(i).Valid
-			internal_S2M(i) <= not OutGlue_full;
-			Output_glue: entity work.InGlue_glue
+			signal OutGlue_full       : std_logic;
+			signal OutGlue_put        : std_logic;
+			signal OutGlue_data_in    : std_logic_vector(GLUE_BITS - 1 downto 0);
+			signal OutGlue_data_out   : std_logic_vector(GLUE_BITS - 1 downto 0);
+			signal OutGlue_Valid      : std_logic;
+			signal OutGlue_got        : std_logic;
+		begin
+			OutGlue_data_in        <= internal_M2S(i).User & internal_M2S(i).Last & internal_M2S(i).Data;
+			OutGlue_put            <= internal_M2S(i).Valid;
+			internal_S2M(i).Ready  <= not OutGlue_full;
+			Output_glue: entity work.FIFO_glue
 			generic map (
 				D_BITS                  => GLUE_BITS
 			)
