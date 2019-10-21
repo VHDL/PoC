@@ -67,7 +67,8 @@ end package;
 
 package body DRP is
   function Initialize_DRP_Bus_M2S(AddressBits : natural; DataBits : natural := 16; Value : std_logic := 'Z') return T_DRP_Bus_M2S is
-    variable var : T_DRP_Bus_M2S :=(
+    variable var : T_DRP_Bus_M2S(
+      Address(AddressBits -1 downto 0), DataIn(DataBits -1 downto 0)) :=(
         Enable      => Value,
         WriteEnable => Value,
         Address     => (AddressBits-1 downto 0 => Value), 
@@ -78,7 +79,7 @@ package body DRP is
   end function;
 
   function Initialize_DRP_Bus_S2M(DataBits : natural := 16; Value : std_logic := 'Z') return T_DRP_Bus_S2M is
-    variable var : T_DRP_Bus_S2M :=(
+    variable var : T_DRP_Bus_S2M(DataOut(DataBits -1 downto 0)) :=(
       Ready => Value,
       DataOut   => (DataBits - 1 downto 0 => Value)
     );
