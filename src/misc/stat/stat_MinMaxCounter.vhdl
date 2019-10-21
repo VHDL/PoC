@@ -46,7 +46,7 @@ begin
 					else
 						StableCounter_Value <= Counter_Value;
 					end if;
-				elsif (Enable = '1') then
+				elsif (Enable = '1') and ((not Counter_Value) /= 0) then
 					Counter_Value         <= Counter_Value + 1;
 				end if;
 				

@@ -68,11 +68,11 @@ architecture rtl of DRP_To_AXI4Lite_Bridge is
       Address(DRP_ADDR_BITS -1 downto 0), DataIn(DRP_DATA_BITS -1 downto 0));
   subtype T_DRP_constr_S2M is T_DRP_Bus_S2M(DataOut(DRP_DATA_BITS -1 downto 0));
   
-  signal AXI4Lite_M2S_i : T_AXI4Lite_constr_M2S := Initialize_AXI4Lite_Bus_M2S(C_AXI_ADDR_BITS, DRP_DATA_BITS);
-	signal AXI4Lite_S2M_i : T_AXI4Lite_constr_S2M := Initialize_AXI4Lite_Bus_S2M(C_AXI_ADDR_BITS, DRP_DATA_BITS);
+  signal AXI4Lite_M2S_i : T_AXI4Lite_constr_M2S := Initialize_AXI4Lite_Bus_M2S(C_AXI_ADDR_BITS, 32);
+	signal AXI4Lite_S2M_i : T_AXI4Lite_constr_S2M := Initialize_AXI4Lite_Bus_S2M(C_AXI_ADDR_BITS, 32);
   
-  signal DRP_M2S_i : T_DRP_Bus_M2S_VECTOR(0 to DRP_COUNT - 1) := (0 to DRP_COUNT - 1 => Initialize_DRP_Bus_M2S(DRP_ADDR_BITS, DRP_DATA_BITS));
-	signal DRP_S2M_i : T_DRP_Bus_S2M_VECTOR(0 to DRP_COUNT - 1) := (0 to DRP_COUNT - 1 => Initialize_DRP_Bus_S2M(               DRP_DATA_BITS));
+  signal DRP_M2S_i : DRP_M2S'subtype;--T_DRP_Bus_M2S_VECTOR(0 to DRP_COUNT - 1) := (0 to DRP_COUNT - 1 => Initialize_DRP_Bus_M2S(DRP_ADDR_BITS, DRP_DATA_BITS));
+	signal DRP_S2M_i : DRP_S2M'subtype;--T_DRP_Bus_S2M_VECTOR(0 to DRP_COUNT - 1) := (0 to DRP_COUNT - 1 => Initialize_DRP_Bus_S2M(               DRP_DATA_BITS));
 
   signal DRP_Enable       : std_logic_vector(0 to DRP_COUNT - 1);
   signal DRP_WriteEnable  : std_logic_vector(0 to DRP_COUNT - 1);
@@ -124,7 +124,9 @@ begin
     AXI4Lite_S2M_i.BResp   <= C_AXI4_RESPONSE_OKAY;
     AXI4Lite_S2M_i.RResp   <= C_AXI4_RESPONSE_OKAY;
     
-    
+    AXI4Lite_S2M_i.ARReady <= '0';
+	AXI4Lite_S2M_i.RValid  <= '0';
+	
     case State is
       when Idle =>
         if (AXI4Lite_M2S_i.AWValid and AXI4Lite_M2S_i.WValid) = '1' then
