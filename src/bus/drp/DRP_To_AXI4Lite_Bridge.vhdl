@@ -124,7 +124,9 @@ begin
     AXI4Lite_S2M_i.BResp   <= C_AXI4_RESPONSE_OKAY;
     AXI4Lite_S2M_i.RResp   <= C_AXI4_RESPONSE_OKAY;
     
-    
+    AXI4Lite_S2M_i.ARReady <= '0';
+	AXI4Lite_S2M_i.RValid  <= '0';
+	
     case State is
       when Idle =>
         if (AXI4Lite_M2S_i.AWValid and AXI4Lite_M2S_i.WValid) = '1' then
