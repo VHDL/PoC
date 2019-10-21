@@ -1,12 +1,23 @@
 puts "BuildVersion: Running script..."
 
 # Script configuration
-set version_file ../../../temp/GitVersion.mem; #Relative Path from "synth" folder of a Vivado-Project
+set version_file ../../../temp/GitVersion.mem;
 
 # Project Versioning
-set Project_Major 0
-set Project_Minor 0
-set Project_Release [exec git rev-list --count HEAD]
+if {[catch {open "../../../Project_Version" r} results]} {
+	set Project_Major 0
+	set Project_Minor 0
+	set Project_Release [exec git rev-list --count HEAD]
+} else {
+	set project_version_file [open "../../../Project_Version" r]
+	set project_version [read $project_version_file]
+	close $project_version_file
+	set project_version [split $project_version "."]
+	set Project_Major [lindex $project_version 0]
+	set Project_Minor [lindex $project_version 1]
+	set Project_Release [lindex $project_version 2]
+	if {$Project_Release eq ""} {set Project_Release [exec git rev-list --count HEAD]}
+}
 
 # Constants
 set VersionOfVersionReg 1
