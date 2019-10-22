@@ -57,7 +57,7 @@ end entity;
 architecture rtl of DRP_To_AXI4Lite_Bridge is
   constant DRP_DATA_BITS   : positive := 16;
   constant C_COUNT_BITS    : natural  := log2ceil(DRP_COUNT);
-  constant C_AXI_ADDR_BITS : natural  := C_COUNT_BITS + DRP_ADDR_BITS + 2;
+  constant C_AXI_ADDR_BITS : natural  := C_COUNT_BITS + DRP_ADDR_BITS;
   
   subtype T_AXI4Lite_constr_M2S is T_AXI4Lite_Bus_M2S(
       AWAddr(C_AXI_ADDR_BITS -1 downto 0), WData(32 -1 downto 0), 
@@ -125,14 +125,14 @@ begin
     AXI4Lite_S2M_i.RResp   <= C_AXI4_RESPONSE_OKAY;
     
     AXI4Lite_S2M_i.ARReady <= '0';
-	AXI4Lite_S2M_i.RValid  <= '0';
+	  AXI4Lite_S2M_i.RValid  <= '0';
 	
     case State is
       when Idle =>
         if (AXI4Lite_M2S_i.AWValid and AXI4Lite_M2S_i.WValid) = '1' then
           DRP_DataIn  <= resize(AXI4Lite_M2S_i.WData, DRP_DataIn'length);
-          DRP_Address <= unsigned(AXI4Lite_M2S_i.AWAddr(DRP_ADDR_BITS + 1 downto 2));
-          DRP_port    := unsigned(AXI4Lite_M2S_i.AWAddr(C_AXI_ADDR_BITS -1 downto DRP_ADDR_BITS + 2));
+          DRP_Address <= unsigned(AXI4Lite_M2S_i.AWAddr(DRP_ADDR_BITS - 1 downto 0));
+          DRP_port    := unsigned(AXI4Lite_M2S_i.AWAddr(C_AXI_ADDR_BITS -1 downto DRP_ADDR_BITS));
           AXI4Lite_S2M_i.AWReady <= '1';
           AXI4Lite_S2M_i.WReady  <= '1';
           
@@ -148,8 +148,8 @@ begin
             State_nxt <= write_error;
           end if;
         elsif AXI4Lite_M2S_i.ARValid = '1' then
-          DRP_Address <= unsigned(AXI4Lite_M2S_i.ARAddr(DRP_ADDR_BITS + 1 downto 2));
-          DRP_port    := unsigned(AXI4Lite_M2S_i.ARAddr(C_AXI_ADDR_BITS -1 downto DRP_ADDR_BITS + 2));
+          DRP_Address <= unsigned(AXI4Lite_M2S_i.ARAddr(DRP_ADDR_BITS - 1 downto 0));
+          DRP_port    := unsigned(AXI4Lite_M2S_i.ARAddr(C_AXI_ADDR_BITS -1 downto DRP_ADDR_BITS));
           AXI4Lite_S2M_i.ARReady <= '1';
           
           if DRP_port < DRP_COUNT then
