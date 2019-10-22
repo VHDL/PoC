@@ -40,16 +40,16 @@ use     OSVVM_AXI4.Axi4LiteInterfacePkg.all;
 
 package AXI4Lite_OSVVM is
 
-	procedure to_PoC_XI4Lite_Bus_Slave(signal PoC_M2S : in T_AXI4LITE_BUS_M2S; signal PoC_S2M : out T_AXI4LITE_BUS_S2M; signal OSVVM_Bus : inout Axi4LiteRecType);
+	procedure to_PoC_AXI4Lite_Bus_Slave(signal PoC_M2S : in T_AXI4LITE_BUS_M2S; signal PoC_S2M : out T_AXI4LITE_BUS_S2M; signal OSVVM_Bus : inout Axi4LiteRecType);
 
-	procedure to_PoC_XI4Lite_Bus_Master(signal PoC_M2S : out T_AXI4LITE_BUS_M2S; signal PoC_S2M : in T_AXI4LITE_BUS_S2M; signal OSVVM_Bus : inout Axi4LiteRecType);
+	procedure to_PoC_AXI4Lite_Bus_Master(signal PoC_M2S : out T_AXI4LITE_BUS_M2S; signal PoC_S2M : in T_AXI4LITE_BUS_S2M; signal OSVVM_Bus : inout Axi4LiteRecType);
 
 end package;
 
 package body AXI4Lite_OSVVM is
 
-		procedure to_PoC_AXI4Lite_Bus_Slave(signal PoC_M2S : in T_AXI4LITE_BUS_M2S; signal PoC_S2M : out T_AXI4LITE_BUS_S2M; signal OSVVM_Bus : inout Axi4LiteRecType) is
-		begin
+	procedure to_PoC_AXI4Lite_Bus_Slave(signal PoC_M2S : in T_AXI4LITE_BUS_M2S; signal PoC_S2M : out T_AXI4LITE_BUS_S2M; signal OSVVM_Bus : inout Axi4LiteRecType) is
+	begin
 			OSVVM_Bus.WriteAddress.AWValid <= PoC_M2S.AWValid;
 			OSVVM_Bus.WriteAddress.AWAddr  <= PoC_M2S.AWAddr ;
 			-- OSVVM_Bus.WriteAddress.AWCache <= PoC_M2S.AWCache;
