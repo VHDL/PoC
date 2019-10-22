@@ -150,7 +150,7 @@ begin
 					for i in CONFIG'range loop
 							trunc_addr := std_logic_vector(CONFIG(i).address);
 						--check for writable register
-						if ((axi_awaddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) and (CONFIG(i).rw_config = readWriteable)) then -- found fitting register and it is writable
+						if (axi_awaddr = std_logic_vector(CONFIG(i).Address(ADDRESS_BITS - 1 downto ADDR_LSB)) and (CONFIG(i).rw_config = readWriteable)) then 
 							for ii in S_AXI_m2s.WStrb'reverse_range loop
 								-- Respective byte enables are asserted as per write strobes
 								if (S_AXI_m2s.WStrb(ii) = '1' ) then
