@@ -112,7 +112,7 @@ begin
     end if;
   end process;
   
-  process(State, AXI4Lite_M2S_i, DRP_S2M_i)
+  process(State, AXI4Lite_M2S_i, DRP_S2M_i, AXI4Lite_S2M_i)
     variable DRP_port : unsigned(C_COUNT_BITS - 1 downto 0) := (others => '0');
   begin
     State_nxt       <= State;
