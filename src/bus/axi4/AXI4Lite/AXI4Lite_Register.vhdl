@@ -60,9 +60,9 @@ architecture rtl of AXI4Lite_Register is
 	function get_RegisterAddressBits(Config : T_AXI4_Register_Description_Vector) return positive is
 		variable temp : positive := 1;
 	begin
-		for i in Config'Length - 1 downto 0 loop
-			if log2ceil(to_integer(Config(i).address)) > temp then
-				temp := log2ceil(to_integer(Config(i).address));
+		for i in Config'range loop
+			if log2ceil(to_integer(Config(i).address) +1) > temp then
+				temp := log2ceil(to_integer(Config(i).address) +1);
 			end if;
 		end loop;
 		return temp;
