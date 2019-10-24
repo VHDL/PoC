@@ -57,6 +57,19 @@ architecture rtl of AXI4Lite_Register is
 	constant ADDRESS_BITS  : positive := S_AXI_m2s.AWAddr'length;
 	constant DATA_BITS     : positive := S_AXI_m2s.WData'length;
 	
+	function get_RegisterAddressBits(Config : T_AXI4_Register_Description_Vector) return positive is
+		variable temp : positive := 1;
+	begin
+		for i in Config'range loop
+			if log2ceil(to_integer(Config(i).address) +1) > temp then
+				temp := log2ceil(to_integer(Config(i).address) +1);
+			end if;
+		end loop;
+		return temp;
+	end function;
+	
+	constant REG_ADDRESS_BITS : positive := get_RegisterAddressBits(CONFIG);
+	
 	-- Example-specific design signals
 	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
 	-- ADDR_LSB is used for addressing 32/64 bit registers/memories
@@ -137,7 +150,7 @@ begin
 	end process;
 	
 	process(S_AXI_ACLK)
-		variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
+		-- variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
 	begin
 		if rising_edge(S_AXI_ACLK) then
 			if ((S_AXI_ARESETN = '0')) then
@@ -148,9 +161,11 @@ begin
 				clear_latch <= (others => '0');
 				if (slv_reg_wren = '1') then
 					for i in CONFIG'range loop
-							trunc_addr := std_logic_vector(CONFIG(i).address);
+							-- trunc_addr := std_logic_vector(CONFIG(i).address);
 						--check for writable register
-						if ((axi_awaddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) and (CONFIG(i).rw_config = readWriteable)) then -- found fitting register and it is writable
+						if  (axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) = std_logic_vector(CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB)))
+							and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+							and (CONFIG(i).rw_config = readWriteable) then 
 							for ii in S_AXI_m2s.WStrb'reverse_range loop
 								-- Respective byte enables are asserted as per write strobes
 								if (S_AXI_m2s.WStrb(ii) = '1' ) then
@@ -158,7 +173,9 @@ begin
 								end if;
 							end loop;
 						--check for register with clearable latch on write
-						elsif ((axi_awaddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) and (CONFIG(i).rw_config = latchValue_clearOnWrite)) then
+						elsif (axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) = std_logic_vector(CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB)))
+							and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+							and (CONFIG(i).rw_config = latchValue_clearOnWrite) then
 							clear_latch(i) <= '1';
 						end if;
 					end loop;

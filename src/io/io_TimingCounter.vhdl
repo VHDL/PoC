@@ -70,14 +70,14 @@ architecture rtl of io_TimingCounter is
 	constant TIMING_MAX			: natural			:= imax(TIMING_TABLE2);
 	constant COUNTER_BITS		: natural			:= log2ceilnz(TIMING_MAX + 1);
 
-	signal Counter_s				: signed(COUNTER_BITS downto 0)		:= to_signed(TIMING_TABLE2(0), COUNTER_BITS + 1);
+	signal Counter_s				: signed(COUNTER_BITS downto 0)		:= to_signed(TIMING_TABLE2(0) -1, COUNTER_BITS + 1);
 
 begin
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
 			if (Load = '1') then
-				Counter_s		<= to_signed(TIMING_TABLE2(Slot), Counter_s'length);
+				Counter_s		<= to_signed(TIMING_TABLE2(Slot) -1, Counter_s'length);
 			elsif ((Enable = '1') and (Counter_s(Counter_s'high) = '0')) then
 				Counter_s	<= Counter_s - 1;
 			end if;
