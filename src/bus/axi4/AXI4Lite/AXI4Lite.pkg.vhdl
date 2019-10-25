@@ -143,6 +143,8 @@ package AXI4Lite is
 	end record;
 	
 	type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
+	
+	function get_RegisterAddressBits(Config : T_AXI4_Register_Description_Vector) return positive; 
 
 	function to_AXI4_Register_Description(  Address : unsigned(Address_Width -1 downto 0); 
 	                                        writeable : boolean; 
@@ -375,6 +377,17 @@ package body AXI4Lite is
 			Auto_Clear_Mask	=> Auto_Clear_Mask
 		);
 	begin
+		return temp;
+	end function;
+	
+	function get_RegisterAddressBits(Config : T_AXI4_Register_Description_Vector) return positive is
+		variable temp : positive := 1;
+	begin
+		for i in Config'range loop
+			if log2ceil(to_integer(Config(i).address) +1) > temp then
+				temp := log2ceil(to_integer(Config(i).address) +1);
+			end if;
+		end loop;
 		return temp;
 	end function;
 --  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector) return T_AXI4_Register_Set is

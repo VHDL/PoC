@@ -57,16 +57,7 @@ architecture rtl of AXI4Lite_Register is
 	constant ADDRESS_BITS  : positive := S_AXI_m2s.AWAddr'length;
 	constant DATA_BITS     : positive := S_AXI_m2s.WData'length;
 	
-	function get_RegisterAddressBits(Config : T_AXI4_Register_Description_Vector) return positive is
-		variable temp : positive := 1;
-	begin
-		for i in Config'range loop
-			if log2ceil(to_integer(Config(i).address) +1) > temp then
-				temp := log2ceil(to_integer(Config(i).address) +1);
-			end if;
-		end loop;
-		return temp;
-	end function;
+
 	
 	constant REG_ADDRESS_BITS : positive := get_RegisterAddressBits(CONFIG);
 	
@@ -109,6 +100,8 @@ architecture rtl of AXI4Lite_Register is
 	signal clear_latch_read  : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
 	
 begin
+	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
+	
 	S_AXI_s2m.AWReady <= axi_awready;
 	S_AXI_s2m.WReady  <= axi_wready; 
 	S_AXI_s2m.BResp   <= axi_bresp;  
