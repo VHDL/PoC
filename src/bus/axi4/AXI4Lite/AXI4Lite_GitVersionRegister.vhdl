@@ -76,7 +76,7 @@ architecture rtl of AXI4Lite_GitVersionRegister is
 	signal   RegisterFile_ReadPort   : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0);
   constant RegisterFile_WritePort  : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0) := to_slvv(VersionData);
   
-  constant Address_Bits : natural := log2ceil(CONFIG'Length) + log2ceil(DATA_BITS);
+  constant Address_Bits : natural := get_RegisterAddressBits(CONFIG);--log2ceil(CONFIG'Length) + log2ceil(DATA_BITS);
   
 	signal AddressTrunc_m2s : T_AXI4LITE_BUS_M2S(
       AWAddr(Address_Bits -1 downto 0), WData(DATA_BITS -1 downto 0), 
