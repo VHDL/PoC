@@ -43,7 +43,7 @@ use     work.iic.all;
 entity iic_Passthrough is
 	generic (
 		CLOCK_FREQ     : FREQ    := 100 MHz;
-		DEBOUNCE_TIME  : T_TIME  := 50.0e-9;
+		DEBOUNCE_TIME  : T_TIME  := 500.0e-9;
 		SYNC_DEPTH     : natural := 3
 	);
   port (
@@ -63,7 +63,9 @@ end entity;
 
 
 architecture rtl of iic_Passthrough is
-	constant cycles  : natural := TimingToCycles(DEBOUNCE_TIME, CLOCK_FREQ);
+
+	ATTRIBUTE MARK_DEBUG : string;
+	constant cycles  : natural := 60;--TimingToCycles(DEBOUNCE_TIME, CLOCK_FREQ);
 	constant c_data  : natural := 1;
 	constant c_clock : natural := 0;
 
@@ -74,7 +76,13 @@ architecture rtl of iic_Passthrough is
 	signal a_set           : std_logic_vector(1 downto 0) := (others => '0');
 	signal b_set           : std_logic_vector(1 downto 0) := (others => '0');
 
-  type t_state is (IDLE, ST_A, ST_B, ST_W);
+  type t_state is (IDLE, ST_A, ST_B, ST_W);	
+  
+	ATTRIBUTE MARK_DEBUG of a_level_i      : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of b_level_i      : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of a_set          : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of b_set          : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of debug_level    : SIGNAL IS "TRUE";
 
 begin
 	--SCL
@@ -138,8 +146,8 @@ begin
 	
 		Glitch_a : entity work.io_GlitchFilter
 		generic map(
-			HIGH_SPIKE_SUPPRESSION_CYCLES			=> cycles /2,
-			LOW_SPIKE_SUPPRESSION_CYCLES			=> cycles /2
+			HIGH_SPIKE_SUPPRESSION_CYCLES			=> 3,--cycles /2,
+			LOW_SPIKE_SUPPRESSION_CYCLES			=> 3--cycles /2
 		)
 		port map(
 			Clock		=> Clock,
@@ -148,8 +156,8 @@ begin
 		);
 		Glitch_b : entity work.io_GlitchFilter
 		generic map(
-			HIGH_SPIKE_SUPPRESSION_CYCLES			=> cycles /2,
-			LOW_SPIKE_SUPPRESSION_CYCLES			=> cycles /2
+			HIGH_SPIKE_SUPPRESSION_CYCLES			=> 3,--cycles /2,
+			LOW_SPIKE_SUPPRESSION_CYCLES			=> 3--cycles /2
 		)
 		port map(
 			Clock		=> Clock,
