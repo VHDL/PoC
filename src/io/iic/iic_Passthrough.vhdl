@@ -43,7 +43,7 @@ use     work.iic.all;
 entity iic_Passthrough is
 	generic (
 		CLOCK_FREQ     : FREQ    := 100 MHz;
-		DEBOUNCE_TIME  : T_TIME  := 50.0e-9;
+		DEBOUNCE_TIME  : T_TIME  := 500.0e-9;
 		SYNC_DEPTH     : natural := 3
 	);
   port (
@@ -63,7 +63,9 @@ end entity;
 
 
 architecture rtl of iic_Passthrough is
-	constant cycles  : natural := TimingToCycles(DEBOUNCE_TIME, CLOCK_FREQ);
+
+	ATTRIBUTE MARK_DEBUG : string;
+	constant cycles  : natural := 100;--TimingToCycles(DEBOUNCE_TIME, CLOCK_FREQ);
 	constant c_data  : natural := 1;
 	constant c_clock : natural := 0;
 
@@ -74,7 +76,13 @@ architecture rtl of iic_Passthrough is
 	signal a_set           : std_logic_vector(1 downto 0) := (others => '0');
 	signal b_set           : std_logic_vector(1 downto 0) := (others => '0');
 
-  type t_state is (IDLE, ST_A, ST_B, ST_W);
+  type t_state is (IDLE, ST_A, ST_B, ST_W);	
+  
+	ATTRIBUTE MARK_DEBUG of a_level_i      : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of b_level_i      : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of a_set          : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of b_set          : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of debug_level    : SIGNAL IS "TRUE";
 
 begin
 	--SCL
@@ -113,21 +121,26 @@ begin
 --    Output(2)     => a_level(c_clock),
 --    Output(3)     => b_level(c_clock)
 --  );
-  Clock_debounce : entity work.sync_Bits
-  generic map(
-    BITS                    => 4
-  )
-  port map(
-    Clock		      => Clock,
-    Input(0)      => port_a_in.data,
-    Input(1)      => port_b_in.data,
-    Input(2)      => port_a_in.clock,
-    Input(3)      => port_b_in.clock,
-    Output(0)     => a_level_i(c_data),
-    Output(1)     => b_level_i(c_data),
-    Output(2)     => a_level_i(c_clock),
-    Output(3)     => b_level_i(c_clock)
-  );
+--  Clock_debounce : entity work.sync_Bits
+--  generic map(
+--    BITS                    => 4
+--  )
+--  port map(
+--    Clock		      => Clock,
+--    Input(0)      => port_a_in.data,
+--    Input(1)      => port_b_in.data,
+--    Input(2)      => port_a_in.clock,
+--    Input(3)      => ,
+--    Output(0)     => a_level_i(c_data),
+--    Output(1)     => b_level_i(c_data),
+--    Output(2)     => a_level_i(c_clock),
+--    Output(3)     => b_level_i(c_clock)
+--  );
+
+	a_level_i(c_data)  <= port_a_in.data when rising_edge(Clock);
+	b_level_i(c_data)  <= port_b_in.data when rising_edge(Clock);
+	a_level_i(c_clock) <= port_a_in.clock when rising_edge(Clock);
+	b_level_i(c_clock) <= port_b_in.clock when rising_edge(Clock);
 
 	genFSM : for i in 0 to 1 generate
 		signal state      : t_state := IDLE;
@@ -136,26 +149,28 @@ begin
 		signal b_level         : std_logic;
 	begin
 	
-		Glitch_a : entity work.io_GlitchFilter
-		generic map(
-			HIGH_SPIKE_SUPPRESSION_CYCLES			=> cycles /2,
-			LOW_SPIKE_SUPPRESSION_CYCLES			=> cycles /2
-		)
-		port map(
-			Clock		=> Clock,
-			Input		=> a_level_i(i),
-			Output	=> a_level
-		);
-		Glitch_b : entity work.io_GlitchFilter
-		generic map(
-			HIGH_SPIKE_SUPPRESSION_CYCLES			=> cycles /2,
-			LOW_SPIKE_SUPPRESSION_CYCLES			=> cycles /2
-		)
-		port map(
-			Clock		=> Clock,
-			Input		=> b_level_i(i),
-			Output	=> b_level
-		);
+--		Glitch_a : entity work.io_GlitchFilter
+--		generic map(
+--			HIGH_SPIKE_SUPPRESSION_CYCLES			=> 3,--cycles /2,
+--			LOW_SPIKE_SUPPRESSION_CYCLES			=> 3--cycles /2
+--		)
+--		port map(
+--			Clock		=> Clock,
+--			Input		=> a_level_i(i),
+--			Output	=> a_level
+--		);
+		a_level <= a_level_i(i);
+--		Glitch_b : entity work.io_GlitchFilter
+--		generic map(
+--			HIGH_SPIKE_SUPPRESSION_CYCLES			=> 3,--cycles /2,
+--			LOW_SPIKE_SUPPRESSION_CYCLES			=> 3--cycles /2
+--		)
+--		port map(
+--			Clock		=> Clock,
+--			Input		=> b_level_i(i),
+--			Output	=> b_level
+--		);
+		b_level <= b_level_i(i);
 	
 		debug_level(i) <= '0' when state /= IDLE else '1';
 
@@ -212,5 +227,19 @@ begin
 				end if;
 			end if;
 		end process;
+		
+--		counter : entity PoC.io_TimingCounter
+--		generic map(
+--			TIMING_TABLE	: (0 => 																					-- timing table
+--		);
+--		port (
+--			Clock					: in	std_logic;																		-- clock
+--			Enable				: in	std_logic;																		-- enable counter
+--			Load					: in	std_logic;																		-- load Timing Value from TIMING_TABLE selected by slot
+--			Slot					: in	natural range 0 to (TIMING_TABLE'length - 1);	--
+--			Timeout				: out std_logic																			-- timing reached
+--		);
   end generate;
+  
+  
 end architecture;
