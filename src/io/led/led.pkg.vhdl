@@ -7,7 +7,7 @@
 --									Patrick Lehmann
 --									Asif Iqbal
 --
--- Package:					TBD
+-- Package:					PoC.io.led
 --
 -- Description:
 -- -------------------------------------
