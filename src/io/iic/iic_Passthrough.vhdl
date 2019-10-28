@@ -73,7 +73,7 @@ architecture rtl of iic_Passthrough is
 	constant c_clock : natural := 0;
 	
 	constant glitch_cycles : natural := 4;
-	constant wait_cycles   : natural := 50;
+	constant wait_cycles   : natural := 8;
 	
 	constant TIMING_TABLE	: T_NATVEC(0 to 1) := (GLITCH_POS => glitch_cycles, WAIT_POS => wait_cycles);
 
@@ -83,10 +83,10 @@ architecture rtl of iic_Passthrough is
 	signal b_level_i         : std_logic_vector(1 downto 0);
 	signal a_set           : std_logic_vector(1 downto 0) := (others => '0');
 	signal b_set           : std_logic_vector(1 downto 0) := (others => '0');
---	signal a_set_d           : std_logic_vector(1 downto 0) := (others => '0');
---	signal b_set_d           : std_logic_vector(1 downto 0) := (others => '0');
---	signal a_set_fe        : std_logic_vector(1 downto 0);
---	signal b_set_fe        : std_logic_vector(1 downto 0);
+	signal a_set_d           : std_logic_vector(1 downto 0) := (others => '0');
+	signal b_set_d           : std_logic_vector(1 downto 0) := (others => '0');
+	signal a_set_fe        : std_logic_vector(1 downto 0);
+	signal b_set_fe        : std_logic_vector(1 downto 0);
 
   type t_state is (IDLE, ST_A, ST_B, ST_BW, ST_AW);	
   
@@ -94,34 +94,34 @@ architecture rtl of iic_Passthrough is
 	ATTRIBUTE MARK_DEBUG of b_level_i      : SIGNAL IS "TRUE";
 	ATTRIBUTE MARK_DEBUG of a_set          : SIGNAL IS "TRUE";
 	ATTRIBUTE MARK_DEBUG of b_set          : SIGNAL IS "TRUE";
---	ATTRIBUTE MARK_DEBUG of a_set_d          : SIGNAL IS "TRUE";
---	ATTRIBUTE MARK_DEBUG of b_set_d          : SIGNAL IS "TRUE";
---	ATTRIBUTE MARK_DEBUG of a_set_fe          : SIGNAL IS "TRUE";
---	ATTRIBUTE MARK_DEBUG of b_set_fe          : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of a_set_d          : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of b_set_d          : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of a_set_fe          : SIGNAL IS "TRUE";
+	ATTRIBUTE MARK_DEBUG of b_set_fe          : SIGNAL IS "TRUE";
 	ATTRIBUTE MARK_DEBUG of debug_level    : SIGNAL IS "TRUE";
 
 begin
---	a_set_d               <= a_set when rising_edge(clock);
---	b_set_d               <= b_set when rising_edge(clock);
---	a_set_fe              <= a_set_d and not a_set;
---	b_set_fe              <= b_set_d and not b_set;
+	a_set_d               <= a_set when rising_edge(clock);
+	b_set_d               <= b_set when rising_edge(clock);
+	a_set_fe              <= a_set_d and not a_set;
+	b_set_fe              <= b_set_d and not b_set;
 	
 	--SCL
-	port_a_out.clock_O    <= '0';--a_set_fe(c_clock);
-	port_a_out.clock_T    <= not a_set(c_clock);-- when rising_edge(clock);
+	port_a_out.clock_O    <= a_set_fe(c_clock);
+	port_a_out.clock_T    <= not a_set(c_clock) when rising_edge(clock);
 
-	port_b_out.clock_O    <= '0';--b_set_fe(c_clock);
-	port_b_out.clock_T    <= not b_set(c_clock);-- when rising_edge(clock);
+	port_b_out.clock_O    <= b_set_fe(c_clock);
+	port_b_out.clock_T    <= not b_set(c_clock) when rising_edge(clock);
 	
 
 	debug.clock       <= debug_level(c_clock);
 
 	--SDA
-	port_a_out.data_O     <= '0';--a_set_fe(c_data);
-	port_a_out.data_T     <= not a_set(c_data);-- when rising_edge(clock);
+	port_a_out.data_O     <= a_set_fe(c_data);
+	port_a_out.data_T     <= not a_set(c_data) when rising_edge(clock);
 
-	port_b_out.data_O     <= '0';--b_set_fe(c_data);
-	port_b_out.data_T     <= not b_set(c_data);-- when rising_edge(clock);
+	port_b_out.data_O     <= b_set_fe(c_data);
+	port_b_out.data_T     <= not b_set(c_data) when rising_edge(clock);
 
 	debug.data        <= debug_level(c_data);
 
