@@ -73,7 +73,7 @@ architecture rtl of iic_Passthrough is
 	constant c_clock : natural := 0;
 	
 	constant glitch_cycles : natural := 4;
-	constant wait_cycles   : natural := 50;
+	constant wait_cycles   : natural := 70;
 	
 	constant TIMING_TABLE	: T_NATVEC(0 to 1) := (GLITCH_POS => glitch_cycles, WAIT_POS => wait_cycles);
 
@@ -175,6 +175,8 @@ begin
 		signal Load					: std_logic;																		-- load Timing Value from TIMING_TABLE selected by slot
 		signal Slot					: natural range 0 to (TIMING_TABLE'length - 1);	--
 		signal Timeout			: std_logic;																			-- timing reached
+		signal Timeout_d  	: std_logic := '0';																			-- timing reached
+		signal Timeout_re  	: std_logic;																			-- timing reached
 		
 		ATTRIBUTE MARK_DEBUG of state    : SIGNAL IS "TRUE";
 		ATTRIBUTE MARK_DEBUG of a_level    : SIGNAL IS "TRUE";
@@ -184,6 +186,8 @@ begin
 		ATTRIBUTE MARK_DEBUG of Slot    : SIGNAL IS "TRUE";
 		ATTRIBUTE MARK_DEBUG of Timeout    : SIGNAL IS "TRUE";
 	begin
+		Timeout_d <= Timeout when rising_edge(clock);
+		Timeout_re <= Timeout and not Timeout_d;
 	
 		a_level <= a_level_i(i);
 		b_level <= b_level_i(i);
@@ -221,14 +225,14 @@ begin
 							Enable   <= '1';
 								if a_level = '1' then 
 									b_set(i) <= '0';
-									if Timeout = '1' then
+--									if Timeout = '1' and Load = '0' then
 										Enable   <= '0';
 										Slot     <= WAIT_POS;
 										Load     <= '1';
 										state    <= ST_AW;
-									else
-										state    <= IDLE;
-									end if;
+--									else
+--										state    <= IDLE;
+--									end if;
 								end if;
 								
 						when ST_AW => 
@@ -238,7 +242,7 @@ begin
 								Load       <= '1';
 								state      <= ST_A;
 								b_set(i)   <= '1';
-							elsif Timeout = '1' then
+							elsif Timeout_re = '1' then
 								state      <= IDLE;
 							end if;							
 
@@ -247,14 +251,14 @@ begin
 							Enable   <= '1';
 								if b_level = '1' then 
 									a_set(i) <= '0';
-									if Timeout = '1' then
+--									if Timeout = '1' and Load = '0' then
 										Enable   <= '0';
 										Slot     <= WAIT_POS;
 										Load     <= '1';
 										state    <= ST_BW;
-									else
-										state    <= IDLE;
-									end if;
+--									else
+--										state    <= IDLE;
+--									end if;
 								end if;
 								
 						when ST_BW => 
@@ -264,7 +268,7 @@ begin
 								Load       <= '1';
 								state      <= ST_B;
 								a_set(i)   <= '1';
-							elsif Timeout = '1' then
+							elsif Timeout_re = '1' then
 								state      <= IDLE;
 							end if;					
 					end case;
