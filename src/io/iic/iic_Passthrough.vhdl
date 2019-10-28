@@ -73,7 +73,7 @@ architecture rtl of iic_Passthrough is
 	constant c_clock : natural := 0;
 	
 	constant glitch_cycles : natural := 4;
-	constant wait_cycles   : natural := 70;
+	constant wait_cycles   : natural := 50;
 	
 	constant TIMING_TABLE	: T_NATVEC(0 to 1) := (GLITCH_POS => glitch_cycles, WAIT_POS => wait_cycles);
 
