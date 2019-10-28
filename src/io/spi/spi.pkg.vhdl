@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:                 Stefan Unrein
---                                  Max Kraft-Kugler
---                                  Patrick Lehmann
---                                  Asif Iqbal
+--                          Max Kraft-Kugler
+--                          Patrick Lehmann
+--                          Asif Iqbal
 --
 -- Package:                 PoC.io.spi
 --
@@ -34,13 +34,13 @@ use     IEEE.std_logic_1164.all;
 
 package spi is
 
-    type T_SPI_M2S is record
-        MOSI            : std_logic;
-        SCK             : std_logic;
-        SS              : std_logic;
-    end record;
-    type T_SPI_S2M is record
-        MISO            : std_logic;
-    end record;
+	type T_SPI_M2S is record
+		MOSI            : std_logic;
+		SCK             : std_logic;
+		SS              : std_logic;
+	end record;
+	type T_SPI_S2M is record
+		MISO            : std_logic;
+	end record;
 
 end package;
