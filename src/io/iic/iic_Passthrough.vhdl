@@ -53,48 +53,48 @@ entity iic_Passthrough is
 		ENABLE_AKTIVE_PULLUP : boolean := false
 	);
   port (
-		Clock   : in    std_logic;
-		Reset   : in    std_logic;
+		Clock                : in    std_logic;
+		Reset                : in    std_logic;
 		
-  	Port_a_in  : in  T_IO_IIC_SERIAL_IN;
-  	Port_a_out : out T_IO_IIC_SERIAL_OUT;
+  	Port_a_in            : in  T_IO_IIC_SERIAL_IN;
+  	Port_a_out           : out T_IO_IIC_SERIAL_OUT;
   	
-		Port_b_in  : in  T_IO_IIC_SERIAL_IN;
-		Port_b_out : out T_IO_IIC_SERIAL_OUT;
+		Port_b_in            : in  T_IO_IIC_SERIAL_IN;
+		Port_b_out           : out T_IO_IIC_SERIAL_OUT;
 		
 --		MasterIsA  : in std_logic := '1';
 		
-		Port_Debug   : out   T_IO_IIC_SERIAL_PCB
+		Port_Debug           : out   T_IO_IIC_SERIAL_PCB
 	);
 end entity;
 
 
 architecture rtl of iic_Passthrough is
-	ATTRIBUTE MARK_DEBUG     : string;
+	ATTRIBUTE MARK_DEBUG   : string;
 	
-	constant data_pos        : natural := 1;
-	constant clock_pos       : natural := 0;
+	constant data_pos      : natural := 1;
+	constant clock_pos     : natural := 0;
 	
-	constant BITS            : natural := 8;
+	constant BITS          : natural := 8;
 	
 	constant high_low_counter_bits : natural := log2ceilnz(integer(div(CLOCK_FREQ, LOWEST_IIC_FREQ)) * 2) +1;
 	
 --	constant IIC_LOW_PER     : natural := TimingToCycles(IIC_LOW_TIME, CLOCK_FREQ);
 --	constant SAVETY_CYCLES   : natural := TimingToCycles(SAVETY_MARGIN, CLOCK_FREQ);
 	
-	constant GLITCH_POS      : natural := 0;
-	constant PULL_UP_POS     : natural := 1;
-	constant ACK_WAIT_POS    : natural := 2;
-	constant ACK_PULL_POS    : natural := 3;	
+	constant GLITCH_POS    : natural := 0;
+	constant PULL_UP_POS   : natural := 1;
+	constant ACK_WAIT_POS  : natural := 2;
+	constant ACK_PULL_POS  : natural := 3;	
 
   signal debug_level     : std_logic_vector(1 downto 0);
 
-	signal a_level_i         : std_logic_vector(1 downto 0);
-	signal b_level_i         : std_logic_vector(1 downto 0);
+	signal a_level_i       : std_logic_vector(1 downto 0);
+	signal b_level_i       : std_logic_vector(1 downto 0);
 	signal a_set           : std_logic_vector(1 downto 0) := (others => '0');
 	signal b_set           : std_logic_vector(1 downto 0) := (others => '0');
-	signal a_set_d           : std_logic_vector(1 downto 0) := (others => '0');
-	signal b_set_d           : std_logic_vector(1 downto 0) := (others => '0');
+	signal a_set_d         : std_logic_vector(1 downto 0) := (others => '0');
+	signal b_set_d         : std_logic_vector(1 downto 0) := (others => '0');
 	signal a_set_fe        : std_logic_vector(1 downto 0);
 	signal b_set_fe        : std_logic_vector(1 downto 0);
 	
@@ -125,10 +125,10 @@ begin
 	port_b_out.clock_O    <= ite(ENABLE_AKTIVE_PULLUP, b_set_fe(clock_pos), '0');
 	port_b_out.clock_T    <= not b_set(clock_pos) when rising_edge(clock);
 	
-	Port_Debug.clock       <= debug_level(clock_pos);
+	Port_Debug.clock      <= debug_level(clock_pos);
 	
-	a_level_i(clock_pos) <= port_a_in.clock when rising_edge(Clock); --One-Bit Sync
-	b_level_i(clock_pos) <= port_b_in.clock when rising_edge(Clock); --One-Bit Sync
+	a_level_i(clock_pos)  <= port_a_in.clock when rising_edge(Clock); --One-Bit Sync
+	b_level_i(clock_pos)  <= port_b_in.clock when rising_edge(Clock); --One-Bit Sync
 	-------------------------------------------------------------------
 
 	--SDA--------------------------------------------------------------
@@ -138,21 +138,21 @@ begin
 	port_b_out.data_O     <= ite(ENABLE_AKTIVE_PULLUP, b_set_fe(data_pos), '0');
 	port_b_out.data_T     <= not b_set(data_pos) when rising_edge(clock);
 
-	a_level_i(data_pos)  <= port_a_in.data  when rising_edge(Clock); --One-Bit Sync
-	b_level_i(data_pos)  <= port_b_in.data  when rising_edge(Clock); --One-Bit Sync
+	a_level_i(data_pos)   <= port_a_in.data  when rising_edge(Clock); --One-Bit Sync
+	b_level_i(data_pos)   <= port_b_in.data  when rising_edge(Clock); --One-Bit Sync
 	
-	Port_Debug.data        <= debug_level(data_pos);
+	Port_Debug.data       <= debug_level(data_pos);
 	------------------------------------------------------------------
 	
 	----------------------------------CLOCK----------------------------------------------------------
 	clk_blk : block
-		ATTRIBUTE MARK_DEBUG : string;
+		ATTRIBUTE MARK_DEBUG     : string;
   	
   	type t_state is (IDLE, ST_A, ST_B, ST_BW, ST_AW, ST_ACKW, ST_ACK);	
   	
-  	signal is_frame_start : std_logic;
+  	signal is_frame_start    : std_logic;
 		
-		signal state      : t_state := IDLE;
+		signal state             : t_state := IDLE;
 --		signal wait_count : integer range 0 to cycles := cycles;
 		signal a_level           : std_logic;
 		signal a_level_glitch    : std_logic;
@@ -169,12 +169,12 @@ begin
 --		signal high_counter_us_i : unsigned(high_low_counter_bits -3 downto 0) := (others => '0');
 		signal low_counter_us_i  : unsigned(high_low_counter_bits -3 downto 0) := (others => '0');
 		
-		signal Enable				: std_logic;																		-- enable counter
-		signal Load					: std_logic;																		-- load Timing Value from TIMING_TABLE selected by slot
-		signal Slot					: unsigned(1 downto 0);	--
-		signal Timeout			: std_logic;																			-- timing reached
-		signal Timeout_d  	: std_logic := '0';																			-- timing reached
-		signal Timeout_re  	: std_logic;																			-- timing reached
+		signal Enable				     : std_logic;																		-- enable counter
+		signal Load					     : std_logic;																		-- load Timing Value from TIMING_TABLE selected by slot
+		signal Slot					     : unsigned(1 downto 0);	--
+		signal Timeout			     : std_logic;																			-- timing reached
+		signal Timeout_d  	     : std_logic := '0';																			-- timing reached
+		signal Timeout_re  	     : std_logic;																			-- timing reached
 		
 		ATTRIBUTE MARK_DEBUG of state             : SIGNAL IS "TRUE";
 		ATTRIBUTE MARK_DEBUG of a_level           : SIGNAL IS "TRUE";
@@ -221,7 +221,7 @@ begin
 		
 		is_frame_start    <= a_level_data_fe and a_level_glitch_d and a_level_glitch;
 		
-		Timeout_d <= Timeout when rising_edge(clock);
+		Timeout_d  <= Timeout when rising_edge(clock);
 		Timeout_re <= Timeout and not Timeout_d;
 	
 		a_level <= a_level_i(clock_pos);
@@ -234,116 +234,116 @@ begin
 			if rising_edge(clock) then
 				a_set(clock_pos) <= '0';
 				b_set(clock_pos) <= '0';
-				Slot     <= to_unsigned(GLITCH_POS, 2);
-				Enable   <= '0';
-				Load     <= '0';
+				Slot             <= to_unsigned(GLITCH_POS, 2);
+				Enable           <= '0';
+				Load             <= '0';
 
 				if reset = '1' then
-					state      <= IDLE;
+					state          <= IDLE;
 				else
 					case state is
 						when IDLE => 
-							Slot     <= to_unsigned(GLITCH_POS, 2);
+							Slot       <= to_unsigned(GLITCH_POS, 2);
 							if a_level = '0' then
-								Load       <= '1';
-								state      <= ST_A;
-								b_set(clock_pos)   <= '1';
+								Load             <= '1';
+								state            <= ST_A;
+								b_set(clock_pos) <= '1';
 							end if;
 							if b_level = '0' then 
-								Load     <= '1';
-								state    <= ST_B;
+								Load             <= '1';
+								state            <= ST_B;
 								a_set(clock_pos) <= '1';
 							end if;
 
 						when ST_A => 
-							b_set(clock_pos) <= '1';
+							b_set(clock_pos)     <= '1';
 							Enable   <= '1';
 								if a_level = '1' then 
 									b_set(clock_pos) <= '0';
 --									if Timeout = '1' and Load = '0' then
-										Enable   <= '0';
-										Slot     <= to_unsigned(PULL_UP_POS, 2);
-										Load     <= '1';
-										state    <= ST_AW;
+										Enable         <= '0';
+										Slot           <= to_unsigned(PULL_UP_POS, 2);
+										Load           <= '1';
+										state          <= ST_AW;
 --									else
 --										state    <= IDLE;
 --									end if;
 								elsif is_ACK_cycle = '1' then
-									Slot     <= to_unsigned(ACK_WAIT_POS, 2);
-									Load     <= '1';
-									state    <= ST_ACKW;
+									Slot             <= to_unsigned(ACK_WAIT_POS, 2);
+									Load             <= '1';
+									state            <= ST_ACKW;
 								end if;
 								
 						when ST_AW => 
-							Enable   <= '1';
+							Enable             <= '1';
 							if a_level = '0' then 
-								Slot     <= to_unsigned(GLITCH_POS, 2);
-								Load       <= '1';
-								state      <= ST_A;
-								b_set(clock_pos)   <= '1';
+								Slot             <= to_unsigned(GLITCH_POS, 2);
+								Load             <= '1';
+								state            <= ST_A;
+								b_set(clock_pos) <= '1';
 							elsif Timeout_re = '1' then
-								state      <= IDLE;
+								state            <= IDLE;
 							end if;			
 						
 						when ST_ACKW =>
-							Enable   <= '1';
+							Enable           <= '1';
 --							if a_level = '0' then
 --								b_set(clock_pos)   <= '1';
 --							end if;
-							b_set(clock_pos)   <= '1';
+							b_set(clock_pos) <= '1';
 							if is_ACK_cycle = '0' then
-								Slot     <= to_unsigned(GLITCH_POS, 2);
-								Load     <= '1';
-								state    <= ST_A;
+								Slot           <= to_unsigned(GLITCH_POS, 2);
+								Load           <= '1';
+								state          <= ST_A;
 							elsif Timeout_re = '1' then
 --								b_set(clock_pos)   <= '1';
-								Slot       <= to_unsigned(ACK_PULL_POS, 2);
-								Load       <= '1';
-								state      <= ST_ACK;
+								Slot           <= to_unsigned(ACK_PULL_POS, 2);
+								Load           <= '1';
+								state          <= ST_ACK;
 							end if;
 							
 						when ST_ACK =>
-							Enable           <= '1';
-							a_set(clock_pos) <= '1';
-							b_set(clock_pos) <= '1';
+							Enable               <= '1';
+							a_set(clock_pos)     <= '1';
+							b_set(clock_pos)     <= '1';
 							if is_ACK_cycle = '0' then
-								Slot     <= to_unsigned(GLITCH_POS, 2);
-								Load     <= '1';
-								state    <= ST_A;
-							elsif Timeout_d = '1' then
-								b_set(clock_pos) <= '0';
+								Slot               <= to_unsigned(GLITCH_POS, 2);
+								Load               <= '1';
+								state              <= ST_A;
+							elsif Timeout = '1' and Load = '0' then
+								b_set(clock_pos)   <= '0';
 								if b_level = '1' then
 									a_set(clock_pos) <= '0';
 									if a_level = '1' then
-										state      <= IDLE;
+										state          <= IDLE;
 									end if;
 								end if;
 							end if;
 
 						when ST_B => 
-							a_set(clock_pos) <= '1';
+							a_set(clock_pos)     <= '1';
 							Enable   <= '1';
 								if b_level = '1' then 
 									a_set(clock_pos) <= '0';
 --									if Timeout = '1' and Load = '0' then
-										Enable   <= '0';
-										Slot     <= to_unsigned(PULL_UP_POS, 2);
-										Load     <= '1';
-										state    <= ST_BW;
+										Enable         <= '0';
+										Slot           <= to_unsigned(PULL_UP_POS, 2);
+										Load           <= '1';
+										state          <= ST_BW;
 --									else
 --										state    <= IDLE;
 --									end if;
 								end if;
 								
 						when ST_BW => 
-							Enable   <= '1';
+							Enable             <= '1';
 							if b_level = '0' then 
-								Slot     <= to_unsigned(GLITCH_POS, 2);
-								Load       <= '1';
-								state      <= ST_B;
-								a_set(clock_pos)   <= '1';
+								Slot             <= to_unsigned(GLITCH_POS, 2);
+								Load             <= '1';
+								state            <= ST_B;
+								a_set(clock_pos) <= '1';
 							elsif Timeout_re = '1' then
-								state      <= IDLE;
+								state            <= IDLE;
 							end if;					
 					end case;
 				end if;
@@ -406,7 +406,7 @@ begin
 		Bit_counter_proc : process(clock)
 		begin
 			if rising_edge(clock) then
-				if reset = '1' then
+				if reset = '1' or is_frame_start = '1' then
 					bit_counter <= to_unsigned(BITS, bit_counter'length);
 				elsif a_level_glitch_fe = '1' then
 					if bit_counter < BITS then
@@ -414,8 +414,8 @@ begin
 					else
 						bit_counter <= (others => '0');
 					end if;
-				elsif is_frame_start = '1' then
-					bit_counter <= (others => '0');
+--				elsif is_frame_start = '1' then
+--					bit_counter <= to_unsigned(BITS, bit_counter'length);
 				end if;
 			end if;
 		end process;
