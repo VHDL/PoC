@@ -59,14 +59,14 @@ architecture rtl of AXI4Lite_Register is
 	
 
 	
-	constant REG_ADDRESS_BITS : positive := get_RegisterAddressBits(CONFIG);
-	
 	-- Example-specific design signals
 	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
 	-- ADDR_LSB is used for addressing 32/64 bit registers/memories
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
 	constant ADDR_LSB   : positive  := log2ceil(DATA_BITS) - 3;
+	
+	constant REG_ADDRESS_BITS : positive := ite(get_RegisterAddressBits(CONFIG) < ADDR_LSB, ADDR_LSB, get_RegisterAddressBits(CONFIG));
 	
 	-- AXI4LITE signals
 	signal axi_awaddr   : std_logic_vector(ADDRESS_BITS - ADDR_LSB - 1 downto 0)  := (others => '0');
@@ -101,6 +101,9 @@ architecture rtl of AXI4Lite_Register is
 	
 begin
 	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
+    assert false report "ADDR_LSB = " & integer'image(ADDR_LSB) severity warning;
+    assert false report "ADDRESS_BITS = " & integer'image(ADDRESS_BITS) severity warning;
+    assert false report "REG_ADDRESS_BITS = " & integer'image(REG_ADDRESS_BITS) severity warning;
 	
 	S_AXI_s2m.AWReady <= axi_awready;
 	S_AXI_s2m.WReady  <= axi_wready; 
