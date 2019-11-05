@@ -7,7 +7,7 @@
 --                          Patrick Lehmann
 --                          Asif Iqbal
 --
--- Package:                 PoC.io.led
+-- Package:                 PoC.io.jtag
 --
 -- Description:
 -- -------------------------------------
@@ -29,33 +29,19 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- =============================================================================
-
 library IEEE;
 use     IEEE.std_logic_1164.all;
 
+package jtag is
 
-package led is
-	type T_IO_LED_COLORED_RGB is record
-		R : std_logic;
-		G : std_logic;
-		B : std_logic;
-	end record;
-	type T_IO_LED_COLORED_RGB_VECTOR is array(natural range <>) of T_IO_LED_COLORED_RGB;
-	
-	type T_IO_LED_COLORED_RGBW is record
-		R : std_logic;
-		G : std_logic;
-		B : std_logic;
-		W : std_logic;
-	end record;
-	type T_IO_LED_COLORED_RGBW_VECTOR is array(natural range <>) of T_IO_LED_COLORED_RGBW;
-	
-	type T_IO_LED_COLORED_RGBWW is record
-		R : std_logic;
-		G : std_logic;
-		B : std_logic;
-		WW : std_logic; --Warm White
-		CW : std_logic; --Cold White
-	end record;
-	type T_IO_LED_COLORED_RGBWW_VECTOR is array(natural range <>) of T_IO_LED_COLORED_RGBWW;
+    type T_JTAG_M2S is record
+        EN              : std_logic;
+        TCK             : std_logic;
+        TDI             : std_logic;
+        TMS             : std_logic_vector;
+    end record;
+    type T_JTAG_S2M is record
+        TDO             : std_logic;
+    end record;
+
 end package;
