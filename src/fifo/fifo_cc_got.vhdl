@@ -92,6 +92,7 @@ use			IEEE.numeric_std.all;
 library	poc;
 use			poc.config.all;
 use			poc.utils.all;
+use			poc.mem.all;
 use			poc.ocram.all;
 
 
@@ -317,7 +318,8 @@ begin
     ram : entity PoC.ocram_sdp
       generic map (
         A_BITS => A_BITS,
-        D_BITS => D_BITS
+        D_BITS => D_BITS,
+        RAM_TYPE => get_ram_type(A_BITS, D_BITS)
       )
       port map (
         wclk   => clk,
