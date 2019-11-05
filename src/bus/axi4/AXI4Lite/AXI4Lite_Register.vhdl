@@ -57,12 +57,16 @@ architecture rtl of AXI4Lite_Register is
 	constant ADDRESS_BITS  : positive := S_AXI_m2s.AWAddr'length;
 	constant DATA_BITS     : positive := S_AXI_m2s.WData'length;
 	
+
+	
 	-- Example-specific design signals
 	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
 	-- ADDR_LSB is used for addressing 32/64 bit registers/memories
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
 	constant ADDR_LSB   : positive  := log2ceil(DATA_BITS) - 3;
+	
+	constant REG_ADDRESS_BITS : positive := ite(get_RegisterAddressBits(CONFIG) < ADDR_LSB, ADDR_LSB, get_RegisterAddressBits(CONFIG));
 	
 	-- AXI4LITE signals
 	signal axi_awaddr   : std_logic_vector(ADDRESS_BITS - ADDR_LSB - 1 downto 0)  := (others => '0');
@@ -96,6 +100,11 @@ architecture rtl of AXI4Lite_Register is
 	signal clear_latch_read  : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
 	
 begin
+	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
+    assert false report "ADDR_LSB = " & integer'image(ADDR_LSB) severity warning;
+    assert false report "ADDRESS_BITS = " & integer'image(ADDRESS_BITS) severity warning;
+    assert false report "REG_ADDRESS_BITS = " & integer'image(REG_ADDRESS_BITS) severity warning;
+	
 	S_AXI_s2m.AWReady <= axi_awready;
 	S_AXI_s2m.WReady  <= axi_wready; 
 	S_AXI_s2m.BResp   <= axi_bresp;  
@@ -137,7 +146,7 @@ begin
 	end process;
 	
 	process(S_AXI_ACLK)
-		variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
+		-- variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
 	begin
 		if rising_edge(S_AXI_ACLK) then
 			if ((S_AXI_ARESETN = '0')) then
@@ -148,9 +157,11 @@ begin
 				clear_latch <= (others => '0');
 				if (slv_reg_wren = '1') then
 					for i in CONFIG'range loop
-							trunc_addr := std_logic_vector(CONFIG(i).address);
+							-- trunc_addr := std_logic_vector(CONFIG(i).address);
 						--check for writable register
-						if ((axi_awaddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) and (CONFIG(i).rw_config = readWriteable)) then -- found fitting register and it is writable
+						if  (axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) = std_logic_vector(CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB)))
+							and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+							and (CONFIG(i).rw_config = readWriteable) then 
 							for ii in S_AXI_m2s.WStrb'reverse_range loop
 								-- Respective byte enables are asserted as per write strobes
 								if (S_AXI_m2s.WStrb(ii) = '1' ) then
@@ -158,7 +169,9 @@ begin
 								end if;
 							end loop;
 						--check for register with clearable latch on write
-						elsif ((axi_awaddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) and (CONFIG(i).rw_config = latchValue_clearOnWrite)) then
+						elsif (axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) = std_logic_vector(CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB)))
+							and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+							and (CONFIG(i).rw_config = latchValue_clearOnWrite) then
 							clear_latch(i) <= '1';
 						end if;
 					end loop;

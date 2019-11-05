@@ -66,6 +66,7 @@ entity ocram_sdp is
 	generic (
 		A_BITS		: positive;															-- number of address bits
 		D_BITS		: positive;															-- number of data bits
+		RAM_TYPE  : T_RAM_TYPE := RAM_TYPE_AUTO;
 		FILENAME	: string		:= ""												-- file-name for RAM initialization
 	);
 	port (
@@ -98,7 +99,7 @@ begin
 		--	 This is the expected behaviour.
 		--	 With two different clocks, synthesis complains about an undefined
 		--	 read-write behaviour, that can be ignored.
-
+		attribute ram_style : string;
     attribute ramstyle : string;
 
     subtype	word_t	is std_logic_vector(D_BITS - 1 downto 0);
@@ -127,7 +128,8 @@ begin
 		end function;
 
 		signal ram : ram_t	:= ocram_InitMemory(FILENAME);
-		attribute ramstyle of ram : signal is "no_rw_check";
+		attribute ramstyle  of ram : signal is get_ramstyle_string(RAM_TYPE);
+		attribute ram_style of ram : signal is get_ram_style_string(RAM_TYPE);
 
 	begin
 		process(wclk)

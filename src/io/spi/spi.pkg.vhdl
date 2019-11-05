@@ -2,16 +2,16 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Stefan Unrein
---									Max Kraft-Kugler
---									Patrick Lehmann
---									Asif Iqbal
+-- Authors:                 Stefan Unrein
+--                          Max Kraft-Kugler
+--                          Patrick Lehmann
+--                          Asif Iqbal
 --
--- Package:					TBD
+-- Package:                 PoC.io.spi
 --
 -- Description:
 -- -------------------------------------
---		For detailed documentation see below.
+--      For detailed documentation see below.
 --
 -- License:
 -- =============================================================================
@@ -21,7 +21,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--      http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,36 +29,18 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- =============================================================================
-
 library IEEE;
-use     IEEE.STD_LOGIC_1164.ALL;
-use     IEEE.NUMERIC_STD.ALL;
+use     IEEE.std_logic_1164.all;
 
-use     work.utils.all;
-use     work.iic.all;
+package spi is
 
+	type T_SPI_M2S is record
+		MOSI            : std_logic;
+		SCK             : std_logic;
+		SS              : std_logic;
+	end record;
+	type T_SPI_S2M is record
+		MISO            : std_logic;
+	end record;
 
-entity iic_RawDemultiplexer is
-	generic (
-		PORTS : positive
-	);
-	port (
-		sel    :	in    unsigned(log2ceilnz(PORTS) - 1 downto 0);
-		input  :	inout T_IO_IIC_SERIAL;
-			
-		output : 	inout T_IO_IIC_SERIAL_VECTOR(PORTS - 1 downto 0)
-	);
-end entity;
-
-architecture rtl of iic_RawDemultiplexer is
-begin
-	gen: for i in 0 to PORTS - 1 generate
-		output(i).Clock.O <= input.Clock.O when sel = i else '0';
-		output(i).Clock.T <= input.Clock.T when sel = i else '0';
-		output(i).Data.O  <= input.Data.O when sel = i else '0';
-		output(i).Data.T  <= input.Data.T when sel = i else '0';
-	end generate;
-		
-	input.Clock.I <= output(to_index(sel)).Clock.I;
-	input.Data.I  <= output(to_index(sel)).Data.I;
-end architecture;
+end package;
