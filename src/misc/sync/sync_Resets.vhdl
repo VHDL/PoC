@@ -41,17 +41,17 @@ entity sync_Resets is
 		NUM_CLOCKS    : natural             := 2
 	);
 	port (
-		Clocks        : in  std_logic_vector(NUM_CLOCKS - 1 downto 0); -- <Clocks> output clock domains
-		Input         : in  std_logic;                                 -- @async:  reset input
-		Outputs       : out std_logic_vector(NUM_CLOCKS - 1 downto 0)  -- @Clocks(i): synchronized reset to Clocks(i)
+		Clocks        : in  std_logic_vector(NUM_CLOCKS -1 downto 0); -- <Clocks> output clock domains
+		Input_Reset   : in  std_logic;                                -- @async:  reset input
+		Output_Resets : out std_logic_vector(NUM_CLOCKS -1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of sync_Resets is
-	signal sync_reset_d      : std_logic_vector(NUM_CLOCKS - 1 downto 1) := (others => '0');
-	signal sync_reset_out    : std_logic_vector(NUM_CLOCKS - 1 downto 0) := (others => '0');
-	signal sync_bits_out     : std_logic_vector(NUM_CLOCKS - 1 downto 0) := (others => '0');
+	signal sync_reset_d      : std_logic_vector(NUM_CLOCKS -1 downto 1) := (others => '0');
+	signal sync_reset_out    : std_logic_vector(NUM_CLOCKS -1 downto 0) := (others => '0');
+	signal sync_bits_out     : std_logic_vector(NUM_CLOCKS -1 downto 0) := (others => '0');
 begin
 
 	reset_sync_inst :  entity work.sync_Reset
@@ -60,7 +60,7 @@ begin
 		)
 		port map(
 			Clock         => Clocks(0),
-			Input         => Input,
+			Input         => Input_Reset,
 			D             => '0',
 			Output        => sync_reset_out(0)
 		);
@@ -109,7 +109,7 @@ begin
 			)
 			port map(
 				Clock         => Clocks(i),
-				Input         => Input,
+				Input         => Input_Reset,
 				D             => sync_reset_d(i),
 				Output        => sync_reset_out(i)
 			);
@@ -125,6 +125,6 @@ begin
 			);
 	end generate;
 	
-	Outputs <= sync_bits_out;
+	Output_Resets <= sync_bits_out;
 	
 end architecture;

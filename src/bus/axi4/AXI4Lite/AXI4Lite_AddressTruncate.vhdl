@@ -73,8 +73,8 @@ begin
 	M_AXI_m2s.BReady     <= S_AXI_m2s.BReady  ;
 	M_AXI_m2s.ARValid    <= S_AXI_m2s.ARValid ;
 	M_AXI_m2s.ARAddr     <= ite(    ADDR_OUT_BITS > ADDR_IN_BITS, 
-                                  (ADDR_IN_BITS - ADDR_OUT_BITS - 1 downto 0 => '0') & S_AXI_m2s.AWAddr, 
-                                  S_AXI_m2s.AWAddr(ADDR_OUT_BITS - 1 downto 0));
+                                  (ADDR_IN_BITS - ADDR_OUT_BITS - 1 downto 0 => '0') & S_AXI_m2s.ARAddr, 
+                                  S_AXI_m2s.ARAddr(ADDR_OUT_BITS - 1 downto 0));
   M_AXI_m2s.ARCache    <= S_AXI_m2s.ARCache ;
 	M_AXI_m2s.ARProt     <= S_AXI_m2s.ARProt  ;
 	M_AXI_m2s.RReady     <= S_AXI_m2s.RReady  ;

@@ -57,12 +57,16 @@ architecture rtl of AXI4Lite_Register is
 	constant ADDRESS_BITS  : positive := S_AXI_m2s.AWAddr'length;
 	constant DATA_BITS     : positive := S_AXI_m2s.WData'length;
 	
+
+	
 	-- Example-specific design signals
 	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
 	-- ADDR_LSB is used for addressing 32/64 bit registers/memories
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
 	constant ADDR_LSB   : positive  := log2ceil(DATA_BITS) - 3;
+	
+	constant REG_ADDRESS_BITS : positive := ite(get_RegisterAddressBits(CONFIG) < ADDR_LSB, ADDR_LSB, get_RegisterAddressBits(CONFIG));
 	
 	-- AXI4LITE signals
 	signal axi_awaddr   : std_logic_vector(ADDRESS_BITS - ADDR_LSB - 1 downto 0)  := (others => '0');
@@ -90,8 +94,17 @@ architecture rtl of AXI4Lite_Register is
 	signal slv_reg_rden : std_logic;
 	signal slv_reg_wren : std_logic;
 	signal reg_data_out : std_logic_vector(DATA_BITS - 1 downto 0);
+
+	signal latched           : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
+	signal clear_latch       : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
+	signal clear_latch_read  : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
 	
 begin
+	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
+    assert false report "ADDR_LSB = " & integer'image(ADDR_LSB) severity warning;
+    assert false report "ADDRESS_BITS = " & integer'image(ADDRESS_BITS) severity warning;
+    assert false report "REG_ADDRESS_BITS = " & integer'image(REG_ADDRESS_BITS) severity warning;
+	
 	S_AXI_s2m.AWReady <= axi_awready;
 	S_AXI_s2m.WReady  <= axi_wready; 
 	S_AXI_s2m.BResp   <= axi_bresp;  
@@ -100,7 +113,6 @@ begin
 	S_AXI_s2m.RData   <= axi_rdata;  
 	S_AXI_s2m.RResp   <= axi_rresp;  
 	S_AXI_s2m.RValid  <= axi_rvalid; 
-   
 	-------- WRITE TRANSACTION DEPENDECIES --------
 	
 	process (S_AXI_ACLK)
@@ -134,28 +146,53 @@ begin
 	end process;
 	
 	process(S_AXI_ACLK)
-		variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
+		-- variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
 	begin
 		if rising_edge(S_AXI_ACLK) then
 			if ((S_AXI_ARESETN = '0')) then
-				-- RegisterFile <= Register_init(CONFIG);
+				RegisterFile <= Register_init(CONFIG);
+				latched      <= (others => '0');
+				clear_latch  <= (others => '0');
 			else
+				clear_latch <= (others => '0');
 				if (slv_reg_wren = '1') then
 					for i in CONFIG'range loop
-							trunc_addr := std_logic_vector(CONFIG(i).address);
-						if ((axi_awaddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) and (CONFIG(i).writeable)) then -- found fitting register and it is writable
+							-- trunc_addr := std_logic_vector(CONFIG(i).address);
+						--check for writable register
+						if  (axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) = std_logic_vector(CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB)))
+							and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+							and (CONFIG(i).rw_config = readWriteable) then 
 							for ii in S_AXI_m2s.WStrb'reverse_range loop
 								-- Respective byte enables are asserted as per write strobes
 								if (S_AXI_m2s.WStrb(ii) = '1' ) then
 									RegisterFile(i)(ii * 8 + 7 downto ii * 8) <= S_AXI_m2s.WData(8 * ii + 7 downto 8 * ii);
 								end if;
 							end loop;
+						--check for register with clearable latch on write
+						elsif (axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) = std_logic_vector(CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB)))
+							and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+							and (CONFIG(i).rw_config = latchValue_clearOnWrite) then
+							clear_latch(i) <= '1';
 						end if;
 					end loop;
 				else
 					--clear where needed, otherwise latch
 					for i in CONFIG'range loop
-						RegisterFile(i) <= RegisterFile(i) and (not CONFIG(i).Auto_Clear_Mask);  
+						if ((CONFIG(i).rw_config = latchValue_clearOnWrite) or (CONFIG(i).rw_config = latchValue_clearOnRead)) then
+							--latch value on change
+							if(latched(i) = '0') then
+								RegisterFile(i) <= RegisterFile_WritePort(i);
+								if (RegisterFile_WritePort(i) = RegisterFile(i)) then
+									latched(i)      <= '1';
+								end if;
+							--clear on clear latch command
+							elsif (clear_latch(i) = '1') or (clear_latch_read(i) = '1') then
+								latched(i)      <= '0';
+								RegisterFile(i) <= RegisterFile_WritePort(i);
+							end if;
+						else
+							RegisterFile(i) <= RegisterFile(i) and (not CONFIG(i).Auto_Clear_Mask);
+						end if;
 					end loop;
 				end if;
 			end if;
@@ -218,30 +255,37 @@ begin
 	slv_reg_rden <=  S_AXI_m2s.ARValid and axi_arready and (not axi_rvalid);   
 
 
-	-- TODO: 
 	blockReadMux: block
 		signal mux : T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
+		signal hit : std_logic_vector(CONFIG'Length - 1 downto 0);
 	begin
+		clear_latch_read <= (others => '0');
 		--only wire out register if read only
 		genMux: for i in CONFIG'range generate
-			genPort: if (not(CONFIG(i).writeable)) generate 
-				mux(i) <= RegisterFile_WritePort(i);
+			genPort: if (CONFIG(i).rw_config = readable) generate 
+				mux(i)              <= RegisterFile_WritePort(i);
+			elsif (CONFIG(i).rw_config = latchValue_clearOnRead) generate
+				clear_latch_read(i) <= '1';
+				mux(i)              <= RegisterFile(i);
 			else generate
-				mux(i) <= RegisterFile(i);
+				mux(i)              <= RegisterFile(i);
 			end generate;
 		end generate;
 
-		process(mux, axi_araddr)
+		hit_gen : for i in hit'range generate
+			signal config_addr : unsigned(axi_araddr'range);
+		begin
+			config_addr <= CONFIG(i).address(config_addr'high + ADDR_LSB downto ADDR_LSB);
+			hit(i) <= '1' when std_logic_vector(config_addr) = axi_araddr else '0';
+		end generate;
+
+		process(mux, hit)
 			variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
 		begin
-				reg_data_out  <= (others => '0');
-			for i in CONFIG'range loop
-					trunc_addr := std_logic_vector(CONFIG(i).address);
-				if(axi_araddr = trunc_addr(CONFIG(i).address'length - 1 downto ADDR_LSB)) then
-					reg_data_out <= mux(i);
-					exit;
-				end if;
-			end loop;
+			reg_data_out  <= (others => '0');
+			if unsigned(hit) /= 0 then
+				reg_data_out <= mux(lssb_idx(hit));
+			end if;
 		end process;
 		
 	end block;

@@ -72,6 +72,11 @@ package io is
 		signal pad      : inout std_logic_vector;
 		signal tristate : inout T_IO_TRISTATE_VECTOR
 	);
+	
+	procedure io_tristate_connect (
+		signal from_input  : inout T_IO_TRISTATE_VECTOR;
+		signal to_output : inout T_IO_TRISTATE_VECTOR
+	);
 
 	type T_IO_7SEGMENT_CHAR is (
 		IO_7SEGMENT_CHAR_0, IO_7SEGMENT_CHAR_1, IO_7SEGMENT_CHAR_2, IO_7SEGMENT_CHAR_3,
@@ -190,6 +195,18 @@ package body io is
 			-- not intended, see also :ref:`ISSUES:General:inout_records`.
 			tristate(k).t <= 'Z';
 			tristate(k).o <= 'Z';
+		end loop;
+	end procedure;
+	
+	procedure io_tristate_connect (
+		signal from_input  : inout T_IO_TRISTATE_VECTOR;
+		signal to_output : inout T_IO_TRISTATE_VECTOR
+	) is
+	begin
+		for i in from_input'range loop
+			to_output(i).i <= from_input(i).i;
+			from_input(i).o  <= to_output(i).o;
+			from_input(i).t  <= to_output(i).t;
 		end loop;
 	end procedure;
 

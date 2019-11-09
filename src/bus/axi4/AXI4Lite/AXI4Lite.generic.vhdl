@@ -1,10 +1,65 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
+-- =============================================================================
+-- Authors:					Stefan Unrein
+--									Max Kraft-Kugler
+--									Patrick Lehmann
+--									Asif Iqbal
+--
+-- Package:					TBD
+--
+-- Description:
+-- -------------------------------------
+--		For detailed documentation see below.
+--
+-- License:
+-- =============================================================================
+-- Copyright 2017-2019 PLC2 Design GmbH, Germany
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--		http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
+use work.AXI4Stream.all;
+
+
+package AXI4Stream_Sized is
+	generic (
+		DATA_BITS     : natural;
+		USER_BITS     : natural := 0
+	);
+
+	subtype SIZED_M2S is T_AXI4STREAM_M2S(
+		Data(DATA_BITS - 1 downto 0),
+		User(USER_BITS - 1 downto 0)
+	);
+	subtype SIZED_S2M is T_AXI4STREAM_S2M;
+	
+	subtype SIZED_M2S_VECTOR is T_AXI4STREAM_M2S_VECTOR(open)(
+		Data(DATA_BITS - 1 downto 0),
+		User(USER_BITS - 1 downto 0)
+	);
+	subtype SIZED_S2M_VECTOR is T_AXI4STREAM_S2M_VECTOR;
+end package;
+
+
 use work.AXI4Lite.all;
 
 
 package AXI4Lite_Sized is
 	generic (
-		ADDRESS_BITS  : positive := 32;
-		DATA_BITS     : positive := 32
+		ADDRESS_BITS  : natural;
+		DATA_BITS     : natural
 	);
 	
 	subtype SIZED_M2S is T_AXI4LITE_BUS_M2S(
@@ -33,10 +88,10 @@ use work.AXI4_Full.all;
 
 package AXI4Full_Sized is
 	generic (
-		ADDRESS_BITS  : positive;
-		DATA_BITS     : positive;
-		USER_BITS     : positive;
-		ID_BITS       : positive
+		ADDRESS_BITS  : natural;
+		DATA_BITS     : natural;
+		USER_BITS     : natural := 0;
+		ID_BITS       : natural := 0
 	);
 
 	subtype SIZED_M2S is T_AXI4_BUS_M2S(

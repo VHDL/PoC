@@ -2,26 +2,26 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Stefan Unrein
---									Max Kraft-Kugler
---									Patrick Lehmann
---									Asif Iqbal
+-- Authors:         Patrick Lehmann
+--                  Stefan Unrein
 --
--- Package:					TBD
+-- Entity:          A generic AXI4-Stream module to pause a stream.
 --
 -- Description:
 -- -------------------------------------
---		For detailed documentation see below.
+-- .. TODO:: No documentation available.
 --
 -- License:
 -- =============================================================================
--- Copyright 2017-2019 PLC2 Design GmbH, Germany
+-- Copyright 2018-2019 PLC2 Design GmbH, Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,34 +31,34 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.ALL;
-use     IEEE.NUMERIC_STD.ALL;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
-use     work.iic.all;
+use     work.vectors.all;
+use     work.axi4stream.all;
 
 
-entity iic_RawDemultiplexer is
-	generic (
-		PORTS : positive
-	);
+entity AXI4Stream_Pause is
 	port (
-		sel    :	in    unsigned(log2ceilnz(PORTS) - 1 downto 0);
-		input  :	inout T_IO_IIC_SERIAL;
-			
-		output : 	inout T_IO_IIC_SERIAL_VECTOR(PORTS - 1 downto 0)
+		Pause               : in  std_logic;
+		-- IN Port
+		In_M2S              : in  T_AXI4STREAM_M2S;
+		In_S2M              : out T_AXI4STREAM_S2M;
+		-- OUT Ports
+		Out_M2S             : out T_AXI4STREAM_M2S;
+		Out_S2M             : in  T_AXI4STREAM_S2M
 	);
 end entity;
 
-architecture rtl of iic_RawDemultiplexer is
+
+architecture rtl of AXI4Stream_Pause is
 begin
-	gen: for i in 0 to PORTS - 1 generate
-		output(i).Clock.O <= input.Clock.O when sel = i else '0';
-		output(i).Clock.T <= input.Clock.T when sel = i else '0';
-		output(i).Data.O  <= input.Data.O when sel = i else '0';
-		output(i).Data.T  <= input.Data.T when sel = i else '0';
-	end generate;
-		
-	input.Clock.I <= output(to_index(sel)).Clock.I;
-	input.Data.I  <= output(to_index(sel)).Data.I;
+	Out_M2S.Valid <= In_M2S.Valid and not Pause;
+	Out_M2S.Data  <= In_M2S.Data;
+	Out_M2S.Last  <= In_M2S.Last;
+	Out_M2S.User  <= In_M2S.User;
+	
+	In_S2M.Ready  <= Out_S2M.Ready and not Pause;
+
 end architecture;

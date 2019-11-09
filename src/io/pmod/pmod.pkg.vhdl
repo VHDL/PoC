@@ -37,6 +37,12 @@ library PoC;
 
 
 package pmod is
+	subtype T_PMOD_SINGLE is std_logic_vector(4 downto 1);
+	type    T_PMOD_SINGLE_VECTOR is array(natural range <>) of T_PMOD_SINGLE;	
+	
+	subtype T_PMOD_DUAL is std_logic_vector(8 downto 1);
+	type    T_PMOD_DUAL_VECTOR is array(natural range <>) of T_PMOD_DUAL;	
+	
 	type T_PMOD_KYPD_KEYPAD is record
 		Key0	: std_logic;
 		Key1	: std_logic;
@@ -68,8 +74,3 @@ package pmod is
 	end record;
 end package;
 
-
-package body pmod is
-
-
-end package body;

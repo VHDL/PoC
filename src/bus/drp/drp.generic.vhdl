@@ -2,20 +2,18 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Stefan Unrein
---									Max Kraft-Kugler
---									Patrick Lehmann
---									Asif Iqbal
+-- Authors:				 	Stefan Unrein
 --
--- Package:					TBD
+-- Entity:				 	Generic Dynamic Reconfiguration Port(DRP) bus description
 --
 -- Description:
 -- -------------------------------------
---		For detailed documentation see below.
+-- This package implements a generic Dynamic Reconfiguration Port(DRP) description.
+--
 --
 -- License:
 -- =============================================================================
--- Copyright 2017-2019 PLC2 Design GmbH, Germany
+-- Copyright 2018-2019 PLC2 Design GmbH, Germany
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -30,35 +28,32 @@
 -- limitations under the License.
 -- =============================================================================
 
-library IEEE;
-use     IEEE.STD_LOGIC_1164.ALL;
-use     IEEE.NUMERIC_STD.ALL;
-
-use     work.utils.all;
-use     work.iic.all;
+use work.DRP.all;
 
 
-entity iic_RawDemultiplexer is
+package DRP_Sized is
 	generic (
-		PORTS : positive
+		ADDRESS_BITS  : natural;
+		DATA_BITS     : natural
 	);
-	port (
-		sel    :	in    unsigned(log2ceilnz(PORTS) - 1 downto 0);
-		input  :	inout T_IO_IIC_SERIAL;
-			
-		output : 	inout T_IO_IIC_SERIAL_VECTOR(PORTS - 1 downto 0)
+	
+	
+	subtype SIZED_S2M is T_DRP_Bus_S2M(
+		DataOut(DATA_BITS -1 downto 0)
 	);
-end entity;
 
-architecture rtl of iic_RawDemultiplexer is
-begin
-	gen: for i in 0 to PORTS - 1 generate
-		output(i).Clock.O <= input.Clock.O when sel = i else '0';
-		output(i).Clock.T <= input.Clock.T when sel = i else '0';
-		output(i).Data.O  <= input.Data.O when sel = i else '0';
-		output(i).Data.T  <= input.Data.T when sel = i else '0';
-	end generate;
-		
-	input.Clock.I <= output(to_index(sel)).Clock.I;
-	input.Data.I  <= output(to_index(sel)).Data.I;
-end architecture;
+	subtype SIZED_M2S is T_DRP_Bus_M2S(
+		Address(ADDRESS_BITS -1 downto 0),
+		DataIn(DATA_BITS -1 downto 0)
+	);
+	
+	subtype SIZED_M2S_VECTOR is T_DRP_Bus_M2S_VECTOR(open)(
+		Address(ADDRESS_BITS -1 downto 0),
+		DataIn(DATA_BITS -1 downto 0)
+	);
+	
+	subtype SIZED_S2M_VECTOR is T_DRP_Bus_S2M_VECTOR(open)(
+		DataOut(DATA_BITS -1 downto 0)
+	);
+
+end package;
