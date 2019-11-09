@@ -44,18 +44,18 @@
 -- limitations under the License.
 -- =============================================================================
 
-library STD;
-use			STD.TextIO.all;
+use     STD.TextIO.all;
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.std_logic_textio.all;
+use     IEEE.numeric_std.all;
 
 library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.strings.all;
-use			PoC.vectors.all;
+use     PoC.config.all;
+use     PoC.utils.all;
+use     PoC.strings.all;
+use     PoC.vectors.all;
 
 
 package mem is
@@ -147,7 +147,12 @@ package body mem is
 
 			readline(FileHandle, CurrentLine);
 --			report CurrentLine.all severity NOTE;
-			ReadHex(CurrentLine, TempWord, Good);
+--			ReadHex(CurrentLine, TempWord, Good);
+			-- WORKAROUND: for Xilinx Vivado (tested with 2018.3)
+			--	Version:	All versions
+			--	Issue:		User defined procedures using access types like line are not supported (synthesizable).
+			--	Solution:	Use hread, which only supports n*4 bits.
+			hread(CurrentLine, TempWord, Good);
 			if not Good then
 				report "Error while reading memory file '" & FileName & "'." severity FAILURE;
 				return Result;
