@@ -13,6 +13,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2017-2019 Patrick Lehmann - Bötzingen, Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --										 Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -45,6 +46,19 @@ package iic is
 		Clock : T_IO_TRISTATE;
 		Data  : T_IO_TRISTATE;
 	end record;
+	
+	type T_IO_IIC_SERIAL_IN is record
+		Clock : std_logic;
+		Data  : std_logic;
+	end record;
+	type T_IO_IIC_SERIAL_OUT is record
+		Clock_o : std_logic;
+		Clock_t : std_logic;
+		Data_o  : std_logic;
+		Data_t  : std_logic;
+	end record;
+
+	constant C_IO_IIC_SERIAL_INIT : T_IO_IIC_SERIAL := (C_IO_TRISTATE_INIT, C_IO_TRISTATE_INIT);
 
 	type T_IO_IIC_SERIAL_PCB is record
 		Clock : std_logic;
@@ -54,6 +68,8 @@ package iic is
 	constant C_IO_IIC_SERIAL_PCB_INIT : T_IO_IIC_SERIAL_PCB := ('Z', 'Z');
 
 	type T_IO_IIC_SERIAL_VECTOR     is array(natural range <>) of T_IO_IIC_SERIAL;
+	type T_IO_IIC_SERIAL_IN_VECTOR  is array(natural range <>) of T_IO_IIC_SERIAL_IN;
+	type T_IO_IIC_SERIAL_OUT_VECTOR is array(natural range <>) of T_IO_IIC_SERIAL_OUT;
 	type T_IO_IIC_SERIAL_PCB_VECTOR is array(natural range <>) of T_IO_IIC_SERIAL_PCB;
 
 	-- Drive std_logic values from Tri-State signals and in reverse.
