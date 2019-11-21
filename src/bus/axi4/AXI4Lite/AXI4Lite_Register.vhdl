@@ -195,6 +195,20 @@ begin
 								latched(i)      <= '0';
 								RegisterFile(i) <= RegisterFile_WritePort(i);
 							end if;
+						elsif ((CONFIG(i).rw_config = latchHighBit_clearOnWrite) or (CONFIG(i).rw_config = latchHighBit_clearOnRead)) then
+							--latch '1' in Register
+							RegisterFile(i) <= RegisterFile(i) or RegisterFile_WritePort(i);
+							--clear on clear latch command
+							if (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
+								RegisterFile(i) <= RegisterFile_WritePort(i);
+							end if;
+						elsif ((CONFIG(i).rw_config = latchLowBit_clearOnWrite) or (CONFIG(i).rw_config = latchLowBit_clearOnRead)) then
+							--latch '0' in Register
+							RegisterFile(i) <= RegisterFile(i) and RegisterFile_WritePort(i);
+							--clear on clear latch command
+							if (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
+								RegisterFile(i) <= RegisterFile_WritePort(i);
+							end if;
 						else
 							RegisterFile(i) <= RegisterFile(i) and (not CONFIG(i).Auto_Clear_Mask);
 						end if;
