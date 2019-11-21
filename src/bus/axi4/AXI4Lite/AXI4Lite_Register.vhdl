@@ -42,14 +42,16 @@ entity AXI4Lite_Register is
 	 	CONFIG        : T_AXI4_Register_Description_Vector
 	);
 	port (
-		S_AXI_ACLK              : in  std_logic;
-		S_AXI_ARESETN           : in  std_logic;
+		S_AXI_ACLK                 : in  std_logic;
+		S_AXI_ARESETN              : in  std_logic;
 		
-		S_AXI_m2s               : in  T_AXI4Lite_BUS_M2S;
-		S_AXI_s2m               : out T_AXI4Lite_BUS_S2M;
+		S_AXI_m2s                  : in  T_AXI4Lite_BUS_M2S;
+		S_AXI_s2m                  : out T_AXI4Lite_BUS_S2M;
 		
-		RegisterFile_ReadPort   : out T_SLVV(0 to CONFIG'Length - 1);
-		RegisterFile_WritePort  : in  T_SLVV(0 to CONFIG'Length - 1)
+		RegisterFile_ReadPort      : out T_SLVV(0 to CONFIG'Length - 1);
+		RegisterFile_ReadPort_hit  : out std_logic_vector(0 to CONFIG'Length - 1);
+		RegisterFile_WritePort     : in  T_SLVV(0 to CONFIG'Length - 1);
+		RegisterFile_WritePort_hit : out std_logic_vector(0 to CONFIG'Length - 1)
 	);
 end entity;
 
@@ -80,6 +82,10 @@ architecture rtl of AXI4Lite_Register is
 	signal axi_rdata    : std_logic_vector(DATA_BITS - 1 downto 0)               := (others => '0');
 	signal axi_rresp    : std_logic_vector(1 downto 0)  := "00";
 	signal axi_rvalid   : std_logic := '0';
+	
+	
+	signal hit_r        : std_logic_vector(CONFIG'Length - 1 downto 0);
+	signal hit_w        : std_logic_vector(CONFIG'Length - 1 downto 0);
 
 	function Register_init(Config : T_AXI4_Register_Description_Vector) return T_SLVV is
 		variable Result : T_SLVV(0 to Config'Length - 1)(DATA_BITS - 1 downto 0);
@@ -97,8 +103,8 @@ architecture rtl of AXI4Lite_Register is
 	signal reg_data_out : std_logic_vector(DATA_BITS - 1 downto 0);
 
 	signal latched           : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
-	signal clear_latch       : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
-	signal clear_latch_read  : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
+	signal clear_latch_w     : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
+	signal clear_latch_r     : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
 	
 begin
 	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
@@ -155,16 +161,14 @@ begin
 			if ((S_AXI_ARESETN = '0')) then
 				RegisterFile <= Register_init(CONFIG);
 				latched      <= (others => '0');
-				clear_latch  <= (others => '0');
+				clear_latch_w  <= (others => '0');
 			else
-				clear_latch <= (others => '0');
+				clear_latch_w <= (others => '0');
 				if (slv_reg_wren = '1') then
 					for i in CONFIG'range loop
 							-- trunc_addr := std_logic_vector(CONFIG(i).address);
 						--check for writable register
-						if  (axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) = std_logic_vector(CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB)))
-							and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
-							and (CONFIG(i).rw_config = readWriteable) then 
+						if hit_w(i) = '1' and (CONFIG(i).rw_config = readWriteable) then 
 							for ii in S_AXI_m2s.WStrb'reverse_range loop
 								-- Respective byte enables are asserted as per write strobes
 								if (S_AXI_m2s.WStrb(ii) = '1' ) then
@@ -172,10 +176,8 @@ begin
 								end if;
 							end loop;
 						--check for register with clearable latch on write
-						elsif (axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) = std_logic_vector(CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB)))
-							and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
-							and (CONFIG(i).rw_config = latchValue_clearOnWrite) then
-							clear_latch(i) <= '1';
+						elsif  hit_w(i) = '1' and (CONFIG(i).rw_config = latchValue_clearOnWrite) then
+							clear_latch_w(i) <= '1';
 						end if;
 					end loop;
 				else
@@ -185,11 +187,11 @@ begin
 							--latch value on change
 							if(latched(i) = '0') then
 								RegisterFile(i) <= RegisterFile_WritePort(i);
-								if (RegisterFile_WritePort(i) = RegisterFile(i)) then
+								if (RegisterFile_WritePort(i) /= RegisterFile(i)) then
 									latched(i)      <= '1';
 								end if;
 							--clear on clear latch command
-							elsif (clear_latch(i) = '1') or (clear_latch_read(i) = '1') then
+							elsif (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
 								latched(i)      <= '0';
 								RegisterFile(i) <= RegisterFile_WritePort(i);
 							end if;
@@ -209,9 +211,9 @@ begin
 				axi_bvalid  <= '0';
 				axi_bresp   <= C_AXI4_RESPONSE_OKAY;
 			else
-				if (axi_bvalid = '0' and axi_awready = '1' and axi_wready = '1' and S_AXI_m2s.WValid = '1' and S_AXI_m2s.AWValid = '1') then
+				if (axi_bvalid = '0' and slv_reg_wren = '1') then
 					axi_bvalid  <= '1';
-					axi_bresp   <= C_AXI4_RESPONSE_OKAY;
+					axi_bresp   <= C_AXI4_RESPONSE_OKAY when unsigned(hit_w) /= 0 else C_AXI4_RESPONSE_DECODE_ERROR;
 				elsif (S_AXI_m2s.BReady = '1' and axi_bvalid = '1') then
 					axi_bvalid <= '0';
 				end if;
@@ -220,8 +222,8 @@ begin
 	end process;
 	
 	slv_reg_wren <= axi_wready and axi_awready and S_AXI_m2s.AWValid and S_AXI_m2s.WValid;
-	
-	RegisterFile_ReadPort <= RegisterFile;
+	clear_latch_w <= slv_reg_wren or hit_w;
+	RegisterFile_ReadPort     <= RegisterFile;
 	
 	-------- READ TRANSACTION DEPENDECIES --------
 	
@@ -246,9 +248,9 @@ begin
 			if (S_AXI_ARESETN = '0') then
 				axi_rvalid <= '0';
 				axi_rresp  <= C_AXI4_RESPONSE_OKAY;
-			elsif (axi_rvalid = '0' and S_AXI_m2s.ARValid = '1' and axi_arready = '1') then
+			elsif slv_reg_rden = '1' then
 				axi_rvalid <= '1';
-				axi_rresp  <= C_AXI4_RESPONSE_OKAY;
+				axi_rresp  <= C_AXI4_RESPONSE_OKAY when unsigned(hit_r) /= 0 else C_AXI4_RESPONSE_DECODE_ERROR;
 			else
 				axi_rvalid <= '0';
 			end if;
@@ -256,38 +258,30 @@ begin
 	end process;
 	
 	slv_reg_rden <=  S_AXI_m2s.ARValid and axi_arready and (not axi_rvalid);   
+	RegisterFile_WritePort_hit <= slv_reg_rden and hit_r;
+	clear_latch_r              <= slv_reg_rden and hit_r;
 
 
 	blockReadMux: block
 		signal mux : T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
-		signal hit : std_logic_vector(CONFIG'Length - 1 downto 0);
 	begin
-		clear_latch_read <= (others => '0');
 		--only wire out register if read only
 		genMux: for i in CONFIG'range generate
 			genPort: if (CONFIG(i).rw_config = readable) generate 
 				mux(i)              <= RegisterFile_WritePort(i);
 			elsif (CONFIG(i).rw_config = latchValue_clearOnRead) generate
-				clear_latch_read(i) <= '1';
 				mux(i)              <= RegisterFile(i);
 			else generate
 				mux(i)              <= RegisterFile(i);
 			end generate;
 		end generate;
 
-		hit_gen : for i in hit'range generate
-			signal config_addr : unsigned(axi_araddr'range);
-		begin
-			config_addr <= CONFIG(i).address(config_addr'high + ADDR_LSB downto ADDR_LSB);
-			hit(i) <= '1' when std_logic_vector(config_addr) = axi_araddr else '0';
-		end generate;
-
-		process(mux, hit)
+		process(mux, hit_r)
 			variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
 		begin
 			reg_data_out  <= (others => '0');
-			if unsigned(hit) /= 0 then
-				reg_data_out <= mux(lssb_idx(hit));
+			if unsigned(hit_r) /= 0 then
+				reg_data_out <= mux(lssb_idx(hit_r));
 			end if;
 		end process;
 		
@@ -309,5 +303,24 @@ begin
 			end if;
 		end if;
 	end process;  
+	
+	hit_gen_r : for i in hit_r'range generate
+		signal config_addr : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
+	begin
+		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
+		hit_r(i)    <= '1' when (std_logic_vector(config_addr) = axi_araddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
+												and (unsigned(axi_araddr(axi_araddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+												else '0';
+	end generate;
+		
+	hit_gen_w : for i in hit_w'range generate
+		signal config_addr : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
+	begin
+		RegisterFile_ReadPort_hit(i) <= slv_reg_wren when hit_w(i) = '1' and CONFIG(i).rw_config = readWriteable else '0';
+		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
+		hit_w(i)    <= '1' when (std_logic_vector(config_addr) = axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
+												and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+												else '0';
+	end generate;
 	
 end architecture;
