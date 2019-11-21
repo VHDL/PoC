@@ -334,6 +334,7 @@ begin
 		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		hit_w(i)    <= '1' when (std_logic_vector(config_addr) = axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
 												and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+												and (CONFIG(i).rw_config = readWriteable)
 												else '0';
 	end generate;
 	
