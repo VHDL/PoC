@@ -38,6 +38,7 @@ use	    work.axi4lite.all;
 
 entity AXI4Lite_Register is
 	generic (
+		DEBUG         : boolean := false;
 	 	CONFIG        : T_AXI4_Register_Description_Vector
 	);
 	port (
@@ -101,9 +102,11 @@ architecture rtl of AXI4Lite_Register is
 	
 begin
 	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
-    assert false report "ADDR_LSB = " & integer'image(ADDR_LSB) severity warning;
-    assert false report "ADDRESS_BITS = " & integer'image(ADDRESS_BITS) severity warning;
-    assert false report "REG_ADDRESS_BITS = " & integer'image(REG_ADDRESS_BITS) severity warning;
+	assert not DEBUG report "========================== PoC.Axi4LiteRegister ==========================" severity note;
+	assert not DEBUG report "ADDR_LSB         = " & integer'image(ADDR_LSB)         severity note;
+	assert not DEBUG report "ADDRESS_BITS     = " & integer'image(ADDRESS_BITS)     severity note;
+	assert not DEBUG report "REG_ADDRESS_BITS = " & integer'image(REG_ADDRESS_BITS) severity note;
+	assert not DEBUG report "=================== END of PoC.Axi4LiteRegister ==========================" severity note;
 	
 	S_AXI_s2m.AWReady <= axi_awready;
 	S_AXI_s2m.WReady  <= axi_wready; 
