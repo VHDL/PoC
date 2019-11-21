@@ -60,8 +60,6 @@ architecture rtl of AXI4Lite_Register is
 	constant ADDRESS_BITS  : positive := S_AXI_m2s.AWAddr'length;
 	constant DATA_BITS     : positive := S_AXI_m2s.WData'length;
 	
-
-	
 	-- Example-specific design signals
 	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
 	-- ADDR_LSB is used for addressing 32/64 bit registers/memories
@@ -70,6 +68,21 @@ architecture rtl of AXI4Lite_Register is
 	constant ADDR_LSB   : positive  := log2ceil(DATA_BITS) - 3;
 	
 	constant REG_ADDRESS_BITS : positive := ite(get_RegisterAddressBits(CONFIG) < ADDR_LSB, ADDR_LSB, get_RegisterAddressBits(CONFIG));
+	
+	function check_for_ADDR_conflicts return boolean is
+		variable addr : unsigned(REG_ADDRESS_BITS downto ADDR_LSB);
+	begin
+		for i in CONFIG'low to CONFIG'high -1 loop
+			addr := CONFIG(i).address(addr'range);
+			for ii in i +1 to CONFIG'high loop
+				if addr = CONFIG(ii).address(addr'range) then
+					report "AXI4Lite_Register Error: Addressconflict in Config: CONFIG(" & integer'image(i) & ") and CONFIG(" & integer'image(ii) & ") are equal!" severity failure;
+					return false;
+				end if;
+			end loop;
+		end loop;
+		return true;
+	end function;
 	
 	-- AXI4LITE signals
 	signal axi_awaddr   : std_logic_vector(ADDRESS_BITS - ADDR_LSB - 1 downto 0)  := (others => '0');
@@ -108,6 +121,7 @@ architecture rtl of AXI4Lite_Register is
 	
 begin
 	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
+	assert check_for_ADDR_conflicts report "AXI4Lite_Register Error: Addressconflict in Config!" severity failure;
 	assert not DEBUG report "========================== PoC.Axi4LiteRegister ==========================" severity note;
 	assert not DEBUG report "ADDR_LSB         = " & integer'image(ADDR_LSB)         severity note;
 	assert not DEBUG report "ADDRESS_BITS     = " & integer'image(ADDRESS_BITS)     severity note;
