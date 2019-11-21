@@ -78,16 +78,18 @@ use			IEEE.numeric_std.all;
 
 use			work.config.all;
 use			work.utils.all;
+use			work.mem.all;
 use			work.ocram.ocram_sdp;
 
 
 entity fifo_cc_got_tempput is
   generic (
+  	RAM_TYPE       : T_RAM_TYPE := RAM_TYPE_AUTO;     
     D_BITS         : positive;          -- Data Width
     MIN_DEPTH      : positive;          -- Minimum FIFO Depth
     DATA_REG       : boolean := false;  -- Store Data Content in Registers
     STATE_REG      : boolean := false;  -- Registered Full/Empty Indicators
-    OUTPUT_REG     : boolean := false;  -- Registered FIFO Output
+    OUTPUT_REG     : boolean := true;  -- Registered FIFO Output
     ESTATE_WR_BITS : natural := 0;      -- Empty State Bits
     FSTATE_RD_BITS : natural := 0       -- Full State Bits
   );
@@ -316,6 +318,7 @@ begin
     -- Backing Memory
     ram : entity work.ocram_sdp
       generic map (
+      	RAM_TYPE => RAM_TYPE,
         A_BITS => A_BITS,
         D_BITS => D_BITS
       )
