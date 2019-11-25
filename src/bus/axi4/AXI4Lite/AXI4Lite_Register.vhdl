@@ -246,7 +246,7 @@ begin
 			elsif (axi_rvalid = '0' and S_AXI_m2s.ARValid = '1' and axi_arready = '1') then
 				axi_rvalid <= '1';
 				axi_rresp  <= C_AXI4_RESPONSE_OKAY;
-			else
+			elsif (S_AXI_m2s.RReady = '1') then
 				axi_rvalid <= '0';
 			end if;
 		end if;
