@@ -44,20 +44,50 @@ package vectors is
 	-- Type declarations
 	-- ==========================================================================
 	-- STD_LOGIC_VECTORs
-	subtype T_SLV_2             is std_logic_vector(1 downto 0);
-	subtype T_SLV_3             is std_logic_vector(2 downto 0);
-	subtype T_SLV_4             is std_logic_vector(3 downto 0);
-	subtype T_SLV_8             is std_logic_vector(7 downto 0);
-	subtype T_SLV_12            is std_logic_vector(11 downto 0);
-	subtype T_SLV_16            is std_logic_vector(15 downto 0);
-	subtype T_SLV_24            is std_logic_vector(23 downto 0);
-	subtype T_SLV_32            is std_logic_vector(31 downto 0);
-	subtype T_SLV_48            is std_logic_vector(47 downto 0);
-	subtype T_SLV_64            is std_logic_vector(63 downto 0);
-	subtype T_SLV_96            is std_logic_vector(95 downto 0);
-	subtype T_SLV_128           is std_logic_vector(127 downto 0);
-	subtype T_SLV_256           is std_logic_vector(255 downto 0);
-	subtype T_SLV_512           is std_logic_vector(511 downto 0);
+	subtype T_SLV_2							is std_logic_vector(1 downto 0);
+	subtype T_SLV_3							is std_logic_vector(2 downto 0);
+	subtype T_SLV_4							is std_logic_vector(3 downto 0);
+	subtype T_SLV_8							is std_logic_vector(7 downto 0);
+	subtype T_SLV_12						is std_logic_vector(11 downto 0);
+	subtype T_SLV_16						is std_logic_vector(15 downto 0);
+	subtype T_SLV_24						is std_logic_vector(23 downto 0);
+	subtype T_SLV_32						is std_logic_vector(31 downto 0);
+	subtype T_SLV_48						is std_logic_vector(47 downto 0);
+	subtype T_SLV_64						is std_logic_vector(63 downto 0);
+	subtype T_SLV_96						is std_logic_vector(95 downto 0);
+	subtype T_SLV_128						is std_logic_vector(127 downto 0);
+	subtype T_SLV_256						is std_logic_vector(255 downto 0);
+	subtype T_SLV_512						is std_logic_vector(511 downto 0);
+	-- UNSIGNEDs
+	subtype T_SLU_2							is unsigned(1 downto 0);
+	subtype T_SLU_3							is unsigned(2 downto 0);
+	subtype T_SLU_4							is unsigned(3 downto 0);
+	subtype T_SLU_8							is unsigned(7 downto 0);
+	subtype T_SLU_12						is unsigned(11 downto 0);
+	subtype T_SLU_16						is unsigned(15 downto 0);
+	subtype T_SLU_24						is unsigned(23 downto 0);
+	subtype T_SLU_32						is unsigned(31 downto 0);
+	subtype T_SLU_48						is unsigned(47 downto 0);
+	subtype T_SLU_64						is unsigned(63 downto 0);
+	subtype T_SLU_96						is unsigned(95 downto 0);
+	subtype T_SLU_128						is unsigned(127 downto 0);
+	subtype T_SLU_256						is unsigned(255 downto 0);
+	subtype T_SLU_512						is unsigned(511 downto 0);
+	-- SIGNEDs
+	subtype T_SLS_2							is signed(1 downto 0);
+	subtype T_SLS_3							is signed(2 downto 0);
+	subtype T_SLS_4							is signed(3 downto 0);
+	subtype T_SLS_8							is signed(7 downto 0);
+	subtype T_SLS_12						is signed(11 downto 0);
+	subtype T_SLS_16						is signed(15 downto 0);
+	subtype T_SLS_24						is signed(23 downto 0);
+	subtype T_SLS_32						is signed(31 downto 0);
+	subtype T_SLS_48						is signed(47 downto 0);
+	subtype T_SLS_64						is signed(63 downto 0);
+	subtype T_SLS_96						is signed(95 downto 0);
+	subtype T_SLS_128						is signed(127 downto 0);
+	subtype T_SLS_256						is signed(255 downto 0);
+	subtype T_SLS_512						is signed(511 downto 0);
 	
 	-- Data BE Vector
 	type T_DATA_BE is record
@@ -68,20 +98,50 @@ package vectors is
 	type T_DATA_BE_VECTOR is array(natural range <>) of T_DATA_BE;
 
 	-- STD_LOGIC_VECTOR_VECTORs
-	type    T_SLVV              is array(NATURAL range <>) of STD_LOGIC_VECTOR;         -- VHDL 2008 syntax - not yet supported by Xilinx
-	type    T_SLVV_2            is array(natural range <>) of T_SLV_2;
-	type    T_SLVV_3            is array(natural range <>) of T_SLV_3;
-	type    T_SLVV_4            is array(natural range <>) of T_SLV_4;
-	type    T_SLVV_8            is array(natural range <>) of T_SLV_8;
-	type    T_SLVV_12           is array(natural range <>) of T_SLV_12;
-	type    T_SLVV_16           is array(natural range <>) of T_SLV_16;
-	type    T_SLVV_24           is array(natural range <>) of T_SLV_24;
-	type    T_SLVV_32           is array(natural range <>) of T_SLV_32;
-	type    T_SLVV_48           is array(natural range <>) of T_SLV_48;
-	type    T_SLVV_64           is array(natural range <>) of T_SLV_64;
-	type    T_SLVV_128          is array(natural range <>) of T_SLV_128;
-	type    T_SLVV_256          is array(natural range <>) of T_SLV_256;
-	type    T_SLVV_512          is array(natural range <>) of T_SLV_512;
+  type		T_SLVV							is array(NATURAL range <>) of STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	type		T_SLVV_2						is array(natural range <>) of T_SLV_2;
+	type		T_SLVV_3						is array(natural range <>) of T_SLV_3;
+	type		T_SLVV_4						is array(natural range <>) of T_SLV_4;
+	type		T_SLVV_8						is array(natural range <>) of T_SLV_8;
+	type		T_SLVV_12						is array(natural range <>) of T_SLV_12;
+	type		T_SLVV_16						is array(natural range <>) of T_SLV_16;
+	type		T_SLVV_24						is array(natural range <>) of T_SLV_24;
+	type		T_SLVV_32						is array(natural range <>) of T_SLV_32;
+	type		T_SLVV_48						is array(natural range <>) of T_SLV_48;
+	type		T_SLVV_64						is array(natural range <>) of T_SLV_64;
+	type		T_SLVV_128					is array(natural range <>) of T_SLV_128;
+	type		T_SLVV_256					is array(natural range <>) of T_SLV_256;
+	type		T_SLVV_512					is array(natural range <>) of T_SLV_512;
+	-- UNSIGNED_VECTORs
+  type		T_SLUV							is array(NATURAL range <>) of UNSIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	type		T_SLUV_2						is array(natural range <>) of T_SLU_2;
+	type		T_SLUV_3						is array(natural range <>) of T_SLU_3;
+	type		T_SLUV_4						is array(natural range <>) of T_SLU_4;
+	type		T_SLUV_8						is array(natural range <>) of T_SLU_8;
+	type		T_SLUV_12						is array(natural range <>) of T_SLU_12;
+	type		T_SLUV_16						is array(natural range <>) of T_SLU_16;
+	type		T_SLUV_24						is array(natural range <>) of T_SLU_24;
+	type		T_SLUV_32						is array(natural range <>) of T_SLU_32;
+	type		T_SLUV_48						is array(natural range <>) of T_SLU_48;
+	type		T_SLUV_64						is array(natural range <>) of T_SLU_64;
+	type		T_SLUV_128					is array(natural range <>) of T_SLU_128;
+	type		T_SLUV_256					is array(natural range <>) of T_SLU_256;
+	type		T_SLUV_512					is array(natural range <>) of T_SLU_512;
+	-- SIGNED_VECTORs
+  type		T_SLSV							is array(NATURAL range <>) of SIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	type		T_SLSV_2						is array(natural range <>) of T_SLS_2;
+	type		T_SLSV_3						is array(natural range <>) of T_SLS_3;
+	type		T_SLSV_4						is array(natural range <>) of T_SLS_4;
+	type		T_SLSV_8						is array(natural range <>) of T_SLS_8;
+	type		T_SLSV_12						is array(natural range <>) of T_SLS_12;
+	type		T_SLSV_16						is array(natural range <>) of T_SLS_16;
+	type		T_SLSV_24						is array(natural range <>) of T_SLS_24;
+	type		T_SLSV_32						is array(natural range <>) of T_SLS_32;
+	type		T_SLSV_48						is array(natural range <>) of T_SLS_48;
+	type		T_SLSV_64						is array(natural range <>) of T_SLS_64;
+	type		T_SLSV_128					is array(natural range <>) of T_SLS_128;
+	type		T_SLSV_256					is array(natural range <>) of T_SLS_256;
+	type		T_SLSV_512					is array(natural range <>) of T_SLS_512;
 
 	-- STD_LOGIC_MATRIXs
 	type    T_SLM               is array(natural range <>, natural range <>) of std_logic;

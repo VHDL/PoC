@@ -133,7 +133,12 @@ package AXI4Lite is
 	
 	function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set;
 	
-	type T_ReadWrite_Config is (readWriteable, readable, latchValue_clearOnRead, latchValue_clearOnWrite);
+	type T_ReadWrite_Config is (
+		readWriteable, readable, 
+		latchValue_clearOnRead, latchValue_clearOnWrite, 
+		latchHighBit_clearOnRead, latchHighBit_clearOnWrite, 
+		latchLowBit_clearOnRead, latchLowBit_clearOnWrite
+	);
 
 	type T_AXI4_Register_Description is record
 		Address             : unsigned(Address_Width-1 downto 0);
