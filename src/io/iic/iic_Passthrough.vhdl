@@ -49,13 +49,13 @@ entity iic_Passthrough is
 		GLITCH_CYCLES        : natural := 8;
 		PULL_UP_CYCLES       : natural := 55
 	);
-  port (
+	port (
 		Clock                : in    std_logic;
 		Reset                : in    std_logic;
 		
-  	Port_a_in            : in  T_IO_IIC_SERIAL_IN;
-  	Port_a_out           : out T_IO_IIC_SERIAL_OUT;
-  	
+		Port_a_in            : in  T_IO_IIC_SERIAL_IN;
+		Port_a_out           : out T_IO_IIC_SERIAL_OUT;
+		
 		Port_b_in            : in  T_IO_IIC_SERIAL_IN;
 		Port_b_out           : out T_IO_IIC_SERIAL_OUT;
 		
