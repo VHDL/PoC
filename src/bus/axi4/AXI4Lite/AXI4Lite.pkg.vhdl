@@ -34,6 +34,7 @@ use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
 use     work.utils.all;
+use     work.strings.all;
 use     work.AXI4_Common.all;
 
 
@@ -146,6 +147,8 @@ package AXI4Lite is
 		Init_Value          : std_logic_vector(Data_Width-1 downto 0);
 		Auto_Clear_Mask     : std_logic_vector(Data_Width-1 downto 0);
 	end record;
+	
+	function to_string(reg : T_AXI4_Register_Description) return string;
 	
 	type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
 	
@@ -351,6 +354,16 @@ package body AXI4Lite is
 		temp.Last_Index := reg_vec'length -1;
 		return temp;
 	end function;
+	
+
+	function to_string(reg : T_AXI4_Register_Description) return string is
+	begin
+		return "Address: 0x" & to_string(std_logic_vector(reg.address), 'h', 4) 
+			& ", Init_Value: 0x" & to_string(reg.Init_Value, 'h', 4)
+			& ", Auto_Clear_Mask: 0x" & to_string(reg.Auto_Clear_Mask, 'h', 4)
+			& ", rw_config: " & T_ReadWrite_Config'image(reg.rw_config);
+	end function;
+	
 	
 	function to_AXI4_Register_Description(  Address : unsigned(Address_Width -1 downto 0); 
 	                                        writeable : boolean; 
