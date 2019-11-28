@@ -84,6 +84,15 @@ architecture rtl of AXI4Lite_Register is
 		return true;
 	end function;
 	
+	function print_CONFIG return string is
+	begin
+		for i in CONFIG'range loop
+			report "CONFIG(" & integer'image(i) & "):" & to_string(CONFIG(i)) severity note;
+--			report to_string(CONFIG(i)) severity note;
+		end loop;
+		return "-";
+	end function;
+	
 	-- AXI4LITE signals
 	signal axi_awaddr   : std_logic_vector(ADDRESS_BITS - ADDR_LSB - 1 downto 0)  := (others => '0');
 	signal axi_awready  : std_logic := '0';
@@ -126,7 +135,9 @@ begin
 	assert not DEBUG report "ADDR_LSB         = " & integer'image(ADDR_LSB)         severity note;
 	assert not DEBUG report "ADDRESS_BITS     = " & integer'image(ADDRESS_BITS)     severity note;
 	assert not DEBUG report "REG_ADDRESS_BITS = " & integer'image(REG_ADDRESS_BITS) severity note;
+	assert not DEBUG report print_CONFIG severity note;
 	assert not DEBUG report "=================== END of PoC.Axi4LiteRegister ==========================" severity note;
+
 	
 	S_AXI_s2m.AWReady <= axi_awready;
 	S_AXI_s2m.WReady  <= axi_wready; 
