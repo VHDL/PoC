@@ -146,7 +146,7 @@ begin
 	end process;
 
 	reassign_Outputs : for i in 0 to PORTS - 1 generate
-		Out_M2S(i).Valid    <= InGlue_Valid and Valid_Mask_r;
+		Out_M2S(i).Valid    <= InGlue_Valid and Valid_Mask_r(i);
 		--Out_M2S(i).Data     <= InGlue_data_out(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos));
 		--Out_M2S(i).Last     <= InGlue_data_out(high(Bit_Vec, Last_Pos));
 		--Out_M2S(i).User     <= InGlue_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
