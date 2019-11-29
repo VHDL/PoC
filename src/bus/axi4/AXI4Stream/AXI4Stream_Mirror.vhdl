@@ -86,10 +86,12 @@ architecture rtl of AXI4Stream_Mirror is
 	signal InGlue_data_out    : std_logic_vector(GLUE_BITS - 1 downto 0);
 	signal InGlue_Valid       : std_logic;
 	signal InGlue_got         : std_logic;
+
+	signal MirrorOut_valid    : std_logic_vector(PORTS - 1 downto 0);
+	signal MirrorOut_data     : T_SLM(PORTS - 1 downto 0, GLUE_BITS - 1 downto 0);
+	signal MirrorOut_ack      : std_logic_vector(PORTS - 1 downto 0);
 	
 	signal Out_Ready          : std_logic_vector(PORTS - 1 downto 0);
-
-	signal Ready_i            : std_logic;
 
 	signal internal_M2S       : T_AXI4STREAM_M2S_VECTOR(PORTS - 1 downto 0)(
 	       Data(DATA_BITS - 1 downto 0),
@@ -128,36 +130,60 @@ begin
 			got                     => InGlue_got
 		);
 	
-	Ready_gen : for i in 0 to PORTS - 1 generate
-		Out_Ready(i) <= internal_S2M(i).Ready or ready_mask(i);
-	end generate;
-	
-	Ready_i        <= slv_and(Out_Ready); --TODO timing loop?
-	
-	InGlue_got   <= Ready_i;
+	mirror : entity PoC.stream_Mirror
+		generic map(
+			PORTS         => PORTS,
+			DATA_BITS     => GLUE_BITS,
+			META_BITS     => (0 => 1),
+			META_LENGTH   => (0 => 1)
+		)
+		port map(
+			Clock         => Clock,
+			Reset         => Reset,
+			-- IN Port
+			In_Valid      => InGlue_Valid,
+			In_Data       => InGlue_data_out,
+			In_SOF        => '0', -- unused
+			In_EOF        => '0', -- unused, last is encoded in data
+			In_Ack        => InGlue_got,
+			In_Meta_rst   => open,
+			In_Meta_nxt   => open,
+			In_Meta_Data  => (others => '0'),
+			-- OUT Port
+			Out_Valid     => MirrorOut_valid,
+			Out_Data      => MirrorOut_data,
+			Out_SOF       => open, -- unused
+			Out_EOF       => open, -- unused, last is encoded in data
+			Out_Ack       => MirrorOut_ack,
+			Out_Meta_rst  => (others => '0'),
+			Out_Meta_nxt  => (others => (others => '0')),
+			Out_Meta_Data => open
+		);
 
-	-- missed transaction indication:
-	gen_lost:for i in 0 to PORTS - 1 generate
-		-- transaction is considered lost when:
-		-- the master transaction (towards the fifo) has happend and the current slave is not ready
-		mask_transaction_lost(i) <= (Ready_i and internal_M2S(i).Valid) and (not internal_S2M(i).Ready);
+	ackowlegde_gen : for i in 0 to PORTS - 1 generate
+		MirrorOut_ack(i) <= internal_S2M(i).Ready or ready_mask(i);
 	end generate;
 
-	
-	genOutput : for i in 0 to PORTS - 1 generate
-		--suppress valid whenever masked and not ready, otherwise transmit through valid as is
-		internal_M2S(i).Valid    <= (InGlue_Valid and not ready_mask(i)) or (InGlue_Valid and Ready_i);
+	reassign_Outputs : for i in 0 to PORTS - 1 generate
+		internal_M2S(i).Valid    <= MirrorOut_valid(i);
 		--internal_M2S(i).Data     <= InGlue_data_out(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos));
 		--internal_M2S(i).Last     <= InGlue_data_out(high(Bit_Vec, Last_Pos));
 		--internal_M2S(i).User     <= InGlue_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
 		--internal_M2S(i).Keep     <= InGlue_data_out(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos));
 		--TODO fix with above:
-		internal_M2S(i).Data     <= InGlue_data_out(DATA_BITS - 1 downto 0);
-		internal_M2S(i).Last     <= InGlue_data_out(DATA_BITS);
-		internal_M2S(i).User     <= InGlue_data_out(InGlue_data_out'high downto DATA_BITS + 1);
+		internal_M2S(i).Data     <= MirrorOut_data(i, DATA_BITS - 1 downto 0);
+		internal_M2S(i).Last     <= MirrorOut_data(i, DATA_BITS);
+		internal_M2S(i).User     <= MirrorOut_data(i, InGlue_data_out'high downto DATA_BITS + 1);
 	end generate;
-	
-	gen_outputs : for i in 0 to PORTS - 1 generate
+
+	-- missed transaction indication:
+	gen_lost:for i in 0 to PORTS - 1 generate
+		-- transaction is considered lost when:
+		-- the mirror transaction (all ports are either ready or masked) has happend and the current slave is not ready
+		mask_transaction_lost(i) <= ((slv_and(MirrorOut_ack) and internal_M2S(i).Valid) and (not internal_S2M(i).Ready));
+	end generate;
+
+	gen_Outputs : for i in 0 to PORTS - 1 generate
 		gen_glue : if ADD_OUTPUT_GLUE generate
 			signal OutGlue_full       : std_logic;
 			signal OutGlue_put        : std_logic;
