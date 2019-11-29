@@ -199,7 +199,7 @@ package vectors is
 
 	-- Convert to vector: to_slv
 	function to_slv(slvv : T_SLVV)                return std_logic_vector;                -- convert vector-vector to flatten vector
-	function to_slv(slvv : T_SLVV_2)              return std_logic_vector;                -- convert vector-vector to flatten vector
+	function to_slv(slvv : T_SLVV_2)              return std_logic_vector;                -- ...
 	function to_slv(slvv : T_SLVV_4)              return std_logic_vector;                -- ...
 	function to_slv(slvv : T_SLVV_8)              return std_logic_vector;                -- ...
 	function to_slv(slvv : T_SLVV_12)             return std_logic_vector;                -- ...
@@ -208,6 +208,7 @@ package vectors is
 	function to_slv(slvv : T_SLVV_32)             return std_logic_vector;                -- ...
 	function to_slv(slvv : T_SLVV_64)             return std_logic_vector;                -- ...
 	function to_slv(slvv : T_SLVV_128)            return std_logic_vector;                -- ...
+	function to_slv(sluv : T_SLUV_64)             return std_logic_vector;                -- ...
 	function to_slv(slm : T_SLM)                  return std_logic_vector;                -- convert matrix to flatten vector
 
 	-- Convert flat vector to avector-vector: to_slvv_*
@@ -221,6 +222,7 @@ package vectors is
 	function to_slvv_128(slv : std_logic_vector)  return T_SLVV_128;                      --
 	function to_slvv_256(slv : std_logic_vector)  return T_SLVV_256;                      --
 	function to_slvv_512(slv : std_logic_vector)  return T_SLVV_512;                      --
+	function to_sluv_64(slv : std_logic_vector)   return T_SLUV_64;                       --
 
 	-- Convert matrix to avector-vector: to_slvv_*
 	function to_slvv(slm : T_SLM)     return T_SLVV;                                      --
@@ -596,6 +598,15 @@ package body vectors is
 		end loop;
 		return slv;
 	end function;
+	
+	function to_slv(sluv : T_SLUV_64)              return std_logic_vector is
+		variable slv      : std_logic_vector((sluv'length * 64) - 1 downto 0);
+	begin
+		for i in sluv'range loop
+			slv((i * 64) + 63 downto (i * 64))    := std_logic_vector(sluv(i));
+		end loop;
+		return slv;
+	end function;
 
 	-- convert matrix to flatten vector
 	function to_slv(slm : T_SLM) return std_logic_vector is
@@ -728,6 +739,17 @@ package body vectors is
 
 		for i in Result'range loop
 			Result(i) := slv((i * 512) + 511 downto (i * 512));
+		end loop;
+		return Result;
+	end function;
+	
+	function to_sluv_64(slv : std_logic_vector)   return T_SLUV_64 is
+		variable Result   : T_SLUV_64((slv'length / 64) - 1 downto 0);
+	begin
+		if ((slv'length mod 64) /= 0) then report "to_slvv_512: width mismatch - slv'length is no multiple of 64 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
+
+		for i in Result'range loop
+			Result(i) := unsigned(slv((i * 64) + 63 downto (i * 64)));
 		end loop;
 		return Result;
 	end function;
