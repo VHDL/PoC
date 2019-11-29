@@ -134,7 +134,7 @@ begin
 		generic map(
 			PORTS         => PORTS,
 			DATA_BITS     => GLUE_BITS,
-			META_BITS     => (0 => 1),
+			META_BITS     => (0 to -1 => 1), --Null range
 			META_LENGTH   => (0 => 1)
 		)
 		port map(
