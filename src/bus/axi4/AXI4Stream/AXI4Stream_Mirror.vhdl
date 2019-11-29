@@ -87,18 +87,10 @@ architecture rtl of AXI4Stream_Mirror is
 	signal InGlue_Valid       : std_logic;
 	signal InGlue_got         : std_logic;
 
-	signal MirrorOut_valid    : std_logic_vector(PORTS - 1 downto 0);
-	signal MirrorOut_data     : T_SLM(PORTS - 1 downto 0, GLUE_BITS - 1 downto 0);
-	signal MirrorOut_ack      : std_logic_vector(PORTS - 1 downto 0);
+	signal Ack_i              : std_logic;
+	signal Mask_r             : std_logic_vector(PORTS - 1 downto 0)                        := (others => '1');
 	
 	signal Out_Ready          : std_logic_vector(PORTS - 1 downto 0);
-
-	signal internal_M2S       : T_AXI4STREAM_M2S_VECTOR(PORTS - 1 downto 0)(
-	       Data(DATA_BITS - 1 downto 0),
-	       User(USER_BITS - 1 downto 0)
-	       -- Keep(KEEP_BITS - 1 downto 0)
-		);
-	signal internal_S2M       : T_AXI4STREAM_S2M_VECTOR(PORTS - 1 downto 0);
 
 begin
 	--InGlue_data_in(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos)) <= In_M2S.Data;
@@ -129,100 +121,41 @@ begin
 			do                      => InGlue_data_out,
 			got                     => InGlue_got
 		);
-	
-	mirror : entity PoC.stream_Mirror
-		generic map(
-			PORTS         => PORTS,
-			DATA_BITS     => GLUE_BITS,
-			META_BITS     => (0 to -1 => 1), --Null range
-			META_LENGTH   => (0 => 1)
-		)
-		port map(
-			Clock         => Clock,
-			Reset         => Reset,
-			-- IN Port
-			In_Valid      => InGlue_Valid,
-			In_Data       => InGlue_data_out,
-			In_SOF        => '0', -- unused
-			In_EOF        => '0', -- unused, last is encoded in data
-			In_Ack        => InGlue_got,
-			In_Meta_rst   => open,
-			In_Meta_nxt   => open,
-			In_Meta_Data  => (others => '0'),
-			-- OUT Port
-			Out_Valid     => MirrorOut_valid,
-			Out_Data      => MirrorOut_data,
-			Out_SOF       => open, -- unused
-			Out_EOF       => open, -- unused, last is encoded in data
-			Out_Ack       => MirrorOut_ack,
-			Out_Meta_rst  => (others => '0'),
-			Out_Meta_nxt  => (others => (others => '0')),
-			Out_Meta_Data => open
-		);
 
-	ackowlegde_gen : for i in 0 to PORTS - 1 generate
-		MirrorOut_ack(i) <= internal_S2M(i).Ready or ready_mask(i);
-	end generate;
+
+	Ack_i         <= slv_and(Out_Ack) or slv_and(not Valid_Mask_r or Out_Ack);
+	InGlue_got    <= Ack_i;
+
+	Out_Data      <= Out_Data_i;
+
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or Ack_i ) = '1') then
+				Valid_Mask_r    <= (others => '1');
+			else
+				Valid_Mask_r    <= Valid_Mask_r and not Out_Ack;
+			end if;
+		end if;
+	end process;
 
 	reassign_Outputs : for i in 0 to PORTS - 1 generate
-		internal_M2S(i).Valid    <= MirrorOut_valid(i);
-		--internal_M2S(i).Data     <= InGlue_data_out(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos));
-		--internal_M2S(i).Last     <= InGlue_data_out(high(Bit_Vec, Last_Pos));
-		--internal_M2S(i).User     <= InGlue_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
-		--internal_M2S(i).Keep     <= InGlue_data_out(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos));
+		Out_M2S(i).Valid    <= InGlue_Valid and Valid_Mask_r;
+		--Out_M2S(i).Data     <= InGlue_data_out(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos));
+		--Out_M2S(i).Last     <= InGlue_data_out(high(Bit_Vec, Last_Pos));
+		--Out_M2S(i).User     <= InGlue_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
+		--Out_M2S(i).Keep     <= InGlue_data_out(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos));
 		--TODO fix with above:
-		internal_M2S(i).Data     <= get_row(MirrorOut_data, i)(DATA_BITS - 1 downto 0);
-		internal_M2S(i).Last     <= get_row(MirrorOut_data, i)(DATA_BITS);
-		internal_M2S(i).User     <= get_row(MirrorOut_data, i)(InGlue_data_out'high downto DATA_BITS + 1);
+		Out_M2S(i).Data     <= get_row(InGlue_data_out, i)(DATA_BITS - 1 downto 0);
+		Out_M2S(i).Last     <= get_row(InGlue_data_out, i)(DATA_BITS);
+		Out_M2S(i).User     <= get_row(InGlue_data_out, i)(InGlue_data_out'high downto DATA_BITS + 1);
 	end generate;
 
 	-- missed transaction indication:
 	gen_lost:for i in 0 to PORTS - 1 generate
 		-- transaction is considered lost when:
-		-- the mirror transaction (all ports are either ready or masked) has happend and the current slave is not ready
-		mask_transaction_lost(i) <= ((slv_and(MirrorOut_ack) and internal_M2S(i).Valid) and (not internal_S2M(i).Ready));
+		-- the mirror transaction (all ports are either ready or masked) has happend but current slave had no transaction (valid still asserted without a ready)
+		mask_transaction_lost(i) <= ((glue_got and (Out_M2S(i).Valid and not Out_S2M(i).Ready));
 	end generate;
 
-	gen_Outputs : for i in 0 to PORTS - 1 generate
-		gen_glue : if ADD_OUTPUT_GLUE generate
-			signal OutGlue_full       : std_logic;
-			signal OutGlue_put        : std_logic;
-			signal OutGlue_data_in    : std_logic_vector(GLUE_BITS - 1 downto 0);
-			signal OutGlue_data_out   : std_logic_vector(GLUE_BITS - 1 downto 0);
-			signal OutGlue_Valid      : std_logic;
-			signal OutGlue_got        : std_logic;
-		begin
-			OutGlue_data_in        <= internal_M2S(i).User & internal_M2S(i).Last & internal_M2S(i).Data;
-			OutGlue_put            <= internal_M2S(i).Valid;
-			internal_S2M(i).Ready  <= not OutGlue_full;
-			Output_glue: entity work.FIFO_glue
-			generic map (
-				D_BITS                  => GLUE_BITS
-			)
-			port map (
-				-- Global Reset and Clock
-				clk                     => Clock,
-				rst                     => Reset,
-
-				-- Writing Interface
-				put                     => OutGlue_put,
-				di                      => OutGlue_data_in,
-				ful                     => OutGlue_full,
-
-				-- Reading Interface
-				vld                     => OutGlue_Valid,
-				do                      => OutGlue_data_out,
-				got                     => OutGlue_got
-			);
-			Out_M2S(i).Valid    <= OutGlue_Valid;
-			Out_M2S(i).Data     <= OutGlue_data_out(DATA_BITS - 1 downto 0);
-			Out_M2S(i).Last     <= OutGlue_data_out(DATA_BITS);
-			Out_M2S(i).User     <= OutGlue_data_out(InGlue_data_out'high downto DATA_BITS + 1);
-			OutGlue_got         <= Out_S2M(i).Ready;
-		else generate
-			Out_M2S             <= internal_M2S;
-			internal_S2M        <= Out_S2M;
-		end generate;
-	end generate;
-	
 end architecture;
