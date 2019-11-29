@@ -88,7 +88,9 @@ architecture rtl of AXI4Stream_Mirror is
 	signal InGlue_got         : std_logic;
 
 	signal Ack_i              : std_logic;
-	signal Mask_r             : std_logic_vector(PORTS - 1 downto 0)                        := (others => '1');
+	signal Valid_Mask_r       : std_logic_vector(PORTS - 1 downto 0) := (others => '1');
+	signal Valid_ack          : std_logic_vector(PORTS - 1 downto 0);
+	signal Masked_ack         : std_logic_vector(PORTS - 1 downto 0);
 	
 	signal Out_Ready          : std_logic_vector(PORTS - 1 downto 0);
 
@@ -122,11 +124,15 @@ begin
 			got                     => InGlue_got
 		);
 
+	ackowlegde_gen : for i in 0 to PORTS - 1 generate
+		-- remove valid only dependend on ready
+		Valid_ack(i)  <= Out_S2M(i).Ready;
+		-- acknowledge if masked or ready
+		Masked_ack(i) <= Out_S2M(i).Ready or ready_mask(i);
+	end generate;
 
-	Ack_i         <= slv_and(Out_Ack) or slv_and(not Valid_Mask_r or Out_Ack);
+	Ack_i         <= slv_and(Masked_ack) or slv_and(not Valid_Mask_r or Masked_ack);
 	InGlue_got    <= Ack_i;
-
-	Out_Data      <= Out_Data_i;
 
 	process(Clock)
 	begin
@@ -134,7 +140,7 @@ begin
 			if ((Reset or Ack_i ) = '1') then
 				Valid_Mask_r    <= (others => '1');
 			else
-				Valid_Mask_r    <= Valid_Mask_r and not Out_Ack;
+				Valid_Mask_r    <= Valid_Mask_r and not Valid_ack;
 			end if;
 		end if;
 	end process;
