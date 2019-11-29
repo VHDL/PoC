@@ -84,6 +84,15 @@ architecture rtl of AXI4Lite_Register is
 		return true;
 	end function;
 	
+	function print_CONFIG return string is
+	begin
+		for i in CONFIG'range loop
+			report "CONFIG(" & integer'image(i) & "):" & to_string(CONFIG(i)) severity note;
+--			report to_string(CONFIG(i)) severity note;
+		end loop;
+		return "-";
+	end function;
+	
 	-- AXI4LITE signals
 	signal axi_awaddr   : std_logic_vector(ADDRESS_BITS - ADDR_LSB - 1 downto 0)  := (others => '0');
 	signal axi_awready  : std_logic := '0';
@@ -119,6 +128,8 @@ architecture rtl of AXI4Lite_Register is
 	signal clear_latch_w     : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
 	signal clear_latch_r     : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
 	
+	signal outstanding_read  : std_logic := '0';
+	
 begin
 	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
 	assert check_for_ADDR_conflicts report "AXI4Lite_Register Error: Addressconflict in Config!" severity failure;
@@ -126,7 +137,9 @@ begin
 	assert not DEBUG report "ADDR_LSB         = " & integer'image(ADDR_LSB)         severity note;
 	assert not DEBUG report "ADDRESS_BITS     = " & integer'image(ADDRESS_BITS)     severity note;
 	assert not DEBUG report "REG_ADDRESS_BITS = " & integer'image(REG_ADDRESS_BITS) severity note;
+	assert not DEBUG report print_CONFIG severity note;
 	assert not DEBUG report "=================== END of PoC.Axi4LiteRegister ==========================" severity note;
+
 	
 	S_AXI_s2m.AWReady <= axi_awready;
 	S_AXI_s2m.WReady  <= axi_wready; 
@@ -261,7 +274,7 @@ begin
 			if (S_AXI_ARESETN = '0') then
 				axi_arready <= '0';
 				axi_araddr  <= (others => '1');
-			elsif (axi_arready = '0' and S_AXI_m2s.ARValid = '1') then
+			elsif (axi_arready = '0' and S_AXI_m2s.ARValid = '1' and outstanding_read = '0') then
 				axi_arready <= '1';
 				axi_araddr  <= S_AXI_m2s.ARAddr(S_AXI_m2s.ARAddr'high downto ADDR_LSB);
 			else
@@ -279,12 +292,13 @@ begin
 			elsif slv_reg_rden = '1' then
 				axi_rvalid <= '1';
 				axi_rresp  <= C_AXI4_RESPONSE_OKAY when unsigned(hit_r) /= 0 else C_AXI4_RESPONSE_DECODE_ERROR;
-			else
+			elsif S_AXI_m2s.RReady = '1' then
 				axi_rvalid <= '0';
 			end if;
 		end if;
 	end process;
 	
+	outstanding_read <= (outstanding_read or slv_reg_rden) and not (not S_AXI_ARESETN or S_AXI_m2s.RReady) when rising_edge(S_AXI_ACLK);
 	slv_reg_rden <=  S_AXI_m2s.ARValid and axi_arready and (not axi_rvalid);   
 	RegisterFile_WritePort_hit <= slv_reg_rden and hit_r;
 	clear_latch_r              <= slv_reg_rden and hit_r;
