@@ -125,9 +125,9 @@ begin
 		);
 
 	ackowlegde_gen : for i in 0 to PORTS - 1 generate
-		-- remove valid only dependend on ready
+		-- acknowlege for valid only dependend on ready
 		Valid_ack(i)  <= Out_S2M(i).Ready;
-		-- acknowledge if masked or ready
+		-- acknowledge for data movement when masked or ready
 		Masked_ack(i) <= Out_S2M(i).Ready or ready_mask(i);
 	end generate;
 
