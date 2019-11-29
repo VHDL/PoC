@@ -152,9 +152,9 @@ begin
 		--Out_M2S(i).User     <= InGlue_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
 		--Out_M2S(i).Keep     <= InGlue_data_out(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos));
 		--TODO fix with above:
-		Out_M2S(i).Data     <= get_row(InGlue_data_out, i)(DATA_BITS - 1 downto 0);
-		Out_M2S(i).Last     <= get_row(InGlue_data_out, i)(DATA_BITS);
-		Out_M2S(i).User     <= get_row(InGlue_data_out, i)(InGlue_data_out'high downto DATA_BITS + 1);
+		Out_M2S(i).Data     <= InGlue_data_out(DATA_BITS - 1 downto 0);
+		Out_M2S(i).Last     <= InGlue_data_out(DATA_BITS);
+		Out_M2S(i).User     <= InGlue_data_out(InGlue_data_out'high downto DATA_BITS + 1);
 	end generate;
 
 	-- missed transaction indication:
