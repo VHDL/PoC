@@ -104,7 +104,7 @@ begin
 	InGlue_put     <= In_M2S.Valid;
 	In_S2M.Ready   <= not InGlue_full;
 
-	FIFO : entity work.FIFO_glue
+	InGlue : entity work.FIFO_glue
 		generic map (
 			D_BITS                  => GLUE_BITS
 		)
@@ -161,7 +161,7 @@ begin
 	gen_lost:for i in 0 to PORTS - 1 generate
 		-- transaction is considered lost when:
 		-- the mirror transaction (all ports are either ready or masked) has happend but current slave had no transaction (valid still asserted without a ready)
-		mask_transaction_lost(i) <= (glue_got and (Out_M2S(i).Valid and not Out_S2M(i).Ready));
+		mask_transaction_lost(i) <= (InGlue_got and (Out_M2S(i).Valid and not Out_S2M(i).Ready));
 	end generate;
 
 end architecture;
