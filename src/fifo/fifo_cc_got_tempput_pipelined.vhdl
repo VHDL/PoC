@@ -49,14 +49,53 @@ architecture rtl of fifo_cc_got_tempput_pipelined is
 	signal fifo_put       : std_logic;                            -- Write Request
 	signal fifo_din       : std_logic_vector(D_BITS +1 downto 0);  -- Input Data
 	signal fifo_full      : std_logic;
-	signal fifo_commit    : std_logic;
-	signal fifo_rollback  : std_logic;
 	signal fifo_got       : std_logic;                            -- Read Completed
 	signal fifo_dout      : std_logic_vector(D_BITS-1 downto 0);  -- Output Data
 	signal fifo_valid     : std_logic;
+	
+	signal glue_put       : std_logic;                            -- Write Request
+	signal glue_din       : std_logic_vector(D_BITS -1 downto 0);  -- Input Data
+	signal glue_full      : std_logic;
+	signal glue_commit    : std_logic;
+	signal glue_rollback  : std_logic;
+	
+	signal is_data        : std_logic := '0';
 
 
 begin
+
+--   put       : in  std_logic;                            -- Write Request
+--    din       : in  std_logic_vector(D_BITS-1 downto 0);  -- Input Data
+--         
+--     commit    : in  std_logic;
+--    rollback  : in
+
+
+	process(clk)
+	begin
+		if rising_edge(clk) then	
+			if rst = '1' then
+				is_data <= '0';
+			elsif glue_full = '0' and is_data = '0' then
+				if put = '1' then
+					glue_din <= din;
+					is_data  <= '1';
+				end if;
+			elsif glue_full = '0' and is_data = '1' then
+				if put = '1' then
+					glue_din <= din;
+				elsif (commit or rollback) = '1' then
+					is_data  <= '0';
+				end if;
+			end if;
+		end if;
+	end process;
+	
+	full     <= glue_full;
+	glue_commit   <= commit;
+	glue_rollback <= rollback;
+	glue_put <= '1' when glue_full = '0' and is_data = '1' and (commit or rollback) = '1' else '0';
+	
 	pre_stage : entity work.fifo_glue
   generic map(
   	PIPELINE_STAGES => PRE_PIPELINES,
@@ -68,11 +107,11 @@ begin
     rst             => rst,
 
     -- Input
-    put             => put,
-    di(din'range)   => din,
-		di(din'high +1) => commit,
-		di(din'high +2) => rollback,
-    ful             => full,
+    put             => glue_put,
+    di(din'range)   => glue_din,
+		di(din'high +1) => glue_commit,
+		di(din'high +2) => glue_rollback,
+    ful             => glue_full,
 
     -- Output
     vld             => fifo_put,
