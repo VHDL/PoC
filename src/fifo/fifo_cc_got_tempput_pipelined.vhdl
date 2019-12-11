@@ -94,7 +94,7 @@ begin
 	full     <= glue_full;
 	glue_commit   <= commit;
 	glue_rollback <= rollback;
-	glue_put <= '1' when glue_full = '0' and is_data = '1' and (commit or rollback) = '1' else '0';
+	glue_put <= '1' when (glue_full = '0') and (is_data = '1') and (commit or rollback or put) = '1' else '0';
 	
 	pre_stage : entity work.fifo_glue
 	generic map(
