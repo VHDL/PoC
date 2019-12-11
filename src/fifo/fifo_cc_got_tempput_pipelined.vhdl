@@ -69,9 +69,7 @@ begin
 
 		-- Input
 		put             => put,
-		di(din'range)   => din,
-		di(din'high +1) => commit,
-		di(din'high +2) => rollback,
+		di              => rollback & commit & din,
 		ful             => full,
 
 		-- Output
