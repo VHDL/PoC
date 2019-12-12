@@ -74,6 +74,9 @@ begin
 	process(clk)
 	begin
 		if rising_edge(clk) then  
+			glue_commit   <= commit;
+			glue_rollback <= rollback;
+			
 			if rst = '1' then
 				is_data <= '0';
 			elsif glue_full = '0' and is_data = '0' then
@@ -84,7 +87,7 @@ begin
 			elsif glue_full = '0' and is_data = '1' then
 				if put = '1' then
 					glue_din <= din;
-				elsif (commit or rollback) = '1' then
+				elsif (glue_commit or glue_rollback) = '1' then
 					is_data  <= '0';
 				end if;
 			end if;
@@ -92,9 +95,7 @@ begin
 	end process;
 	
 	full     <= glue_full;
-	glue_commit   <= commit;
-	glue_rollback <= rollback;
-	glue_put <= '1' when (glue_full = '0') and (is_data = '1') and (commit or rollback or put) = '1' else '0';
+	glue_put <= '1' when (glue_full = '0') and (is_data = '1') and (glue_commit or glue_rollback or put) = '1' else '0';
 	
 	pre_stage : entity work.fifo_glue
 	generic map(
