@@ -80,6 +80,8 @@ package AXI4Lite is
 	
 	function BlockTransaction(Bus : T_AXI4LITE_BUS_M2S;        Enable : std_logic) return T_AXI4LITE_BUS_M2S;
 	function BlockTransaction(Bus : T_AXI4LITE_BUS_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4LITE_BUS_M2S_VECTOR;
+	
+	function AddressTranslate(Bus : T_AXI4LITE_BUS_M2S; Offset : signed) return T_AXI4LITE_BUS_M2S;
 
 	type T_AXI4LITE_BUS_S2M is record
 		WReady      : std_logic;
@@ -273,6 +275,27 @@ package body AXI4Lite is
 			temp(i).ARProt := Bus(i).ARProt ;
 			temp(i).RReady := Bus(i).RReady and Enable;
 		end loop;
+		return temp;
+	end function;
+	
+	function AddressTranslate(Bus : T_AXI4LITE_BUS_M2S; Offset : signed) return T_AXI4LITE_BUS_M2S is
+		variable temp : Bus'subtype;
+	begin
+		assert Offset'length = Bus.AWAddr'length report "PoC.AXI4Lite.AddressTranslate: Length of Offeset-Bits and Address-Bits is no equal!" severity failure;
+		
+		temp.AWValid:= Bus.AWValid;
+		temp.AWAddr := unsigned(Bus.AWAddr) + unsigned(std_logic_vector(Offset));
+		temp.AWCache:= Bus.AWCache;
+		temp.AWProt := Bus.AWProt;
+		temp.WValid := Bus.WValid;
+		temp.WData  := Bus.WData;
+		temp.WStrb  := Bus.WStrb  ;
+		temp.BReady := Bus.BReady ;
+		temp.ARValid:= Bus.ARValid;
+		temp.ARAddr := unsigned(Bus.ARAddr) + unsigned(std_logic_vector(Offset));
+		temp.ARCache:= Bus.ARCache;
+		temp.ARProt := Bus.ARProt ;
+		temp.RReady := Bus.RReady;
 		return temp;
 	end function;
 	

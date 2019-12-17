@@ -214,7 +214,9 @@ package AXI4_Full is
 	
 	function BlockTransaction(Bus : T_AXI4_Bus_M2S;        Enable : std_logic) return T_AXI4_Bus_M2S;
 	function BlockTransaction(Bus : T_AXI4_Bus_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_M2S_VECTOR;
-
+	
+	function AddressTranslate(Bus : T_AXI4_Bus_M2S;        Offset : signed) return T_AXI4_Bus_M2S;
+	
 	function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M;
 	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_M2S;
 	
@@ -303,6 +305,45 @@ package body AXI4_Full is
 			temp(i).ARUser  := Bus(i).ARUser  ;
 			temp(i).RReady  := Bus(i).RReady and Enable;
 		end loop;
+		return temp;
+	end function;
+	
+	function AddressTranslate(Bus : T_AXI4_Bus_M2S; Offset : signed) return T_AXI4_Bus_M2S is
+		variable temp : Bus'subtype;
+	begin
+		assert Offset'length = Bus.AWAddr'length report "PoC.AXI4_Full.AddressTranslate: Length of Offeset-Bits and Address-Bits is no equal!" severity failure;
+		
+		temp.AWID    := Bus.AWID    ;
+		temp.AWAddr  := unsigned(Bus.AWAddr) + unsigned(std_logic_vector(Offset));
+		temp.AWLen   := Bus.AWLen   ;
+		temp.AWSize  := Bus.AWSize  ;
+		temp.AWBurst := Bus.AWBurst ;
+		temp.AWLock  := Bus.AWLock  ;
+		temp.AWQOS   := Bus.AWQOS   ;
+		temp.AWRegion:= Bus.AWRegion;
+		temp.AWUser  := Bus.AWUser  ;
+		temp.AWValid := Bus.AWValid;
+		temp.AWCache := Bus.AWCache ;
+		temp.AWProt  := Bus.AWProt  ;
+		temp.WValid  := Bus.WValid;
+		temp.WLast   := Bus.WLast   ;
+		temp.WUser   := Bus.WUser   ;
+		temp.WData   := Bus.WData   ;
+		temp.WStrb   := Bus.WStrb   ;
+		temp.BReady  := Bus.BReady;
+		temp.ARValid := Bus.ARValid;
+		temp.ARAddr  := unsigned(Bus.ARAddr) + unsigned(std_logic_vector(Offset));
+		temp.ARCache := Bus.ARCache ;
+		temp.ARProt  := Bus.ARProt  ;
+		temp.ARID    := Bus.ARID    ;
+		temp.ARLen   := Bus.ARLen   ;
+		temp.ARSize  := Bus.ARSize  ;
+		temp.ARBurst := Bus.ARBurst ;
+		temp.ARLock  := Bus.ARLock  ;
+		temp.ARQOS   := Bus.ARQOS   ;
+		temp.ARRegion:= Bus.ARRegion;
+		temp.ARUser  := Bus.ARUser  ;
+		temp.RReady  := Bus.RReady;
 		return temp;
 	end function;
 	
