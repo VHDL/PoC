@@ -174,6 +174,9 @@ package AXI4_Full is
 	end record;
 	type T_AXI4_Bus_S2M_VECTOR is array(natural range <>) of T_AXI4_Bus_S2M;
 	
+	function BlockTransaction(Bus : T_AXI4_Bus_S2M;        Enable : std_logic) return T_AXI4_Bus_S2M;
+	function BlockTransaction(Bus : T_AXI4_Bus_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_S2M_VECTOR;
+	
 	type T_AXI4_Bus_M2S is record
 		AWID        : std_logic_vector; 
 		AWAddr      : std_logic_vector; 
@@ -209,6 +212,9 @@ package AXI4_Full is
 	end record;
 	type T_AXI4_Bus_M2S_VECTOR is array(natural range <>) of T_AXI4_Bus_M2S;
 	
+	function BlockTransaction(Bus : T_AXI4_Bus_M2S;        Enable : std_logic) return T_AXI4_Bus_M2S;
+	function BlockTransaction(Bus : T_AXI4_Bus_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_M2S_VECTOR;
+
 	function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M;
 	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_M2S;
 	
@@ -223,6 +229,124 @@ end package;
 
 
 package body AXI4_Full is 
+	
+	function BlockTransaction(Bus : T_AXI4_Bus_M2S;        Enable : std_logic) return T_AXI4_Bus_M2S is
+		variable temp : Bus'subtype;
+	begin
+		temp.AWID    := Bus.AWID    ;
+		temp.AWAddr  := Bus.AWAddr  ;
+		temp.AWLen   := Bus.AWLen   ;
+		temp.AWSize  := Bus.AWSize  ;
+		temp.AWBurst := Bus.AWBurst ;
+		temp.AWLock  := Bus.AWLock  ;
+		temp.AWQOS   := Bus.AWQOS   ;
+		temp.AWRegion:= Bus.AWRegion;
+		temp.AWUser  := Bus.AWUser  ;
+		temp.AWValid := Bus.AWValid and Enable;
+		temp.AWCache := Bus.AWCache ;
+		temp.AWProt  := Bus.AWProt  ;
+		temp.WValid  := Bus.WValid and Enable;
+		temp.WLast   := Bus.WLast   ;
+		temp.WUser   := Bus.WUser   ;
+		temp.WData   := Bus.WData   ;
+		temp.WStrb   := Bus.WStrb   ;
+		temp.BReady  := Bus.BReady and Enable;
+		temp.ARValid := Bus.ARValid and Enable;
+		temp.ARAddr  := Bus.ARAddr  ;
+		temp.ARCache := Bus.ARCache ;
+		temp.ARProt  := Bus.ARProt  ;
+		temp.ARID    := Bus.ARID    ;
+		temp.ARLen   := Bus.ARLen   ;
+		temp.ARSize  := Bus.ARSize  ;
+		temp.ARBurst := Bus.ARBurst ;
+		temp.ARLock  := Bus.ARLock  ;
+		temp.ARQOS   := Bus.ARQOS   ;
+		temp.ARRegion:= Bus.ARRegion;
+		temp.ARUser  := Bus.ARUser  ;
+		temp.RReady  := Bus.RReady and Enable;
+		return temp;
+	end function;
+	
+	function BlockTransaction(Bus : T_AXI4_Bus_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_M2S_VECTOR is
+		variable temp : Bus'subtype;
+	begin
+		for i in Bus'range loop
+			temp(i).AWID    := Bus(i).AWID    ;
+			temp(i).AWAddr  := Bus(i).AWAddr  ;
+			temp(i).AWLen   := Bus(i).AWLen   ;
+			temp(i).AWSize  := Bus(i).AWSize  ;
+			temp(i).AWBurst := Bus(i).AWBurst ;
+			temp(i).AWLock  := Bus(i).AWLock  ;
+			temp(i).AWQOS   := Bus(i).AWQOS   ;
+			temp(i).AWRegion:= Bus(i).AWRegion;
+			temp(i).AWUser  := Bus(i).AWUser  ;
+			temp(i).AWValid := Bus(i).AWValid and Enable;
+			temp(i).AWCache := Bus(i).AWCache ;
+			temp(i).AWProt  := Bus(i).AWProt  ;
+			temp(i).WValid  := Bus(i).WValid and Enable;
+			temp(i).WLast   := Bus(i).WLast   ;
+			temp(i).WUser   := Bus(i).WUser   ;
+			temp(i).WData   := Bus(i).WData   ;
+			temp(i).WStrb   := Bus(i).WStrb   ;
+			temp(i).BReady  := Bus(i).BReady and Enable;
+			temp(i).ARValid := Bus(i).ARValid and Enable;
+			temp(i).ARAddr  := Bus(i).ARAddr  ;
+			temp(i).ARCache := Bus(i).ARCache ;
+			temp(i).ARProt  := Bus(i).ARProt  ;
+			temp(i).ARID    := Bus(i).ARID    ;
+			temp(i).ARLen   := Bus(i).ARLen   ;
+			temp(i).ARSize  := Bus(i).ARSize  ;
+			temp(i).ARBurst := Bus(i).ARBurst ;
+			temp(i).ARLock  := Bus(i).ARLock  ;
+			temp(i).ARQOS   := Bus(i).ARQOS   ;
+			temp(i).ARRegion:= Bus(i).ARRegion;
+			temp(i).ARUser  := Bus(i).ARUser  ;
+			temp(i).RReady  := Bus(i).RReady and Enable;
+		end loop;
+		return temp;
+	end function;
+	
+	function BlockTransaction(Bus : T_AXI4_Bus_S2M;        Enable : std_logic) return T_AXI4_Bus_S2M is
+		variable temp : Bus'subtype;
+	begin
+		temp.AWReady:= Bus.AWReady and Enable;
+		temp.WReady := Bus.WReady and Enable;
+		temp.BValid := Bus.BValid and Enable;
+		temp.BResp  := Bus.BResp  ;
+		temp.BID    := Bus.BID    ;
+		temp.BUser  := Bus.BUser  ;
+		temp.ARReady:= Bus.ARReady and Enable;
+		temp.RValid := Bus.RValid and Enable;
+		temp.RData  := Bus.RData  ;
+		temp.RResp  := Bus.RResp  ;
+		temp.RID    := Bus.RID    ;
+		temp.RLast  := Bus.RLast  ;
+		temp.RUser  := Bus.RUser  ;
+		return temp;
+	end function;
+	
+	function BlockTransaction(Bus : T_AXI4_Bus_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_S2M_VECTOR is
+		variable temp : Bus'subtype;
+	begin
+		for i in Bus'range loop
+			temp(i).AWReady:= Bus(i).AWReady and Enable;
+			temp(i).WReady := Bus(i).WReady and Enable;
+			temp(i).BValid := Bus(i).BValid and Enable;
+			temp(i).BResp  := Bus(i).BResp  ;
+			temp(i).BID    := Bus(i).BID    ;
+			temp(i).BUser  := Bus(i).BUser  ;
+			temp(i).ARReady:= Bus(i).ARReady and Enable;
+			temp(i).RValid := Bus(i).RValid and Enable;
+			temp(i).RData  := Bus(i).RData  ;
+			temp(i).RResp  := Bus(i).RResp  ;
+			temp(i).RID    := Bus(i).RID    ;
+			temp(i).RLast  := Bus(i).RLast  ;
+			temp(i).RUser  := Bus(i).RUser  ;
+		end loop;
+		return temp;
+	end function;
+	
+	
 --  -----------Wirte Address
 --  function Initialize_AXI4Lite_WriteAddress_Bus(AddressBits : natural) return T_AXI4Lite_WriteAddress_Bus is
 --  begin
