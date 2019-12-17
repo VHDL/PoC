@@ -78,10 +78,10 @@ package AXI4Lite is
 	end record;
 	type T_AXI4LITE_BUS_M2S_VECTOR is array(natural range <>) of T_AXI4LITE_BUS_M2S;	
 	
-	function BlockTransaction(Bus : T_AXI4LITE_BUS_M2S;        Enable : std_logic) return T_AXI4LITE_BUS_M2S;
-	function BlockTransaction(Bus : T_AXI4LITE_BUS_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4LITE_BUS_M2S_VECTOR;
+	function BlockTransaction(InBus : T_AXI4LITE_BUS_M2S;        Enable : std_logic) return T_AXI4LITE_BUS_M2S;
+	function BlockTransaction(InBus : T_AXI4LITE_BUS_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4LITE_BUS_M2S_VECTOR;
 	
-	function AddressTranslate(Bus : T_AXI4LITE_BUS_M2S; Offset : signed) return T_AXI4LITE_BUS_M2S;
+	function AddressTranslate(InBus : T_AXI4LITE_BUS_M2S; Offset : signed) return T_AXI4LITE_BUS_M2S;
 
 	type T_AXI4LITE_BUS_S2M is record
 		WReady      : std_logic;
@@ -95,8 +95,8 @@ package AXI4Lite is
 	end record;
 	type T_AXI4LITE_BUS_S2M_VECTOR is array(natural range <>) of T_AXI4LITE_BUS_S2M;
 	
-	function BlockTransaction(Bus : T_AXI4LITE_BUS_S2M;        Enable : std_logic) return T_AXI4LITE_BUS_S2M;
-	function BlockTransaction(Bus : T_AXI4LITE_BUS_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4LITE_BUS_S2M_VECTOR;
+	function BlockTransaction(InBus : T_AXI4LITE_BUS_S2M;        Enable : std_logic) return T_AXI4LITE_BUS_S2M;
+	function BlockTransaction(InBus : T_AXI4LITE_BUS_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4LITE_BUS_S2M_VECTOR;
 	
 
 	type T_AXI4Lite_Bus is record
@@ -238,93 +238,93 @@ end package;
 
 package body AXI4Lite is
 
-	function BlockTransaction(Bus : T_AXI4LITE_BUS_M2S;        Enable : std_logic) return T_AXI4LITE_BUS_M2S is
-		variable temp : Bus'subtype;
+	function BlockTransaction(InBus : T_AXI4LITE_BUS_M2S;        Enable : std_logic) return T_AXI4LITE_BUS_M2S is
+		variable temp : InBus'subtype;
 	begin
-		temp.AWValid:= Bus.AWValid and Enable;
-		temp.AWAddr := Bus.AWAddr;
-		temp.AWCache:= Bus.AWCache;
-		temp.AWProt := Bus.AWProt;
-		temp.WValid := Bus.WValid and Enable;
-		temp.WData  := Bus.WData;
-		temp.WStrb  := Bus.WStrb  ;
-		temp.BReady := Bus.BReady and Enable;
-		temp.ARValid:= Bus.ARValid and Enable;
-		temp.ARAddr := Bus.ARAddr ;
-		temp.ARCache:= Bus.ARCache;
-		temp.ARProt := Bus.ARProt ;
-		temp.RReady := Bus.RReady and Enable;
+		temp.AWValid:= InBus.AWValid and Enable;
+		temp.AWAddr := InBus.AWAddr;
+		temp.AWCache:= InBus.AWCache;
+		temp.AWProt := InBus.AWProt;
+		temp.WValid := InBus.WValid and Enable;
+		temp.WData  := InBus.WData;
+		temp.WStrb  := InBus.WStrb  ;
+		temp.BReady := InBus.BReady and Enable;
+		temp.ARValid:= InBus.ARValid and Enable;
+		temp.ARAddr := InBus.ARAddr ;
+		temp.ARCache:= InBus.ARCache;
+		temp.ARProt := InBus.ARProt ;
+		temp.RReady := InBus.RReady and Enable;
 		return temp;
 	end function;
 	
-	function BlockTransaction(Bus : T_AXI4LITE_BUS_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4LITE_BUS_M2S_VECTOR is
-		variable temp : Bus'subtype;
+	function BlockTransaction(InBus : T_AXI4LITE_BUS_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4LITE_BUS_M2S_VECTOR is
+		variable temp : InBus'subtype;
 	begin
-		for i in Bus'range loop
-			temp(i).AWValid:= Bus(i).AWValid and Enable;
-			temp(i).AWAddr := Bus(i).AWAddr;
-			temp(i).AWCache:= Bus(i).AWCache;
-			temp(i).AWProt := Bus(i).AWProt;
-			temp(i).WValid := Bus(i).WValid and Enable;
-			temp(i).WData  := Bus(i).WData;
-			temp(i).WStrb  := Bus(i).WStrb  ;
-			temp(i).BReady := Bus(i).BReady and Enable;
-			temp(i).ARValid:= Bus(i).ARValid and Enable;
-			temp(i).ARAddr := Bus(i).ARAddr ;
-			temp(i).ARCache:= Bus(i).ARCache;
-			temp(i).ARProt := Bus(i).ARProt ;
-			temp(i).RReady := Bus(i).RReady and Enable;
+		for i in InBus'range loop
+			temp(i).AWValid:= InBus(i).AWValid and Enable(i);
+			temp(i).AWAddr := InBus(i).AWAddr;
+			temp(i).AWCache:= InBus(i).AWCache;
+			temp(i).AWProt := InBus(i).AWProt;
+			temp(i).WValid := InBus(i).WValid and Enable(i);
+			temp(i).WData  := InBus(i).WData;
+			temp(i).WStrb  := InBus(i).WStrb  ;
+			temp(i).BReady := InBus(i).BReady and Enable(i);
+			temp(i).ARValid:= InBus(i).ARValid and Enable(i);
+			temp(i).ARAddr := InBus(i).ARAddr ;
+			temp(i).ARCache:= InBus(i).ARCache;
+			temp(i).ARProt := InBus(i).ARProt ;
+			temp(i).RReady := InBus(i).RReady and Enable(i);
 		end loop;
 		return temp;
 	end function;
 	
-	function AddressTranslate(Bus : T_AXI4LITE_BUS_M2S; Offset : signed) return T_AXI4LITE_BUS_M2S is
-		variable temp : Bus'subtype;
+	function AddressTranslate(InBus : T_AXI4LITE_BUS_M2S; Offset : signed) return T_AXI4LITE_BUS_M2S is
+		variable temp : InBus'subtype;
 	begin
-		assert Offset'length = Bus.AWAddr'length report "PoC.AXI4Lite.AddressTranslate: Length of Offeset-Bits and Address-Bits is no equal!" severity failure;
+		assert Offset'length = InBus.AWAddr'length report "PoC.AXI4Lite.AddressTranslate: Length of Offeset-Bits and Address-Bits is no equal!" severity failure;
 		
-		temp.AWValid:= Bus.AWValid;
-		temp.AWAddr := unsigned(Bus.AWAddr) + unsigned(std_logic_vector(Offset));
-		temp.AWCache:= Bus.AWCache;
-		temp.AWProt := Bus.AWProt;
-		temp.WValid := Bus.WValid;
-		temp.WData  := Bus.WData;
-		temp.WStrb  := Bus.WStrb  ;
-		temp.BReady := Bus.BReady ;
-		temp.ARValid:= Bus.ARValid;
-		temp.ARAddr := unsigned(Bus.ARAddr) + unsigned(std_logic_vector(Offset));
-		temp.ARCache:= Bus.ARCache;
-		temp.ARProt := Bus.ARProt ;
-		temp.RReady := Bus.RReady;
+		temp.AWValid:= InBus.AWValid;
+		temp.AWAddr := std_logic_vector(unsigned(InBus.AWAddr) + unsigned(std_logic_vector(Offset)));
+		temp.AWCache:= InBus.AWCache;
+		temp.AWProt := InBus.AWProt;
+		temp.WValid := InBus.WValid;
+		temp.WData  := InBus.WData;
+		temp.WStrb  := InBus.WStrb  ;
+		temp.BReady := InBus.BReady ;
+		temp.ARValid:= InBus.ARValid;
+		temp.ARAddr := std_logic_vector(unsigned(InBus.ARAddr) + unsigned(std_logic_vector(Offset)));
+		temp.ARCache:= InBus.ARCache;
+		temp.ARProt := InBus.ARProt ;
+		temp.RReady := InBus.RReady;
 		return temp;
 	end function;
 	
-	function BlockTransaction(Bus : T_AXI4LITE_BUS_S2M;        Enable : std_logic) return T_AXI4LITE_BUS_S2M is
-		variable temp : Bus'subtype;
+	function BlockTransaction(InBus : T_AXI4LITE_BUS_S2M;        Enable : std_logic) return T_AXI4LITE_BUS_S2M is
+		variable temp : InBus'subtype;
 	begin
-		temp.WReady := Bus.WReady and Enable;
-		temp.BValid := Bus.BValid and Enable;
-		temp.BResp  := Bus.BResp;
-		temp.ARReady:= Bus.ARReady and Enable;
-		temp.AWReady:= Bus.AWReady and Enable;
-		temp.RValid := Bus.RValid and Enable;
-		temp.RData  := Bus.RData;
-		temp.RResp  := Bus.RResp;
+		temp.WReady := InBus.WReady and Enable;
+		temp.BValid := InBus.BValid and Enable;
+		temp.BResp  := InBus.BResp;
+		temp.ARReady:= InBus.ARReady and Enable;
+		temp.AWReady:= InBus.AWReady and Enable;
+		temp.RValid := InBus.RValid and Enable;
+		temp.RData  := InBus.RData;
+		temp.RResp  := InBus.RResp;
 		return temp;
 	end function;
 	
-	function BlockTransaction(Bus : T_AXI4LITE_BUS_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4LITE_BUS_S2M_VECTOR is
-		variable temp : Bus'subtype;
+	function BlockTransaction(InBus : T_AXI4LITE_BUS_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4LITE_BUS_S2M_VECTOR is
+		variable temp : InBus'subtype;
 	begin
-		for i in Bus'range loop
-			temp(i).WReady := Bus(i).WReady and Enable;
-			temp(i).BValid := Bus(i).BValid and Enable;
-			temp(i).BResp  := Bus(i).BResp;
-			temp(i).ARReady:= Bus(i).ARReady and Enable;
-			temp(i).AWReady:= Bus(i).AWReady and Enable;
-			temp(i).RValid := Bus(i).RValid and Enable;
-			temp(i).RData  := Bus(i).RData;
-			temp(i).RResp  := Bus(i).RResp;
+		for i in InBus'range loop
+			temp(i).WReady := InBus(i).WReady and Enable(i);
+			temp(i).BValid := InBus(i).BValid and Enable(i);
+			temp(i).BResp  := InBus(i).BResp;
+			temp(i).ARReady:= InBus(i).ARReady and Enable(i);
+			temp(i).AWReady:= InBus(i).AWReady and Enable(i);
+			temp(i).RValid := InBus(i).RValid and Enable(i);
+			temp(i).RData  := InBus(i).RData;
+			temp(i).RResp  := InBus(i).RResp;
 		end loop;
 		return temp;
 	end function;
