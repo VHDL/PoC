@@ -182,8 +182,9 @@ begin
 		end if;
 	end process;
 	
+	
+	--RegisterFile write process
 	process(S_AXI_ACLK)
-		-- variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
 	begin
 		if rising_edge(S_AXI_ACLK) then
 			if ((S_AXI_ARESETN = '0')) then
@@ -204,7 +205,9 @@ begin
 								end if;
 							end loop;
 						--check for register with clearable latch on write
-						elsif  hit_w(i) = '1' and (CONFIG(i).rw_config = latchValue_clearOnWrite) then
+						elsif  hit_w(i) = '1' and ((CONFIG(i).rw_config = latchValue_clearOnWrite) 
+							                         or (CONFIG(i).rw_config = latchHighBit_clearOnWrite) 
+							                         or (CONFIG(i).rw_config = latchLowBit_clearOnWrite)) then
 							clear_latch_w(i) <= '1';
 						end if;
 					else
@@ -337,7 +340,6 @@ begin
 				reg_data_out <= mux(lssb_idx(hit_r));
 			end if;
 		end process;
-		
 	end block;
 
 		-- Output register or memory read data
@@ -373,7 +375,8 @@ begin
 		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		hit_w(i)    <= '1' when (std_logic_vector(config_addr) = axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
 												and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
-												and (CONFIG(i).rw_config = readWriteable)
+												and ((CONFIG(i).rw_config = readWriteable) or (CONFIG(i).rw_config = latchValue_clearOnWrite) 
+															or (CONFIG(i).rw_config = latchHighBit_clearOnWrite) or (CONFIG(i).rw_config = latchLowBit_clearOnWrite))
 												else '0';
 	end generate;
 	
