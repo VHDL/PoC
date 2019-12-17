@@ -153,6 +153,8 @@ package AXI4Lite is
 	type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
 	
 	function get_RegisterAddressBits(Config : T_AXI4_Register_Description_Vector) return positive; 
+	
+	function get_strobeVector(Config : T_AXI4_Register_Description_Vector) return std_logic_vector; 
 
 	function to_AXI4_Register_Description(  Address : unsigned(Address_Width -1 downto 0); 
 	                                        writeable : boolean; 
@@ -408,6 +410,26 @@ package body AXI4Lite is
 		end loop;
 		return temp;
 	end function;
+	
+	function get_strobeVector(Config : T_AXI4_Register_Description_Vector) return std_logic_vector is
+		variable temp : std_logic_vector(Config'range);
+	begin
+		for i in Config'range loop
+			if Config(i).rw_config = readWriteable then
+				temp(i) := '0';
+			else
+				temp(i) := '1';
+			end if;
+		end loop;
+		return temp;
+	end function;
+	
+--		type T_ReadWrite_Config is (
+--		readWriteable, readable, 
+--		latchValue_clearOnRead, latchValue_clearOnWrite, 
+--		latchHighBit_clearOnRead, latchHighBit_clearOnWrite, 
+--		latchLowBit_clearOnRead, latchLowBit_clearOnWrite
+--	);
 --  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector) return T_AXI4_Register_Set is
 --    variable temp : T_AXI4_Register_Set(AXI4_Register(reg_vec'length -1 downto 0), Last_Index(log2ceilnz(reg_vec'length) -1 downto 0)) := (
 --      AXI4_Register => reg_vec,
