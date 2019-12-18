@@ -52,7 +52,7 @@ entity AXI4Lite_Register is
 		RegisterFile_ReadPort_hit     : out std_logic_vector(0 to CONFIG'Length - 1);
 		RegisterFile_WritePort        : in  T_SLVV(0 to CONFIG'Length - 1);
 		RegisterFile_WritePort_hit    : out std_logic_vector(0 to CONFIG'Length - 1);
-		RegisterFile_WritePort_strobe : out std_logic_vector(0 to CONFIG'Length - 1) := get_strobeVector(CONFIG)
+		RegisterFile_WritePort_strobe : in  std_logic_vector(0 to CONFIG'Length - 1) := get_strobeVector(CONFIG)
 	);
 end entity;
 
