@@ -54,12 +54,12 @@ entity stat_Histogram_man_boundary is
 end entity;
 
 architecture rtl of stat_Histogram_man_boundary is
-	constant RESOLUTION_BITS : natural := Histogram'length(1);
+	constant NUM_OF_BUCKETS  : natural := Histogram'length(1);
 	constant COUNTER_BITS    : natural := Histogram'length(2);
+	constant BUCKET_BITS     : natural := log2ceil(NUM_OF_BUCKETS);
 	constant DATA_BITS       : natural := DataIn'length;
-	constant NUM_OF_BUCKETS  : natural := window_bounds'length;
 
-	signal buckets           : std_logic_vector(RESOLUTION_BITS - 1 downto 0);
+	signal buckets           : std_logic_vector(BUCKET_BITS - 1 downto 0);
 
 begin
 	--TODO check window_bounds correct dimensions via asserts (2**RESOLUTION_BITS) to 1
@@ -87,7 +87,7 @@ begin
 
 	histogram_inst : entity PoC.stat_Histogram
 		generic map(
-			DATA_BITS     => RESOLUTION_BITS,
+			DATA_BITS     => BUCKET_BITS,
 			COUNTER_BITS  => COUNTER_BITS
 		)
 		port map(

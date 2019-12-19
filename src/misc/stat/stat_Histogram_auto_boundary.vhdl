@@ -42,7 +42,6 @@ use     PoC.vectors.all;
 
 entity stat_Histogram_auto_boundary is
 	generic (
-		DATA_BITS           : positive    := 16;
 		RESOLUTION_BITS     : positive    :=  4;
 		COUNTER_BITS        : positive    := 16
 	);
@@ -51,18 +50,21 @@ entity stat_Histogram_auto_boundary is
 		Reset               : in  std_logic;
 
 		Enable              : in  std_logic;
-		DataIn              : in  std_logic_vector(DATA_BITS - 1 downto 0);
-		window_bounds_upper : in  natural(DATA_BITS - 1 downto 0);
-		window_bounds_lower : in  natural(DATA_BITS - 1 downto 0);
+		DataIn              : in  std_logic_vector;
+		window_bounds_upper : in  unsigned;
+		window_bounds_lower : in  unsigned;
 
-		Histogram           : out T_SLM(2**RESOLUTION_BITS - 1 downto 0, COUNTER_BITS - 1 downto 0)
+		Histogram           : out T_SLM
 	);
 end entity;
 
 architecture rtl of stat_Histogram_auto_boundary is
-	constant NUM_OF_BUCKETS : natural := 2**RESOLUTION_BITS; 
+	constant NUM_OF_BUCKETS  : natural := Histogram'length(1);
+	constant COUNTER_BITS    : natural := Histogram'length(2);
+	constant BUCKET_BITS     : natural := log2ceil(NUM_OF_BUCKETS);
+	constant DATA_BITS       : natural := DataIn'length;
 
-	signal buckets          : std_logic_vector(RESOLUTION_BITS - 1 downto 0);
+	signal buckets           : std_logic_vector(BUCKET_BITS - 1 downto 0);
 
 	signal window_width     : natural(DATA_BITS - 1 downto 0);
 	signal window_steps     : natural(DATA_BITS - 1 downto 0);
@@ -73,6 +75,7 @@ architecture rtl of stat_Histogram_auto_boundary is
 	signal window_changed  : std_logic;
 
 begin
+	-- todo check window_bounds_upper/lower DATA_BITS via assert
 	
 	window_width <= window_bounds_upper - window_bounds_lower;
 	window_steps <= window_width/NUM_OF_BUCKETS; -- TODO check how this will be implemented by the synthesis tool!!!!!!!
@@ -115,7 +118,7 @@ begin
 
 	histogram_inst : entity PoC.stat_Histogram
 		generic map(
-			DATA_BITS     => RESOLUTION_BITS,
+			DATA_BITS     => BUCKET_BITS,
 			COUNTER_BITS  => COUNTER_BITS
 		)
 		port map(
