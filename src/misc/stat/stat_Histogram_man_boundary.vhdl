@@ -75,12 +75,12 @@ begin
 			if (bucket_n = NUM_OF_BUCKETS - 1) then
 				--check if datum is above highest bucket's threshhold
 				if DataIn >= window_bounds(bucket_n) then
-					buckets <= bucket_n;
+					buckets <= std_logic_vector(to_unsigned(bucket_n, buckets'length));
 				end if;
 			else
 				--check if datum is between this and next bucket's threshhold
 				if (DataIn >= window_bounds(bucket_n)) and (DataIn < window_bounds(bucket_n + 1 )) then
-					buckets <= bucket_n;
+					buckets <= std_logic_vector(to_unsigned(bucket_n, buckets'length));
 				end if;
 			end if;
 		end loop;
