@@ -87,7 +87,7 @@ begin
 
 	histogram_inst : entity PoC.stat_Histogram
 		generic map(
-			DATA_BITS     => DATA_BITS,
+			DATA_BITS     => RESOLUTION_BITS,
 			COUNTER_BITS  => COUNTER_BITS
 		)
 		port map(
