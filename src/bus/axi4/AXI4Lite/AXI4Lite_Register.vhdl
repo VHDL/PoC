@@ -28,18 +28,18 @@
 -- =============================================================================
 
 library IEEE;
-use	    IEEE.std_logic_1164.all;
-use	    IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-use	    work.utils.all;
-use	    work.vectors.all;
-use	    work.axi4lite.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.axi4lite.all;
 
 
 entity AXI4Lite_Register is
 	generic (
 		DEBUG         : boolean := false;
-	 	CONFIG        : T_AXI4_Register_Description_Vector
+		CONFIG        : T_AXI4_Register_Description_Vector
 	);
 	port (
 		S_AXI_ACLK                 : in  std_logic;
