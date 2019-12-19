@@ -67,7 +67,7 @@ begin
 			if (Reset = '1') then
 				Counter_Value       <= (others => '0');
 				StableCounter_Value <= (others => '0');
-				Minimum             <= (others => '0');
+				Minimum             <= (others => '1');
 				Maximum             <= (others => '0');
 			else
 				--counter:
