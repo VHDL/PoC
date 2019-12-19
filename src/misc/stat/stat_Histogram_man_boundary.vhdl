@@ -41,30 +41,29 @@ use     PoC.vectors.all;
 
 
 entity stat_Histogram_man_boundary is
-	generic (
-		DATA_BITS           : positive    := 16;
-		RESOLUTION_BITS     : positive    :=  4;
-		COUNTER_BITS        : positive    := 16
-	);
 	port (
 		Clock               : in  std_logic;
 		Reset               : in  std_logic;
 
 		Enable              : in  std_logic;
-		DataIn              : in  std_logic_vector(DATA_BITS - 1 downto 0);
-		window_bounds       : in  T_SLVV(2**RESOLUTION_BITS - 1 downto 1)(DATA_BITS - 1 downto 0);
+		DataIn              : in  std_logic_vector;
+		window_bounds       : in  T_SLVV;
 		window_changed      : in  std_logic;
-
-		Histogram           : out T_SLM(2**RESOLUTION_BITS - 1 downto 0, COUNTER_BITS - 1 downto 0)
+		Histogram           : out T_SLM
 	);
 end entity;
 
 architecture rtl of stat_Histogram_man_boundary is
-	constant NUM_OF_BUCKETS : natural := 2**RESOLUTION_BITS; 
+	constant RESOLUTION_BITS : natural := Histogram'length(1);
+	constant COUNTER_BITS    : natural := Histogram'length(2);
+	constant DATA_BITS       : natural := DataIn'length;
+	constant NUM_OF_BUCKETS  : natural := window_bounds'length;
 
-	signal buckets          : std_logic_vector(RESOLUTION_BITS - 1 downto 0);
+	signal buckets           : std_logic_vector(RESOLUTION_BITS - 1 downto 0);
 
 begin
+	--TODO check window_bounds correct dimensions via asserts (2**RESOLUTION_BITS) to 1
+
 	-- re-resolve buckets depending on window resolution and boundary:
 	process(DataIn, window_bounds) is
 	begin
@@ -88,7 +87,7 @@ begin
 
 	histogram_inst : entity PoC.stat_Histogram
 		generic map(
-			DATA_BITS     => RESOLUTION_BITS,
+			DATA_BITS     => DATA_BITS,
 			COUNTER_BITS  => COUNTER_BITS
 		)
 		port map(
