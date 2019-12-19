@@ -113,7 +113,7 @@ begin
 		end loop;
 	end process;
 
-	histogram : entity PoC.stat_Histogram
+	histogram_inst : entity PoC.stat_Histogram
 		generic map(
 			DATA_BITS     => RESOLUTION_BITS,
 			COUNTER_BITS  => COUNTER_BITS
