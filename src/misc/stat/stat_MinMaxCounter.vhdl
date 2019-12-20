@@ -2,16 +2,16 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Stefan Unrein
---									Max Kraft-Kugler
---									Patrick Lehmann
---									Asif Iqbal
+-- Authors:         Stefan Unrein
+--                  Max Kraft-Kugler
+--                  Patrick Lehmann
+--                  Asif Iqbal
 --
--- Package:					TBD
+-- Package:         TBD
 --
 -- Description:
 -- -------------------------------------
---		For detailed documentation see below.
+--    For detailed documentation see below.
 --
 -- License:
 -- =============================================================================
@@ -21,7 +21,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
