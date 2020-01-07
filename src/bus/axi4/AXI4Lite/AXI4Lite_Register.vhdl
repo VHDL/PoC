@@ -42,16 +42,17 @@ entity AXI4Lite_Register is
 		CONFIG        : T_AXI4_Register_Description_Vector
 	);
 	port (
-		S_AXI_ACLK                 : in  std_logic;
-		S_AXI_ARESETN              : in  std_logic;
+		S_AXI_ACLK                    : in  std_logic;
+		S_AXI_ARESETN                 : in  std_logic;
 		
-		S_AXI_m2s                  : in  T_AXI4Lite_BUS_M2S;
-		S_AXI_s2m                  : out T_AXI4Lite_BUS_S2M;
+		S_AXI_m2s                     : in  T_AXI4Lite_BUS_M2S;
+		S_AXI_s2m                     : out T_AXI4Lite_BUS_S2M;
 		
-		RegisterFile_ReadPort      : out T_SLVV(0 to CONFIG'Length - 1);
-		RegisterFile_ReadPort_hit  : out std_logic_vector(0 to CONFIG'Length - 1);
-		RegisterFile_WritePort     : in  T_SLVV(0 to CONFIG'Length - 1);
-		RegisterFile_WritePort_hit : out std_logic_vector(0 to CONFIG'Length - 1)
+		RegisterFile_ReadPort         : out T_SLVV(0 to CONFIG'Length - 1);
+		RegisterFile_ReadPort_hit     : out std_logic_vector(0 to CONFIG'Length - 1);
+		RegisterFile_WritePort        : in  T_SLVV(0 to CONFIG'Length - 1);
+		RegisterFile_WritePort_hit    : out std_logic_vector(0 to CONFIG'Length - 1);
+		RegisterFile_WritePort_strobe : in  std_logic_vector(0 to CONFIG'Length - 1) := get_strobeVector(CONFIG)
 	);
 end entity;
 
@@ -181,18 +182,19 @@ begin
 		end if;
 	end process;
 	
+	
+	--RegisterFile write process
 	process(S_AXI_ACLK)
-		-- variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
 	begin
 		if rising_edge(S_AXI_ACLK) then
 			if ((S_AXI_ARESETN = '0')) then
 				RegisterFile <= Register_init(CONFIG);
 				latched      <= (others => '0');
---				clear_latch_w  <= (others => '0');
+				clear_latch_w  <= (others => '0');
 			else
---				clear_latch_w <= (others => '0');
-				if (slv_reg_wren = '1') then
-					for i in CONFIG'range loop
+				clear_latch_w <= (others => '0');
+				for i in CONFIG'range loop
+					if (slv_reg_wren = '1') then
 							-- trunc_addr := std_logic_vector(CONFIG(i).address);
 						--check for writable register
 						if hit_w(i) = '1' and (CONFIG(i).rw_config = readWriteable) then 
@@ -203,16 +205,16 @@ begin
 								end if;
 							end loop;
 						--check for register with clearable latch on write
---						elsif  hit_w(i) = '1' and (CONFIG(i).rw_config = latchValue_clearOnWrite) then
---							clear_latch_w(i) <= '1';
+						elsif  hit_w(i) = '1' and ((CONFIG(i).rw_config = latchValue_clearOnWrite) 
+							                         or (CONFIG(i).rw_config = latchHighBit_clearOnWrite) 
+							                         or (CONFIG(i).rw_config = latchLowBit_clearOnWrite)) then
+							clear_latch_w(i) <= '1';
 						end if;
-					end loop;
-				else
+					else
 					--clear where needed, otherwise latch
-					for i in CONFIG'range loop
 						if ((CONFIG(i).rw_config = latchValue_clearOnWrite) or (CONFIG(i).rw_config = latchValue_clearOnRead)) then
 							--latch value on change
-							if(latched(i) = '0') then
+							if(latched(i) = '0') and (RegisterFile_WritePort_strobe(i) = '1') then
 								RegisterFile(i) <= RegisterFile_WritePort(i);
 								if (RegisterFile_WritePort(i) /= RegisterFile(i)) then
 									latched(i)      <= '1';
@@ -224,23 +226,35 @@ begin
 							end if;
 						elsif ((CONFIG(i).rw_config = latchHighBit_clearOnWrite) or (CONFIG(i).rw_config = latchHighBit_clearOnRead)) then
 							--latch '1' in Register
-							RegisterFile(i) <= RegisterFile(i) or RegisterFile_WritePort(i);
+							if (RegisterFile_WritePort_strobe(i) = '1') then
+								RegisterFile(i) <= RegisterFile(i) or RegisterFile_WritePort(i);
+							end if;
 							--clear on clear latch command
 							if (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
 								RegisterFile(i) <= RegisterFile_WritePort(i);
 							end if;
 						elsif ((CONFIG(i).rw_config = latchLowBit_clearOnWrite) or (CONFIG(i).rw_config = latchLowBit_clearOnRead)) then
 							--latch '0' in Register
-							RegisterFile(i) <= RegisterFile(i) and RegisterFile_WritePort(i);
+							if (RegisterFile_WritePort_strobe(i) = '1') then
+								RegisterFile(i) <= RegisterFile(i) and RegisterFile_WritePort(i);
+							end if;
 							--clear on clear latch command
 							if (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
 								RegisterFile(i) <= RegisterFile_WritePort(i);
 							end if;
-						else
-							RegisterFile(i) <= RegisterFile(i) and (not CONFIG(i).Auto_Clear_Mask);
+						elsif (CONFIG(i).rw_config = readWriteable) then
+							if (RegisterFile_WritePort_strobe(i) = '1') then
+								RegisterFile(i) <= RegisterFile_WritePort(i);
+							else
+								RegisterFile(i) <= RegisterFile(i) and (not CONFIG(i).Auto_Clear_Mask);
+							end if;
+						else --last else is read_only port
+							if (RegisterFile_WritePort_strobe(i) = '1') then
+								RegisterFile(i) <= RegisterFile_WritePort(i);
+							end if;
 						end if;
-					end loop;
-				end if;
+					end if;
+				end loop;
 			end if;
 		end if;
 	end process;
@@ -309,13 +323,13 @@ begin
 	begin
 		--only wire out register if read only
 		genMux: for i in CONFIG'range generate
-			genPort: if (CONFIG(i).rw_config = readable) generate 
-				mux(i)              <= RegisterFile_WritePort(i);
-			elsif (CONFIG(i).rw_config = latchValue_clearOnRead) generate
+--			genPort: if (CONFIG(i).rw_config = readable) generate 
+--				mux(i)              <= RegisterFile_WritePort(i);
+--			elsif (CONFIG(i).rw_config = latchValue_clearOnRead) generate
+--				mux(i)              <= RegisterFile(i);
+--			else generate
 				mux(i)              <= RegisterFile(i);
-			else generate
-				mux(i)              <= RegisterFile(i);
-			end generate;
+--			end generate;
 		end generate;
 
 		process(mux, hit_r)
@@ -326,7 +340,6 @@ begin
 				reg_data_out <= mux(lssb_idx(hit_r));
 			end if;
 		end process;
-		
 	end block;
 
 		-- Output register or memory read data
@@ -362,7 +375,8 @@ begin
 		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		hit_w(i)    <= '1' when (std_logic_vector(config_addr) = axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
 												and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
-												and (CONFIG(i).rw_config = readWriteable)
+												and ((CONFIG(i).rw_config = readWriteable) or (CONFIG(i).rw_config = latchValue_clearOnWrite) 
+															or (CONFIG(i).rw_config = latchHighBit_clearOnWrite) or (CONFIG(i).rw_config = latchLowBit_clearOnWrite))
 												else '0';
 	end generate;
 	
