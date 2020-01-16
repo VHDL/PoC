@@ -100,6 +100,12 @@ package AXI4 is
   
   ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   
+  function to_AXI4LITE_BUS(full : T_AXI4_BUS_M2S) return T_AXI4LITE_BUS_M2S;
+  function to_AXI4LITE_BUS(full : T_AXI4_BUS_S2M) return T_AXI4LITE_BUS_S2M;
+  
+  function to_AXI4_BUS(lite : T_AXI4LITE_BUS_M2S) return T_AXI4_BUS_M2S;
+  function to_AXI4_BUS(lite : T_AXI4LITE_BUS_S2M) return T_AXI4_BUS_S2M;
+  
   -- AXI4 common types and constants
   alias T_AXI4_Response               is work.AXI4_Common.T_AXI4_Response;
 	alias C_AXI4_RESPONSE_OKAY          is work.AXI4_Common.C_AXI4_RESPONSE_OKAY;
@@ -284,4 +290,102 @@ package body AXI4 is
 --  begin
 --    return temp;
 --  end function;
+
+
+
+  function to_AXI4LITE_BUS(full : T_AXI4_BUS_M2S) return T_AXI4LITE_BUS_M2S is
+  	constant addrbit : natural := full.AWAddr'length;
+  	constant databit : natural := full.WData'length;
+  	variable temp : T_AXI4LITE_BUS_M2S(AWAddr(addrbit -1 DOWNTO 0), WData(databit-1 DOWNTO 0), WStrb((databit/8)-1 DOWNTO 0), ARAddr(addrbit -1 DOWNTO 0));
+  begin
+  	temp.AWValid     := full.AWValid;
+		temp.AWAddr      := full.AWAddr ;
+		temp.AWCache     := full.AWCache;
+		temp.AWProt      := full.AWProt ;
+		temp.WValid      := full.WValid ;
+		temp.WData       := full.WData  ;
+		temp.WStrb       := full.WStrb  ;
+		temp.BReady      := full.BReady ;
+		temp.ARValid     := full.ARValid;
+		temp.ARAddr      := full.ARAddr ;
+		temp.ARCache     := full.ARCache;
+		temp.ARProt      := full.ARProt ;
+		temp.RReady      := full.RReady ;
+  	return temp;
+  end function;
+  
+  function to_AXI4LITE_BUS(full : T_AXI4_BUS_S2M) return T_AXI4LITE_BUS_S2M is
+  	constant databit : natural := full.RData'length;
+		variable temp : T_AXI4LITE_BUS_S2M(RData(databit-1 DOWNTO 0));
+	begin
+		temp.WReady      := full.WReady ;
+		temp.BValid      := full.BValid ;
+		temp.BResp       := full.BResp  ;
+		temp.ARReady     := full.ARReady;
+		temp.AWReady     := full.AWReady;
+		temp.RValid      := full.RValid ;
+		temp.RData       := full.RData  ;
+		temp.RResp       := full.RResp  ;
+		return temp;
+	end function;
+  
+  function to_AXI4_BUS(lite : T_AXI4LITE_BUS_M2S) return T_AXI4_BUS_M2S is
+  	constant addrbit : natural := lite.AWAddr'length;
+  	constant databit : natural := lite.WData'length;
+  	variable temp : T_AXI4_BUS_M2S(AWAddr(addrbit -1 DOWNTO 0), WData(databit-1 DOWNTO 0), WStrb((databit/8)-1 DOWNTO 0), 
+		                               ARAddr(addrbit -1 DOWNTO 0), AWID(-1 DOWNTO 0), AWUser(-1 DOWNTO 0), WUser(-1 DOWNTO 0), ARID(-1 DOWNTO 0), ARUser(-1 DOWNTO 0));
+  begin
+		temp.AWAddr      := lite.AWAddr ;
+		temp.AWValid     := lite.AWValid;
+		temp.WValid      := lite.WValid ;
+		temp.WLast       := '1';
+		temp.WData       := lite.WData  ;
+		temp.WStrb       := lite.WStrb  ;
+		temp.BReady      := lite.BReady ;
+		temp.ARValid     := lite.ARValid;
+		temp.ARAddr      := lite.ARAddr ;
+		temp.RReady      := lite.RReady ;
+		temp.AWCache     := lite.AWCache;
+		temp.AWProt      := lite.AWProt ;
+		temp.ARCache     := lite.ARCache;
+		temp.ARProt      := lite.ARProt ;
+		temp.ARLen       := (others => '0');
+		temp.AWLen       := (others => '0');
+		temp.ARLock      := (others => '0');
+		temp.AWLock      := (others => '0');
+		temp.ARQOS       := (others => '0');
+		temp.ARRegion    := (others => '0');
+		temp.AWQOS       := (others => '0');
+		temp.AWRegion    := (others => '0');
+		temp.AWBurst     := C_AXI4_BURST_FIXED; 
+		temp.ARBurst     := C_AXI4_BURST_FIXED;
+		temp.ARSize      := std_logic_vector(to_unsigned(log2ceil(databit/8),3));
+		temp.AWSize      := std_logic_vector(to_unsigned(log2ceil(databit/8),3));
+		temp.ARUser      := (others => '0');
+		temp.WUser       := (others => '0');
+		temp.AWUser      := (others => '0');
+		temp.AWID        := (others => '0');
+		temp.ARID        := (others => '0');
+  	return temp;
+  end function;
+	
+  function to_AXI4_BUS(lite : T_AXI4LITE_BUS_S2M) return T_AXI4_BUS_S2M is
+  	constant databit : natural := lite.RData'length;
+  	variable temp : T_AXI4_Bus_S2M(RData(databit-1 DOWNTO 0), BID(-1 DOWNTO 0), BUser(-1 DOWNTO 0), RID(-1 DOWNTO 0), RUser(-1 DOWNTO 0));
+  begin
+		temp.AWReady     := lite.AWReady;
+		temp.WReady      := lite.WReady ;
+		temp.BValid      := lite.BValid ;
+		temp.BResp       := lite.BResp  ;
+		temp.ARReady     := lite.ARReady;
+		temp.RValid      := lite.RValid ;
+		temp.RData       := lite.RData  ;
+		temp.RResp       := lite.RResp  ;
+		temp.RLast       := '1';
+		temp.BID         := (others => '0');
+		temp.BUser       := (others => '0');
+		temp.RID         := (others => '0');
+		temp.RUser       := (others => '0');
+		return temp;
+  end function;
 end package body;
