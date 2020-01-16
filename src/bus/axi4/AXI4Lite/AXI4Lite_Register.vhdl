@@ -150,8 +150,8 @@ begin
 	S_AXI_s2m.RData   <= axi_rdata;  
 	S_AXI_s2m.RResp   <= axi_rresp;  
 	S_AXI_s2m.RValid  <= axi_rvalid; 
-	-------- WRITE TRANSACTION DEPENDECIES --------
 	
+	-------- WRITE TRANSACTION DEPENDECIES --------
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
@@ -168,7 +168,6 @@ begin
 		end if;
 	end process;
 
-	
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
@@ -183,7 +182,7 @@ begin
 	end process;
 	
 	
-	--RegisterFile write process
+	----------- RegisterFile write process ----------------
 	process(S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then
@@ -258,6 +257,8 @@ begin
 		end if;
 	end process;
 	
+	
+	------------- Write Response --------------
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
@@ -275,12 +276,13 @@ begin
 		end if;
 	end process;
 	
+	--Write Signals
 	slv_reg_wren <= axi_wready and axi_awready and S_AXI_m2s.AWValid and S_AXI_m2s.WValid;
 	clear_latch_w <= slv_reg_wren and hit_w;
 	RegisterFile_ReadPort     <= RegisterFile;
 	
-	-------- READ TRANSACTION DEPENDECIES --------
 	
+	-------- READ TRANSACTION DEPENDECIES --------
 	process (S_AXI_ACLK)
 	begin
 		if rising_edge(S_AXI_ACLK) then 
@@ -311,11 +313,11 @@ begin
 		end if;
 	end process;
 	
+	--Read Signals
 	outstanding_read <= (outstanding_read or slv_reg_rden) and not (not S_AXI_ARESETN or S_AXI_m2s.RReady) when rising_edge(S_AXI_ACLK);
 	slv_reg_rden <=  S_AXI_m2s.ARValid and axi_arready and (not axi_rvalid);   
 	RegisterFile_WritePort_hit <= slv_reg_rden and hit_r;
 	clear_latch_r              <= slv_reg_rden and hit_r;
-
 
 	blockReadMux: block
 		signal mux : T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
@@ -358,6 +360,8 @@ begin
 		end if;
 	end process;  
 	
+	
+	------------ Address Hit's ---------------------------
 	hit_gen_r : for i in hit_r'range generate
 		signal config_addr : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 	begin
