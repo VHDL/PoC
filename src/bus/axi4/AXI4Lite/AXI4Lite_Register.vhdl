@@ -192,60 +192,66 @@ begin
 				latched      <= (others => '0');
 			else
 				for i in CONFIG'range loop
-					if (slv_reg_wren = '1') then
-							-- trunc_addr := std_logic_vector(CONFIG(i).address);
-						--check for writable register
-						if hit_w(i) = '1' and (CONFIG(i).rw_config = readWriteable) then 
+					--Latch Value Funktion
+					if ((CONFIG(i).rw_config = latchValue_clearOnWrite) or (CONFIG(i).rw_config = latchValue_clearOnRead)) then
+						--latch value on change
+						if(latched(i) = '0') and (RegisterFile_WritePort_strobe(i) = '1') then
+							RegisterFile(i) <= RegisterFile_WritePort(i);
+							if (RegisterFile_WritePort(i) /= RegisterFile(i)) then
+								latched(i)      <= '1';
+							end if;
+						--clear on clear latch command
+						elsif (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
+							latched(i)      <= '0';
+							RegisterFile(i) <= RegisterFile_WritePort(i);
+						end if;
+						
+					--Latch High Bit Funktion
+					elsif ((CONFIG(i).rw_config = latchHighBit_clearOnWrite) or (CONFIG(i).rw_config = latchHighBit_clearOnRead)) then
+						--latch '1' in Register
+						if (RegisterFile_WritePort_strobe(i) = '1') then
+							RegisterFile(i) <= RegisterFile(i) or RegisterFile_WritePort(i);
+						end if;
+						--clear on clear latch command
+						if (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
+							RegisterFile(i) <= RegisterFile_WritePort(i);
+						end if;
+						
+					--Latch Low Bit Funktion
+					elsif ((CONFIG(i).rw_config = latchLowBit_clearOnWrite) or (CONFIG(i).rw_config = latchLowBit_clearOnRead)) then
+						--latch '0' in Register
+						if (RegisterFile_WritePort_strobe(i) = '1') then
+							RegisterFile(i) <= RegisterFile(i) and RegisterFile_WritePort(i);
+						end if;
+						--clear on clear latch command
+						if (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
+							RegisterFile(i) <= RegisterFile_WritePort(i);
+						end if;
+						
+					--Read-Write Register
+					elsif (CONFIG(i).rw_config = readWriteable) then
+						if (hit_w(i) = '1') and (slv_reg_wren = '1') then 
 							for ii in S_AXI_m2s.WStrb'reverse_range loop
 								-- Respective byte enables are asserted as per write strobes
 								if (S_AXI_m2s.WStrb(ii) = '1' ) then
 									RegisterFile(i)(ii * 8 + 7 downto ii * 8) <= S_AXI_m2s.WData(8 * ii + 7 downto 8 * ii);
 								end if;
 							end loop;
+						elsif (RegisterFile_WritePort_strobe(i) = '1') then
+							RegisterFile(i) <= RegisterFile_WritePort(i);
+						else
+							RegisterFile(i) <= RegisterFile(i) and (not CONFIG(i).Auto_Clear_Mask);
 						end if;
+						
+					--Read-Only Register
+					elsif (CONFIG(i).rw_config = readable) then --last else is read_only port
+						if (RegisterFile_WritePort_strobe(i) = '1') then
+							RegisterFile(i) <= RegisterFile_WritePort(i);
+						end if;
+						
+					--Unsupported
 					else
-					--clear where needed, otherwise latch
-						if ((CONFIG(i).rw_config = latchValue_clearOnWrite) or (CONFIG(i).rw_config = latchValue_clearOnRead)) then
-							--latch value on change
-							if(latched(i) = '0') and (RegisterFile_WritePort_strobe(i) = '1') then
-								RegisterFile(i) <= RegisterFile_WritePort(i);
-								if (RegisterFile_WritePort(i) /= RegisterFile(i)) then
-									latched(i)      <= '1';
-								end if;
-							--clear on clear latch command
-							elsif (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
-								latched(i)      <= '0';
-								RegisterFile(i) <= RegisterFile_WritePort(i);
-							end if;
-						elsif ((CONFIG(i).rw_config = latchHighBit_clearOnWrite) or (CONFIG(i).rw_config = latchHighBit_clearOnRead)) then
-							--latch '1' in Register
-							if (RegisterFile_WritePort_strobe(i) = '1') then
-								RegisterFile(i) <= RegisterFile(i) or RegisterFile_WritePort(i);
-							end if;
-							--clear on clear latch command
-							if (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
-								RegisterFile(i) <= RegisterFile_WritePort(i);
-							end if;
-						elsif ((CONFIG(i).rw_config = latchLowBit_clearOnWrite) or (CONFIG(i).rw_config = latchLowBit_clearOnRead)) then
-							--latch '0' in Register
-							if (RegisterFile_WritePort_strobe(i) = '1') then
-								RegisterFile(i) <= RegisterFile(i) and RegisterFile_WritePort(i);
-							end if;
-							--clear on clear latch command
-							if (clear_latch_w(i) = '1') or (clear_latch_r(i) = '1') then
-								RegisterFile(i) <= RegisterFile_WritePort(i);
-							end if;
-						elsif (CONFIG(i).rw_config = readWriteable) then
-							if (RegisterFile_WritePort_strobe(i) = '1') then
-								RegisterFile(i) <= RegisterFile_WritePort(i);
-							else
-								RegisterFile(i) <= RegisterFile(i) and (not CONFIG(i).Auto_Clear_Mask);
-							end if;
-						else --last else is read_only port
-							if (RegisterFile_WritePort_strobe(i) = '1') then
-								RegisterFile(i) <= RegisterFile_WritePort(i);
-							end if;
-						end if;
+						assert false report "AXI4Lite_Register::: rw_config : " & T_ReadWrite_Config'image(CONFIG(i).rw_config) & " of Config(" & integer'image(i) & ") is not supported!" severity failure;
 					end if;
 				end loop;
 			end if;
