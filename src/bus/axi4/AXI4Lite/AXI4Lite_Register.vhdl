@@ -190,9 +190,7 @@ begin
 			if ((S_AXI_ARESETN = '0')) then
 				RegisterFile <= Register_init(CONFIG);
 				latched      <= (others => '0');
-				clear_latch_w  <= (others => '0');
 			else
-				clear_latch_w <= (others => '0');
 				for i in CONFIG'range loop
 					if (slv_reg_wren = '1') then
 							-- trunc_addr := std_logic_vector(CONFIG(i).address);
@@ -204,11 +202,6 @@ begin
 									RegisterFile(i)(ii * 8 + 7 downto ii * 8) <= S_AXI_m2s.WData(8 * ii + 7 downto 8 * ii);
 								end if;
 							end loop;
-						--check for register with clearable latch on write
-						elsif  hit_w(i) = '1' and ((CONFIG(i).rw_config = latchValue_clearOnWrite) 
-							                         or (CONFIG(i).rw_config = latchHighBit_clearOnWrite) 
-							                         or (CONFIG(i).rw_config = latchLowBit_clearOnWrite)) then
-							clear_latch_w(i) <= '1';
 						end if;
 					else
 					--clear where needed, otherwise latch
