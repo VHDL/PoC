@@ -277,7 +277,7 @@ begin
 	end process;
 	
 	slv_reg_wren <= axi_wready and axi_awready and S_AXI_m2s.AWValid and S_AXI_m2s.WValid;
-	clear_latch_w <= slv_reg_wren or hit_w;
+	clear_latch_w <= slv_reg_wren and hit_w;
 	RegisterFile_ReadPort     <= RegisterFile;
 	
 	-------- READ TRANSACTION DEPENDECIES --------
