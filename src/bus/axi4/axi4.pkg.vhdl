@@ -53,50 +53,50 @@ use     work.AXI4_Full.all;
 
 package AXI4 is
   -------Define AXI Register structure-------------
-  constant Address_Width  : natural := 32;
-  constant Data_Width  : natural := 32;
+--  constant Address_Width  : natural := 32;
+--  constant Data_Width  : natural := 32;
+----  type T_AXI4_Register is record
+----    Address : unsigned;
+----    Data    : std_logic_vector;
+----    Mask    : std_logic_vector;
+----  end record;
 --  type T_AXI4_Register is record
---    Address : unsigned;
---    Data    : std_logic_vector;
---    Mask    : std_logic_vector;
+--    Address : unsigned(Address_Width -1 downto 0);
+--    Data    : std_logic_vector(Data_Width -1 downto 0);
+--    Mask    : std_logic_vector(Data_Width -1 downto 0);
 --  end record;
-  type T_AXI4_Register is record
-    Address : unsigned(Address_Width -1 downto 0);
-    Data    : std_logic_vector(Data_Width -1 downto 0);
-    Mask    : std_logic_vector(Data_Width -1 downto 0);
-  end record;
   
---  function to_AXI4_Register(Address : unsigned; Data : std_logic_vector; Mask : std_logic_vector; AddressBits : natural; DataBits : natural) return T_AXI4_Register;
-  function to_AXI4_Register(Address : unsigned(Address_Width -1 downto 0); Data : std_logic_vector(Data_Width -1 downto 0); Mask : std_logic_vector(Data_Width -1 downto 0)) return T_AXI4_Register;
---  function Initialize_AXI4_register(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4_Register;
-  function Initialize_AXI4_register(Value : std_logic := 'Z') return T_AXI4_Register;
+----  function to_AXI4_Register(Address : unsigned; Data : std_logic_vector; Mask : std_logic_vector; AddressBits : natural; DataBits : natural) return T_AXI4_Register;
+--  function to_AXI4_Register(Address : unsigned(Address_Width -1 downto 0); Data : std_logic_vector(Data_Width -1 downto 0); Mask : std_logic_vector(Data_Width -1 downto 0)) return T_AXI4_Register;
+----  function Initialize_AXI4_register(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4_Register;
+--  function Initialize_AXI4_register(Value : std_logic := 'Z') return T_AXI4_Register;
   
-  type T_AXI4_Register_Vector is array (natural range <>) of T_AXI4_Register;
+--  type T_AXI4_Register_Vector is array (natural range <>) of T_AXI4_Register;
   
-  type T_AXI4_Register_Set is record
-    AXI4_Register  : T_AXI4_Register_Vector;
-    Last_Index     : natural;
-  end record;
+--  type T_AXI4_Register_Set is record
+--    AXI4_Register  : T_AXI4_Register_Vector;
+--    Last_Index     : natural;
+--  end record;
   
-  type T_AXI4_Register_Set_VECTOR is array (natural range <>) of T_AXI4_Register_Set;
+--  type T_AXI4_Register_Set_VECTOR is array (natural range <>) of T_AXI4_Register_Set;
   
-  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set;
+--  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set;
   
 
-  type T_AXI4_Register_Description is record
-		Address             : unsigned(Address_Width-1 downto 0);
-		Writeable           : boolean;
-		Init_Value          : std_logic_vector(Data_Width-1 downto 0);
-		Auto_Clear_Mask     : std_logic_vector(Data_Width-1 downto 0);
-  end record;
+--  type T_AXI4_Register_Description is record
+--		Address             : unsigned(Address_Width-1 downto 0);
+--		Writeable           : boolean;
+--		Init_Value          : std_logic_vector(Data_Width-1 downto 0);
+--		Auto_Clear_Mask     : std_logic_vector(Data_Width-1 downto 0);
+--  end record;
   
-  type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
+--  type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
   
-  function to_AXI4_Register_Description(	Address : unsigned(Address_Width -1 downto 0); 
-  																				Writeable : boolean := true; 
-  																				Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
-  																				Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
-																				) return T_AXI4_Register_Description;
+--  function to_AXI4_Register_Description(	Address : unsigned(Address_Width -1 downto 0); 
+--  																				Writeable : boolean := true; 
+--  																				Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
+--  																				Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
+--																				) return T_AXI4_Register_Description;
   
   ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   
@@ -147,42 +147,42 @@ package AXI4 is
 
 
 	-- AXI4 (full)
-	alias T_AXI4_Bus_M2S           is work.AXI4_Full.T_AXI4_Bus_M2S;
-	alias T_AXI4_Bus_S2M           is work.AXI4_Full.T_AXI4_Bus_S2M;
-  alias T_AXI4_Bus               is work.AXI4_Full.T_AXI4_Bus;
+--	alias T_AXI4_Bus_M2S           is work.AXI4_Full.T_AXI4_Bus_M2S;
+--	alias T_AXI4_Bus_S2M           is work.AXI4_Full.T_AXI4_Bus_S2M;
+--  alias T_AXI4_Bus               is work.AXI4_Full.T_AXI4_Bus;
 	
-  alias T_AXI4_Bus_M2S_VECTOR    is work.AXI4_Full.T_AXI4_Bus_M2S_VECTOR;
-  alias T_AXI4_Bus_S2M_VECTOR    is work.AXI4_Full.T_AXI4_Bus_S2M_VECTOR;
-  alias T_AXI4_Bus_VECTOR        is work.AXI4_Full.T_AXI4_Bus_VECTOR;
+--  alias T_AXI4_Bus_M2S_VECTOR    is work.AXI4_Full.T_AXI4_Bus_M2S_VECTOR;
+--  alias T_AXI4_Bus_S2M_VECTOR    is work.AXI4_Full.T_AXI4_Bus_S2M_VECTOR;
+--  alias T_AXI4_Bus_VECTOR        is work.AXI4_Full.T_AXI4_Bus_VECTOR;
 	
-	alias Initialize_AXI4_Bus_M2S  is work.AXI4_Full.Initialize_AXI4_Bus_M2S[natural, natural, natural, natural, std_logic return T_AXI4_Bus_M2S];
-	alias Initialize_AXI4_Bus_S2M  is work.AXI4_Full.Initialize_AXI4_Bus_S2M[natural, natural, natural, natural, std_logic return T_AXI4_Bus_S2M];
-	alias Initialize_AXI4_Bus      is work.AXI4_Full.Initialize_AXI4_Bus    [natural, natural, natural, natural return T_AXI4_Bus];
+--	alias Initialize_AXI4_Bus_M2S  is work.AXI4_Full.Initialize_AXI4_Bus_M2S[natural, natural, natural, natural, std_logic return T_AXI4_Bus_M2S];
+--	alias Initialize_AXI4_Bus_S2M  is work.AXI4_Full.Initialize_AXI4_Bus_S2M[natural, natural, natural, natural, std_logic return T_AXI4_Bus_S2M];
+--	alias Initialize_AXI4_Bus      is work.AXI4_Full.Initialize_AXI4_Bus    [natural, natural, natural, natural return T_AXI4_Bus];
   
 	
 	-- AXI4-Lite
-	alias T_AXI4Lite_Bus_M2S           is work.AXI4Lite.T_AXI4Lite_Bus_M2S;
-	alias T_AXI4Lite_Bus_S2M           is work.AXI4Lite.T_AXI4Lite_Bus_S2M;
-  alias T_AXI4Lite_Bus               is work.AXI4Lite.T_AXI4Lite_Bus;
+--	alias T_AXI4Lite_Bus_M2S           is work.AXI4Lite.T_AXI4Lite_Bus_M2S;
+--	alias T_AXI4Lite_Bus_S2M           is work.AXI4Lite.T_AXI4Lite_Bus_S2M;
+--  alias T_AXI4Lite_Bus               is work.AXI4Lite.T_AXI4Lite_Bus;
 
-  alias T_AXI4Lite_Bus_M2S_VECTOR    is work.AXI4Lite.T_AXI4Lite_Bus_M2S_VECTOR;
-  alias T_AXI4Lite_Bus_S2M_VECTOR    is work.AXI4Lite.T_AXI4Lite_Bus_S2M_VECTOR;
-  alias T_AXI4Lite_Bus_VECTOR        is work.AXI4Lite.T_AXI4Lite_Bus_VECTOR;
+--  alias T_AXI4Lite_Bus_M2S_VECTOR    is work.AXI4Lite.T_AXI4Lite_Bus_M2S_VECTOR;
+--  alias T_AXI4Lite_Bus_S2M_VECTOR    is work.AXI4Lite.T_AXI4Lite_Bus_S2M_VECTOR;
+--  alias T_AXI4Lite_Bus_VECTOR        is work.AXI4Lite.T_AXI4Lite_Bus_VECTOR;
 
-	alias Initialize_AXI4Lite_Bus_M2S  is work.AXI4Lite.Initialize_AXI4Lite_Bus_M2S[natural, natural, std_logic return T_AXI4Lite_Bus_M2S];
-	alias Initialize_AXI4Lite_Bus_S2M  is work.AXI4Lite.Initialize_AXI4Lite_Bus_S2M[natural, natural, std_logic return T_AXI4Lite_Bus_S2M];
-	alias Initialize_AXI4Lite_Bus      is work.AXI4Lite.Initialize_AXI4Lite_Bus    [natural, natural return T_AXI4Lite_Bus];
+--	alias Initialize_AXI4Lite_Bus_M2S  is work.AXI4Lite.Initialize_AXI4Lite_Bus_M2S[natural, natural, std_logic return T_AXI4Lite_Bus_M2S];
+--	alias Initialize_AXI4Lite_Bus_S2M  is work.AXI4Lite.Initialize_AXI4Lite_Bus_S2M[natural, natural, std_logic return T_AXI4Lite_Bus_S2M];
+--	alias Initialize_AXI4Lite_Bus      is work.AXI4Lite.Initialize_AXI4Lite_Bus    [natural, natural return T_AXI4Lite_Bus];
 
 	
 	-- AXI4-Stream
-	alias T_AXI4Stream_M2S is work.AXI4Stream.T_AXI4Stream_M2S;
-	alias T_AXI4Stream_S2M is work.AXI4Stream.T_AXI4Stream_S2M;
+--	alias T_AXI4Stream_M2S is work.AXI4Stream.T_AXI4Stream_M2S;
+--	alias T_AXI4Stream_S2M is work.AXI4Stream.T_AXI4Stream_S2M;
 	
-	alias T_AXI4Stream_M2S_VECTOR is work.AXI4Stream.T_AXI4Stream_M2S_VECTOR;
-	alias T_AXI4Stream_S2M_VECTOR is work.AXI4Stream.T_AXI4Stream_S2M_VECTOR;
+--	alias T_AXI4Stream_M2S_VECTOR is work.AXI4Stream.T_AXI4Stream_M2S_VECTOR;
+--	alias T_AXI4Stream_S2M_VECTOR is work.AXI4Stream.T_AXI4Stream_S2M_VECTOR;
 
-	alias Initialize_AXI4Stream_M2S is work.AXI4Stream.Initialize_AXI4Stream_M2S[natural, natural, std_logic return T_AXI4Stream_M2S];
-	alias Initialize_AXI4Stream_S2M is work.AXI4Stream.Initialize_AXI4Stream_S2M[         natural, std_logic return T_AXI4Stream_S2M];
+--	alias Initialize_AXI4Stream_M2S is work.AXI4Stream.Initialize_AXI4Stream_M2S[natural, natural, std_logic return T_AXI4Stream_M2S];
+--	alias Initialize_AXI4Stream_S2M is work.AXI4Stream.Initialize_AXI4Stream_S2M[         natural, std_logic return T_AXI4Stream_S2M];
 end package;
 
 
@@ -201,15 +201,15 @@ package body AXI4 is
 --    return temp;
 --  end function;
 
-  function to_AXI4_Register(Address : unsigned(Address_Width -1 downto 0); Data : std_logic_vector(Data_Width -1 downto 0); Mask : std_logic_vector(Data_Width -1 downto 0)) return T_AXI4_Register is
-    variable temp : T_AXI4_Register := (
-        Address => Address,
-        Data    => Data,
-        Mask    => Mask
-      );
-  begin
-    return temp;
-  end function;
+--  function to_AXI4_Register(Address : unsigned(Address_Width -1 downto 0); Data : std_logic_vector(Data_Width -1 downto 0); Mask : std_logic_vector(Data_Width -1 downto 0)) return T_AXI4_Register is
+--    variable temp : T_AXI4_Register := (
+--        Address => Address,
+--        Data    => Data,
+--        Mask    => Mask
+--      );
+--  begin
+--    return temp;
+--  end function;
   
 --  function Initialize_AXI4_register(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4_Register is
 --    variable temp : T_AXI4_Register(
@@ -226,16 +226,16 @@ package body AXI4 is
 --  begin
 --    return temp;
 --  end function;
-  function Initialize_AXI4_register(Value : std_logic := 'Z') return T_AXI4_Register is
-    variable temp : T_AXI4_Register := 
-      to_AXI4_Register(
-        Address => (Address_Width -1 downto 0 => Value), 
-        Data => (Data_Width -1 downto 0 => Value), 
-        Mask => (Data_Width -1 downto 0 => Value)
-      );
-  begin
-    return temp;
-  end function;
+--  function Initialize_AXI4_register(Value : std_logic := 'Z') return T_AXI4_Register is
+--    variable temp : T_AXI4_Register := 
+--      to_AXI4_Register(
+--        Address => (Address_Width -1 downto 0 => Value), 
+--        Data => (Data_Width -1 downto 0 => Value), 
+--        Mask => (Data_Width -1 downto 0 => Value)
+--      );
+--  begin
+--    return temp;
+--  end function;
 -------------------------------------------------------------------------------------------------------------
 
 --  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set is
@@ -254,33 +254,33 @@ package body AXI4 is
 --    temp.Last_Index := reg_vec'length -1;
 --    return temp;
 --  end function;
-  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set is
-    variable temp : T_AXI4_Register_Set(AXI4_Register(0 to size -1)) := (
-      AXI4_Register => (others => Initialize_AXI4_register),
-      Last_Index    => 0
-    );
+--  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector; size : natural) return T_AXI4_Register_Set is
+--    variable temp : T_AXI4_Register_Set(AXI4_Register(0 to size -1)) := (
+--      AXI4_Register => (others => Initialize_AXI4_register),
+--      Last_Index    => 0
+--    );
 
-  begin
-    temp.AXI4_Register(reg_vec'range) := reg_vec;
-    temp.Last_Index := reg_vec'length -1;
-    return temp;
-  end function;
+--  begin
+--    temp.AXI4_Register(reg_vec'range) := reg_vec;
+--    temp.Last_Index := reg_vec'length -1;
+--    return temp;
+--  end function;
   
-	function to_AXI4_Register_Description(	Address : unsigned(Address_Width -1 downto 0); 
-  																				Writeable : boolean := true; 
-  																				Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
-  																				Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
-																				) return T_AXI4_Register_Description is
+--	function to_AXI4_Register_Description(	Address : unsigned(Address_Width -1 downto 0); 
+--  																				Writeable : boolean := true; 
+--  																				Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
+--  																				Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
+--																				) return T_AXI4_Register_Description is
 																				
-		variable temp : T_AXI4_Register_Description := (
-			Address         => Address,
-			Writeable       => Writeable,
-			Init_Value      => Init_Value,
-			Auto_Clear_Mask	=> Auto_Clear_Mask
-		);
-	begin
-		return temp;
-	end function;
+--		variable temp : T_AXI4_Register_Description := (
+--			Address         => Address,
+--			Writeable       => Writeable,
+--			Init_Value      => Init_Value,
+--			Auto_Clear_Mask	=> Auto_Clear_Mask
+--		);
+--	begin
+--		return temp;
+--	end function;
   
 --  function to_AXI4_Register_Set(reg_vec : T_AXI4_Register_Vector) return T_AXI4_Register_Set is
 --    variable temp : T_AXI4_Register_Set(AXI4_Register(reg_vec'length -1 downto 0), Last_Index(log2ceilnz(reg_vec'length) -1 downto 0)) := (
