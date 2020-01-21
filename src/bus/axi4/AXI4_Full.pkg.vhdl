@@ -515,23 +515,23 @@ package body AXI4_Full is
 
 	 function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M is
 		variable var : T_AXI4_Bus_S2M(
-			BID(IDBits - 1 downto 0), RID(IDBits - 1 downto 0),
-			BUser(UserBits - 1 downto 0), RUser(UserBits - 1 downto 0),
+			BID(ite(IDBits = 0,1,IDBits) - 1 downto 0), RID(ite(IDBits = 0,1,IDBits) - 1 downto 0),
+			BUser(ite(UserBits = 0,1,UserBits) - 1 downto 0), RUser(ite(UserBits = 0,1,UserBits) - 1 downto 0),
 			RData(DataBits - 1 downto 0)
 		) := (
 			AWReady => Value,
 			WReady  => Value,
 			BValid  => Value,
 			BResp   => (others => Value),
-			BID     => (IDBits - 1 downto 0 => Value),
-			BUser   => (UserBits - 1 downto 0 => Value),
+			BID     => (ite(IDBits = 0,1,IDBits) - 1 downto 0 => Value),
+			BUser   => (ite(UserBits = 0,1,UserBits) - 1 downto 0 => Value),
 			ARReady => Value,
 			RValid  => Value,
 			RData   => (DataBits - 1 downto 0 => Value),
 			RResp   => (others => Value),
-			RID     => (IDBits - 1 downto 0 => Value),
+			RID     => (ite(IDBits = 0,1,IDBits) - 1 downto 0 => Value),
 			RLast   => Value,
-			RUser   => (UserBits - 1 downto 0 => Value)
+			RUser   => (ite(UserBits = 0,1,UserBits) - 1 downto 0 => Value)
 		);
 	begin
 		return var;
@@ -539,8 +539,8 @@ package body AXI4_Full is
 	
 	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_M2S is
 		variable var : T_AXI4_Bus_M2S(
-			AWID(IDBits - 1 downto 0), ARID(IDBits - 1 downto 0),
-			AWUser(UserBits - 1 downto 0), ARUser(UserBits - 1 downto 0), WUser(UserBits - 1 downto 0),
+			AWID(ite(IDBits = 0,1,IDBits) - 1 downto 0), ARID(ite(IDBits = 0,1,IDBits) - 1 downto 0),
+			AWUser(ite(UserBits = 0,1,UserBits) - 1 downto 0), ARUser(ite(UserBits = 0,1,UserBits) - 1 downto 0), WUser(ite(UserBits = 0,1,UserBits) - 1 downto 0),
 			WData(DataBits - 1 downto 0), WStrb((DataBits / 8) - 1 downto 0),
 			AWAddr(AddressBits-1 downto 0), ARAddr(AddressBits - 1 downto 0)
 		) := (
@@ -548,32 +548,32 @@ package body AXI4_Full is
 			AWCache => (others => Value),
 			AWAddr  => (AddressBits-1 downto 0 => Value), 
 			AWProt  => (others => Value),
-			AWID    => (IDBits-1 downto 0 => Value), 
+			AWID    => (ite(IDBits = 0,1,IDBits)-1 downto 0 => Value), 
 			AWLen   => (others => Value),
 			AWSize  => (others => Value),
 			AWBurst => (others => Value),
 			AWLock  => (others => Value),
 			AWQOS   => (others => Value),
 			AWRegion=> (others => Value),
-			AWUser  => (UserBits-1 downto 0 => Value),
+			AWUser  => (ite(UserBits = 0,1,UserBits)-1 downto 0 => Value),
 			WValid  => Value,
 			WData   => (DataBits - 1 downto 0 => Value),
 			WStrb   => ((DataBits / 8) - 1 downto 0 => Value),
 			WLast   => Value,
-			WUser   => (UserBits - 1 downto 0 => Value),
+			WUser   => (ite(UserBits = 0,1,UserBits) - 1 downto 0 => Value),
 			BReady  => Value,
 			ARValid => Value,
 			ARCache => (others => Value),
 			ARAddr  => (AddressBits - 1 downto 0 => Value),
 			ARProt  => (others => Value),
-			ARID    => (IDBits - 1 downto 0 => Value),
+			ARID    => (ite(IDBits = 0,1,IDBits) - 1 downto 0 => Value),
 			ARLen   => (others => Value),
 			ARSize  => (others => Value),
 			ARBurst => (others => Value),
 			ARLock  => (others => Value),
 			ARQOS   => (others => Value),
 			ARRegion=> (others => Value),
-			ARUser  => (UserBits - 1 downto 0 => Value),
+			ARUser  => (ite(UserBits = 0,1,UserBits) - 1 downto 0 => Value),
 			RReady  => Value
 		);
 	begin
