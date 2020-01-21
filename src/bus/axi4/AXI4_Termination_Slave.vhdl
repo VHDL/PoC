@@ -33,7 +33,7 @@
 library IEEE;
 use     IEEE.std_logic_1164.all;
 
-use     work.axi4.all;
+use     work.axi4_Full.all;
 
 
 entity AXI4_Termination_Slave is
@@ -54,7 +54,7 @@ begin
 	AXI4_S2M.BUser   <= (others => '0');
 	AXI4_S2M.ARReady <= '1';
 	AXI4_S2M.RValid  <= '1';
-	AXI4_S2M.RData   <= (DataBits - 1 downto 0 => Value);
+	AXI4_S2M.RData   <= (others => '0');
 	AXI4_S2M.RResp   <= C_AXI4_RESPONSE_SLAVE_ERROR;
 	AXI4_S2M.RID     <= (others => '0');
 	AXI4_S2M.RLast   <= '0';
