@@ -38,8 +38,9 @@ use	    work.axi4lite.all;
 
 entity AXI4Lite_Register is
 	generic (
-		DEBUG         : boolean := false;
-	 	CONFIG        : T_AXI4_Register_Description_Vector
+		DEBUG                         : boolean := false;
+		IGNORE_HIGH_ADDR              : boolean := true;
+	 	CONFIG                        : T_AXI4_Register_Description_Vector
 	);
 	port (
 		S_AXI_ACLK                    : in  std_logic;
@@ -367,7 +368,7 @@ begin
 	begin
 		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		hit_r(i)    <= '1' when (std_logic_vector(config_addr) = axi_araddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
-												and (unsigned(axi_araddr(axi_araddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+												and ((unsigned(axi_araddr(axi_araddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0) or IGNORE_HIGH_ADDR)
 												else '0';
 	end generate;
 		
@@ -377,7 +378,7 @@ begin
 		RegisterFile_ReadPort_hit(i) <= slv_reg_wren when hit_w(i) = '1' and CONFIG(i).rw_config = readWriteable else '0';
 		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		hit_w(i)    <= '1' when (std_logic_vector(config_addr) = axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
-												and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+												and ((unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0) or IGNORE_HIGH_ADDR)
 												and ((CONFIG(i).rw_config = readWriteable) or (CONFIG(i).rw_config = latchValue_clearOnWrite) 
 															or (CONFIG(i).rw_config = latchHighBit_clearOnWrite) or (CONFIG(i).rw_config = latchLowBit_clearOnWrite))
 												else '0';
