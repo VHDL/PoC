@@ -168,7 +168,7 @@ package AXI4Lite is
 	
 	function get_strobeVector(Config : T_AXI4_Register_Description_Vector) return std_logic_vector; 
 
-	function to_AXI4_Register_Description(  Name : string;
+	function to_AXI4_Register_Description(  Name : string := "";
 																					Address : unsigned(Address_Width -1 downto 0); 
 	                                        writeable : boolean; 
 	                                        Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
@@ -176,7 +176,7 @@ package AXI4Lite is
 	                                    ) return T_AXI4_Register_Description;
 	
 	
-	function to_AXI4_Register_Description(	Name : string;
+	function to_AXI4_Register_Description(	Name : string := "";
 																					Address : unsigned(Address_Width -1 downto 0); 
 	                                        rw_config : T_ReadWrite_Config := readWriteable; 
 	                                        Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
@@ -469,14 +469,14 @@ package body AXI4Lite is
 	function to_string(reg : T_AXI4_Register_Description) return string is
 	begin
 		return "Name: " & reg.Name
-			& "Address: 0x" & to_string(std_logic_vector(reg.address), 'h', 4) 
+			& ", Address: 0x" & to_string(std_logic_vector(reg.address), 'h', 4) 
 			& ", Init_Value: 0x" & to_string(reg.Init_Value, 'h', 4)
 			& ", Auto_Clear_Mask: 0x" & to_string(reg.Auto_Clear_Mask, 'h', 4)
 			& ", rw_config: " & T_ReadWrite_Config'image(reg.rw_config);
 	end function;
 	
 	
-	function to_AXI4_Register_Description(  Name : string;
+	function to_AXI4_Register_Description(  Name : string := "";
 																					Address : unsigned(Address_Width -1 downto 0); 
 	                                        writeable : boolean; 
 	                                        Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
@@ -496,7 +496,7 @@ package body AXI4Lite is
 		return temp;
 	end function;
 	
-	function to_AXI4_Register_Description(	Name : string;
+	function to_AXI4_Register_Description(	Name : string := "";
 																					Address : unsigned(Address_Width -1 downto 0); 
 	                                        rw_config : T_ReadWrite_Config := readWriteable; 
 	                                        Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
