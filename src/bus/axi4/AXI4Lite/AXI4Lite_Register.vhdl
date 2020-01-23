@@ -136,9 +136,10 @@ begin
 	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
 	assert check_for_ADDR_conflicts report "AXI4Lite_Register Error: Addressconflict in Config!" severity failure;
 	assert not DEBUG report "========================== PoC.Axi4LiteRegister ==========================" severity note;
-	assert not DEBUG report "ADDR_LSB         = " & integer'image(ADDR_LSB)         severity note;
-	assert not DEBUG report "ADDRESS_BITS     = " & integer'image(ADDRESS_BITS)     severity note;
-	assert not DEBUG report "REG_ADDRESS_BITS = " & integer'image(REG_ADDRESS_BITS) severity note;
+	assert not DEBUG report "ADDR_LSB          = " & integer'image(ADDR_LSB)         severity note;
+	assert not DEBUG report "ADDRESS_BITS      = " & integer'image(ADDRESS_BITS)     severity note;
+	assert not DEBUG report "REG_ADDRESS_BITS  = " & integer'image(REG_ADDRESS_BITS) severity note;
+	assert not DEBUG report "Number of Configs = " & integer'image(Config'length)    severity note;
 	assert not DEBUG report print_CONFIG severity note;
 	assert not DEBUG report "=================== END of PoC.Axi4LiteRegister ==========================" severity note;
 
