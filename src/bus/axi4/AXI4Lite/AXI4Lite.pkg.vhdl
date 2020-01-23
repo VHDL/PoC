@@ -114,7 +114,8 @@ package AXI4Lite is
 
 	-------Define AXI Register structure-------------
 	constant Address_Width  : natural := 32;
-	constant Data_Width  : natural := 32;
+	constant Data_Width     : natural := 32;
+	constant Name_Width     : natural := 64;
 --  type T_AXI4_Register is record
 --    Address : unsigned;
 --    Data    : std_logic_vector;
@@ -150,7 +151,7 @@ package AXI4Lite is
 	);
 
 	type T_AXI4_Register_Description is record
-		Name                : string(1 to 32);
+		Name                : string(1 to Name_Width);
 		Address             : unsigned(Address_Width-1 downto 0);
 		rw_config           : T_ReadWrite_Config;
 		Init_Value          : std_logic_vector(Data_Width-1 downto 0);
@@ -468,7 +469,7 @@ package body AXI4Lite is
 
 	function to_string(reg : T_AXI4_Register_Description) return string is
 	begin
-		return "Name: " & reg.Name
+		return " Name: " & resize(reg.Name,Name_Width)
 			& ", Address: 0x" & to_string(std_logic_vector(reg.address), 'h', 4) 
 			& ", Init_Value: 0x" & to_string(reg.Init_Value, 'h', 4)
 			& ", Auto_Clear_Mask: 0x" & to_string(reg.Auto_Clear_Mask, 'h', 4)
@@ -483,7 +484,7 @@ package body AXI4Lite is
 	                                        Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
 	                                    ) return T_AXI4_Register_Description is
 		variable temp : T_AXI4_Register_Description := (
-			Name             => resize(Name,32),
+			Name             => resize(Name,Name_Width),
 			Address          => Address,
 			rw_config        => readWriteable,
 			Init_Value       => Init_Value,
@@ -503,7 +504,7 @@ package body AXI4Lite is
 	                                        Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0')
 	                                     ) return T_AXI4_Register_Description is
 		variable temp : T_AXI4_Register_Description := (
-			Name            => resize(Name,32),
+			Name            => resize(Name,Name_Width),
 			Address         => Address,
 			rw_config       => rw_config,
 			Init_Value      => Init_Value,
