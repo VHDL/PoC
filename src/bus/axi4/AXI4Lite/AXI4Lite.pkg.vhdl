@@ -163,6 +163,8 @@ package AXI4Lite is
 	type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
 	
 	function get_index(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer;
+	function get_NumberOfIndexes(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer;
+	function get_indexRange(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return T_INTVEC;
 	function get_Address(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return unsigned;
 	function get_Name(Address : unsigned(Address_Width -1 downto 0); Register_Vector : T_AXI4_Register_Description_Vector) return string;
 --	function get_index(Address : unsigned(Address_Width -1 downto 0); Register_Vector : T_AXI4_Register_Description_Vector) return integer;
@@ -551,6 +553,30 @@ package body AXI4Lite is
 		end loop;
 		assert false report "PoC.AXI4Lite.pkg.vhdl: get_index('" & Name & "' , Register_Vector) : no match found!" severity failure;
 		return -1;
+	end function;
+	
+	function get_NumberOfIndexes(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer is
+		variable temp : integer := 0;
+	begin
+		for i in Register_Vector'range loop
+			if str_ifind(Register_Vector(i).Name, Name) then
+				temp := temp +1;
+			end if;
+		end loop;
+		return temp;
+	end function;
+	
+	function get_indexRange(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return T_INTVEC is
+		variable temp : T_INTVEC(0 to get_NumberOfIndexes(Name, Register_Vector) -1) := (others => -1);
+		variable pos  : integer := 0;
+	begin
+		for i in Register_Vector'range loop
+			if str_ifind(Register_Vector(i).Name, Name) then
+				temp(pos) := i;
+				pos       := pos +1;
+			end if;
+		end loop;
+		return temp;
 	end function;
 	
 	function get_index(Address : unsigned(Address_Width -1 downto 0); Register_Vector : T_AXI4_Register_Description_Vector) return integer is
