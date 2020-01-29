@@ -46,6 +46,7 @@ use     work.AXI4_Common.all;
 
 
 package AXI4Lite is
+	constant DEBUG : boolean := true;
 	alias T_AXI4_Response               is work.AXI4_Common.T_AXI4_Response;
 	alias C_AXI4_RESPONSE_OKAY          is work.AXI4_Common.C_AXI4_RESPONSE_OKAY;
 	alias C_AXI4_RESPONSE_EX_OKAY       is work.AXI4_Common.C_AXI4_RESPONSE_EX_OKAY;
@@ -542,16 +543,19 @@ package body AXI4Lite is
 		return temp;
 	end function;
 	
-	
-	
 	function get_index(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer is
 	begin
 		for i in Register_Vector'range loop
 			if str_imatch(Register_Vector(i).Name, Name) then
+				assert DEBUG report "PoC.AXI4Lite.pkg.vhdl: get_index('" & Name & "' , Register_Vector) : found at " & integer'image(i) severity note;
 				return i;
 			end if;
 		end loop;
-		assert false report "PoC.AXI4Lite.pkg.vhdl: get_index('" & Name & "' , Register_Vector) : no match found!" severity failure;
+		if DEBUG then
+			assert false report "PoC.AXI4Lite.pkg.vhdl: get_index('" & Name & "' , Register_Vector) : no match found!" severity warning;
+		else
+			assert false report "PoC.AXI4Lite.pkg.vhdl: get_index('" & Name & "' , Register_Vector) : no match found!" severity failure;
+		end if;
 		return -1;
 	end function;
 	
@@ -579,25 +583,30 @@ package body AXI4Lite is
 		return temp;
 	end function;
 	
-	function get_index(Address : unsigned(Address_Width -1 downto 0); Register_Vector : T_AXI4_Register_Description_Vector) return integer is
-	begin
-		for i in Register_Vector'range loop
-			if Register_Vector(i).Address = Address then
-				return i;
-			end if;
-		end loop;
-		assert false report "PoC.AXI4Lite.pkg.vhdl: get_index(" & to_string(std_logic_vector(Address), 'h', 4) & " , Register_Vector) : no match found!" severity failure;
-		return -1;
-	end function;
+--	function get_index(Address : unsigned(Address_Width -1 downto 0); Register_Vector : T_AXI4_Register_Description_Vector) return integer is
+--	begin
+--		for i in Register_Vector'range loop
+--			if Register_Vector(i).Address = Address then
+--				return i;
+--			end if;
+--		end loop;
+--		assert false report "PoC.AXI4Lite.pkg.vhdl: get_index(" & to_string(std_logic_vector(Address), 'h', 4) & " , Register_Vector) : no match found!" severity failure;
+--		return -1;
+--	end function;
 	
 	function get_Address(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return unsigned is
 	begin
 		for i in Register_Vector'range loop
 			if str_imatch(Register_Vector(i).Name, Name) then
+				assert DEBUG report "PoC.AXI4Lite.pkg.vhdl: get_Address('" & Name & "' , Register_Vector) : found at " & integer'image(i) severity note;
 				return Register_Vector(i).Address;
 			end if;
 		end loop;
-		assert false report "PoC.AXI4Lite.pkg.vhdl: get_Address('" & Name & "' , Register_Vector) : no match found!" severity failure;
+		if DEBUG then
+			assert false report "PoC.AXI4Lite.pkg.vhdl: get_Address('" & Name & "' , Register_Vector) : no match found!" severity warning;
+		else
+			assert false report "PoC.AXI4Lite.pkg.vhdl: get_Address('" & Name & "' , Register_Vector) : no match found!" severity failure;
+		end if;
 		return unsigned'(Address_Width -1 downto 0 => '1');
 	end function;
 
@@ -605,10 +614,15 @@ package body AXI4Lite is
 	begin
 		for i in Register_Vector'range loop
 			if Register_Vector(i).Address = Address then
+				assert DEBUG report "PoC.AXI4Lite.pkg.vhdl: get_Name(" & to_string(std_logic_vector(Address), 'h', 4) & " , Register_Vector) : found match at " & integer'image(i) severity note;
 				return Register_Vector(i).Name;
 			end if;
 		end loop;
-		assert false report "PoC.AXI4Lite.pkg.vhdl: get_Name(" & to_string(std_logic_vector(Address), 'h', 4) & " , Register_Vector) : no match found!" severity failure;
+		if DEBUG then
+			assert false report "PoC.AXI4Lite.pkg.vhdl: get_Name(" & to_string(std_logic_vector(Address), 'h', 4) & " , Register_Vector) : no match found!" severity warning;
+		else
+			assert false report "PoC.AXI4Lite.pkg.vhdl: get_Name(" & to_string(std_logic_vector(Address), 'h', 4) & " , Register_Vector) : no match found!" severity failure;
+		end if;
 		return resize("",Name_Width);
 	end function;
 	
