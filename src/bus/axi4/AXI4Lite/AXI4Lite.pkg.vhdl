@@ -547,7 +547,7 @@ package body AXI4Lite is
 	begin
 		for i in Register_Vector'range loop
 			if str_imatch(Register_Vector(i).Name, Name) then
-				assert DEBUG report "PoC.AXI4Lite.pkg.vhdl: get_index('" & Name & "' , Register_Vector) : found at " & integer'image(i) severity note;
+				assert not DEBUG report "PoC.AXI4Lite.pkg.vhdl: get_index('" & Name & "' , Register_Vector) : found at " & integer'image(i) severity note;
 				return i;
 			end if;
 		end loop;
@@ -598,7 +598,7 @@ package body AXI4Lite is
 	begin
 		for i in Register_Vector'range loop
 			if str_imatch(Register_Vector(i).Name, Name) then
-				assert DEBUG report "PoC.AXI4Lite.pkg.vhdl: get_Address('" & Name & "' , Register_Vector) : found at " & integer'image(i) severity note;
+				assert not DEBUG report "PoC.AXI4Lite.pkg.vhdl: get_Address('" & Name & "' , Register_Vector) : found at " & integer'image(i) severity note;
 				return Register_Vector(i).Address;
 			end if;
 		end loop;
@@ -614,7 +614,7 @@ package body AXI4Lite is
 	begin
 		for i in Register_Vector'range loop
 			if Register_Vector(i).Address = Address then
-				assert DEBUG report "PoC.AXI4Lite.pkg.vhdl: get_Name(" & to_string(std_logic_vector(Address), 'h', 4) & " , Register_Vector) : found match at " & integer'image(i) severity note;
+				assert not DEBUG report "PoC.AXI4Lite.pkg.vhdl: get_Name(" & to_string(std_logic_vector(Address), 'h', 4) & " , Register_Vector) : found match at " & integer'image(i) severity note;
 				return Register_Vector(i).Name;
 			end if;
 		end loop;
