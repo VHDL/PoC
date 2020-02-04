@@ -553,6 +553,7 @@ package body AXI4Lite is
 		end loop;
 		if DEBUG then
 			assert false report "PoC.AXI4Lite.pkg.vhdl: get_index('" & Name & "' , Register_Vector) : no match found!" severity warning;
+			return 0;
 		else
 			assert false report "PoC.AXI4Lite.pkg.vhdl: get_index('" & Name & "' , Register_Vector) : no match found!" severity failure;
 		end if;
