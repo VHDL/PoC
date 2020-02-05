@@ -160,7 +160,7 @@ begin
 					position <= (others => '0');
 				else
 					if (Match_IF(i) = '1') and (Is_AW = '1') then
-						if position < Number_of_Interfaces -1 then
+						if position < Number_of_Offsets -1 then
 							position <= position +1;
 						else
 							position <= (others => '0');
