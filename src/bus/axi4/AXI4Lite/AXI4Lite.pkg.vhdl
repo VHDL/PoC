@@ -28,6 +28,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- =============================================================================
+use			STD.TextIO.all;
 
 library IEEE;
 use     IEEE.std_logic_1164.all;
@@ -46,7 +47,10 @@ use     work.AXI4_Common.all;
 
 
 package AXI4Lite is
-	constant DEBUG : boolean := true;
+	constant DEBUG : boolean := false;
+	
+	attribute Count        : integer;
+	
 	alias T_AXI4_Response               is work.AXI4_Common.T_AXI4_Response;
 	alias C_AXI4_RESPONSE_OKAY          is work.AXI4_Common.C_AXI4_RESPONSE_OKAY;
 	alias C_AXI4_RESPONSE_EX_OKAY       is work.AXI4_Common.C_AXI4_RESPONSE_EX_OKAY;
@@ -150,6 +154,7 @@ package AXI4Lite is
 		latchHighBit_clearOnRead, latchHighBit_clearOnWrite, 
 		latchLowBit_clearOnRead, latchLowBit_clearOnWrite
 	);
+	attribute Count of T_ReadWrite_Config : type is T_ReadWrite_Config'pos(T_ReadWrite_Config'high) + 1;
 
 	type T_AXI4_Register_Description is record
 		Name                : string(1 to Name_Width);
@@ -160,8 +165,11 @@ package AXI4Lite is
 	end record;
 	
 	function to_string(reg : T_AXI4_Register_Description) return string;
+--	function to_c_header_string(reg : T_AXI4_Register_Description) return string;
 	
 	type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
+	
+	impure function write_c_header_file(FileName : string; Name : string; reg : T_AXI4_Register_Description_Vector) return boolean;
 	
 	function get_index(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer;
 	function get_NumberOfIndexes(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer;
@@ -481,6 +489,60 @@ package body AXI4Lite is
 			& ", rw_config: " & T_ReadWrite_Config'image(reg.rw_config);
 	end function;
 	
+	impure function write_c_header_file(FileName : string; Name : string; reg : T_AXI4_Register_Description_Vector) return boolean is
+		constant QM : character := '"';
+		constant size_header    : natural := imax(FileName'length,51);
+		file     FileHandle		  : TEXT open write_MODE is FileName;
+  	variable CurrentLine	  : LINE;
+  	
+  	procedure write(S : string) is
+  	begin
+  		write(CurrentLine, S);
+  		writeline(FileHandle, CurrentLine);
+  	end procedure;
+  	
+	begin
+		write("/*****************************************************");
+		write("* Automatically generated File from VHDL PoC Library *");
+		write("* Poc.AXI4Lite.T_AXI4_Register_Description           *");
+		write("* generated C-Header File                            *");
+		write("* " & FileName & " *");
+		write("*****************************************************/");
+		write(" ");
+		write(" ");
+		write(" ");
+		write("enum AXI4Register_Function {");
+		for i in 0 to T_ReadWrite_Config'Count -2 loop
+			write("    " & T_ReadWrite_Config'image(T_ReadWrite_Config'val(i)) & ",");
+		end loop;
+		write("    " & T_ReadWrite_Config'image(T_ReadWrite_Config'val(T_ReadWrite_Config'Count -1)));
+		write("};");
+		write(" ");
+		write("struct AXI4Register {");
+		write("    char                  Name[" & integer'image(Name_Width) & "];");
+		write("    uint32_t              Address;");
+		write("    uint32_t              Init_Value;");
+		write("    uint32_t              Auto_Clear_Mask;");
+		write("    AXI4Register_Function rw_config;");
+		write("};");
+		write(" ");
+		write("AXI4Register " & Name & "[]{");
+		for i in 0 to reg'length -1 loop
+			write("    { .Name            = " & QM & reg(i - reg'low).Name & QM & ",");
+			write("      .Address         = 0x" & to_string(std_logic_vector(reg(i - reg'low).address), 'h', 4) & ",");
+			write("      .Init_Value      = 0x" & to_string(std_logic_vector(reg(i - reg'low).Init_Value), 'h', 4) & ",");
+			write("      .Auto_Clear_Mask = 0x" & to_string(std_logic_vector(reg(i - reg'low).Auto_Clear_Mask), 'h', 4) & ",");
+			if i /= reg'high then
+				write("      .rw_config       = " & T_ReadWrite_Config'image(reg(i - reg'low).rw_config) & " },");
+			else
+				write("      .rw_config       = " & T_ReadWrite_Config'image(reg(i - reg'low).rw_config) & " }");
+			end if;
+		end loop;
+		write("};");
+		write(" ");
+		write("//end");
+		return true;
+	end function;	
 	
 	function to_AXI4_Register_Description(  Name : string := "";
 																					Address : unsigned(Address_Width -1 downto 0); 
