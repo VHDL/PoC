@@ -36,6 +36,7 @@ use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.strings.all;
+use     work.vectors.all;
 use     work.AXI4_Common.all;
 
 
@@ -168,6 +169,11 @@ package AXI4Lite is
 --	function to_c_header_string(reg : T_AXI4_Register_Description) return string;
 	
 	type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
+	
+	
+	function get_addresses(description_vector : T_AXI4_Register_Description_Vector) return T_SLUV;
+	function get_InitValue(description_vector : T_AXI4_Register_Description_Vector) return T_SLVV;
+	function get_AutoClearMask(description_vector : T_AXI4_Register_Description_Vector) return T_SLVV;
 	
 	impure function write_c_header_file(FileName : string; Name : string; reg : T_AXI4_Register_Description_Vector) return boolean;
 	
@@ -578,6 +584,33 @@ package body AXI4Lite is
 			Auto_Clear_Mask	=> Auto_Clear_Mask
 		);
 	begin
+		return temp;
+	end function;
+	
+	function get_addresses(description_vector : T_AXI4_Register_Description_Vector) return T_SLUV is
+		variable temp : T_SLUV(description_vector'range)(Address_Width -1 downto 0);
+	begin
+		for i in temp'range loop
+			temp(i) := description_vector(i).address;
+		end loop;
+		return temp;
+	end function;
+	
+	function get_initValue(description_vector : T_AXI4_Register_Description_Vector) return T_SLVV is
+		variable temp : T_SLVV(description_vector'range)(Data_Width -1 downto 0);
+	begin
+		for i in temp'range loop
+			temp(i) := description_vector(i).init_value;
+		end loop;
+		return temp;
+	end function;
+	
+	function get_AutoClearMask(description_vector : T_AXI4_Register_Description_Vector) return T_SLVV is
+		variable temp : T_SLVV(description_vector'range)(Data_Width -1 downto 0);
+	begin
+		for i in temp'range loop
+			temp(i) := description_vector(i).Auto_Clear_Mask;
+		end loop;
 		return temp;
 	end function;
 	
