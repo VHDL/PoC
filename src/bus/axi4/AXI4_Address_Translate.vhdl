@@ -31,7 +31,7 @@ library PoC;
 package AXI4_A64_D128 is
 new PoC.AXI4Full_Sized
 	generic map (
-		ADDRESS_BITS => 40,
+		ADDRESS_BITS => 64,
 		DATA_BITS    => 16,
 		USER_BITS    => 1,
 		ID_BITS      => 1
@@ -60,10 +60,10 @@ entity AXI4_Address_Translate is
 		Clock                 : in  std_logic;
 		Reset                 : in  std_logic;
 									        
-		In_AXI4_M2S           : in  AXI4_A64_D128.SIZED_M2S;--T_AXI4_Bus_M2S;
-		In_AXI4_S2M           : out AXI4_A64_D128.SIZED_S2M;--T_AXI4_Bus_S2M;
-		Out_AXI4_M2S          : out AXI4_A64_D128.SIZED_M2S;--T_AXI4_Bus_M2S;
-		Out_AXI4_S2M          : in  AXI4_A64_D128.SIZED_S2M;--T_AXI4_Bus_S2M;
+		In_AXI4_M2S           : in  T_AXI4_Bus_M2S;--AXI4_A64_D128.SIZED_M2S;--
+		In_AXI4_S2M           : out T_AXI4_Bus_S2M;--AXI4_A64_D128.SIZED_S2M;--
+		Out_AXI4_M2S          : out T_AXI4_Bus_M2S;--AXI4_A64_D128.SIZED_M2S;--
+		Out_AXI4_S2M          : in  T_AXI4_Bus_S2M;--AXI4_A64_D128.SIZED_S2M;--
 		
 		Offset                : in  T_SLSV(0 to (Number_of_Interfaces * Number_of_Offsets) -1)(Offset_Bits -1 downto 0);
 		
