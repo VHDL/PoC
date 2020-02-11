@@ -39,7 +39,8 @@ use	    work.axi4lite.all;
 entity AXI4Lite_Register is
 	generic (
 		DEBUG                         : boolean := false;
-		IGNORE_HIGH_ADDR              : boolean := true;
+		IGNORE_HIGH_ADDR              : boolean := false;
+		DISABLE_ADDR_CHECK            : boolean := true;
 	 	CONFIG                        : T_AXI4_Register_Description_Vector
 	);
 	port (
@@ -74,15 +75,17 @@ architecture rtl of AXI4Lite_Register is
 	function check_for_ADDR_conflicts return boolean is
 		variable addr : unsigned(REG_ADDRESS_BITS downto ADDR_LSB);
 	begin
-		for i in CONFIG'low to CONFIG'high -1 loop
-			addr := CONFIG(i).address(addr'range);
-			for ii in i +1 to CONFIG'high loop
-				if addr = CONFIG(ii).address(addr'range) then
-					report "AXI4Lite_Register Error: Addressconflict in Config: CONFIG(" & integer'image(i) & ") and CONFIG(" & integer'image(ii) & ") are equal!" severity failure;
-					return false;
-				end if;
+		if not DISABLE_ADDR_CHECK then
+			for i in CONFIG'low to CONFIG'high -1 loop
+				addr := CONFIG(i).address(addr'range);
+				for ii in i +1 to CONFIG'high loop
+					if addr = CONFIG(ii).address(addr'range) then
+						report "AXI4Lite_Register Error: Addressconflict in Config: CONFIG(" & integer'image(i) & ") and CONFIG(" & integer'image(ii) & ") are equal!" severity failure;
+						return false;
+					end if;
+				end loop;
 			end loop;
-		end loop;
+		end if;
 		return true;
 	end function;
 	
