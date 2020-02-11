@@ -333,7 +333,7 @@ package body AXI4 is
   	constant addrbit : natural := lite.AWAddr'length;
   	constant databit : natural := lite.WData'length;
   	variable temp : T_AXI4_BUS_M2S(AWAddr(addrbit -1 DOWNTO 0), WData(databit-1 DOWNTO 0), WStrb((databit/8)-1 DOWNTO 0), 
-		                               ARAddr(addrbit -1 DOWNTO 0), AWID(-1 DOWNTO 0), AWUser(-1 DOWNTO 0), WUser(-1 DOWNTO 0), ARID(-1 DOWNTO 0), ARUser(-1 DOWNTO 0));
+		                               ARAddr(addrbit -1 DOWNTO 0), AWID(0 DOWNTO 0), AWUser(0 DOWNTO 0), WUser(0 DOWNTO 0), ARID(0 DOWNTO 0), ARUser(0 DOWNTO 0));
   begin
 		temp.AWAddr      := lite.AWAddr ;
 		temp.AWValid     := lite.AWValid;
@@ -371,7 +371,7 @@ package body AXI4 is
 	
   function to_AXI4_BUS(lite : T_AXI4LITE_BUS_S2M) return T_AXI4_BUS_S2M is
   	constant databit : natural := lite.RData'length;
-  	variable temp : T_AXI4_Bus_S2M(RData(databit-1 DOWNTO 0), BID(-1 DOWNTO 0), BUser(-1 DOWNTO 0), RID(-1 DOWNTO 0), RUser(-1 DOWNTO 0));
+  	variable temp : T_AXI4_Bus_S2M(RData(databit-1 DOWNTO 0), BID(0 DOWNTO 0), BUser(0 DOWNTO 0), RID(0 DOWNTO 0), RUser(0 DOWNTO 0));
   begin
 		temp.AWReady     := lite.AWReady;
 		temp.WReady      := lite.WReady ;

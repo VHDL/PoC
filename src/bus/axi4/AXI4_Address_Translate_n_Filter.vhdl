@@ -41,8 +41,8 @@ entity AXI4_Address_Translate_n_Filter is
 		Number_of_Spaces : positive := 1;
 		Address_Bits     : positive := 32;
 		Data_Bits        : positive := 32;
-		ID_Bits          : positive := 0;
-		User_Bits        : positive := 0
+		ID_Bits          : positive := 1;
+		User_Bits        : positive := 1
 	);
 	port ( 
 		Clock          : in  std_logic;

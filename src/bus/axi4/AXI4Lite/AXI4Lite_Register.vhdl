@@ -28,18 +28,19 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.std_logic_1164.all;
-use     IEEE.numeric_std.all;
+use	    IEEE.std_logic_1164.all;
+use	    IEEE.numeric_std.all;
 
-use     work.utils.all;
-use     work.vectors.all;
-use     work.axi4lite.all;
+use	    work.utils.all;
+use	    work.vectors.all;
+use	    work.axi4lite.all;
 
 
 entity AXI4Lite_Register is
 	generic (
-		DEBUG         : boolean := false;
-		CONFIG        : T_AXI4_Register_Description_Vector
+		DEBUG                         : boolean := false;
+		IGNORE_HIGH_ADDR              : boolean := true;
+	 	CONFIG                        : T_AXI4_Register_Description_Vector
 	);
 	port (
 		S_AXI_ACLK                    : in  std_logic;
@@ -135,9 +136,10 @@ begin
 	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
 	assert check_for_ADDR_conflicts report "AXI4Lite_Register Error: Addressconflict in Config!" severity failure;
 	assert not DEBUG report "========================== PoC.Axi4LiteRegister ==========================" severity note;
-	assert not DEBUG report "ADDR_LSB         = " & integer'image(ADDR_LSB)         severity note;
-	assert not DEBUG report "ADDRESS_BITS     = " & integer'image(ADDRESS_BITS)     severity note;
-	assert not DEBUG report "REG_ADDRESS_BITS = " & integer'image(REG_ADDRESS_BITS) severity note;
+	assert not DEBUG report "ADDR_LSB          = " & integer'image(ADDR_LSB)         severity note;
+	assert not DEBUG report "ADDRESS_BITS      = " & integer'image(ADDRESS_BITS)     severity note;
+	assert not DEBUG report "REG_ADDRESS_BITS  = " & integer'image(REG_ADDRESS_BITS) severity note;
+	assert not DEBUG report "Number of Configs = " & integer'image(Config'length)    severity note;
 	assert not DEBUG report print_CONFIG severity note;
 	assert not DEBUG report "=================== END of PoC.Axi4LiteRegister ==========================" severity note;
 
@@ -367,17 +369,19 @@ begin
 	begin
 		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		hit_r(i)    <= '1' when (std_logic_vector(config_addr) = axi_araddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
-												and (unsigned(axi_araddr(axi_araddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+												and ((unsigned(axi_araddr(axi_araddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0) or IGNORE_HIGH_ADDR)
 												else '0';
 	end generate;
 		
 	hit_gen_w : for i in hit_w'range generate
 		signal config_addr : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
+		signal RegisterFile_ReadPort_hit_i : std_logic_vector(RegisterFile_ReadPort_hit'range):= (others => '0');
 	begin
-		RegisterFile_ReadPort_hit(i) <= slv_reg_wren when hit_w(i) = '1' and CONFIG(i).rw_config = readWriteable else '0';
+		RegisterFile_ReadPort_hit_i(i) <= slv_reg_wren when hit_w(i) = '1' and CONFIG(i).rw_config = readWriteable else '0';
+		RegisterFile_ReadPort_hit(i)   <= RegisterFile_ReadPort_hit_i(i) when rising_edge(S_AXI_ACLK);
 		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		hit_w(i)    <= '1' when (std_logic_vector(config_addr) = axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
-												and (unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0)
+												and ((unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0) or IGNORE_HIGH_ADDR)
 												and ((CONFIG(i).rw_config = readWriteable) or (CONFIG(i).rw_config = latchValue_clearOnWrite) 
 															or (CONFIG(i).rw_config = latchHighBit_clearOnWrite) or (CONFIG(i).rw_config = latchLowBit_clearOnWrite))
 												else '0';
