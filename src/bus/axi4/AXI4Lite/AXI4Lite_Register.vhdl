@@ -49,9 +49,9 @@ entity AXI4Lite_Register is
 		S_AXI_m2s                     : in  T_AXI4Lite_BUS_M2S;
 		S_AXI_s2m                     : out T_AXI4Lite_BUS_S2M;
 		
-		RegisterFile_ReadPort         : out T_SLVV(0 to CONFIG'Length - 1);
+		RegisterFile_ReadPort         : out T_SLVV(0 to CONFIG'Length - 1)(Data_Width-1 downto 0);
 		RegisterFile_ReadPort_hit     : out std_logic_vector(0 to CONFIG'Length - 1);
-		RegisterFile_WritePort        : in  T_SLVV(0 to CONFIG'Length - 1);
+		RegisterFile_WritePort        : in  T_SLVV(0 to CONFIG'Length - 1)(Data_Width-1 downto 0);
 		RegisterFile_WritePort_hit    : out std_logic_vector(0 to CONFIG'Length - 1);
 		RegisterFile_WritePort_strobe : in  std_logic_vector(0 to CONFIG'Length - 1) := get_strobeVector(CONFIG)
 	);
