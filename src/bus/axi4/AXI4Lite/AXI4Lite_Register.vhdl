@@ -375,10 +375,10 @@ begin
 		
 	hit_gen_w : for i in hit_w'range generate
 		signal config_addr : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
-		signal RegisterFile_ReadPort_hit_i : std_logic_vector(RegisterFile_ReadPort_hit'range);
+		signal RegisterFile_ReadPort_hit_i : std_logic_vector(RegisterFile_ReadPort_hit'range):= (others => '0');
 	begin
 		RegisterFile_ReadPort_hit_i(i) <= slv_reg_wren when hit_w(i) = '1' and CONFIG(i).rw_config = readWriteable else '0';
-		RegisterFile_ReadPort_hit      <= RegisterFile_ReadPort_hit_i when rising_edge(S_AXI_ACLK);
+		RegisterFile_ReadPort_hit(i)   <= RegisterFile_ReadPort_hit_i(i) when rising_edge(S_AXI_ACLK);
 		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		hit_w(i)    <= '1' when (std_logic_vector(config_addr) = axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
 												and ((unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0) or IGNORE_HIGH_ADDR)
