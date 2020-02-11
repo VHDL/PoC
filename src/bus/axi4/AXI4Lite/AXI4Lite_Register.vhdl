@@ -338,7 +338,7 @@ begin
 		process(mux, hit_r)
 			variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
 		begin
-			reg_data_out  <= (others => '0');
+			reg_data_out  <= (others => '1');
 			if unsigned(hit_r) /= 0 then
 				reg_data_out <= mux(lssb_idx(hit_r));
 			end if;
