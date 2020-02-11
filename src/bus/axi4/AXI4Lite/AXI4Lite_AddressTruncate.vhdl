@@ -62,9 +62,7 @@ begin
 
 	--MASTER
 	M_AXI_m2s.AWValid    <= S_AXI_m2s.AWValid ;
-	M_AXI_m2s.AWAddr     <= ite(    ADDR_OUT_BITS > ADDR_IN_BITS, 
-                                  (ADDR_IN_BITS - ADDR_OUT_BITS - 1 downto 0 => '0') & S_AXI_m2s.AWAddr, 
-                                  S_AXI_m2s.AWAddr(ADDR_OUT_BITS - 1 downto 0));
+	M_AXI_m2s.AWAddr     <= resize(S_AXI_m2s.AWAddr, ADDR_OUT_BITS);
   M_AXI_m2s.AWCache    <= S_AXI_m2s.AWCache ;
 	M_AXI_m2s.AWProt     <= S_AXI_m2s.AWProt  ;
 	M_AXI_m2s.WValid     <= S_AXI_m2s.WValid  ;
@@ -72,9 +70,7 @@ begin
 	M_AXI_m2s.WStrb      <= S_AXI_m2s.WStrb   ;
 	M_AXI_m2s.BReady     <= S_AXI_m2s.BReady  ;
 	M_AXI_m2s.ARValid    <= S_AXI_m2s.ARValid ;
-	M_AXI_m2s.ARAddr     <= ite(    ADDR_OUT_BITS > ADDR_IN_BITS, 
-                                  (ADDR_IN_BITS - ADDR_OUT_BITS - 1 downto 0 => '0') & S_AXI_m2s.AWAddr, 
-                                  S_AXI_m2s.AWAddr(ADDR_OUT_BITS - 1 downto 0));
+	M_AXI_m2s.ARAddr     <= resize(S_AXI_m2s.ARAddr, ADDR_OUT_BITS);
   M_AXI_m2s.ARCache    <= S_AXI_m2s.ARCache ;
 	M_AXI_m2s.ARProt     <= S_AXI_m2s.ARProt  ;
 	M_AXI_m2s.RReady     <= S_AXI_m2s.RReady  ;

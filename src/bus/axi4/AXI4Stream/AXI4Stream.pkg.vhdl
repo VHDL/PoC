@@ -32,14 +32,14 @@
 library IEEE;
 use     IEEE.std_logic_1164.all;
 
-  
+
 package AXI4Stream is
 	type T_AXI4Stream_M2S is record
 		Valid : std_logic;
 		Data  : std_logic_vector;
 		Last  : std_logic;
 		User  : std_logic_vector;
-    -- Keep  : std_logic_vector;
+--    Keep  : std_logic_vector;
 	end record;
 	
 	type T_AXI4Stream_S2M is record
@@ -58,10 +58,12 @@ package body AXI4Stream is
 	function Initialize_AXI4Stream_M2S(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_M2S is
 		variable init : T_AXI4Stream_M2S(
 				Data(DataBits -1 downto 0),
-				User(UserBits -1 downto 0)
+				User(UserBits -1 downto 0)--,
+--				Keep((DataBits / 8) -1 downto 0)
 			) := (
 				Valid => Value,
 				Data  => (others => Value),
+--				Keep  => (others => Value),
 				Last  => Value,
 				User  => (others => Value)
 			);

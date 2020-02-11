@@ -517,12 +517,10 @@ package body utils is
 	-- ==========================================================================
 	-- return log2; always rounded up
 	function log2ceil(arg : positive) return natural is
-		variable tmp : positive;
-		variable log : natural;
+		variable tmp : positive := 2;
+		variable log : natural  := 1;
 	begin
 		if arg = 1 then	return 0; end if;
-		tmp := 1;
-		log := 0;
 		while arg > tmp loop
 			tmp := tmp * 2;
 			log := log + 1;
@@ -538,12 +536,10 @@ package body utils is
 
 	-- return log10; always rounded up
 	function log10ceil(arg : positive) return natural is
-		variable tmp : positive;
-		variable log : natural;
+		variable tmp : positive := 10;
+		variable log : natural  := 1;
 	begin
 		if arg = 1 then	return 0; end if;
-		tmp := 1;
-		log := 0;
 		while arg > tmp loop
 			tmp := tmp * 10;
 			log := log + 1;

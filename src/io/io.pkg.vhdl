@@ -62,6 +62,12 @@ package io is
 	type T_IO_TRISTATE_VECTOR	is array(natural range <>) of T_IO_TRISTATE;
 
 	type T_IO_LVDS_VECTOR			is array(natural range <>) of T_IO_LVDS;
+	
+	function get_p_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector;
+	function get_n_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector;
+	function to_LVDS_vector(p : std_logic_vector; n : std_logic_vector) return T_IO_LVDS_VECTOR;
+	
+	type T_IO_LVDS_VV			    is array(natural range <>) of T_IO_LVDS_VECTOR;
 
 	type T_IO_DATARATE is (IO_DATARATE_SDR, IO_DATARATE_DDR, IO_DATARATE_QDR);
 
@@ -71,6 +77,11 @@ package io is
 	procedure io_tristate_driver (
 		signal pad      : inout std_logic_vector;
 		signal tristate : inout T_IO_TRISTATE_VECTOR
+	);
+	
+	procedure io_tristate_connect (
+		signal from_input  : inout T_IO_TRISTATE_VECTOR;
+		signal to_output : inout T_IO_TRISTATE_VECTOR
 	);
 
 	type T_IO_7SEGMENT_CHAR is (
@@ -175,6 +186,35 @@ end package;
 
 
 package body io is
+	function get_p_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector is
+		variable temp : std_logic_vector(vec'range);
+	begin
+		for i in vec'range loop
+			temp(i) := vec(i).p;
+		end loop;
+		return temp;
+	end function;
+	
+	function get_n_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector is
+		variable temp : std_logic_vector(vec'range);
+	begin
+		for i in vec'range loop
+			temp(i) := vec(i).n;
+		end loop;
+		return temp;
+	end function;
+	
+	function to_LVDS_vector(p : std_logic_vector; n : std_logic_vector) return T_IO_LVDS_VECTOR is
+		variable temp : T_IO_LVDS_VECTOR(p'range);
+	begin
+		assert p'length = n'length report "PoC.io.to_LVDS_vector: Length of p and n vectors dosn't match!" severity failure;
+		for i in p'range loop
+			temp(i).p := p(i);
+			temp(i).n := n(i);
+		end loop;
+		return temp;
+	end function;
+	
 	procedure io_tristate_driver (
 		signal pad      : inout std_logic_vector;
 		signal tristate : inout T_IO_TRISTATE_VECTOR
@@ -190,6 +230,18 @@ package body io is
 			-- not intended, see also :ref:`ISSUES:General:inout_records`.
 			tristate(k).t <= 'Z';
 			tristate(k).o <= 'Z';
+		end loop;
+	end procedure;
+	
+	procedure io_tristate_connect (
+		signal from_input  : inout T_IO_TRISTATE_VECTOR;
+		signal to_output : inout T_IO_TRISTATE_VECTOR
+	) is
+	begin
+		for i in from_input'range loop
+			to_output(i).i <= from_input(i).i;
+			from_input(i).o  <= to_output(i).o;
+			from_input(i).t  <= to_output(i).t;
 		end loop;
 	end procedure;
 

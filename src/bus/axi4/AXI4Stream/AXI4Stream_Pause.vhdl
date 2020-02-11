@@ -2,25 +2,26 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:				 	Stefan Unrein
---                  Patrick Lehmann
+-- Authors:         Patrick Lehmann
+--                  Stefan Unrein
 --
--- Entity:				 	A slave-side bus termination module for AXI4-Stream.
+-- Entity:          A generic AXI4-Stream module to pause a stream.
 --
 -- Description:
 -- -------------------------------------
--- This entity is a bus termination module for AXI4-Stream that represents a
--- dummy slave.
+-- .. TODO:: No documentation available.
 --
 -- License:
 -- =============================================================================
 -- Copyright 2018-2019 PLC2 Design GmbH, Germany
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,30 +32,33 @@
 
 library IEEE;
 use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
+use     work.vectors.all;
 use     work.axi4stream.all;
 
 
-entity AXI4Stream_Termination_Slave is
-	generic (
-		VALUE     : std_logic := '0'
-	);
-	port ( 
+entity AXI4Stream_Pause is
+	port (
+		Pause               : in  std_logic;
 		-- IN Port
-		In_M2S    : in  T_AXI4Stream_M2S;
-		In_S2M    : out T_AXI4Stream_S2M
+		In_M2S              : in  T_AXI4STREAM_M2S;
+		In_S2M              : out T_AXI4STREAM_S2M;
+		-- OUT Ports
+		Out_M2S             : out T_AXI4STREAM_M2S;
+		Out_S2M             : in  T_AXI4STREAM_S2M
 	);
 end entity;
 
 
-architecture rtl of AXI4Stream_Termination_Slave is
-  constant DataBits : natural := In_M2S.Data'length;
-  constant UserBits : natural := In_M2S.User'length;
-  signal M2S_dummy : In_M2S'subtype;
+architecture rtl of AXI4Stream_Pause is
 begin
-
-	In_S2M <= Initialize_AXI4Stream_S2M(UserBits, VALUE);
-	M2S_dummy <= In_M2S;
+	Out_M2S.Valid <= In_M2S.Valid and not Pause;
+	Out_M2S.Data  <= In_M2S.Data;
+	Out_M2S.Last  <= In_M2S.Last;
+	Out_M2S.User  <= In_M2S.User;
+	
+	In_S2M.Ready  <= Out_S2M.Ready and not Pause;
 
 end architecture;

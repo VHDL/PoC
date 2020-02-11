@@ -3,14 +3,13 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:				 	Stefan Unrein
---                  Patrick Lehmann
 --
--- Entity:				 	A slave-side bus termination module for AXI4-Stream.
+-- Entity:				 	Generic Dynamic Reconfiguration Port(DRP) bus description
 --
 -- Description:
 -- -------------------------------------
--- This entity is a bus termination module for AXI4-Stream that represents a
--- dummy slave.
+-- This package implements a generic Dynamic Reconfiguration Port(DRP) description.
+--
 --
 -- License:
 -- =============================================================================
@@ -29,32 +28,32 @@
 -- limitations under the License.
 -- =============================================================================
 
-library IEEE;
-use     IEEE.std_logic_1164.all;
-
-use     work.utils.all;
-use     work.axi4stream.all;
+use work.DRP.all;
 
 
-entity AXI4Stream_Termination_Slave is
+package DRP_Sized is
 	generic (
-		VALUE     : std_logic := '0'
+		ADDRESS_BITS  : natural;
+		DATA_BITS     : natural
 	);
-	port ( 
-		-- IN Port
-		In_M2S    : in  T_AXI4Stream_M2S;
-		In_S2M    : out T_AXI4Stream_S2M
+	
+	
+	subtype SIZED_S2M is T_DRP_Bus_S2M(
+		DataOut(DATA_BITS -1 downto 0)
 	);
-end entity;
 
+	subtype SIZED_M2S is T_DRP_Bus_M2S(
+		Address(ADDRESS_BITS -1 downto 0),
+		DataIn(DATA_BITS -1 downto 0)
+	);
+	
+	subtype SIZED_M2S_VECTOR is T_DRP_Bus_M2S_VECTOR(open)(
+		Address(ADDRESS_BITS -1 downto 0),
+		DataIn(DATA_BITS -1 downto 0)
+	);
+	
+	subtype SIZED_S2M_VECTOR is T_DRP_Bus_S2M_VECTOR(open)(
+		DataOut(DATA_BITS -1 downto 0)
+	);
 
-architecture rtl of AXI4Stream_Termination_Slave is
-  constant DataBits : natural := In_M2S.Data'length;
-  constant UserBits : natural := In_M2S.User'length;
-  signal M2S_dummy : In_M2S'subtype;
-begin
-
-	In_S2M <= Initialize_AXI4Stream_S2M(UserBits, VALUE);
-	M2S_dummy <= In_M2S;
-
-end architecture;
+end package;

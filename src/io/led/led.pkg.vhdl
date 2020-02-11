@@ -2,25 +2,26 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:				 	Stefan Unrein
---                  Patrick Lehmann
+-- Authors:                 Stefan Unrein
+--                          Max Kraft-Kugler
+--                          Patrick Lehmann
+--                          Asif Iqbal
 --
--- Entity:				 	A slave-side bus termination module for AXI4-Stream.
+-- Package:                 PoC.io.led
 --
 -- Description:
 -- -------------------------------------
--- This entity is a bus termination module for AXI4-Stream that represents a
--- dummy slave.
+--      For detailed documentation see below.
 --
 -- License:
 -- =============================================================================
--- Copyright 2018-2019 PLC2 Design GmbH, Germany
+-- Copyright 2017-2019 PLC2 Design GmbH, Germany
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--      http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,29 +33,29 @@
 library IEEE;
 use     IEEE.std_logic_1164.all;
 
-use     work.utils.all;
-use     work.axi4stream.all;
 
-
-entity AXI4Stream_Termination_Slave is
-	generic (
-		VALUE     : std_logic := '0'
-	);
-	port ( 
-		-- IN Port
-		In_M2S    : in  T_AXI4Stream_M2S;
-		In_S2M    : out T_AXI4Stream_S2M
-	);
-end entity;
-
-
-architecture rtl of AXI4Stream_Termination_Slave is
-  constant DataBits : natural := In_M2S.Data'length;
-  constant UserBits : natural := In_M2S.User'length;
-  signal M2S_dummy : In_M2S'subtype;
-begin
-
-	In_S2M <= Initialize_AXI4Stream_S2M(UserBits, VALUE);
-	M2S_dummy <= In_M2S;
-
-end architecture;
+package led is
+	type T_IO_LED_COLORED_RGB is record
+		R : std_logic;
+		G : std_logic;
+		B : std_logic;
+	end record;
+	type T_IO_LED_COLORED_RGB_VECTOR is array(natural range <>) of T_IO_LED_COLORED_RGB;
+	
+	type T_IO_LED_COLORED_RGBW is record
+		R : std_logic;
+		G : std_logic;
+		B : std_logic;
+		W : std_logic;
+	end record;
+	type T_IO_LED_COLORED_RGBW_VECTOR is array(natural range <>) of T_IO_LED_COLORED_RGBW;
+	
+	type T_IO_LED_COLORED_RGBWW is record
+		R : std_logic;
+		G : std_logic;
+		B : std_logic;
+		WW : std_logic; --Warm White
+		CW : std_logic; --Cold White
+	end record;
+	type T_IO_LED_COLORED_RGBWW_VECTOR is array(natural range <>) of T_IO_LED_COLORED_RGBWW;
+end package;
