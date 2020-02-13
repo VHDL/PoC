@@ -145,7 +145,6 @@ begin
 		signal Offset_i                : T_SLSV(0 to Number_of_Offsets -1)(Offset_Bits -1 downto 0);
 		signal position                : unsigned(log2ceilnz(Number_of_Offsets) -1 downto 0) := (others => '0');
 	begin
-		assert false report "IF_high = " & integer'image(IF_high) & "; IF_low = " & integer'image(IF_low) severity warning;
 		Match_IF(i)   <= '1' when unsigned(In_AXI4_M2S.AWAddr(IF_high downto IF_low)) = to_unsigned(i, IF_high - IF_low +1) else '0';
 		Offset_Pos(i) <= position;
 		Offset_i      <= Offset((i * Number_of_Offsets) to ((i + 1) * Number_of_Offsets) -1);
