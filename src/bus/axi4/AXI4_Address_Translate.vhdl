@@ -120,7 +120,7 @@ begin
 	
 	--Read Port Signals
 	Out_AXI4_M2S.ARValid     <= In_AXI4_M2S.ARValid ;
-	Out_AXI4_M2S.ARAddr      <= In_AXI4_M2S.ARAddr  ;
+	Out_AXI4_M2S.ARAddr      <= resize(In_AXI4_M2S.ARAddr, Out_AXI4_M2S.ARAddr'length);
 	Out_AXI4_M2S.ARCache     <= In_AXI4_M2S.ARCache ;
 	Out_AXI4_M2S.ARProt      <= In_AXI4_M2S.ARProt  ;
 	Out_AXI4_M2S.ARID        <= In_AXI4_M2S.ARID    ;
