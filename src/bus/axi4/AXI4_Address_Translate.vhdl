@@ -120,7 +120,7 @@ begin
 	
 	--Read Port Signals
 	Out_AXI4_M2S.ARValid     <= In_AXI4_M2S.ARValid ;
-	Out_AXI4_M2S.ARAddr      <= In_AXI4_M2S.ARAddr  ;
+	Out_AXI4_M2S.ARAddr      <= resize(In_AXI4_M2S.ARAddr, Out_AXI4_M2S.ARAddr'length);
 	Out_AXI4_M2S.ARCache     <= In_AXI4_M2S.ARCache ;
 	Out_AXI4_M2S.ARProt      <= In_AXI4_M2S.ARProt  ;
 	Out_AXI4_M2S.ARID        <= In_AXI4_M2S.ARID    ;
@@ -145,7 +145,6 @@ begin
 		signal Offset_i                : T_SLSV(0 to Number_of_Offsets -1)(Offset_Bits -1 downto 0);
 		signal position                : unsigned(log2ceilnz(Number_of_Offsets) -1 downto 0) := (others => '0');
 	begin
-		assert false report "IF_high = " & integer'image(IF_high) & "; IF_low = " & integer'image(IF_low) severity warning;
 		Match_IF(i)   <= '1' when unsigned(In_AXI4_M2S.AWAddr(IF_high downto IF_low)) = to_unsigned(i, IF_high - IF_low +1) else '0';
 		Offset_Pos(i) <= position;
 		Offset_i      <= Offset((i * Number_of_Offsets) to ((i + 1) * Number_of_Offsets) -1);
