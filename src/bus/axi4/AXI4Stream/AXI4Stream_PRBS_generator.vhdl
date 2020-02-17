@@ -38,6 +38,9 @@ use     PoC.axi4stream.all;
 
 
 entity AXI4Stream_PRBS_generator is
+	generic (
+		SEED     : natural := 0
+	);
 	port (
 		Clock    : in  std_logic;
 		Reset    : in  std_logic;
@@ -58,7 +61,7 @@ begin
 	prng_inst : entity PoC.arith_prng
 	generic map(
 		BITS => DATA_BITS,
-		SEED => (DATA_BITS - 1 downto 0 => '0')
+		SEED => std_logic_vector(to_unsigned(SEED, DATA_BITS))
 	)
 	port map(
 		clk  => Clock,
