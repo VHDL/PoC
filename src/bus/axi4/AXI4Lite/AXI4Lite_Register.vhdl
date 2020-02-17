@@ -112,7 +112,9 @@ architecture rtl of AXI4Lite_Register is
 	
 	
 	signal hit_r        : std_logic_vector(CONFIG'Length - 1 downto 0);
+	signal is_high_r    : std_logic;
 	signal hit_w        : std_logic_vector(CONFIG'Length - 1 downto 0);
+	signal is_high_w    : std_logic;
 
 	function Register_init(Config : T_AXI4_Register_Description_Vector) return T_SLVV is
 		variable Result : T_SLVV(0 to Config'Length - 1)(DATA_BITS - 1 downto 0);
@@ -367,24 +369,38 @@ begin
 	
 	
 	------------ Address Hit's ---------------------------
-	hit_gen_r : for i in hit_r'range generate
-		signal config_addr : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
-	begin
-		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
-		hit_r(i)    <= '1' when (std_logic_vector(config_addr) = axi_araddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
-												and ((unsigned(axi_araddr(axi_araddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0) or IGNORE_HIGH_ADDR)
-												else '0';
+	high_addr_gen : if (REG_ADDRESS_BITS >= ADDRESS_BITS) or (IGNORE_HIGH_ADDR = TRUE) generate
+		is_high_r <= '1';
+		is_high_w <= '1';
+	else generate
+		is_high_r <= '1' when axi_araddr(axi_araddr'high downto REG_ADDRESS_BITS - ADDR_LSB) = (axi_araddr'high downto REG_ADDRESS_BITS - ADDR_LSB => '0') else '0';
+		is_high_w <= '1' when axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB) = (axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB => '0') else '0';
 	end generate;
-		
+	
+	
+	hit_gen_r : for i in hit_r'range generate
+		signal config_addr  : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
+		signal is_config    : std_logic;
+	begin
+		config_addr  <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
+		is_config    <= '1' when std_logic_vector(config_addr) = axi_araddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) else '0';
+		hit_r(i)     <= '1' when (is_config = '1') and (is_high_r = '1') else '0';
+	end generate;
+	
+	
+	
+	
 	hit_gen_w : for i in hit_w'range generate
 		signal config_addr : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
+		signal is_config    : std_logic;
 		signal RegisterFile_ReadPort_hit_i : std_logic_vector(RegisterFile_ReadPort_hit'range);
 	begin
 		RegisterFile_ReadPort_hit_i(i) <= slv_reg_wren when hit_w(i) = '1' and CONFIG(i).rw_config = readWriteable else '0';
 		RegisterFile_ReadPort_hit(i)   <= RegisterFile_ReadPort_hit_i(i) when rising_edge(S_AXI_ACLK);
 		config_addr <= CONFIG(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
-		hit_w(i)    <= '1' when (std_logic_vector(config_addr) = axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0))
-												and ((unsigned(axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB)) = 0) or IGNORE_HIGH_ADDR)
+		is_config   <= '1' when std_logic_vector(config_addr) = axi_awaddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) else '0';
+		hit_w(i)    <= '1' when (is_config = '1')
+												and (is_high_w = '1')
 												and ((CONFIG(i).rw_config = readWriteable) or (CONFIG(i).rw_config = latchValue_clearOnWrite) 
 															or (CONFIG(i).rw_config = latchHighBit_clearOnWrite) or (CONFIG(i).rw_config = latchLowBit_clearOnWrite))
 												else '0';
