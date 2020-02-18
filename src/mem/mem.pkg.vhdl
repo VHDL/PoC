@@ -186,7 +186,7 @@ package body mem is
 	begin
 		if VENDOR = VENDOR_XILINX then
 			case ram_style is
-				when RAM_TYPE_AUTO      => return "";
+				when RAM_TYPE_AUTO      => return "auto";
 				when RAM_TYPE_LUT_RAM   => return "distributed";
 				when RAM_TYPE_BLOCK_RAM => return "block";
 				when RAM_TYPE_ULTRA_RAM => return "ultra";
