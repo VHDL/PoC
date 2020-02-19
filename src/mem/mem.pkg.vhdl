@@ -200,12 +200,10 @@ package body mem is
 	begin
 		if a <= 7 then
 			return RAM_TYPE_LUT_RAM;
-		elsif a <= 11 then
-			return RAM_TYPE_BLOCK_RAM;
-		elsif scale(real(d) / 72.0, 0.0, 1.0) > 0.8 then
+		elsif (scale(real(d) / 72.0, 0.0, 1.0) > 0.8) and (a >= 11) then
 			return RAM_TYPE_ULTRA_RAM;
 		else
-			return RAM_TYPE_AUTO;
+			return RAM_TYPE_BLOCK_RAM;
 		end if;
 	end function;
 
