@@ -137,8 +137,8 @@ begin
 		end function;
 
 		signal ram : ram_t	:= ocram_InitMemory(FILENAME);
-		attribute ramstyle  of ram : signal is get_ramstyle_string(RAM_TYPE_i);
-		attribute ram_style of ram : signal is get_ram_style_string(RAM_TYPE_i);
+		attribute ramstyle  of ram : signal is get_ramstyle(RAM_TYPE_i);
+		attribute ram_style of ram : signal is get_ram_style(RAM_TYPE_i);
 
 	begin
 		process(wclk)
