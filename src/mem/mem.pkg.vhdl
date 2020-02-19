@@ -178,7 +178,7 @@ package body mem is
 			assert ram_style = RAM_TYPE_AUTO report "RAM_TYPE '" & T_RAM_TYPE'image(ram_style) & "' not supported for Altera Devices!" severity warning;
 			return "no_rw_check";
 		else
-			return "";
+			return "auto";
 		end if;
 	end function;
 	
@@ -192,7 +192,7 @@ package body mem is
 				when RAM_TYPE_ULTRA_RAM => return "ultra";
 			end case;
 		else
-			return "";
+			return "auto";
 		end if;
 	end function;
 	
