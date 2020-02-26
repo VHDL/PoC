@@ -42,6 +42,8 @@ entity stream_FrameGenerator is
   generic (
     DATA_BITS					: positive														:= 8;
 		WORD_BITS					: positive														:= 16
+--		APPEND						: T_FRAMEGEN_APPEND										:= FRAMEGEN_APP_NONE;
+--		FRAMEGROUPS				: T_FRAMEGEN_FRAMEGROUP_VECTOR_8			:= (0 => C_FRAMEGEN_FRAMEGROUP_EMPTY)
   );
 	port (
 		Clock							: in	std_logic;
@@ -50,9 +52,9 @@ entity stream_FrameGenerator is
 		Command						: in	T_FRAMEGEN_COMMAND;
 		Status						: out	T_FRAMEGEN_STATUS;
 		-- Control interface
---		Pause							: in	T_SLV_16;
---		FrameGroupIndex		: in	T_SLV_8;
---		FrameIndex				: in	T_SLV_8;
+		Pause							: in	T_SLV_16;
+		FrameGroupIndex		: in	T_SLV_8;
+		FrameIndex				: in	T_SLV_8;
 		Sequences					: in	T_SLV_16;
 		FrameLength				: in	T_SLV_16;
 		-- OUT Port
@@ -66,10 +68,11 @@ end entity;
 
 
 architecture rtl of stream_FrameGenerator is
+	constant N_arith	: natural := integer((real(DATA_BITS) / 168.0) +0.5);--(DATA_BITS + 83) / 168;integer(real(DATA_BITS9 / 168.0) +0.5);
 	type T_STATE is (
 		ST_IDLE,
-			ST_SEQUENCE_SOF, ST_SEQUENCE_SOF_D,	ST_SEQUENCE_DATA,	ST_SEQUENCE_EOF,
-			ST_RANDOM_SOF, ST_RANDOM_SOF_D,		ST_RANDOM_DATA,		ST_RANDOM_EOF,
+			ST_SEQUENCE_SOF,	ST_SEQUENCE_DATA,	ST_SEQUENCE_EOF,
+			ST_RANDOM_SOF,		ST_RANDOM_DATA,		ST_RANDOM_EOF,
 		ST_ERROR
 	);
 
@@ -202,12 +205,10 @@ begin
 						Status										<= FRAMEGEN_STATUS_COMPLETE;
 						NextState									<= ST_IDLE;
 					else
-						NextState									<= ST_SEQUENCE_SOF_D;
+						NextState									<= ST_SEQUENCE_SOF;
 					end if;
 --					end if;
 				end if;
-      when ST_SEQUENCE_SOF_D =>
-        NextState									<= ST_SEQUENCE_SOF;
 
 			-- generate random numbers
 			-- ----------------------------------------------------------------------
@@ -240,22 +241,12 @@ begin
 				Out_Data									<= PRNG_Data;
 				Out_EOF										<= '1';
 
+				FrameLengthCounter_rst		<= '1';
+
 				if (Out_Ack	 = '1') then
-				  SequencesCounter_en			<= '1';
-				  FrameLengthCounter_rst  <= '1';
-				  
 					PRNG_rst								<= '1';
-					
-					if SequencesCounter_us = (unsigned(Sequences) - 1) then
-						Status										<= FRAMEGEN_STATUS_COMPLETE;
-						NextState									<= ST_IDLE;
-					else
-						NextState									<= ST_RANDOM_SOF_D;
-					end if;
+					NextState								<= ST_IDLE;
 				end if;
-				
-      when ST_RANDOM_SOF_D =>
-        NextState									<= ST_RANDOM_SOF;
 
 			when ST_ERROR =>
 				Status										<= FRAMEGEN_STATUS_ERROR;
@@ -297,16 +288,20 @@ begin
 		end if;
 	end process;
 
-	PRNG : entity PoC.arith_prng
-    generic map (
-      BITS		=> DATA_BITS,
-      SEED    => "10101010101010101010101010101011010101010"
-		)
-    port map (
-      clk			=> Clock,
-      rst			=> PRNG_rst,
-      got			=> PRNG_got,
-      val			=> PRNG_Data
-     );
+	arith_gen : for i in 0 to N_arith -1 generate
+		constant high : natural := ite(i = (N_arith -1), DATA_BITS -1, (i * 168) + 167);
+	begin
+		PRNG : entity PoC.arith_prng
+			generic map (
+				BITS		=> ite(i = (N_arith -1), DATA_BITS -(i * 168), 168),
+				SEED		=> std_logic_vector(unsigned'("110001100011101100101111110")+i)
+			)
+			port map (
+				clk			=> Clock,
+				rst			=> Reset,--PRNG_rst,
+				got			=> PRNG_got,
+				val			=> PRNG_Data(high downto i * 168)
+			 );
+	 end generate;
 
 end architecture;
