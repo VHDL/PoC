@@ -56,6 +56,8 @@ package io is
 		P			: std_logic;
 		N			: std_logic;
 	end record;
+	
+	constant C_IO_LVDS_INIT : T_IO_LVDS := ('Z', 'Z');
 
 	-- Do not use this type for ``inout`` ports of synthesizable IP cores to drive
 	-- values in both directions, see also
