@@ -165,7 +165,8 @@ begin
 
 	process(FSM_State,
 					Command,
-					TX_Status, TX_Error, TX_Meta_Payload_nxt,
+					TX_Status, TX_Error, TX_Meta_Payload_nxt, TX_Meta_rst, TX_Meta_IPv4Address_nxt, IPv4Address_Data,
+					RX_Meta_SrcIPv4Address_Data, 
 					RX_Status, RX_Error, RX_Meta_Identification, RX_Meta_SequenceNumber, RX_Meta_Payload_Data, RX_Meta_Payload_last)
 	begin
 		FSM_NextState											<= FSM_State;

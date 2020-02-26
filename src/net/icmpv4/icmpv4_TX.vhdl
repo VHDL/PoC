@@ -123,7 +123,8 @@ begin
 		end if;
 	end process;
 
-	process(State, Command, Out_Ack, PayloadROM_Reader_ov, PayloadROM_Data)
+	process(State, Command, Out_Ack, PayloadROM_Reader_ov, PayloadROM_Data, In_Meta_Type, In_Meta_Code, 
+					Checksum, In_Meta_Identification, In_Meta_SequenceNumber, In_Meta_Payload_Data)
 	begin
 		NextState													<= State;
 
@@ -311,4 +312,5 @@ begin
 
 	In_Meta_IPv4Address_nxt					<= Out_Meta_DestIPv4Address_nxt;
 	Out_Meta_DestIPv4Address_Data		<= In_Meta_IPv4Address_Data;
+	In_Meta_rst	<= Out_Meta_rst;
 end architecture;

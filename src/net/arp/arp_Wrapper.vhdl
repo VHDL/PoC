@@ -123,6 +123,7 @@ architecture rtl of arp_Wrapper is
 	signal FSMPool_IPSeq1_SenderIPv4Address_rst		: std_logic;
 	signal FSMPool_IPSeq1_SenderIPv4Address_nxt		: std_logic;
 
+	--signal FSMPool_BCRcv_Clear										: std_logic;
 	signal FSMPool_BCRcv_Address_rst							: std_logic;
 	signal FSMPool_BCRcv_SenderMACAddress_nxt			: std_logic;
 	signal FSMPool_BCRcv_SenderIPv4Address_nxt		: std_logic;
@@ -146,9 +147,12 @@ architecture rtl of arp_Wrapper is
 
 	-- broadcast receiver
 	--CSE Interface
-	signal BCRcv_Command													: T_NET_ARP_RECEIVER_COMMAND;
 	signal BCRcv_Status														: T_NET_ARP_RECEIVER_STATUS;
+	signal BCRcv_Command													: T_NET_ARP_RECEIVER_COMMAND;
+	--signal BCRcv_Error														: std_logic;
 
+	-- signal BCRcv_RequestReceived									: std_logic;
+	-- signal BCRcv_AnswerReceived										: std_logic;
 	signal BCRcv_SenderMACAddress_Data						: T_SLV_8;
 	signal BCRcv_SenderIPv4Address_Data						: T_SLV_8;
 	signal BCRcv_TargetIPv4Address_Data						: T_SLV_8;
@@ -198,6 +202,7 @@ architecture rtl of arp_Wrapper is
 	signal FSMCache_IPSeq2_SenderIPv4Address_rst	: std_logic;
 	signal FSMCache_IPSeq2_SenderIPv4Address_nxt	: std_logic;
 
+	--signal FSMCache_UCRcv_Clear										: std_logic;
 	signal FSMCache_UCRcv_Address_rst							: std_logic;
 	signal FSMCache_UCRcv_SenderMACAddress_nxt		: std_logic;
 	signal FSMCache_UCRcv_SenderIPv4Address_nxt		: std_logic;
@@ -229,9 +234,11 @@ architecture rtl of arp_Wrapper is
 
 	-- unicast receiver
 	--CSE Interface
-	signal FSMCache_UCRcv_Command									: T_NET_ARP_RECEIVER_COMMAND;
 	signal UCRcv_Status														: T_NET_ARP_RECEIVER_STATUS;
+	signal UCRcv_Command													: T_NET_ARP_RECEIVER_COMMAND;
 	
+	-- signal UCRcv_Error														: std_logic;
+	-- signal UCRcv_ResponseReceived									: std_logic;
 	signal UCRcv_SenderMACAddress_Data						: T_SLV_8;
 	signal UCRcv_SenderIPv4Address_Data						: T_SLV_8;
 	signal UCRcv_TargetMACAddress_Data						: T_SLV_8;
@@ -263,12 +270,11 @@ architecture rtl of arp_Wrapper is
 	signal BCReq_TX_Meta_DestMACAddress_rst				: std_logic;
 	signal BCReq_TX_Meta_DestMACAddress_nxt				: std_logic;
 	signal BCReq_TX_Meta_DestMACAddress_Data			: T_SLV_8;
+	
+	signal IPSeq1_Input														: std_logic_vector(31 downto 0);
 
-	constant IPV4_ADDRESS_COUNT									  : positive := INITIAL_IPV4ADDRESSES'length;
-	signal IPv4_Address_Counter										: unsigned (log2ceilnz(IPV4_ADDRESS_COUNT) - 1 downto 0) := (others => '0');
-	signal IPv4_Address_Counter_en								: std_logic;
-	signal IPv4_Address_Counter_rst								: std_logic;
-
+	constant IPv4_Address_Length									: positive := INITIAL_IPV4ADDRESSES'length;
+	signal IPv4_Address_Counter										: unsigned (log2ceilnz(IPv4_Address_Length) - 1 downto 0) := (others => '0');
 begin
 	-- latched inputs (high-active)
 	IPPool_Announce_l	<= ((IPPool_Announce or IPPool_Announce_l) and not IPPool_Announced_i) when rising_edge(Clock);
@@ -307,12 +313,14 @@ begin
 			Clock									=> Clock,
 			Reset									=> Reset,
 	
-			Input									=> to_slv(INITIAL_IPV4ADDRESSES(to_integer(IPv4_Address_Counter))),
+			Input									=> IPSeq1_Input,
 			rst										=> FSMPool_IPSeq1_SenderIPv4Address_rst,
 			rev										=> '1',
 			nxt										=> FSMPool_IPSeq1_SenderIPv4Address_nxt,
 			Output								=> IPSeq1_SenderIPv4Address_Data
 		);
+		
+	IPSeq1_Input	<= to_slv(INITIAL_IPV4ADDRESSES(to_integer(IPv4_Address_Counter)));
 
 	process(Clock)
 	begin
@@ -337,6 +345,10 @@ begin
 	begin
 		FSMPool_NextState											<= FSMPool_State;
 
+--		FSMPool_Command						<= NET_ARP_CACHE_CMD_NONE;
+--		FSMPool_NewIPv4Address_Data		<= UCRcv_SenderIPv4Address_Data;
+--		FSMPool_NewMACAddress_Data			<= UCRcv_SenderMACAddress_Data;
+
 		IPPool_Announced_i										<= '0';
 
 		FSMPool_MACSeq1_SenderMACAddress_rst	<= '0';
@@ -346,7 +358,7 @@ begin
 		FSMPool_IPSeq1_SenderIPv4Address_nxt	<= '0';
 		
 		BCRcv_Command													<= NET_ARP_RECEIVER_CMD_NONE;
-
+		-- FSMPool_BCRcv_Clear										<= '0';
 		FSMPool_BCRcv_Address_rst							<= '0';
 		FSMPool_BCRcv_SenderMACAddress_nxt		<= '0';
 		FSMPool_BCRcv_SenderIPv4Address_nxt		<= '0';
@@ -357,9 +369,6 @@ begin
 
 		FSMPool_UCRsp_SendResponse						<= '0';
 		FSMPool_UCRsp_SenderMACAddress_Data		<= MACSeq1_SenderMACAddress_Data;
-		
-		IPv4_Address_Counter_en					<= '0';
-		IPv4_Address_Counter_rst				<= '0';
 		
 		if FSMPool_State /= ST_SEND_ANNOUNCE then
 			FSMPool_UCRsp_SenderIPv4Address_Data	<= BCRcv_TargetIPv4Address_Data;
@@ -373,13 +382,13 @@ begin
 		
 		case FSMPool_State is
 			when ST_IDLE =>
-				if (BCRcv_Status = NET_ARP_RECEIVER_STATUS_REQUEST_RECEIVED) then 
+				if (BCRcv_Status = NET_ARP_RECEIVER_STATUS_RequestReceived) then 
 					FSMPool_IPPool_Lookup									<= '1';
 					FSMPool_BCRcv_TargetIPv4Address_nxt		<= IPPool_IPv4Address_nxt;
 
 					FSMPool_NextState											<= ST_IPPOOL_WAIT;
 					
-				elsif (BCRcv_Status = NET_ARP_RECEIVER_STATUS_ANSWER_RECEIVED) then
+				elsif (BCRcv_Status = NET_ARP_RECEIVER_STATUS_AnswerReceived) then
 					-- FSMPool_BCRcv_Clear										<= '1';
 					BCRcv_Command													<= NET_ARP_RECEIVER_CMD_CLEAR;
 					
@@ -400,6 +409,7 @@ begin
 
 					FSMPool_NextState											<= ST_SEND_RESPONSE;
 				elsif (IPPool_PoolResult = CACHE_RESULT_MISS) then
+					-- FSMPool_BCRcv_Clear										<= '1';
 					BCRcv_Command													<= NET_ARP_RECEIVER_CMD_CLEAR;
 					FSMPool_NextState											<= ST_IDLE;
 				end if;
@@ -412,40 +422,34 @@ begin
 				FSMPool_BCRcv_TargetIPv4Address_nxt			<= UCRsp_SenderIPv4Address_nxt;
 
 				if (UCRsp_Complete = '1') then
+					-- FSMPool_BCRcv_Clear							<= '1';
 					BCRcv_Command													<= NET_ARP_RECEIVER_CMD_CLEAR;
-					FSMPool_NextState								      <= ST_IDLE;
+					FSMPool_NextState								<= ST_IDLE;
 				end if;
 
 			when ST_SEND_ANNOUNCE =>
+--				FSMPool_BCRcv_SenderMACAddress_nxt			<= UCRsp_TargetMACAddress_nxt;
+--				FSMPool_BCRcv_SenderIPv4Address_nxt			<= UCRsp_TargetIPv4Address_nxt;
 				FSMPool_MACSeq1_SenderMACAddress_nxt		<= UCRsp_SenderMACAddress_nxt;
 				FSMPool_IPSeq1_SenderIPv4Address_nxt		<= UCRsp_SenderIPv4Address_nxt;
 				if (UCRsp_Complete = '1') then
-					if (IPv4_Address_Counter < (IPv4_Address_Length - 1)) then
-						IPv4_Address_Counter_en				<= '1';
+					if IPv4_Address_Counter < (IPv4_Address_Length - 1) then
+--						FSMPool_UCRsp_SendResponse						<= '1';
+--						FSMPool_MACSeq1_SenderMACAddress_rst	<= '1';
+--						FSMPool_IPSeq1_SenderIPv4Address_rst	<= '1';
+						IPv4_Address_Counter <= IPv4_Address_Counter + 1;
 					else
-						IPPool_Announced_i					<= '1';
-						IPv4_Address_Counter_rst			<= '1';
+						IPPool_Announced_i											<= '1';
 						
+						IPv4_Address_Counter										<= (others => '0');
 					end if;
-
-					FSMPool_NextState											<= ST_IDLE;
+					FSMPool_NextState												<= ST_IDLE;
 				end if;
 
 			when ST_ERROR =>
 				null;
 
 		end case;
-	end process;
-	
-	IPv4_Address_counter_proc : process(Clock)
-	begin
-		if rising_edge(Clock) then
-			if IPv4_Address_Counter_rst = '1' then
-				IPv4_Address_Counter				<= (others => '0');
-			elsif IPv4_Address_Counter_en = '1' then
-				IPv4_Address_Counter                <= IPv4_Address_Counter + 1;
-			end if;
-		end if;
 	end process;
 
 	BCRcv : entity PoC.arp_BroadCast_Receiver
@@ -469,9 +473,14 @@ begin
 			RX_Meta_DestMACAddress_Data		=> Eth_BC_RX_Meta_DestMACAddress_Data,
 
 			--CSE Interface
-			Command                       => BCRcv_Command,
-			Status                        => BCRcv_Status,
+			Status												=> BCRcv_Status,
+			Command												=> BCRcv_Command,
+			
+			--Clear													=> FSMPool_BCRcv_Clear,
+			--Error													=> BCRcv_Error,
 
+			-- RequestReceived								=> BCRcv_RequestReceived,
+			-- AnswerReceived								=> BCRcv_AnswerReceived,
 			Address_rst										=> FSMPool_BCRcv_Address_rst,
 			SenderMACAddress_nxt					=> FSMPool_BCRcv_SenderMACAddress_nxt,
 			SenderMACAddress_Data					=> BCRcv_SenderMACAddress_Data,
@@ -532,7 +541,6 @@ begin
 			TX_Meta_DestMACAddress_nxt		=> UCRsp_TX_Meta_DestMACAddress_nxt,
 			TX_Meta_DestMACAddress_Data		=> UCRsp_TX_Meta_DestMACAddress_Data
 		);
-
 -- =============================================================================
 -- ARPCache Path
 -- =============================================================================
@@ -618,8 +626,8 @@ begin
 		FSMCache_BCReq_TargetMACAddress_Data				<= x"00";
 		FSMCache_BCReq_TargetIPv4Address_Data				<= IPCache_IPv4Address_Data;
 		
-		FSMCache_UCRcv_Command											<= NET_ARP_RECEIVER_CMD_NONE;
-
+		UCRcv_Command																<= NET_ARP_RECEIVER_CMD_NONE;
+		--FSMCache_UCRcv_Clear												<= UCRcv_ResponseReceived;		-- discard all ARP packets, which are not requested / expected
 		FSMCache_UCRcv_Address_rst									<= '0';
 		FSMCache_UCRcv_SenderMACAddress_nxt					<= '0';
 		FSMCache_UCRcv_SenderIPv4Address_nxt				<= '0';
@@ -634,8 +642,8 @@ begin
 					FSMCache_NextState										<= ST_CACHE;
 				end if;
 				
-				if (UCRcv_Status = NET_ARP_RECEIVER_STATUS_REQUEST_RECEIVED) then -- TODO: Handle Unicast Request
-					FSMCache_UCRcv_Command								<= NET_ARP_RECEIVER_CMD_CLEAR;
+				if (UCRcv_Status = NET_ARP_RECEIVER_STATUS_RequestReceived) then--##TODO: Handle Unicast Request
+					UCRcv_Command													<= NET_ARP_RECEIVER_CMD_CLEAR;
 				end if;
 
 			when ST_CACHE =>
@@ -670,8 +678,8 @@ begin
 					FSMCache_NextState										<= ST_CACHE;
 				end if;
 				
-				if (UCRcv_Status = NET_ARP_RECEIVER_STATUS_RequestReceived) then -- TODO: Handle Unicast Request
-					FSMCache_UCRcv_Command								<= NET_ARP_RECEIVER_CMD_CLEAR;
+				if (UCRcv_Status = NET_ARP_RECEIVER_STATUS_RequestReceived) then--##TODO: Handle Unicast Request
+					UCRcv_Command													<= NET_ARP_RECEIVER_CMD_CLEAR;
 				end  if;
 
 			when ST_SEND_BROADCAST_REQUEST =>
@@ -698,13 +706,14 @@ begin
 				end if;
 
 			when ST_WAIT_FOR_UNICAST_RESPONSE =>
+				--FSMCache_UCRcv_Clear										<= '0';
 				FSMCache_ARPReq_TimeoutCounter_rst			<= '0';
 				-- TODO: check received ARP packet data with ethernet metadata
 
 				if (UCRcv_Status = NET_ARP_RECEIVER_STATUS_ERROR) then 
 					-- FIXME: error handling
 					FSMCache_NextState										<= ST_ERROR;
-				elsif (UCRcv_Status = NET_ARP_RECEIVER_STATUS_ANSWER_RECEIVED) then 
+				elsif (UCRcv_Status = NET_ARP_RECEIVER_STATUS_AnswerReceived) then 
 					FSMCache_ARPCache_Command							<= NET_ARP_ARPCACHE_CMD_ADD;
 					FSMCache_UCRcv_SenderMACAddress_nxt		<= ARPCache_NewMACAddress_nxt;
 					FSMCache_UCRcv_SenderIPv4Address_nxt	<= ARPCache_NewIPv4Address_nxt;
@@ -717,11 +726,13 @@ begin
 				end if;
 
 			when ST_UPDATE_CACHE =>
+				--FSMCache_UCRcv_Clear										<= '0';
 				FSMCache_UCRcv_SenderMACAddress_nxt			<= ARPCache_NewMACAddress_nxt;
 				FSMCache_UCRcv_SenderIPv4Address_nxt		<= ARPCache_NewIPv4Address_nxt;
 
 				if (ARPCache_Status = NET_ARP_ARPCACHE_STATUS_UPDATE_COMPLETE) then
-					FSMCache_UCRcv_Command								<= NET_ARP_RECEIVER_CMD_CLEAR;
+					UCRcv_Command													<= NET_ARP_RECEIVER_CMD_CLEAR;
+					--FSMCache_UCRcv_Clear									<= '1';
 					IPCache_IPv4Address_rst								<= '1';
 
 					FSMCache_NextState										<= ST_CACHE;
@@ -769,9 +780,12 @@ begin
 			RX_Meta_DestMACAddress_Data		=> Eth_UC_RX_Meta_DestMACAddress_Data,
 
 			--CSE Interface
-			Command												=> FSMCache_UCRcv_Command,
 			Status												=> UCRcv_Status,
+			Command												=> UCRcv_Command,
+			-- Clear													=> FSMCache_UCRcv_Clear,
+			-- Error													=> UCRcv_Error,
 
+			-- ResponseReceived							=> UCRcv_ResponseReceived,
 			Address_rst										=> FSMCache_UCRcv_Address_rst,
 			SenderIPAddress_nxt						=> FSMCache_UCRcv_SenderIPv4Address_nxt,
 			SenderIPAddress_Data					=> UCRcv_SenderIPv4Address_Data,
@@ -870,6 +884,7 @@ begin
 		signal StmMux_Out_Meta_rev	: std_logic_vector(META_REV_BITS - 1 downto 0);
 
 	begin
+
 		-- StmMux Port 0 - broadcast requester
 		StmMux_In_Valid(LLMUX_PORT_BCREQ)				<= BCReq_TX_Valid;
 		assign_row(StmMux_In_Data, BCReq_TX_Data,	LLMUX_PORT_BCREQ);

@@ -118,16 +118,6 @@ package net is
 	end record;
 
 	-- FPGA <=> PHY physical interface: SGMII (Serial GMII)
-	type	T_SGMII_LANE			is record
-		TX_P									: std_logic;
-		TX_N									: std_logic;
-		
-		RX_P									: std_logic;
-		RX_N									: std_logic;
-	end record;
-	
-	type 		T_SGMII_LANE_VECTOR is array (natural range <>) of T_SGMII_LANE;
-	
 	type T_NET_ETH_PHY_INTERFACE_SGMII is record
 		DGB_SystemClock_In		: std_logic;
 		DGB_AutoNeg_Restart		: std_logic;
@@ -136,20 +126,11 @@ package net is
 		SGMII_TXRefClock_Out	: std_logic;
 		SGMII_RXRefClock_Out	: std_logic;
 
-		Lane									: T_SGMII_LANE_VECTOR;--(3 downto 0);
-	end record;
-	
-	-- FPGA <=> PHY physical interface: XGMII
-	type		XGMII_LANE is record
-		Data		: std_logic_vector(7 downto 0);
-		Control	: std_logic;
-	end record;
-	
-	type		XGMII_LANE_VECTOR is array (natural range <>) of XGMII_LANE;
-	
-	type T_NET_ETH_PHY_INTERFACE_XGMII is record
-		RefClock						: std_logic;
-		Lane								: XGMII_LANE_VECTOR(3 downto 0);
+		TX_n									: std_logic;
+		TX_p									: std_logic;
+
+		RX_n									: std_logic;
+		RX_p									: std_logic;
 	end record;
 
 	-- FPGA <=> PHY management interface: MDIO (Management Data Input/Output)
@@ -167,58 +148,10 @@ package net is
 	type T_NET_ETH_PHY_INTERFACES is record
 		GMII									: T_NET_ETH_PHY_INTERFACE_GMII;
 		RGMII									: T_NET_ETH_PHY_INTERFACE_RGMII;
-		--XGMII									: T_NET_ETH_PHY_INTERFACE_XGMII;
 		SGMII									: T_NET_ETH_PHY_INTERFACE_SGMII;
 		MDIO									: T_NET_ETH_PHY_INTERFACE_MDIO;
 		Common								: T_NET_ETH_PHY_INTERFACE_COMMON;
 	end record;
-
-	constant C_NET_ETH_PHY_INTERFACE_GMII_INIT : T_NET_ETH_PHY_INTERFACE_GMII := (
-		RX_RefClock				=> 'Z',
-		TX_Clock					=> 'Z',
-		TX_Valid					=> 'Z',
-		TX_Data						=> (others => 'Z'),
-		TX_Error					=> 'Z',
-		RX_Clock					=> 'Z',
-		RX_Valid					=> 'Z',
-		RX_Data						=> (others => 'Z'),
-		RX_Error					=> 'Z'
-	);
-	constant C_NET_ETH_PHY_INTERFACE_RGMII_INIT : T_NET_ETH_PHY_INTERFACE_RGMII := (
-		RX_RefClock				=> 'Z',
-		TX_Clock					=> 'Z',
-		TX_Data						=> (others => 'Z'),
-		TX_Control				=> 'Z',
-		RX_Clock					=> 'Z',
-		RX_Data						=> (others => 'Z'),
-		RX_Control				=> 'Z'
-	);
-	constant C_SGMII_LANE_INIT	: T_SGMII_LANE := (TX_P => 'Z', TX_N => 'Z', RX_P => 'Z', RX_N => 'Z');
---	constant C_NET_ETH_PHY_INTERFACE_SGMII_INIT : T_NET_ETH_PHY_INTERFACE_SGMII := (
---		DGB_SystemClock_In		=> 'Z',
---		DGB_AutoNeg_Restart		=> 'Z',
---		SGMII_RefClock_In			=> 'Z',
---		SGMII_TXRefClock_Out	=> 'Z',
---		SGMII_RXRefClock_Out	=> 'Z',
---		Lane									=> (others => C_SGMII_LANE_INIT)
---	);
-	constant C_NET_ETH_PHY_INTERFACE_MDIO_INIT : T_NET_ETH_PHY_INTERFACE_MDIO := (
-		Clock_ts	=> (I => 'Z', O => 'Z', T => 'Z'),
-		Data_ts		=> (I => 'Z', O => 'Z', T => 'Z')
-	);
-	constant C_NET_ETH_PHY_INTERFACE_COMMON_INIT : T_NET_ETH_PHY_INTERFACE_COMMON := (
-		Reset							=> 'Z',
-		Interrupt					=> 'Z'
-	);
---	constant C_NET_ETH_PHY_INTERFACES_INIT : T_NET_ETH_PHY_INTERFACES := (
---		GMII									=> C_NET_ETH_PHY_INTERFACE_GMII_INIT,
---		RGMII									=> C_NET_ETH_PHY_INTERFACE_RGMII_INIT,
---		SGMII									=> C_NET_ETH_PHY_INTERFACE_SGMII_INIT,
---		MDIO									=> C_NET_ETH_PHY_INTERFACE_MDIO_INIT,
---		Common								=> C_NET_ETH_PHY_INTERFACE_COMMON_INIT
---	);
-	
-	function generate_C_NET_ETH_PHY_INTERFACES_INIT(length : natural) return T_NET_ETH_PHY_INTERFACES;
 
 	-- ==========================================================================================================================================================
 	-- Ethernet: physical coding sublayer (PCS)
@@ -242,7 +175,6 @@ package net is
 	type T_NET_ETH_RS_DATA_INTERFACE is (
 		NET_ETH_RS_DATA_INTERFACE_MII,
 		NET_ETH_RS_DATA_INTERFACE_GMII,
-		NET_ETH_RS_DATA_INTERFACE_XGMII,
 		NET_ETH_RS_DATA_INTERFACE_TRANSCEIVER
 	);
 
@@ -458,24 +390,12 @@ package net is
 		NET_ARP_ARPCACHE_CMD_ADD
 --		NET_ARP_ARPCACHE_CMD_INVALIDATE
 	);
-	
-	type T_NET_ARP_RECEIVER_COMMAND is (
-		NET_ARP_RECEIVER_CMD_NONE,
-		NET_ARP_RECEIVER_CMD_CLEAR
-	);
 
 	-- status
 	type T_NET_ARP_ARPCACHE_STATUS is (
 		NET_ARP_ARPCACHE_STATUS_IDLE,
 		NET_ARP_ARPCACHE_STATUS_UPDATING,
 		NET_ARP_ARPCACHE_STATUS_UPDATE_COMPLETE
-	);
-	
-	type T_NET_ARP_RECEIVER_STATUS is (
-		NET_ARP_RECEIVER_STATUS_IDLE,
-		NET_ARP_RECEIVER_STATUS_RequestReceived,
-		NET_ARP_RECEIVER_STATUS_AnswerReceived,
-		NET_ARP_RECEIVER_STATUS_ERROR
 	);
 
 	type T_NET_ARP_IPPOOL_COMMAND is (
@@ -810,27 +730,6 @@ end package;
 
 
 package body net is
-	
-	function generate_C_NET_ETH_PHY_INTERFACES_INIT(length : natural) return T_NET_ETH_PHY_INTERFACES is
-		constant C_SGMII_LANE_INIT_VECTOR	: T_SGMII_LANE_VECTOR(length -1 downto 0) := (length -1 downto 0 => C_SGMII_LANE_INIT);
-		constant C_NET_ETH_PHY_INTERFACE_SGMII_INIT : T_NET_ETH_PHY_INTERFACE_SGMII := (
-			DGB_SystemClock_In		=> 'Z',
-			DGB_AutoNeg_Restart		=> 'Z',
-			SGMII_RefClock_In			=> 'Z',
-			SGMII_TXRefClock_Out	=> 'Z',
-			SGMII_RXRefClock_Out	=> 'Z',
-			Lane									=> (1 downto 0 => C_SGMII_LANE_INIT)--C_SGMII_LANE_INIT_VECTOR
-		);
-	begin
-		return (
-			GMII									=> C_NET_ETH_PHY_INTERFACE_GMII_INIT,
-			RGMII									=> C_NET_ETH_PHY_INTERFACE_RGMII_INIT,
-			SGMII									=> C_NET_ETH_PHY_INTERFACE_SGMII_INIT,
-			MDIO									=> C_NET_ETH_PHY_INTERFACE_MDIO_INIT,
-			Common								=> C_NET_ETH_PHY_INTERFACE_COMMON_INIT
-		);
-	end function;
-
 
 	function to_net_eth_RSDataInterface(str : string) return T_NET_ETH_RS_DATA_INTERFACE is
 	begin
