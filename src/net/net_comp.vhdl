@@ -134,7 +134,7 @@ PACKAGE net_comp IS
 			RS_RX_Error								: OUT	STD_LOGIC;
 			
 			-- PHY-SGMII interface		
-			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
+			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACES
 		);
 	END COMPONENT;
 
@@ -195,6 +195,96 @@ PACKAGE net_comp IS
     gmii_isolate : OUT STD_LOGIC
   );
 END COMPONENT;
+
+	COMPONENT eth_GMII_SGMII_PCS_Series7_transceiver is
+	generic
+	(
+			EXAMPLE_SIMULATION                      : integer   := 0          -- Set to 1 for simulation
+	);
+		 port (
+				mmcm_reset          : out   std_logic;
+				recclk_mmcm_reset   : out   std_logic;
+				data_valid          : in    std_logic;
+				independent_clock   : in    std_logic;
+				encommaalign        : in    std_logic;
+				powerdown           : in    std_logic;
+				usrclk              : in    std_logic;
+				usrclk2             : in    std_logic;
+				rxusrclk              : in    std_logic;
+				rxusrclk2             : in    std_logic;
+				txreset             : in    std_logic;
+				txdata              : in    std_logic_vector (7 downto 0);
+				txchardispmode      : in    std_logic;
+				txchardispval       : in    std_logic;
+				txcharisk           : in    std_logic;
+				rxreset             : in    std_logic;
+				rxchariscomma       : out   std_logic;
+				rxcharisk           : out   std_logic;
+				rxclkcorcnt         : out   std_logic_vector (2 downto 0);
+				rxdata              : out   std_logic_vector (7 downto 0);
+				rxdisperr           : out   std_logic;
+				rxnotintable        : out   std_logic;
+				rxrundisp           : out   std_logic;
+				rxbuferr            : out   std_logic;
+				txbuferr            : out   std_logic;
+				plllkdet            : out   std_logic;
+				txoutclk            : out   std_logic;
+				rxoutclk            : out   std_logic;
+				txn                 : out   std_logic;
+				txp                 : out   std_logic;
+				rxn                 : in    std_logic;
+				rxp                 : in    std_logic;
+				gtrefclk            : in    std_logic;
+				gtrefclk_bufg       : in    std_logic;
+			 
+				pmareset            : in    std_logic;
+				mmcm_locked         : in    std_logic;
+				resetdone           : out   std_logic;
+					gt0_rxbyteisaligned_out   : out std_logic;
+					gt0_rxbyterealign_out     : out std_logic;
+					gt0_rxcommadet_out        : out std_logic;
+					gt0_txpolarity_in         : in  std_logic;
+					gt0_txdiffctrl_in         : in  std_logic_vector(3 downto 0);
+					gt0_txinhibit_in          : in  std_logic;
+					gt0_txpostcursor_in       : in  std_logic_vector(4 downto 0);
+					gt0_txprecursor_in        : in  std_logic_vector(4 downto 0);
+					gt0_rxpolarity_in         : in  std_logic;
+					gt0_rxdfelpmreset_in      : in  std_logic;
+					gt0_rxdfeagcovrden_in     : in  std_logic;
+					gt0_rxlpmen_in            : in  std_logic;
+					gt0_txprbssel_in          : in  std_logic_vector(2 downto 0);
+					gt0_txprbsforceerr_in     : in  std_logic;
+					gt0_rxprbscntreset_in     : in  std_logic;
+					gt0_rxprbserr_out         : out std_logic;
+					gt0_rxprbssel_in          : in  std_logic_vector(2 downto 0);
+					gt0_loopback_in           : in  std_logic_vector(2 downto 0);
+					gt0_txresetdone_out       : out std_logic;
+					gt0_rxresetdone_out       : out std_logic;
+					gt0_eyescanreset_in       : in  std_logic;
+					gt0_eyescandataerror_out  : out std_logic;
+					gt0_eyescantrigger_in     : in  std_logic;
+					gt0_rxcdrhold_in          : in  std_logic;
+					gt0_rxmonitorout_out      : out std_logic_vector(6 downto 0);
+					gt0_rxmonitorsel_in       : in  std_logic_vector(1 downto 0);
+					gt0_drpaddr_in            : in  std_logic_vector(8 downto 0);
+					gt0_drpclk_in             : in  std_logic;
+					gt0_drpdi_in              : in  std_logic_vector(15 downto 0);
+					gt0_drpdo_out             : out std_logic_vector(15 downto 0);
+					gt0_drpen_in              : in  std_logic;
+					gt0_drprdy_out            : out std_logic;
+					gt0_drpwe_in              : in  std_logic;  
+					gt0_txpmareset_in         : in  std_logic;
+					gt0_txpcsreset_in         : in  std_logic;
+					gt0_rxpmareset_in         : in  std_logic;
+					gt0_rxpcsreset_in         : in  std_logic;
+					gt0_rxbufreset_in         : in  std_logic;
+					gt0_rxbufstatus_out       : out std_logic_vector(2 downto 0);
+					gt0_txbufstatus_out       : out std_logic_vector(1 downto 0);
+					gt0_dmonitorout_out       : out std_logic_vector(7 downto 0);        
+					gt0_qplloutclk            : in  std_logic;
+					gt0_qplloutrefclk         : in  std_logic
+		 );
+	end component;
  -----------------------------------------------------------------------------
    -- Component Declaration for the 1000BASE-X PCS/PMA sublayer core.
    -----------------------------------------------------------------------------
@@ -349,7 +439,8 @@ END COMPONENT;
 		CLOCKIN_FREQ								: FREQ															:= 125.0 MHz;															-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
 		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		--
-		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		--
+		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII;		--
+		IS_SIM										: boolean														:= FALSE
 	);
 	port (
 		-- clock interface
@@ -364,6 +455,7 @@ END COMPONENT;
 		Reset											: in	std_logic;
 		
 		-- Command-Status-Error interface
+		Core_Status								: out T_SLV_16;
 		
 		-- MAC LocalLink interface
 		TX_Valid									: in	std_logic;

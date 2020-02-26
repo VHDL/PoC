@@ -337,11 +337,11 @@ begin
 			Out_EOF								=> TX_StmMux_EOF,
 			Out_Ack								=> IPv4_TX_Ack
 		);
-
-	TX_StmMux_SrcIPv4Address_Data										<= TX_StmMux_Meta(TX_StmMux_SrcIPv4Address_Data'range);
-	TX_StmMux_DestIPv4Address_Data									<= TX_StmMux_Meta(TX_StmMux_DestIPv4Address_Data'range);
-	TX_StmMux_Length																<= TX_StmMux_Meta(TX_StmMux_Length'range);
-	TX_StmMux_Protocol															<= TX_StmMux_Meta(TX_StmMux_Protocol'range);
+	
+	TX_StmMux_SrcIPv4Address_Data										<= TX_StmMux_Meta(high(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_SRCADR)		downto low(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_SRCADR));
+	TX_StmMux_DestIPv4Address_Data									<= TX_StmMux_Meta(high(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_DESTADR)	downto low(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_DESTADR));
+	TX_StmMux_Length																<= TX_StmMux_Meta(high(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_LENGTH)		downto low(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_LENGTH));
+	TX_StmMux_Protocol															<= TX_StmMux_Meta(high(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_PROTOCOL)	downto low(TXSTMMUX_META_BITS, TXSTMMUX_META_STREAMID_PROTOCOL));
 
 	TX_StmMux_Meta_rev(TXSTMMUX_META_RST_BIT)				<= IPv4_TX_Meta_rst;
 	TX_StmMux_Meta_rev(TXSTMMUX_META_SRC_NXT_BIT)		<= IPv4_TX_Meta_SrcIPv4Address_nxt;

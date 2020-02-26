@@ -270,8 +270,6 @@ architecture rtl of arp_Wrapper is
 	signal BCReq_TX_Meta_DestMACAddress_rst				: std_logic;
 	signal BCReq_TX_Meta_DestMACAddress_nxt				: std_logic;
 	signal BCReq_TX_Meta_DestMACAddress_Data			: T_SLV_8;
-	
-	signal IPSeq1_Input														: std_logic_vector(31 downto 0);
 
 	constant IPv4_Address_Length									: positive := INITIAL_IPV4ADDRESSES'length;
 	signal IPv4_Address_Counter										: unsigned (log2ceilnz(IPv4_Address_Length) - 1 downto 0) := (others => '0');
@@ -313,14 +311,12 @@ begin
 			Clock									=> Clock,
 			Reset									=> Reset,
 	
-			Input									=> IPSeq1_Input,
+			Input									=> to_slv(INITIAL_IPV4ADDRESSES(to_integer(IPv4_Address_Counter))),
 			rst										=> FSMPool_IPSeq1_SenderIPv4Address_rst,
 			rev										=> '1',
 			nxt										=> FSMPool_IPSeq1_SenderIPv4Address_nxt,
 			Output								=> IPSeq1_SenderIPv4Address_Data
 		);
-		
-	IPSeq1_Input	<= to_slv(INITIAL_IPV4ADDRESSES(to_integer(IPv4_Address_Counter)));
 
 	process(Clock)
 	begin

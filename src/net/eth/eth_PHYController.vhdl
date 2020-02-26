@@ -50,7 +50,8 @@ entity Eth_PHYController is
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE										:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;					--
 		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS						:= x"00";																			--
 		PHY_MANAGEMENT_INTERFACE	: T_NET_ETH_PHY_MANAGEMENT_INTERFACE			:= NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO;			--
-		BAUDRATE									: BAUD																		:= 1 MBd																			-- 1.0 MBit/s
+		BAUDRATE									: BAUD																		:= 1 MBd;																			-- 1.0 MBit/s+
+		IS_SIM										: boolean 																:= false
 	);
 	port (
 		Clock											: in		std_logic;
@@ -61,9 +62,12 @@ entity Eth_PHYController is
 		Status										: out		T_NET_ETH_PHYCONTROLLER_STATUS;
 		Error											: out		T_NET_ETH_PHYCONTROLLER_ERROR;
 		
-		PHY_Reset									: out		std_logic;															--
+		MDIO_Read_Register				: in std_logic_vector(4 downto 0);
+		MDIO_Register_Data				: out	T_SLV_16;
+		
+		PHY_Reset									: out		std_logic := 'Z';															--
 		PHY_Interrupt							: in		std_logic;															--
-		PHY_MDIO									: inout T_NET_ETH_PHY_INTERFACE_MDIO						-- Management Data Input/Output
+		PHY_MDIO									: inout T_NET_ETH_PHY_INTERFACE_MDIO	:= C_NET_ETH_PHY_INTERFACE_MDIO_INIT					-- Management Data Input/Output
 	);
 end entity;
 
@@ -87,37 +91,46 @@ begin
 
 --	assert FALSE report "BAUDRATE = " & BAUD'image(BAUDRATE) severity NOTE;
 --	assert FALSE report "MD_CLOCK_FREQUENCY_KHZ = " & REAL'image(MD_CLOCK_FREQUENCY_KHZ)	& " kHz" severity NOTE;
-
-	genMarvel88E1111 : if (PHY_DEVICE = NET_ETH_PHY_DEVICE_MARVEL_88E1111) generate
+	phy_device_gen0 : if IS_SIM = FALSE generate
+		genMarvel88E1111 : if (PHY_DEVICE = NET_ETH_PHY_DEVICE_MARVEL_88E1111) generate
+		
+		begin
+			PHYC : entity PoC.Eth_PHYController_Marvell_88E1111
+				generic map (
+					DEBUG										=> DEBUG,
+					CLOCK_FREQ							=> CLOCK_FREQ,
+					PHY_DEVICE_ADDRESS			=> PHY_DEVICE_ADDRESS
+				)
+				port map (
+					Clock										=> Clock,
+					Reset										=> Reset,
+					
+					-- PHYController interface
+					Command									=> Command,
+					Status									=> Status,
+					Error										=> Error,
+					
+					PHY_Reset								=> PHY_Reset,
+					PHY_Interrupt						=> PHY_Interrupt,
+					
+					MDIO_Command						=> PHYC_MDIO_Command,
+					MDIO_Status							=> MDIO_Status,
+					MDIO_Error							=> MDIO_Error,
+					
+					MDIO_Physical_Address		=> PHYC_MDIO_Physical_Address,
+					MDIO_Register_Address		=> PHYC_MDIO_Register_Address,
+					MDIO_Register_DataIn		=> MDIOC_Register_DataIn,
+					MDIO_Register_DataOut		=> PHYC_MDIO_Register_DataOut,
+					
+					MDIO_Read_Register			=> MDIO_Read_Register,
+					MDIO_Register_Data			=> MDIO_Register_Data
+				);
+		end generate;
+	end generate;
 	
-	begin
-		PHYC : entity PoC.Eth_PHYController_Marvell_88E1111
-			generic map (
-				DEBUG										=> DEBUG,
-				CLOCK_FREQ							=> CLOCK_FREQ,
-				PHY_DEVICE_ADDRESS			=> PHY_DEVICE_ADDRESS
-			)
-			port map (
-				Clock										=> Clock,
-				Reset										=> Reset,
-				
-				-- PHYController interface
-				Command									=> Command,
-				Status									=> Status,
-				Error										=> Error,
-				
-				PHY_Reset								=> PHY_Reset,
-				PHY_Interrupt						=> PHY_Interrupt,
-				
-				MDIO_Command						=> PHYC_MDIO_Command,
-				MDIO_Status							=> MDIO_Status,
-				MDIO_Error							=> MDIO_Error,
-				
-				MDIO_Physical_Address		=> PHYC_MDIO_Physical_Address,
-				MDIO_Register_Address		=> PHYC_MDIO_Register_Address,
-				MDIO_Register_DataIn		=> MDIOC_Register_DataIn,
-				MDIO_Register_DataOut		=> PHYC_MDIO_Register_DataOut
-			);
+	phy_device_gen1 : if IS_SIM = TRUE generate
+		Status <= NET_ETH_PHYC_STATUS_CONNECTED;
+		Error <= NET_ETH_PHYC_ERROR_NONE;
 	end generate;
 	
 	genMDIOC0 : if (PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO) generate

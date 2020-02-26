@@ -170,13 +170,19 @@ end package;
 package body strings is
 	--
 	function to_IPStyle(str : string) return T_IPSTYLE is
+		--gives the low place of string back
+		-- This WORKAROUND may be needed for Vivado <=2017.4 or GHDL <=0.36-dev
+		function str_low(str : string) return integer is
+		begin
+			return str'low;
+		end function;
 	begin
-		for i in T_IPSTYLE'pos(T_IPSTYLE'low) to T_IPSTYLE'pos(T_IPSTYLE'high) loop
-			if str_imatch(str, T_IPSTYLE'image(T_IPSTYLE'val(i))) then
-				return T_IPSTYLE'val(i);
+		for i in T_IPSTYLE loop
+			if str_imatch(str_toUpper(str), str_toUpper(T_IPSTYLE'image(i)))
+			or str_imatch(str_toUpper(str), str_toUpper(T_IPSTYLE'image(i)(str_low(T_IPSTYLE'image(i))+8 to str_low(T_IPSTYLE'image(i))+str_length(T_IPSTYLE'image(i))-1))) then	--start from char 8 to get rid of prefix
+				return i;
 			end if;
 		end loop;
-
 		report "Unknown IPStyle: '" & str & "'" severity FAILURE;
 		return IPSTYLE_UNKNOWN;
 	end function;
@@ -392,7 +398,7 @@ package body strings is
 		constant s				: REAL		:= sign(Value);
 		constant val			: REAL		:= Value * s;
 		constant int			: integer	:= integer(floor(val));
-		constant frac			: integer	:= integer(round((val - real(int)) * real(10**precision)));
+		constant frac			: integer	:= integer(round((val - real(int)) * 10.0**precision));
 		constant overflow : boolean := frac >= 10**precision;
 		constant int2     : integer := ite(overflow, int+1, int);
 		constant frac2    : integer := ite(overflow, frac-10**precision, frac);
@@ -759,16 +765,10 @@ package body strings is
 				return TRUE;
 			end if;
 		end loop;
-		
-		-- WORKAROUND: for Xilinx Vivado
-		--	Version:	2017.4
-		--	Issue:
-		--		Expressions in a RETURN statement are not obeying to the short-circuit
-		--		operator evaluation rules of VHDL.
-		--	Solution:
-		--		But, the evaluation of expressions is handled correctly in IF statements.
-		
 		-- check special cases
+		
+		-- WORKAROUND for Vivado 2017.4
+		-- Evaluation of expressions is handled differently in if statements compared to return statements
 		if (((str1'length = len) and (str2'length = len)) or										-- both strings are fully consumed and equal
 				((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or			-- str1 is longer, but str_length equals len
 				((str2'length > len) and (str2(str2'low + len) = C_POC_NUL))) then	-- str2 is longer, but str_length equals len

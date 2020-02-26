@@ -74,7 +74,8 @@ entity Eth_Wrapper is
 		PHY_DEVICE								: T_NET_ETH_PHY_DEVICE								:= NET_ETH_PHY_DEVICE_MARVEL_88E1111;				--
 		PHY_DEVICE_ADDRESS				: T_NET_ETH_PHY_DEVICE_ADDRESS				:= x"00";																		--
 		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE				:= NET_ETH_PHY_DATA_INTERFACE_GMII;					--
-		PHY_MANAGEMENT_INTERFACE	: T_NET_ETH_PHY_MANAGEMENT_INTERFACE	:= NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO		--
+		PHY_MANAGEMENT_INTERFACE	: T_NET_ETH_PHY_MANAGEMENT_INTERFACE	:= NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO;
+		IS_SIM										: boolean 														:= false
 	);
 	port (
 		Ethernet_Reset						: in	std_logic;				-- TODO: replace this signal by 6 aligned reset for each clock-domain
@@ -89,6 +90,7 @@ entity Eth_Wrapper is
 		Command										: in	T_NET_ETH_COMMAND;
 		Status										: out	T_NET_ETH_STATUS;
 		Error											: out	T_NET_ETH_ERROR;
+		Core_Status								: out std_logic_vector(15 downto 0);
 		
 		-- LocalLink interface
 		TX_Valid									: in	std_logic;
@@ -103,11 +105,14 @@ entity Eth_Wrapper is
 		RX_EOF										: out	std_logic;
 		RX_Ack										: in	std_logic;
 		
+		MDIO_Read_Register				: in std_logic_vector(4 downto 0);
+		MDIO_Register_Data				: out	T_SLV_16;
+		
 		-- GMII PHY interface
 -- TODO:		GMII_Reset								: out	STD_LOGIC;				-- 						 RST		-> PHY Reset
 -- TODO:		GMII_Interrupt						: in	STD_LOGIC;				--						 INT		-> Interrupt
 
-		PHY_Interface							:	inout	T_NET_ETH_PHY_INTERFACES
+		PHY_Interface							:	inout	T_NET_ETH_PHY_INTERFACES := C_NET_ETH_PHY_INTERFACES_INIT
 	);
 end entity;
 
@@ -127,6 +132,12 @@ architecture rtl of Eth_Wrapper is
 	signal ManagementData_Data_i			: std_logic;
 	signal ManagementData_Data_o			: std_logic;
 	signal ManagementData_Data_t			: std_logic;
+	
+	signal eth_wrapper_rx_valid				: std_logic;
+	signal eth_wrapper_rx_SoF					: std_logic;
+	signal eth_wrapper_rx_EoF					: std_logic;
+	signal eth_wrapper_rx_ACK					: std_logic;
+	signal eth_wrapper_rx_Data				: T_SLV_8;
 	
 begin
 
@@ -228,7 +239,8 @@ begin
 				CLOCKIN_FREQ							=> CLOCKIN_FREQ,
 				ETHERNET_IPSTYLE					=> ETHERNET_IPSTYLE,
 				RS_DATA_INTERFACE					=> RS_DATA_INTERFACE,
-				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE
+				PHY_DATA_INTERFACE				=> PHY_DATA_INTERFACE,
+				IS_SIM										=> IS_SIM
 			)
 			port map (
 				-- clock interface
@@ -243,6 +255,7 @@ begin
 				Reset											=> Ethernet_Reset,
 				
 				-- Command-Status-Error interface
+				Core_Status								=> Core_Status,
 				
 				-- MAC LocalLink interface
 				TX_Valid									=> TX_Valid,
@@ -251,14 +264,20 @@ begin
 				TX_EOF										=> TX_EOF,
 				TX_Ack										=> TX_Ack,
 				
-				RX_Valid									=> RX_Valid,
-				RX_Data										=> RX_Data,
-				RX_SOF										=> RX_SOF,
-				RX_EOF										=> RX_EOF,
-				RX_Ack										=> RX_Ack,
+				RX_Valid									=> eth_wrapper_rx_valid,--RX_Valid,
+				RX_Data										=> eth_wrapper_rx_data,--RX_Data,
+				RX_SOF										=> eth_wrapper_rx_SoF,--RX_SOF,
+				RX_EOF										=> eth_wrapper_rx_EoF,--RX_EOF,
+				RX_Ack										=> eth_wrapper_rx_ack,--RX_Ack,
 				
 				PHY_Interface							=> PHY_Interface
 			);
+			
+			RX_Valid <= eth_wrapper_rx_valid;
+			RX_Data <= eth_wrapper_rx_data;
+			RX_SOF <= eth_wrapper_rx_SoF;
+			RX_EOF <= eth_wrapper_rx_EoF;
+			eth_wrapper_rx_ack <= RX_Ack;  
 			
 	end generate;
 	
@@ -267,33 +286,57 @@ begin
 		signal PHYC_Status			: T_NET_ETH_PHYCONTROLLER_STATUS;
 		signal PHYC_Error				: T_NET_ETH_PHYCONTROLLER_ERROR;
 		
+		
 	begin
 		process(Command)
 		begin
 			case Command is
 				when NET_ETH_CMD_NONE =>					PHYC_Command		<= NET_ETH_PHYC_CMD_NONE;
+				when NET_ETH_CMD_READ =>					PHYC_Command		<= NET_ETH_PHYC_CMD_READ;
 				when NET_ETH_CMD_HARD_RESET =>		PHYC_Command		<= NET_ETH_PHYC_CMD_HARD_RESET;
 				when NET_ETH_CMD_SOFT_RESET =>		PHYC_Command		<= NET_ETH_PHYC_CMD_SOFT_RESET;
 				when others =>										PHYC_Command		<= NET_ETH_PHYC_CMD_NONE;
 			end case;
 		end process;
 		
-		process(PHYC_Status, PHYC_Error)
+		process(PHYC_Status, PHYC_Error, Tx_Valid, eth_wrapper_rx_valid)
 		begin
 			case PHYC_Status is
-				when NET_ETH_PHYC_STATUS_POWER_DOWN =>			Status	<= NET_ETH_STATUS_POWER_DOWN;
-				when NET_ETH_PHYC_STATUS_RESETING =>				Status	<= NET_ETH_STATUS_RESETING;
-				when NET_ETH_PHYC_STATUS_CONNECTING =>			Status	<= NET_ETH_STATUS_CONNECTING;
-				when NET_ETH_PHYC_STATUS_CONNECTED =>				Status	<= NET_ETH_STATUS_CONNECTED;
-				when NET_ETH_PHYC_STATUS_DISCONNECTING =>		Status	<= NET_ETH_STATUS_DISCONNECTING;
-				when NET_ETH_PHYC_STATUS_DISCONNECTED =>		Status	<= NET_ETH_STATUS_DISCONNECTED;
-				when NET_ETH_PHYC_STATUS_ERROR =>						Status	<= NET_ETH_STATUS_ERROR;
+				when NET_ETH_PHYC_STATUS_POWER_DOWN 			=>	Status	<= NET_ETH_STATUS_POWER_DOWN;
+				when NET_ETH_PHYC_STATUS_RESETING 				=>	Status	<= NET_ETH_STATUS_RESETING;
+				when NET_ETH_PHYC_STATUS_CONNECTING 			=>	Status	<= NET_ETH_STATUS_CONNECTING;
+				when NET_ETH_PHYC_STATUS_CONNECTED 				=>	Status	<= NET_ETH_STATUS_CONNECTED;
+				when NET_ETH_PHYC_STATUS_READING 					=>	Status	<= NET_ETH_STATUS_READING;
+					if Tx_Valid = '1' then
+						Status	<= NET_ETH_STATUS_CONNECTED;
+					else
+						Status	<= NET_ETH_STATUS_Error;
+					end if;
+				when NET_ETH_PHYC_STATUS_DISCONNECTING 		=>	Status	<= NET_ETH_STATUS_DISCONNECTING;
+				when NET_ETH_PHYC_STATUS_DISCONNECTED 		=>	Status	<= NET_ETH_STATUS_DISCONNECTED;
+				when NET_ETH_PHYC_STATUS_ERROR 						=>	Status	<= NET_ETH_STATUS_ERROR;
+				when others 														 	=>	Status	<= NET_ETH_STATUS_POWER_DOWN;
 				
 			end case;
 			
 			case PHYC_Error is
-				when NET_ETH_PHYC_ERROR_NONE =>							Error		<= NET_ETH_ERROR_NONE;
-				when others =>															Error		<= NET_ETH_ERROR_NONE;
+				when NET_ETH_PHYC_ERROR_NONE 															=>	Error		<= NET_ETH_ERROR_NONE;
+					if eth_wrapper_rx_valid = '1' then 
+						Error		<= NET_ETH_ERROR_MDIO_CONTROLLER_ERROR;
+					else
+						Error		<= NET_ETH_ERROR_NONE;
+					end if;
+				when NET_ETH_PHYC_ERROR_NO_MATCH_DEVICE_ID								=> 	Error		<= NET_ETH_ERROR_NO_MATCH_DEVICE_ID;
+				when NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR							=> 	Error		<= NET_ETH_ERROR_MDIO_CONTROLLER_ERROR;
+					
+--				when NET_ETH_PHYC_ERROR_NO_CABLE													=>	Error		<= NET_ETH_ERROR_NO_CABLE;
+--				when NET_ETH_PHYC_ERROR_ST_SEARCH_DEVICE_WAIT							=>	Error		<= NET_ETH_ERROR_ST_SEARCH_DEVICE_WAIT;
+--				when NET_ETH_PHYC_ERROR_ST_READ_DEVICE_ID_WAIT_1					=>	Error		<= NET_ETH_ERROR_ST_READ_DEVICE_ID_WAIT_1;
+--				when NET_ETH_PHYC_ERROR_ST_READ_DEVICE_ID_WAIT_2					=>	Error		<= NET_ETH_ERROR_ST_READ_DEVICE_ID_WAIT_2;
+--				when NET_ETH_PHYC_ERROR_ST_WRITE_INTERRUPT_WAIT						=>	Error		<= NET_ETH_ERROR_ST_WRITE_INTERRUPT_WAIT;
+--				when NET_ETH_PHYC_ERROR_ST_READ_STATUS_WAIT								=>	Error		<= NET_ETH_ERROR_ST_READ_STATUS_WAIT;
+--				when NET_ETH_PHYC_ERROR_ST_READ_PHY_SPECIFIC_STATUS_WAIT	=>	Error		<= NET_ETH_ERROR_ST_READ_PHY_SPECIFIC_STATUS_WAIT;
+				when others 																							=>	Error		<= NET_ETH_ERROR_NO_MATCH_DEVICE_ID;
 			end case;
 			
 	--		MAC_ERROR_MAC_ERROR,
@@ -309,7 +352,8 @@ begin
 				PHY_DEVICE											=> PHY_DEVICE,
 				PHY_DEVICE_ADDRESS							=> PHY_DEVICE_ADDRESS,
 				PHY_MANAGEMENT_INTERFACE				=> PHY_MANAGEMENT_INTERFACE,
-				BAUDRATE												=> ite((PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO), 1 MBd, 100 kBd)
+				BAUDRATE												=> ite((PHY_MANAGEMENT_INTERFACE = NET_ETH_PHY_MANAGEMENT_INTERFACE_MDIO), 1 MBd, 100 kBd),
+				IS_SIM													=> IS_SIM
 			)
 			port map (
 				Clock														=> TX_Clock,
@@ -319,6 +363,9 @@ begin
 				Command													=> PHYC_Command,
 				Status													=> PHYC_Status,
 				Error														=> PHYC_Error,
+				
+				MDIO_Read_Register				=> MDIO_Read_Register,
+				MDIO_Register_Data				=> MDIO_Register_Data,
 				
 				PHY_Reset												=> PHY_Interface.Common.Reset,				--
 				PHY_Interrupt										=> PHY_Interface.Common.Interrupt,		--

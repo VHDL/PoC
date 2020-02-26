@@ -64,11 +64,11 @@ entity mdio_Controller is
 		
 		-- tri-state interface
 		MD_Clock_i								: in	std_logic;			-- IEEE 802.3: MDC		-> Managament Data Clock I
-		MD_Clock_o								: out	std_logic;			-- IEEE 802.3: MDC		-> Managament Data Clock O
-		MD_Clock_t								: out	std_logic;			-- IEEE 802.3: MDC		-> Managament Data Clock tri-state
+		MD_Clock_o								: out	std_logic := 'Z';			-- IEEE 802.3: MDC		-> Managament Data Clock O
+		MD_Clock_t								: out	std_logic := 'Z';			-- IEEE 802.3: MDC		-> Managament Data Clock tri-state
 		MD_Data_i									: in	std_logic;			-- IEEE 802.3: MDIO		-> Managament Data I
-		MD_Data_o									: out	std_logic;			-- IEEE 802.3: MDIO		-> Managament Data O
-		MD_Data_t									: out	std_logic				-- IEEE 802.3: MDIO		-> Managament Data tri-state
+		MD_Data_o									: out	std_logic := 'Z';			-- IEEE 802.3: MDIO		-> Managament Data O
+		MD_Data_t									: out	std_logic := 'Z'				-- IEEE 802.3: MDIO		-> Managament Data tri-state
 	);
 end entity;
 

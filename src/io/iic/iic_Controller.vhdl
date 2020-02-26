@@ -80,11 +80,11 @@ ENTITY iic_Controller IS
 		
 		-- tristate interface
 		SerialClock_i									: IN	STD_LOGIC;
-		SerialClock_o									: OUT	STD_LOGIC;
-		SerialClock_t									: OUT	STD_LOGIC;
-		SerialData_i									: IN	STD_LOGIC;
-		SerialData_o									: OUT	STD_LOGIC;
-		SerialData_t									: OUT	STD_LOGIC
+		SerialClock_o									: OUT	STD_LOGIC  := 'Z';
+		SerialClock_t									: OUT	STD_LOGIC  := 'Z';
+		SerialData_i									: IN	STD_LOGIC ;
+		SerialData_o									: OUT	STD_LOGIC  := 'Z';
+		SerialData_t									: OUT	STD_LOGIC  := 'Z'
 	);
 END ENTITY;
 

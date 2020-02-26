@@ -173,7 +173,7 @@ begin
 	end process;
 
 	process(State, In_Valid, In_SOF, In_EOF, In_Data,
-					In_Meta_Length,
+					In_Meta_Length, TotalLength,
 					Out_Ack, Out_Meta_rst, Out_Meta_DestMACAddress_nxt,
 					ARP_IPCache_Valid, ARP_IPCache_IPv4Address_rst, ARP_IPCache_IPv4Address_nxt, ARP_IPCache_MACAddress_Data,
 					In_Meta_DestIPv4Address_Data, In_Meta_SrcIPv4Address_Data, In_Meta_Protocol,
@@ -224,8 +224,8 @@ begin
 				end if;
 
 			when ST_ARP_QUERY =>
-				Out_Data											<= x"4" & InternetHeaderLength;
-				Out_SOF												<= '1';
+--				--Out_Data											<= InternetHeaderLength &  x"4";
+--				--Out_SOF												<= '1';
 
 				In_Meta_rst										<= ARP_IPCache_IPv4Address_rst;
 				In_Meta_DestIPv4Address_nxt		<= ARP_IPCache_IPv4Address_nxt;
@@ -233,29 +233,29 @@ begin
 				ARP_IPCache_Query							<= '1';
 
 				if (ARP_IPCache_Valid = '1') then
-					Out_Valid										<= '1';
+--					Out_Valid										<= '1';
 					In_Meta_rst									<= '1';		-- reset metadata
 
---					if (Out_Ack	 = '1') then
---						NextState									<= ST_SEND_TYPE_OF_SERVICE;
---					else
---						NextState									<= ST_SEND_VERSION;
---					end if;
+----					if (Out_Ack	 = '1') then
+----						NextState									<= ST_SEND_TYPE_OF_SERVICE;
+----					else
+----						NextState									<= ST_SEND_VERSION;
+----					end if;
 					NextState										<= ST_CHECKSUM_IPV4_ADDRESSES;
 				else
 					NextState										<= ST_ARP_QUERY_WAIT;
 				end if;
 
 			when ST_ARP_QUERY_WAIT =>
-				Out_Valid											<= '0';
+				--Out_Valid											<= '0';
 				Out_Data											<= x"4" & InternetHeaderLength;
-				Out_SOF												<= '1';
+				--Out_SOF												<= '1';
 
 				In_Meta_rst										<= ARP_IPCache_IPv4Address_rst;
 				In_Meta_DestIPv4Address_nxt		<= ARP_IPCache_IPv4Address_nxt;
 
 				if (ARP_IPCache_Valid = '1') then
-					Out_Valid										<= '1';
+					--Out_Valid										<= '1';
 					In_Meta_rst									<= '1';		-- reset metadata
 
 --					if (Out_Ack	 = '1') then
@@ -278,6 +278,8 @@ begin
 				Checksum_Addend1_us						<= unsigned(In_Meta_DestIPv4Address_Data);
 
 				if (IPv4SeqCounter_us = 3) then
+					In_Meta_rst									<= '1';		-- reset metadata
+					
 					NextState										<= ST_CHECKSUM_IPVERSION_LENGTH_0;
 				end if;
 
@@ -483,7 +485,7 @@ begin
 				Out_EOF												<= In_EOF;
 				In_Ack_i											<= Out_Ack;
 
-				if ((In_EOF and Out_Ack) = '1') then
+				if ((In_EOF and Out_Ack and In_Valid) = '1') then
 					In_Meta_rst									<= '1';
 					NextState										<= ST_IDLE;
 				end if;

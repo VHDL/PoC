@@ -40,8 +40,6 @@ use			PoC.strings.all;
 
 
 package stream is
-  attribute Count : integer;
-  
 	--types for stream_FrameGenerator
 	type T_FRAMEGEN_COMMAND is (
 		FRAMEGEN_CMD_NONE,
@@ -51,8 +49,6 @@ package stream is
 		FRAMEGEN_CMD_SINGLE_FRAMEGROUP,
 		FRAMEGEN_CMD_ALL_FRAMES
 	);
-	attribute Count of T_FRAMEGEN_COMMAND : type is T_FRAMEGEN_COMMAND'pos(T_FRAMEGEN_COMMAND'high) + 1;
-	function to_slv(val : T_FRAMEGEN_COMMAND) return std_logic_vector;
 	
 	type T_FRAMEGEN_STATUS is (
 		FRAMEGEN_STATUS_IDLE,
@@ -60,8 +56,6 @@ package stream is
 		FRAMEGEN_STATUS_COMPLETE,
 		FRAMEGEN_STATUS_ERROR
 	);
-	attribute Count of T_FRAMEGEN_STATUS : type is T_FRAMEGEN_STATUS'pos(T_FRAMEGEN_STATUS'high) + 1;
-	function to_slv(val : T_FRAMEGEN_STATUS) return std_logic_vector;
 
 	-- single dataword for TestRAM
 	type T_SIM_STREAM_WORD_8 is record
@@ -185,17 +179,7 @@ end;
 
 
 package body stream is
-  function to_slv(val : T_FRAMEGEN_COMMAND) return std_logic_vector is
-  begin
-		return std_logic_vector(to_unsigned(T_FRAMEGEN_COMMAND'pos(val),log2ceilnz(T_FRAMEGEN_COMMAND'Count)));
-	end function;
-	
-  function to_slv(val : T_FRAMEGEN_STATUS) return std_logic_vector is
-  begin
-    return std_logic_vector(to_unsigned(T_FRAMEGEN_STATUS'pos(val),log2ceilnz(T_FRAMEGEN_STATUS'Count)));
-	end function;
-	
-  function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_8) return natural is
+function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_8) return natural is
 	begin
 		for i in 0 to Data'length - 1 loop
 			if (Data(i).EOFG = TRUE) then

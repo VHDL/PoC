@@ -59,7 +59,7 @@ entity eth_RSLayer_GMII_GMII_Xilinx is
 		RS_RX_Error								: out		std_logic;
 		
 		-- PHY-GMII interface
-		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
+		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII := C_NET_ETH_PHY_INTERFACE_GMII_INIT
 	);
 end entity;
 

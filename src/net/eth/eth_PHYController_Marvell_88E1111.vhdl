@@ -54,7 +54,7 @@ entity Eth_PHYController_Marvell_88E1111 is
 		-- PHYController interface
 		Command										: in	T_NET_ETH_PHYCONTROLLER_COMMAND;
 		Status										: out	T_NET_ETH_PHYCONTROLLER_STATUS;
-		Error											: out	T_NET_ETH_PHYCONTROLLER_ERROR;
+		Error											: out	T_NET_ETH_PHYCONTROLLER_ERROR := NET_ETH_PHYC_ERROR_NONE;
 		
 		PHY_Reset									: out		std_logic;
 		PHY_Interrupt							: in		std_logic;
@@ -66,7 +66,10 @@ entity Eth_PHYController_Marvell_88E1111 is
 		MDIO_Physical_Address			: out	std_logic_vector(6 downto 0);
 		MDIO_Register_Address			: out	std_logic_vector(4 downto 0);
 		MDIO_Register_DataIn			: in	T_SLV_16;
-		MDIO_Register_DataOut			: out	T_SLV_16
+		MDIO_Register_DataOut			: out	T_SLV_16;
+		
+		MDIO_Read_Register				: in std_logic_vector(4 downto 0);
+		MDIO_Register_Data				: out	T_SLV_16
 	);
 end entity;
 
@@ -83,6 +86,8 @@ architecture rtl of Eth_PHYController_Marvell_88E1111 is
 		ST_WRITE_INTERRUPT,						ST_WRITE_INTERRUPT_WAIT,
 		ST_READ_STATUS,								ST_READ_STATUS_WAIT,
 		ST_READ_PHY_SPECIFIC_STATUS,	ST_READ_PHY_SPECIFIC_STATUS_WAIT,
+		ST_READ_PHY_FOR_UPPER,				ST_READ_PHY_FOR_UPPER_WAIT,
+		ST_WRITE_PHY_CONTROL,					ST_WRITE_PHY_CONTROL_WAIT,
 		ST_ERROR
 	);
 	
@@ -91,18 +96,19 @@ architecture rtl of Eth_PHYController_Marvell_88E1111 is
 	
 	attribute FSM_ENCODING of State										: signal is ite(DEBUG, "gray", ite((VENDOR = VENDOR_XILINX), "auto", "default"));
 	
-	constant C_MDIO_REGADR_COMMAND										: std_logic_vector(4 downto 0)		:= to_slv( 0, 5);
-	constant C_MDIO_REGADR_STATUS											: std_logic_vector(4 downto 0)		:= to_slv( 1, 5);
-	constant C_MDIO_REGADR_EXT_STATUS									: std_logic_vector(4 downto 0)		:= to_slv(15, 5);
-	constant C_MDIO_REGADR_PHY_IDENTIFIER_1						: std_logic_vector(4 downto 0)		:= to_slv( 2, 5);
-	constant C_MDIO_REGADR_PHY_IDENTIFIER_2						: std_logic_vector(4 downto 0)		:= to_slv( 3, 5);
-	constant C_MDIO_REGADR_NEXTPAGE_TRANSMIT					: std_logic_vector(4 downto 0)		:= to_slv( 7, 5);
-	constant C_MDIO_REGADR_AUTONEG_ADVERTISEMENT			: std_logic_vector(4 downto 0)		:= to_slv( 4, 5);
-	constant C_MDIO_REGADR_AUTONEG_EXPANION						: std_logic_vector(4 downto 0)		:= to_slv( 6, 5);
-	constant C_MDIO_REGADR_LINKPARTNER_ABILITY				: std_logic_vector(4 downto 0)		:= to_slv( 5, 5);
-	constant C_MDIO_REGADR_LINKPARTNER_NEXTPAGE				: std_logic_vector(4 downto 0)		:= to_slv( 8, 5);
-	constant C_MDIO_REGADR_1000BASET_CONTROL					: std_logic_vector(4 downto 0)		:= to_slv( 9, 5);
-	constant C_MDIO_REGADR_1000BASET_STATUS						: std_logic_vector(4 downto 0)		:= to_slv(10, 5);
+	constant C_MDIO_REGADR_COMMAND										: std_logic_vector(4 downto 0)		:= to_slv( 0, 5);--Control
+	constant C_MDIO_REGADR_STATUS											: std_logic_vector(4 downto 0)		:= to_slv( 1, 5);--Status
+	constant C_MDIO_REGADR_EXT_STATUS									: std_logic_vector(4 downto 0)		:= to_slv(15, 5);--Extended Status
+	constant C_MDIO_REGADR_PHY_IDENTIFIER_1						: std_logic_vector(4 downto 0)		:= to_slv( 2, 5);--PHY Identifier
+	constant C_MDIO_REGADR_PHY_IDENTIFIER_2						: std_logic_vector(4 downto 0)		:= to_slv( 3, 5);--PHY Identifier
+	constant C_MDIO_REGADR_NEXTPAGE_TRANSMIT					: std_logic_vector(4 downto 0)		:= to_slv( 7, 5);--Auto-Negotiation Next Page Transmit 
+	constant C_MDIO_REGADR_AUTONEG_ADVERTISEMENT			: std_logic_vector(4 downto 0)		:= to_slv( 4, 5);--Auto-Negotiation Advertisement
+	constant C_MDIO_REGADR_AUTONEG_EXPANION						: std_logic_vector(4 downto 0)		:= to_slv( 6, 5);--Auto-Negotiation Expansion
+	constant C_MDIO_REGADR_LINKPARTNER_ABILITY				: std_logic_vector(4 downto 0)		:= to_slv( 5, 5);--Auto-Negotiation Link Partner Base Page Ability
+	constant C_MDIO_REGADR_LINKPARTNER_NEXTPAGE				: std_logic_vector(4 downto 0)		:= to_slv( 8, 5);--Auto-Negotiation Link Partner Received Next Page
+	constant C_MDIO_REGADR_1000BASET_CONTROL					: std_logic_vector(4 downto 0)		:= to_slv( 9, 5);--MASTER-SLAVE Control Register
+	constant C_MDIO_REGADR_1000BASET_STATUS						: std_logic_vector(4 downto 0)		:= to_slv(10, 5);--MASTER-SLAVE Status Register
+	--Vendor Specific below
 	constant C_MDIO_REGADR_PHY_SPECIFIC_CONTROL				: std_logic_vector(4 downto 0)		:= to_slv(16, 5);
 	constant C_MDIO_REGADR_EXT_PHY_SPECIFIC_CONTROL		: std_logic_vector(4 downto 0)		:= to_slv(20, 5);
 	constant C_MDIO_REGADR_EXT_PHY_SPECIFIC_CONTROL2	: std_logic_vector(4 downto 0)		:= to_slv(26, 5);
@@ -120,7 +126,7 @@ architecture rtl of Eth_PHYController_Marvell_88E1111 is
 	constant TTID_WAITTIME_AFTER_LINK_UP							: natural		:= 1;
 	
 	constant TIMING_TABLE															: T_NATVEC	:= (
-		TTID_RESET_PULSE								=> TimingToCycles(2.0,	CLOCK_FREQ),
+		TTID_RESET_PULSE								=> TimingToCycles(5.0,	CLOCK_FREQ),
 		TTID_WAITTIME_AFTER_LINK_UP			=> TimingToCycles(1.0e-3,			CLOCK_FREQ)
 	);
 	
@@ -137,6 +143,8 @@ architecture rtl of Eth_PHYController_Marvell_88E1111 is
 	signal Status_rst																	: std_logic;
 	signal Status_set																	: std_logic;
 	signal Status_r																		: std_logic												:= '0';
+	
+	signal Error_nxt																	: T_NET_ETH_PHYCONTROLLER_ERROR;
 	
 begin
 
@@ -163,15 +171,22 @@ begin
 			else
 				State			<= NextState;
 			end if;
+			
+			if (Reset = '1') then
+				 Error <= NET_ETH_PHYC_ERROR_NONE;
+--			elsif (State = ST_ERROR) then
+			elsif (Error_nxt /= NET_ETH_PHYC_ERROR_NONE) then
+				Error <= Error_nxt;
+			end if;
 		end if;
 	end process;
 	
-	process(State, Command, TC_Timeout, PHY_Interrupt_l, MDIO_Status, MDIO_Error, MDIO_Register_DataIn, Status_r)
+	process(State, Command, TC_Timeout, PHY_Interrupt_l, MDIO_Status, MDIO_Error, MDIO_Register_DataIn, Status_r, MDIO_Read_Register)
 	begin
 		NextState								<= State;
 		
 		Status									<= NET_ETH_PHYC_STATUS_RESETING;
-		Error										<= NET_ETH_PHYC_ERROR_NONE;
+		Error_nxt								<= NET_ETH_PHYC_ERROR_NONE;
 		
 		PHY_Reset								<= '0';
 		
@@ -187,10 +202,12 @@ begin
 		PHY_Interrupt_rst				<= '0';
 		Status_rst							<= '0';
 		Status_set							<= '0';
+		MDIO_Register_Data			<= MDIO_Register_Data;
 		
 		case State is
 			when ST_RESET =>
 				Status							<= NET_ETH_PHYC_STATUS_RESETING;
+				Error_nxt								<= NET_ETH_PHYC_ERROR_NONE;
 				
 				TC_Load							<= '1';
 				TC_Slot							<= TTID_RESET_PULSE;
@@ -206,6 +223,8 @@ begin
 				
 				if (TC_Timeout = '1') then
 					NextState					<= ST_SEARCH_DEVICE;
+--					NextState					<= ST_WRITE_PHY_CONTROL;
+--					NextState					<= ST_READ_PHY_FOR_UPPER;
 				end if;
 				
 			when ST_SEARCH_DEVICE =>
@@ -223,15 +242,18 @@ begin
 						
 					when IO_MDIO_MDIOC_STATUS_CHECK_OK =>
 						NextState				<= ST_READ_DEVICE_ID_1;
+--						NextState				<= ST_WRITE_PHY_CONTROL;
 						
 					when IO_MDIO_MDIOC_STATUS_CHECK_FAILED =>
 						NextState				<= ST_SEARCH_DEVICE;
 						
 					when IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState				<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
 						
 					when others =>
 						NextState				<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
 				end case;	-- MDIO_Status
 				
 			when ST_READ_DEVICE_ID_1 =>
@@ -253,14 +275,17 @@ begin
 						if (MDIO_Register_DataIn = x"0141") then									-- OUI
 							NextState					<= ST_READ_DEVICE_ID_2;
 						else
+							Error_nxt					<= NET_ETH_PHYC_ERROR_NO_MATCH_DEVICE_ID;
 							NextState					<= ST_ERROR;
 						end if;
 						
 					when IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState					<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
 						
 					when others =>
 						NextState					<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
 						
 				end case;	-- MDIO_Status
 				
@@ -287,13 +312,16 @@ begin
 							NextState					<= ST_READ_PHY_SPECIFIC_STATUS;
 						else
 							NextState					<= ST_ERROR;
+							Error_nxt						<= NET_ETH_PHYC_ERROR_NO_MATCH_DEVICE_ID;----------------------------
 						end if;
 						
 					when IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState					<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;-------------------------------
 						
 					when others =>
 						NextState					<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;----------------------------
 						
 				end case;	-- MDIO_Status
 				
@@ -319,9 +347,11 @@ begin
 						
 					when IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState					<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
 						
 					when others =>
 						NextState					<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
 						
 				end case;	-- MDIO_Status
 				
@@ -369,9 +399,11 @@ begin
 						
 					when IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState					<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
 						
 					when others =>
 						NextState					<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
 						
 				end case;	-- MDIO_Status
 				
@@ -399,25 +431,91 @@ begin
 						null;
 						
 					when IO_MDIO_MDIOC_STATUS_READ_COMPLETE =>
-						if ((MDIO_Register_DataIn(15)	= '1') and
-								(MDIO_Register_DataIn(14)	= '0') and
-								(MDIO_Register_DataIn(13)	= '1') and
-								(MDIO_Register_DataIn(11)	= '1') and
-								(MDIO_Register_DataIn(10)	= '1') and
-								(MDIO_Register_DataIn(4)	= '0'))
+						MDIO_Register_Data <= MDIO_Register_DataIn;
+						if ((MDIO_Register_DataIn(15)	= '1') and		--speed
+								(MDIO_Register_DataIn(14)	= '0') and		--speed
+								(MDIO_Register_DataIn(13)	= '1') and		--FUll-Duplex	
+								(MDIO_Register_DataIn(11)	= '1') and		--Auto-neg off
+								(MDIO_Register_DataIn(10)	= '1') and		--Link Up
+								(MDIO_Register_DataIn(4)	= '0'))				--Aktiv (not sleep)
 						then
 							Status_set			<= '1';
 						else
 							Status_rst			<= '1';
 						end if;
 						
-						NextState					<= ST_READ_PHY_SPECIFIC_STATUS;
+						if Command = NET_ETH_PHYC_CMD_NONE then
+							NextState					<= ST_READ_PHY_SPECIFIC_STATUS;
+						elsif Command = NET_ETH_PHYC_CMD_READ then
+							NextState					<= ST_READ_PHY_FOR_UPPER;
+						end if;
 						
 					when IO_MDIO_MDIOC_STATUS_ERROR =>
 						NextState					<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
 						
 					when others =>
 						NextState					<= ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
+						
+				end case;	-- MDIO_Status
+			
+			when ST_WRITE_PHY_CONTROL =>
+				Status									<= NET_ETH_PHYC_STATUS_CONNECTED;
+			
+				MDIO_Command						<= IO_MDIO_MDIOC_CMD_WRITE;
+				MDIO_Register_Address		<= C_MDIO_REGADR_COMMAND;
+				MDIO_Register_DataOut		<= "0001000101000000";
+				
+				NextState								<= ST_WRITE_PHY_CONTROL_WAIT;
+			
+			when ST_WRITE_PHY_CONTROL_WAIT =>
+				Status									<= NET_ETH_PHYC_STATUS_CONNECTED;
+							
+				case MDIO_Status is
+					when IO_MDIO_MDIOC_STATUS_WRITING =>
+						null;
+						
+					when IO_MDIO_MDIOC_STATUS_WRITE_COMPLETE =>
+--						NextState					<= ST_READ_STATUS;
+--						NextState					<= ST_READ_PHY_SPECIFIC_STATUS;
+						NextState					<= ST_READ_PHY_FOR_UPPER;
+						
+					when IO_MDIO_MDIOC_STATUS_ERROR =>
+						NextState					<= ST_WRITE_PHY_CONTROL;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
+						
+					when others =>
+						NextState					<= ST_WRITE_PHY_CONTROL;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
+						
+				end case;	-- MDIO_Status
+			
+			when ST_READ_PHY_FOR_UPPER =>
+				Status						<= NET_ETH_PHYC_STATUS_READING;
+				MDIO_Command						<= IO_MDIO_MDIOC_CMD_READ;
+				MDIO_Register_Address		<= MDIO_Read_Register;
+				
+				NextState								<= ST_READ_PHY_FOR_UPPER_WAIT;
+				
+			when ST_READ_PHY_FOR_UPPER_WAIT =>
+				Status						<= NET_ETH_PHYC_STATUS_READING;
+				
+				case MDIO_Status is
+					when IO_MDIO_MDIOC_STATUS_READING =>
+						null;
+						
+					when IO_MDIO_MDIOC_STATUS_READ_COMPLETE =>
+						MDIO_Register_Data <= MDIO_Register_DataIn;
+						NextState					<= ST_READ_PHY_FOR_UPPER;--ST_READ_PHY_SPECIFIC_STATUS;
+						
+					when IO_MDIO_MDIOC_STATUS_ERROR =>
+						NextState					<= ST_READ_PHY_FOR_UPPER;--ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
+						
+					when others =>
+						NextState					<= ST_READ_PHY_FOR_UPPER;--ST_ERROR;
+						Error_nxt						<= NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR;
 						
 				end case;	-- MDIO_Status
 				

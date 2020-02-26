@@ -50,7 +50,8 @@ entity eth_Wrapper_Series7 is
 		CLOCKIN_FREQ								: FREQ															:= 125.0 MHz;															-- 125 MHz
 		ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
 		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		--
-		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_SGMII		--
+		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_SGMII;		--
+		IS_SIM										: boolean 													:= FALSE
 	);
 	port (
 		-- clock interface
@@ -79,7 +80,9 @@ entity eth_Wrapper_Series7 is
 		RX_EOF										: out	std_logic;
 		RX_Ack										: in	std_logic;
 		
-		PHY_Interface							:	inout	T_NET_ETH_PHY_INTERFACES
+		Core_Status								: out t_slv_16;--std_logic_vector (15 downto 0);
+		
+		PHY_Interface							:	inout	T_NET_ETH_PHY_INTERFACES := C_NET_ETH_PHY_INTERFACES_INIT
 	);
 end entity;
 
@@ -106,6 +109,10 @@ architecture rtl of eth_Wrapper_Series7 is
 	
 	signal TX_Reset									: std_logic;		-- FIXME:
 	signal RX_Reset									: std_logic;		-- FIXME:
+	
+	signal an_interrupt         : std_logic;                    -- Interrupt to processor to signal that Auto-Negotiation has completed
+	signal an_adv_config_vector : std_logic_vector(15 downto 0) := "0001100000000001"; -- Alternate interface to program REG4 (AN ADV)
+	signal an_restart_config    : std_logic;                     -- Alternate signal to modify AN restart bit in REG0
 	
 begin
 
@@ -200,7 +207,7 @@ begin
 			begin
 				GMII	: entity PoC.eth_RSLayer_GMII_GMII_Xilinx
 					port map (
-						Reset_async								=> '0',--Reset_async,
+						Reset_async								=> '0',--Reset_async,		--TODO: CHECK
 									
 						RS_TX_Clock								=> '0',--RS_TX_Clock,
 						RS_RX_Clock								=> RS_RX_Clock,
@@ -228,62 +235,36 @@ begin
 			
 			
 				PCS : entity PoC.eth_RSLayer_GMII_SGMII_Series7
+					generic map (
+						IS_SIM 									=> IS_SIM
+					)
 					port map (
-						reset									=> reset,
-						resetdone => open,
-						
-						-- status
-						status_vector					=> open,
-						
-						speed_is_10_100 => '0',
-						speed_is_100 => '1',
-						
-						-- configuration interface (disabled)
-						configuration_vector	=> (others => '0'),
-						
-						-- GMII Interface
-						gmii_isolate					=> open,
-						gmii_txd							=> RS_TX_Data,			-- Transmit data from client MAC.
-						gmii_tx_en						=> RS_TX_Valid,			-- Transmit control signal from client MAC.
-						gmii_tx_er						=> RS_TX_Error,			-- Transmit control signal from client MAC.
-						gmii_rxd							=> RS_RX_Data, 			-- Received Data to client MAC.
-						gmii_rx_dv						=> RS_RX_Valid,			-- Received control signal to client MAC.
-						gmii_rx_er						=> RS_RX_Error,			-- Received control signal to client MAC.
-						
-						-- SGMII PHY Interface
-						txn => PHY_Interface.SGMII.tx_n,
-						txp => PHY_Interface.SGMII.tx_p,
-						rxn => PHY_Interface.SGMII.rx_n,
-						rxp => PHY_Interface.SGMII.rx_p,
-						
-						--CLK's
-						pma_reset => '0',
-						mmcm_reset => open,
-						
-						mmcm_locked => '1',
-						cplllock => open,
-						
-						userclk => RS_RX_Clock,
-						userclk2 => RS_RX_Clock,
-						
-						gtrefclk_bufg => RS_RX_Clock,
-						gtrefclk => RS_RX_Clock,
-							
-						independent_clock_bufg => RS_RX_Clock,
-						txoutclk => open,
-						rxoutclk => open,
-						rxuserclk => RS_RX_Clock,
-						rxuserclk2 => RS_RX_Clock,
-						sgmii_clk_r => open,
-						sgmii_clk_f => open,
-						sgmii_clk_en => open,
-						gt0_qplloutclk_in => RS_RX_Clock,
-						gt0_qplloutrefclk_in => RS_RX_Clock,
-						
-						-- optical light detected in optical transceiver
-						signal_detect					=> '1'
-						
+					Clock											=> TX_Clock,
+					Reset											=> reset,
 			
+					-- GEMAC-GMII interface
+					RS_TX_Clock								=>RS_TX_Clock,
+					RS_TX_Valid								=>RS_TX_Valid,
+					RS_TX_Data								=>RS_TX_Data	,
+					RS_TX_Error								=>RS_TX_Error,
+			                                 
+					RS_RX_Clock								=>RS_RX_Clock,
+					RS_RX_Valid								=>RS_RX_Valid,
+					RS_RX_Data								=>RS_RX_Data	,
+					RS_RX_Error								=>RS_RX_Error,
+					
+					status_vector							=> Core_Status,
+					configuration_vector			=> (others => '0'),
+					 resetdone           => open,                    -- The GT transceiver has completed its reset cycle
+					 speed_is_10_100           => '0',  
+					 speed_is_100            => '0', 
+					 
+--				 an_interrupt         => an_interrupt,--open,
+--					an_adv_config_vector => an_adv_config_vector,--"0001100000000001",
+--					an_restart_config    => an_restart_config,--'0',
+			
+					-- PHY-SGMII interface
+					PHY_Interface							=> PHY_Interface
 			
 			
 					);

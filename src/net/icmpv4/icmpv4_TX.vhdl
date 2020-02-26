@@ -123,8 +123,8 @@ begin
 		end if;
 	end process;
 
-	process(State, Command, Out_Ack, PayloadROM_Reader_ov, PayloadROM_Data, In_Meta_Type, In_Meta_Code, 
-					Checksum, In_Meta_Identification, In_Meta_SequenceNumber, In_Meta_Payload_Data)
+	process(State, Command, Out_Ack, PayloadROM_Reader_ov, PayloadROM_Data, In_Meta_Type, In_Meta_Code, Checksum, 
+					In_Meta_Identification, In_Meta_SequenceNumber, In_Meta_Payload_Data, In_Meta_Payload_last)
 	begin
 		NextState													<= State;
 
@@ -136,6 +136,7 @@ begin
 		Out_SOF														<= '0';
 		Out_EOF														<= '0';
 		Out_Meta_Length										<= (others => '0');
+		In_Meta_Payload_nxt								<= '0';
 
 		PayloadROM_Reader_nxt							<= '0';
 
@@ -311,6 +312,6 @@ begin
 	PayloadROM_Data									<= PAYLOAD_ROM(to_integer(PayloadROM_Reader_us));
 
 	In_Meta_IPv4Address_nxt					<= Out_Meta_DestIPv4Address_nxt;
+	In_Meta_rst											<= Out_Meta_rst;
 	Out_Meta_DestIPv4Address_Data		<= In_Meta_IPv4Address_Data;
-	In_Meta_rst	<= Out_Meta_rst;
 end architecture;

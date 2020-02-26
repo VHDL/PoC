@@ -165,8 +165,7 @@ begin
 
 	process(FSM_State,
 					Command,
-					TX_Status, TX_Error, TX_Meta_Payload_nxt, TX_Meta_rst, TX_Meta_IPv4Address_nxt, IPv4Address_Data,
-					RX_Meta_SrcIPv4Address_Data, 
+					TX_Status, TX_Error, TX_Meta_Payload_nxt, IPv4Address_Data, TX_Meta_rst, TX_Meta_IPv4Address_nxt, RX_Meta_SrcIPv4Address_Data,
 					RX_Status, RX_Error, RX_Meta_Identification, RX_Meta_SequenceNumber, RX_Meta_Payload_Data, RX_Meta_Payload_last)
 	begin
 		FSM_NextState											<= FSM_State;
@@ -190,6 +189,11 @@ begin
 		FSM_RX_Meta_SrcIPv4Address_nxt		<= '0';
 		FSM_RX_Meta_DestIPv4Address_nxt		<= '0';
 		FSM_RX_Meta_Payload_nxt						<= '0';
+		FSM_TX_Meta_IPv4Address_Data			<= IPv4Address_Data;
+		
+		IPv4Address_rst								    <= '0';
+		IPv4Address_nxt								    <= '0';
+
 
 		case FSM_State is
 			when ST_IDLE =>
@@ -239,6 +243,8 @@ begin
 				end case;
 
 			when ST_WAIT_FOR_ECHO_REPLY =>
+				IPv4Address_rst								<= '1';
+				
 				case RX_Status is
 					when NET_ICMPV4_RX_STATUS_IDLE =>										null;
 					when NET_ICMPV4_RX_STATUS_RECEIVING =>							null;
@@ -298,6 +304,7 @@ begin
 
 			-- ======================================================================
 			when ST_ERROR =>
+				IPv4Address_rst								<= '1';
 				Status												<= NET_ICMPV4_STATUS_ERROR;
 				Error													<= NET_ICMPV4_ERROR_FSM;
 				FSM_NextState									<= ST_IDLE;

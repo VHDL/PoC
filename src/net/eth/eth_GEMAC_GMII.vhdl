@@ -160,7 +160,7 @@ begin
 			XClk_TX_FIFO : entity PoC.fifo_ic_got
 				generic map (
 					D_BITS							=> XClk_TX_FIFO_DataIn'length,
-					MIN_DEPTH						=> 16,
+					MIN_DEPTH						=> 4096,--todo
 					DATA_REG						=> TRUE,
 					OUTPUT_REG					=> FALSE,
 					ESTATE_WR_BITS			=> 0,
