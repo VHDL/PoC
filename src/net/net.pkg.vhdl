@@ -96,67 +96,76 @@ package net is
 	);
 
 	-- FPGA <=> PHY physical interface: GMII (Gigabit Media Independant Interface)
-	type T_NET_ETH_PHY_INTERFACE_GMII is record
+	type T_NET_ETH_PHY_INTERFACE_GMII_P2F is record     --Port-to-Fabric (in)
 		RX_RefClock						: std_logic;
-
-		TX_Clock							: std_logic;
-		TX_Valid							: std_logic;
-		TX_Data								: T_SLV_8;
-		TX_Error							: std_logic;
 
 		RX_Clock							: std_logic;
 		RX_Valid							: std_logic;
 		RX_Data								: T_SLV_8;
 		RX_Error							: std_logic;
 	end record;
+	type T_NET_ETH_PHY_INTERFACE_GMII_F2P is record     --Fabric-to-Port (out)
+		TX_Clock							: std_logic;
+		TX_Valid							: std_logic;
+		TX_Data								: T_SLV_8;
+		TX_Error							: std_logic;
+	end record;
 
 	-- FPGA <=> PHY physical interface: RGMII (Reduced Gigabit Media Independant Interface)
-	type T_NET_ETH_PHY_INTERFACE_RGMII is record
+	type T_NET_ETH_PHY_INTERFACE_RGMII_P2F is record     --Port-to-Fabric (in)
 		RX_RefClock						: std_logic;
-
-		TX_Clock							: std_logic;
-		TX_Data								: T_SLV_4;
-		TX_Control						: std_logic;
-
+		
 		RX_Clock							: std_logic;
 		RX_Data								: T_SLV_4;
 		RX_Control						: std_logic;
+	end record;	
+	type T_NET_ETH_PHY_INTERFACE_RGMII_F2P is record     --Fabric-to-Port (out)
+		TX_Clock							: std_logic;
+		TX_Data								: T_SLV_4;
+		TX_Control						: std_logic;
 	end record;
 
 	-- FPGA <=> PHY physical interface: SGMII (Serial GMII)
-	type	T_SGMII_LANE			is record
-		TX_P									: std_logic;
-		TX_N									: std_logic;
+--	subtype T_SGMII_LANE_P2F is T_IO_LVDS;
+--	subtype T_SGMII_LANE_F2P is T_IO_LVDS;
+--	type	T_SGMII_LANE			is record
+--		TX_P									: std_logic;
+--		TX_N									: std_logic;
 		
-		RX_P									: std_logic;
-		RX_N									: std_logic;
-	end record;
+--		RX_P									: std_logic;
+--		RX_N									: std_logic;
+--	end record;
 	
-	type 		T_SGMII_LANE_VECTOR is array (natural range <>) of T_SGMII_LANE;
+--	type 		T_SGMII_LANE_P2F_VECTOR is array (natural range <>) of T_IO_LVDS;
+--	type 		T_SGMII_LANE_F2P_VECTOR is array (natural range <>) of T_IO_LVDS;
 	
-	type T_NET_ETH_PHY_INTERFACE_SGMII is record
+	type T_NET_ETH_PHY_INTERFACE_SGMII_P2F is record     --Port-to-Fabric (in)
 		DGB_SystemClock_In		: std_logic;
-		DGB_AutoNeg_Restart		: std_logic;
 
 		SGMII_RefClock_In			: std_logic;
+		RX_Lane								: T_IO_LVDS_VECTOR;--(3 downto 0);
+	end record;	
+	type T_NET_ETH_PHY_INTERFACE_SGMII_F2P is record     --Fabric-to-Port (out)
+		DGB_AutoNeg_Restart		: std_logic;
+
 		SGMII_TXRefClock_Out	: std_logic;
 		SGMII_RXRefClock_Out	: std_logic;
 
-		Lane									: T_SGMII_LANE_VECTOR;--(3 downto 0);
+		TX_Lane									: T_IO_LVDS_VECTOR;--(3 downto 0);
 	end record;
 	
 	-- FPGA <=> PHY physical interface: XGMII
-	type		XGMII_LANE is record
-		Data		: std_logic_vector(7 downto 0);
-		Control	: std_logic;
-	end record;
+--	type		XGMII_LANE is record
+--		Data		: std_logic_vector(7 downto 0);
+--		Control	: std_logic;
+--	end record;
 	
-	type		XGMII_LANE_VECTOR is array (natural range <>) of XGMII_LANE;
+--	type		XGMII_LANE_VECTOR is array (natural range <>) of XGMII_LANE;
 	
-	type T_NET_ETH_PHY_INTERFACE_XGMII is record
-		RefClock						: std_logic;
-		Lane								: XGMII_LANE_VECTOR(3 downto 0);
-	end record;
+--	type T_NET_ETH_PHY_INTERFACE_XGMII is record
+--		RefClock						: std_logic;
+--		Lane								: XGMII_LANE_VECTOR(3 downto 0);
+--	end record;
 
 	-- FPGA <=> PHY management interface: MDIO (Management Data Input/Output)
 	type T_NET_ETH_PHY_INTERFACE_MDIO is record
@@ -164,41 +173,48 @@ package net is
 		Data_ts								: T_IO_TRISTATE;	-- data (MDIO)
 	end record;
 
-	type T_NET_ETH_PHY_INTERFACE_COMMON is record
-		Reset									: std_logic;
-		Interrupt							: std_logic;
-	end record;
+--	type T_NET_ETH_PHY_INTERFACE_COMMON is record
+--		Reset									: std_logic;
+--		Interrupt							: std_logic;
+--	end record;
 
 	-- combined interface definition - union-types are still not supported in VHDL
-	type T_NET_ETH_PHY_INTERFACES is record
-		GMII									: T_NET_ETH_PHY_INTERFACE_GMII;
-		RGMII									: T_NET_ETH_PHY_INTERFACE_RGMII;
-		SGMII									: T_NET_ETH_PHY_INTERFACE_SGMII;
-		MDIO									: T_NET_ETH_PHY_INTERFACE_MDIO;
-		Common								: T_NET_ETH_PHY_INTERFACE_COMMON;
-	end record;
+--	type T_NET_ETH_PHY_INTERFACES_P2F is record     --Port-to-Fabric (in)
+--		GMII									: T_NET_ETH_PHY_INTERFACE_GMII;
+--		RGMII									: T_NET_ETH_PHY_INTERFACE_RGMII;
+--		SGMII									: T_NET_ETH_PHY_INTERFACE_SGMII;
+--		MDIO									: T_NET_ETH_PHY_INTERFACE_MDIO;
+--		Common								: T_NET_ETH_PHY_INTERFACE_COMMON;
+--	end record;	
+--	type T_NET_ETH_PHY_INTERFACES_F2P is record     --Fabric-to-Port (out)
+--		GMII									: T_NET_ETH_PHY_INTERFACE_GMII;
+--		RGMII									: T_NET_ETH_PHY_INTERFACE_RGMII;
+--		SGMII									: T_NET_ETH_PHY_INTERFACE_SGMII;
+--		MDIO									: T_NET_ETH_PHY_INTERFACE_MDIO;
+--		Common								: T_NET_ETH_PHY_INTERFACE_COMMON;
+--	end record;
 
-	constant C_NET_ETH_PHY_INTERFACE_GMII_INIT : T_NET_ETH_PHY_INTERFACE_GMII := (
-		RX_RefClock				=> 'Z',
-		TX_Clock					=> 'Z',
-		TX_Valid					=> 'Z',
-		TX_Data						=> (others => 'Z'),
-		TX_Error					=> 'Z',
-		RX_Clock					=> 'Z',
-		RX_Valid					=> 'Z',
-		RX_Data						=> (others => 'Z'),
-		RX_Error					=> 'Z'
-	);
-	constant C_NET_ETH_PHY_INTERFACE_RGMII_INIT : T_NET_ETH_PHY_INTERFACE_RGMII := (
-		RX_RefClock				=> 'Z',
-		TX_Clock					=> 'Z',
-		TX_Data						=> (others => 'Z'),
-		TX_Control				=> 'Z',
-		RX_Clock					=> 'Z',
-		RX_Data						=> (others => 'Z'),
-		RX_Control				=> 'Z'
-	);
-	constant C_SGMII_LANE_INIT	: T_SGMII_LANE := (TX_P => 'Z', TX_N => 'Z', RX_P => 'Z', RX_N => 'Z');
+--	constant C_NET_ETH_PHY_INTERFACE_GMII_INIT : T_NET_ETH_PHY_INTERFACE_GMII := (
+--		RX_RefClock				=> 'Z',
+--		TX_Clock					=> 'Z',
+--		TX_Valid					=> 'Z',
+--		TX_Data						=> (others => 'Z'),
+--		TX_Error					=> 'Z',
+--		RX_Clock					=> 'Z',
+--		RX_Valid					=> 'Z',
+--		RX_Data						=> (others => 'Z'),
+--		RX_Error					=> 'Z'
+--	);
+--	constant C_NET_ETH_PHY_INTERFACE_RGMII_INIT : T_NET_ETH_PHY_INTERFACE_RGMII := (
+--		RX_RefClock				=> 'Z',
+--		TX_Clock					=> 'Z',
+--		TX_Data						=> (others => 'Z'),
+--		TX_Control				=> 'Z',
+--		RX_Clock					=> 'Z',
+--		RX_Data						=> (others => 'Z'),
+--		RX_Control				=> 'Z'
+--	);
+--	constant C_SGMII_LANE_INIT	: T_SGMII_LANE := (TX_P => 'Z', TX_N => 'Z', RX_P => 'Z', RX_N => 'Z');
 --	constant C_NET_ETH_PHY_INTERFACE_SGMII_INIT : T_NET_ETH_PHY_INTERFACE_SGMII := (
 --		DGB_SystemClock_In		=> 'Z',
 --		DGB_AutoNeg_Restart		=> 'Z',
@@ -207,14 +223,14 @@ package net is
 --		SGMII_RXRefClock_Out	=> 'Z',
 --		Lane									=> (others => C_SGMII_LANE_INIT)
 --	);
-	constant C_NET_ETH_PHY_INTERFACE_MDIO_INIT : T_NET_ETH_PHY_INTERFACE_MDIO := (
-		Clock_ts	=> (I => 'Z', O => 'Z', T => 'Z'),
-		Data_ts		=> (I => 'Z', O => 'Z', T => 'Z')
-	);
-	constant C_NET_ETH_PHY_INTERFACE_COMMON_INIT : T_NET_ETH_PHY_INTERFACE_COMMON := (
-		Reset							=> 'Z',
-		Interrupt					=> 'Z'
-	);
+--	constant C_NET_ETH_PHY_INTERFACE_MDIO_INIT : T_NET_ETH_PHY_INTERFACE_MDIO := (
+--		Clock_ts	=> (I => 'Z', O => 'Z', T => 'Z'),
+--		Data_ts		=> (I => 'Z', O => 'Z', T => 'Z')
+--	);
+--	constant C_NET_ETH_PHY_INTERFACE_COMMON_INIT : T_NET_ETH_PHY_INTERFACE_COMMON := (
+--		Reset							=> 'Z',
+--		Interrupt					=> 'Z'
+--	);
 --	constant C_NET_ETH_PHY_INTERFACES_INIT : T_NET_ETH_PHY_INTERFACES := (
 --		GMII									=> C_NET_ETH_PHY_INTERFACE_GMII_INIT,
 --		RGMII									=> C_NET_ETH_PHY_INTERFACE_RGMII_INIT,
@@ -223,7 +239,14 @@ package net is
 --		Common								=> C_NET_ETH_PHY_INTERFACE_COMMON_INIT
 --	);
 	
-	function generate_C_NET_ETH_PHY_INTERFACES_INIT(length : natural) return T_NET_ETH_PHY_INTERFACES;
+--	function generate_C_NET_ETH_PHY_INTERFACES_INIT(length : natural) return T_NET_ETH_PHY_INTERFACES;
+	function init                  return T_NET_ETH_PHY_INTERFACE_MDIO;
+	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_F2P;
+	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_P2F;
+	function init                  return T_NET_ETH_PHY_INTERFACE_RGMII_F2P;
+	function init                  return T_NET_ETH_PHY_INTERFACE_RGMII_P2F;
+	function init                  return T_NET_ETH_PHY_INTERFACE_GMII_F2P;
+	function init                  return T_NET_ETH_PHY_INTERFACE_GMII_P2F;
 
 	-- ==========================================================================================================================================================
 	-- Ethernet: physical coding sublayer (PCS)
@@ -247,7 +270,7 @@ package net is
 	type T_NET_ETH_RS_DATA_INTERFACE is (
 		NET_ETH_RS_DATA_INTERFACE_MII,
 		NET_ETH_RS_DATA_INTERFACE_GMII,
-		NET_ETH_RS_DATA_INTERFACE_TRANSCEIVER,
+		NET_ETH_RS_DATA_INTERFACE_SGMII,
 		NET_ETH_RS_DATA_INTERFACE_EMPTY
 	);
 
@@ -818,23 +841,84 @@ end package;
 
 package body net is
 	
-	function generate_C_NET_ETH_PHY_INTERFACES_INIT(length : natural) return T_NET_ETH_PHY_INTERFACES is
-		constant C_SGMII_LANE_INIT_VECTOR	: T_SGMII_LANE_VECTOR(length -1 downto 0) := (length -1 downto 0 => C_SGMII_LANE_INIT);
-		constant C_NET_ETH_PHY_INTERFACE_SGMII_INIT : T_NET_ETH_PHY_INTERFACE_SGMII := (
-			DGB_SystemClock_In		=> 'Z',
-			DGB_AutoNeg_Restart		=> 'Z',
-			SGMII_RefClock_In			=> 'Z',
-			SGMII_TXRefClock_Out	=> 'Z',
-			SGMII_RXRefClock_Out	=> 'Z',
-			Lane									=> (1 downto 0 => C_SGMII_LANE_INIT)--C_SGMII_LANE_INIT_VECTOR
-		);
+--	function generate_C_NET_ETH_PHY_INTERFACES_INIT(length : natural) return T_NET_ETH_PHY_INTERFACES is
+--		constant C_SGMII_LANE_INIT_VECTOR	: T_SGMII_LANE_VECTOR(length -1 downto 0) := (length -1 downto 0 => C_SGMII_LANE_INIT);
+--		constant C_NET_ETH_PHY_INTERFACE_SGMII_INIT : T_NET_ETH_PHY_INTERFACE_SGMII := (
+--			DGB_SystemClock_In		=> 'Z',
+--			DGB_AutoNeg_Restart		=> 'Z',
+--			SGMII_RefClock_In			=> 'Z',
+--			SGMII_TXRefClock_Out	=> 'Z',
+--			SGMII_RXRefClock_Out	=> 'Z',
+--			Lane									=> (1 downto 0 => C_SGMII_LANE_INIT)--C_SGMII_LANE_INIT_VECTOR
+--		);
+--	begin
+--		return (
+--			GMII									=> C_NET_ETH_PHY_INTERFACE_GMII_INIT,
+--			RGMII									=> C_NET_ETH_PHY_INTERFACE_RGMII_INIT,
+--			SGMII									=> C_NET_ETH_PHY_INTERFACE_SGMII_INIT,
+--			MDIO									=> C_NET_ETH_PHY_INTERFACE_MDIO_INIT,
+--			Common								=> C_NET_ETH_PHY_INTERFACE_COMMON_INIT
+--		);
+--	end function;
+
+	function init return T_NET_ETH_PHY_INTERFACE_MDIO is
+	begin
+		return (Clock_ts	=> (I => 'Z', O => 'Z', T => 'Z'),
+		        Data_ts   => (I => 'Z', O => 'Z', T => 'Z'));
+	end function;
+	function init                  return T_NET_ETH_PHY_INTERFACE_GMII_F2P is
 	begin
 		return (
-			GMII									=> C_NET_ETH_PHY_INTERFACE_GMII_INIT,
-			RGMII									=> C_NET_ETH_PHY_INTERFACE_RGMII_INIT,
-			SGMII									=> C_NET_ETH_PHY_INTERFACE_SGMII_INIT,
-			MDIO									=> C_NET_ETH_PHY_INTERFACE_MDIO_INIT,
-			Common								=> C_NET_ETH_PHY_INTERFACE_COMMON_INIT
+			TX_Clock		=> 'Z',
+			TX_Valid		=> 'Z',
+			TX_Data			=> (others => 'Z'),
+			TX_Error		=> 'Z'
+		);
+	end function;
+	function init                  return T_NET_ETH_PHY_INTERFACE_GMII_P2F is
+	begin
+		return (
+			RX_RefClock	=> 'Z',
+			RX_Clock		=> 'Z',
+			RX_Valid	  => 'Z',
+			RX_Data			=> (others => 'Z'),
+			RX_Error    => 'Z'
+		);
+	end function;
+	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_F2P is
+		variable temp : T_NET_ETH_PHY_INTERFACE_SGMII_F2P(TX_Lane(0 to Lanes -1)) := (
+			DGB_AutoNeg_Restart  => 'Z',
+			SGMII_TXRefClock_Out => 'Z',
+			SGMII_RXRefClock_Out => 'Z',
+			TX_Lane              => (0 to Lanes -1 => C_IO_LVDS_INIT)
+		);
+	begin
+		return temp;
+	end function;
+	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_P2F is
+		variable temp : T_NET_ETH_PHY_INTERFACE_SGMII_P2F(RX_Lane(0 to Lanes -1)) := (
+			DGB_SystemClock_In  => 'Z',
+			SGMII_RefClock_In   => 'Z',
+			RX_Lane             => (0 to Lanes -1 => C_IO_LVDS_INIT)
+		);
+	begin
+		return temp;
+	end function;
+	function init                  return T_NET_ETH_PHY_INTERFACE_RGMII_F2P is
+	begin
+		return (
+			TX_Clock		=> 'Z',
+			TX_Data			=> (others => 'Z'),
+			TX_Control	=> 'Z'
+		);
+	end function;
+	function init                  return T_NET_ETH_PHY_INTERFACE_RGMII_P2F is
+	begin
+		return (
+			RX_RefClock	=> 'Z',
+			RX_Clock		=> 'Z',
+			RX_Data			=> (others => 'Z'),
+			RX_Control	=> 'Z'
 		);
 	end function;
 
