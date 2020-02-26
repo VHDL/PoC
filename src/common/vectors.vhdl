@@ -238,7 +238,7 @@ package vectors is
 	function to_slvv_128(slv : std_logic_vector)  return T_SLVV_128;                      --
 	function to_slvv_256(slv : std_logic_vector)  return T_SLVV_256;                      --
 	function to_slvv_512(slv : std_logic_vector)  return T_SLVV_512;                      --
-	function to_sluv_64(slv : std_logic_vector)   return T_SLUV_64;                       --
+--	function to_sluv_64(slv : std_logic_vector)   return T_SLUV_64;                       --
 
 	-- Convert matrix to avector-vector: to_slvv_*
 	function to_slvv(slm : T_SLM)     return T_SLVV;                                      --
