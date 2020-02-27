@@ -142,7 +142,7 @@ package net is
 	type T_NET_ETH_PHY_INTERFACE_SGMII_P2F is record     --Port-to-Fabric (in)
 		DGB_SystemClock_In		: std_logic;
 
-		SGMII_RefClock_In			: std_logic;
+		SGMII_RefClock_In			: T_IO_LVDS;
 		RX_Lane								: T_IO_LVDS_VECTOR;--(3 downto 0);
 	end record;	
 	type T_NET_ETH_PHY_INTERFACE_SGMII_F2P is record     --Fabric-to-Port (out)
@@ -154,18 +154,18 @@ package net is
 		TX_Lane									: T_IO_LVDS_VECTOR;--(3 downto 0);
 	end record;
 	
-	-- FPGA <=> PHY physical interface: XGMII
---	type		XGMII_LANE is record
---		Data		: std_logic_vector(7 downto 0);
---		Control	: std_logic;
---	end record;
+--	 FPGA <=> PHY physical interface: XGMII
+	type		XGMII_LANE is record
+		Data		: std_logic_vector(7 downto 0);
+		Control	: std_logic;
+	end record;
 	
---	type		XGMII_LANE_VECTOR is array (natural range <>) of XGMII_LANE;
+	type		XGMII_LANE_VECTOR is array (natural range <>) of XGMII_LANE;
 	
---	type T_NET_ETH_PHY_INTERFACE_XGMII is record
---		RefClock						: std_logic;
---		Lane								: XGMII_LANE_VECTOR(3 downto 0);
---	end record;
+	type T_NET_ETH_PHY_INTERFACE_XGMII is record
+		RefClock						: std_logic;
+		Lane								: XGMII_LANE_VECTOR;
+	end record;
 
 	-- FPGA <=> PHY management interface: MDIO (Management Data Input/Output)
 	type T_NET_ETH_PHY_INTERFACE_MDIO is record
@@ -270,7 +270,7 @@ package net is
 	type T_NET_ETH_RS_DATA_INTERFACE is (
 		NET_ETH_RS_DATA_INTERFACE_MII,
 		NET_ETH_RS_DATA_INTERFACE_GMII,
-		NET_ETH_RS_DATA_INTERFACE_SGMII,
+		NET_ETH_RS_DATA_INTERFACE_XGMII,
 		NET_ETH_RS_DATA_INTERFACE_EMPTY
 	);
 
@@ -898,7 +898,7 @@ package body net is
 	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_P2F is
 		variable temp : T_NET_ETH_PHY_INTERFACE_SGMII_P2F(RX_Lane(0 to Lanes -1)) := (
 			DGB_SystemClock_In  => 'Z',
-			SGMII_RefClock_In   => 'Z',
+			SGMII_RefClock_In   => C_IO_LVDS_INIT,
 			RX_Lane             => (0 to Lanes -1 => C_IO_LVDS_INIT)
 		);
 	begin
