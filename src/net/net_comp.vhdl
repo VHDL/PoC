@@ -46,245 +46,245 @@ PACKAGE net_comp IS
 	-- ==========================================================================================================================================================
 	-- Ethernet: reconcilation sublayer (RS)
 	-- ==========================================================================================================================================================
-	COMPONENT eth_RSLayer_GMII_GMII_Xilinx is
-	port (
-		Reset_async								: in		std_logic;			-- @async:
+--	COMPONENT eth_RSLayer_GMII_GMII_Xilinx is
+--	port (
+--		Reset_async								: in		std_logic;			-- @async:
 		
-		-- RS-GMII interface
-		RS_TX_Clock								: in		std_logic;
-		RS_TX_Valid								: in		std_logic;
-		RS_TX_Data								: in		T_SLV_8;
-		RS_TX_Error								: in		std_logic;
+--		-- RS-GMII interface
+--		RS_TX_Clock								: in		std_logic;
+--		RS_TX_Valid								: in		std_logic;
+--		RS_TX_Data								: in		T_SLV_8;
+--		RS_TX_Error								: in		std_logic;
 		
-		RS_RX_Clock								: in		std_logic;
-		RS_RX_Valid								: out		std_logic;
-		RS_RX_Data								: out		T_SLV_8;
-		RS_RX_Error								: out		std_logic;
+--		RS_RX_Clock								: in		std_logic;
+--		RS_RX_Valid								: out		std_logic;
+--		RS_RX_Data								: out		T_SLV_8;
+--		RS_RX_Error								: out		std_logic;
 		
-		-- PHY-GMII interface
-		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
-	);
-	END COMPONENT;
+--		-- PHY-GMII interface
+--		PHY_Interface							: inout	T_NET_ETH_PHY_INTERFACE_GMII
+--	);
+--	END COMPONENT;
 
-	COMPONENT Eth_RSLayer_GMII_SGMII_Virtex5 IS
-		GENERIC (
-			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
-		);
-		PORT (
-			Clock											: IN	STD_LOGIC;
-			Reset											: IN	STD_LOGIC;
+--	COMPONENT Eth_RSLayer_GMII_SGMII_Virtex5 IS
+--		GENERIC (
+--			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
+--		);
+--		PORT (
+--			Clock											: IN	STD_LOGIC;
+--			Reset											: IN	STD_LOGIC;
 			
-			-- GEMAC-GMII interface
-			RS_TX_Clock								: IN	STD_LOGIC;
-			RS_TX_Valid								: IN	STD_LOGIC;
-			RS_TX_Data								: IN	T_SLV_8;
-			RS_TX_Error								: IN	STD_LOGIC;
+--			-- GEMAC-GMII interface
+--			RS_TX_Clock								: IN	STD_LOGIC;
+--			RS_TX_Valid								: IN	STD_LOGIC;
+--			RS_TX_Data								: IN	T_SLV_8;
+--			RS_TX_Error								: IN	STD_LOGIC;
 			
-			RS_RX_Clock								: IN	STD_LOGIC;
-			RS_RX_Valid								: OUT	STD_LOGIC;
-			RS_RX_Data								: OUT	T_SLV_8;
-			RS_RX_Error								: OUT	STD_LOGIC;
+--			RS_RX_Clock								: IN	STD_LOGIC;
+--			RS_RX_Valid								: OUT	STD_LOGIC;
+--			RS_RX_Data								: OUT	T_SLV_8;
+--			RS_RX_Error								: OUT	STD_LOGIC;
 			
-			-- PHY-SGMII interface		
-			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
-		);
-	END COMPONENT;
+--			-- PHY-SGMII interface		
+--			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
+--		);
+--	END COMPONENT;
 
-	COMPONENT Eth_RSLayer_GMII_SGMII_Virtex6 IS
-		GENERIC (
-			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
-		);
-		PORT (
-			Clock											: IN	STD_LOGIC;
-			Reset											: IN	STD_LOGIC;
+--	COMPONENT Eth_RSLayer_GMII_SGMII_Virtex6 IS
+--		GENERIC (
+--			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
+--		);
+--		PORT (
+--			Clock											: IN	STD_LOGIC;
+--			Reset											: IN	STD_LOGIC;
 			
-			-- GEMAC-GMII interface
-			RS_TX_Clock								: IN	STD_LOGIC;
-			RS_TX_Valid								: IN	STD_LOGIC;
-			RS_TX_Data								: IN	T_SLV_8;
-			RS_TX_Error								: IN	STD_LOGIC;
+--			-- GEMAC-GMII interface
+--			RS_TX_Clock								: IN	STD_LOGIC;
+--			RS_TX_Valid								: IN	STD_LOGIC;
+--			RS_TX_Data								: IN	T_SLV_8;
+--			RS_TX_Error								: IN	STD_LOGIC;
 			
-			RS_RX_Clock								: IN	STD_LOGIC;
-			RS_RX_Valid								: OUT	STD_LOGIC;
-			RS_RX_Data								: OUT	T_SLV_8;
-			RS_RX_Error								: OUT	STD_LOGIC;
+--			RS_RX_Clock								: IN	STD_LOGIC;
+--			RS_RX_Valid								: OUT	STD_LOGIC;
+--			RS_RX_Data								: OUT	T_SLV_8;
+--			RS_RX_Error								: OUT	STD_LOGIC;
 			
-			-- PHY-SGMII interface		
-			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
-		);
-	END COMPONENT;
+--			-- PHY-SGMII interface		
+--			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACE_SGMII
+--		);
+--	END COMPONENT;
 
-	COMPONENT Eth_RSLayer_GMII_SGMII_Series7 IS
-		GENERIC (
-			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
-		);
-		PORT (
-			Clock											: IN	STD_LOGIC;
-			Reset											: IN	STD_LOGIC;
+--	COMPONENT Eth_RSLayer_GMII_SGMII_Series7 IS
+--		GENERIC (
+--			CLOCK_IN_FREQ							: FREQ													:= 125.0 MHz					-- 125 MHz
+--		);
+--		PORT (
+--			Clock											: IN	STD_LOGIC;
+--			Reset											: IN	STD_LOGIC;
 			
-			-- GEMAC-GMII interface
-			RS_TX_Clock								: IN	STD_LOGIC;
-			RS_TX_Valid								: IN	STD_LOGIC;
-			RS_TX_Data								: IN	T_SLV_8;
-			RS_TX_Error								: IN	STD_LOGIC;
+--			-- GEMAC-GMII interface
+--			RS_TX_Clock								: IN	STD_LOGIC;
+--			RS_TX_Valid								: IN	STD_LOGIC;
+--			RS_TX_Data								: IN	T_SLV_8;
+--			RS_TX_Error								: IN	STD_LOGIC;
 			
-			RS_RX_Clock								: IN	STD_LOGIC;
-			RS_RX_Valid								: OUT	STD_LOGIC;
-			RS_RX_Data								: OUT	T_SLV_8;
-			RS_RX_Error								: OUT	STD_LOGIC;
+--			RS_RX_Clock								: IN	STD_LOGIC;
+--			RS_RX_Valid								: OUT	STD_LOGIC;
+--			RS_RX_Data								: OUT	T_SLV_8;
+--			RS_RX_Error								: OUT	STD_LOGIC;
 			
-			-- PHY-SGMII interface		
-			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACES
-		);
-	END COMPONENT;
+--			-- PHY-SGMII interface		
+--			PHY_Interface							: INOUT	T_NET_ETH_PHY_INTERFACES
+--		);
+--	END COMPONENT;
 
-	COMPONENT eth_GMII_SGMII_PCS_Series7
-  PORT (
-		--Control
-    reset : IN STD_LOGIC;
-    resetdone : OUT STD_LOGIC;
+--	COMPONENT eth_GMII_SGMII_PCS_Series7
+--  PORT (
+--		--Control
+--    reset : IN STD_LOGIC;
+--    resetdone : OUT STD_LOGIC;
 		
-    status_vector : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-    configuration_vector : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
-    speed_is_10_100 : IN STD_LOGIC;
-    speed_is_100 : IN STD_LOGIC;
-    signal_detect : IN STD_LOGIC;
+--    status_vector : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+--    configuration_vector : IN STD_LOGIC_VECTOR(4 DOWNTO 0);
+--    speed_is_10_100 : IN STD_LOGIC;
+--    speed_is_100 : IN STD_LOGIC;
+--    signal_detect : IN STD_LOGIC;
 		
-		--CLK s
-    gtrefclk_bufg : IN STD_LOGIC;
-    gtrefclk : IN STD_LOGIC;
+--		--CLK s
+--    gtrefclk_bufg : IN STD_LOGIC;
+--    gtrefclk : IN STD_LOGIC;
 		
-    gt0_qplloutclk_in : IN STD_LOGIC;
-    gt0_qplloutrefclk_in : IN STD_LOGIC;
+--    gt0_qplloutclk_in : IN STD_LOGIC;
+--    gt0_qplloutrefclk_in : IN STD_LOGIC;
 		
-    independent_clock_bufg : IN STD_LOGIC;
+--    independent_clock_bufg : IN STD_LOGIC;
 		
-    mmcm_locked : IN STD_LOGIC;
-    mmcm_reset : OUT STD_LOGIC;
+--    mmcm_locked : IN STD_LOGIC;
+--    mmcm_reset : OUT STD_LOGIC;
 		
-    txoutclk : OUT STD_LOGIC;
-    rxoutclk : OUT STD_LOGIC;
+--    txoutclk : OUT STD_LOGIC;
+--    rxoutclk : OUT STD_LOGIC;
 		
-    cplllock : OUT STD_LOGIC;
+--    cplllock : OUT STD_LOGIC;
 		
-    pma_reset : IN STD_LOGIC;
+--    pma_reset : IN STD_LOGIC;
 		
-    userclk : IN STD_LOGIC;
-    userclk2 : IN STD_LOGIC;
+--    userclk : IN STD_LOGIC;
+--    userclk2 : IN STD_LOGIC;
 		
-    rxuserclk : IN STD_LOGIC;
-    rxuserclk2 : IN STD_LOGIC;
+--    rxuserclk : IN STD_LOGIC;
+--    rxuserclk2 : IN STD_LOGIC;
 		
-    sgmii_clk_r : OUT STD_LOGIC;
-    sgmii_clk_f : OUT STD_LOGIC;
-    sgmii_clk_en : OUT STD_LOGIC;
+--    sgmii_clk_r : OUT STD_LOGIC;
+--    sgmii_clk_f : OUT STD_LOGIC;
+--    sgmii_clk_en : OUT STD_LOGIC;
 		
-		--SGMII PHY Interface
-    txn : OUT STD_LOGIC;
-    txp : OUT STD_LOGIC;
-    rxn : IN STD_LOGIC;
-    rxp : IN STD_LOGIC;
+--		--SGMII PHY Interface
+--    txn : OUT STD_LOGIC;
+--    txp : OUT STD_LOGIC;
+--    rxn : IN STD_LOGIC;
+--    rxp : IN STD_LOGIC;
 		
-		--GMII Interface
-    gmii_txd : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-    gmii_tx_en : IN STD_LOGIC;
-    gmii_tx_er : IN STD_LOGIC;
-    gmii_rxd : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-    gmii_rx_dv : OUT STD_LOGIC;
-    gmii_rx_er : OUT STD_LOGIC;
-    gmii_isolate : OUT STD_LOGIC
-  );
-END COMPONENT;
+--		--GMII Interface
+--    gmii_txd : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+--    gmii_tx_en : IN STD_LOGIC;
+--    gmii_tx_er : IN STD_LOGIC;
+--    gmii_rxd : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+--    gmii_rx_dv : OUT STD_LOGIC;
+--    gmii_rx_er : OUT STD_LOGIC;
+--    gmii_isolate : OUT STD_LOGIC
+--  );
+--END COMPONENT;
 
-	COMPONENT eth_GMII_SGMII_PCS_Series7_transceiver is
-	generic
-	(
-			EXAMPLE_SIMULATION                      : integer   := 0          -- Set to 1 for simulation
-	);
-		 port (
-				mmcm_reset          : out   std_logic;
-				recclk_mmcm_reset   : out   std_logic;
-				data_valid          : in    std_logic;
-				independent_clock   : in    std_logic;
-				encommaalign        : in    std_logic;
-				powerdown           : in    std_logic;
-				usrclk              : in    std_logic;
-				usrclk2             : in    std_logic;
-				rxusrclk              : in    std_logic;
-				rxusrclk2             : in    std_logic;
-				txreset             : in    std_logic;
-				txdata              : in    std_logic_vector (7 downto 0);
-				txchardispmode      : in    std_logic;
-				txchardispval       : in    std_logic;
-				txcharisk           : in    std_logic;
-				rxreset             : in    std_logic;
-				rxchariscomma       : out   std_logic;
-				rxcharisk           : out   std_logic;
-				rxclkcorcnt         : out   std_logic_vector (2 downto 0);
-				rxdata              : out   std_logic_vector (7 downto 0);
-				rxdisperr           : out   std_logic;
-				rxnotintable        : out   std_logic;
-				rxrundisp           : out   std_logic;
-				rxbuferr            : out   std_logic;
-				txbuferr            : out   std_logic;
-				plllkdet            : out   std_logic;
-				txoutclk            : out   std_logic;
-				rxoutclk            : out   std_logic;
-				txn                 : out   std_logic;
-				txp                 : out   std_logic;
-				rxn                 : in    std_logic;
-				rxp                 : in    std_logic;
-				gtrefclk            : in    std_logic;
-				gtrefclk_bufg       : in    std_logic;
+--	COMPONENT eth_GMII_SGMII_PCS_Series7_transceiver is
+--	generic
+--	(
+--			EXAMPLE_SIMULATION                      : integer   := 0          -- Set to 1 for simulation
+--	);
+--		 port (
+--				mmcm_reset          : out   std_logic;
+--				recclk_mmcm_reset   : out   std_logic;
+--				data_valid          : in    std_logic;
+--				independent_clock   : in    std_logic;
+--				encommaalign        : in    std_logic;
+--				powerdown           : in    std_logic;
+--				usrclk              : in    std_logic;
+--				usrclk2             : in    std_logic;
+--				rxusrclk              : in    std_logic;
+--				rxusrclk2             : in    std_logic;
+--				txreset             : in    std_logic;
+--				txdata              : in    std_logic_vector (7 downto 0);
+--				txchardispmode      : in    std_logic;
+--				txchardispval       : in    std_logic;
+--				txcharisk           : in    std_logic;
+--				rxreset             : in    std_logic;
+--				rxchariscomma       : out   std_logic;
+--				rxcharisk           : out   std_logic;
+--				rxclkcorcnt         : out   std_logic_vector (2 downto 0);
+--				rxdata              : out   std_logic_vector (7 downto 0);
+--				rxdisperr           : out   std_logic;
+--				rxnotintable        : out   std_logic;
+--				rxrundisp           : out   std_logic;
+--				rxbuferr            : out   std_logic;
+--				txbuferr            : out   std_logic;
+--				plllkdet            : out   std_logic;
+--				txoutclk            : out   std_logic;
+--				rxoutclk            : out   std_logic;
+--				txn                 : out   std_logic;
+--				txp                 : out   std_logic;
+--				rxn                 : in    std_logic;
+--				rxp                 : in    std_logic;
+--				gtrefclk            : in    std_logic;
+--				gtrefclk_bufg       : in    std_logic;
 			 
-				pmareset            : in    std_logic;
-				mmcm_locked         : in    std_logic;
-				resetdone           : out   std_logic;
-					gt0_rxbyteisaligned_out   : out std_logic;
-					gt0_rxbyterealign_out     : out std_logic;
-					gt0_rxcommadet_out        : out std_logic;
-					gt0_txpolarity_in         : in  std_logic;
-					gt0_txdiffctrl_in         : in  std_logic_vector(3 downto 0);
-					gt0_txinhibit_in          : in  std_logic;
-					gt0_txpostcursor_in       : in  std_logic_vector(4 downto 0);
-					gt0_txprecursor_in        : in  std_logic_vector(4 downto 0);
-					gt0_rxpolarity_in         : in  std_logic;
-					gt0_rxdfelpmreset_in      : in  std_logic;
-					gt0_rxdfeagcovrden_in     : in  std_logic;
-					gt0_rxlpmen_in            : in  std_logic;
-					gt0_txprbssel_in          : in  std_logic_vector(2 downto 0);
-					gt0_txprbsforceerr_in     : in  std_logic;
-					gt0_rxprbscntreset_in     : in  std_logic;
-					gt0_rxprbserr_out         : out std_logic;
-					gt0_rxprbssel_in          : in  std_logic_vector(2 downto 0);
-					gt0_loopback_in           : in  std_logic_vector(2 downto 0);
-					gt0_txresetdone_out       : out std_logic;
-					gt0_rxresetdone_out       : out std_logic;
-					gt0_eyescanreset_in       : in  std_logic;
-					gt0_eyescandataerror_out  : out std_logic;
-					gt0_eyescantrigger_in     : in  std_logic;
-					gt0_rxcdrhold_in          : in  std_logic;
-					gt0_rxmonitorout_out      : out std_logic_vector(6 downto 0);
-					gt0_rxmonitorsel_in       : in  std_logic_vector(1 downto 0);
-					gt0_drpaddr_in            : in  std_logic_vector(8 downto 0);
-					gt0_drpclk_in             : in  std_logic;
-					gt0_drpdi_in              : in  std_logic_vector(15 downto 0);
-					gt0_drpdo_out             : out std_logic_vector(15 downto 0);
-					gt0_drpen_in              : in  std_logic;
-					gt0_drprdy_out            : out std_logic;
-					gt0_drpwe_in              : in  std_logic;  
-					gt0_txpmareset_in         : in  std_logic;
-					gt0_txpcsreset_in         : in  std_logic;
-					gt0_rxpmareset_in         : in  std_logic;
-					gt0_rxpcsreset_in         : in  std_logic;
-					gt0_rxbufreset_in         : in  std_logic;
-					gt0_rxbufstatus_out       : out std_logic_vector(2 downto 0);
-					gt0_txbufstatus_out       : out std_logic_vector(1 downto 0);
-					gt0_dmonitorout_out       : out std_logic_vector(7 downto 0);        
-					gt0_qplloutclk            : in  std_logic;
-					gt0_qplloutrefclk         : in  std_logic
-		 );
-	end component;
+--				pmareset            : in    std_logic;
+--				mmcm_locked         : in    std_logic;
+--				resetdone           : out   std_logic;
+--					gt0_rxbyteisaligned_out   : out std_logic;
+--					gt0_rxbyterealign_out     : out std_logic;
+--					gt0_rxcommadet_out        : out std_logic;
+--					gt0_txpolarity_in         : in  std_logic;
+--					gt0_txdiffctrl_in         : in  std_logic_vector(3 downto 0);
+--					gt0_txinhibit_in          : in  std_logic;
+--					gt0_txpostcursor_in       : in  std_logic_vector(4 downto 0);
+--					gt0_txprecursor_in        : in  std_logic_vector(4 downto 0);
+--					gt0_rxpolarity_in         : in  std_logic;
+--					gt0_rxdfelpmreset_in      : in  std_logic;
+--					gt0_rxdfeagcovrden_in     : in  std_logic;
+--					gt0_rxlpmen_in            : in  std_logic;
+--					gt0_txprbssel_in          : in  std_logic_vector(2 downto 0);
+--					gt0_txprbsforceerr_in     : in  std_logic;
+--					gt0_rxprbscntreset_in     : in  std_logic;
+--					gt0_rxprbserr_out         : out std_logic;
+--					gt0_rxprbssel_in          : in  std_logic_vector(2 downto 0);
+--					gt0_loopback_in           : in  std_logic_vector(2 downto 0);
+--					gt0_txresetdone_out       : out std_logic;
+--					gt0_rxresetdone_out       : out std_logic;
+--					gt0_eyescanreset_in       : in  std_logic;
+--					gt0_eyescandataerror_out  : out std_logic;
+--					gt0_eyescantrigger_in     : in  std_logic;
+--					gt0_rxcdrhold_in          : in  std_logic;
+--					gt0_rxmonitorout_out      : out std_logic_vector(6 downto 0);
+--					gt0_rxmonitorsel_in       : in  std_logic_vector(1 downto 0);
+--					gt0_drpaddr_in            : in  std_logic_vector(8 downto 0);
+--					gt0_drpclk_in             : in  std_logic;
+--					gt0_drpdi_in              : in  std_logic_vector(15 downto 0);
+--					gt0_drpdo_out             : out std_logic_vector(15 downto 0);
+--					gt0_drpen_in              : in  std_logic;
+--					gt0_drprdy_out            : out std_logic;
+--					gt0_drpwe_in              : in  std_logic;  
+--					gt0_txpmareset_in         : in  std_logic;
+--					gt0_txpcsreset_in         : in  std_logic;
+--					gt0_rxpmareset_in         : in  std_logic;
+--					gt0_rxpcsreset_in         : in  std_logic;
+--					gt0_rxbufreset_in         : in  std_logic;
+--					gt0_rxbufstatus_out       : out std_logic_vector(2 downto 0);
+--					gt0_txbufstatus_out       : out std_logic_vector(1 downto 0);
+--					gt0_dmonitorout_out       : out std_logic_vector(7 downto 0);        
+--					gt0_qplloutclk            : in  std_logic;
+--					gt0_qplloutrefclk         : in  std_logic
+--		 );
+--	end component;
  -----------------------------------------------------------------------------
    -- Component Declaration for the 1000BASE-X PCS/PMA sublayer core.
    -----------------------------------------------------------------------------
@@ -352,186 +352,186 @@ END COMPONENT;
 	-- ==========================================================================================================================================================
 	-- Ethernet: MAC Control-Layer
 	-- ==========================================================================================================================================================
-	COMPONENT Eth_Wrapper_Virtex5 IS
-		GENERIC (
-			DEBUG											: BOOLEAN														:= FALSE;															-- 
-			CLOCKIN_FREQ							: FREQ															:= 125.0 MHz;													-- 125 MHz
-			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
-			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
-			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
-		);
-		PORT (
-			-- clock interface
-			RS_TX_Clock								: IN	STD_LOGIC;
-			RS_RX_Clock								: IN	STD_LOGIC;
-			Eth_TX_Clock							: IN	STD_LOGIC;
-			Eth_RX_Clock							: IN	STD_LOGIC;
-			TX_Clock									: IN	STD_LOGIC;
-			RX_Clock									: IN	STD_LOGIC;
+--	COMPONENT Eth_Wrapper_Virtex5 IS
+--		GENERIC (
+--			DEBUG											: BOOLEAN														:= FALSE;															-- 
+--			CLOCKIN_FREQ							: FREQ															:= 125.0 MHz;													-- 125 MHz
+--			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
+--			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
+--			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
+--		);
+--		PORT (
+--			-- clock interface
+--			RS_TX_Clock								: IN	STD_LOGIC;
+--			RS_RX_Clock								: IN	STD_LOGIC;
+--			Eth_TX_Clock							: IN	STD_LOGIC;
+--			Eth_RX_Clock							: IN	STD_LOGIC;
+--			TX_Clock									: IN	STD_LOGIC;
+--			RX_Clock									: IN	STD_LOGIC;
 
-			-- reset interface
-			Reset											: IN	STD_LOGIC;
+--			-- reset interface
+--			Reset											: IN	STD_LOGIC;
 			
-			-- Command-Status-Error interface
+--			-- Command-Status-Error interface
 			
-			-- MAC LocalLink interface
-			TX_Valid									: IN	STD_LOGIC;
-			TX_Data										: IN	T_SLV_8;
-			TX_SOF										: IN	STD_LOGIC;
-			TX_EOF										: IN	STD_LOGIC;
-			TX_Ack										: OUT	STD_LOGIC;
+--			-- MAC LocalLink interface
+--			TX_Valid									: IN	STD_LOGIC;
+--			TX_Data										: IN	T_SLV_8;
+--			TX_SOF										: IN	STD_LOGIC;
+--			TX_EOF										: IN	STD_LOGIC;
+--			TX_Ack										: OUT	STD_LOGIC;
 
-			RX_Valid									: OUT	STD_LOGIC;
-			RX_Data										: OUT	T_SLV_8;
-			RX_SOF										: OUT	STD_LOGIC;
-			RX_EOF										: OUT	STD_LOGIC;
-			RX_Ack										: In	STD_LOGIC;
+--			RX_Valid									: OUT	STD_LOGIC;
+--			RX_Data										: OUT	T_SLV_8;
+--			RX_SOF										: OUT	STD_LOGIC;
+--			RX_EOF										: OUT	STD_LOGIC;
+--			RX_Ack										: In	STD_LOGIC;
 			
-			-- PHY-SGMII interface
-			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
-		);
-	END COMPONENT;
+--			-- PHY-SGMII interface
+--			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
+--		);
+--	END COMPONENT;
 	
-	COMPONENT Eth_Wrapper_Virtex6 IS
-		GENERIC (
-			DEBUG											: BOOLEAN														:= FALSE;															-- 
-			CLOCKIN_FREQ							: FREQ															:= 125.0 MHz;													-- 125 MHz
-			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
-			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
-			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
-		);
-		PORT (
-			-- clock interface
-			RS_TX_Clock								: IN	STD_LOGIC;
-			RS_RX_Clock								: IN	STD_LOGIC;
-			Eth_TX_Clock							: IN	STD_LOGIC;
-			Eth_RX_Clock							: IN	STD_LOGIC;
-			TX_Clock									: IN	STD_LOGIC;
-			RX_Clock									: IN	STD_LOGIC;
+--	COMPONENT Eth_Wrapper_Virtex6 IS
+--		GENERIC (
+--			DEBUG											: BOOLEAN														:= FALSE;															-- 
+--			CLOCKIN_FREQ							: FREQ															:= 125.0 MHz;													-- 125 MHz
+--			ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											-- 
+--			RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		-- 
+--			PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII		-- 
+--		);
+--		PORT (
+--			-- clock interface
+--			RS_TX_Clock								: IN	STD_LOGIC;
+--			RS_RX_Clock								: IN	STD_LOGIC;
+--			Eth_TX_Clock							: IN	STD_LOGIC;
+--			Eth_RX_Clock							: IN	STD_LOGIC;
+--			TX_Clock									: IN	STD_LOGIC;
+--			RX_Clock									: IN	STD_LOGIC;
 			
-			-- reset interface
-			Reset											: IN	STD_LOGIC;
+--			-- reset interface
+--			Reset											: IN	STD_LOGIC;
 			
-			-- Command-Status-Error interface
+--			-- Command-Status-Error interface
 			
-			-- MAC LocalLink interface
-			TX_Valid									: IN	STD_LOGIC;
-			TX_Data										: IN	T_SLV_8;
-			TX_SOF										: IN	STD_LOGIC;
-			TX_EOF										: IN	STD_LOGIC;
-			TX_Ack										: OUT	STD_LOGIC;
+--			-- MAC LocalLink interface
+--			TX_Valid									: IN	STD_LOGIC;
+--			TX_Data										: IN	T_SLV_8;
+--			TX_SOF										: IN	STD_LOGIC;
+--			TX_EOF										: IN	STD_LOGIC;
+--			TX_Ack										: OUT	STD_LOGIC;
 
-			RX_Valid									: OUT	STD_LOGIC;
-			RX_Data										: OUT	T_SLV_8;
-			RX_SOF										: OUT	STD_LOGIC;
-			RX_EOF										: OUT	STD_LOGIC;
-			RX_Ack										: In	STD_LOGIC;
+--			RX_Valid									: OUT	STD_LOGIC;
+--			RX_Data										: OUT	T_SLV_8;
+--			RX_SOF										: OUT	STD_LOGIC;
+--			RX_EOF										: OUT	STD_LOGIC;
+--			RX_Ack										: In	STD_LOGIC;
 			
-			-- PHY-SGMII interface
-			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
-		);
-	END COMPONENT;
+--			-- PHY-SGMII interface
+--			PHY_Interface							:	INOUT	T_NET_ETH_PHY_INTERFACES
+--		);
+--	END COMPONENT;
 	
-	COMPONENT eth_Wrapper_Series7 is
-	generic (
-		DEBUG											: boolean														:= FALSE;															--
---		CLOCK_FREQ_MHZ						: REAL															:= 125.0;															-- 125 MHz
-		CLOCKIN_FREQ								: FREQ															:= 125.0 MHz;															-- 125 MHz
-		ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
-		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		--
-		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII;		--
-		IS_SIM										: boolean														:= FALSE
-	);
-	port (
-		-- clock interface
-		RS_TX_Clock								: in	std_logic;
-		RS_RX_Clock								: in	std_logic;
-		Eth_TX_Clock							: in	std_logic;
-		Eth_RX_Clock							: in	std_logic;
-		TX_Clock									: in	std_logic;
-		RX_Clock									: in	std_logic;
+--	COMPONENT eth_Wrapper_Series7 is
+--	generic (
+--		DEBUG											: boolean														:= FALSE;															--
+----		CLOCK_FREQ_MHZ						: REAL															:= 125.0;															-- 125 MHz
+--		CLOCKIN_FREQ								: FREQ															:= 125.0 MHz;															-- 125 MHz
+--		ETHERNET_IPSTYLE					: T_IPSTYLE													:= IPSTYLE_SOFT;											--
+--		RS_DATA_INTERFACE					: T_NET_ETH_RS_DATA_INTERFACE				:= NET_ETH_RS_DATA_INTERFACE_GMII;		--
+--		PHY_DATA_INTERFACE				: T_NET_ETH_PHY_DATA_INTERFACE			:= NET_ETH_PHY_DATA_INTERFACE_GMII;		--
+--		IS_SIM										: boolean														:= FALSE
+--	);
+--	port (
+--		-- clock interface
+--		RS_TX_Clock								: in	std_logic;
+--		RS_RX_Clock								: in	std_logic;
+--		Eth_TX_Clock							: in	std_logic;
+--		Eth_RX_Clock							: in	std_logic;
+--		TX_Clock									: in	std_logic;
+--		RX_Clock									: in	std_logic;
 		
-		-- reset interface
-		Reset											: in	std_logic;
+--		-- reset interface
+--		Reset											: in	std_logic;
 		
-		-- Command-Status-Error interface
-		Core_Status								: out T_SLV_16;
+--		-- Command-Status-Error interface
+--		Core_Status								: out T_SLV_16;
 		
-		-- MAC LocalLink interface
-		TX_Valid									: in	std_logic;
-		TX_Data										: in	T_SLV_8;
-		TX_SOF										: in	std_logic;
-		TX_EOF										: in	std_logic;
-		TX_Ack										: out	std_logic;
+--		-- MAC LocalLink interface
+--		TX_Valid									: in	std_logic;
+--		TX_Data										: in	T_SLV_8;
+--		TX_SOF										: in	std_logic;
+--		TX_EOF										: in	std_logic;
+--		TX_Ack										: out	std_logic;
 		
-		RX_Valid									: out	std_logic;
-		RX_Data										: out	T_SLV_8;
-		RX_SOF										: out	std_logic;
-		RX_EOF										: out	std_logic;
-		RX_Ack										: in	std_logic;
+--		RX_Valid									: out	std_logic;
+--		RX_Data										: out	T_SLV_8;
+--		RX_SOF										: out	std_logic;
+--		RX_EOF										: out	std_logic;
+--		RX_Ack										: in	std_logic;
 		
-		PHY_Interface							:	inout	T_NET_ETH_PHY_INTERFACES
-	);
-	END COMPONENT;
+--		PHY_Interface							:	inout	T_NET_ETH_PHY_INTERFACES
+--	);
+--	END COMPONENT;
 	
 	-- ==========================================================================================================================================================
 	-- Ethernet: MAC Data-Link-Layer
 	-- ==========================================================================================================================================================
-	COMPONENT TEMAC_GMII_Virtex5 IS
-		PORT (
-			-- Client Receiver Interface - EMAC0
-			EMAC0CLIENTRXCLIENTCLKOUT       : out std_logic;
-			CLIENTEMAC0RXCLIENTCLKIN        : in  std_logic;
-			EMAC0CLIENTRXD                  : out std_logic_vector(7 downto 0);
-			EMAC0CLIENTRXDVLD               : out std_logic;
-			EMAC0CLIENTRXDVLDMSW            : out std_logic;
-			EMAC0CLIENTRXGOODFRAME          : out std_logic;
-			EMAC0CLIENTRXBADFRAME           : out std_logic;
-			EMAC0CLIENTRXFRAMEDROP          : out std_logic;
-			EMAC0CLIENTRXSTATS              : out std_logic_vector(6 downto 0);
-			EMAC0CLIENTRXSTATSVLD           : out std_logic;
-			EMAC0CLIENTRXSTATSBYTEVLD       : out std_logic;
+--	COMPONENT TEMAC_GMII_Virtex5 IS
+--		PORT (
+--			-- Client Receiver Interface - EMAC0
+--			EMAC0CLIENTRXCLIENTCLKOUT       : out std_logic;
+--			CLIENTEMAC0RXCLIENTCLKIN        : in  std_logic;
+--			EMAC0CLIENTRXD                  : out std_logic_vector(7 downto 0);
+--			EMAC0CLIENTRXDVLD               : out std_logic;
+--			EMAC0CLIENTRXDVLDMSW            : out std_logic;
+--			EMAC0CLIENTRXGOODFRAME          : out std_logic;
+--			EMAC0CLIENTRXBADFRAME           : out std_logic;
+--			EMAC0CLIENTRXFRAMEDROP          : out std_logic;
+--			EMAC0CLIENTRXSTATS              : out std_logic_vector(6 downto 0);
+--			EMAC0CLIENTRXSTATSVLD           : out std_logic;
+--			EMAC0CLIENTRXSTATSBYTEVLD       : out std_logic;
 
-			-- Client Transmitter Interface - EMAC0
-			EMAC0CLIENTTXCLIENTCLKOUT       : out std_logic;
-			CLIENTEMAC0TXCLIENTCLKIN        : in  std_logic;
-			CLIENTEMAC0TXD                  : in  std_logic_vector(7 downto 0);
-			CLIENTEMAC0TXDVLD               : in  std_logic;
-			CLIENTEMAC0TXDVLDMSW            : in  std_logic;
-			EMAC0CLIENTTXACK                : out std_logic;
-			CLIENTEMAC0TXFIRSTBYTE          : in  std_logic;
-			CLIENTEMAC0TXUNDERRUN           : in  std_logic;
-			EMAC0CLIENTTXCOLLISION          : out std_logic;
-			EMAC0CLIENTTXRETRANSMIT         : out std_logic;
-			CLIENTEMAC0TXIFGDELAY           : in  std_logic_vector(7 downto 0);
-			EMAC0CLIENTTXSTATS              : out std_logic;
-			EMAC0CLIENTTXSTATSVLD           : out std_logic;
-			EMAC0CLIENTTXSTATSBYTEVLD       : out std_logic;
+--			-- Client Transmitter Interface - EMAC0
+--			EMAC0CLIENTTXCLIENTCLKOUT       : out std_logic;
+--			CLIENTEMAC0TXCLIENTCLKIN        : in  std_logic;
+--			CLIENTEMAC0TXD                  : in  std_logic_vector(7 downto 0);
+--			CLIENTEMAC0TXDVLD               : in  std_logic;
+--			CLIENTEMAC0TXDVLDMSW            : in  std_logic;
+--			EMAC0CLIENTTXACK                : out std_logic;
+--			CLIENTEMAC0TXFIRSTBYTE          : in  std_logic;
+--			CLIENTEMAC0TXUNDERRUN           : in  std_logic;
+--			EMAC0CLIENTTXCOLLISION          : out std_logic;
+--			EMAC0CLIENTTXRETRANSMIT         : out std_logic;
+--			CLIENTEMAC0TXIFGDELAY           : in  std_logic_vector(7 downto 0);
+--			EMAC0CLIENTTXSTATS              : out std_logic;
+--			EMAC0CLIENTTXSTATSVLD           : out std_logic;
+--			EMAC0CLIENTTXSTATSBYTEVLD       : out std_logic;
 
-			-- MAC Control Interface - EMAC0
-			CLIENTEMAC0PAUSEREQ             : in  std_logic;
-			CLIENTEMAC0PAUSEVAL             : in  std_logic_vector(15 downto 0);
+--			-- MAC Control Interface - EMAC0
+--			CLIENTEMAC0PAUSEREQ             : in  std_logic;
+--			CLIENTEMAC0PAUSEVAL             : in  std_logic_vector(15 downto 0);
 
-			-- Clock Signal - EMAC0
-			GTX_CLK_0                       : in  std_logic;
-			PHYEMAC0TXGMIIMIICLKIN          : in  std_logic;
-			EMAC0PHYTXGMIIMIICLKOUT         : out std_logic;
+--			-- Clock Signal - EMAC0
+--			GTX_CLK_0                       : in  std_logic;
+--			PHYEMAC0TXGMIIMIICLKIN          : in  std_logic;
+--			EMAC0PHYTXGMIIMIICLKOUT         : out std_logic;
 
-			-- GMII Interface - EMAC0
-			GMII_TXD_0                      : out std_logic_vector(7 downto 0);
-			GMII_TX_EN_0                    : out std_logic;
-			GMII_TX_ER_0                    : out std_logic;
-			GMII_RXD_0                      : in  std_logic_vector(7 downto 0);
-			GMII_RX_DV_0                    : in  std_logic;
-			GMII_RX_ER_0                    : in  std_logic;
-			GMII_RX_CLK_0                   : in  std_logic;
+--			-- GMII Interface - EMAC0
+--			GMII_TXD_0                      : out std_logic_vector(7 downto 0);
+--			GMII_TX_EN_0                    : out std_logic;
+--			GMII_TX_ER_0                    : out std_logic;
+--			GMII_RXD_0                      : in  std_logic_vector(7 downto 0);
+--			GMII_RX_DV_0                    : in  std_logic;
+--			GMII_RX_ER_0                    : in  std_logic;
+--			GMII_RX_CLK_0                   : in  std_logic;
 
-			DCM_LOCKED_0                    : in  std_logic;
+--			DCM_LOCKED_0                    : in  std_logic;
 
-			-- Asynchronous Reset
-			RESET                           : in  std_logic
-		);
-	END COMPONENT;
+--			-- Asynchronous Reset
+--			RESET                           : in  std_logic
+--		);
+--	END COMPONENT;
 
 	-- ==========================================================================================================================================================
 	-- Eth_Wrapper: configuration data structures
