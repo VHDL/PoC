@@ -931,6 +931,7 @@ package body config is
 					when "7V"	 =>    return DEVICE_VIRTEX7;
 					when "VU"	 =>    return DEVICE_VIRTEX_ULTRA;
 					when "7Z"	 =>    return DEVICE_ZYNQ7;
+					when "ZU"	 =>    return DEVICE_ZYNQ_ULTRA_PLUS;
 					when others =>  report "Unknown Xilinx device in MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end case;
 
@@ -968,7 +969,11 @@ package body config is
 					when 'S' =>    return DEVICE_FAMILY_SPARTAN;
 					when 'V' =>    return DEVICE_FAMILY_VIRTEX;
 					when 'Z' =>    return DEVICE_FAMILY_ZYNQ;
-					when others =>  report "Unknown Xilinx device family in MY_DEVICE = '" & MY_DEV & "'" severity failure;
+					when others =>  
+						case MY_DEV(3) is
+							when 'Z' => return DEVICE_FAMILY_ZYNQ;
+							when others => report "Unknown Xilinx device family in MY_DEVICE = '" & MY_DEV & "'" severity failure;
+						end case;
 				end case;
 
 			when others => report "Unknown vendor in MY_DEVICE = '" & MY_DEV & "'" severity failure;
@@ -1174,6 +1179,9 @@ package body config is
 		constant DEV_NUM  : natural           := DEVICE_NUMBER(DeviceString);
 		constant DEV_SUB  : T_DEVICE_SUBTYPE  := DEVICE_SUBTYPE(DeviceString);
 	begin
+		report "Device :" & T_DEVICE'image(DEV) severity warning;
+		report "DEV_NUM :" & integer'image(DEV_NUM) severity warning;
+		report "DEV_SUB :" & T_DEVICE_SUBTYPE'image(DEV_SUB) severity warning;
     case DEV is
       when DEVICE_GENERIC =>                                      return TRANSCEIVER_GENERIC;
 			when DEVICE_MAX2 | DEVICE_MAX10 =>                          return TRANSCEIVER_NONE;    -- Altera MAX II, 10 devices have no transceivers
@@ -1237,6 +1245,8 @@ package body config is
 					when 15 =>                    return TRANSCEIVER_GTPE2;
 					when others =>                return TRANSCEIVER_GTXE2;
 				end case;
+			when DEVICE_ZYNQ_ULTRA_PLUS =>
+				return TRANSCEIVER_GTXE2;
 
 			when others => report "Unknown device." severity failure;
 		end case;
