@@ -49,13 +49,13 @@ entity iic_Passthrough is
 		GLITCH_CYCLES        : natural := 8;
 		PULL_UP_CYCLES       : natural := 55
 	);
-  port (
+	port (
 		Clock                : in    std_logic;
 		Reset                : in    std_logic;
 		
-  	Port_a_in            : in  T_IO_IIC_SERIAL_IN;
-  	Port_a_out           : out T_IO_IIC_SERIAL_OUT;
-  	
+		Port_a_in            : in  T_IO_IIC_SERIAL_IN;
+		Port_a_out           : out T_IO_IIC_SERIAL_OUT;
+		
 		Port_b_in            : in  T_IO_IIC_SERIAL_IN;
 		Port_b_out           : out T_IO_IIC_SERIAL_OUT;
 		
@@ -363,7 +363,7 @@ begin
 		begin
 			if rising_edge(clock) then
 				if reset = '1' or is_frame_start = '1' then
-					bit_counter <= to_unsigned(BITS, bit_counter'length);
+					bit_counter <= (others => '0');
 				elsif a_level_glitch_fe = '1' then
 					if bit_counter < BITS then
 						bit_counter <= bit_counter +1;

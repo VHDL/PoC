@@ -174,6 +174,9 @@ package AXI4_Full is
 	end record;
 	type T_AXI4_Bus_S2M_VECTOR is array(natural range <>) of T_AXI4_Bus_S2M;
 	
+	function BlockTransaction(InBus : T_AXI4_Bus_S2M;        Enable : std_logic) return T_AXI4_Bus_S2M;
+	function BlockTransaction(InBus : T_AXI4_Bus_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_S2M_VECTOR;
+	
 	type T_AXI4_Bus_M2S is record
 		AWID        : std_logic_vector; 
 		AWAddr      : std_logic_vector; 
@@ -209,6 +212,11 @@ package AXI4_Full is
 	end record;
 	type T_AXI4_Bus_M2S_VECTOR is array(natural range <>) of T_AXI4_Bus_M2S;
 	
+	function BlockTransaction(InBus : T_AXI4_Bus_M2S;        Enable : std_logic) return T_AXI4_Bus_M2S;
+	function BlockTransaction(InBus : T_AXI4_Bus_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_M2S_VECTOR;
+	
+	function AddressTranslate(InBus : T_AXI4_Bus_M2S;        Offset : signed) return T_AXI4_Bus_M2S;
+	
 	function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M;
 	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_M2S;
 	
@@ -223,6 +231,163 @@ end package;
 
 
 package body AXI4_Full is 
+	
+	function BlockTransaction(InBus : T_AXI4_Bus_M2S;        Enable : std_logic) return T_AXI4_Bus_M2S is
+		variable temp : InBus'subtype;
+	begin
+		temp.AWID    := InBus.AWID    ;
+		temp.AWAddr  := InBus.AWAddr  ;
+		temp.AWLen   := InBus.AWLen   ;
+		temp.AWSize  := InBus.AWSize  ;
+		temp.AWBurst := InBus.AWBurst ;
+		temp.AWLock  := InBus.AWLock  ;
+		temp.AWQOS   := InBus.AWQOS   ;
+		temp.AWRegion:= InBus.AWRegion;
+		temp.AWUser  := InBus.AWUser  ;
+		temp.AWValid := InBus.AWValid and Enable;
+		temp.AWCache := InBus.AWCache ;
+		temp.AWProt  := InBus.AWProt  ;
+		temp.WValid  := InBus.WValid and Enable;
+		temp.WLast   := InBus.WLast   ;
+		temp.WUser   := InBus.WUser   ;
+		temp.WData   := InBus.WData   ;
+		temp.WStrb   := InBus.WStrb   ;
+		temp.BReady  := InBus.BReady and Enable;
+		temp.ARValid := InBus.ARValid and Enable;
+		temp.ARAddr  := InBus.ARAddr  ;
+		temp.ARCache := InBus.ARCache ;
+		temp.ARProt  := InBus.ARProt  ;
+		temp.ARID    := InBus.ARID    ;
+		temp.ARLen   := InBus.ARLen   ;
+		temp.ARSize  := InBus.ARSize  ;
+		temp.ARBurst := InBus.ARBurst ;
+		temp.ARLock  := InBus.ARLock  ;
+		temp.ARQOS   := InBus.ARQOS   ;
+		temp.ARRegion:= InBus.ARRegion;
+		temp.ARUser  := InBus.ARUser  ;
+		temp.RReady  := InBus.RReady and Enable;
+		return temp;
+	end function;
+	
+	function BlockTransaction(InBus : T_AXI4_Bus_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_M2S_VECTOR is
+		variable temp : InBus'subtype;
+	begin
+		for i in InBus'range loop
+			temp(i).AWID    := InBus(i).AWID    ;
+			temp(i).AWAddr  := InBus(i).AWAddr  ;
+			temp(i).AWLen   := InBus(i).AWLen   ;
+			temp(i).AWSize  := InBus(i).AWSize  ;
+			temp(i).AWBurst := InBus(i).AWBurst ;
+			temp(i).AWLock  := InBus(i).AWLock  ;
+			temp(i).AWQOS   := InBus(i).AWQOS   ;
+			temp(i).AWRegion:= InBus(i).AWRegion;
+			temp(i).AWUser  := InBus(i).AWUser  ;
+			temp(i).AWValid := InBus(i).AWValid and Enable(i);
+			temp(i).AWCache := InBus(i).AWCache ;
+			temp(i).AWProt  := InBus(i).AWProt  ;
+			temp(i).WValid  := InBus(i).WValid and Enable(i);
+			temp(i).WLast   := InBus(i).WLast   ;
+			temp(i).WUser   := InBus(i).WUser   ;
+			temp(i).WData   := InBus(i).WData   ;
+			temp(i).WStrb   := InBus(i).WStrb   ;
+			temp(i).BReady  := InBus(i).BReady and Enable(i);
+			temp(i).ARValid := InBus(i).ARValid and Enable(i);
+			temp(i).ARAddr  := InBus(i).ARAddr  ;
+			temp(i).ARCache := InBus(i).ARCache ;
+			temp(i).ARProt  := InBus(i).ARProt  ;
+			temp(i).ARID    := InBus(i).ARID    ;
+			temp(i).ARLen   := InBus(i).ARLen   ;
+			temp(i).ARSize  := InBus(i).ARSize  ;
+			temp(i).ARBurst := InBus(i).ARBurst ;
+			temp(i).ARLock  := InBus(i).ARLock  ;
+			temp(i).ARQOS   := InBus(i).ARQOS   ;
+			temp(i).ARRegion:= InBus(i).ARRegion;
+			temp(i).ARUser  := InBus(i).ARUser  ;
+			temp(i).RReady  := InBus(i).RReady and Enable(i);
+		end loop;
+		return temp;
+	end function;
+	
+	function AddressTranslate(InBus : T_AXI4_Bus_M2S; Offset : signed) return T_AXI4_Bus_M2S is
+		variable temp : InBus'subtype;
+	begin
+		assert Offset'length = InBus.AWAddr'length report "PoC.AXI4_Full.AddressTranslate: Length of Offeset-Bits and Address-Bits is no equal!" severity failure;
+		
+		temp.AWID    := InBus.AWID    ;
+		temp.AWAddr  := std_logic_vector(unsigned(InBus.AWAddr) + unsigned(std_logic_vector(Offset)));
+		temp.AWLen   := InBus.AWLen   ;
+		temp.AWSize  := InBus.AWSize  ;
+		temp.AWBurst := InBus.AWBurst ;
+		temp.AWLock  := InBus.AWLock  ;
+		temp.AWQOS   := InBus.AWQOS   ;
+		temp.AWRegion:= InBus.AWRegion;
+		temp.AWUser  := InBus.AWUser  ;
+		temp.AWValid := InBus.AWValid;
+		temp.AWCache := InBus.AWCache ;
+		temp.AWProt  := InBus.AWProt  ;
+		temp.WValid  := InBus.WValid;
+		temp.WLast   := InBus.WLast   ;
+		temp.WUser   := InBus.WUser   ;
+		temp.WData   := InBus.WData   ;
+		temp.WStrb   := InBus.WStrb   ;
+		temp.BReady  := InBus.BReady;
+		temp.ARValid := InBus.ARValid;
+		temp.ARAddr  := std_logic_vector(unsigned(InBus.ARAddr) + unsigned(std_logic_vector(Offset)));
+		temp.ARCache := InBus.ARCache ;
+		temp.ARProt  := InBus.ARProt  ;
+		temp.ARID    := InBus.ARID    ;
+		temp.ARLen   := InBus.ARLen   ;
+		temp.ARSize  := InBus.ARSize  ;
+		temp.ARBurst := InBus.ARBurst ;
+		temp.ARLock  := InBus.ARLock  ;
+		temp.ARQOS   := InBus.ARQOS   ;
+		temp.ARRegion:= InBus.ARRegion;
+		temp.ARUser  := InBus.ARUser  ;
+		temp.RReady  := InBus.RReady;
+		return temp;
+	end function;
+	
+	function BlockTransaction(InBus : T_AXI4_Bus_S2M;        Enable : std_logic) return T_AXI4_Bus_S2M is
+		variable temp : InBus'subtype;
+	begin
+		temp.AWReady:= InBus.AWReady and Enable;
+		temp.WReady := InBus.WReady and Enable;
+		temp.BValid := InBus.BValid and Enable;
+		temp.BResp  := InBus.BResp  ;
+		temp.BID    := InBus.BID    ;
+		temp.BUser  := InBus.BUser  ;
+		temp.ARReady:= InBus.ARReady and Enable;
+		temp.RValid := InBus.RValid and Enable;
+		temp.RData  := InBus.RData  ;
+		temp.RResp  := InBus.RResp  ;
+		temp.RID    := InBus.RID    ;
+		temp.RLast  := InBus.RLast  ;
+		temp.RUser  := InBus.RUser  ;
+		return temp;
+	end function;
+	
+	function BlockTransaction(InBus : T_AXI4_Bus_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_S2M_VECTOR is
+		variable temp : InBus'subtype;
+	begin
+		for i in InBus'range loop
+			temp(i).AWReady:= InBus(i).AWReady and Enable(i);
+			temp(i).WReady := InBus(i).WReady and Enable(i);
+			temp(i).BValid := InBus(i).BValid and Enable(i);
+			temp(i).BResp  := InBus(i).BResp  ;
+			temp(i).BID    := InBus(i).BID    ;
+			temp(i).BUser  := InBus(i).BUser  ;
+			temp(i).ARReady:= InBus(i).ARReady and Enable(i);
+			temp(i).RValid := InBus(i).RValid and Enable(i);
+			temp(i).RData  := InBus(i).RData  ;
+			temp(i).RResp  := InBus(i).RResp  ;
+			temp(i).RID    := InBus(i).RID    ;
+			temp(i).RLast  := InBus(i).RLast  ;
+			temp(i).RUser  := InBus(i).RUser  ;
+		end loop;
+		return temp;
+	end function;
+	
+	
 --  -----------Wirte Address
 --  function Initialize_AXI4Lite_WriteAddress_Bus(AddressBits : natural) return T_AXI4Lite_WriteAddress_Bus is
 --  begin
@@ -350,23 +515,23 @@ package body AXI4_Full is
 
 	 function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M is
 		variable var : T_AXI4_Bus_S2M(
-			BID(IDBits - 1 downto 0), RID(IDBits - 1 downto 0),
-			BUser(UserBits - 1 downto 0), RUser(UserBits - 1 downto 0),
+			BID(ite(IDBits = 0,1,IDBits) - 1 downto 0), RID(ite(IDBits = 0,1,IDBits) - 1 downto 0),
+			BUser(ite(UserBits = 0,1,UserBits) - 1 downto 0), RUser(ite(UserBits = 0,1,UserBits) - 1 downto 0),
 			RData(DataBits - 1 downto 0)
 		) := (
 			AWReady => Value,
 			WReady  => Value,
 			BValid  => Value,
 			BResp   => (others => Value),
-			BID     => (IDBits - 1 downto 0 => Value),
-			BUser   => (UserBits - 1 downto 0 => Value),
+			BID     => (ite(IDBits = 0,1,IDBits) - 1 downto 0 => Value),
+			BUser   => (ite(UserBits = 0,1,UserBits) - 1 downto 0 => Value),
 			ARReady => Value,
 			RValid  => Value,
 			RData   => (DataBits - 1 downto 0 => Value),
 			RResp   => (others => Value),
-			RID     => (IDBits - 1 downto 0 => Value),
+			RID     => (ite(IDBits = 0,1,IDBits) - 1 downto 0 => Value),
 			RLast   => Value,
-			RUser   => (UserBits - 1 downto 0 => Value)
+			RUser   => (ite(UserBits = 0,1,UserBits) - 1 downto 0 => Value)
 		);
 	begin
 		return var;
@@ -374,8 +539,8 @@ package body AXI4_Full is
 	
 	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_M2S is
 		variable var : T_AXI4_Bus_M2S(
-			AWID(IDBits - 1 downto 0), ARID(IDBits - 1 downto 0),
-			AWUser(UserBits - 1 downto 0), ARUser(UserBits - 1 downto 0), WUser(UserBits - 1 downto 0),
+			AWID(ite(IDBits = 0,1,IDBits) - 1 downto 0), ARID(ite(IDBits = 0,1,IDBits) - 1 downto 0),
+			AWUser(ite(UserBits = 0,1,UserBits) - 1 downto 0), ARUser(ite(UserBits = 0,1,UserBits) - 1 downto 0), WUser(ite(UserBits = 0,1,UserBits) - 1 downto 0),
 			WData(DataBits - 1 downto 0), WStrb((DataBits / 8) - 1 downto 0),
 			AWAddr(AddressBits-1 downto 0), ARAddr(AddressBits - 1 downto 0)
 		) := (
@@ -383,32 +548,32 @@ package body AXI4_Full is
 			AWCache => (others => Value),
 			AWAddr  => (AddressBits-1 downto 0 => Value), 
 			AWProt  => (others => Value),
-			AWID    => (IDBits-1 downto 0 => Value), 
+			AWID    => (ite(IDBits = 0,1,IDBits)-1 downto 0 => Value), 
 			AWLen   => (others => Value),
 			AWSize  => (others => Value),
 			AWBurst => (others => Value),
 			AWLock  => (others => Value),
 			AWQOS   => (others => Value),
 			AWRegion=> (others => Value),
-			AWUser  => (UserBits-1 downto 0 => Value),
+			AWUser  => (ite(UserBits = 0,1,UserBits)-1 downto 0 => Value),
 			WValid  => Value,
 			WData   => (DataBits - 1 downto 0 => Value),
 			WStrb   => ((DataBits / 8) - 1 downto 0 => Value),
 			WLast   => Value,
-			WUser   => (UserBits - 1 downto 0 => Value),
+			WUser   => (ite(UserBits = 0,1,UserBits) - 1 downto 0 => Value),
 			BReady  => Value,
 			ARValid => Value,
 			ARCache => (others => Value),
 			ARAddr  => (AddressBits - 1 downto 0 => Value),
 			ARProt  => (others => Value),
-			ARID    => (IDBits - 1 downto 0 => Value),
+			ARID    => (ite(IDBits = 0,1,IDBits) - 1 downto 0 => Value),
 			ARLen   => (others => Value),
 			ARSize  => (others => Value),
 			ARBurst => (others => Value),
 			ARLock  => (others => Value),
 			ARQOS   => (others => Value),
 			ARRegion=> (others => Value),
-			ARUser  => (UserBits - 1 downto 0 => Value),
+			ARUser  => (ite(UserBits = 0,1,UserBits) - 1 downto 0 => Value),
 			RReady  => Value
 		);
 	begin

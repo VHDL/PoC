@@ -84,7 +84,7 @@ use			work.ocram.ocram_sdp;
 
 entity fifo_cc_got_tempput is
   generic (
-  	RAM_TYPE       : T_RAM_TYPE := RAM_TYPE_AUTO;     
+  	RAM_TYPE       : T_RAM_TYPE := RAM_TYPE_ULTRA_RAM;--RAM_TYPE_AUTO;     
     D_BITS         : positive;          -- Data Width
     MIN_DEPTH      : positive;          -- Minimum FIFO Depth
     DATA_REG       : boolean := false;  -- Store Data Content in Registers
