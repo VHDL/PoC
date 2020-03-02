@@ -66,7 +66,7 @@ begin
 		port map (
 			I  => internal_iic_out.Data_o,
 			T  => internal_iic_out.Data_t,
-			O  => MIPI_RX_I2C_in(interface_nr - A2_MIPI_RX_MFP'low).Data,
+			O  => internal_iic_in.Data,
 			IO => iic_pad.Data
 		);
 	SerialClock: IOBUF
