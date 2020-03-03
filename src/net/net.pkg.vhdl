@@ -350,6 +350,9 @@ package net is
 
 	function to_slvv_8(mac : T_NET_MAC_ADDRESS)						return T_SLVV_8;
 	function to_slvv_8(Ethtype : T_NET_MAC_ETHERNETTYPE)	return T_SLVV_8;
+	
+	function rev(mac : T_NET_MAC_ADDRESS)						      return T_NET_MAC_ADDRESS;
+	function rev(Ethtype : T_NET_MAC_ETHERNETTYPE)	      return T_NET_MAC_ETHERNETTYPE;
 
 	function to_string(mac : T_NET_MAC_ADDRESS)						return string;
 	function to_string(Ethtype : T_NET_MAC_ETHERNETTYPE)	return string;
@@ -443,6 +446,8 @@ package net is
 	function to_slv(tos : T_NET_IPV4_TYPE_OF_SERVICE)		return std_logic_vector;
 
 	function to_slvv_8(ip : T_NET_IPV4_ADDRESS)		return T_SLVV_8;
+	
+	function rev(ip : T_NET_IPV4_ADDRESS)		      return T_NET_IPV4_ADDRESS;
 
 	function to_string(ip : T_NET_IPV4_ADDRESS)		return string;
 
@@ -1081,6 +1086,16 @@ package body net is
 		end loop;
 		return slv;
 	end function;
+	
+	function rev(mac : T_NET_MAC_ADDRESS)						      return T_NET_MAC_ADDRESS is
+	begin
+		return to_net_mac_address(to_slv(rev(to_slvv_8(mac))));
+	end function;
+	
+	function rev(Ethtype : T_NET_MAC_ETHERNETTYPE)	      return T_NET_MAC_ETHERNETTYPE is
+	begin
+		return to_net_mac_ethernettype(to_slv(rev(to_slvv_8(Ethtype))));
+	end function;
 
 	function to_slvv_8(mac : T_NET_MAC_ADDRESS) return T_SLVV_8 is
 		variable slvv : T_SLVV_8(mac'range);
@@ -1222,6 +1237,11 @@ package body net is
 			slv(((i * 8) + 7) downto (i * 8))		:= ip(i);
 		end loop;
 		return slv;
+	end function;
+	
+	function rev(ip : T_NET_IPV4_ADDRESS)		      return T_NET_IPV4_ADDRESS is
+	begin
+		return to_net_ipv4_address(to_slv(rev(to_slvv_8(ip))));
 	end function;
 --
 --	function to_slv(proto : T_NET_IPV4_PROTOCOL) return STD_LOGIC_VECTOR is
