@@ -89,8 +89,8 @@ package mem is
 		CONTENT : T_MEM_CONTENT := MEM_CONTENT_HEX
 	) return T_SLM;
 	
-	function get_ram_style_string(ram_style : T_RAM_TYPE) return string;
-	function get_ramstyle_string(ram_style : T_RAM_TYPE)  return string;
+	function get_ram_style(ram_style : T_RAM_TYPE) return string;
+	function get_ramstyle(ram_style : T_RAM_TYPE)  return string;
 	function get_ram_type(a : positive; d : positive) return T_RAM_TYPE;
 end package;
 
@@ -172,40 +172,41 @@ package body mem is
 		return  Result;
 	end function;
 	
-	function get_ramstyle_string(ram_style : T_RAM_TYPE) return string is
+	function get_ramstyle(ram_style : T_RAM_TYPE) return string is
 	begin
 		if VENDOR = VENDOR_ALTERA then
 			assert ram_style = RAM_TYPE_AUTO report "RAM_TYPE '" & T_RAM_TYPE'image(ram_style) & "' not supported for Altera Devices!" severity warning;
 			return "no_rw_check";
 		else
-			return "";
+			return "auto";
 		end if;
 	end function;
 	
-	function get_ram_style_string(ram_style : T_RAM_TYPE)  return string is
+	function get_ram_style(ram_style : T_RAM_TYPE)  return string is
 	begin
 		if VENDOR = VENDOR_XILINX then
 			case ram_style is
-				when RAM_TYPE_AUTO      => return "";
+				when RAM_TYPE_AUTO      => return "auto";
 				when RAM_TYPE_LUT_RAM   => return "distributed";
 				when RAM_TYPE_BLOCK_RAM => return "block";
 				when RAM_TYPE_ULTRA_RAM => return "ultra";
 			end case;
 		else
-			return "";
+			return "auto";
 		end if;
 	end function;
 	
 	function get_ram_type(a : positive; d : positive) return T_RAM_TYPE is
 	begin
 		if a <= 7 then
+			assert false report "PoC.mem.get_ram_type(): chosen RAM-Type is LUT-RAM." severity note;
 			return RAM_TYPE_LUT_RAM;
-		elsif a <= 11 then
-			return RAM_TYPE_BLOCK_RAM;
-		elsif scale(real(d) / 72.0, 0.0, 1.0) > 0.8 then
+		elsif (scale(real(d) / 72.0, 0.0, 1.0) > 0.8) and (a >= 11) then
+			assert false report "PoC.mem.get_ram_type(): chosen RAM-Type is ULTRA-RAM." severity note;
 			return RAM_TYPE_ULTRA_RAM;
 		else
-			return RAM_TYPE_AUTO;
+			assert false report "PoC.mem.get_ram_type(): chosen RAM-Type is BLOCK-RAM." severity note;
+			return RAM_TYPE_BLOCK_RAM;
 		end if;
 	end function;
 
