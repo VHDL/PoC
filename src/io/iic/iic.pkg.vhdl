@@ -46,11 +46,6 @@ package iic is
 		Clock : T_IO_TRISTATE;
 		Data  : T_IO_TRISTATE;
 	end record;
-
-	type T_IO_IIC_SERIAL_PAD is record
-		Clock : std_logic;
-		Data  : std_logic;
-	end record;
 	
 	type T_IO_IIC_SERIAL_IN is record
 		Clock : std_logic;
