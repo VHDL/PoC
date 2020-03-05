@@ -320,23 +320,8 @@ begin
 			end case;
 			
 			case PHYC_Error is
-				when NET_ETH_PHYC_ERROR_NONE 															=>	Error		<= NET_ETH_ERROR_NONE;
-					if eth_wrapper_rx_valid = '1' then 
-						Error		<= NET_ETH_ERROR_MDIO_CONTROLLER_ERROR;
-					else
-						Error		<= NET_ETH_ERROR_NONE;
-					end if;
-				when NET_ETH_PHYC_ERROR_NO_MATCH_DEVICE_ID								=> 	Error		<= NET_ETH_ERROR_NO_MATCH_DEVICE_ID;
-				when NET_ETH_PHYC_ERROR_MDIO_CONTROLLER_ERROR							=> 	Error		<= NET_ETH_ERROR_MDIO_CONTROLLER_ERROR;
-					
---				when NET_ETH_PHYC_ERROR_NO_CABLE													=>	Error		<= NET_ETH_ERROR_NO_CABLE;
---				when NET_ETH_PHYC_ERROR_ST_SEARCH_DEVICE_WAIT							=>	Error		<= NET_ETH_ERROR_ST_SEARCH_DEVICE_WAIT;
---				when NET_ETH_PHYC_ERROR_ST_READ_DEVICE_ID_WAIT_1					=>	Error		<= NET_ETH_ERROR_ST_READ_DEVICE_ID_WAIT_1;
---				when NET_ETH_PHYC_ERROR_ST_READ_DEVICE_ID_WAIT_2					=>	Error		<= NET_ETH_ERROR_ST_READ_DEVICE_ID_WAIT_2;
---				when NET_ETH_PHYC_ERROR_ST_WRITE_INTERRUPT_WAIT						=>	Error		<= NET_ETH_ERROR_ST_WRITE_INTERRUPT_WAIT;
---				when NET_ETH_PHYC_ERROR_ST_READ_STATUS_WAIT								=>	Error		<= NET_ETH_ERROR_ST_READ_STATUS_WAIT;
---				when NET_ETH_PHYC_ERROR_ST_READ_PHY_SPECIFIC_STATUS_WAIT	=>	Error		<= NET_ETH_ERROR_ST_READ_PHY_SPECIFIC_STATUS_WAIT;
-				when others 																							=>	Error		<= NET_ETH_ERROR_NO_MATCH_DEVICE_ID;
+				when NET_ETH_PHYC_ERROR_NONE =>							Error		<= NET_ETH_ERROR_NONE;
+				when others =>															Error		<= NET_ETH_ERROR_NONE;
 			end case;
 			
 	--		MAC_ERROR_MAC_ERROR,
