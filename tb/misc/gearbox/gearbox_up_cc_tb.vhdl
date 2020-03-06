@@ -58,7 +58,7 @@ architecture tb of gearbox_up_cc_tb is
 	end record;
 	type T_TUPLE_VECTOR is array(natural range <>) of T_TUPLE;
 
-	constant TB_GENERATOR_LIST	: T_TUPLE_VECTOR	:= ((8, 32), (8, 20), (8, 36), (64, 66), (12, 128));
+	constant TB_GENERATOR_LIST	: T_TUPLE_VECTOR	:= ((8, 12), (8,16));--, (8, 20), (8, 36), (64, 66), (12, 128));
 
 	constant CLOCK_FREQ					: FREQ						:= 100 MHz;
 	signal Clock								: std_logic				:= '1';
@@ -74,8 +74,10 @@ begin
 		constant INPUT_BITS						: positive		:= TB_GENERATOR_LIST(i).InputBits;
 		constant OUTPUT_BITS					: positive		:= TB_GENERATOR_LIST(i).OutputBits;
 		constant OUTPUT_ORDER					: T_BIT_ORDER	:= MSB_FIRST;
-		constant ADD_INPUT_REGISTERS	: boolean			:= TRUE;
+		constant ADD_INPUT_REGISTERS	: boolean			:= FALSE;
 		constant ADD_OUTPUT_REGISTERS	: boolean			:= FALSE;
+		constant USE_UNCOMPLETE_FRAME	: boolean			:= FALSE;
+		constant BIT_GROUP						: natural			:= 4;
 
 		constant BITS_PER_CHUNK				: positive		:= greatestCommonDivisor(INPUT_BITS, OUTPUT_BITS);
 		constant INPUT_CHUNKS					: positive		:= INPUT_BITS / BITS_PER_CHUNK;
@@ -98,11 +100,14 @@ begin
 
 		signal SyncIn									: std_logic;
 		signal ValidIn								: std_logic;
+		signal LastIn									: std_logic		:='0';
 		signal DataIn									: std_logic_vector(INPUT_BITS - 1 downto 0);
+		signal BEIn										: std_logic_vector(ite(USE_UNCOMPLETE_FRAME, INPUT_BITS / BIT_GROUP, 0) - 1 downto 0);
 
 		signal SyncOut								: std_logic;
 		signal ValidOut								: std_logic;
 		signal DataOut								: std_logic_vector(OUTPUT_BITS - 1 downto 0);
+		signal BEOut									: std_logic_vector(ite(USE_UNCOMPLETE_FRAME, OUTPUT_BITS / BIT_GROUP, 0) - 1 downto 0);
 		signal FirstOut								: std_logic;
 		signal LastOut								: std_logic;
 
@@ -125,7 +130,9 @@ begin
 
 		begin
 			RandomVar.InitSeed(RandomVar'instance_name);		-- Generate initial seeds
-
+			
+			LastIn		<= '0';
+			
 			SyncIn		<= '0';
 			DataIn		<= (others => 'U');
 			ValidIn		<= '0';
@@ -136,15 +143,27 @@ begin
 			SyncIn		<= '1';
 			ValidIn		<= '1';
 			DataIn		<= genChunkedRandomValue;
+			BEIn			<= (others => '1');
 			wait until falling_edge(Clock);
 
 			SyncIn		<= '0';
+			
 			for i in 0 to LOOP_COUNT - 1 loop
 				DataIn		<= genChunkedRandomValue;
 				ValidIn		<= '1';
+				BEIn			<= (others => '1');
 				wait until falling_edge(Clock);
 			end loop;
-
+			
+			-- uncomplete_gen0 : if USE_UNCOMPLETE_FRAME then
+				-- DataIn		<= genChunkedRandomValue;
+				-- ValidIn		<= '1';
+				-- LastIn		<= '1';
+				-- BEIn			<= (others => '1');
+				-- wait until falling_edge(Clock);
+			-- end if;
+			
+			LastIn		<= '0';
 			SyncIn		<= '1';
 			ValidIn		<= '1';
 			DataIn		<= genChunkedRandomValue;
@@ -160,7 +179,16 @@ begin
 				end if;
 				wait until falling_edge(Clock);
 			end loop;
-
+			
+			-- uncomplete_gen1 : if USE_UNCOMPLETE_FRAME then
+				-- DataIn		<= genChunkedRandomValue;
+				-- ValidIn		<= '1';
+				-- LastIn		<= '1';
+				-- BEIn			<= (others => '1');
+				-- wait until falling_edge(Clock);
+			-- end if;
+			
+			LastIn		<= '0';
 			DataIn		<= (others => '0');
 			ValidIn		<= '0';
 
@@ -175,6 +203,8 @@ begin
 				OUTPUT_BITS						=> OUTPUT_BITS,
 				META_BITS							=> 0,	--META_BITS,
 				-- OUTPUT_ORDER					=> OUTPUT_ORDER,
+				USE_UNCOMPLETE_FRAME	=> USE_UNCOMPLETE_FRAME,
+				BIT_GROUP							=> BIT_GROUP,
 				ADD_INPUT_REGISTERS		=> ADD_INPUT_REGISTERS,
 				ADD_OUTPUT_REGISTERS	=> ADD_OUTPUT_REGISTERS
 			)
@@ -185,10 +215,13 @@ begin
 				In_Valid		=> ValidIn,
 				In_Data			=> DataIn,
 				In_Meta			=> (others => '0'),	--MetaIn,
+				In_Last(0)			=> LastIn,
+				In_BE				=> BEIn,
 
 				Out_Sync		=> SyncOut,
 				Out_Valid		=> ValidOut,
 				Out_Data		=> DataOut,
+				Out_BE			=> BEOut,
 				Out_Meta		=> open,	--MetaOut
 				Out_First		=> FirstOut,
 				Out_Last		=> LastOut

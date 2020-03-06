@@ -131,7 +131,7 @@ architecture rtl of mac_RX_SrcMAC_Filter is
 	signal Out_Meta_SrcMACAddress_nxt_i	: std_logic;
 
 begin
-	assert FALSE report "RX_SrcMAC_Filter:  patterns=" & integer'image(PATTERN_COUNT)			severity NOTE;
+	assert not DEBUG report "RX_SrcMAC_Filter:  patterns=" & integer'image(PATTERN_COUNT)			severity NOTE;
 
 	In_Ack				<= In_Ack_i;
 	Is_DataFlow		<= In_Valid and In_Ack_i;

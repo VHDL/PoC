@@ -380,17 +380,21 @@ begin
 				Length_d														<= (others => '0');
 			else
 				if (SourcePort_en0 = '1') then
-					SourcePort_d(7 downto 0)					<= In_Data;
+					SourcePort_d(15 downto 8)					<= In_Data;
+--					SourcePort_d(7 downto 0)					<= In_Data;
 				end if;
 				if (SourcePort_en1 = '1') then
-					SourcePort_d(15 downto 8)					<= In_Data;
+					SourcePort_d(7 downto 0)					<= In_Data;
+--					SourcePort_d(15 downto 8)					<= In_Data;
 				end if;
 
 				if (DestinationPort_en0 = '1') then
-					DestinationPort_d(7 downto 0)			<= In_Data;
+					DestinationPort_d(15 downto 8)			<= In_Data;
+--					DestinationPort_d(7 downto 0)			<= In_Data;
 				end if;
 				if (DestinationPort_en1 = '1') then
-					DestinationPort_d(15 downto 8)		<= In_Data;
+					DestinationPort_d(7 downto 0)		<= In_Data;
+--					DestinationPort_d(15 downto 8)		<= In_Data;
 				end if;
 
 				if (Length_en0 = '1') then

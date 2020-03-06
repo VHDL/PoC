@@ -387,22 +387,23 @@ begin
 		signal Writer_Counter_en			: std_logic;
 		signal Writer_Counter_us			: unsigned(log2ceilnz(META_FIFO_DEPTH(i) * MAX_FRAMES) - 1 downto 0)			:= (others => '0');
 	begin
-		Writer_Counter_rst		<= '0';		-- FIXME: is this correct?
 
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
+				Writer_Counter_rst		    <= '0';
+				Writer_CounterControl			<= '0';
 				if (Reset = '1') then
-					Writer_CounterControl			<= '0';
-				elsif ((In_Valid and In_SOF) = '1') then
+					Writer_CounterControl		<= '0';
+				elsif ((In_Valid and In_SOF) = '1') or ((Writer_CounterControl = '1') and (Writer_Counter_us < (META_FIFO_DEPTH(i) - 1))) then
 					Writer_CounterControl		<= '1';
 				elsif (Writer_Counter_us = (META_FIFO_DEPTH(i) - 1)) then
-					Writer_CounterControl		<= '0';
+					Writer_Counter_rst		  <= '1';
 				end if;
 			end if;
 		end process;
 
-		Writer_Counter_en		<= (In_Valid and In_SOF) or Writer_CounterControl;
+		Writer_Counter_en		<= (In_Valid and In_SOF and not Reset) or Writer_CounterControl;
 
 		process(Clock)
 		begin
