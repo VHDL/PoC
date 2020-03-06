@@ -55,7 +55,7 @@ entity arp_Cache is
 
 		Command										: in	T_NET_ARP_ARPCACHE_COMMAND;
 		Status										: out	T_NET_ARP_ARPCACHE_STATUS;
-
+		
 		NewIPv4Address_rst				: out	std_logic;
 		NewIPv4Address_nxt				: out	std_logic;
 		NewIPv4Address_Data				: in	T_SLV_8;

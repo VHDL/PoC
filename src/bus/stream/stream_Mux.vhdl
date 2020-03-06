@@ -97,93 +97,110 @@ architecture rtl of stream_Mux is
 	signal Out_EOF_i									: std_logic;
 
 begin
-	RequestVector				<= In_Valid and In_SOF;
-	RequestWithSelf			<= slv_or(RequestVector);
-	RequestWithoutSelf	<= slv_or(RequestVector and not ChannelPointer_d);
-
-	process(Clock)
-	begin
-		if rising_edge(Clock) then
-			if (Reset = '1') then
-				State				<= ST_IDLE;
-			else
-				State				<= NextState;
-			end if;
-		end if;
-	end process;
-
-	process(State, RequestWithSelf, RequestWithoutSelf, Out_Ack, Out_EOF_i, ChannelPointer_d, ChannelPointer_nxt)
-	begin
-		NextState									<= State;
-
-		FSM_Dataflow_en						<= '0';
-
-		ChannelPointer_en					<= '0';
-		ChannelPointer						<= ChannelPointer_d;
-
-		case State is
-			when ST_IDLE =>
-				if (RequestWithSelf = '1') then
-					ChannelPointer_en		<= '1';
-
-					NextState						<= ST_DATAFLOW;
-				end if;
-
-			when ST_DATAFLOW =>
-				FSM_Dataflow_en				<= '1';
-
-				if ((Out_Ack and Out_EOF_i) = '1') then
-					if (RequestWithoutSelf = '0') then
-						NextState					<= ST_IDLE;
-					else
-						ChannelPointer_en	<= '1';
-					end if;
-				end if;
-		end case;
-	end process;
-
-	process(Clock)
-	begin
-		if rising_edge(Clock) then
-			if (Reset = '1') then
-				ChannelPointer_d			<= to_slv(2 ** (PORTS - 1), PORTS);
-			elsif (ChannelPointer_en = '1') then
-				ChannelPointer_d		<= ChannelPointer_nxt;
-			end if;
-		end if;
-	end process;
-
-	RequestLeft					<= (not ((unsigned(ChannelPointer_d) - 1) or unsigned(ChannelPointer_d))) and unsigned(RequestVector);
-	SelectLeft					<= (unsigned(not RequestLeft) + 1)		and RequestLeft;
-	SelectRight					<= (unsigned(not RequestVector) + 1)	and unsigned(RequestVector);
-	ChannelPointer_nxt	<= std_logic_vector(ite((RequestLeft = (RequestLeft'range => '0')), SelectRight, SelectLeft));
-
-	ChannelPointer_bin	<= onehot2bin(ChannelPointer);
-	idx									<= to_integer(ChannelPointer_bin);
-
-	Out_Data						<= get_row(In_Data, idx);
-	Out_Meta						<= get_row(In_Meta, idx);
-
-	Out_SOF							<= In_SOF(to_integer(ChannelPointer_bin));
-	Out_EOF_i						<= In_EOF(to_integer(ChannelPointer_bin));
-	Out_Valid						<= In_Valid(to_integer(ChannelPointer_bin)) and FSM_Dataflow_en;
-	Out_EOF							<= Out_EOF_i;
-
-	In_Ack							<= (In_Ack	'range => (Out_Ack	 and FSM_Dataflow_en)) and ChannelPointer;
-
-	genMetaReverse_0 : if META_REV_BITS = 0 generate
-		In_Meta_rev		<= (others => (others => '0'));
-	end generate;
-	genMetaReverse_1 : if META_REV_BITS > 0 generate
-		signal Temp_Meta_rev : T_SLM(PORTS - 1 downto 0, META_REV_BITS - 1 downto 0)		:= (others => (others => 'Z'));
-	begin
-		genAssign : for i in 0 to PORTS - 1 generate
-			signal row	: std_logic_vector(META_REV_BITS - 1 downto 0);
+	gen_mux_normal : if Ports > 1 generate
+		RequestVector				<= In_Valid and In_SOF;
+		RequestWithSelf			<= slv_or(RequestVector);
+		RequestWithoutSelf	<= slv_or(RequestVector and not ChannelPointer_d);
+	
+		process(Clock)
 		begin
-			row		<= Out_Meta_rev and (row'range => ChannelPointer(i));
-			assign_row(Temp_Meta_rev, row, i);
+			if rising_edge(Clock) then
+				if (Reset = '1') then
+					State				<= ST_IDLE;
+				else
+					State				<= NextState;
+				end if;
+			end if;
+		end process;
+	
+		process(State, RequestWithSelf, RequestWithoutSelf, Out_Ack, Out_EOF_i, ChannelPointer_d, ChannelPointer_nxt)
+		begin
+			NextState									<= State;
+	
+			FSM_Dataflow_en						<= '0';
+	
+			ChannelPointer_en					<= '0';
+			ChannelPointer						<= ChannelPointer_d;
+	
+			case State is
+				when ST_IDLE =>
+					if (RequestWithSelf = '1') then
+						ChannelPointer_en		<= '1';
+	
+						NextState						<= ST_DATAFLOW;
+					end if;
+	
+				when ST_DATAFLOW =>
+					FSM_Dataflow_en				<= '1';
+	
+					if ((Out_Ack and Out_EOF_i) = '1') then
+						if (RequestWithoutSelf = '0') then
+							NextState					<= ST_IDLE;
+						else
+							ChannelPointer_en	<= '1';
+						end if;
+					end if;
+			end case;
+		end process;
+	
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				if (Reset = '1') then
+					ChannelPointer_d			<= to_slv(2 ** (PORTS - 1), PORTS);
+				elsif (ChannelPointer_en = '1') then
+					ChannelPointer_d		<= ChannelPointer_nxt;
+				end if;
+			end if;
+		end process;
+	
+		RequestLeft					<= (not ((unsigned(ChannelPointer_d) - 1) or unsigned(ChannelPointer_d))) and unsigned(RequestVector);
+		SelectLeft					<= (unsigned(not RequestLeft) + 1)		and RequestLeft;
+		SelectRight					<= (unsigned(not RequestVector) + 1)	and unsigned(RequestVector);
+		ChannelPointer_nxt	<= std_logic_vector(ite((RequestLeft = (RequestLeft'range => '0')), SelectRight, SelectLeft));
+	
+		ChannelPointer_bin	<= onehot2bin(ChannelPointer);
+		idx									<= to_integer(ChannelPointer_bin);
+	
+		Out_Data						<= get_row(In_Data, idx);
+		Out_Meta						<= get_row(In_Meta, idx);
+	
+		Out_SOF							<= In_SOF(to_integer(ChannelPointer_bin));
+		Out_EOF_i						<= In_EOF(to_integer(ChannelPointer_bin));
+		Out_Valid						<= In_Valid(to_integer(ChannelPointer_bin)) and FSM_Dataflow_en;
+		Out_EOF							<= Out_EOF_i;
+	
+		In_Ack							<= (In_Ack	'range => (Out_Ack	 and FSM_Dataflow_en)) and ChannelPointer;
+	
+		genMetaReverse_0 : if META_REV_BITS = 0 generate
+			In_Meta_rev		<= (others => (others => '0'));
 		end generate;
-		In_Meta_rev		<= Temp_Meta_rev;
+		genMetaReverse_1 : if META_REV_BITS > 0 generate
+			signal Temp_Meta_rev : T_SLM(PORTS - 1 downto 0, META_REV_BITS - 1 downto 0)		:= (others => (others => 'Z'));
+		begin
+			genAssign : for i in 0 to PORTS - 1 generate
+				signal row	: std_logic_vector(META_REV_BITS - 1 downto 0);
+			begin
+				row		<= Out_Meta_rev and (row'range => ChannelPointer(i));
+				assign_row(Temp_Meta_rev, row, i);
+			end generate;
+			In_Meta_rev		<= Temp_Meta_rev;
+		end generate;
+	end generate;
+	
+	gen_mux_1 : if Ports = 1 generate
+
+		In_Ack(0)					<=Out_Ack;
+		Out_Valid					<= In_Valid(0);
+		Out_Data					<= get_row(In_Data, 0);
+		Out_Meta					<= get_row(In_Meta, 0);
+		Out_SOF						<= In_SOF(0);
+		Out_EOF						<= In_EOF(0);
+		assign_row(In_Meta_rev,Out_Meta_rev,0);
+	end generate;
+	
+	gen_mux_0 : if Ports < 1 generate
+		assert false report "Ports of stream_Mux cant be Zero!" severity failure;
 	end generate;
 
 end architecture;
