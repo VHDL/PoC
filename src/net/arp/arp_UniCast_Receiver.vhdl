@@ -437,9 +437,9 @@ begin
 
 			when ST_COMPLETE =>
 				if (Operation = OP_REQUEST) then
-					Status											<= NET_ARP_RECEIVER_STATUS_REQUEST_RECEIVED;
+					Status											<= NET_ARP_RECEIVER_STATUS_REQUESTRECEIVED;
 				elsif (Operation = OP_ANSWER) then
-					Status											<= NET_ARP_RECEIVER_STATUS_ANSWER_RECEIVED;
+					Status											<= NET_ARP_RECEIVER_STATUS_ANSWERRECEIVED;
 				end if;
 
 				if (Command = NET_ARP_RECEIVER_CMD_CLEAR) then

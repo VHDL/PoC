@@ -373,13 +373,13 @@ begin
 		
 		case FSMPool_State is
 			when ST_IDLE =>
-				if (BCRcv_Status = NET_ARP_RECEIVER_STATUS_REQUEST_RECEIVED) then 
+				if (BCRcv_Status = NET_ARP_RECEIVER_STATUS_REQUESTRECEIVED) then 
 					FSMPool_IPPool_Lookup									<= '1';
 					FSMPool_BCRcv_TargetIPv4Address_nxt		<= IPPool_IPv4Address_nxt;
 
 					FSMPool_NextState											<= ST_IPPOOL_WAIT;
 					
-				elsif (BCRcv_Status = NET_ARP_RECEIVER_STATUS_ANSWER_RECEIVED) then
+				elsif (BCRcv_Status = NET_ARP_RECEIVER_STATUS_ANSWERRECEIVED) then
 					-- FSMPool_BCRcv_Clear										<= '1';
 					BCRcv_Command													<= NET_ARP_RECEIVER_CMD_CLEAR;
 					
@@ -420,7 +420,7 @@ begin
 				FSMPool_MACSeq1_SenderMACAddress_nxt		<= UCRsp_SenderMACAddress_nxt;
 				FSMPool_IPSeq1_SenderIPv4Address_nxt		<= UCRsp_SenderIPv4Address_nxt;
 				if (UCRsp_Complete = '1') then
-					if (IPv4_Address_Counter < (IPv4_Address_Length - 1)) then
+					if (IPv4_Address_Counter < (IPV4_ADDRESS_COUNT - 1)) then
 						IPv4_Address_Counter_en				<= '1';
 					else
 						IPPool_Announced_i					<= '1';
@@ -634,7 +634,7 @@ begin
 					FSMCache_NextState										<= ST_CACHE;
 				end if;
 				
-				if (UCRcv_Status = NET_ARP_RECEIVER_STATUS_REQUEST_RECEIVED) then -- TODO: Handle Unicast Request
+				if (UCRcv_Status = NET_ARP_RECEIVER_STATUS_REQUESTRECEIVED) then -- TODO: Handle Unicast Request
 					FSMCache_UCRcv_Command								<= NET_ARP_RECEIVER_CMD_CLEAR;
 				end if;
 
@@ -704,7 +704,7 @@ begin
 				if (UCRcv_Status = NET_ARP_RECEIVER_STATUS_ERROR) then 
 					-- FIXME: error handling
 					FSMCache_NextState										<= ST_ERROR;
-				elsif (UCRcv_Status = NET_ARP_RECEIVER_STATUS_ANSWER_RECEIVED) then 
+				elsif (UCRcv_Status = NET_ARP_RECEIVER_STATUS_ANSWERRECEIVED) then 
 					FSMCache_ARPCache_Command							<= NET_ARP_ARPCACHE_CMD_ADD;
 					FSMCache_UCRcv_SenderMACAddress_nxt		<= ARPCache_NewMACAddress_nxt;
 					FSMCache_UCRcv_SenderIPv4Address_nxt	<= ARPCache_NewIPv4Address_nxt;
