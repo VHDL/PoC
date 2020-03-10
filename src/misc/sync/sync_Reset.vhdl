@@ -73,65 +73,35 @@ end entity;
 
 
 architecture rtl of sync_Reset is
+	attribute ASYNC_REG                    : string;
+	attribute SHREG_EXTRACT                : string;
+
+	signal Data_async                      : std_logic;
+	signal Data_meta                      : std_logic    := '1';
+	signal Data_sync                      : std_logic_vector(SYNC_DEPTH - 1 downto 0)    := (others => '1');
+
+	-- Mark registers as asynchronous
+	attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
+	attribute ASYNC_REG      of Data_sync  : signal is "TRUE";
+
+	-- Prevent XST from translating two FFs into SRL plus FF
+	attribute SHREG_EXTRACT of Data_meta  : signal is "NO";
+	attribute SHREG_EXTRACT of Data_sync  : signal is "NO";
+
 begin
-	genGeneric : if (VENDOR /= VENDOR_ALTERA) and (VENDOR /= VENDOR_XILINX) generate
-		attribute ASYNC_REG                    : string;
-		attribute SHREG_EXTRACT                : string;
+	Data_async  <= Input;
 
-		signal Data_async                      : std_logic;
-		signal Data_meta                      : std_logic    := '1';
-		signal Data_sync                      : std_logic_vector(SYNC_DEPTH - 1 downto 0)    := (others => '1');
-
-		-- Mark registers as asynchronous
-		attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
-		attribute ASYNC_REG      of Data_sync  : signal is "TRUE";
-
-		-- Prevent XST from translating two FFs into SRL plus FF
-		attribute SHREG_EXTRACT of Data_meta  : signal is "NO";
-		attribute SHREG_EXTRACT of Data_sync  : signal is "NO";
-
+	process(Clock, Data_async)
 	begin
-		Data_async  <= Input;
+		if (Data_async = '1') then
+			Data_meta    <= '1';
+			Data_sync    <= (others => '1');
+		elsif rising_edge(Clock) then
+			Data_meta    <= D;
+			Data_sync    <= Data_sync(Data_sync'high - 1 downto 0) & Data_meta;
+		end if;
+	end process;
 
-		process(Clock, Data_async)
-		begin
-			if (Data_async = '1') then
-				Data_meta    <= '1';
-				Data_sync    <= (others => '1');
-			elsif rising_edge(Clock) then
-				Data_meta    <= D;
-				Data_sync    <= Data_sync(Data_sync'high - 1 downto 0) & Data_meta;
-			end if;
-		end process;
+	Output    <= Data_sync(Data_sync'high);
 
-		Output    <= Data_sync(Data_sync'high);
-	end generate;
-
-	-- use dedicated and optimized 2 D-FF synchronizer for Altera FPGAs
-	genAltera : if VENDOR = VENDOR_ALTERA generate
-		sync : sync_Reset_Altera
-			generic map (
-				SYNC_DEPTH  => SYNC_DEPTH
-			)
-			port map (
-				Clock       => Clock,
-				Input       => Input,
-				D           => D,
-				Output      => Output
-			);
-	end generate;
-
-	-- use dedicated and optimized 2 D-FF synchronizer for Xilinx FPGAs
-	genXilinx : if VENDOR = VENDOR_XILINX generate
-		sync : sync_Reset_Xilinx
-			generic map (
-				SYNC_DEPTH  => SYNC_DEPTH
-			)
-			port map (
-				Clock       => Clock,
-				Input       => Input,
-				D           => D,
-				Output      => Output
-			);
-	end generate;
 end architecture;

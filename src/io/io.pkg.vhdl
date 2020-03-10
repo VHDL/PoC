@@ -62,6 +62,12 @@ package io is
 	type T_IO_TRISTATE_VECTOR	is array(natural range <>) of T_IO_TRISTATE;
 
 	type T_IO_LVDS_VECTOR			is array(natural range <>) of T_IO_LVDS;
+	
+	function get_p_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector;
+	function get_n_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector;
+	function to_LVDS_vector(p : std_logic_vector; n : std_logic_vector) return T_IO_LVDS_VECTOR;
+	
+	type T_IO_LVDS_VV			    is array(natural range <>) of T_IO_LVDS_VECTOR;
 
 	type T_IO_DATARATE is (IO_DATARATE_SDR, IO_DATARATE_DDR, IO_DATARATE_QDR);
 
@@ -180,6 +186,35 @@ end package;
 
 
 package body io is
+	function get_p_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector is
+		variable temp : std_logic_vector(vec'range);
+	begin
+		for i in vec'range loop
+			temp(i) := vec(i).p;
+		end loop;
+		return temp;
+	end function;
+	
+	function get_n_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector is
+		variable temp : std_logic_vector(vec'range);
+	begin
+		for i in vec'range loop
+			temp(i) := vec(i).n;
+		end loop;
+		return temp;
+	end function;
+	
+	function to_LVDS_vector(p : std_logic_vector; n : std_logic_vector) return T_IO_LVDS_VECTOR is
+		variable temp : T_IO_LVDS_VECTOR(p'range);
+	begin
+		assert p'length = n'length report "PoC.io.to_LVDS_vector: Length of p and n vectors dosn't match!" severity failure;
+		for i in p'range loop
+			temp(i).p := p(i);
+			temp(i).n := n(i);
+		end loop;
+		return temp;
+	end function;
+	
 	procedure io_tristate_driver (
 		signal pad      : inout std_logic_vector;
 		signal tristate : inout T_IO_TRISTATE_VECTOR

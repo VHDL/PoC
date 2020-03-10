@@ -86,17 +86,13 @@ architecture rtl of AXI4Stream_Mirror is
 	signal InGlue_data_out    : std_logic_vector(GLUE_BITS - 1 downto 0);
 	signal InGlue_Valid       : std_logic;
 	signal InGlue_got         : std_logic;
+
+	signal Ack_i              : std_logic;
+	signal Valid_Mask_r       : std_logic_vector(PORTS - 1 downto 0) := (others => '1');
+	signal Valid_ack          : std_logic_vector(PORTS - 1 downto 0);
+	signal Masked_ack         : std_logic_vector(PORTS - 1 downto 0);
 	
 	signal Out_Ready          : std_logic_vector(PORTS - 1 downto 0);
-
-	signal Ready_i            : std_logic;
-
-	signal internal_M2S       : T_AXI4STREAM_M2S_VECTOR(PORTS - 1 downto 0)(
-	       Data(DATA_BITS - 1 downto 0),
-	       User(USER_BITS - 1 downto 0)
-	       -- Keep(KEEP_BITS - 1 downto 0)
-		);
-	signal internal_S2M       : T_AXI4STREAM_S2M_VECTOR(PORTS - 1 downto 0);
 
 begin
 	--InGlue_data_in(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos)) <= In_M2S.Data;
@@ -108,7 +104,7 @@ begin
 	InGlue_put     <= In_M2S.Valid;
 	In_S2M.Ready   <= not InGlue_full;
 
-	FIFO : entity work.FIFO_glue
+	InGlue : entity work.FIFO_glue
 		generic map (
 			D_BITS                  => GLUE_BITS
 		)
@@ -127,76 +123,45 @@ begin
 			do                      => InGlue_data_out,
 			got                     => InGlue_got
 		);
-	
-	Ready_gen : for i in 0 to PORTS - 1 generate
-		Out_Ready(i) <= internal_S2M(i).Ready or ready_mask(i);
+
+	ackowlegde_gen : for i in 0 to PORTS - 1 generate
+		-- acknowlege for valid only dependend on ready
+		Valid_ack(i)  <= Out_S2M(i).Ready;
+		-- acknowledge for data movement when masked or ready
+		Masked_ack(i) <= Out_S2M(i).Ready or ready_mask(i);
 	end generate;
-	
-	Ready_i        <= slv_and(Out_Ready); --TODO timing loop?
-	
-	InGlue_got   <= Ready_i;
+
+	Ack_i         <= slv_and(Masked_ack) or slv_and(not Valid_Mask_r or Masked_ack);
+	InGlue_got    <= Ack_i;
+
+	process(Clock)
+	begin
+		if rising_edge(Clock) then
+			if ((Reset or Ack_i ) = '1') then
+				Valid_Mask_r    <= (others => '1');
+			else
+				Valid_Mask_r    <= Valid_Mask_r and not Valid_ack;
+			end if;
+		end if;
+	end process;
+
+	reassign_Outputs : for i in 0 to PORTS - 1 generate
+		Out_M2S(i).Valid    <= InGlue_Valid and Valid_Mask_r(i);
+		--Out_M2S(i).Data     <= InGlue_data_out(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos));
+		--Out_M2S(i).Last     <= InGlue_data_out(high(Bit_Vec, Last_Pos));
+		--Out_M2S(i).User     <= InGlue_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
+		--Out_M2S(i).Keep     <= InGlue_data_out(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos));
+		--TODO fix with above:
+		Out_M2S(i).Data     <= InGlue_data_out(DATA_BITS - 1 downto 0);
+		Out_M2S(i).Last     <= InGlue_data_out(DATA_BITS);
+		Out_M2S(i).User     <= InGlue_data_out(InGlue_data_out'high downto DATA_BITS + 1);
+	end generate;
 
 	-- missed transaction indication:
 	gen_lost:for i in 0 to PORTS - 1 generate
 		-- transaction is considered lost when:
-		-- the master transaction (towards the fifo) has happend and the current slave is not ready
-		mask_transaction_lost(i) <= (Ready_i and internal_M2S(i).Valid) and (not internal_S2M(i).Ready);
+		-- the mirror transaction (all ports are either ready or masked) has happend but current slave had no transaction (valid still asserted without a ready)
+		mask_transaction_lost(i) <= (InGlue_got and (Out_M2S(i).Valid and not Out_S2M(i).Ready));
 	end generate;
 
-	
-	genOutput : for i in 0 to PORTS - 1 generate
-		--suppress valid whenever masked and not ready, otherwise transmit through valid as is
-		internal_M2S(i).Valid    <= (InGlue_Valid and not ready_mask(i)) or (InGlue_Valid and Ready_i);
-		--internal_M2S(i).Data     <= InGlue_data_out(high(Bit_Vec, Data_Pos) downto low(Bit_Vec, Data_Pos));
-		--internal_M2S(i).Last     <= InGlue_data_out(high(Bit_Vec, Last_Pos));
-		--internal_M2S(i).User     <= InGlue_data_out(high(Bit_Vec, User_Pos) downto low(Bit_Vec, User_Pos));
-		--internal_M2S(i).Keep     <= InGlue_data_out(high(Bit_Vec, Keep_Pos) downto low(Bit_Vec, Keep_Pos));
-		--TODO fix with above:
-		internal_M2S(i).Data     <= InGlue_data_out(DATA_BITS - 1 downto 0);
-		internal_M2S(i).Last     <= InGlue_data_out(DATA_BITS);
-		internal_M2S(i).User     <= InGlue_data_out(InGlue_data_out'high downto DATA_BITS + 1);
-	end generate;
-	
-	gen_outputs : for i in 0 to PORTS - 1 generate
-		gen_glue : if ADD_OUTPUT_GLUE generate
-			signal OutGlue_full       : std_logic;
-			signal OutGlue_put        : std_logic;
-			signal OutGlue_data_in    : std_logic_vector(GLUE_BITS - 1 downto 0);
-			signal OutGlue_data_out   : std_logic_vector(GLUE_BITS - 1 downto 0);
-			signal OutGlue_Valid      : std_logic;
-			signal OutGlue_got        : std_logic;
-		begin
-			OutGlue_data_in        <= internal_M2S(i).User & internal_M2S(i).Last & internal_M2S(i).Data;
-			OutGlue_put            <= internal_M2S(i).Valid;
-			internal_S2M(i).Ready  <= not OutGlue_full;
-			Output_glue: entity work.FIFO_glue
-			generic map (
-				D_BITS                  => GLUE_BITS
-			)
-			port map (
-				-- Global Reset and Clock
-				clk                     => Clock,
-				rst                     => Reset,
-
-				-- Writing Interface
-				put                     => OutGlue_put,
-				di                      => OutGlue_data_in,
-				ful                     => OutGlue_full,
-
-				-- Reading Interface
-				vld                     => OutGlue_Valid,
-				do                      => OutGlue_data_out,
-				got                     => OutGlue_got
-			);
-			Out_M2S(i).Valid    <= OutGlue_Valid;
-			Out_M2S(i).Data     <= OutGlue_data_out(DATA_BITS - 1 downto 0);
-			Out_M2S(i).Last     <= OutGlue_data_out(DATA_BITS);
-			Out_M2S(i).User     <= OutGlue_data_out(InGlue_data_out'high downto DATA_BITS + 1);
-			OutGlue_got         <= Out_S2M(i).Ready;
-		else generate
-			Out_M2S             <= internal_M2S;
-			internal_S2M        <= Out_S2M;
-		end generate;
-	end generate;
-	
 end architecture;
