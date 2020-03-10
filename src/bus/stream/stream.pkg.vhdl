@@ -185,17 +185,17 @@ end;
 
 
 package body stream is
-  function to_slv(val : T_FRAMEGEN_COMMAND) return std_logic_vector is
-  begin
+	function to_slv(val : T_FRAMEGEN_COMMAND) return std_logic_vector is
+	begin
 		return std_logic_vector(to_unsigned(T_FRAMEGEN_COMMAND'pos(val),log2ceilnz(T_FRAMEGEN_COMMAND'Count)));
 	end function;
 	
-  function to_slv(val : T_FRAMEGEN_STATUS) return std_logic_vector is
-  begin
-    return std_logic_vector(to_unsigned(T_FRAMEGEN_STATUS'pos(val),log2ceilnz(T_FRAMEGEN_STATUS'Count)));
+	function to_slv(val : T_FRAMEGEN_STATUS) return std_logic_vector is
+	begin
+		return std_logic_vector(to_unsigned(T_FRAMEGEN_STATUS'pos(val),log2ceilnz(T_FRAMEGEN_STATUS'Count)));
 	end function;
 	
-  function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_8) return natural is
+	function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_8) return natural is
 	begin
 		for i in 0 to Data'length - 1 loop
 			if (Data(i).EOFG = TRUE) then

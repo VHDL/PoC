@@ -159,6 +159,53 @@ package net is
 		Common								: T_NET_ETH_PHY_INTERFACE_COMMON;
 	end record;
 
+	constant C_NET_ETH_PHY_INTERFACE_GMII_INIT : T_NET_ETH_PHY_INTERFACE_GMII := (
+		RX_RefClock				=> 'Z',
+		TX_Clock					=> 'Z',
+		TX_Valid					=> 'Z',
+		TX_Data						=> (others => 'Z'),
+		TX_Error					=> 'Z',
+		RX_Clock					=> 'Z',
+		RX_Valid					=> 'Z',
+		RX_Data						=> (others => 'Z'),
+		RX_Error					=> 'Z'
+	);
+	constant C_NET_ETH_PHY_INTERFACE_RGMII_INIT : T_NET_ETH_PHY_INTERFACE_RGMII := (
+		RX_RefClock				=> 'Z',
+		TX_Clock					=> 'Z',
+		TX_Data						=> (others => 'Z'),
+		TX_Control				=> 'Z',
+		RX_Clock					=> 'Z',
+		RX_Data						=> (others => 'Z'),
+		RX_Control				=> 'Z'
+	);
+	constant C_NET_ETH_PHY_INTERFACE_SGMII_INIT : T_NET_ETH_PHY_INTERFACE_SGMII := (
+		DGB_SystemClock_In		=> 'Z',
+		DGB_AutoNeg_Restart		=> 'Z',
+		SGMII_RefClock_In			=> 'Z',
+		SGMII_TXRefClock_Out	=> 'Z',
+		SGMII_RXRefClock_Out	=> 'Z',
+		TX_n									=> 'Z',
+		TX_p									=> 'Z',
+		RX_n									=> 'Z',
+		RX_p									=> 'Z'
+	);
+	constant C_NET_ETH_PHY_INTERFACE_MDIO_INIT : T_NET_ETH_PHY_INTERFACE_MDIO := (
+		Clock_ts	=> (I => 'Z', O => 'Z', T => 'Z'),
+		Data_ts		=> (I => 'Z', O => 'Z', T => 'Z')
+	);
+	constant C_NET_ETH_PHY_INTERFACE_COMMON_INIT : T_NET_ETH_PHY_INTERFACE_COMMON := (
+		Reset							=> 'Z',
+		Interrupt					=> 'Z'
+	);
+	constant C_NET_ETH_PHY_INTERFACES_INIT : T_NET_ETH_PHY_INTERFACES := (
+		GMII									=> C_NET_ETH_PHY_INTERFACE_GMII_INIT,
+		RGMII									=> C_NET_ETH_PHY_INTERFACE_RGMII_INIT,
+		SGMII									=> C_NET_ETH_PHY_INTERFACE_SGMII_INIT,
+		MDIO									=> C_NET_ETH_PHY_INTERFACE_MDIO_INIT,
+		Common								=> C_NET_ETH_PHY_INTERFACE_COMMON_INIT
+	);
+
 	-- ==========================================================================================================================================================
 	-- Ethernet: physical coding sublayer (PCS)
 	-- ==========================================================================================================================================================
@@ -698,44 +745,65 @@ end package;
 
 package body net is
 
+	function str_low(str : string) return integer is
+	begin
+		return str'low;
+	end function;
+
 	function to_net_eth_RSDataInterface(str : string) return T_NET_ETH_RS_DATA_INTERFACE is
 	begin
-		for i in T_NET_ETH_RS_DATA_INTERFACE'pos(T_NET_ETH_RS_DATA_INTERFACE'low) to T_NET_ETH_RS_DATA_INTERFACE'pos(T_NET_ETH_RS_DATA_INTERFACE'high) loop
-			if str_match(str_toUpper(str), str_toUpper(T_NET_ETH_RS_DATA_INTERFACE'image(T_NET_ETH_RS_DATA_INTERFACE'val(i)))) then
-				return T_NET_ETH_RS_DATA_INTERFACE'val(i);
+		for i in T_NET_ETH_RS_DATA_INTERFACE loop
+			--report "Trimmed RS_DATA_INTERFACE: '" & T_NET_ETH_RS_DATA_INTERFACE'image(i)(27 to str_length(T_NET_ETH_RS_DATA_INTERFACE'image(i))) & "'" severity warning;	--test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_RS_DATA_INTERFACE'image(i)))
+			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_RS_DATA_INTERFACE'image(i)(str_low(T_NET_ETH_RS_DATA_INTERFACE'image(i))+26 to str_low(T_NET_ETH_RS_DATA_INTERFACE'image(i))+str_length(T_NET_ETH_RS_DATA_INTERFACE'image(i))-1))) then		 --start from char 26 to get rid of prefix
+				--report "RS_DATA_INTERFACE: '" & T_NET_ETH_RS_DATA_INTERFACE'image(i) & "'" severity warning;	--test
+				return i;
 			end if;
 		end loop;
-		report "Unknown RS_DATA_INTERFACE: " & str severity FAILURE;
+		report "Unknown RS_DATA_INTERFACE: '" & str & "'" severity FAILURE;
+		return NET_ETH_RS_DATA_INTERFACE_EMPTY;
 	end function;
 
 	function to_net_eth_PHYDataInterface(str : string) return T_NET_ETH_PHY_DATA_INTERFACE is
 	begin
-		for i in T_NET_ETH_PHY_DATA_INTERFACE'pos(T_NET_ETH_PHY_DATA_INTERFACE'low) to T_NET_ETH_PHY_DATA_INTERFACE'pos(T_NET_ETH_PHY_DATA_INTERFACE'high) loop
-			if str_match(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DATA_INTERFACE'image(T_NET_ETH_PHY_DATA_INTERFACE'val(i)))) then
-				return T_NET_ETH_PHY_DATA_INTERFACE'val(i);
+		for i in T_NET_ETH_PHY_DATA_INTERFACE loop
+			--report "Trimmed PHY_DATA_INTERFACE: '" & T_NET_ETH_PHY_DATA_INTERFACE'image(i)(28 to str_length(T_NET_ETH_PHY_DATA_INTERFACE'image(i))) & "'" severity warning;	--test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DATA_INTERFACE'image(i)))	
+			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DATA_INTERFACE'image(i)(str_low(T_NET_ETH_PHY_DATA_INTERFACE'image(i))+27 to str_low(T_NET_ETH_PHY_DATA_INTERFACE'image(i))+str_length(T_NET_ETH_PHY_DATA_INTERFACE'image(i))-1))) then	--start from char 27 to get rid of prefix
+				--report "PHY_DATA_INTERFACE: '" & T_NET_ETH_PHY_DATA_INTERFACE'image(i) & "'" severity warning;	--test
+				return i;
 			end if;
 		end loop;
-		report "Unknown PHY_DATA_INTERFACE: " & str severity FAILURE;
+		report "Unknown PHY_DATA_INTERFACE: '" & str & "'" severity FAILURE;
+		return NET_ETH_PHY_DATA_INTERFACE_EMPTY;
 	end function;
 
 	function to_net_eth_PHYManagementInterface(str : string) return T_NET_ETH_PHY_MANAGEMENT_INTERFACE is
 	begin
-		for i in T_NET_ETH_PHY_MANAGEMENT_INTERFACE'pos(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'low) to T_NET_ETH_PHY_MANAGEMENT_INTERFACE'pos(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'high) loop
-			if str_match(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'val(i)))) then
-				return T_NET_ETH_PHY_MANAGEMENT_INTERFACE'val(i);
+		for i in T_NET_ETH_PHY_MANAGEMENT_INTERFACE loop
+			--report "Trimmed PHY_MANAGEMENT_INTERFACE: '" & T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)(34 to str_length(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))) & "'" severity warning;	--test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)))	
+			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)(str_low(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))+33 to str_low(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))+str_length(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))-1))) then	--start from char 33 to get rid of prefix
+				--report "PHY_MANAGEMENT_INTERFACE: '" & T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i) & "'" severity warning;	--test
+				return i;
 			end if;
 		end loop;
-		report "Unknown PHY_MANAGEMENT_INTERFACE: " & str severity FAILURE;
+		report "Unknown PHY_MANAGEMENT_INTERFACE: '" & str & "'" severity FAILURE;
+		return NET_ETH_PHY_MANAGEMENT_INTERFACE_EMPTY;
 	end function;
-
+	
 	function to_net_eth_PHYDevice(str : string) return T_NET_ETH_PHY_DEVICE is
 	begin
-		for i in T_NET_ETH_PHY_DEVICE'pos(T_NET_ETH_PHY_DEVICE'low) to T_NET_ETH_PHY_DEVICE'pos(T_NET_ETH_PHY_DEVICE'high) loop
-			if str_match(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DEVICE'image(T_NET_ETH_PHY_DEVICE'val(i)))) then
-				return T_NET_ETH_PHY_DEVICE'val(i);
+		for i in T_NET_ETH_PHY_DEVICE loop
+			--report "Trimmed PHY_DEVICE: '" & T_NET_ETH_PHY_DEVICE'image(i)(20 to str_length(T_NET_ETH_PHY_DEVICE'image(i))) & "'" severity warning;	--test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DEVICE'image(i)))	
+			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DEVICE'image(i)(str_low(T_NET_ETH_PHY_DEVICE'image(i))+19 to str_low(T_NET_ETH_PHY_DEVICE'image(i))+str_length(T_NET_ETH_PHY_DEVICE'image(i))-1))) then	--start from char 19 to get rid of prefix
+				--report "PHY_DEVICE: '" & T_NET_ETH_PHY_DEVICE'image(i) & "'" severity warning;	--test
+				return i;
 			end if;
 		end loop;
-		report "Unknown PHY_DEVICE: " & str severity FAILURE;
+		report "Unknown PHY_DEVICE: '" & str & "'" severity FAILURE;
+		return NET_ETH_PHY_DEVICE_EMPTY;
 	end function;
 
 
@@ -870,23 +938,33 @@ package body net is
 
 	function to_string(EthType : T_NET_MAC_ETHERNETTYPE) return string is
 	begin
-		-- TODO: replace this case-statement by substring(image(EthType), 10,0)
-		case to_slv(EthType) is
-			when to_slv(C_NET_MAC_ETHERNETTYPE_EMPTY) =>				return "Empty";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_ARP) =>					return "ARP";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_IPV4) =>					return "IPv4";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_IPV6) =>					return "IPv6";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_JUMBOFRAMES) =>	return "Jumbo";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_MACCONTROL) =>		return "MACControl";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_QINQ) =>					return "QinQ";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_SNMP) =>					return "SNMP";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_VLAN) =>					return "VLAN";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_WOL) =>					return "WOL";
-
-			when to_slv(C_NET_MAC_ETHERNETTYPE_SWAP) =>					return "Swap";
-			when to_slv(C_NET_MAC_ETHERNETTYPE_LOOPBACK) =>			return "LoopBack";
-			when others =>																			return "0x" & to_string(to_slv(EthType), 'h');
-		end case;
+		if EthType = C_NET_MAC_ETHERNETTYPE_EMPTY then
+			return "Empty";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_ARP then
+			return "ARP";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_IPV4 then
+			return "IPv4";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_IPV6 then
+			return "IPv6";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_JUMBOFRAMES then
+			return "Jumbo";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_MACCONTROL then
+			return "MACControl";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_QINQ then
+			return "QinQ";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_SNMP then
+			return "SNMP";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_VLAN then
+			return "VLAN";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_WOL then
+			return "WOL";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_SWAP then
+			return "Swap";
+		elsif EthType = C_NET_MAC_ETHERNETTYPE_LOOPBACK then
+			return "LoopBack";
+		else 
+			return "0x" & to_string(to_slv(EthType), 'h');
+		end if;
 	end function;
 
 	-- ==========================================================================================================================================================

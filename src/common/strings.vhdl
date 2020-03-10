@@ -170,13 +170,19 @@ end package;
 package body strings is
 	--
 	function to_IPStyle(str : string) return T_IPSTYLE is
+		--gives the low place of string back
+		-- This WORKAROUND may be needed for Vivado <=2017.4 or GHDL <=0.36-dev
+		function str_low(str : string) return integer is
+		begin
+			return str'low;
+		end function;
 	begin
-		for i in T_IPSTYLE'pos(T_IPSTYLE'low) to T_IPSTYLE'pos(T_IPSTYLE'high) loop
-			if str_imatch(str, T_IPSTYLE'image(T_IPSTYLE'val(i))) then
-				return T_IPSTYLE'val(i);
+		for i in T_IPSTYLE loop
+			if str_imatch(str_toUpper(str), str_toUpper(T_IPSTYLE'image(i)))
+			or str_imatch(str_toUpper(str), str_toUpper(T_IPSTYLE'image(i)(str_low(T_IPSTYLE'image(i))+8 to str_low(T_IPSTYLE'image(i))+str_length(T_IPSTYLE'image(i))-1))) then	--start from char 8 to get rid of prefix
+				return i;
 			end if;
 		end loop;
-
 		report "Unknown IPStyle: '" & str & "'" severity FAILURE;
 		return IPSTYLE_UNKNOWN;
 	end function;

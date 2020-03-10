@@ -45,24 +45,30 @@ use			PoC.components.all;
 
 entity gearbox_up_cc is
 	generic (
-		INPUT_BITS						: positive	:= 24;
-		OUTPUT_BITS						: positive	:= 32;
-		META_BITS							: natural		:= 0;
-		ADD_INPUT_REGISTERS		: boolean		:= FALSE;
-		ADD_OUTPUT_REGISTERS	: boolean		:= FALSE
+		DEBUG									: boolean 	:= true;
+		INPUT_BITS						: positive	:= 16;
+		OUTPUT_BITS						: positive	:= 24;
+		META_BITS							: natural		:= 112;
+		USE_UNCOMPLETE_FRAME	: boolean 	:= true;
+		BIT_GROUP							:	natural 	:= 8;
+		ADD_INPUT_REGISTERS		: boolean		:= false;
+		ADD_OUTPUT_REGISTERS	: boolean		:= false
 	);
 	port (
 		Clock				: in	std_logic;
 
 		In_Sync			: in	std_logic;
 		In_Valid		: in	std_logic;
+		In_Last			: in	std_logic_vector(ite(USE_UNCOMPLETE_FRAME, 1, 0) - 1 downto 0);
 		In_Data			: in	std_logic_vector(INPUT_BITS - 1 downto 0);
 		In_Meta			: in	std_logic_vector(META_BITS - 1 downto 0);
+		In_BE				: in	std_logic_vector(ite(USE_UNCOMPLETE_FRAME, INPUT_BITS / BIT_GROUP, 0) - 1 downto 0);
 
 		Out_Sync		: out	std_logic;
 		Out_Valid		: out	std_logic;
 		Out_Data		: out	std_logic_vector(OUTPUT_BITS - 1 downto 0);
 		Out_Meta		: out	std_logic_vector(META_BITS - 1 downto 0);
+		Out_BE			: out	std_logic_vector(ite(USE_UNCOMPLETE_FRAME, OUTPUT_BITS / BIT_GROUP, 0) - 1 downto 0);
 		Out_First		: out	std_logic;
 		Out_Last		: out	std_logic
 	);
@@ -70,12 +76,15 @@ end entity;
 
 
 architecture rtl of gearbox_up_cc is
-	constant C_VERBOSE				: boolean			:= FALSE;	--POC_VERBOSE;
+	constant C_VERBOSE						: boolean			:= FALSE;	--POC_VERBOSE;
 
-	constant BITS_PER_CHUNK		: positive		:= greatestCommonDivisor(INPUT_BITS, OUTPUT_BITS);
-	constant INPUT_CHUNKS			: positive		:= INPUT_BITS / BITS_PER_CHUNK;
-	constant OUTPUT_CHUNKS		: positive		:= OUTPUT_BITS / BITS_PER_CHUNK;
-	constant STAGES						: positive		:= div_ceil(OUTPUT_CHUNKS, INPUT_CHUNKS);
+	constant DIVISOR							: positive		:= greatestCommonDivisor(INPUT_BITS, OUTPUT_BITS);
+	constant BITS_PER_CHUNK				: positive		:= ite(USE_UNCOMPLETE_FRAME,DIVISOR + (DIVISOR / BIT_GROUP), DIVISOR);
+	constant INPUT_CHUNKS					: positive		:= INPUT_BITS / DIVISOR;
+	constant OUTPUT_CHUNKS				: positive		:= OUTPUT_BITS / DIVISOR;
+	constant STAGES								: positive		:= div_ceil(OUTPUT_CHUNKS, INPUT_CHUNKS);
+	constant IN_DATA_BITS_INTERN 	: positive 		:= ite(USE_UNCOMPLETE_FRAME,INPUT_BITS + In_BE'length, INPUT_BITS);
+	constant OUT_DATA_BITS_INTERN : positive 		:= ite(USE_UNCOMPLETE_FRAME,OUTPUT_BITS + Out_BE'length, OUTPUT_BITS);
 
 	subtype T_CHUNK					is std_logic_vector(BITS_PER_CHUNK - 1 downto 0);
 	type T_CHUNK_VECTOR			is array(natural range <>) of T_CHUNK;
@@ -207,15 +216,19 @@ architecture rtl of gearbox_up_cc is
 		end loop;
 		return slv;
 	end function;
-
+	
 	signal In_Sync_d					: std_logic																					:= '0';
-	signal In_Data_d					:	std_logic_vector(INPUT_BITS - 1 downto 0)					:= (others => '0');
+	signal In_Data_d					:	std_logic_vector(IN_DATA_BITS_INTERN - 1 downto 0)					:= (others => '0');
 	signal In_Meta_d					:	std_logic_vector(META_BITS - 1 downto 0)					:= (others => '0');
 	signal In_Valid_d					: std_logic																					:= '0';
+	signal In_Last_d					: std_logic																					:= '0';
+	signal In_Uncomplete			: std_logic																					:= '0';
+	signal In_Uncomplete_d		: std_logic																					:= '0';
 
 	signal StageSelect_rst		: std_logic;
 	signal StageSelect_en			: std_logic;
 	signal StageSelect_us			: unsigned(log2ceilnz(OUTPUT_CHUNKS) - 1 downto 0)	:= (others => '0');
+	signal StageSelect_us_last: unsigned(log2ceilnz(OUTPUT_CHUNKS) - 1 downto 0)	:= (others => '0');
 	signal StageSelect_ov			: std_logic;
 
 	signal MuxSelect_rst			: std_logic;
@@ -229,19 +242,21 @@ architecture rtl of gearbox_up_cc is
 	signal MetaBuffer					:	std_logic_vector(META_BITS - 1 downto 0)					:= (others => '0');
 	signal GearBoxOutput			: T_CHUNK_VECTOR(OUTPUT_CHUNKS - 1 downto 0);
 
-	signal SyncOut						: std_logic;
-	signal ValidOut						: std_logic;
-	signal DataOut						:	std_logic_vector(OUTPUT_BITS - 1 downto 0);
-	signal MetaOut						:	std_logic_vector(META_BITS - 1 downto 0);
-	signal FirstOut						: std_logic;
-	signal LastOut						: std_logic;
+	signal SyncOut						: std_logic																						:= '0';
+	signal ValidOut						: std_logic																						:= '0';
+	signal DataOut						:	std_logic_vector(OUT_DATA_BITS_INTERN - 1 downto 0)	:= (others => '0');
+--	signal BEOut							:	std_logic_vector(Out_BE'length - 1 downto 0)					:= (others => '0');
+	signal MetaOut						:	std_logic_vector(META_BITS - 1 downto 0)						:= (others => '0');
+	signal FirstOut						: std_logic																						:= '0';
+	signal LastOut						: std_logic																						:= '0';
 
-	signal Out_Sync_d					: std_logic																					:= '0';
-	signal Out_Valid_d				: std_logic																					:= '0';
-	signal Out_Data_d					:	std_logic_vector(OUTPUT_BITS - 1 downto 0)				:= (others => '0');
-	signal Out_Meta_d					:	std_logic_vector(META_BITS - 1 downto 0)					:= (others => '0');
-	signal Out_First_d				: std_logic																					:= '0';
-	signal Out_Last_d					: std_logic																					:= '0';
+	signal Out_Sync_d					: std_logic																						:= '0';
+	signal Out_Valid_d				: std_logic																						:= '0';
+	signal Out_Data_d					:	std_logic_vector(OUTPUT_BITS - 1 downto 0)					:= (others => '0');
+	signal Out_BE_d						:	std_logic_vector(Out_BE'length - 1 downto 0)				:= (others => '0');
+	signal Out_Meta_d					:	std_logic_vector(META_BITS - 1 downto 0)						:= (others => '0');
+	signal Out_First_d				: std_logic																						:= '0';
+	signal Out_Last_d					: std_logic																						:= '0';
 
 begin
 	assert (not C_VERBOSE)
@@ -253,14 +268,70 @@ begin
 					 "  BITS_PER_CHUNK=" & integer'image(BITS_PER_CHUNK)
 		severity NOTE;
 	assert (INPUT_BITS < OUTPUT_BITS) report "INPUT_BITS must be less than OUTPUT_BITS, otherwise it's no up-sizing gearbox." severity FAILURE;
+	assert (not USE_UNCOMPLETE_FRAME) or (((INPUT_BITS mod BIT_GROUP) = 0) and ((OUTPUT_BITS mod BIT_GROUP) = 0)) report "If USE_UNCOMPLETE_FRAME is used, INPUT_BITS and OUTPUT_BITS must be multiple of BIT_GROUP!" severity failure;
+	assert (not USE_UNCOMPLETE_FRAME) or ((OUTPUT_BITS mod INPUT_BITS) = 0) report "If USE_UNCOMPLETE_FRAME is used, OUTPUT_BITS must be multiple of INPUT_BITS!" severity failure;
+	
+	Input_gen0 : if USE_UNCOMPLETE_FRAME generate
+		In_Sync_d			<= In_Sync or (In_Uncomplete);--	when registered(Clock, ADD_INPUT_REGISTERS);
+		In_Uncomplete		<= In_Last_d and In_Valid_d;
+		In_Uncomplete_d	<= In_Uncomplete when rising_edge(Clock);
+		
+		Input_gen0_reg0 : if ADD_INPUT_REGISTERS generate
+			In_Valid_d	<= In_Valid				when rising_edge(Clock);
+			In_Meta_d		<= In_Meta				when rising_edge(Clock);
+			In_Last_d		<= In_Last(0)			when rising_edge(Clock);
+		end generate;
+		Input_gen0_reg1 : if not ADD_INPUT_REGISTERS generate
+			In_Valid_d	<= In_Valid	;
+			In_Meta_d		<= In_Meta	;
+			In_Last_d		<= In_Last(0);
+		end generate;
 
-	In_Sync_d		<= In_Sync;--	when registered(Clock, ADD_INPUT_REGISTERS);
-	In_Valid_d	<= In_Valid	when registered(Clock, ADD_INPUT_REGISTERS);
-	In_Data_d		<= In_Data	when registered(Clock, ADD_INPUT_REGISTERS);
-	In_Meta_d		<= In_Meta	when registered(Clock, ADD_INPUT_REGISTERS);
+		
+		Input_data_gen0 : for i in 0 to BIT_GROUP - 1 generate
+			assert not DEBUG report "In_Data_d(" & integer'image(i) & ")<= In_Data(" & integer'image(i) & ")when registered ...;" severity note;
+			Input_data_gen0_reg0 : if ADD_INPUT_REGISTERS generate
+				In_Data_d(i)<= In_Data(i)	when rising_edge(Clock);
+			end generate;
+			Input_data_gen0_reg1 : if not ADD_INPUT_REGISTERS generate
+				In_Data_d(i)<= In_Data(i);
+			end generate;
+		end generate;
+		
+		Input_data_gen1 : for i in BIT_GROUP to IN_DATA_BITS_INTERN - 1 generate
+			constant BE_mod 		: natural := (i + 1) mod (BIT_GROUP + 1);
+			constant BE_count : natural := (i + 1) / (BIT_GROUP + 1);
+		begin
+			assert not DEBUG report "-------------------------------------------------" severity note;
+			assert not DEBUG report "i        ='" & integer'image(i) & "'" severity note;
+			assert not DEBUG report "BE_mod    ='" & natural'image(BE_mod) & "'" severity note;
+			assert not DEBUG report "BE_count ='" & natural'image(BE_count) & "'" severity note;
+			Input_data_gen0_reg0 : if ADD_INPUT_REGISTERS generate
+				In_Data_d(i)<= ite(BE_mod = 0, In_BE(BE_count - 1), In_Data(i - BE_count))	when rising_edge(Clock);
+			end generate;
+			Input_data_gen0_reg1 : if not ADD_INPUT_REGISTERS generate
+				In_Data_d(i)<= ite(BE_mod = 0, In_BE(BE_count - 1), In_Data(i - BE_count));
+			end generate;
+		end generate;
+	end generate;
+	
+	Input_gen1 : if not USE_UNCOMPLETE_FRAME generate
+		In_Sync_d			<= In_Sync;-- or (In_Uncomplete);--	when registered(Clock, ADD_INPUT_REGISTERS);
+		Input_gen1_reg0 : if ADD_INPUT_REGISTERS generate
+			In_Valid_d	<= In_Valid		when rising_edge(Clock);
+			In_Meta_d		<= In_Meta		when rising_edge(Clock);
+			In_Data_d		<= In_Data		when rising_edge(Clock);
+		end generate;
+		Input_gen1_reg1 : if not ADD_INPUT_REGISTERS generate
+			In_Valid_d	<= In_Valid	;
+			In_Meta_d		<= In_Meta	;
+			In_Data_d		<= In_Data	;
+		end generate;
+	end generate;
+	
 
 	GearBoxInput			<= to_chunkv(In_Data_d);
-	GearBoxBuffer_en	<= COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).Reg_en and In_Valid_d and not In_Sync_d;
+	GearBoxBuffer_en	<= In_Valid_d;-- and not In_Sync_d and COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).Reg_en;
 
 	process(Clock)
 	begin
@@ -272,10 +343,11 @@ begin
 		end if;
 	end process;
 
-	StageSelect_rst	<= In_Sync_d or (StageSelect_ov and In_Valid_d);
-	StageSelect_en	<= In_Valid_d or (StageSelect_ov and In_Valid_d);
+	StageSelect_rst	<= In_Sync_d or (StageSelect_ov and In_Valid_d) or (not In_Valid_d and In_Uncomplete_d);
+	StageSelect_en	<= In_Valid_d;
 	StageSelect_us	<= upcounter_next(cnt => StageSelect_us, rst => StageSelect_rst, en => StageSelect_en) when rising_edge(Clock);
 	StageSelect_ov	<= upcounter_equal(cnt => StageSelect_us, value => (OUTPUT_CHUNKS - 1));
+	StageSelect_us_last	<= StageSelect_us when rising_edge(Clock);
 
 	MuxSelect_rst		<= (StageSelect_ov and MuxSelect_ov and In_Valid_d) or In_Sync_d;
 	MuxSelect_en		<= COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).Valid and In_Valid_d;
@@ -284,7 +356,7 @@ begin
 
 	-- generate gearbox multiplexer structure
 	genMux : for j in 0 to OUTPUT_CHUNKS - 1 generate
-		signal MuxInput		: T_CHUNK_VECTOR(OUTPUT_CHUNKS - 1 downto 0);
+		signal MuxInput		: T_CHUNK_VECTOR(INPUT_CHUNKS - 1 downto 0);
 	begin
 		genMuxInputs : for i in 0 to INPUT_CHUNKS - 1 generate
 			-- assert (not C_VERBOSE)
@@ -302,28 +374,111 @@ begin
 				MuxInput(i)	<= GearBoxBuffer(MUX_INPUT_TRANSLATION(i)(j).Stage)(MUX_INPUT_TRANSLATION(i)(j).Index);
 			end generate;
 		end generate;
-
-		GearBoxOutput(j)	<= MuxInput(to_index(MuxSelect_us, OUTPUT_CHUNKS - 1));
+		genMux_uncomplete0 : if USE_UNCOMPLETE_FRAME generate
+			GearBoxOutput(j)	<= MuxInput(to_index(MuxSelect_us, OUTPUT_CHUNKS - 1)) when not (In_Uncomplete_d = '1' and (j > StageSelect_us_last)) else (others => '0');--TODO
+		end generate;
+		genMux_uncomplete1 : if not USE_UNCOMPLETE_FRAME generate
+			GearBoxOutput(j)	<= MuxInput(to_index(MuxSelect_us, OUTPUT_CHUNKS - 1));
+		end generate;
 	end generate;
 
-	ValidOut		<= COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).Valid and In_Valid_d;
-	SyncOut			<= not COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).Reg_en and ValidOut;
-	DataOut			<= to_slv(GearBoxOutput);
-	MetaOut			<= MetaBuffer;
-	FirstOut		<= COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).First;
-	LastOut			<= COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).Last;
-
-	Out_Sync_d	<= SyncOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
-	Out_Valid_d	<= ValidOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
-	Out_Data_d	<= DataOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
-	Out_Meta_d	<= MetaOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
-	Out_First_d	<= FirstOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
-	Out_Last_d	<= LastOut	when registered(Clock, ADD_OUTPUT_REGISTERS);
-
-	Out_Sync		<= Out_Sync_d;
-	Out_Valid		<= Out_Valid_d;
-	Out_Data		<= Out_Data_d;
-	Out_Meta		<= Out_Meta_d;
-	Out_First		<= Out_First_d;
-	Out_Last		<= Out_Last_d;
+	out_gen0 : if not USE_UNCOMPLETE_FRAME generate
+		ValidOut		<= (COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).Valid) and In_Valid_d when rising_edge(clock);
+		SyncOut			<= not COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).Reg_en and ValidOut;
+		DataOut			<= to_slv(GearBoxOutput);
+		MetaOut			<= MetaBuffer;
+		FirstOut		<= COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).First when rising_edge(clock);
+		LastOut			<= COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).Last when rising_edge(clock);
+	end generate;
+	out_gen1 : if USE_UNCOMPLETE_FRAME generate
+		ValidOut		<= (COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).Valid and In_Valid_d) or In_Uncomplete when rising_edge(clock);
+		SyncOut			<= ValidOut;
+		DataOut			<= to_slv(GearBoxOutput);
+		MetaOut			<= MetaBuffer;
+		FirstOut		<= COUNTER_TRANSLATION(to_index(StageSelect_us, OUTPUT_CHUNKS - 1)).First and not In_Uncomplete when rising_edge(clock);
+		LastOut			<= In_Uncomplete_d;
+	end generate;
+	
+	
+	Output_gen1 : if not USE_UNCOMPLETE_FRAME generate
+		Output_gen1_reg0 : if ADD_OUTPUT_REGISTERS generate
+			Out_Sync_d	<= SyncOut	when rising_edge(Clock);
+			Out_Valid_d	<= ValidOut	when rising_edge(Clock);
+			Out_Data_d	<= DataOut	when rising_edge(Clock);
+			Out_Meta_d	<= MetaOut	when rising_edge(Clock);
+			Out_First_d	<= FirstOut	when rising_edge(Clock);
+			Out_Last_d	<= LastOut	when rising_edge(Clock);
+		end generate;
+		Output_gen1_reg1 : if not ADD_OUTPUT_REGISTERS generate
+			Out_Sync_d	<= SyncOut	;
+			Out_Valid_d	<= ValidOut	;
+			Out_Data_d	<= DataOut	;
+			Out_Meta_d	<= MetaOut	;
+			Out_First_d	<= FirstOut	;
+			Out_Last_d	<= LastOut	;
+		end generate;
+		
+		Out_Sync		<= Out_Sync_d;
+		Out_Valid		<= Out_Valid_d;
+		Out_Data		<= Out_Data_d;
+		Out_Meta		<= Out_Meta_d;
+		Out_First		<= Out_First_d;
+		Out_Last		<= Out_Last_d;
+	end generate;
+	
+	Output_gen0 : if USE_UNCOMPLETE_FRAME generate
+		Output_gen0_reg0 : if ADD_OUTPUT_REGISTERS generate
+			Out_Sync_d	<= SyncOut	when rising_edge(Clock);
+			Out_Valid_d	<= ValidOut	when rising_edge(Clock);
+			Out_Meta_d	<= MetaOut	when rising_edge(Clock);
+			Out_First_d	<= FirstOut	when rising_edge(Clock);
+			Out_Last_d	<= LastOut	when rising_edge(Clock);
+		end generate;
+		Output_gen0_reg1 : if not ADD_OUTPUT_REGISTERS generate
+			Out_Sync_d	<= SyncOut	;
+			Out_Valid_d	<= ValidOut	;
+			Out_Meta_d	<= MetaOut	;
+			Out_First_d	<= FirstOut	;
+			Out_Last_d	<= LastOut	;
+		end generate;
+		Output_data_gen0 : for i in 0 to BIT_GROUP - 1 generate
+			Output_gen0_reg0 : if ADD_OUTPUT_REGISTERS generate
+				Out_Data_d(i)		<= DataOut(i)	when rising_edge(Clock);
+			end generate;
+			Output_gen0_reg1 : if not ADD_OUTPUT_REGISTERS generate
+				Out_Data_d(i)		<= DataOut(i);
+			end generate;
+		end generate;
+		
+		Output_data_gen1 : for i in BIT_GROUP to OUT_DATA_BITS_INTERN - 1 generate
+--			constant t_mod 		: natural := (i + 1) mod 5;
+			constant BE_count : natural := (i + 1) / (BIT_GROUP + 1);
+		begin
+			Output_data_gen_data : if ((i + 1) mod (BIT_GROUP + 1)) /= 0 generate
+				Output_data_gen_data_reg1 : if not ADD_OUTPUT_REGISTERS generate
+					Out_Data_d(i - BE_count)	<= DataOut(i)	;
+				end generate;
+				Output_data_gen_data_reg0 : if ADD_OUTPUT_REGISTERS generate
+					Out_Data_d(i - BE_count)	<= DataOut(i)	when rising_edge(Clock);
+				end generate;
+			end generate;
+			Output_data_gen_BE : if ((i + 1) mod (BIT_GROUP + 1)) = 0 generate
+				Output_data_gen_BE_reg0 : if ADD_OUTPUT_REGISTERS generate
+					Out_BE_d(BE_count - 1)		<= DataOut(i)	when rising_edge(Clock);
+				end generate;
+				Output_data_gen_BE_reg1 : if not ADD_OUTPUT_REGISTERS generate
+					Out_BE_d(BE_count - 1)		<= DataOut(i)	;
+				end generate;
+			end generate;
+		end generate;
+		
+		Out_Sync		<= Out_Sync_d;
+		Out_Valid		<= Out_Valid_d;
+		Out_Data		<= Out_Data_d;
+		Out_BE			<= Out_BE_d;
+		Out_Meta		<= Out_Meta_d;
+		Out_First		<= Out_First_d;
+		Out_Last		<= Out_Last_d;
+	end generate;
+	
 end architecture;
