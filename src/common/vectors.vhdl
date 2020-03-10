@@ -5,6 +5,7 @@
 -- Authors:         Thomas B. Preusser
 --                  Martin Zabel
 --                  Patrick Lehmann
+--                  Stefan Unrein
 --
 -- Package:         Common functions and types
 --
@@ -98,7 +99,7 @@ package vectors is
 	type T_DATA_BE_VECTOR is array(natural range <>) of T_DATA_BE;
 
 	-- STD_LOGIC_VECTOR_VECTORs
-  type		T_SLVV							is array(NATURAL range <>) of STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
+  	type		T_SLVV							is array(NATURAL range <>) of STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	type		T_SLVV_2						is array(natural range <>) of T_SLV_2;
 	type		T_SLVV_3						is array(natural range <>) of T_SLV_3;
 	type		T_SLVV_4						is array(natural range <>) of T_SLV_4;
@@ -113,7 +114,7 @@ package vectors is
 	type		T_SLVV_256					is array(natural range <>) of T_SLV_256;
 	type		T_SLVV_512					is array(natural range <>) of T_SLV_512;
 	-- UNSIGNED_VECTORs
-  type		T_SLUV							is array(NATURAL range <>) of UNSIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
+  	type		T_SLUV							is array(NATURAL range <>) of UNSIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	type		T_SLUV_2						is array(natural range <>) of T_SLU_2;
 	type		T_SLUV_3						is array(natural range <>) of T_SLU_3;
 	type		T_SLUV_4						is array(natural range <>) of T_SLU_4;
@@ -128,7 +129,7 @@ package vectors is
 	type		T_SLUV_256					is array(natural range <>) of T_SLU_256;
 	type		T_SLUV_512					is array(natural range <>) of T_SLU_512;
 	-- SIGNED_VECTORs
-  type		T_SLSV							is array(NATURAL range <>) of SIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
+  	type		T_SLSV							is array(NATURAL range <>) of SIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	type		T_SLSV_2						is array(natural range <>) of T_SLS_2;
 	type		T_SLSV_3						is array(natural range <>) of T_SLS_3;
 	type		T_SLSV_4						is array(natural range <>) of T_SLS_4;
@@ -144,7 +145,11 @@ package vectors is
 	type		T_SLSV_512					is array(natural range <>) of T_SLS_512;
 
 	-- STD_LOGIC_MATRIXs
-	type    T_SLM               is array(natural range <>, natural range <>) of std_logic;
+	type		T_SLM								is array(natural range <>, natural range <>) of std_logic;
+	
+	-- STD_LOGIC_3D_MATRIXs
+	type		T_SLM_8								is array(natural range <>, natural range <>) of T_SLV_8;
+	type		T_SLM_32								is array(natural range <>, natural range <>) of T_SLV_32;
 	-- ATTENTION:
 	-- 1. you MUST initialize your matrix signal with 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 	--    Example: signal myMatrix  : T_SLM(3 downto 0, 7 downto 0)      := (others => (others => 'Z'));
@@ -156,22 +161,31 @@ package vectors is
 	--  dimension 2 => columns    - e.g. Bits/Bytes in a word
 	--
 	-- WORKAROUND: for Xilinx ISE/iSim
-	--  Version:  14.2
-	--  Issue:    myMatrix'range(n) for n >= 2 returns always myMatrix'range(1)
+	--  Version:	14.2
+	--  Issue:		myMatrix'range(n) for n >= 2 returns always myMatrix'range(1)
 
-	-- ==========================================================================
-	-- Function declarations
-	-- ==========================================================================
-	-- slicing boundary calulations
-	function low (lenvec : T_POSVEC; index : natural) return natural;
-	function high(lenvec : T_POSVEC; index : natural) return natural;
+  -- ==========================================================================
+  -- Function declarations
+  -- ==========================================================================
+  -- slicing boundary calculations
+  function low (lenvec : T_POSVEC; index : natural) return natural;
+  function low (lenvec : T_NATVEC; index : natural) return natural;
+  function high(lenvec : T_POSVEC; index : natural) return natural;
+  function high(lenvec : T_NATVEC; index : natural) return natural;
+	
+	-- Make vector of constant
+	function mk_const(const : std_logic; 	length : natural) return std_logic_vector;
+	function mk_const(const : T_SLV_8; 		length : natural) return T_SLVV_8;
 
 	-- Assign procedures: assign_*
-	procedure assign_row(signal slm : out T_SLM; slv : std_logic_vector; constant RowIndex : natural);                                  -- assign vector to complete row
-	procedure assign_row(signal slm : out T_SLM; slv : std_logic_vector; constant RowIndex : natural; Position : natural);              -- assign short vector to row starting at position
-	procedure assign_row(signal slm : out T_SLM; slv : std_logic_vector; constant RowIndex : natural; High : natural; Low : natural);   -- assign short vector to row in range high:low
-	procedure assign_col(signal slm : out T_SLM; slv : std_logic_vector; constant ColIndex : natural);                                  -- assign vector to complete column
-	-- ATTENTION: see T_SLM definition for further details and work-arounds
+	procedure assign_row(signal slm : out T_SLM		; slv : std_logic_vector; constant RowIndex : natural);																	-- assign vector to complete row
+	procedure assign_row(signal slm : out T_SLM_8	; slv : T_SLVV_8				; constant RowIndex : natural);																	-- assign vector to complete row
+	procedure assign_row(signal slm : out T_SLM_32; slv : T_SLVV_32				; constant RowIndex : natural);																	-- assign vector to complete row
+	procedure assign_row(signal slm : out T_SLM		; slv : std_logic_vector; constant RowIndex : natural; Position : natural);							-- assign short vector to row starting at position
+	procedure assign_row(signal slm : out T_SLM		; slv : std_logic_vector; constant RowIndex : natural; High : natural; Low : natural);		-- assign short vector to row in range high:low
+	procedure assign_row(signal slm : out T_SLM_8	; slv : T_SLVV_8				; constant RowIndex : natural; High : natural; Low : natural);		-- assign short vector to row in range high:low
+	procedure assign_col(signal slm : out T_SLM		; slv : std_logic_vector; constant ColIndex : natural);																	-- assign vector to complete column
+	-- ATTENTION:	see T_SLM definition for further details and work-arounds
 
 	-- Matrix to matrix conversion: slm_slice*
 	function slm_slice(slm : T_SLM; RowIndex : natural; ColIndex : natural; Height : natural; Width : natural) return T_SLM;            -- get submatrix in boundingbox RowIndex,ColIndex,Height,Width
@@ -192,10 +206,12 @@ package vectors is
 	function slm_merge_cols(slm1 : T_SLM; slm2 : T_SLM) return T_SLM;
 
 	-- Matrix to vector conversion: get_*
-	function get_col(slm : T_SLM; ColIndex : natural) return std_logic_vector;                                  -- get a matrix column
-	function get_row(slm : T_SLM; RowIndex : natural) return std_logic_vector;                                  -- get a matrix row
-	function get_row(slm : T_SLM; RowIndex : natural; Length : positive)  return std_logic_vector;              -- get a matrix row of defined length [length - 1 downto 0]
-	function get_row(slm : T_SLM; RowIndex : natural; High : natural; Low : natural) return std_logic_vector;   -- get a sub vector of a matrix row at high:low
+	function get_col(slm 		: T_SLM		; ColIndex : natural) return std_logic_vector;																	-- get a matrix column
+	function get_row(slm 		: T_SLM		; RowIndex : natural) return std_logic_vector;																	-- get a matrix row
+	function get_row(slm 		: T_SLM_8	; RowIndex : natural) return T_SLVV_8;																	-- get a matrix row
+	function get_row(slm 		: T_SLM_32  ; RowIndex : natural) return T_SLVV_32;																	-- get a matrix row
+	function get_row(slm 		: T_SLM		; RowIndex : natural; Length : positive) return std_logic_vector;							-- get a matrix row of defined length [length - 1 downto 0]
+	function get_row(slm 		: T_SLM		; RowIndex : natural; High : natural; Low : natural) return std_logic_vector;		-- get a sub vector of a matrix row at high:low
 
 	-- Convert to vector: to_slv
 	function to_slv(slvv : T_SLVV)                return std_logic_vector;                -- convert vector-vector to flatten vector
@@ -222,7 +238,7 @@ package vectors is
 	function to_slvv_128(slv : std_logic_vector)  return T_SLVV_128;                      --
 	function to_slvv_256(slv : std_logic_vector)  return T_SLVV_256;                      --
 	function to_slvv_512(slv : std_logic_vector)  return T_SLVV_512;                      --
-	function to_sluv_64(slv : std_logic_vector)   return T_SLUV_64;                       --
+--	function to_sluv_64(slv : std_logic_vector)   return T_SLUV_64;                       --
 
 	-- Convert matrix to avector-vector: to_slvv_*
 	function to_slvv(slm : T_SLM)     return T_SLVV;                                      --
@@ -283,6 +299,15 @@ package body vectors is
 			pos := pos + lenvec(i);
 		end loop;
 		return pos;
+	end function;	
+	
+	function low(lenvec : T_NATVEC; index : natural) return natural is
+		variable pos		: natural		:= 0;
+	begin
+		for i in lenvec'low to index - 1 loop
+			pos := pos + lenvec(i);
+		end loop;
+		return pos;
 	end function;
 
 	function high(lenvec : T_POSVEC; index : natural) return natural is
@@ -293,11 +318,53 @@ package body vectors is
 		end loop;
 		return pos - 1;
 	end function;
+	
+	function high(lenvec : T_NATVEC; index : natural) return natural is
+		variable pos		: natural		:= 0;
+	begin
+		for i in lenvec'low to index loop
+			pos := pos + lenvec(i);
+		end loop;
+		return pos - 1;
+	end function;
+	
+	-- Make vector of constant
+	function mk_const(const : std_logic; 	length : natural) return std_logic_vector is
+		variable slv : std_logic_vector(length -1 downto 0) := (others => const);
+	begin
+		return slv;
+	end function;
+	
+	function mk_const(const : T_SLV_8; 		length : natural) return T_SLVV_8 is
+		variable slv : T_SLVV_8(length -1 downto 0) := (others => const);
+	begin
+		return slv;
+	end function;
 
 	-- Assign procedures: assign_*
 	-- ==========================================================================
 	procedure assign_row(signal slm : out T_SLM; slv : std_logic_vector; constant RowIndex : natural) is
 		variable temp : std_logic_vector(slm'high(2) downto slm'low(2));          -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+	begin
+		temp := slv;
+		for i in temp'range loop
+			slm(RowIndex, i)  <= temp(i);
+		end loop;
+	end procedure;
+	
+	--todo : test
+	procedure assign_row(signal slm : out T_SLM_8; slv : T_SLVV_8; constant RowIndex : natural) is
+		variable temp : T_SLVV_8(slm'high(2) downto slm'low(2));					-- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+	begin
+		temp := slv;
+		for i in temp'range loop
+			slm(RowIndex, i)  <= temp(i);
+		end loop;
+	end procedure;	
+	
+	--todo : test
+	procedure assign_row(signal slm : out T_SLM_32; slv : T_SLVV_32; constant RowIndex : natural) is
+		variable temp : T_SLVV_32(slm'high(2) downto slm'low(2));					-- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
 	begin
 		temp := slv;
 		for i in temp'range loop
@@ -316,6 +383,16 @@ package body vectors is
 
 	procedure assign_row(signal slm : out T_SLM; slv : std_logic_vector; constant RowIndex : natural; High : natural; Low : natural) is
 		variable temp : std_logic_vector(High downto Low);
+	begin
+		temp := slv;
+		for i in temp'range loop
+			slm(RowIndex, i)  <= temp(i);
+		end loop;
+	end procedure;
+	
+	--todo : test
+	procedure assign_row(signal slm : out T_SLM_8; slv : T_SLVV_8; constant RowIndex : natural; High : natural; Low : natural) is
+		variable temp : T_SLVV_8(High downto Low);
 	begin
 		temp := slv;
 		for i in temp'range loop
@@ -487,6 +564,26 @@ package body vectors is
 		end loop;
 		return slv;
 	end function;
+	
+	--todo : test
+	function get_row(slm : T_SLM_8; RowIndex : natural)	return T_SLVV_8 is
+		variable slv		: T_SLVV_8(slm'high(2) downto slm'low(2));					-- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+	begin 
+		for i in slv'range loop
+			slv(i)	:= slm(RowIndex, i);
+		end loop;
+		return slv;
+	end function;
+	
+	--todo : test
+	function get_row(slm : T_SLM_32; RowIndex : natural)	return T_SLVV_32 is
+		variable slv		: T_SLVV_32(slm'high(2) downto slm'low(2));					-- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+	begin 
+		for i in slv'range loop
+			slv(i)	:= slm(RowIndex, i);
+		end loop;
+		return slv;
+	end function;
 
 	-- get a matrix row of defined length [length - 1 downto 0]
 	function get_row(slm : T_SLM; RowIndex : natural; Length : positive) return std_logic_vector is
@@ -522,7 +619,7 @@ package body vectors is
 		variable slv      : std_logic_vector((slvv'length * 2) - 1 downto 0);
 	begin
 		for i in slvv'range loop
-			slv((i * 2) + 1 downto (i * 2))   := slvv(i);
+			slv(((i - slvv'low) * 2) + 1 downto ((i - slvv'low) * 2))		:= slvv(i);
 		end loop;
 		return slv;
 	end function;
@@ -531,7 +628,7 @@ package body vectors is
 		variable slv      : std_logic_vector((slvv'length * 4) - 1 downto 0);
 	begin
 		for i in slvv'range loop
-			slv((i * 4) + 3 downto (i * 4))   := slvv(i);
+			slv(((i - slvv'low) * 4) + 3 downto ((i - slvv'low) * 4))		:= slvv(i);
 		end loop;
 		return slv;
 	end function;
@@ -540,7 +637,7 @@ package body vectors is
 		variable slv      : std_logic_vector((slvv'length * 8) - 1 downto 0);
 	begin
 		for i in slvv'range loop
-			slv((i * 8) + 7 downto (i * 8))   := slvv(i);
+			slv(((i - slvv'low) * 8) + 7 downto ((i - slvv'low) * 8))		:= slvv(i);
 		end loop;
 		return slv;
 	end function;
@@ -549,7 +646,7 @@ package body vectors is
 		variable slv      : std_logic_vector((slvv'length * 12) - 1 downto 0);
 	begin
 		for i in slvv'range loop
-			slv((i * 12) + 11 downto (i * 12))    := slvv(i);
+			slv(((i - slvv'low) * 12) + 11 downto ((i - slvv'low) * 12))		:= slvv(i);
 		end loop;
 		return slv;
 	end function;
@@ -558,7 +655,7 @@ package body vectors is
 		variable slv      : std_logic_vector((slvv'length * 16) - 1 downto 0);
 	begin
 		for i in slvv'range loop
-			slv((i * 16) + 15 downto (i * 16))    := slvv(i);
+			slv(((i - slvv'low) * 16) + 15 downto ((i - slvv'low) * 16))		:= slvv(i);
 		end loop;
 		return slv;
 	end function;
@@ -567,7 +664,7 @@ package body vectors is
 		variable slv      : std_logic_vector((slvv'length * 24) - 1 downto 0);
 	begin
 		for i in slvv'range loop
-			slv((i * 24) + 23 downto (i * 24))    := slvv(i);
+			slv(((i - slvv'low) * 24) + 23 downto ((i - slvv'low) * 24))		:= slvv(i);
 		end loop;
 		return slv;
 	end function;
@@ -576,7 +673,7 @@ package body vectors is
 		variable slv      : std_logic_vector((slvv'length * 32) - 1 downto 0);
 	begin
 		for i in slvv'range loop
-			slv((i * 32) + 31 downto (i * 32))    := slvv(i);
+			slv(((i - slvv'low) * 32) + 31 downto ((i - slvv'low) * 32))		:= slvv(i);
 		end loop;
 		return slv;
 	end function;
@@ -585,7 +682,7 @@ package body vectors is
 		variable slv      : std_logic_vector((slvv'length * 64) - 1 downto 0);
 	begin
 		for i in slvv'range loop
-			slv((i * 64) + 63 downto (i * 64))    := slvv(i);
+			slv(((i - slvv'low) * 64) + 63 downto ((i - slvv'low) * 64))		:= slvv(i);
 		end loop;
 		return slv;
 	end function;
@@ -594,7 +691,7 @@ package body vectors is
 		variable slv      : std_logic_vector((slvv'length * 128) - 1 downto 0);
 	begin
 		for i in slvv'range loop
-			slv((i * 128) + 127 downto (i * 128))   := slvv(i);
+			slv(((i - slvv'low) * 128) + 127 downto ((i - slvv'low) * 128))		:= slvv(i);
 		end loop;
 		return slv;
 	end function;
@@ -639,10 +736,10 @@ package body vectors is
 	function to_slvv_4(slv : std_logic_vector) return T_SLVV_4 is
 		variable Result   : T_SLVV_4((slv'length / 4) - 1 downto 0);
 	begin
-		if ((slv'length mod 4) /= 0) then report "to_slvv_4: width mismatch - slv'length is no multiple of 4 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
+		assert ((slv'length mod 4) = 0)	report "to_slvv_4: width mismatch - slv'length is no multiple of 4 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;
 
 		for i in Result'range loop
-			Result(i) := slv((i * 4) + 3 downto (i * 4));
+			Result(i)	:= slv((i * 4) + slv'low + 3 downto (i * 4) + slv'low);
 		end loop;
 		return Result;
 	end function;
@@ -651,10 +748,10 @@ package body vectors is
 	function to_slvv_8(slv : std_logic_vector) return T_SLVV_8 is
 		variable Result   : T_SLVV_8((slv'length / 8) - 1 downto 0);
 	begin
-		if ((slv'length mod 8) /= 0) then report "to_slvv_8: width mismatch - slv'length is no multiple of 8 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
+		assert ((slv'length mod 8) = 0)	report "to_slvv_8: width mismatch - slv'length is no multiple of 8 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;
 
 		for i in Result'range loop
-			Result(i) := slv((i * 8) + 7 downto (i * 8));
+			Result(i)	:= slv((i * 8) + slv'low + 7 downto (i * 8) + slv'low);
 		end loop;
 		return Result;
 	end function;
@@ -663,10 +760,10 @@ package body vectors is
 	function to_slvv_12(slv : std_logic_vector) return T_SLVV_12 is
 		variable Result   : T_SLVV_12((slv'length / 12) - 1 downto 0);
 	begin
-		if ((slv'length mod 12) /= 0) then  report "to_slvv_12: width mismatch - slv'length is no multiple of 12 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
+		assert ((slv'length mod 12) = 0)	report "to_slvv_12: width mismatch - slv'length is no multiple of 12 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;
 
 		for i in Result'range loop
-			Result(i) := slv((i * 12) + 11 downto (i * 12));
+			Result(i)	:= slv((i * 12) + slv'low + 11 downto (i * 12) + slv'low);
 		end loop;
 		return Result;
 	end function;
@@ -675,10 +772,10 @@ package body vectors is
 	function to_slvv_16(slv : std_logic_vector) return T_SLVV_16 is
 		variable Result   : T_SLVV_16((slv'length / 16) - 1 downto 0);
 	begin
-		if ((slv'length mod 16) /= 0) then  report "to_slvv_16: width mismatch - slv'length is no multiple of 16 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
+		assert ((slv'length mod 16) = 0)	report "to_slvv_16: width mismatch - slv'length is no multiple of 16 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;
 
 		for i in Result'range loop
-			Result(i) := slv((i * 16) + 15 downto (i * 16));
+			Result(i)	:= slv((i * 16) + slv'low + 15 downto (i * 16) + slv'low);
 		end loop;
 		return Result;
 	end function;
@@ -687,10 +784,10 @@ package body vectors is
 	function to_slvv_32(slv : std_logic_vector) return T_SLVV_32 is
 		variable Result   : T_SLVV_32((slv'length / 32) - 1 downto 0);
 	begin
-		if ((slv'length mod 32) /= 0) then  report "to_slvv_32: width mismatch - slv'length is no multiple of 32 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
+		assert ((slv'length mod 32) = 0)	report "to_slvv_32: width mismatch - slv'length is no multiple of 32 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;
 
 		for i in Result'range loop
-			Result(i) := slv((i * 32) + 31 downto (i * 32));
+			Result(i)	:= slv((i * 32) + slv'low + 31 downto (i * 32) + slv'low);
 		end loop;
 		return Result;
 	end function;
@@ -699,10 +796,10 @@ package body vectors is
 	function to_slvv_64(slv : std_logic_vector) return T_SLVV_64 is
 		variable Result   : T_SLVV_64((slv'length / 64) - 1 downto 0);
 	begin
-		if ((slv'length mod 64) /= 0) then  report "to_slvv_64: width mismatch - slv'length is no multiple of 64 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
+		assert ((slv'length mod 64) = 0)	report "to_slvv_64: width mismatch - slv'length is no multiple of 64 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;
 
 		for i in Result'range loop
-			Result(i) := slv((i * 64) + 63 downto (i * 64));
+			Result(i)	:= slv((i * 64) + slv'low + 63 downto (i * 64) + slv'low);
 		end loop;
 		return Result;
 	end function;
@@ -711,10 +808,10 @@ package body vectors is
 	function to_slvv_128(slv : std_logic_vector) return T_SLVV_128 is
 		variable Result   : T_SLVV_128((slv'length / 128) - 1 downto 0);
 	begin
-		if ((slv'length mod 128) /= 0) then report "to_slvv_128: width mismatch - slv'length is no multiple of 128 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
+		assert ((slv'length mod 128) = 0)	report "to_slvv_128: width mismatch - slv'length is no multiple of 128 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;
 
 		for i in Result'range loop
-			Result(i) := slv((i * 128) + 127 downto (i * 128));
+			Result(i)	:= slv((i * 128) + slv'low + 127 downto (i * 128) + slv'low);
 		end loop;
 		return Result;
 	end function;
@@ -723,10 +820,10 @@ package body vectors is
 	function to_slvv_256(slv : std_logic_vector) return T_SLVV_256 is
 		variable Result   : T_SLVV_256((slv'length / 256) - 1 downto 0);
 	begin
-		if ((slv'length mod 256) /= 0) then report "to_slvv_256: width mismatch - slv'length is no multiple of 256 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
+		assert ((slv'length mod 256) = 0)	report "to_slvv_256: width mismatch - slv'length is no multiple of 256 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;
 
 		for i in Result'range loop
-			Result(i) := slv((i * 256) + 255 downto (i * 256));
+			Result(i)	:= slv((i * 256) + slv'low + 255 downto (i * 256) + slv'low);
 		end loop;
 		return Result;
 	end function;
@@ -735,21 +832,10 @@ package body vectors is
 	function to_slvv_512(slv : std_logic_vector) return T_SLVV_512 is
 		variable Result   : T_SLVV_512((slv'length / 512) - 1 downto 0);
 	begin
-		if ((slv'length mod 512) /= 0) then report "to_slvv_512: width mismatch - slv'length is no multiple of 512 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
+		assert ((slv'length mod 512) = 0)	report "to_slvv_512: width mismatch - slv'length is no multiple of 512 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;
 
 		for i in Result'range loop
-			Result(i) := slv((i * 512) + 511 downto (i * 512));
-		end loop;
-		return Result;
-	end function;
-	
-	function to_sluv_64(slv : std_logic_vector)   return T_SLUV_64 is
-		variable Result   : T_SLUV_64((slv'length / 64) - 1 downto 0);
-	begin
-		if ((slv'length mod 64) /= 0) then report "to_slvv_512: width mismatch - slv'length is no multiple of 64 (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;  end if;
-
-		for i in Result'range loop
-			Result(i) := unsigned(slv((i * 64) + 63 downto (i * 64)));
+			Result(i)	:= slv((i * 512) + slv'low + 511 downto (i * 512) + slv'low);
 		end loop;
 		return Result;
 	end function;

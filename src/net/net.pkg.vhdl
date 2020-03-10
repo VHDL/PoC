@@ -96,47 +96,75 @@ package net is
 	);
 
 	-- FPGA <=> PHY physical interface: GMII (Gigabit Media Independant Interface)
-	type T_NET_ETH_PHY_INTERFACE_GMII is record
+	type T_NET_ETH_PHY_INTERFACE_GMII_P2F is record     --Port-to-Fabric (in)
 		RX_RefClock						: std_logic;
-
-		TX_Clock							: std_logic;
-		TX_Valid							: std_logic;
-		TX_Data								: T_SLV_8;
-		TX_Error							: std_logic;
 
 		RX_Clock							: std_logic;
 		RX_Valid							: std_logic;
 		RX_Data								: T_SLV_8;
 		RX_Error							: std_logic;
 	end record;
+	type T_NET_ETH_PHY_INTERFACE_GMII_F2P is record     --Fabric-to-Port (out)
+		TX_Clock							: std_logic;
+		TX_Valid							: std_logic;
+		TX_Data								: T_SLV_8;
+		TX_Error							: std_logic;
+	end record;
 
 	-- FPGA <=> PHY physical interface: RGMII (Reduced Gigabit Media Independant Interface)
-	type T_NET_ETH_PHY_INTERFACE_RGMII is record
+	type T_NET_ETH_PHY_INTERFACE_RGMII_P2F is record     --Port-to-Fabric (in)
 		RX_RefClock						: std_logic;
-
-		TX_Clock							: std_logic;
-		TX_Data								: T_SLV_4;
-		TX_Control						: std_logic;
-
+		
 		RX_Clock							: std_logic;
 		RX_Data								: T_SLV_4;
 		RX_Control						: std_logic;
+	end record;	
+	type T_NET_ETH_PHY_INTERFACE_RGMII_F2P is record     --Fabric-to-Port (out)
+		TX_Clock							: std_logic;
+		TX_Data								: T_SLV_4;
+		TX_Control						: std_logic;
 	end record;
 
 	-- FPGA <=> PHY physical interface: SGMII (Serial GMII)
-	type T_NET_ETH_PHY_INTERFACE_SGMII is record
+--	subtype T_SGMII_LANE_P2F is T_IO_LVDS;
+--	subtype T_SGMII_LANE_F2P is T_IO_LVDS;
+--	type	T_SGMII_LANE			is record
+--		TX_P									: std_logic;
+--		TX_N									: std_logic;
+		
+--		RX_P									: std_logic;
+--		RX_N									: std_logic;
+--	end record;
+	
+--	type 		T_SGMII_LANE_P2F_VECTOR is array (natural range <>) of T_IO_LVDS;
+--	type 		T_SGMII_LANE_F2P_VECTOR is array (natural range <>) of T_IO_LVDS;
+	
+	type T_NET_ETH_PHY_INTERFACE_SGMII_P2F is record     --Port-to-Fabric (in)
 		DGB_SystemClock_In		: std_logic;
+
+		SGMII_RefClock_In			: T_IO_LVDS;
+		RX_Lane								: T_IO_LVDS_VECTOR;--(3 downto 0);
+	end record;	
+	type T_NET_ETH_PHY_INTERFACE_SGMII_F2P is record     --Fabric-to-Port (out)
 		DGB_AutoNeg_Restart		: std_logic;
 
-		SGMII_RefClock_In			: std_logic;
 		SGMII_TXRefClock_Out	: std_logic;
 		SGMII_RXRefClock_Out	: std_logic;
 
-		TX_n									: std_logic;
-		TX_p									: std_logic;
-
-		RX_n									: std_logic;
-		RX_p									: std_logic;
+		TX_Lane									: T_IO_LVDS_VECTOR;--(3 downto 0);
+	end record;
+	
+--	 FPGA <=> PHY physical interface: XGMII
+	type		XGMII_LANE is record
+		Data		: std_logic_vector(7 downto 0);
+		Control	: std_logic;
+	end record;
+	
+	type		XGMII_LANE_VECTOR is array (natural range <>) of XGMII_LANE;
+	
+	type T_NET_ETH_PHY_INTERFACE_XGMII is record
+		RefClock						: std_logic;
+		Lane								: XGMII_LANE_VECTOR;
 	end record;
 
 	-- FPGA <=> PHY management interface: MDIO (Management Data Input/Output)
@@ -145,66 +173,80 @@ package net is
 		Data_ts								: T_IO_TRISTATE;	-- data (MDIO)
 	end record;
 
-	type T_NET_ETH_PHY_INTERFACE_COMMON is record
-		Reset									: std_logic;
-		Interrupt							: std_logic;
-	end record;
+--	type T_NET_ETH_PHY_INTERFACE_COMMON is record
+--		Reset									: std_logic;
+--		Interrupt							: std_logic;
+--	end record;
 
 	-- combined interface definition - union-types are still not supported in VHDL
-	type T_NET_ETH_PHY_INTERFACES is record
-		GMII									: T_NET_ETH_PHY_INTERFACE_GMII;
-		RGMII									: T_NET_ETH_PHY_INTERFACE_RGMII;
-		SGMII									: T_NET_ETH_PHY_INTERFACE_SGMII;
-		MDIO									: T_NET_ETH_PHY_INTERFACE_MDIO;
-		Common								: T_NET_ETH_PHY_INTERFACE_COMMON;
-	end record;
+--	type T_NET_ETH_PHY_INTERFACES_P2F is record     --Port-to-Fabric (in)
+--		GMII									: T_NET_ETH_PHY_INTERFACE_GMII;
+--		RGMII									: T_NET_ETH_PHY_INTERFACE_RGMII;
+--		SGMII									: T_NET_ETH_PHY_INTERFACE_SGMII;
+--		MDIO									: T_NET_ETH_PHY_INTERFACE_MDIO;
+--		Common								: T_NET_ETH_PHY_INTERFACE_COMMON;
+--	end record;	
+--	type T_NET_ETH_PHY_INTERFACES_F2P is record     --Fabric-to-Port (out)
+--		GMII									: T_NET_ETH_PHY_INTERFACE_GMII;
+--		RGMII									: T_NET_ETH_PHY_INTERFACE_RGMII;
+--		SGMII									: T_NET_ETH_PHY_INTERFACE_SGMII;
+--		MDIO									: T_NET_ETH_PHY_INTERFACE_MDIO;
+--		Common								: T_NET_ETH_PHY_INTERFACE_COMMON;
+--	end record;
 
-	constant C_NET_ETH_PHY_INTERFACE_GMII_INIT : T_NET_ETH_PHY_INTERFACE_GMII := (
-		RX_RefClock				=> 'Z',
-		TX_Clock					=> 'Z',
-		TX_Valid					=> 'Z',
-		TX_Data						=> (others => 'Z'),
-		TX_Error					=> 'Z',
-		RX_Clock					=> 'Z',
-		RX_Valid					=> 'Z',
-		RX_Data						=> (others => 'Z'),
-		RX_Error					=> 'Z'
-	);
-	constant C_NET_ETH_PHY_INTERFACE_RGMII_INIT : T_NET_ETH_PHY_INTERFACE_RGMII := (
-		RX_RefClock				=> 'Z',
-		TX_Clock					=> 'Z',
-		TX_Data						=> (others => 'Z'),
-		TX_Control				=> 'Z',
-		RX_Clock					=> 'Z',
-		RX_Data						=> (others => 'Z'),
-		RX_Control				=> 'Z'
-	);
-	constant C_NET_ETH_PHY_INTERFACE_SGMII_INIT : T_NET_ETH_PHY_INTERFACE_SGMII := (
-		DGB_SystemClock_In		=> 'Z',
-		DGB_AutoNeg_Restart		=> 'Z',
-		SGMII_RefClock_In			=> 'Z',
-		SGMII_TXRefClock_Out	=> 'Z',
-		SGMII_RXRefClock_Out	=> 'Z',
-		TX_n									=> 'Z',
-		TX_p									=> 'Z',
-		RX_n									=> 'Z',
-		RX_p									=> 'Z'
-	);
-	constant C_NET_ETH_PHY_INTERFACE_MDIO_INIT : T_NET_ETH_PHY_INTERFACE_MDIO := (
-		Clock_ts	=> (I => 'Z', O => 'Z', T => 'Z'),
-		Data_ts		=> (I => 'Z', O => 'Z', T => 'Z')
-	);
-	constant C_NET_ETH_PHY_INTERFACE_COMMON_INIT : T_NET_ETH_PHY_INTERFACE_COMMON := (
-		Reset							=> 'Z',
-		Interrupt					=> 'Z'
-	);
-	constant C_NET_ETH_PHY_INTERFACES_INIT : T_NET_ETH_PHY_INTERFACES := (
-		GMII									=> C_NET_ETH_PHY_INTERFACE_GMII_INIT,
-		RGMII									=> C_NET_ETH_PHY_INTERFACE_RGMII_INIT,
-		SGMII									=> C_NET_ETH_PHY_INTERFACE_SGMII_INIT,
-		MDIO									=> C_NET_ETH_PHY_INTERFACE_MDIO_INIT,
-		Common								=> C_NET_ETH_PHY_INTERFACE_COMMON_INIT
-	);
+--	constant C_NET_ETH_PHY_INTERFACE_GMII_INIT : T_NET_ETH_PHY_INTERFACE_GMII := (
+--		RX_RefClock				=> 'Z',
+--		TX_Clock					=> 'Z',
+--		TX_Valid					=> 'Z',
+--		TX_Data						=> (others => 'Z'),
+--		TX_Error					=> 'Z',
+--		RX_Clock					=> 'Z',
+--		RX_Valid					=> 'Z',
+--		RX_Data						=> (others => 'Z'),
+--		RX_Error					=> 'Z'
+--	);
+--	constant C_NET_ETH_PHY_INTERFACE_RGMII_INIT : T_NET_ETH_PHY_INTERFACE_RGMII := (
+--		RX_RefClock				=> 'Z',
+--		TX_Clock					=> 'Z',
+--		TX_Data						=> (others => 'Z'),
+--		TX_Control				=> 'Z',
+--		RX_Clock					=> 'Z',
+--		RX_Data						=> (others => 'Z'),
+--		RX_Control				=> 'Z'
+--	);
+--	constant C_SGMII_LANE_INIT	: T_SGMII_LANE := (TX_P => 'Z', TX_N => 'Z', RX_P => 'Z', RX_N => 'Z');
+--	constant C_NET_ETH_PHY_INTERFACE_SGMII_INIT : T_NET_ETH_PHY_INTERFACE_SGMII := (
+--		DGB_SystemClock_In		=> 'Z',
+--		DGB_AutoNeg_Restart		=> 'Z',
+--		SGMII_RefClock_In			=> 'Z',
+--		SGMII_TXRefClock_Out	=> 'Z',
+--		SGMII_RXRefClock_Out	=> 'Z',
+--		Lane									=> (others => C_SGMII_LANE_INIT)
+--	);
+--	constant C_NET_ETH_PHY_INTERFACE_MDIO_INIT : T_NET_ETH_PHY_INTERFACE_MDIO := (
+--		Clock_ts	=> (I => 'Z', O => 'Z', T => 'Z'),
+--		Data_ts		=> (I => 'Z', O => 'Z', T => 'Z')
+--	);
+--	constant C_NET_ETH_PHY_INTERFACE_COMMON_INIT : T_NET_ETH_PHY_INTERFACE_COMMON := (
+--		Reset							=> 'Z',
+--		Interrupt					=> 'Z'
+--	);
+--	constant C_NET_ETH_PHY_INTERFACES_INIT : T_NET_ETH_PHY_INTERFACES := (
+--		GMII									=> C_NET_ETH_PHY_INTERFACE_GMII_INIT,
+--		RGMII									=> C_NET_ETH_PHY_INTERFACE_RGMII_INIT,
+--		SGMII									=> C_NET_ETH_PHY_INTERFACE_SGMII_INIT,
+--		MDIO									=> C_NET_ETH_PHY_INTERFACE_MDIO_INIT,
+--		Common								=> C_NET_ETH_PHY_INTERFACE_COMMON_INIT
+--	);
+	
+--	function generate_C_NET_ETH_PHY_INTERFACES_INIT(length : natural) return T_NET_ETH_PHY_INTERFACES;
+	function init                  return T_NET_ETH_PHY_INTERFACE_MDIO;
+	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_F2P;
+	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_P2F;
+	function init                  return T_NET_ETH_PHY_INTERFACE_RGMII_F2P;
+	function init                  return T_NET_ETH_PHY_INTERFACE_RGMII_P2F;
+	function init                  return T_NET_ETH_PHY_INTERFACE_GMII_F2P;
+	function init                  return T_NET_ETH_PHY_INTERFACE_GMII_P2F;
 
 	-- ==========================================================================================================================================================
 	-- Ethernet: physical coding sublayer (PCS)
@@ -229,7 +271,7 @@ package net is
 		NET_ETH_RS_DATA_INTERFACE_EMPTY,
 		NET_ETH_RS_DATA_INTERFACE_MII,
 		NET_ETH_RS_DATA_INTERFACE_GMII,
-		NET_ETH_RS_DATA_INTERFACE_TRANSCEIVER
+		NET_ETH_RS_DATA_INTERFACE_XGMII
 	);
 
 	-- ==========================================================================================================================================================
@@ -237,11 +279,11 @@ package net is
 	-- ==========================================================================================================================================================
 	type T_NET_ETH_COMMAND is (
 		NET_ETH_CMD_NONE,
+		NET_ETH_CMD_READ,
+		NET_ETH_CMD_HARD_RESET,
+		NET_ETH_CMD_SOFT_RESET--,
 --		NET_ETH_CMD_POWER_DOWN,
 --		NET_ETH_CMD_POWER_UP
-		NET_ETH_CMD_HARD_RESET,
-		NET_ETH_CMD_SOFT_RESET,
-		NET_ETH_CMD_READ
 	);
 
 	type T_NET_ETH_STATUS is (
@@ -283,12 +325,12 @@ package net is
 	-- Ethernet: MAC Data-Link-Layer
 	-- ==========================================================================================================================================================
 	-- types
-	type T_NET_MAC_ADDRESS								is array (5 downto 0)				of T_SLV_8;
-	type T_NET_MAC_ETHERNETTYPE						is array (1 downto 0)				of T_SLV_8;
+	type T_NET_MAC_ADDRESS                  is array (5 downto 0)       of T_SLV_8;
+	type T_NET_MAC_ETHERNETTYPE             is array (1 downto 0)       of T_SLV_8;
 
 	-- arrays
-	type T_NET_MAC_ADDRESS_VECTOR					is array (natural range <>) of T_NET_MAC_ADDRESS;
-	type T_NET_MAC_ETHERNETTYPE_VECTOR		is array (natural range <>)	of T_NET_MAC_ETHERNETTYPE;
+	type T_NET_MAC_ADDRESS_VECTOR           is array (natural range <>) of T_NET_MAC_ADDRESS;
+	type T_NET_MAC_ETHERNETTYPE_VECTOR      is array (natural range <>)	of T_NET_MAC_ETHERNETTYPE;
 
 	-- predefined constants
 	constant C_NET_MAC_ADDRESS_EMPTY			: T_NET_MAC_ADDRESS					:= (others => (others => '0'));
@@ -308,6 +350,9 @@ package net is
 
 	function to_slvv_8(mac : T_NET_MAC_ADDRESS)						return T_SLVV_8;
 	function to_slvv_8(Ethtype : T_NET_MAC_ETHERNETTYPE)	return T_SLVV_8;
+	
+	function rev(mac : T_NET_MAC_ADDRESS)						      return T_NET_MAC_ADDRESS;
+	function rev(Ethtype : T_NET_MAC_ETHERNETTYPE)	      return T_NET_MAC_ETHERNETTYPE;
 
 	function to_string(mac : T_NET_MAC_ADDRESS)						return string;
 	function to_string(Ethtype : T_NET_MAC_ETHERNETTYPE)	return string;
@@ -352,6 +397,8 @@ package net is
 	-- internet layer: Internet Protocol - common
 	-- ==========================================================================================================================================================
 	subtype T_NET_IP_PROTOCOL											is T_SLV_8;
+	
+	function get_IP_Address_Bits(version : integer) return integer;
 
 
 	-- ==========================================================================================================================================================
@@ -399,6 +446,8 @@ package net is
 	function to_slv(tos : T_NET_IPV4_TYPE_OF_SERVICE)		return std_logic_vector;
 
 	function to_slvv_8(ip : T_NET_IPV4_ADDRESS)		return T_SLVV_8;
+	
+	function rev(ip : T_NET_IPV4_ADDRESS)		      return T_NET_IPV4_ADDRESS;
 
 	function to_string(ip : T_NET_IPV4_ADDRESS)		return string;
 
@@ -594,6 +643,7 @@ package net is
 	-- transport layer: User Datagram Protocol (UDP)
 	-- ==========================================================================================================================================================
 	subtype T_NET_UDP_PORT								is T_SLV_16;
+	type		T_NET_UDP_PORT_VECTOR					is array (natural range <>)	of T_NET_UDP_PORT;
 
 
 	type		T_NET_UDP_PORTPAIR is record
@@ -602,6 +652,9 @@ package net is
 	end record;
 
 	type		T_NET_UDP_PORTPAIR_VECTOR			is array(natural range <>) of T_NET_UDP_PORTPAIR;
+	
+	function get_NET_UDP_Ingress_Ports 	(Portpair : T_NET_UDP_PORTPAIR_VECTOR) return T_NET_UDP_PORT_VECTOR;
+	function get_NET_UDP_Egress_Ports 	(Portpair : T_NET_UDP_PORTPAIR_VECTOR) return T_NET_UDP_PORT_VECTOR;
 
 
 	-- ==========================================================================================================================================================
@@ -624,6 +677,54 @@ package net is
 	constant C_NET_MAC_ETHERNETTYPE_MACCONTROL			: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"8808");		-- MAC Control
 	constant C_NET_MAC_ETHERNETTYPE_JUMBOFRAMES			: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"8870");		-- Jumbo Frames
 	constant C_NET_MAC_ETHERNETTYPE_QINQ						: T_NET_MAC_ETHERNETTYPE		:= to_net_mac_ethernettype(x"9100");		-- Q-in-Q
+	
+	constant C_TEST_NET_MAC_CONFIGURATION		: T_NET_MAC_CONFIGURATION_VECTOR := (
+		0 => (	-----eth0--------------------------------------------------
+			--MAC Address = AA:BB:CC:DD:EE:FF
+				Interface =>	(	Address =>	(x"AA",x"BB",x"CC",x"DD",x"EE",x"FF"),
+												Mask 		=>	C_NET_MAC_MASK_DEFAULT),
+				SourceFilter => (
+					0 =>				(	Address =>	(x"50",x"E5",x"49",x"52",x"F1",x"C8"),
+												Mask 		=>	C_NET_MAC_MASK_EMPTY),
+					others =>		(	Address =>	C_NET_MAC_ADDRESS_EMPTY,
+												Mask 		=>	C_NET_MAC_MASK_EMPTY)),
+				TypeSwitch =>	(
+					--0 =>					C_NET_MAC_ETHERNETTYPE_LOOPBACK,
+					--1 =>					C_NET_MAC_ETHERNETTYPE_ARP,
+					0 =>					C_NET_MAC_ETHERNETTYPE_IPV4,
+					others =>			C_NET_MAC_ETHERNETTYPE_EMPTY)
+				)--,
+			-- 1 => (	-----eth1--------------------------------------------------
+				-- --MAC Address = A0:B0:C0:D0:E0:F0
+					-- Interface =>	(	Address =>	(x"A0",x"B0",x"C0",x"D0",x"E0",x"F0"),
+													-- Mask 		=>	C_NET_MAC_MASK_DEFAULT),
+					-- SourceFilter => (
+						-- 0 =>				(	Address =>	(x"50",x"E5",x"49",x"52",x"F1",x"C8"),
+													-- Mask 		=>	C_NET_MAC_MASK_DEFAULT),
+						-- others =>		(	Address =>	C_NET_MAC_ADDRESS_EMPTY,
+													-- Mask 		=>	C_NET_MAC_MASK_EMPTY)),
+					-- TypeSwitch =>	(
+						-- 0 =>					C_NET_MAC_ETHERNETTYPE_LOOPBACK,
+						-- 1 =>					C_NET_MAC_ETHERNETTYPE_ARP,
+						-- 2 =>					C_NET_MAC_ETHERNETTYPE_IPV4,
+						-- others =>			C_NET_MAC_ETHERNETTYPE_EMPTY)
+					-- ),
+			-- 1 => (	-----eth_broadcast-------------------------------------------------
+			-- --MAC Address = BROADCAST
+				-- Interface =>	(	Address =>	C_NET_MAC_ADDRESS_BROADCAST,
+												-- Mask 		=>	C_NET_MAC_MASK_DEFAULT),
+				-- SourceFilter => (
+					-- 0 =>				(	Address =>	(x"00",x"00",x"00",x"00",x"00",x"01"),
+												-- Mask 		=>	C_NET_MAC_MASK_EMPTY),
+					-- others =>		(	Address =>	C_NET_MAC_ADDRESS_EMPTY,
+												-- Mask 		=>	C_NET_MAC_MASK_EMPTY)),
+				-- TypeSwitch =>	(
+					-- 0 =>					C_NET_MAC_ETHERNETTYPE_ARP,
+					-- 1 =>					C_NET_MAC_ETHERNETTYPE_IPV4,
+					-- others =>			C_NET_MAC_ETHERNETTYPE_EMPTY)
+				-- )
+			
+	);
 
 	-- ==========================================================================================================================================================
 	-- Internet Layer: known Upper-Layer Protocols for Internet Protocol
@@ -744,11 +845,88 @@ end package;
 
 
 package body net is
+	
+--	function generate_C_NET_ETH_PHY_INTERFACES_INIT(length : natural) return T_NET_ETH_PHY_INTERFACES is
+--		constant C_SGMII_LANE_INIT_VECTOR	: T_SGMII_LANE_VECTOR(length -1 downto 0) := (length -1 downto 0 => C_SGMII_LANE_INIT);
+--		constant C_NET_ETH_PHY_INTERFACE_SGMII_INIT : T_NET_ETH_PHY_INTERFACE_SGMII := (
+--			DGB_SystemClock_In		=> 'Z',
+--			DGB_AutoNeg_Restart		=> 'Z',
+--			SGMII_RefClock_In			=> 'Z',
+--			SGMII_TXRefClock_Out	=> 'Z',
+--			SGMII_RXRefClock_Out	=> 'Z',
+--			Lane									=> (1 downto 0 => C_SGMII_LANE_INIT)--C_SGMII_LANE_INIT_VECTOR
+--		);
+--	begin
+--		return (
+--			GMII									=> C_NET_ETH_PHY_INTERFACE_GMII_INIT,
+--			RGMII									=> C_NET_ETH_PHY_INTERFACE_RGMII_INIT,
+--			SGMII									=> C_NET_ETH_PHY_INTERFACE_SGMII_INIT,
+--			MDIO									=> C_NET_ETH_PHY_INTERFACE_MDIO_INIT,
+--			Common								=> C_NET_ETH_PHY_INTERFACE_COMMON_INIT
+--		);
+--	end function;
 
-	function str_low(str : string) return integer is
+	function init return T_NET_ETH_PHY_INTERFACE_MDIO is
 	begin
-		return str'low;
+		return (Clock_ts	=> (I => 'Z', O => 'Z', T => 'Z'),
+		        Data_ts   => (I => 'Z', O => 'Z', T => 'Z'));
 	end function;
+	function init                  return T_NET_ETH_PHY_INTERFACE_GMII_F2P is
+	begin
+		return (
+			TX_Clock		=> 'Z',
+			TX_Valid		=> 'Z',
+			TX_Data			=> (others => 'Z'),
+			TX_Error		=> 'Z'
+		);
+	end function;
+	function init                  return T_NET_ETH_PHY_INTERFACE_GMII_P2F is
+	begin
+		return (
+			RX_RefClock	=> 'Z',
+			RX_Clock		=> 'Z',
+			RX_Valid	  => 'Z',
+			RX_Data			=> (others => 'Z'),
+			RX_Error    => 'Z'
+		);
+	end function;
+	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_F2P is
+		variable temp : T_NET_ETH_PHY_INTERFACE_SGMII_F2P(TX_Lane(0 to Lanes -1)) := (
+			DGB_AutoNeg_Restart  => 'Z',
+			SGMII_TXRefClock_Out => 'Z',
+			SGMII_RXRefClock_Out => 'Z',
+			TX_Lane              => (0 to Lanes -1 => C_IO_LVDS_INIT)
+		);
+	begin
+		return temp;
+	end function;
+	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_P2F is
+		variable temp : T_NET_ETH_PHY_INTERFACE_SGMII_P2F(RX_Lane(0 to Lanes -1)) := (
+			DGB_SystemClock_In  => 'Z',
+			SGMII_RefClock_In   => C_IO_LVDS_INIT,
+			RX_Lane             => (0 to Lanes -1 => C_IO_LVDS_INIT)
+		);
+	begin
+		return temp;
+	end function;
+	function init                  return T_NET_ETH_PHY_INTERFACE_RGMII_F2P is
+	begin
+		return (
+			TX_Clock		=> 'Z',
+			TX_Data			=> (others => 'Z'),
+			TX_Control	=> 'Z'
+		);
+	end function;
+	function init                  return T_NET_ETH_PHY_INTERFACE_RGMII_P2F is
+	begin
+		return (
+			RX_RefClock	=> 'Z',
+			RX_Clock		=> 'Z',
+			RX_Data			=> (others => 'Z'),
+			RX_Control	=> 'Z'
+		);
+	end function;
+
 
 	function to_net_eth_RSDataInterface(str : string) return T_NET_ETH_RS_DATA_INTERFACE is
 	begin
@@ -908,6 +1086,16 @@ package body net is
 		end loop;
 		return slv;
 	end function;
+	
+	function rev(mac : T_NET_MAC_ADDRESS)						      return T_NET_MAC_ADDRESS is
+	begin
+		return to_net_mac_address(to_slv(rev(to_slvv_8(mac))));
+	end function;
+	
+	function rev(Ethtype : T_NET_MAC_ETHERNETTYPE)	      return T_NET_MAC_ETHERNETTYPE is
+	begin
+		return to_net_mac_ethernettype(to_slv(rev(to_slvv_8(Ethtype))));
+	end function;
 
 	function to_slvv_8(mac : T_NET_MAC_ADDRESS) return T_SLVV_8 is
 		variable slvv : T_SLVV_8(mac'range);
@@ -967,6 +1155,19 @@ package body net is
 		end if;
 	end function;
 
+	-- ==========================================================================================================================================================
+	-- internet layer: Internet Protocol 
+	-- ==========================================================================================================================================================
+	function get_IP_Address_Bits(version : integer) return integer is
+	begin
+		if version = 4 then
+			return 32;
+		elsif version = 6 then
+			return 128;
+		else
+			return 0;
+		end if;
+	end function;
 	-- ==========================================================================================================================================================
 	-- internet layer: Internet Protocol Version 4 (IPv4)
 	-- ==========================================================================================================================================================
@@ -1036,6 +1237,11 @@ package body net is
 			slv(((i * 8) + 7) downto (i * 8))		:= ip(i);
 		end loop;
 		return slv;
+	end function;
+	
+	function rev(ip : T_NET_IPV4_ADDRESS)		      return T_NET_IPV4_ADDRESS is
+	begin
+		return to_net_ipv4_address(to_slv(rev(to_slvv_8(ip))));
 	end function;
 --
 --	function to_slv(proto : T_NET_IPV4_PROTOCOL) return STD_LOGIC_VECTOR is
@@ -1242,5 +1448,28 @@ package body net is
 	function to_string(Prefix : T_NET_IPV6_PREFIX)	return string is
 	begin
 		return to_string(Prefix.Prefix) & "/" & to_string(Prefix.PrefixLength, 'd');
+	end function;
+	
+	-- ==========================================================================================================================================================
+	-- UDP layer: User Datagram Protocol
+	-- ==========================================================================================================================================================
+	function get_NET_UDP_Ingress_Ports 	(Portpair : T_NET_UDP_PORTPAIR_VECTOR) return T_NET_UDP_PORT_VECTOR is
+		variable result : T_NET_UDP_PORT_VECTOR(Portpair'range);
+	begin
+		for i in Portpair'range loop
+			result(i) := Portpair(i).Ingress;
+		end loop;
+		
+		return result;
+	end function;
+	
+	function get_NET_UDP_Egress_Ports 	(Portpair : T_NET_UDP_PORTPAIR_VECTOR) return T_NET_UDP_PORT_VECTOR is	
+		variable result : T_NET_UDP_PORT_VECTOR(Portpair'range);
+	begin
+		for i in Portpair'range loop
+			result(i) := Portpair(i).Egress;
+		end loop;
+		
+		return result;
 	end function;
 end package body;

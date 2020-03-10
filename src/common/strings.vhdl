@@ -142,6 +142,7 @@ package strings is
 	function chr_toUpper(chr : character) return character;
 
 	-- String functions
+	function str_low(str : string) return integer;
 	function str_length(str : string)										return natural;
 	function str_equal(str1 : string; str2 : string)		return boolean;
 	function str_match(str1 : string; str2 : string)		return boolean;
@@ -169,13 +170,14 @@ end package;
 
 package body strings is
 	--
+	function str_low(str : string) return integer is
+	begin
+		return str'low;
+	end function;
+	
 	function to_IPStyle(str : string) return T_IPSTYLE is
 		--gives the low place of string back
 		-- This WORKAROUND may be needed for Vivado <=2017.4 or GHDL <=0.36-dev
-		function str_low(str : string) return integer is
-		begin
-			return str'low;
-		end function;
 	begin
 		for i in T_IPSTYLE loop
 			if str_imatch(str_toUpper(str), str_toUpper(T_IPSTYLE'image(i)))
@@ -398,7 +400,7 @@ package body strings is
 		constant s				: REAL		:= sign(Value);
 		constant val			: REAL		:= Value * s;
 		constant int			: integer	:= integer(floor(val));
-		constant frac			: integer	:= integer(round((val - real(int)) * real(10**precision)));
+		constant frac			: integer	:= integer(round((val - real(int)) * 10.0**precision));
 		constant overflow : boolean := frac >= 10**precision;
 		constant int2     : integer := ite(overflow, int+1, int);
 		constant frac2    : integer := ite(overflow, frac-10**precision, frac);
