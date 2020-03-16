@@ -176,6 +176,7 @@ package AXI4Lite is
 	function get_AutoClearMask(description_vector : T_AXI4_Register_Description_Vector) return T_SLVV;
 	
 	impure function write_c_header_file(FileName : string; Name : string; reg : T_AXI4_Register_Description_Vector) return boolean;
+	impure function write_csv_file(FileName : string; reg : T_AXI4_Register_Description_Vector) return boolean;
 	
 	function get_index(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer;
 	function get_NumberOfIndexes(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer;
@@ -547,6 +548,38 @@ package body AXI4Lite is
 		write("};");
 		write(" ");
 		write("//end");
+		return true;
+	end function;	
+	
+	impure function write_csv_file(FileName : string; reg : T_AXI4_Register_Description_Vector) return boolean is
+		constant QM : character := '"';
+		constant size_header    : natural := imax(FileName'length,51);
+		file     FileHandle		  : TEXT open write_MODE is FileName;
+  	variable CurrentLine	  : LINE;
+  	
+  	procedure write(S : string) is
+  	begin
+  		write(CurrentLine, S);
+  		writeline(FileHandle, CurrentLine);
+  	end procedure;
+  	
+	begin
+		write("Automatically generated File from VHDL PoC Library");
+		write("Poc.AXI4Lite.T_AXI4_Register_Description");
+		write("generated CSV File");
+		write(" ");
+		write(" ");
+		write(" ");
+		write("Config(i) ; Name ; Address ; Init_Value ; Auto_Clear_Mask");
+		for i in 0 to reg'length -1 loop
+			write( integer'image(i)                                                             & " ; " & 
+			       reg(i - reg'low).Name                                                        & " ; " & 
+			       "0x" & to_string(std_logic_vector(reg(i - reg'low).address), 'h', 4)         & " ; " &
+			       "0x" & to_string(std_logic_vector(reg(i - reg'low).Init_Value), 'h', 4)      & " ; " &
+			       "0x" & to_string(std_logic_vector(reg(i - reg'low).Auto_Clear_Mask), 'h', 4)
+			);
+		end loop;
+		write(" ");
 		return true;
 	end function;	
 	
