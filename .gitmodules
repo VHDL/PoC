@@ -13,3 +13,6 @@
 [submodule "lib/vunit"]
 	path = lib/vunit
 	url = ../vunit.git
+[submodule "docs/_themes/sphinx_rtd_theme"]
+	path = docs/_themes/sphinx_rtd_theme
+	url = ../sphinx_rtd_theme.git
