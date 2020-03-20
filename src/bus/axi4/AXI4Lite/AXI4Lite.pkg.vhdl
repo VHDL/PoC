@@ -176,6 +176,7 @@ package AXI4Lite is
 	function get_AutoClearMask(description_vector : T_AXI4_Register_Description_Vector) return T_SLVV;
 	
 	impure function write_c_header_file(FileName : string; Name : string; reg : T_AXI4_Register_Description_Vector) return boolean;
+	impure function write_c_header_file_t(FileName : string; Name : string; reg : T_AXI4_Register_Description_Vector) return boolean;
 	impure function write_csv_file(FileName : string; reg : T_AXI4_Register_Description_Vector) return boolean;
 	
 	function get_index(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer;
@@ -549,6 +550,145 @@ package body AXI4Lite is
 		write(" ");
 		write("//end");
 		return true;
+	end function;		
+	
+	impure function write_c_header_file_t(FileName : string; Name : string; reg : T_AXI4_Register_Description_Vector) return boolean is
+		constant QM : character := '"';
+		constant size_header    : natural := imax(FileName'length,51);
+		file     FileHandle		  : TEXT open write_MODE is FileName;
+  	variable CurrentLine	  : LINE;
+  	
+  	procedure write(S : string) is
+  	begin
+  		write(CurrentLine, S);
+  		writeline(FileHandle, CurrentLine);
+  	end procedure;
+  	
+  	function resize(str : string) return string is
+  	begin
+  		return str_lalign(str, Name_Width, C_POC_NUL);
+  	end function;
+  	
+  	procedure ln is
+  	begin
+  		write(" ");
+  	end procedure;
+  	
+  	procedure printInstanceStruct(S : string) is
+  	begin
+  	 write("struct AXI4RegisterOffset" & str_trim(str_normalize(S)) & " {");
+  	end procedure;
+  	
+  	procedure printInstanceStructE is
+  	begin
+  	 write("};");
+  	end procedure;
+  	
+  	procedure printInstanceItem(S : string; preString : string := "uint32_t "; indent : natural := 1) is
+  	begin
+  	 write((1 to indent * 2 => ' ') & str_trim(str_replace(str_normalize(preString),".","_")) & "   " & str_trim(str_replace(str_normalize(S),".","_")) & ";");
+  	end procedure;
+  	
+  	procedure printRegInstance(S : string; indent : natural := 1) is
+  	begin
+  	 write((1 to indent * 2 => ' ') & "." & str_trim(str_normalize(S)) & " {");
+  	end procedure;
+  	procedure printRegItem(S : string; i : natural; indent : natural := 2) is
+  	begin
+  	 write((1 to indent * 2 => ' ') & "." & str_trim(str_replace(str_normalize(S),".","_")) & " = 0x" & to_string(std_logic_vector(reg(i - reg'low).address), 'h', 4) & ",");
+  	end procedure;
+  	
+  	subtype T_Name_String is string(1 to Name_Width);
+  	type T_Name_String_V is array(natural range <>) of T_Name_String;
+  	variable Names : T_Name_String_V(reg'range) := (others => (others => C_POC_NUL));
+  	variable Instance : T_Name_String := (others => ' ');
+  	variable length : natural;
+	begin
+		write("/*****************************************************");
+		write("* Automatically generated File from VHDL PoC Library *");
+		write("* Poc.AXI4Lite.T_AXI4_Register_Description           *");
+		write("* generated C-Header File                            *");
+		write("* " & FileName & " *");
+		write("*****************************************************/");
+		ln;ln;
+		
+		for i in reg'range loop
+			Names(i) := reg(i).Name;
+			inner_loop: for j in 1 to Name_Width loop
+				Names(i) := str_replace(Names(i), "(", "_");
+				Names(i) := resize(str_replace(Names(i), ")", ""));
+--				Names(i) := str_replace(Names(i), " ", "");
+				exit inner_loop when str_pos(Names(i), "(") = -1;
+			end loop;
+--			assert false report "Names(" & integer'image(i) & ")='" & Names(i) & "'" severity warning;
+		end loop;
+		length := str_ipos(Names(0), '.');
+		Instance := resize(Names(0)(1 to length -1));
+		printInstanceStruct("_" & Instance(1 to length -1));
+--		assert false report "Length=" & integer'image(length) severity warning;
+--		assert false report "Instance=" & Instance(1 to length -1) severity warning;
+--		assert false report "Sub=" & Names(0)(length +1 to Name_Width) severity warning;
+		for i in reg'range loop
+			if Instance(1 to length -1) = Names(i)(1 to length -1) then
+--				assert false report "Instance=" & Instance(1 to length -1) severity warning;
+--				assert false report "Sub=" & Names(i)(length +1 to Name_Width) severity warning;
+				printInstanceItem(Names(i)(length +1 to Name_Width));
+			else
+				printInstanceStructE;
+				ln;
+--				assert false report "New Instance" severity warning;
+				length := str_ipos(Names(i), '.');
+				Instance := resize(Names(i)(1 to length -1));
+				printInstanceStruct("_" & Instance(1 to length -1));
+				printInstanceItem(Names(i)(length +1 to Name_Width));
+--				assert false report "Instance=" & Instance(1 to length -1) severity warning;
+--				assert false report "Sub=" & Names(i)(length +1 to Name_Width) severity warning;
+			end if;
+		end loop;
+		printInstanceStructE;
+		
+		ln;ln;
+		
+		length := str_ipos(Names(0), '.');
+		Instance := resize(Names(0)(1 to length -1));
+		printInstanceStruct("");
+		printInstanceItem(Instance, "AXI4RegisterOffset_" & Instance);
+		for i in reg'range loop
+			if Instance(1 to length -1) /= Names(i)(1 to length -1) then
+				length := str_ipos(Names(i), '.');
+				Instance := resize(Names(i)(1 to length -1));
+				printInstanceItem(Instance, "AXI4RegisterOffset_" & Instance);
+			end if;
+		end loop;
+		printInstanceStructE;
+		
+		ln;ln;
+		write("static const AXI4RegisterOffset " & Name & " = {");
+		
+		length := str_ipos(Names(0), '.');
+		Instance := resize(Names(0)(1 to length -1));
+		printRegInstance(Instance);
+--		printRegItem(Instance(length +1 to Name_Width),0);
+		for i in reg'range loop
+			if Instance(1 to length -1) = Names(i)(1 to length -1) then
+--				assert false report "Instance=" & Instance(1 to length -1) severity warning;
+--				assert false report "Sub=" & Names(i)(length +1 to Name_Width) severity warning;
+				printRegItem(Names(i)(length +1 to Name_Width), i);
+			else
+				printInstanceStructE;
+				ln;
+--				assert false report "New Instance" severity warning;
+				length := str_ipos(Names(i), '.');
+				Instance := resize(Names(i)(1 to length -1));
+				printRegInstance(Instance);
+				printRegItem(Names(i)(length +1 to Name_Width), i);
+--				assert false report "Instance=" & Instance(1 to length -1) severity warning;
+--				assert false report "Sub=" & Names(i)(length +1 to Name_Width) severity warning;
+			end if;
+		end loop;
+		printInstanceStructE;
+		
+		return false;
 	end function;	
 	
 	impure function write_csv_file(FileName : string; reg : T_AXI4_Register_Description_Vector) return boolean is
