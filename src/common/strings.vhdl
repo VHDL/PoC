@@ -143,6 +143,7 @@ package strings is
 
 	-- String functions
 	function str_low(str : string) return integer;
+	function str_normalize(str : string) return string;
 	function str_length(str : string)										return natural;
 	function str_equal(str1 : string; str2 : string)		return boolean;
 	function str_match(str1 : string; str2 : string)		return boolean;
@@ -173,6 +174,15 @@ package body strings is
 	function str_low(str : string) return integer is
 	begin
 		return str'low;
+	end function;
+	
+	function str_normalize(str : string) return string is
+		variable temp : string(1 to str'length);
+	begin
+		for i in str'range loop
+			temp(i - str'low +1) := str(i);
+		end loop;
+		return temp;
 	end function;
 	
 	function to_IPStyle(str : string) return T_IPSTYLE is
