@@ -593,9 +593,9 @@ package body AXI4Lite is
   	begin
   	 write((1 to indent * 2 => ' ') & "." & str_trim(str_normalize(S)) & " {");
   	end procedure;
-  	procedure printRegItem(S : string; i : natural; indent : natural := 2) is
+  	procedure printRegItem(S : string; i : natural; indent : natural := 2; last : boolean := false) is
   	begin
-  	 write((1 to indent * 2 => ' ') & "." & str_trim(str_replace(str_normalize(S),".","_")) & " = 0x" & to_string(std_logic_vector(reg(i - reg'low).address), 'h', 4) & ",");
+  	 write((1 to indent * 2 => ' ') & "." & str_trim(str_replace(str_normalize(S),".","_")) & " = 0x" & to_string(std_logic_vector(reg(i - reg'low).address), 'h', 4) & ite(last, "", ","));
   	end procedure;
   	
   	subtype T_Name_String is string(1 to Name_Width);
@@ -670,20 +670,17 @@ package body AXI4Lite is
 		printRegInstance(Instance);
 --		printRegItem(Instance(length +1 to Name_Width),0);
 		for i in reg'range loop
-			if Instance(1 to length -1) = Names(i)(1 to length -1) then
---				assert false report "Instance=" & Instance(1 to length -1) severity warning;
---				assert false report "Sub=" & Names(i)(length +1 to Name_Width) severity warning;
-				printRegItem(Names(i)(length +1 to Name_Width), i);
-			else
-				printInstanceStructE;
-				ln;
---				assert false report "New Instance" severity warning;
-				length := str_ipos(Names(i), '.');
-				Instance := resize(Names(i)(1 to length -1));
+			if i = reg'high then
+				printRegItem(Names(i)(length +1 to Name_Width), i, last => true);
+				write("  }");
+			elsif Instance(1 to length -1) /= Names(i +1)(1 to length -1) then
+				printRegItem(Names(i)(length +1 to Name_Width), i, last => true);
+				write("  },");
+				length := str_ipos(Names(i +1), '.');
+				Instance := resize(Names(i +1)(1 to length -1));
 				printRegInstance(Instance);
+			else
 				printRegItem(Names(i)(length +1 to Name_Width), i);
---				assert false report "Instance=" & Instance(1 to length -1) severity warning;
---				assert false report "Sub=" & Names(i)(length +1 to Name_Width) severity warning;
 			end if;
 		end loop;
 		printInstanceStructE;
