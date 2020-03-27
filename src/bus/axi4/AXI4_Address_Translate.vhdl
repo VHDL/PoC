@@ -68,6 +68,7 @@ entity AXI4_Address_Translate is
 		Offset                : in  T_SLSV(0 to (Number_of_Interfaces * Number_of_Offsets) -1)(Offset_Bits -1 downto 0);
 		
 		Offset_Pos            : out T_SLUV(0 to Number_of_Interfaces -1)(log2ceilnz(Number_of_Offsets) -1 downto 0);
+		Offset_Inc            : out std_logic_vector(0 to Number_of_Interfaces -1);
 		Config_Error          : out std_logic;
 		Access_Error_r        : out std_logic;
 		Access_Error_w        : out std_logic
@@ -155,8 +156,11 @@ begin
 			if rising_edge(Clock) then
 				if Reset = '1' then
 					position <= (others => '0');
+					Offset_Inc(i) <= '0';
 				else
+					Offset_Inc(i) <= '0';
 					if (Match_IF(i) = '1') and (Is_AW = '1') then
+						Offset_Inc(i) <= '1';
 						if position < Number_of_Offsets -1 then
 							position <= position +1;
 						else
