@@ -59,16 +59,16 @@ architecture rtl of AXI4_FIFO is
   constant Address_BITS   : natural := In_M2S.AWAddr'length;
   constant Data_BITS      : natural := In_M2S.WData'length;
   constant STRB_BITS      : natural := In_M2S.WData'length / 8;
-  constant CACHE_BITS     : natural := T_AXI4_Cache'length;
-  constant PROTECT_BITS   : natural := T_AXI4_Protect'length;
-  constant RESPONSE_BITS  : natural := T_AXI4_Response'length;
+  constant CACHE_BITS     : natural := In_M2S.AWCache'length;
+  constant PROTECT_BITS   : natural := In_M2S.AWProt'length;
+  constant RESPONSE_BITS  : natural := In_S2M.RResp'length;
 	constant USER_BITS      : natural := In_M2S.AWUser'length;
 	constant ID_BITS        : natural := In_M2S.AWID'length;
 	constant LEN_BITS       : natural := In_M2S.AWLen'length;
-	constant SIZE_BITS      : natural := T_AXI4_Size'length;
-	constant BURST_BITS     : natural := T_AXI4_Burst'length;
-	constant QOS_BITS       : natural := T_AXI4_QoS'length;
-	constant REGION_BITS    : natural := T_AXI4_Region'length;
+	constant SIZE_BITS      : natural := In_M2S.AWSize'length;
+	constant BURST_BITS     : natural := In_M2S.AWBurst'length;
+	constant QOS_BITS       : natural := In_M2S.AWQoS'length;
+	constant REGION_BITS    : natural := In_M2S.AWRegion'length;
 	constant LOCK_BITS      : natural := 1;
 	constant LAST_BITS      : natural := 1;
 
