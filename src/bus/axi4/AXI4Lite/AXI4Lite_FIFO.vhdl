@@ -160,8 +160,8 @@ begin
                     low(BIT_VEC,R_POS) + low(R_BIT_VEC,Resp_POS)) 
     <= Out_S2M.RResp;
   --B IN Interface
-  DataFIFO_DataIn(  low(BIT_VEC,B_POS) + high(R_BIT_VEC,Resp_POS) downto 
-                    low(BIT_VEC,B_POS) + low(R_BIT_VEC,Resp_POS)) 
+  DataFIFO_DataIn(  low(BIT_VEC,B_POS) + high(B_BIT_VEC,Resp_POS) downto 
+                    low(BIT_VEC,B_POS) + low(B_BIT_VEC,Resp_POS)) 
     <= Out_S2M.BResp;  
 
   ----OUTPUT
@@ -190,8 +190,8 @@ begin
   In_S2M.RResp <= DataFIFO_DataOut(   low(BIT_VEC,R_POS) + high(R_BIT_VEC,Resp_POS) downto 
                                       low(BIT_VEC,R_POS) + low(R_BIT_VEC,Resp_POS)); 
   --B Out Interface
-  In_S2M.BResp <= DataFIFO_DataOut(   low(BIT_VEC,B_POS) + high(R_BIT_VEC,Resp_POS) downto 
-                                      low(BIT_VEC,B_POS) + low(R_BIT_VEC,Resp_POS)); 
+  In_S2M.BResp <= DataFIFO_DataOut(   low(BIT_VEC,B_POS) + high(B_BIT_VEC,Resp_POS) downto 
+                                      low(BIT_VEC,B_POS) + low(B_BIT_VEC,Resp_POS)); 
 
 
   gen_fifo : for i in 0 to 4 generate
