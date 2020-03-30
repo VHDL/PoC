@@ -244,7 +244,8 @@ begin
     
       inst_glue : entity work.fifo_glue
       generic map(
-        D_BITS  => BIT_VEC(i)
+        D_BITS          => BIT_VEC(i),
+        Pipeline_Stages => FRAMES +1
       )
       port map(
         -- Control
