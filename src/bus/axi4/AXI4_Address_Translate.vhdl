@@ -76,21 +76,30 @@ entity AXI4_Address_Translate is
 end entity;
 
 architecture rtl of AXI4_Address_Translate is
-	attribute DONT_TOUCH : string;
+	attribute DONT_TOUCH   : string;
 	
-	constant Adder_Bits : positive := lssb_idx(Buffer_Mask or Interface_Mask);
-	constant IF_high    : positive := mssb_idx(Interface_Mask);
-	constant IF_low     : positive := lssb_idx(Interface_Mask);
+	constant Adder_Bits    : positive := lssb_idx(Buffer_Mask or Interface_Mask);
+	constant Offset_high   : positive := mssb_idx(Interface_Mask);
+	constant Offset_low    : positive := lssb_idx(Interface_Mask);
+	constant IF_high       : positive := mssb_idx(Interface_Mask);
+	constant IF_low        : positive := lssb_idx(Interface_Mask);
 	
-	signal Match_IF     : std_logic_vector(0 to Number_of_Interfaces -1);
-	signal address      : T_SLUV(0 to Number_of_Interfaces -1)(Offset_Bits -1 downto 0);
+	signal IF_Addres       : std_logic_vector(IF_high - IF_low downto 0);
+	signal Offset_Addres   : std_logic_vector(IF_high - IF_low downto 0);
+	signal Offset_Addres_d : std_logic_vector(IF_high - IF_low downto 0) := (others => '0');
 	
-	signal Is_AW        : std_logic;
+	signal Match_IF        : std_logic_vector(0 to Number_of_Interfaces -1);
+	signal address         : T_SLUV(0 to Number_of_Interfaces -1)(Offset_Bits -1 downto 0);
+	
+	signal Is_AW           : std_logic;
 --	attribute DONT_TOUCH of Match_IF: signal is "TRUE";
 --	attribute DONT_TOUCH of address: signal is "TRUE";
 --	attribute DONT_TOUCH of Is_AW: signal is "TRUE";
 begin
-	Is_AW    <= In_AXI4_M2S.AWValid and Out_AXI4_S2M.AWReady;
+	Is_AW           <= In_AXI4_M2S.AWValid and Out_AXI4_S2M.AWReady;
+	IF_Addres       <= In_AXI4_M2S.AWAddr(IF_high downto IF_low);
+	Offset_Addres   <= In_AXI4_M2S.AWAddr(Offset_high downto Offset_low);
+	Offset_Addres_d <= Offset_Addres when rising_edge(Clock) and Is_AW = '1';
 	
 	--Write Port Signals
 	Out_AXI4_M2S.AWValid     <= In_AXI4_M2S.AWValid ;
@@ -146,7 +155,7 @@ begin
 		signal Offset_i                : T_SLSV(0 to Number_of_Offsets -1)(Offset_Bits -1 downto 0);
 		signal position                : unsigned(log2ceilnz(Number_of_Offsets) -1 downto 0) := (others => '0');
 	begin
-		Match_IF(i)   <= '1' when unsigned(In_AXI4_M2S.AWAddr(IF_high downto IF_low)) = to_unsigned(i, IF_high - IF_low +1) else '0';
+		Match_IF(i)   <= '1' when unsigned(IF_Addres) = to_unsigned(i, IF_high - IF_low +1) else '0';
 		Offset_Pos(i) <= position;
 		Offset_i      <= Offset((i * Number_of_Offsets) to ((i + 1) * Number_of_Offsets) -1);
 		address(i)      <= unsigned(In_AXI4_M2S.AWAddr(Offset_Bits -1 downto 0)) + unsigned(std_logic_vector(Offset_i(to_integer(position))));
@@ -159,7 +168,7 @@ begin
 					Offset_Inc(i) <= '0';
 				else
 					Offset_Inc(i) <= '0';
-					if (Match_IF(i) = '1') and (Is_AW = '1') then
+					if (Match_IF(i) = '1') and (Is_AW = '1') and (Offset_Addres /= Offset_Addres_d) then
 						Offset_Inc(i) <= '1';
 						if position < Number_of_Offsets -1 then
 							position <= position +1;
