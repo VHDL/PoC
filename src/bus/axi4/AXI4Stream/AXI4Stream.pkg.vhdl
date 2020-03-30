@@ -39,31 +39,32 @@ package AXI4Stream is
 		Data  : std_logic_vector;
 		Last  : std_logic;
 		User  : std_logic_vector;
---    Keep  : std_logic_vector;
+    Keep  : std_logic_vector;
 	end record;
 	
 	type T_AXI4Stream_S2M is record
 		Ready : std_logic;
+		User  : std_logic_vector;
 	end record;
 
 	type T_AXI4Stream_M2S_VECTOR is array(natural range <>) of T_AXI4Stream_M2S;
 	type T_AXI4Stream_S2M_VECTOR is array(natural range <>) of T_AXI4Stream_S2M;
 
-	function Initialize_AXI4Stream_M2S(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_M2S;
-	function Initialize_AXI4Stream_S2M(                    UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_S2M;
+	function Initialize_AXI4Stream_M2S(DataBits : natural; UserBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_M2S;
+	function Initialize_AXI4Stream_S2M(                    UserBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_S2M;
 end package;
 
 
 package body AXI4Stream is 
-	function Initialize_AXI4Stream_M2S(DataBits : natural; UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_M2S is
-		variable init : T_AXI4Stream_M2S(
+	function Initialize_AXI4Stream_M2S(DataBits : natural; UserBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_M2S is
+		constant init : T_AXI4Stream_M2S(
 				Data(DataBits -1 downto 0),
-				User(UserBits -1 downto 0)--,
---				Keep((DataBits / 8) -1 downto 0)
+				User(UserBits -1 downto 0),
+				Keep((DataBits / 8) -1 downto 0)
 			) := (
 				Valid => Value,
 				Data  => (others => Value),
---				Keep  => (others => Value),
+				Keep  => (others => Value),
 				Last  => Value,
 				User  => (others => Value)
 			);
@@ -71,8 +72,11 @@ package body AXI4Stream is
 		return init;
 	end function;
 	
-	function Initialize_AXI4Stream_S2M(UserBits : natural := 0; Value : std_logic := 'Z') return T_AXI4Stream_S2M is
-		variable init : T_AXI4Stream_S2M := (Ready => Value);
+	function Initialize_AXI4Stream_S2M(UserBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_S2M is
+		constant init : T_AXI4Stream_S2M(User(UserBits -1 downto 0)) := (
+			Ready    => Value,
+			User     => (others => Value)
+		);
 	begin
 		return init;
 	end function;
