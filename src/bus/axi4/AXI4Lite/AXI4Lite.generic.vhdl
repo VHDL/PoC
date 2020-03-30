@@ -41,15 +41,21 @@ package AXI4Stream_Sized is
 
 	subtype SIZED_M2S is T_AXI4STREAM_M2S(
 		Data(DATA_BITS - 1 downto 0),
+		Keep(DATA_BITS / 8 -1 downto 0),
 		User(USER_BITS - 1 downto 0)
 	);
-	subtype SIZED_S2M is T_AXI4STREAM_S2M;
+	subtype SIZED_S2M is T_AXI4STREAM_S2M(
+		User(USER_BITS - 1 downto 0)
+	);
 	
 	subtype SIZED_M2S_VECTOR is T_AXI4STREAM_M2S_VECTOR(open)(
 		Data(DATA_BITS - 1 downto 0),
+		Keep(DATA_BITS / 8 -1 downto 0),
 		User(USER_BITS - 1 downto 0)
 	);
-	subtype SIZED_S2M_VECTOR is T_AXI4STREAM_S2M_VECTOR;
+	subtype SIZED_S2M_VECTOR is T_AXI4STREAM_S2M_VECTOR(open)(
+		User(USER_BITS - 1 downto 0)
+	);
 end package;
 
 
