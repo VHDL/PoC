@@ -59,9 +59,9 @@ architecture rtl of AXI4Lite_FIFO is
   constant Address_BITS   : natural  := In_M2S.AWAddr'length;
   constant Data_BITS      : natural  := In_M2S.WData'length;
   constant STRB_BITS      : natural  := In_M2S.WData'length / 8;
-  constant CACHE_BITS     : natural  := T_AXI4_Cache'length;
-  constant PROTECT_BITS   : natural  := T_AXI4_Protect'length;
-  constant RESPONSE_BITS  : natural  := T_AXI4_Response'length;
+  constant CACHE_BITS     : natural  := In_M2S.AWCache'length;
+  constant PROTECT_BITS   : natural  := In_M2S.AWProt'length;
+  constant RESPONSE_BITS  : natural  := In_S2M.RResp'length;
 
   constant Addr_POS       : natural  := 0;
   constant Cache_POS      : natural  := 1;
