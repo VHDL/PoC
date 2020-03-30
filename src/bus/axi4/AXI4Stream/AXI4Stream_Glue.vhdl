@@ -34,6 +34,9 @@ use     work.axi4stream.all;
 
 
 entity AXI4Stream_Glue is
+  generic (
+  	PIPELINE_STAGES : positive := 2
+  );
 	port (
 		Clock             : in  std_logic;
 		Reset             : in  std_logic;
@@ -66,7 +69,8 @@ begin
 
 	FIFO : entity work.fifo_glue
 		generic map (
-			D_BITS  => FIFO_BITS
+			D_BITS          => FIFO_BITS,
+			PIPELINE_STAGES => PIPELINE_STAGES
 		)
 		port map (
 			-- Global Reset and Clock
