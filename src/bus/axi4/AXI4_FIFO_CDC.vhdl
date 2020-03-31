@@ -359,7 +359,7 @@ begin
     DataFIFO_got       <= Out_Ready_vec(i);
     Out_Valid_vec(i)   <= DataFIFO_Valid;
 
-		inst_cc_got : entity work.fifo_ic_got
+		inst_ic_got : entity work.fifo_ic_got
 		generic map (
 			D_BITS							=> BIT_VEC(i),-- Data Width
 			MIN_DEPTH						=> MIN_DEPTH,	                    -- Minimum FIFO Depth
@@ -370,16 +370,16 @@ begin
 		)
 		port map (
 			-- Writing Interface
-			clk_wr              => In_Clock,
-			rst_wr              => In_Reset,
+			clk_wr              => ite(i<3,In_Clock,Out_Clock),
+			rst_wr              => ite(i<3,In_Reset,Out_Reset),
 			put									=> DataFIFO_put,
 			din									=> DataFIFO_DataIn_i,
 			full								=> DataFIFO_Full,
 			estate_wr						=> open,
 
 			-- Reading Interface
-			clk_rd              => Out_Clock,
-			rst_rd              => Out_Reset,
+			clk_rd              => ite(i<3,Out_Clock,In_Clock),
+			rst_rd              => ite(i<3,Out_Reset,In_Reset),
 			got									=> DataFIFO_got,
 			dout								=> DataFIFO_DataOut_i,
 			valid								=> DataFIFO_Valid,
