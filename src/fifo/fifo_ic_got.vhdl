@@ -112,14 +112,12 @@ architecture rtl of fifo_ic_got is
   signal IP1 : std_logic_vector(AN-1 downto 0);                     -- IP + 1
   signal IP0 : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Write Pointer IP
   signal IPz : std_logic_vector(AN-1 downto 0) := (others => '0');  -- IP delayed by one clock
-	signal OPs : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Sync stage: OP0 -> OPc
   signal OPc : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Copy of OP
   signal Ful : std_logic                       := '0';              -- RAM full
 
   -- Registers, clk_rd domain
   signal OP1 : std_logic_vector(AN-1 downto 0);                     -- OP + 1
   signal OP0 : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Read Pointer OP
-  signal IPs : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Sync stage: IPz -> IPc
   signal IPc : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Copy of IP
   signal Avl : std_logic                       := '0';              -- RAM Data available
   signal Vld : std_logic                       := '0';              -- Output Valid
@@ -163,13 +161,9 @@ begin
       if rst_wr = '1' then
         IP0 <= (others => '0');
         IPz <= (others => '0');
-				OPs <= (others => '0');
-        OPc <= (others => '0');
         Ful <= '0';
       else
         IPz <= IP0;
-        OPs <= OP0;
-        OPc <= OPs;
         if puti = '1' then
           IP0 <= IP1;
           if IP1(A_BITS-1 downto 0) = OPc(A_BITS-1 downto 0) then
@@ -193,6 +187,16 @@ begin
 
   di <= din;
   wa <= unsigned(IP0(A_BITS-1 downto 0));
+  
+  Write_pointer_sync : entity work.sync_Bits
+  generic map(
+    BITS          => AN
+  )
+  port map(
+    Clock         => clk_wr,
+    Input         => OP0,
+    Output        => OPc
+  );
 
   -----------------------------------------------------------------------------
   -- Read clock domain
@@ -218,13 +222,9 @@ begin
     if rising_edge(clk_rd) then
       if rst_rd = '1' then
         OP0 <= (others => '0');
-				IPs <= (others => '0');
-        IPc <= (others => '0');
         Avl <= '0';
         Vld <= '0';
       else
-        IPs <= IPz;
-        IPc <= IPs;
         if geti = '1' then
           OP0 <= OP1;
           if OP1(A_BITS-1 downto 0) = IPc(A_BITS-1 downto 0) then
@@ -250,6 +250,16 @@ begin
   end process;
   geti <= (not Vld or goti) and Avl;
   ra   <= unsigned(OP0(A_BITS-1 downto 0));
+  
+  Read_pointer_sync : entity work.sync_Bits
+  generic map(
+    BITS          => AN
+  )
+  port map(
+    Clock         => clk_rd,
+    Input         => IPz,
+    Output        => IPc
+  );
 
   -----------------------------------------------------------------------------
   -- Add register to data output
