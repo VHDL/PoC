@@ -58,11 +58,17 @@ entity arp_BroadCast_Receiver is
 		RX_Meta_SrcMACAddress_Data	: in	T_SLV_8;
 		RX_Meta_DestMACAddress_nxt	: out	std_logic;
 		RX_Meta_DestMACAddress_Data	: in	T_SLV_8;
-
+		
 		--CSE Interface
-		Command											: in  T_NET_ARP_RECEIVER_COMMAND;
+		Command											: in T_NET_ARP_RECEIVER_COMMAND;
 		Status											: out T_NET_ARP_RECEIVER_STATUS;
+		
+		
+		--Clear												: in	std_logic;
+		--Error												: out std_logic;
 
+		--RequestReceived							: out	std_logic;
+		--AnswerReceived							: out	std_logic;
 		Address_rst									: in	std_logic;
 		SenderMACAddress_nxt				: in	std_logic;
 		SenderMACAddress_Data				: out	T_SLV_8;
@@ -90,7 +96,7 @@ architecture rtl of arp_BroadCast_Receiver is
 		ST_DISCARD_FRAME, ST_ERROR
 	);
 	
-	type T_OPERATION	is (OP_REQUEST, OP_ANSWER);
+	type T_OPERATION	is ( OP_REQUEST, OP_ANSWER);
 
 	signal State													: T_STATE																												:= ST_IDLE;
 	signal NextState											: T_STATE;
@@ -157,6 +163,7 @@ begin
 
 	Is_SOF		<= RX_Valid and RX_SOF;
 	Is_EOF		<= RX_Valid and RX_EOF;
+	
 
 	process(Clock)
 	begin
@@ -180,9 +187,12 @@ begin
 		NextState											<= State;
 		NextOperation									<= Operation;
 
-		Status												<= NET_ARP_RECEIVER_STATUS_IDLE;
-
 		RX_Ack												<= '0';
+		
+		Status												<= NET_ARP_RECEIVER_STATUS_IDLE;
+		--RequestReceived								<= '0';
+		--AnswerReceived								<= '0';
+		--Error													<= '0';
 
 		IsIPv4_set										<= '0';
 		IsIPv6_set										<= '0';
@@ -325,10 +335,10 @@ begin
 
 					if (Is_EOF = '0') then
 						if (RX_Data = x"01") then
-							NextState		  <= ST_RECEIVE_SENDER_MAC;
+							NextState		<= ST_RECEIVE_SENDER_MAC;
 							NextOperation	<= OP_REQUEST;
 						elsif (RX_Data = x"02") then
-							NextState		  <= ST_RECEIVE_SENDER_MAC;
+							NextState		<= ST_RECEIVE_SENDER_MAC;
 							NextOperation	<= OP_ANSWER;
 						else
 							NextState		<= ST_DISCARD_FRAME;
@@ -428,11 +438,13 @@ begin
 
 			when ST_COMPLETE =>
 				if (Operation = OP_REQUEST) then
-					Status                    <= NET_ARP_RECEIVER_STATUS_RequestReceived;
+					Status											<= NET_ARP_RECEIVER_STATUS_RequestReceived;
+					--RequestReceived							<= '1';
 				elsif (Operation = OP_ANSWER) then
-					Status                    <= NET_ARP_RECEIVER_STATUS_AnswerReceived;
+					Status											<= NET_ARP_RECEIVER_STATUS_AnswerReceived;
+					--AnswerReceived							<= '1';
 				end if;
-
+				
 				if (Command = NET_ARP_RECEIVER_CMD_CLEAR) then
 					NextState									<= ST_IDLE;
 				end if;
@@ -446,6 +458,7 @@ begin
 
 			when ST_ERROR =>
 				Status											<= NET_ARP_RECEIVER_STATUS_ERROR;
+				--Error												<= '1';
 
 				if (Command = NET_ARP_RECEIVER_CMD_CLEAR) then
 					NextState									<= ST_IDLE;

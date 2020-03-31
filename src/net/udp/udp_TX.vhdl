@@ -321,6 +321,7 @@ begin
 				Checksum_Addend1_us				<= unsigned(In_Meta_Checksum(7 downto 0));
 
 				if (Checksum0_cy = "00") then
+					In_Meta_rst							<= '1';
 					NextState								<= ST_SEND_SOURCE_PORT_0;
 				else
 					NextState								<= ST_CARRY_0;
@@ -382,6 +383,7 @@ begin
 				Checksum_Addend1_us				<= unsigned(In_Meta_Checksum(7 downto 0));
 
 				if (Checksum0_cy = "00") then
+					In_Meta_rst							<= '1';
 					NextState								<= ST_SEND_SOURCE_PORT_0;
 				else
 					NextState								<= ST_CARRY_0;
@@ -390,23 +392,22 @@ begin
 			-- circulate carry bit
 			-- ----------------------------------------------------------------------
 			when ST_CARRY_0 =>
-				In_Meta_rst								<= Out_Meta_rst;
-
 				Checksum_en								<= '1';
 				Checksum_mux_set					<= '1';
 
 				if (Checksum0_cy = "00") then
+					In_Meta_rst							<= '1';
 					NextState								<= ST_SEND_SOURCE_PORT_0;
 				else
 					NextState								<= ST_CARRY_1;
 				end if;
 
 			when ST_CARRY_1 =>
-				In_Meta_rst								<= Out_Meta_rst;
-
+				In_Meta_rst								<= '1';
+				
 				Checksum_en								<= '1';
 				Checksum_mux_rst					<= '1';
-
+				
 				NextState									<= ST_SEND_SOURCE_PORT_0;
 
 			-- assamble header

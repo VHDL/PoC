@@ -150,7 +150,9 @@ begin
 		end if;
 	end process;
 
-	process(State, Command, In_Valid, In_Data, In_SOF, In_EOF, Out_Meta_rst, Out_Meta_Payload_nxt)
+	process(State, Command, In_Valid, In_Data, In_SOF, In_EOF, Out_Meta_rst, Out_Meta_Payload_nxt, Code_d,
+					Out_Meta_SrcMACAddress_nxt, Out_Meta_DestMACAddress_nxt, Out_Meta_SrcIPv4Address_nxt, Out_Meta_DestIPv4Address_nxt)
+
 	begin
 		NextState													<= State;
 

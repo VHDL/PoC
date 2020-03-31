@@ -41,7 +41,7 @@ use     work.iic.all;
 entity iic_IOB_Pad is
 	port (
 		enable         : in    std_logic := '1';
-		iic_pad        : inout T_IO_IIC_SERIAL_PCB;
+		iic_pad        : inout T_IO_IIC_SERIAL_PAD;
 		iic_fabric_m2s : in    T_IO_IIC_SERIAL_OUT;
 		iic_fabric_s2m : out   T_IO_IIC_SERIAL_IN
 	);

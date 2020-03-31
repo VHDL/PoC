@@ -216,7 +216,7 @@ begin
 					In_Ack_i								<= '1';
 
 					if (Is_EOF = '0') then
-						if (In_Data(3 downto 0) = x"4") then
+						if (In_Data(7 downto 4) = x"4") then
 							HeaderLength_en			<= '1';
 							NextState						<= ST_RECEIVE_TYPE_OF_SERVICE;
 						else
