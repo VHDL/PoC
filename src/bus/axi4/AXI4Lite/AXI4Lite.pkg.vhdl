@@ -558,6 +558,9 @@ package body AXI4Lite is
 		file     FileHandle		  : TEXT open write_MODE is FileName;
   	variable CurrentLine	  : LINE;
   	
+  	subtype T_Name_String is string(1 to Name_Width);
+  	type T_Name_String_V is array(natural range <>) of T_Name_String;
+  	
   	procedure write(S : string) is
   	begin
   		write(CurrentLine, S);
@@ -574,35 +577,144 @@ package body AXI4Lite is
   		write(" ");
   	end procedure;
   	
-  	procedure printInstanceStruct(S : string) is
-  	begin
-  	 write("struct AXI4RegisterOffset" & str_trim(str_normalize(S)) & " {");
-  	end procedure;
+--  	procedure printInstanceStruct(S : string) is
+--  	begin
+--  	 write("struct AXI4RegisterOffset" & str_trim(str_normalize(S)) & " {");
+--  	end procedure;
   	
-  	procedure printInstanceStructE is
-  	begin
-  	 write("};");
-  	end procedure;
+--  	procedure printInstanceStructE is
+--  	begin
+--  	 write("};");
+--  	end procedure;
   	
   	procedure printInstanceItem(S : string; preString : string := "uint32_t "; indent : natural := 1) is
   	begin
   	 write((1 to indent * 2 => ' ') & str_trim(str_replace(str_normalize(preString),".","_")) & "   " & str_trim(str_replace(str_normalize(S),".","_")) & ";");
   	end procedure;
   	
-  	procedure printRegInstance(S : string; indent : natural := 1) is
-  	begin
-  	 write((1 to indent * 2 => ' ') & "." & str_trim(str_normalize(S)) & " {");
-  	end procedure;
-  	procedure printRegItem(S : string; i : natural; indent : natural := 2; last : boolean := false) is
-  	begin
-  	 write((1 to indent * 2 => ' ') & "." & str_trim(str_replace(str_normalize(S),".","_")) & " = 0x" & to_string(std_logic_vector(reg(i - reg'low).address), 'h', 4) & ite(last, "", ","));
-  	end procedure;
+--  	procedure printRegInstance(S : string; indent : natural := 1) is
+--  	begin
+--  	 write((1 to indent * 2 => ' ') & "." & str_trim(str_normalize(S)) & " {");
+--  	end procedure;
+--  	procedure printRegItem(S : string; i : natural; indent : natural := 2; last : boolean := false) is
+--  	begin
+--  	 write((1 to indent * 2 => ' ') & "." & str_trim(str_replace(str_normalize(S),".","_")) & " = 0x" & to_string(std_logic_vector(reg(i - reg'low).address), 'h', 4) & ite(last, "", ","));
+--  	end procedure;
   	
-  	subtype T_Name_String is string(1 to Name_Width);
-  	type T_Name_String_V is array(natural range <>) of T_Name_String;
-  	variable Names : T_Name_String_V(reg'range) := (others => (others => C_POC_NUL));
-  	variable Instance : T_Name_String := (others => ' ');
-  	variable length : natural;
+  	
+  	function numberItems(Inst : string; Inst_length : natural; Start_idx : natural) return natural is
+  	begin
+  		for i in Start_idx to reg'high loop
+  			if reg(i).Name(1 to Inst_length) /= Inst(1 to Inst_length) then
+--  				assert false report "NumberItems found: " & integer'image(i - Start_idx) severity warning;
+  				return i - Start_idx;
+  			end if;
+  		end loop;
+--  		assert false report "NumberItems found: " & integer'image(reg'high - Start_idx) severity warning;
+  		return reg'high -Start_idx +1;
+  	end function;
+  	
+  	function subInstPos(Inst : string; Inst_length : natural; Start_idx : natural; Length_idx : natural) return integer is
+  		variable ipos : integer;
+  	begin
+--  		assert false report "subInstPos::: Inst: " & Inst(1 to Inst_length -1) & ", Start_idx: " & integer'image(Start_idx) & ", Length_idx: " & integer'image(Length_idx) severity warning;
+  		for i in Start_idx to Start_idx + Length_idx -1 loop
+  			ipos := str_ipos(reg(i).Name(Inst_length +1 to Name_Width), '.');
+  			if ipos >= 0 then
+  				return i;
+				end if;
+  		end loop;
+  		return -1;
+  	end function;
+  	
+  	function nextInstPos(Inst_length : natural; idx : natural) return integer is
+  	begin
+  		return str_ipos(reg(idx).Name(Inst_length +1 to Name_Width), '.');
+  	end function;
+  	function nextInstName(Inst_length : natural; idx : natural) return string is
+  	begin
+  		return resize(reg(idx).Name(1 to nextInstPos(Inst_length, idx)));
+  	end function;
+  	
+  	
+--  	function analyze(Inst : string; Inst_length : natural; Start_idx : natural) return natural is
+--  		constant Inst_i        : T_Name_String := Inst;
+--  		constant Inst_length_i : natural       := Inst_length;
+--  		constant num_Items     : natural       := numberItems(Inst, Inst_length, Start_idx);
+----  		variable num_Items_i   : natural       := numberItems(Inst, Inst_length, Start_idx);
+--  		variable ipos          : integer;
+--  		variable i             : natural       := Start_idx;
+----  		variable j             : natural;
+--  	begin
+--  		assert false report "New Analyze::: Inst: " & Inst(1 to Inst_length) & ", Start idx: " & integer'image(Start_idx) & ", num_Items: " & integer'image(num_Items) severity warning;
+----  		assert false report "Inst: " & Inst(1 to Inst_length) & ", Start idx: " & integer'image(Start_idx) severity warning;
+--			while i <= Start_idx + num_Items -1 loop 
+----				assert false report "num_Items_i." severity warning;
+----				num_Items_i := numberItems(Inst_i, Inst_length_i, i);
+----				assert false report "num_Items_i: " & integer'image(num_Items_i) severity warning;
+--				assert false report "i: " & integer'image(i) severity warning;
+----				assert false report "ipos." severity warning;
+--				ipos := subInstPos(Inst_i, Inst_length_i, i, num_Items -i +Start_idx);
+--				assert false report "ipos: " & integer'image(ipos) severity warning;
+				
+--				if ipos = -1 then
+--					assert false report "Found Group at: " & integer'image(i) severity warning;
+--					for j in i to i + num_Items -1 loop
+----						assert false report "i: " & integer'image(i) severity warning;
+--						assert false report "Item at: " & integer'image(j) severity warning;
+--						printInstanceItem(reg(j).Name);
+--					end loop;
+----					assert false report "i: " & integer'image(i) severity warning;
+----					i := i + num_Items_i;
+----					assert false report "i: " & integer'image(i) severity warning;
+--					assert false report "Returning Group: " & integer'image(i + num_Items) severity warning;
+--					return i + num_Items;
+--				else
+--					i := analyze(nextInstName(Inst_length_i, ipos), nextInstPos(Inst_length_i, ipos), ipos);
+--				end if;
+			
+--			end loop;
+--  		assert false report "End Analyze " & integer'image(i) severity warning;
+--  		return i;
+--  	end function;
+  	
+--  	function analyze_Item(Inst : string; Inst_length : natural; Start_idx : natural) return natural is
+--			variable subinst_num : natural := 0;
+  		
+--  	begin
+--  		for i in Start_idx to reg'high loop
+--  			if str_ipos(reg(i).Name, '.') = -1 then
+--  				subinst_num := subinst_num +1;
+--  			else
+  			
+--  			end if;
+--  		end loop;
+--  		return reg'high;
+--  	end function;
+  	
+  	
+--  	variable Names : T_Name_String_V(reg'range) := (others => (others => C_POC_NUL));
+
+		function count_depth(str : string) return natural is
+			variable num : natural := 0;
+		begin
+			for i in str'range loop
+				if str(i) = '.' then
+					num := num +1;
+				end if;
+			end loop;
+			return num;
+		end function;
+
+  	variable Inst         : T_Name_String_V(0 to 5)     := (others => (others => ' '));
+  	variable Inst_length  : T_NATVEC(0 to 5)            := (others => 0);
+  	variable items        : T_NATVEC(0 to 5)            := (others => 0);
+		variable length       : natural                     := 0;
+  	variable Pos          : natural                     := 0;
+  	variable i            : natural                     := reg'low;
+  	variable List         : std_logic_vector(reg'range) := (others => '0');
+  	variable depth        : T_NATVEC(reg'range)         := (others => 0);
+  	
 	begin
 		write("/*****************************************************");
 		write("* Automatically generated File from VHDL PoC Library *");
@@ -612,78 +724,110 @@ package body AXI4Lite is
 		write("*****************************************************/");
 		ln;ln;
 		
-		for i in reg'range loop
-			Names(i) := reg(i).Name;
-			inner_loop: for j in 1 to Name_Width loop
-				Names(i) := str_replace(Names(i), "(", "_");
-				Names(i) := resize(str_replace(Names(i), ")", ""));
---				Names(i) := str_replace(Names(i), " ", "");
-				exit inner_loop when str_pos(Names(i), "(") = -1;
-			end loop;
---			assert false report "Names(" & integer'image(i) & ")='" & Names(i) & "'" severity warning;
+		for i in depth'range loop
+			depth(i) := count_depth(reg(i).Name);
+			assert false report"depth(" & integer'image(i) & ") = " & integer'image(depth(i)) severity warning;
 		end loop;
-		length := str_ipos(Names(0), '.');
-		Instance := resize(Names(0)(1 to length -1));
-		printInstanceStruct("_" & Instance(1 to length -1));
---		assert false report "Length=" & integer'image(length) severity warning;
---		assert false report "Instance=" & Instance(1 to length -1) severity warning;
---		assert false report "Sub=" & Names(0)(length +1 to Name_Width) severity warning;
-		for i in reg'range loop
-			if Instance(1 to length -1) = Names(i)(1 to length -1) then
---				assert false report "Instance=" & Instance(1 to length -1) severity warning;
---				assert false report "Sub=" & Names(i)(length +1 to Name_Width) severity warning;
-				printInstanceItem(Names(i)(length +1 to Name_Width));
-			else
-				printInstanceStructE;
-				ln;
---				assert false report "New Instance" severity warning;
-				length := str_ipos(Names(i), '.');
-				Instance := resize(Names(i)(1 to length -1));
-				printInstanceStruct("_" & Instance(1 to length -1));
-				printInstanceItem(Names(i)(length +1 to Name_Width));
---				assert false report "Instance=" & Instance(1 to length -1) severity warning;
---				assert false report "Sub=" & Names(i)(length +1 to Name_Width) severity warning;
-			end if;
-		end loop;
-		printInstanceStructE;
 		
-		ln;ln;
+--		items(Pos) := numberItems(Inst(Pos), Inst_length(Pos), i);
+--		assert false report"Pos: " & integer'image(Pos) & ", items(Pos): " & integer'image( items(Pos) ) severity warning;
 		
-		length := str_ipos(Names(0), '.');
-		Instance := resize(Names(0)(1 to length -1));
-		printInstanceStruct("");
-		printInstanceItem(Instance, "AXI4RegisterOffset_" & Instance);
-		for i in reg'range loop
-			if Instance(1 to length -1) /= Names(i)(1 to length -1) then
-				length := str_ipos(Names(i), '.');
-				Instance := resize(Names(i)(1 to length -1));
-				printInstanceItem(Instance, "AXI4RegisterOffset_" & Instance);
-			end if;
-		end loop;
-		printInstanceStructE;
+--		while subInstPos(Inst(Pos), Inst_length(Pos), i, items(Pos)) /= -1 loop
+--			Pos := Pos +1;
+--			items(Pos) := numberItems(Inst(Pos), Inst_length(Pos), i);
+--			assert false report"Pos: " & integer'image(Pos) & ", items(Pos): " & integer'image( items(Pos) ) severity warning;
+--		end loop;
+--		items(Pos) := numberItems(Inst(Pos), Inst_length(Pos), i);
+--		assert false report"subInstPos: " & integer'image( subInstPos(Inst(Pos), Inst_length(Pos), i, items(Pos)) ) severity warning;
 		
-		ln;ln;
-		write("static const AXI4RegisterOffset " & Name & " = {");
 		
-		length := str_ipos(Names(0), '.');
-		Instance := resize(Names(0)(1 to length -1));
-		printRegInstance(Instance);
---		printRegItem(Instance(length +1 to Name_Width),0);
-		for i in reg'range loop
-			if i = reg'high then
-				printRegItem(Names(i)(length +1 to Name_Width), i, last => true);
-				write("  }");
-			elsif Instance(1 to length -1) /= Names(i +1)(1 to length -1) then
-				printRegItem(Names(i)(length +1 to Name_Width), i, last => true);
-				write("  },");
-				length := str_ipos(Names(i +1), '.');
-				Instance := resize(Names(i +1)(1 to length -1));
-				printRegInstance(Instance);
-			else
-				printRegItem(Names(i)(length +1 to Name_Width), i);
-			end if;
-		end loop;
-		printInstanceStructE;
+--		while i <= reg'high loop 
+		
+--		end loop;
+		
+		
+		
+--		for i in reg'range loop
+--			Names(i) := reg(i).Name;
+--			inner_loop: for j in 1 to Name_Width loop
+--				Names(i) := str_replace(Names(i), "(", "_");
+--				Names(i) := resize(str_replace(Names(i), ")", ""));
+----				Names(i) := str_replace(Names(i), " ", "");
+--				exit inner_loop when str_pos(Names(i), "(") = -1;
+--			end loop;
+----			assert false report "Names(" & integer'image(i) & ")='" & Names(i) & "'" severity warning;
+--		end loop;
+--		while Pos < reg'high loop
+--			Inst_length := str_ipos(reg(Pos).Name(1 to Name_Width), '.');--nextInstPos(0, 0);
+--			Instance    := resize(reg(Pos).Name(1 to Inst_length));--nextInstName(0, 0);
+--			assert false report "Loopcount: " & integer'image(Pos) severity warning;
+--			Pos := analyze(resize(" "), 0, 0);
+--			length := numberItems(Instance, Inst_length, Pos);
+--			assert false report "Pos: " & integer'image(Pos) severity warning;
+--			Pos := Pos + length;
+--		end loop;
+--		length := str_ipos(Names(0), '.');
+--		Instance := resize(Names(0)(1 to length -1));
+--		printInstanceStruct("_" & Instance(1 to length -1));
+----		assert false report "Length=" & integer'image(length) severity warning;
+----		assert false report "Instance=" & Instance(1 to length -1) severity warning;
+----		assert false report "Sub=" & Names(0)(length +1 to Name_Width) severity warning;
+--		for i in reg'range loop
+--			if Instance(1 to length -1) = Names(i)(1 to length -1) then
+----				assert false report "Instance=" & Instance(1 to length -1) severity warning;
+----				assert false report "Sub=" & Names(i)(length +1 to Name_Width) severity warning;
+--				printInstanceItem(Names(i)(length +1 to Name_Width));
+--			else
+--				printInstanceStructE;
+--				ln;
+----				assert false report "New Instance" severity warning;
+--				length := str_ipos(Names(i), '.');
+--				Instance := resize(Names(i)(1 to length -1));
+--				printInstanceStruct("_" & Instance(1 to length -1));
+--				printInstanceItem(Names(i)(length +1 to Name_Width));
+----				assert false report "Instance=" & Instance(1 to length -1) severity warning;
+----				assert false report "Sub=" & Names(i)(length +1 to Name_Width) severity warning;
+--			end if;
+--		end loop;
+--		printInstanceStructE;
+		
+--		ln;ln;
+		
+--		length := str_ipos(Names(0), '.');
+--		Instance := resize(Names(0)(1 to length -1));
+--		printInstanceStruct("");
+--		printInstanceItem(Instance, "AXI4RegisterOffset_" & Instance);
+--		for i in reg'range loop
+--			if Instance(1 to length -1) /= Names(i)(1 to length -1) then
+--				length := str_ipos(Names(i), '.');
+--				Instance := resize(Names(i)(1 to length -1));
+--				printInstanceItem(Instance, "AXI4RegisterOffset_" & Instance);
+--			end if;
+--		end loop;
+--		printInstanceStructE;
+		
+--		ln;ln;
+--		write("static const AXI4RegisterOffset " & Name & " = {");
+		
+--		length := str_ipos(Names(0), '.');
+--		Instance := resize(Names(0)(1 to length -1));
+--		printRegInstance(Instance);
+----		printRegItem(Instance(length +1 to Name_Width),0);
+--		for i in reg'range loop
+--			if i = reg'high then
+--				printRegItem(Names(i)(length +1 to Name_Width), i, last => true);
+--				write("  }");
+--			elsif Instance(1 to length -1) /= Names(i +1)(1 to length -1) then
+--				printRegItem(Names(i)(length +1 to Name_Width), i, last => true);
+--				write("  },");
+--				length := str_ipos(Names(i +1), '.');
+--				Instance := resize(Names(i +1)(1 to length -1));
+--				printRegInstance(Instance);
+--			else
+--				printRegItem(Names(i)(length +1 to Name_Width), i);
+--			end if;
+--		end loop;
+--		printInstanceStructE;
 		
 		return false;
 	end function;	
