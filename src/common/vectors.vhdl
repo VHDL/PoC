@@ -91,12 +91,12 @@ package vectors is
 	subtype T_SLS_512						is signed(511 downto 0);
 	
 	-- Data BE Vector
-	type T_DATA_BE is record
-		be        : std_logic_vector;
-		data      : std_logic_vector;
-	end record;
+--	type T_DATA_BE is record
+--		be        : std_logic_vector;
+--		data      : std_logic_vector;
+--	end record;
 	
-	type T_DATA_BE_VECTOR is array(natural range <>) of T_DATA_BE;
+--	type T_DATA_BE_VECTOR is array(natural range <>) of T_DATA_BE;
 
 	-- STD_LOGIC_VECTOR_VECTORs
 --  	type		T_SLVV							is array(NATURAL range <>) of STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
