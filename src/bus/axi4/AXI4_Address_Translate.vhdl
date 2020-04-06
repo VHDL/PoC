@@ -162,10 +162,10 @@ begin
 		signal Buffer_Addres_d  : std_logic_vector(Buffer_high - Buffer_low downto 0) := (others => '0');
 		signal Buffer_Addres_fe : std_logic;
 	begin
-		Match_IF(i)   <= '1' when unsigned(IF_Addres) = to_unsigned(i, IF_high - IF_low +1) else '0';
+		Match_IF(i -1)   <= '1' when unsigned(IF_Addres) = to_unsigned(i, IF_high - IF_low +1) else '0';
 		Offset_Pos(i) <= position;
 		Offset_i      <= Offset((i * Max_Offsets) to ((i + 1) * Max_Offsets) -1);
-		address(i)    <= unsigned(resize(In_AXI4_M2S.AWAddr(Address_Bits -1 downto 0), Offset_Bits +1)) + unsigned('0' & std_logic_vector(Offset_i(to_integer(position))));
+		address(i -1)    <= unsigned(resize(In_AXI4_M2S.AWAddr(Address_Bits -1 downto 0), Offset_Bits +1)) + unsigned('0' & std_logic_vector(Offset_i(to_integer(position))));
 
 		Buffer_Addres    <= In_AXI4_M2S.AWAddr(Buffer_high downto Buffer_low);
 		Buffer_Addres_d  <= Buffer_Addres when rising_edge(Clock) and Is_AW = '1';
