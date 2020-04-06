@@ -181,7 +181,7 @@ begin
 					Offset_Inc(i) <= '0';
 					if (Match_IF(i) = '1') and (Is_AW = '1') and (Buffer_Addres_fe = '1') then
 						Offset_Inc(i) <= '1';
-						if position < Max_Offsets -1 then
+						if (position < Max_Offsets -1) or (position < Number_of_Offsets -1) then
 							position <= position +1;
 						else
 							position <= (others => '0');
