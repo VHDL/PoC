@@ -38,30 +38,37 @@ use	    work.axi4lite.all;
 
 entity AXI4Lite_Register is
 	generic (
-		DEBUG                         : boolean := false;
-		IGNORE_HIGH_ADDR              : boolean := true;
-		DISABLE_ADDR_CHECK            : boolean := false;
-	 	CONFIG                        : T_AXI4_Register_Description_Vector
+		MARK_DEBUG                        : boolean := false;
+		VERBOSE                           : boolean := false;
+		IGNORE_HIGH_ADDRESS               : boolean := true;
+		DISABLE_ADDRESS_CHECK             : boolean := false;
+		INTERRUPT_ENABLE_REGISTER_ADDRESS : std_logic_vector := (31 downto 0 => 32x"0");
+	 	CONFIG                            : T_AXI4_Register_Description_Vector
 	);
 	port (
-		S_AXI_ACLK                    : in  std_logic;
-		S_AXI_ARESETN                 : in  std_logic;
-		
-		S_AXI_m2s                     : in  T_AXI4Lite_BUS_M2S;
-		S_AXI_s2m                     : out T_AXI4Lite_BUS_S2M;
-		
-		RegisterFile_ReadPort         : out T_SLVV(0 to CONFIG'Length - 1)(Data_Width-1 downto 0);
-		RegisterFile_ReadPort_hit     : out std_logic_vector(0 to CONFIG'Length - 1);
-		RegisterFile_WritePort        : in  T_SLVV(0 to CONFIG'Length - 1)(Data_Width-1 downto 0);
-		RegisterFile_WritePort_hit    : out std_logic_vector(0 to CONFIG'Length - 1);
-		RegisterFile_WritePort_strobe : in  std_logic_vector(0 to CONFIG'Length - 1) := get_strobeVector(CONFIG)
+		S_AXI_ACLK                        : in  std_logic;
+		S_AXI_ARESETN                     : in  std_logic;
+																	    
+		S_AXI_m2s                         : in  T_AXI4Lite_BUS_M2S;
+		S_AXI_s2m                         : out T_AXI4Lite_BUS_S2M;
+		S_AXI_IRQ                         : out std_logic := '0';
+																	    
+		RegisterFile_ReadPort             : out T_SLVV(0 to CONFIG'Length - 1)(Data_Width-1 downto 0);
+		RegisterFile_ReadPort_hit         : out std_logic_vector(0 to CONFIG'Length - 1);
+		RegisterFile_WritePort            : in  T_SLVV(0 to CONFIG'Length - 1)(Data_Width-1 downto 0);
+		RegisterFile_WritePort_hit        : out std_logic_vector(0 to CONFIG'Length - 1);
+		RegisterFile_WritePort_strobe     : in  std_logic_vector(0 to CONFIG'Length - 1) := get_strobeVector(CONFIG)
 	);
 end entity;
 
 
 architecture rtl of AXI4Lite_Register is
-	constant ADDRESS_BITS  : positive := S_AXI_m2s.AWAddr'length;
-	constant DATA_BITS     : positive := S_AXI_m2s.WData'length;
+	constant ADDRESS_BITS               : positive := S_AXI_m2s.AWAddr'length;
+	constant DATA_BITS                  : positive := S_AXI_m2s.WData'length;
+	
+	constant NUMBER_INTERRUPT_REGISTERS : natural  := get_Interrupt_count(CONFIG);
+	constant Interrupt_range            : T_NATVEC := get_Interrupt_range(CONFIG);
+	signal   Is_Interrupt               : std_logic_vector(0 to NUMBER_INTERRUPT_REGISTERS -1);
 	
 	-- Example-specific design signals
 	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
@@ -75,12 +82,19 @@ architecture rtl of AXI4Lite_Register is
 	function check_for_ADDR_conflicts return boolean is
 		variable addr : unsigned(REG_ADDRESS_BITS downto ADDR_LSB);
 	begin
-		if not DISABLE_ADDR_CHECK then
+		if not DISABLE_ADDRESS_CHECK then
 			for i in CONFIG'low to CONFIG'high -1 loop
+				if NUMBER_INTERRUPT_REGISTERS > 0 then
+					if addr = INTERRUPT_ENABLE_REGISTER_ADDRESS then
+						report "PoC.AXI4Lite_Register Error: Addressconflict in Config: CONFIG(" & integer'image(i) & ") and INTERRUPT_ENABLE_REGISTER_ADDRESS are equal!" severity failure;
+						return false;
+					end if;
+				end if;
+			
 				addr := CONFIG(i).address(addr'range);
 				for ii in i +1 to CONFIG'high loop
 					if addr = CONFIG(ii).address(addr'range) then
-						report "AXI4Lite_Register Error: Addressconflict in Config: CONFIG(" & integer'image(i) & ") and CONFIG(" & integer'image(ii) & ") are equal!" severity failure;
+						report "PoC.AXI4Lite_Register Error: Addressconflict in Config: CONFIG(" & integer'image(i) & ") and CONFIG(" & integer'image(ii) & ") are equal!" severity failure;
 						return false;
 					end if;
 				end loop;
@@ -137,16 +151,26 @@ architecture rtl of AXI4Lite_Register is
 	
 	signal outstanding_read  : std_logic := '0';
 	
+	attribute MARK_DEBUG : string;
+	attribute mark_debug of hit_r          : signal is ite(MARK_DEBUG, "true", "false");
+	attribute mark_debug of hit_w          : signal is ite(MARK_DEBUG, "true", "false");
+	attribute mark_debug of axi_awaddr     : signal is ite(MARK_DEBUG, "true", "false");
+	attribute mark_debug of axi_araddr     : signal is ite(MARK_DEBUG, "true", "false");
+	attribute mark_debug of S_AXI_IRQ      : signal is ite(MARK_DEBUG, "true", "false");
+	attribute mark_debug of Is_Interrupt   : signal is ite(MARK_DEBUG, "true", "false");
 begin
-	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
-	assert check_for_ADDR_conflicts report "AXI4Lite_Register Error: Addressconflict in Config!" severity failure;
-	assert not DEBUG report "========================== PoC.Axi4LiteRegister ==========================" severity note;
-	assert not DEBUG report "ADDR_LSB          = " & integer'image(ADDR_LSB)         severity note;
-	assert not DEBUG report "ADDRESS_BITS      = " & integer'image(ADDRESS_BITS)     severity note;
-	assert not DEBUG report "REG_ADDRESS_BITS  = " & integer'image(REG_ADDRESS_BITS) severity note;
-	assert not DEBUG report "Number of Configs = " & integer'image(Config'length)    severity note;
-	assert not DEBUG report print_CONFIG severity note;
-	assert not DEBUG report "=================== END of PoC.Axi4LiteRegister ==========================" severity note;
+	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "PoC.AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
+	assert check_for_ADDR_conflicts         report "PoC.AXI4Lite_Register Error: Addressconflict in Config!" severity failure;
+	assert not VERBOSE report "========================== PoC.Axi4LiteRegister ==========================" severity note;
+	assert not VERBOSE report "ADDR_LSB          = " & integer'image(ADDR_LSB)         severity note;
+	assert not VERBOSE report "ADDRESS_BITS      = " & integer'image(ADDRESS_BITS)     severity note;
+	assert not VERBOSE report "REG_ADDRESS_BITS  = " & integer'image(REG_ADDRESS_BITS) severity note;
+	assert not VERBOSE report "Number of Configs = " & integer'image(Config'length)    severity note;
+	assert not VERBOSE report print_CONFIG severity note;
+	assert not VERBOSE report "=================== END of PoC.Axi4LiteRegister ==========================" severity note;
+	
+	assert not DISABLE_ADDRESS_CHECK report "PoC.AXI4Lite_Register: Address-Check is Disabled!" severity critical;
+	assert not IGNORE_HIGH_ADDRESS   report "PoC.AXI4Lite_Register: High Address Bits are Ignored! This can cause overlapping of Registers!" severity critical;
 
 	
 	S_AXI_s2m.AWReady <= axi_awready;
@@ -369,7 +393,7 @@ begin
 	
 	
 	------------ Address Hit's ---------------------------
-	high_addr_gen : if (REG_ADDRESS_BITS >= ADDRESS_BITS) or (IGNORE_HIGH_ADDR = TRUE) generate
+	high_addr_gen : if (REG_ADDRESS_BITS >= ADDRESS_BITS) or (IGNORE_HIGH_ADDRESS = TRUE) generate
 		is_high_r <= '1';
 		is_high_w <= '1';
 	else generate
@@ -401,5 +425,32 @@ begin
 															or (CONFIG(i).rw_config = latchHighBit_clearOnWrite) or (CONFIG(i).rw_config = latchLowBit_clearOnWrite))
 												else '0';
 	end generate;
+	
+	Interrupt_gen : for i in Is_Interrupt'range generate
+		constant num : natural := Interrupt_range(i);
+	begin
+		process(Clock)
+		begin
+			case CONFIG(num).rw_config is
+				when readWriteable =>
+					Is_Interrupt(i) <= '0';
+				when readable =>
+					Is_Interrupt(i) <= '0';
+				when latchValue_clearOnRead =>
+					Is_Interrupt(i) <= latched(num);
+				when latchValue_clearOnWrite =>
+					Is_Interrupt(i) <= latched(num);
+				when latchHighBit_clearOnRead =>
+					Is_Interrupt(i) <= slv_or(RegisterFile(num));
+				when latchHighBit_clearOnWrite =>
+					Is_Interrupt(i) <= slv_or(RegisterFile(num));
+				when latchLowBit_clearOnRead =>
+					Is_Interrupt(i) <= not slv_and(RegisterFile(num));
+				when latchLowBit_clearOnWrite =>
+					Is_Interrupt(i) <= not slv_and(RegisterFile(num));
+			end case;
+		end process;
+	end generate;
+	S_AXI_IRQ <= slv_or(Is_Interrupt);
 	
 end architecture;
