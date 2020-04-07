@@ -198,7 +198,7 @@ package AXI4Lite is
 	                                        writeable : boolean; 
 	                                        Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
 	                                        Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0');
-																					Is_Interrupt_Register : boolean := false;
+																					Is_Interrupt_Register : boolean := false
 	                                    ) return T_AXI4_Register_Description;
 	
 	
@@ -207,7 +207,7 @@ package AXI4Lite is
 	                                        rw_config : T_ReadWrite_Config := readWriteable; 
 	                                        Init_Value : std_logic_vector(Data_Width -1 downto 0) := (others => '0'); 
 	                                        Auto_Clear_Mask : std_logic_vector(Data_Width -1 downto 0) := (others => '0');
-																					Is_Interrupt_Register : boolean := false;
+																					Is_Interrupt_Register : boolean := false
 	                                    ) return T_AXI4_Register_Description;
 	
 	
@@ -1050,7 +1050,7 @@ package body AXI4Lite is
 		variable temp : natural := 0;
 	begin
 		for i in Register_Vector'range loop
-			if Register_Vector.Is_Interrupt_Register then
+			if Register_Vector(i).Is_Interrupt_Register then
 				temp := temp +1;
 			end if;
 		end loop;
@@ -1062,7 +1062,7 @@ package body AXI4Lite is
 		variable count : natural := 0;
 	begin
 		for i in Register_Vector'range loop
-			if Register_Vector.Is_Interrupt_Register then
+			if Register_Vector(i).Is_Interrupt_Register then
 				temp(count) := i;
 				count       := count +1;
 			end if;

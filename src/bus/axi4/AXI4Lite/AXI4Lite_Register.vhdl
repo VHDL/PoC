@@ -38,11 +38,11 @@ use	    work.axi4lite.all;
 
 entity AXI4Lite_Register is
 	generic (
-		MARK_DEBUG                        : boolean := false;
-		VERBOSE                           : boolean := false;
-		IGNORE_HIGH_ADDRESS               : boolean := true;
-		DISABLE_ADDRESS_CHECK             : boolean := false;
-		INTERRUPT_ENABLE_REGISTER_ADDRESS : std_logic_vector := (31 downto 0 => 32x"0");
+		MARK_DEBUG_SIGNALS                : boolean  := false;
+		VERBOSE                           : boolean  := false;
+		IGNORE_HIGH_ADDRESS               : boolean  := true;
+		DISABLE_ADDRESS_CHECK             : boolean  := false;
+		INTERRUPT_ENABLE_REGISTER_ADDRESS : unsigned := (31 downto 0 => 32x"0");
 	 	CONFIG                            : T_AXI4_Register_Description_Vector
 	);
 	port (
@@ -85,7 +85,7 @@ architecture rtl of AXI4Lite_Register is
 		if not DISABLE_ADDRESS_CHECK then
 			for i in CONFIG'low to CONFIG'high -1 loop
 				if NUMBER_INTERRUPT_REGISTERS > 0 then
-					if addr = INTERRUPT_ENABLE_REGISTER_ADDRESS then
+					if addr = INTERRUPT_ENABLE_REGISTER_ADDRESS(REG_ADDRESS_BITS downto ADDR_LSB) then
 						report "PoC.AXI4Lite_Register Error: Addressconflict in Config: CONFIG(" & integer'image(i) & ") and INTERRUPT_ENABLE_REGISTER_ADDRESS are equal!" severity failure;
 						return false;
 					end if;
@@ -152,12 +152,12 @@ architecture rtl of AXI4Lite_Register is
 	signal outstanding_read  : std_logic := '0';
 	
 	attribute MARK_DEBUG : string;
-	attribute mark_debug of hit_r          : signal is ite(MARK_DEBUG, "true", "false");
-	attribute mark_debug of hit_w          : signal is ite(MARK_DEBUG, "true", "false");
-	attribute mark_debug of axi_awaddr     : signal is ite(MARK_DEBUG, "true", "false");
-	attribute mark_debug of axi_araddr     : signal is ite(MARK_DEBUG, "true", "false");
-	attribute mark_debug of S_AXI_IRQ      : signal is ite(MARK_DEBUG, "true", "false");
-	attribute mark_debug of Is_Interrupt   : signal is ite(MARK_DEBUG, "true", "false");
+	attribute mark_debug of hit_r          : signal is ite(MARK_DEBUG_SIGNALS, "true", "false");
+	attribute mark_debug of hit_w          : signal is ite(MARK_DEBUG_SIGNALS, "true", "false");
+	attribute mark_debug of axi_awaddr     : signal is ite(MARK_DEBUG_SIGNALS, "true", "false");
+	attribute mark_debug of axi_araddr     : signal is ite(MARK_DEBUG_SIGNALS, "true", "false");
+	attribute mark_debug of S_AXI_IRQ      : signal is ite(MARK_DEBUG_SIGNALS, "true", "false");
+	attribute mark_debug of Is_Interrupt   : signal is ite(MARK_DEBUG_SIGNALS, "true", "false");
 begin
 	assert ADDRESS_BITS >= REG_ADDRESS_BITS report "PoC.AXI4Lite_Register Error: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
 	assert check_for_ADDR_conflicts         report "PoC.AXI4Lite_Register Error: Addressconflict in Config!" severity failure;
@@ -169,8 +169,8 @@ begin
 	assert not VERBOSE report print_CONFIG severity note;
 	assert not VERBOSE report "=================== END of PoC.Axi4LiteRegister ==========================" severity note;
 	
-	assert not DISABLE_ADDRESS_CHECK report "PoC.AXI4Lite_Register: Address-Check is Disabled!" severity critical;
-	assert not IGNORE_HIGH_ADDRESS   report "PoC.AXI4Lite_Register: High Address Bits are Ignored! This can cause overlapping of Registers!" severity critical;
+	assert not DISABLE_ADDRESS_CHECK report "PoC.AXI4Lite_Register: Address-Check is Disabled!" severity warning;
+	assert not IGNORE_HIGH_ADDRESS   report "PoC.AXI4Lite_Register: High Address Bits are Ignored! This can cause overlapping of Registers!" severity warning;
 
 	
 	S_AXI_s2m.AWReady <= axi_awready;
