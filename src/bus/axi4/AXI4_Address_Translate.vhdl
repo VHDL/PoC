@@ -86,27 +86,43 @@ architecture rtl of AXI4_Address_Translate is
 	constant IF_high        : positive := mssb_idx(Interface_Mask);
 	constant IF_low         : positive := lssb_idx(Interface_Mask);
 	
-	signal IF_Addres        : std_logic_vector(IF_high - IF_low downto 0);
+--	signal IF_Addres        : std_logic_vector(IF_high - IF_low downto 0);
 --	signal IF_Addres_d      : std_logic_vector(IF_high - IF_low downto 0) := (others => '0');
 --	signal IF_Addres_fe     : std_logic;
 	
 	signal Match_IF         : std_logic_vector(0 to Number_of_Interfaces -1);
 	signal address          : T_SLUV(0 to Number_of_Interfaces -1)(Offset_Bits downto 0);
 	
+	alias In_AWAddress_Buffer  : std_logic_vector(Buffer_high -Buffer_low downto 0) is In_AXI4_M2S.AWAddr(Buffer_high downto Buffer_low);
+	alias In_AWAddress_IF      : std_logic_vector(IF_high -IF_low downto 0)         is In_AXI4_M2S.AWAddr(IF_high downto IF_low);
+	alias In_AWAddress_Data    : std_logic_vector(Address_Bits -1 downto 0)         is In_AXI4_M2S.AWAddr(Address_Bits -1 downto 0);
+	alias In_AWValid           : std_logic                                          is In_AXI4_M2S.AWValid;
+	alias In_AWReady           : std_logic                                          is In_AXI4_S2M.AWReady;
+	
+	signal In_AWAddress_Data_d : std_logic_vector(Address_Bits -1 downto 0) := (others => '0');
+--	alias Out_AWAddress_Buffer : std_logic_vector(Buffer_high -Buffer_low downto 0) is Out_AXI4_M2S.AWAddr(Buffer_high downto Buffer_low);
+--	alias Out_AWAddress_IF     : std_logic_vector(IF_high -IF_low downto 0)         is Out_AXI4_M2S.AWAddr(IF_high downto IF_low);
+--	alias Out_AWAddress_Data   : std_logic_vector(Address_Bits -1 downto 0)         is Out_AXI4_M2S.AWAddr(Address_Bits -1 downto 0);
+	alias Out_AWValid          : std_logic                                          is Out_AXI4_M2S.AWValid;
+	alias Out_AWReady          : std_logic                                          is Out_AXI4_S2M.AWReady;
+	
+	signal Out_AWValid_d       : std_logic_vector(3 downto 0) := (others => '0');
 	signal Is_AW            : std_logic;
 	attribute MARK_DEBUG of Match_IF: signal is "TRUE";
 --	attribute MARK_DEBUG of address: signal is "TRUE";
 --	attribute MARK_DEBUG of Is_AW: signal is "TRUE";
 begin
-	Is_AW            <= In_AXI4_M2S.AWValid and Out_AXI4_S2M.AWReady;
+	Is_AW            <= In_AWValid and Out_AWReady;
 	
-	IF_Addres        <= In_AXI4_M2S.AWAddr(IF_high downto IF_low);
+	In_AWAddress_Data_d <= In_AWAddress_Data when rising_edge(Clock);
+	Out_AWValid_d    <= Out_AWValid_d(Out_AWValid_d'high -1 downto 0) & In_AWValid when rising_edge(Clock);
+--	IF_Addres        <= In_AXI4_M2S.AWAddr(IF_high downto IF_low);
 --	IF_Addres_d      <= IF_Addres when rising_edge(Clock) and Is_AW = '1';
 --	IF_Addres_fe     <= '1' when IF_Addres /= IF_Addres_d else '0';
 	
 	
 	--Write Port Signals
-	Out_AXI4_M2S.AWValid     <= In_AXI4_M2S.AWValid ;
+	Out_AXI4_M2S.AWValid     <= Out_AWValid_d(Out_AWValid_d'high);
 	Out_AXI4_M2S.AWAddr      <= resize(std_logic_vector(address(lssb_idx(Match_IF))), Out_AXI4_M2S.AWAddr'length) when rising_edge(Clock);
 	Out_AXI4_M2S.AWID        <= In_AXI4_M2S.AWID    ;
 	Out_AXI4_M2S.AWLen       <= In_AXI4_M2S.AWLen   ;
@@ -158,20 +174,29 @@ begin
 	Adder_gen : for i in 0 to Number_of_Interfaces -1 generate
 		signal Offset_i         : T_SLUV(0 to Max_Offsets -1)(Offset_Bits -1 downto 0);
 		signal position         : unsigned(log2ceilnz(Max_Offsets) -1 downto 0) := (others => '0');
-		signal Buffer_Addres    : std_logic_vector(Buffer_high - Buffer_low downto 0);
 		signal Buffer_Addres_d  : std_logic_vector(Buffer_high - Buffer_low downto 0) := (others => '0');
 		signal Buffer_Addres_fe : std_logic;
+		
+		signal Match_IF_i       : std_logic;
+		signal Match_IF_d       : std_logic_vector(3 downto 0) := (others => '0');
+		
 		attribute MARK_DEBUG of position: signal is "TRUE";
 		attribute MARK_DEBUG of Buffer_Addres_fe: signal is "TRUE";
 	begin
-		Match_IF(i)   <= '1' when unsigned(IF_Addres) = to_unsigned(i +1, IF_high - IF_low +1) else '0';
+		Match_IF_i   <= '1' when unsigned(In_AWAddress_IF) = to_unsigned(i +1, IF_high - IF_low +1) else '0';
+		Match_IF_d   <= Match_IF_d(Match_IF_d'high -1 downto 0) & Match_IF_i when rising_edge(Clock);
+		Match_IF(i)  <= Match_IF_d(Match_IF_d'high);
+		
 		Offset_Pos(i) <= position;
 		Offset_i      <= Offset((i * Max_Offsets) to ((i + 1) * Max_Offsets) -1) when rising_edge(Clock);
-		address(i)    <= unsigned(resize(In_AXI4_M2S.AWAddr(Address_Bits -1 downto 0), Offset_Bits +1)) + unsigned('0' & std_logic_vector(Offset_i(to_integer(position)))) when rising_edge(Clock);
 
-		Buffer_Addres    <= In_AXI4_M2S.AWAddr(Buffer_high downto Buffer_low);
-		Buffer_Addres_d  <= Buffer_Addres when rising_edge(Clock) and Is_AW = '1';
-		Buffer_Addres_fe <= '1' when Buffer_Addres /= Buffer_Addres_d else '0';
+
+		address(i)    <= unsigned(resize(In_AWAddress_Data_d, Offset_Bits +1)) + unsigned('0' & std_logic_vector(Offset_i(to_integer(position)))) when rising_edge(Clock) and Match_IF_d(1) = '1';
+
+
+
+		Buffer_Addres_d  <= In_AWAddress_Buffer when rising_edge(Clock) and Is_AW = '1' and Match_IF(i) = '1';
+		Buffer_Addres_fe <= Match_IF(i) when In_AWAddress_Buffer /= Buffer_Addres_d else '0';
 
 		process(Clock)
 		begin
