@@ -94,7 +94,7 @@ architecture rtl of AXI4_Address_Translate is
 	signal address          : T_SLUV(0 to Number_of_Interfaces -1)(Offset_Bits downto 0);
 	
 	signal Is_AW            : std_logic;
---	attribute MARK_DEBUG of Match_IF: signal is "TRUE";
+	attribute MARK_DEBUG of Match_IF: signal is "TRUE";
 --	attribute MARK_DEBUG of address: signal is "TRUE";
 --	attribute MARK_DEBUG of Is_AW: signal is "TRUE";
 begin
@@ -107,7 +107,7 @@ begin
 	
 	--Write Port Signals
 	Out_AXI4_M2S.AWValid     <= In_AXI4_M2S.AWValid ;
-	Out_AXI4_M2S.AWAddr      <= resize(std_logic_vector(address(lssb_idx(Match_IF))), Out_AXI4_M2S.AWAddr'length);
+	Out_AXI4_M2S.AWAddr      <= resize(std_logic_vector(address(lssb_idx(Match_IF))), Out_AXI4_M2S.AWAddr'length) when rising_edge(Clock);
 	Out_AXI4_M2S.AWID        <= In_AXI4_M2S.AWID    ;
 	Out_AXI4_M2S.AWLen       <= In_AXI4_M2S.AWLen   ;
 	Out_AXI4_M2S.AWSize      <= In_AXI4_M2S.AWSize  ;
@@ -161,11 +161,13 @@ begin
 		signal Buffer_Addres    : std_logic_vector(Buffer_high - Buffer_low downto 0);
 		signal Buffer_Addres_d  : std_logic_vector(Buffer_high - Buffer_low downto 0) := (others => '0');
 		signal Buffer_Addres_fe : std_logic;
+		attribute MARK_DEBUG of position: signal is "TRUE";
+		attribute MARK_DEBUG of Buffer_Addres_fe: signal is "TRUE";
 	begin
 		Match_IF(i)   <= '1' when unsigned(IF_Addres) = to_unsigned(i +1, IF_high - IF_low +1) else '0';
 		Offset_Pos(i) <= position;
 		Offset_i      <= Offset((i * Max_Offsets) to ((i + 1) * Max_Offsets) -1) when rising_edge(Clock);
-		address(i)    <= unsigned(resize(In_AXI4_M2S.AWAddr(Address_Bits -1 downto 0), Offset_Bits +1)) + unsigned('0' & std_logic_vector(Offset_i(to_integer(position))));
+		address(i)    <= unsigned(resize(In_AXI4_M2S.AWAddr(Address_Bits -1 downto 0), Offset_Bits +1)) + unsigned('0' & std_logic_vector(Offset_i(to_integer(position)))) when rising_edge(Clock);
 
 		Buffer_Addres    <= In_AXI4_M2S.AWAddr(Buffer_high downto Buffer_low);
 		Buffer_Addres_d  <= Buffer_Addres when rising_edge(Clock) and Is_AW = '1';
