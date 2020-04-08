@@ -164,7 +164,7 @@ begin
 	begin
 		Match_IF(i)   <= '1' when unsigned(IF_Addres) = to_unsigned(i +1, IF_high - IF_low +1) else '0';
 		Offset_Pos(i) <= position;
-		Offset_i      <= Offset((i * Max_Offsets) to ((i + 1) * Max_Offsets) -1);
+		Offset_i      <= Offset((i * Max_Offsets) to ((i + 1) * Max_Offsets) -1) when rising_edge(Clock);
 		address(i)    <= unsigned(resize(In_AXI4_M2S.AWAddr(Address_Bits -1 downto 0), Offset_Bits +1)) + unsigned('0' & std_logic_vector(Offset_i(to_integer(position))));
 
 		Buffer_Addres    <= In_AXI4_M2S.AWAddr(Buffer_high downto Buffer_low);
