@@ -99,7 +99,7 @@ package vectors is
 	type T_DATA_BE_VECTOR is array(natural range <>) of T_DATA_BE;
 
 	-- STD_LOGIC_VECTOR_VECTORs
-  	type		T_SLVV							is array(NATURAL range <>) of STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	type		T_SLVV							is array(NATURAL range <>) of STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	type		T_SLVV_2						is array(natural range <>) of T_SLV_2;
 	type		T_SLVV_3						is array(natural range <>) of T_SLV_3;
 	type		T_SLVV_4						is array(natural range <>) of T_SLV_4;
@@ -114,7 +114,7 @@ package vectors is
 	type		T_SLVV_256					is array(natural range <>) of T_SLV_256;
 	type		T_SLVV_512					is array(natural range <>) of T_SLV_512;
 	-- UNSIGNED_VECTORs
-  	type		T_SLUV							is array(NATURAL range <>) of UNSIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	type		T_SLUV							is array(NATURAL range <>) of UNSIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	type		T_SLUV_2						is array(natural range <>) of T_SLU_2;
 	type		T_SLUV_3						is array(natural range <>) of T_SLU_3;
 	type		T_SLUV_4						is array(natural range <>) of T_SLU_4;
@@ -129,7 +129,7 @@ package vectors is
 	type		T_SLUV_256					is array(natural range <>) of T_SLU_256;
 	type		T_SLUV_512					is array(natural range <>) of T_SLU_512;
 	-- SIGNED_VECTORs
-  	type		T_SLSV							is array(NATURAL range <>) of SIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	type		T_SLSV							is array(NATURAL range <>) of SIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	type		T_SLSV_2						is array(natural range <>) of T_SLS_2;
 	type		T_SLSV_3						is array(natural range <>) of T_SLS_3;
 	type		T_SLSV_4						is array(natural range <>) of T_SLS_4;
@@ -145,11 +145,7 @@ package vectors is
 	type		T_SLSV_512					is array(natural range <>) of T_SLS_512;
 
 	-- STD_LOGIC_MATRIXs
-	type		T_SLM								is array(natural range <>, natural range <>) of std_logic;
-	
-	-- STD_LOGIC_3D_MATRIXs
-	type		T_SLM_8								is array(natural range <>, natural range <>) of T_SLV_8;
-	type		T_SLM_32								is array(natural range <>, natural range <>) of T_SLV_32;
+	type    T_SLM               is array(natural range <>, natural range <>) of std_logic;
 	-- ATTENTION:
 	-- 1. you MUST initialize your matrix signal with 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 	--    Example: signal myMatrix  : T_SLM(3 downto 0, 7 downto 0)      := (others => (others => 'Z'));
@@ -161,31 +157,22 @@ package vectors is
 	--  dimension 2 => columns    - e.g. Bits/Bytes in a word
 	--
 	-- WORKAROUND: for Xilinx ISE/iSim
-	--  Version:	14.2
-	--  Issue:		myMatrix'range(n) for n >= 2 returns always myMatrix'range(1)
+	--  Version:  14.2
+	--  Issue:    myMatrix'range(n) for n >= 2 returns always myMatrix'range(1)
 
-  -- ==========================================================================
-  -- Function declarations
-  -- ==========================================================================
-  -- slicing boundary calculations
-  function low (lenvec : T_POSVEC; index : natural) return natural;
-  function low (lenvec : T_NATVEC; index : natural) return natural;
-  function high(lenvec : T_POSVEC; index : natural) return natural;
-  function high(lenvec : T_NATVEC; index : natural) return natural;
-	
-	-- Make vector of constant
-	function mk_const(const : std_logic; 	length : natural) return std_logic_vector;
-	function mk_const(const : T_SLV_8; 		length : natural) return T_SLVV_8;
+	-- ==========================================================================
+	-- Function declarations
+	-- ==========================================================================
+	-- slicing boundary calulations
+	function low (lenvec : T_POSVEC; index : natural) return natural;
+	function high(lenvec : T_POSVEC; index : natural) return natural;
 
 	-- Assign procedures: assign_*
-	procedure assign_row(signal slm : out T_SLM		; slv : std_logic_vector; constant RowIndex : natural);																	-- assign vector to complete row
-	procedure assign_row(signal slm : out T_SLM_8	; slv : T_SLVV_8				; constant RowIndex : natural);																	-- assign vector to complete row
-	procedure assign_row(signal slm : out T_SLM_32; slv : T_SLVV_32				; constant RowIndex : natural);																	-- assign vector to complete row
-	procedure assign_row(signal slm : out T_SLM		; slv : std_logic_vector; constant RowIndex : natural; Position : natural);							-- assign short vector to row starting at position
-	procedure assign_row(signal slm : out T_SLM		; slv : std_logic_vector; constant RowIndex : natural; High : natural; Low : natural);		-- assign short vector to row in range high:low
-	procedure assign_row(signal slm : out T_SLM_8	; slv : T_SLVV_8				; constant RowIndex : natural; High : natural; Low : natural);		-- assign short vector to row in range high:low
-	procedure assign_col(signal slm : out T_SLM		; slv : std_logic_vector; constant ColIndex : natural);																	-- assign vector to complete column
-	-- ATTENTION:	see T_SLM definition for further details and work-arounds
+	procedure assign_row(signal slm : out T_SLM; slv : std_logic_vector; constant RowIndex : natural);                                  -- assign vector to complete row
+	procedure assign_row(signal slm : out T_SLM; slv : std_logic_vector; constant RowIndex : natural; Position : natural);              -- assign short vector to row starting at position
+	procedure assign_row(signal slm : out T_SLM; slv : std_logic_vector; constant RowIndex : natural; High : natural; Low : natural);   -- assign short vector to row in range high:low
+	procedure assign_col(signal slm : out T_SLM; slv : std_logic_vector; constant ColIndex : natural);                                  -- assign vector to complete column
+	-- ATTENTION: see T_SLM definition for further details and work-arounds
 
 	-- Matrix to matrix conversion: slm_slice*
 	function slm_slice(slm : T_SLM; RowIndex : natural; ColIndex : natural; Height : natural; Width : natural) return T_SLM;            -- get submatrix in boundingbox RowIndex,ColIndex,Height,Width
@@ -206,12 +193,10 @@ package vectors is
 	function slm_merge_cols(slm1 : T_SLM; slm2 : T_SLM) return T_SLM;
 
 	-- Matrix to vector conversion: get_*
-	function get_col(slm 		: T_SLM		; ColIndex : natural) return std_logic_vector;																	-- get a matrix column
-	function get_row(slm 		: T_SLM		; RowIndex : natural) return std_logic_vector;																	-- get a matrix row
-	function get_row(slm 		: T_SLM_8	; RowIndex : natural) return T_SLVV_8;																	-- get a matrix row
-	function get_row(slm 		: T_SLM_32  ; RowIndex : natural) return T_SLVV_32;																	-- get a matrix row
-	function get_row(slm 		: T_SLM		; RowIndex : natural; Length : positive) return std_logic_vector;							-- get a matrix row of defined length [length - 1 downto 0]
-	function get_row(slm 		: T_SLM		; RowIndex : natural; High : natural; Low : natural) return std_logic_vector;		-- get a sub vector of a matrix row at high:low
+	function get_col(slm : T_SLM; ColIndex : natural) return std_logic_vector;                                  -- get a matrix column
+	function get_row(slm : T_SLM; RowIndex : natural) return std_logic_vector;                                  -- get a matrix row
+	function get_row(slm : T_SLM; RowIndex : natural; Length : positive)  return std_logic_vector;              -- get a matrix row of defined length [length - 1 downto 0]
+	function get_row(slm : T_SLM; RowIndex : natural; High : natural; Low : natural) return std_logic_vector;   -- get a sub vector of a matrix row at high:low
 
 	-- Convert to vector: to_slv
 	function to_slv(slvv : T_SLVV)                return std_logic_vector;                -- convert vector-vector to flatten vector
@@ -238,7 +223,7 @@ package vectors is
 	function to_slvv_128(slv : std_logic_vector)  return T_SLVV_128;                      --
 	function to_slvv_256(slv : std_logic_vector)  return T_SLVV_256;                      --
 	function to_slvv_512(slv : std_logic_vector)  return T_SLVV_512;                      --
---	function to_sluv_64(slv : std_logic_vector)   return T_SLUV_64;                       --
+	function to_sluv_64(slv : std_logic_vector)   return T_SLUV_64;                       --
 
 	-- Convert matrix to avector-vector: to_slvv_*
 	function to_slvv(slm : T_SLM)     return T_SLVV;                                      --
