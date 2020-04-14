@@ -35,7 +35,7 @@ use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.vectors.all;
-use     work.axi4_full.all;
+use     work.axi4_Full.all;
 
 
 entity AXI4_Sink_Slave is

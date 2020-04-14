@@ -840,6 +840,7 @@ package net is
 	constant C_NET_TCP_PORTNUMBER_FTP_CONTROL					: T_NET_TCP_PORT		:= x"0015";		-- FTP Protocol (21) - RFC 765
 
 	constant C_NET_TCP_PORTNUMBER_LOOPBACK						: T_NET_TCP_PORT		:= x"FFFF";
+	constant C_NET_UDP_PORTNUMBER_UNUSED  						: T_NET_UDP_PORT		:= x"FFFF";
 
 end package;
 

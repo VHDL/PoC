@@ -34,7 +34,7 @@ use			IEEE.numeric_std.all;
 use			work.utils.all;
 use			work.vectors.all;
 use			work.components.all;
-use			work.axi4Lite.all;
+use			work.axi4_Full.all;
 use			work.axi4_Common.all;
 
 
@@ -82,7 +82,7 @@ architecture rtl of AXI4_FIFO is
   constant Burst_POS      : natural := 7;
   constant Lock_POS       : natural := 8;
   constant QoS_POS        : natural := 9;
-  constant      : natural := 10;
+  constant Region_POS     : natural := 10;
   
 	--Data-Only
   constant Data_POS       : natural := 3;
@@ -92,18 +92,18 @@ architecture rtl of AXI4_FIFO is
 	--Ready/Write-Response-Only
   constant Resp_POS       : natural := 2;
 	
-  constant Addr_BIT_VEC   : POS_VEC := (ID_POS => ID_BITS, User_POS => USER_BITS, Addr_POS => Address_BITS, 
+  constant Addr_BIT_VEC   : T_POSVEC := (ID_POS => ID_BITS, User_POS => USER_BITS, Addr_POS => Address_BITS, 
 	                                      Cache_POS => CACHE_BITS, Protect_POS => PROTECT_BITS, Len_POS => LEN_BITS,
 																				Size_POS => SIZE_BITS, Burst_POS => BURST_BITS, Lock_POS => LOCK_BITS,
 																				QoS_POS => QOS_BITS, Region_POS => REGION_BITS
 																			);
-  constant W_BIT_VEC      : POS_VEC := (User_POS => USER_BITS, Strobe_POS => STRB_BITS, Data_POS => Data_BITS
+  constant W_BIT_VEC      : T_POSVEC := (User_POS => USER_BITS, Strobe_POS => STRB_BITS, Data_POS => Data_BITS,
 	                                      Last_POS => LAST_BITS
 																				);
-  constant R_BIT_VEC      : POS_VEC := (ID_POS => ID_BITS, User_POS => USER_BITS, Resp_POS => RESPONSE_BITS, 
+  constant R_BIT_VEC      : T_POSVEC := (ID_POS => ID_BITS, User_POS => USER_BITS, Resp_POS => RESPONSE_BITS, 
 	                                      Data_POS => Data_BITS, Last_POS => LAST_BITS
 	                                      );
-  constant B_BIT_VEC      : POS_VEC := (ID_POS => ID_BITS, User_POS => USER_BITS, Resp_POS => RESPONSE_BITS);
+  constant B_BIT_VEC      : T_POSVEC := (ID_POS => ID_BITS, User_POS => USER_BITS, Resp_POS => RESPONSE_BITS);
       
   constant AW_POS         : natural := 0;
   constant AR_POS         : natural := 1;
@@ -111,7 +111,7 @@ architecture rtl of AXI4_FIFO is
   constant R_POS          : natural := 3;
   constant B_POS          : natural := 4;
                           
-  constant BIT_VEC        : POS_VEC := (
+  constant BIT_VEC        : T_POSVEC := (
       AW_POS => isum(Addr_BIT_VEC),
       AR_POS => isum(Addr_BIT_VEC),
       W_POS  => isum(W_BIT_VEC),
@@ -157,187 +157,185 @@ begin
   
   -----INPUT
   --AW IN Interface
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Addr_POS)) downto 
-                    low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Addr_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Addr_POS) downto 
+                    low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Addr_POS)) 
     <= In_M2S.AWAddr;  
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Cache_POS)) downto 
-                    low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Cache_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Cache_POS) downto 
+                    low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Cache_POS)) 
     <= In_M2S.AWCache;
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Protect_POS)) downto 
-                    low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Protect_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Protect_POS) downto 
+                    low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Protect_POS)) 
     <= In_M2S.AWProt;
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(ID_POS)) downto 
-                    low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(ID_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,ID_POS) downto 
+                    low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,ID_POS)) 
     <= In_M2S.AWID;
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(LEN_POS)) downto 
-                    low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(LEN_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Len_POS) downto 
+                    low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Len_POS)) 
     <= In_M2S.AWLen;
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(SIZE_POS)) downto 
-                    low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(SIZE_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Size_POS) downto 
+                    low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Size_POS)) 
     <= In_M2S.AWSize;
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(BURST_POS)) downto 
-                    low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(BURST_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Burst_POS) downto 
+                    low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Burst_POS)) 
     <= In_M2S.AWBurst;
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Lock_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Lock_POS)) 
     <= In_M2S.AWLock(0);
 		
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Qos_POS)) downto 
-                    low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(QOS_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,QoS_POS) downto 
+                    low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,QoS_POS)) 
     <= In_M2S.AWQoS;
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Region_POS)) downto 
-                    low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Region_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Region_POS) downto 
+                    low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Region_POS)) 
     <= In_M2S.AWRegion;
-  DataFIFO_DataIn(  low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(User_POS)) downto 
-                    low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(User_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,User_POS) downto 
+                    low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,User_POS)) 
     <= In_M2S.AWUser;
   --AR IN Interface
-  DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Addr_POS)) downto 
-                    low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Addr_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Addr_POS) downto 
+                    low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Addr_POS)) 
     <= In_M2S.ARAddr;  
-  DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Cache_POS)) downto 
-                    low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Cache_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Cache_POS) downto 
+                    low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Cache_POS)) 
     <= In_M2S.ARCache;
-  DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Protect_POS)) downto 
-                    low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Protect_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Protect_POS) downto 
+                    low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Protect_POS)) 
     <= In_M2S.ARProt;
-	DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(ID_POS)) downto 
-                    low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(ID_POS))) 
+	DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,ID_POS) downto 
+                    low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,ID_POS)) 
     <= In_M2S.ARID;
-  DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(LEN_POS)) downto 
-                    low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(LEN_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Len_POS) downto 
+                    low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Len_POS)) 
     <= In_M2S.ARLen;
-  DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(SIZE_POS)) downto 
-                    low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(SIZE_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Size_POS) downto 
+                    low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Size_POS)) 
     <= In_M2S.ARSize;
-  DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(BURST_POS)) downto 
-                    low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(BURST_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Burst_POS) downto 
+                    low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Burst_POS)) 
     <= In_M2S.ARBurst;
-  DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Lock_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Lock_POS)) 
     <= In_M2S.ARLock(0);
 		
-  DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Qos_POS)) downto 
-                    low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(QOS_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,QoS_POS) downto 
+                    low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,QoS_POS)) 
     <= In_M2S.ARQoS;
-  DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Region_POS)) downto 
-                    low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Region_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Region_POS) downto 
+                    low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Region_POS)) 
     <= In_M2S.ARRegion;
-  DataFIFO_DataIn(  low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(User_POS)) downto 
-                    low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(User_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,User_POS) downto 
+                    low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,User_POS)) 
     <= In_M2S.ARUser;
   --W IN Interface
-  DataFIFO_DataIn(  low(BIT_VEC(W_POS)) + high(W_BIT_VEC(Data_POS)) downto 
-                    low(BIT_VEC(W_POS)) + low(W_BIT_VEC(Data_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,W_POS) + high(W_BIT_VEC,Data_POS) downto 
+                    low(BIT_VEC,W_POS) + low(W_BIT_VEC,Data_POS)) 
     <= In_M2S.WData;
-  DataFIFO_DataIn(  low(BIT_VEC(W_POS)) + high(W_BIT_VEC(Strobe_POS)) downto 
-                    low(BIT_VEC(W_POS)) + low(W_BIT_VEC(Strobe_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,W_POS) + high(W_BIT_VEC,Strobe_POS) downto 
+                    low(BIT_VEC,W_POS) + low(W_BIT_VEC,Strobe_POS)) 
     <= In_M2S.WStrb;
-  DataFIFO_DataIn(  low(BIT_VEC(W_POS)) + high(W_BIT_VEC(User_POS)) downto 
-                    low(BIT_VEC(W_POS)) + low(W_BIT_VEC(User_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,W_POS) + high(W_BIT_VEC,User_POS) downto 
+                    low(BIT_VEC,W_POS) + low(W_BIT_VEC,User_POS)) 
     <= In_M2S.WUser;
-  DataFIFO_DataIn(  low(BIT_VEC(W_POS)) + high(W_BIT_VEC(Last_POS)) downto 
-                    low(BIT_VEC(W_POS)) + low(W_BIT_VEC(Last_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,W_POS) + low(W_BIT_VEC,Last_POS)) 
     <= In_M2S.WLast;
   --R IN Interface
-  DataFIFO_DataIn(  low(BIT_VEC(R_POS)) + high(R_BIT_VEC(Data_POS)) downto 
-                    low(BIT_VEC(R_POS)) + low(R_BIT_VEC(Data_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,R_POS) + high(R_BIT_VEC,Data_POS) downto 
+                    low(BIT_VEC,R_POS) + low(R_BIT_VEC,Data_POS)) 
     <= Out_S2M.RData;
-  DataFIFO_DataIn(  low(BIT_VEC(R_POS)) + high(R_BIT_VEC(Resp_POS)) downto 
-                    low(BIT_VEC(R_POS)) + low(R_BIT_VEC(Resp_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,R_POS) + high(R_BIT_VEC,Resp_POS) downto 
+                    low(BIT_VEC,R_POS) + low(R_BIT_VEC,Resp_POS)) 
     <= Out_S2M.RResp;
-  DataFIFO_DataIn(  low(BIT_VEC(R_POS)) + high(R_BIT_VEC(ID_POS)) downto 
-                    low(BIT_VEC(R_POS)) + low(R_BIT_VEC(ID_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,R_POS) + high(R_BIT_VEC,ID_POS) downto 
+                    low(BIT_VEC,R_POS) + low(R_BIT_VEC,ID_POS)) 
     <= Out_S2M.RID;
-  DataFIFO_DataIn(  low(BIT_VEC(R_POS)) + high(R_BIT_VEC(User_POS)) downto 
-                    low(BIT_VEC(R_POS)) + low(R_BIT_VEC(User_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,R_POS) + high(R_BIT_VEC,User_POS) downto 
+                    low(BIT_VEC,R_POS) + low(R_BIT_VEC,User_POS)) 
     <= Out_S2M.RUser;
-  DataFIFO_DataIn(  low(BIT_VEC(R_POS)) + high(R_BIT_VEC(Last_POS)) downto 
-                    low(BIT_VEC(R_POS)) + low(R_BIT_VEC(Last_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,R_POS) + low(R_BIT_VEC,Last_POS)) 
     <= Out_S2M.RLast;
   --B IN Interface
-  DataFIFO_DataIn(  low(BIT_VEC(B_POS)) + high(R_BIT_VEC(Resp_POS)) downto 
-                    low(BIT_VEC(B_POS)) + low(R_BIT_VEC(Resp_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,B_POS) + high(R_BIT_VEC,Resp_POS) downto 
+                    low(BIT_VEC,B_POS) + low(R_BIT_VEC,Resp_POS)) 
     <= Out_S2M.BResp; 
-  DataFIFO_DataIn(  low(BIT_VEC(B_POS)) + high(R_BIT_VEC(ID_POS)) downto 
-                    low(BIT_VEC(B_POS)) + low(R_BIT_VEC(ID_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,B_POS) + high(R_BIT_VEC,ID_POS) downto 
+                    low(BIT_VEC,B_POS) + low(R_BIT_VEC,ID_POS)) 
     <= Out_S2M.BID; 
-  DataFIFO_DataIn(  low(BIT_VEC(B_POS)) + high(R_BIT_VEC(User_POS)) downto 
-                    low(BIT_VEC(B_POS)) + low(R_BIT_VEC(User_POS))) 
+  DataFIFO_DataIn(  low(BIT_VEC,B_POS) + high(R_BIT_VEC,User_POS) downto 
+                    low(BIT_VEC,B_POS) + low(R_BIT_VEC,User_POS)) 
     <= Out_S2M.BUser;  
 
   ----OUTPUT
   --AW Out Interface
-  Out_M2S.AWAddr <= DataFIFO_DataOut( low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Addr_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Addr_POS)));
-  Out_M2S.AWCache <= DataFIFO_DataOut(low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Cache_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Cache_POS))); 
-  Out_M2S.AWProt <= DataFIFO_DataOut( low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Protect_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Protect_POS))); 
-  Out_M2S.AWID <= DataFIFO_DataOut( low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(ID_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(ID_POS))); 
-  Out_M2S.AWLen <= DataFIFO_DataOut( low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Len_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Len_POS))); 
-  Out_M2S.AWSize <= DataFIFO_DataOut( low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Size_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Size_POS))); 
-  Out_M2S.AWBurst <= DataFIFO_DataOut( low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Burst_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Burst_POS)));
-  Out_M2S.AWLock <= DataFIFO_DataOut( low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Lock_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Lock_POS))); 
-  Out_M2S.AWQoS <= DataFIFO_DataOut( low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(QoS_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(QoS_POS))); 
-  Out_M2S.AWRegion <= DataFIFO_DataOut( low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(Region_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(Region_POS))); 
-  Out_M2S.AWUser <= DataFIFO_DataOut( low(BIT_VEC(AW_POS)) + high(Addr_BIT_VEC(User_POS)) downto 
-                                      low(BIT_VEC(AW_POS)) + low(Addr_BIT_VEC(User_POS))); 
+  Out_M2S.AWAddr <= DataFIFO_DataOut( low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Addr_POS) downto 
+                                      low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Addr_POS));
+  Out_M2S.AWCache <= DataFIFO_DataOut(low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Cache_POS) downto 
+                                      low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Cache_POS)); 
+  Out_M2S.AWProt <= DataFIFO_DataOut( low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Protect_POS) downto 
+                                      low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Protect_POS)); 
+  Out_M2S.AWID <= DataFIFO_DataOut( low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,ID_POS) downto 
+                                      low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,ID_POS)); 
+  Out_M2S.AWLen <= DataFIFO_DataOut( low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Len_POS) downto 
+                                      low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Len_POS)); 
+  Out_M2S.AWSize <= DataFIFO_DataOut( low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Size_POS) downto 
+                                      low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Size_POS)); 
+  Out_M2S.AWBurst <= DataFIFO_DataOut( low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Burst_POS) downto 
+                                      low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Burst_POS));
+  Out_M2S.AWLock(0) <= DataFIFO_DataOut( low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Lock_POS));
+   
+  Out_M2S.AWQoS <= DataFIFO_DataOut( low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,QoS_POS) downto 
+                                      low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,QoS_POS)); 
+  Out_M2S.AWRegion <= DataFIFO_DataOut( low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,Region_POS) downto 
+                                      low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,Region_POS)); 
+  Out_M2S.AWUser <= DataFIFO_DataOut( low(BIT_VEC,AW_POS) + high(Addr_BIT_VEC,User_POS) downto 
+                                      low(BIT_VEC,AW_POS) + low(Addr_BIT_VEC,User_POS)); 
   --AR Out Interface
-  Out_M2S.ARAddr <= DataFIFO_DataOut( low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Addr_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Addr_POS))); 
-  Out_M2S.ARCache <= DataFIFO_DataOut(low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Cache_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Cache_POS))); 
-  Out_M2S.ARProt <= DataFIFO_DataOut( low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Protect_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Protect_POS))); 
-  Out_M2S.ARID <= DataFIFO_DataOut( low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(ID_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(ID_POS))); 
-  Out_M2S.ARLen <= DataFIFO_DataOut( low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Len_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Len_POS))); 
-  Out_M2S.ARSize <= DataFIFO_DataOut( low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Size_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Size_POS))); 
-  Out_M2S.ARBurst <= DataFIFO_DataOut( low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Burst_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Burst_POS))); 
-  Out_M2S.ARLock <= DataFIFO_DataOut( low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Lock_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Lock_POS))); 
-  Out_M2S.ARQoS <= DataFIFO_DataOut( low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(QoS_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(QoS_POS))); 
-  Out_M2S.ARRegion <= DataFIFO_DataOut( low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(Region_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(Region_POS))); 
-  Out_M2S.ARUser <= DataFIFO_DataOut( low(BIT_VEC(AR_POS)) + high(Addr_BIT_VEC(User_POS)) downto 
-                                      low(BIT_VEC(AR_POS)) + low(Addr_BIT_VEC(User_POS))); 
+  Out_M2S.ARAddr <= DataFIFO_DataOut( low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Addr_POS) downto 
+                                      low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Addr_POS)); 
+  Out_M2S.ARCache <= DataFIFO_DataOut(low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Cache_POS) downto 
+                                      low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Cache_POS)); 
+  Out_M2S.ARProt <= DataFIFO_DataOut( low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Protect_POS) downto 
+                                      low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Protect_POS)); 
+  Out_M2S.ARID <= DataFIFO_DataOut( low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,ID_POS) downto 
+                                      low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,ID_POS)); 
+  Out_M2S.ARLen <= DataFIFO_DataOut( low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Len_POS) downto 
+                                      low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Len_POS)); 
+  Out_M2S.ARSize <= DataFIFO_DataOut( low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Size_POS) downto 
+                                      low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Size_POS)); 
+  Out_M2S.ARBurst <= DataFIFO_DataOut( low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Burst_POS) downto 
+                                      low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Burst_POS)); 
+  Out_M2S.ARLock(0) <= DataFIFO_DataOut( low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Lock_POS)); 
+  
+  Out_M2S.ARQoS <= DataFIFO_DataOut( low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,QoS_POS) downto 
+                                      low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,QoS_POS)); 
+  Out_M2S.ARRegion <= DataFIFO_DataOut( low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,Region_POS) downto 
+                                      low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,Region_POS)); 
+  Out_M2S.ARUser <= DataFIFO_DataOut( low(BIT_VEC,AR_POS) + high(Addr_BIT_VEC,User_POS) downto 
+                                      low(BIT_VEC,AR_POS) + low(Addr_BIT_VEC,User_POS)); 
   --W Out Interface
-  Out_M2S.WData <= DataFIFO_DataOut(  low(BIT_VEC(W_POS)) + high(W_BIT_VEC(Data_POS)) downto 
-                                      low(BIT_VEC(W_POS)) + low(W_BIT_VEC(Data_POS))); 
-  Out_M2S.WStrb <= DataFIFO_DataOut(  low(BIT_VEC(W_POS)) + high(W_BIT_VEC(Strobe_POS)) downto 
-                                      low(BIT_VEC(W_POS)) + low(W_BIT_VEC(Strobe_POS))); 
-  Out_M2S.WUser <= DataFIFO_DataOut(  low(BIT_VEC(W_POS)) + high(W_BIT_VEC(User_POS)) downto 
-                                      low(BIT_VEC(W_POS)) + low(W_BIT_VEC(User_POS))); 
-  Out_M2S.WLast <= DataFIFO_DataOut(  low(BIT_VEC(W_POS)) + low(W_BIT_VEC(Last_POS))); 
+  Out_M2S.WData <= DataFIFO_DataOut(  low(BIT_VEC,W_POS) + high(W_BIT_VEC,Data_POS) downto 
+                                      low(BIT_VEC,W_POS) + low(W_BIT_VEC,Data_POS)); 
+  Out_M2S.WStrb <= DataFIFO_DataOut(  low(BIT_VEC,W_POS) + high(W_BIT_VEC,Strobe_POS) downto 
+                                      low(BIT_VEC,W_POS) + low(W_BIT_VEC,Strobe_POS)); 
+  Out_M2S.WUser <= DataFIFO_DataOut(  low(BIT_VEC,W_POS) + high(W_BIT_VEC,User_POS) downto 
+                                      low(BIT_VEC,W_POS) + low(W_BIT_VEC,User_POS)); 
+  Out_M2S.WLast <= DataFIFO_DataOut(  low(BIT_VEC,W_POS) + low(W_BIT_VEC,Last_POS)); 
 	
   --R Out Interface
-  In_S2M.RData <= DataFIFO_DataOut(   low(BIT_VEC(R_POS)) + high(R_BIT_VEC(Data_POS)) downto 
-                                      low(BIT_VEC(R_POS)) + low(R_BIT_VEC(Data_POS))); 
-  In_S2M.RResp <= DataFIFO_DataOut(   low(BIT_VEC(R_POS)) + high(R_BIT_VEC(Resp_POS)) downto 
-                                      low(BIT_VEC(R_POS)) + low(R_BIT_VEC(Resp_POS))); 
-  In_S2M.RUser <= DataFIFO_DataOut(   low(BIT_VEC(R_POS)) + high(R_BIT_VEC(User_POS)) downto 
-                                      low(BIT_VEC(R_POS)) + low(R_BIT_VEC(User_POS))); 
-  In_S2M.RLast <= DataFIFO_DataOut(   low(BIT_VEC(R_POS)) + low(R_BIT_VEC(Last_POS))); 
+  In_S2M.RData <= DataFIFO_DataOut(   low(BIT_VEC,R_POS) + high(R_BIT_VEC,Data_POS) downto 
+                                      low(BIT_VEC,R_POS) + low(R_BIT_VEC,Data_POS)); 
+  In_S2M.RResp <= DataFIFO_DataOut(   low(BIT_VEC,R_POS) + high(R_BIT_VEC,Resp_POS) downto 
+                                      low(BIT_VEC,R_POS) + low(R_BIT_VEC,Resp_POS)); 
+  In_S2M.RUser <= DataFIFO_DataOut(   low(BIT_VEC,R_POS) + high(R_BIT_VEC,User_POS) downto 
+                                      low(BIT_VEC,R_POS) + low(R_BIT_VEC,User_POS)); 
+  In_S2M.RLast <= DataFIFO_DataOut(   low(BIT_VEC,R_POS) + low(R_BIT_VEC,Last_POS)); 
 	
-  In_S2M.RID <= DataFIFO_DataOut(   low(BIT_VEC(R_POS)) + high(R_BIT_VEC(ID_POS)) downto 
-                                      low(BIT_VEC(R_POS)) + low(R_BIT_VEC(ID_POS))); 
+  In_S2M.RID <= DataFIFO_DataOut(   low(BIT_VEC,R_POS) + high(R_BIT_VEC,ID_POS) downto 
+                                      low(BIT_VEC,R_POS) + low(R_BIT_VEC,ID_POS)); 
   --B Out Interface
-  In_S2M.BResp <= DataFIFO_DataOut(   low(BIT_VEC(B_POS)) + high(R_BIT_VEC(Resp_POS)) downto 
-                                      low(BIT_VEC(B_POS)) + low(R_BIT_VEC(Resp_POS))); 
-  In_S2M.BUser <= DataFIFO_DataOut(   low(BIT_VEC(B_POS)) + high(R_BIT_VEC(User_POS)) downto 
-                                      low(BIT_VEC(B_POS)) + low(R_BIT_VEC(User_POS))); 
-  In_S2M.BID <= DataFIFO_DataOut(   low(BIT_VEC(B_POS)) + high(R_BIT_VEC(ID_POS)) downto 
-                                      low(BIT_VEC(B_POS)) + low(R_BIT_VEC(ID_POS))); 
+  In_S2M.BResp <= DataFIFO_DataOut(   low(BIT_VEC,B_POS) + high(R_BIT_VEC,Resp_POS) downto 
+                                      low(BIT_VEC,B_POS) + low(R_BIT_VEC,Resp_POS)); 
+  In_S2M.BUser <= DataFIFO_DataOut(   low(BIT_VEC,B_POS) + high(R_BIT_VEC,User_POS) downto 
+                                      low(BIT_VEC,B_POS) + low(R_BIT_VEC,User_POS)); 
+  In_S2M.BID <= DataFIFO_DataOut(   low(BIT_VEC,B_POS) + high(R_BIT_VEC,ID_POS) downto 
+                                      low(BIT_VEC,B_POS) + low(R_BIT_VEC,ID_POS)); 
 
 
   gen_fifo : for i in 0 to 4 generate
@@ -346,13 +344,14 @@ begin
     signal DataFIFO_DataOut_i : std_logic_vector(BIT_VEC(i) -1 downto 0);
     signal DataFIFO_Full      : std_logic;
     signal DataFIFO_got       : std_logic;
+    signal DataFIFO_Valid     : std_logic;
   begin
   
     DataFIFO_put       <= In_Valid_vec(i) and not DataFIFO_Full;
     In_Ready_vec(i)    <= not DataFIFO_Full;
-    DataFIFO_DataIn_i  <= DataFIFO_DataIn(high(BIT_VEC(i)) downto low(BIT_VEC(i)));
+    DataFIFO_DataIn_i  <= DataFIFO_DataIn(high(BIT_VEC,i) downto low(BIT_VEC,i));
     
-    DataFIFO_DataOut(high(BIT_VEC(i)) downto low(BIT_VEC(i))) <= DataFIFO_DataOut_i;
+    DataFIFO_DataOut(high(BIT_VEC,i) downto low(BIT_VEC,i)) <= DataFIFO_DataOut_i;
     DataFIFO_got       <= Out_Ready_vec(i);
     Out_Valid_vec(i)   <= DataFIFO_Valid;
     
@@ -389,7 +388,8 @@ begin
     
       inst_glue : entity work.fifo_glue
       generic map(
-        D_BITS  => BIT_VEC(i)
+        D_BITS          => BIT_VEC(i),
+        PIPELINE_STAGES => FRAMES +1
       )
       port map(
         -- Control
