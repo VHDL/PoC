@@ -4,6 +4,6 @@
 set_property  ASYNC_REG true  [ get_cells -regexp {gen\[\d+\]\.Sync/FF1_METASTABILITY_FFS} ]
 set_property  ASYNC_REG true  [ get_cells -regexp {gen\[\d+\]\.Sync/gen\[\d+\]\.FF}        ]
 
-set Period 3.0;#[ get_property PERIOD [ get_clocks -of_objects [ get_pins -regexp {gen\[\d+\]\.Sync/FF1_METASTABILITY_FFS/C} ] ] ]
+set Period 3.2;#[ get_property PERIOD [ get_clocks -of_objects [ get_pins -regexp {gen\[\d+\]\.Sync/FF1_METASTABILITY_FFS/C} ] ] ]
 
 set_max_delay             -to [ get_pins -regexp {gen\[\d+\]\.Sync/FF1_METASTABILITY_FFS/D} ] $Period
