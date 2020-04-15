@@ -91,15 +91,15 @@ package vectors is
 	subtype T_SLS_512						is signed(511 downto 0);
 	
 	-- Data BE Vector
---	type T_DATA_BE is record
---		be        : std_logic_vector;
---		data      : std_logic_vector;
---	end record;
+	type T_DATA_BE is record
+		be        : std_logic_vector;
+		data      : std_logic_vector;
+	end record;
 	
---	type T_DATA_BE_VECTOR is array(natural range <>) of T_DATA_BE;
+	type T_DATA_BE_VECTOR is array(natural range <>) of T_DATA_BE;
 
 	-- STD_LOGIC_VECTOR_VECTORs
---  	type		T_SLVV							is array(NATURAL range <>) of STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	type		T_SLVV							is array(NATURAL range <>) of STD_LOGIC_VECTOR;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	type		T_SLVV_2						is array(natural range <>) of T_SLV_2;
 	type		T_SLVV_3						is array(natural range <>) of T_SLV_3;
 	type		T_SLVV_4						is array(natural range <>) of T_SLV_4;
@@ -114,7 +114,7 @@ package vectors is
 	type		T_SLVV_256					is array(natural range <>) of T_SLV_256;
 	type		T_SLVV_512					is array(natural range <>) of T_SLV_512;
 	-- UNSIGNED_VECTORs
---  	type		T_SLUV							is array(NATURAL range <>) of UNSIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	type		T_SLUV							is array(NATURAL range <>) of UNSIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	type		T_SLUV_2						is array(natural range <>) of T_SLU_2;
 	type		T_SLUV_3						is array(natural range <>) of T_SLU_3;
 	type		T_SLUV_4						is array(natural range <>) of T_SLU_4;
@@ -129,7 +129,7 @@ package vectors is
 	type		T_SLUV_256					is array(natural range <>) of T_SLU_256;
 	type		T_SLUV_512					is array(natural range <>) of T_SLU_512;
 	-- SIGNED_VECTORs
---  	type		T_SLSV							is array(NATURAL range <>) of SIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
+	type		T_SLSV							is array(NATURAL range <>) of SIGNED;					-- VHDL 2008 syntax - not yet supported by Xilinx
 	type		T_SLSV_2						is array(natural range <>) of T_SLS_2;
 	type		T_SLSV_3						is array(natural range <>) of T_SLS_3;
 	type		T_SLSV_4						is array(natural range <>) of T_SLS_4;
