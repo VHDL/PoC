@@ -52,9 +52,9 @@ entity stream_FrameGenerator is
 		Command						: in	T_FRAMEGEN_COMMAND;
 		Status						: out	T_FRAMEGEN_STATUS;
 		-- Control interface
-		Pause							: in	T_SLV_16;
-		FrameGroupIndex		: in	T_SLV_8;
-		FrameIndex				: in	T_SLV_8;
+--		Pause							: in	T_SLV_16;
+--		FrameGroupIndex		: in	T_SLV_8;
+--		FrameIndex				: in	T_SLV_8;
 		Sequences					: in	T_SLV_16;
 		FrameLength				: in	T_SLV_16;
 		-- OUT Port
