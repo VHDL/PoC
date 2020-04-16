@@ -326,31 +326,42 @@ begin
 	RegisterFile_WritePort_hit <= slv_reg_rden and hit_r;
 	clear_latch_r              <= slv_reg_rden and hit_r;
 
-	blockReadMux: block
-		signal mux : T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
-	begin
-		--only wire out register if read only
-		genMux: for i in CONFIG'range generate
---			genPort: if (CONFIG(i).rw_config = readable) generate 
---				mux(i)              <= RegisterFile_WritePort(i);
---			elsif (CONFIG(i).rw_config = latchValue_clearOnRead) generate
+--	blockReadMux: block
+--		signal mux : T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
+--	begin
+--		--only wire out register if read only
+--		genMux: for i in CONFIG'range generate
+----			genPort: if (CONFIG(i).rw_config = readable) generate 
+----				mux(i)              <= RegisterFile_WritePort(i);
+----			elsif (CONFIG(i).rw_config = latchValue_clearOnRead) generate
+----				mux(i)              <= RegisterFile(i);
+----			else generate
 --				mux(i)              <= RegisterFile(i);
---			else generate
-				mux(i)              <= RegisterFile(i);
---			end generate;
-		end generate;
+----			end generate;
+--		end generate;
 
-		process(mux, hit_r)
-			variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
-		begin
-			reg_data_out  <= (others => '1');
-			if unsigned(hit_r) /= 0 then
-				reg_data_out <= mux(lssb_idx(hit_r));
-			end if;
-		end process;
-	end block;
+--		process(mux, hit_r)
+--			variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
+--		begin
+--			reg_data_out  <= (others => '1');
+--			if unsigned(hit_r) /= 0 then
+--				reg_data_out <= mux(lssb_idx(hit_r));
+--			end if;
+--		end process;
+--	end block;
 
-		-- Output register or memory read data
+
+--	-- Read mux process
+--	process(RegisterFile, hit_r)
+--	begin
+--		rdata_mux : for i in hit_r'range loop
+--			if (hit_r(i)) = '1' then
+--				reg_data_out <= RegisterFile(i);
+--			end if;
+--		end loop;	
+--	end process;
+
+	-- Output register or memory read data
 	process(S_AXI_ACLK) is
 	begin
 		if (rising_edge (S_AXI_ACLK)) then
@@ -361,8 +372,11 @@ begin
 				-- acceptance of read address by the slave (axi_arready), 
 				-- output the read data 
 				-- Read address mux
-
-				axi_rdata <= reg_data_out;  -- register read data
+				rdata_mux : for i in hit_r'range loop
+					if (hit_r(i)) = '1' then
+						axi_rdata <= RegisterFile(i);
+					end if;
+				end loop;
 			end if;
 		end if;
 	end process;  
