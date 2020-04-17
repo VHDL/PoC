@@ -2,9 +2,9 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:				 	Stefan Unrein
+-- Authors:         Stefan Unrein, Max Kraft-Kugler
 --
--- Entity:				 	A slave-side bus termination module for AXI4-Lite.
+-- Entity:          A slave-side bus termination module for AXI4-Lite.
 --
 -- Description:
 -- -------------------------------------
@@ -19,7 +19,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,21 +35,28 @@ use     work.axi4lite.all;
 
 
 entity AXI4Lite_Termination_Slave is
-	generic (
-		VALUE         : std_logic := '0'
-	);
 	port ( 
-		AXI4Lite_M2S  : in   T_AXI4Lite_Bus_M2S;
-		AXI4Lite_S2M  : out  T_AXI4Lite_Bus_S2M
+		AXI4Lite_M2S   : in   T_AXI4Lite_Bus_M2S;
+		AXI4Lite_S2M   : out  T_AXI4Lite_Bus_S2M
 	);
 end entity;
 
 
 architecture rtl of AXI4Lite_Termination_Slave is
-  constant AddrBits : natural := AXI4Lite_M2S.AWAddr'length;
-  constant DataBits : natural := AXI4Lite_M2S.WData'length;
 begin
-
-	AXI4Lite_S2M <= Initialize_AXI4Lite_Bus_S2M(AddrBits, DataBits, VALUE);
-
+	AXI4Lite_S2M.AWReady <= '1';
+	AXI4Lite_S2M.WReady  <= '1';
+	AXI4Lite_S2M.BValid  <= '1';
+	AXI4Lite_S2M.BResp   <= C_AXI4_RESPONSE_SLAVE_ERROR;
+	AXI4Lite_S2M.ARReady <= '1';
+	AXI4Lite_S2M.RValid  <= '1';
+	AXI4Lite_S2M.RData   <= (others => '0');
+	AXI4Lite_S2M.RResp   <= C_AXI4_RESPONSE_SLAVE_ERROR;
 end architecture;
+
+
+
+
+
+
+

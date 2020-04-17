@@ -35,21 +35,28 @@ use work.AXI4Stream.all;
 
 package AXI4Stream_Sized is
 	generic (
-		DATA_BITS     : natural;
-		USER_BITS     : natural := 1
+		DATA_BITS     : positive;
+		USER_BITS     : positive := 1;
+		KEEP_BITS     : positive := DATA_BITS / 8
 	);
 
 	subtype SIZED_M2S is T_AXI4STREAM_M2S(
 		Data(DATA_BITS - 1 downto 0),
+		Keep(KEEP_BITS -1 downto 0),
 		User(USER_BITS - 1 downto 0)
 	);
-	subtype SIZED_S2M is T_AXI4STREAM_S2M;
+	subtype SIZED_S2M is T_AXI4STREAM_S2M(
+		User(USER_BITS - 1 downto 0)
+	);
 	
 	subtype SIZED_M2S_VECTOR is T_AXI4STREAM_M2S_VECTOR(open)(
 		Data(DATA_BITS - 1 downto 0),
+		Keep(KEEP_BITS -1 downto 0),
 		User(USER_BITS - 1 downto 0)
 	);
-	subtype SIZED_S2M_VECTOR is T_AXI4STREAM_S2M_VECTOR;
+	subtype SIZED_S2M_VECTOR is T_AXI4STREAM_S2M_VECTOR(open)(
+		User(USER_BITS - 1 downto 0)
+	);
 end package;
 
 
@@ -58,8 +65,8 @@ use work.AXI4Lite.all;
 
 package AXI4Lite_Sized is
 	generic (
-		ADDRESS_BITS  : natural;
-		DATA_BITS     : natural
+		ADDRESS_BITS  : positive;
+		DATA_BITS     : positive
 	);
 	
 	subtype SIZED_M2S is T_AXI4LITE_BUS_M2S(
@@ -88,10 +95,10 @@ use work.AXI4_Full.all;
 
 package AXI4Full_Sized is
 	generic (
-		ADDRESS_BITS  : natural;
-		DATA_BITS     : natural;
-		USER_BITS     : natural := 1;
-		ID_BITS       : natural := 1
+		ADDRESS_BITS  : positive;
+		DATA_BITS     : positive;
+		USER_BITS     : positive := 1;
+		ID_BITS       : positive := 1
 	);
 
 	subtype SIZED_M2S is T_AXI4_BUS_M2S(

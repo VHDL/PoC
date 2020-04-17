@@ -363,7 +363,7 @@ begin
 		begin
 			if rising_edge(clock) then
 				if reset = '1' or is_frame_start = '1' then
-					bit_counter <= to_unsigned(BITS, bit_counter'length);
+					bit_counter <= (others => '0');
 				elsif a_level_glitch_fe = '1' then
 					if bit_counter < BITS then
 						bit_counter <= bit_counter +1;

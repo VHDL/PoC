@@ -138,7 +138,7 @@ begin
 			TAG_BITS									=> TAG_BITS,
 			CHUNK_BITS								=> TAGCHUNK_BITS,
 			TAG_BYTE_ORDER						=> BIG_ENDIAN,
-			USE_INITIAL_TAGS	 				=> TRUE,
+			USE_INITIAL_TAGS	 				=> true,
 			INITIAL_TAGS							=> INITIAL_TAGS
 		)
 		port map (
