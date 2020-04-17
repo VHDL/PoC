@@ -129,7 +129,6 @@ architecture rtl of AXI4Lite_Register is
 	
 	signal slv_reg_rden : std_logic;
 	signal slv_reg_wren : std_logic;
-	signal reg_data_out : std_logic_vector(DATA_BITS - 1 downto 0);
 
 	signal latched           : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
 	signal clear_latch_w     : std_logic_vector(Config'Length-1 downto 0);
