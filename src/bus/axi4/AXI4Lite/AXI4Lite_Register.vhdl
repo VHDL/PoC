@@ -28,19 +28,19 @@
 -- =============================================================================
 
 library IEEE;
-use	    IEEE.std_logic_1164.all;
-use	    IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-use	    work.utils.all;
-use	    work.vectors.all;
-use	    work.axi4lite.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.axi4lite.all;
 
 
 entity AXI4Lite_Register is
 	generic (
 		DEBUG                         : boolean := false;
-		IGNORE_HIGH_ADDR              : boolean := true;
-		DISABLE_ADDR_CHECK            : boolean := false;
+		IGNORE_HIGH_ADDR              : boolean := false;
+		DISABLE_ADDR_CHECK            : boolean := true;
 	 	CONFIG                        : T_AXI4_Register_Description_Vector
 	);
 	port (
@@ -129,7 +129,6 @@ architecture rtl of AXI4Lite_Register is
 	
 	signal slv_reg_rden : std_logic;
 	signal slv_reg_wren : std_logic;
-	signal reg_data_out : std_logic_vector(DATA_BITS - 1 downto 0);
 
 	signal latched           : std_logic_vector(Config'Length-1 downto 0) := (others => '0');
 	signal clear_latch_w     : std_logic_vector(Config'Length-1 downto 0);
@@ -295,7 +294,7 @@ begin
 		if rising_edge(S_AXI_ACLK) then 
 			if (S_AXI_ARESETN = '0') then
 				axi_arready <= '0';
-				axi_araddr  <= (others => '0');
+				axi_araddr  <= (others => '1');
 			elsif (axi_arready = '0' and S_AXI_m2s.ARValid = '1' and outstanding_read = '0') then
 				axi_arready <= '1';
 				axi_araddr  <= S_AXI_m2s.ARAddr(S_AXI_m2s.ARAddr'high downto ADDR_LSB);
@@ -326,31 +325,7 @@ begin
 	RegisterFile_WritePort_hit <= slv_reg_rden and hit_r;
 	clear_latch_r              <= slv_reg_rden and hit_r;
 
-	blockReadMux: block
-		signal mux : T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
-	begin
-		--only wire out register if read only
-		genMux: for i in CONFIG'range generate
---			genPort: if (CONFIG(i).rw_config = readable) generate 
---				mux(i)              <= RegisterFile_WritePort(i);
---			elsif (CONFIG(i).rw_config = latchValue_clearOnRead) generate
---				mux(i)              <= RegisterFile(i);
---			else generate
-				mux(i)              <= RegisterFile(i);
---			end generate;
-		end generate;
-
-		process(mux, hit_r)
-			variable trunc_addr : std_logic_vector(CONFIG(0).address'range);
-		begin
-			reg_data_out  <= (others => '1');
-			if unsigned(hit_r) /= 0 then
-				reg_data_out <= mux(lssb_idx(hit_r));
-			end if;
-		end process;
-	end block;
-
-		-- Output register or memory read data
+	-- Output register or memory read data
 	process(S_AXI_ACLK) is
 	begin
 		if (rising_edge (S_AXI_ACLK)) then
@@ -361,8 +336,12 @@ begin
 				-- acceptance of read address by the slave (axi_arready), 
 				-- output the read data 
 				-- Read address mux
-
-				axi_rdata <= reg_data_out;  -- register read data
+				rdata_mux : for i in hit_r'range loop
+					if (hit_r(i)) = '1' then
+						axi_rdata <= RegisterFile(i);
+						exit;
+					end if;
+				end loop;
 			end if;
 		end if;
 	end process;  
@@ -376,7 +355,8 @@ begin
 		is_high_r <= '1' when axi_araddr(axi_araddr'high downto REG_ADDRESS_BITS - ADDR_LSB) = (axi_araddr'high downto REG_ADDRESS_BITS - ADDR_LSB => '0') else '0';
 		is_high_w <= '1' when axi_awaddr(axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB) = (axi_awaddr'high downto REG_ADDRESS_BITS - ADDR_LSB => '0') else '0';
 	end generate;
-
+	
+	
 	hit_gen_r : for i in hit_r'range generate
 		signal config_addr  : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		signal is_config    : std_logic;
@@ -385,7 +365,10 @@ begin
 		is_config    <= '1' when std_logic_vector(config_addr) = axi_araddr(REG_ADDRESS_BITS - ADDR_LSB -1 downto 0) else '0';
 		hit_r(i)     <= '1' when (is_config = '1') and (is_high_r = '1') else '0';
 	end generate;
-
+	
+	
+	
+	
 	hit_gen_w : for i in hit_w'range generate
 		signal config_addr : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		signal is_config    : std_logic;

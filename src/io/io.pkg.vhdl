@@ -2,25 +2,25 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Patrick Lehmann
+-- Authors:                 Patrick Lehmann
 --
--- Package:					VHDL package for component declarations, types and
---									functions associated to the PoC.io namespace
+-- Package:                 VHDL package for component declarations, types and
+--                          functions associated to the PoC.io namespace
 --
 -- Description:
 -- -------------------------------------
---		For detailed documentation see below.
+--      For detailed documentation see below.
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--      http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,13 +30,12 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use         IEEE.STD_LOGIC_1164.all;
+use         IEEE.NUMERIC_STD.all;
 
 library PoC;
-use			PoC.utils.all;
-use			PoC.my_config.all;
-use			PoC.physical.all;
+use         PoC.utils.all;
+use         PoC.physical.all;
 
 
 package io is
@@ -45,32 +44,41 @@ package io is
 	-- values in both directions, see also
 	-- :ref:`ISSUES:General:inout_records`.
 	type T_IO_TRISTATE is record
-		I			: std_logic;					-- input / from device to FPGA
-		O			: std_logic;					-- output / from FPGA to device
-		T			: std_logic;					-- output disable / tristate enable
+		I           : std_logic;       -- input / from device to FPGA
+		O           : std_logic;       -- output / from FPGA to device
+		T           : std_logic;       -- output disable / tristate enable
+	end record;
+	-- use instead:
+	type T_IO_TRISTATE_IN is record
+		I           : std_logic;       -- input / from device to FPGA
+	end record;
+	type T_IO_TRISTATE_OUT is record
+		O           : std_logic;       -- output / from FPGA to device
+		T           : std_logic;       -- output disable / tristate enable
 	end record;
 
 	constant C_IO_TRISTATE_INIT : T_IO_TRISTATE := ('Z', 'Z', 'Z');
 
 	type T_IO_LVDS is record
-		P			: std_logic;
-		N			: std_logic;
+		P           : std_logic;
+		N           : std_logic;
 	end record;
-	
-	constant C_IO_LVDS_INIT : T_IO_LVDS := ('Z', 'Z');
 
 	-- Do not use this type for ``inout`` ports of synthesizable IP cores to drive
 	-- values in both directions, see also
 	-- :ref:`ISSUES:General:inout_records`.
-	type T_IO_TRISTATE_VECTOR	is array(natural range <>) of T_IO_TRISTATE;
+	type T_IO_TRISTATE_VECTOR     is array(natural range <>) of T_IO_TRISTATE;
+	-- use instead:
+	type T_IO_TRISTATE_IN_VECTOR  is array(natural range <>) of T_IO_TRISTATE_IN;
+	type T_IO_TRISTATE_OUT_VECTOR is array(natural range <>) of T_IO_TRISTATE_OUT;
 
-	type T_IO_LVDS_VECTOR			is array(natural range <>) of T_IO_LVDS;
+	type T_IO_LVDS_VECTOR         is array(natural range <>) of T_IO_LVDS;
 	
 	function get_p_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector;
 	function get_n_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector;
 	function to_LVDS_vector(p : std_logic_vector; n : std_logic_vector) return T_IO_LVDS_VECTOR;
 	
-	type T_IO_LVDS_VV			    is array(natural range <>) of T_IO_LVDS_VECTOR;
+	type T_IO_LVDS_VV             is array(natural range <>) of T_IO_LVDS_VECTOR;
 
 	type T_IO_DATARATE is (IO_DATARATE_SDR, IO_DATARATE_DDR, IO_DATARATE_QDR);
 
@@ -84,7 +92,7 @@ package io is
 	
 	procedure io_tristate_connect (
 		signal from_input  : inout T_IO_TRISTATE_VECTOR;
-		signal to_output : inout T_IO_TRISTATE_VECTOR
+		signal to_output   : inout T_IO_TRISTATE_VECTOR
 	);
 
 	type T_IO_7SEGMENT_CHAR is (
@@ -97,7 +105,7 @@ package io is
 
 	type T_IO_7SEGMENT_CHAR_ENCODING is array(T_IO_7SEGMENT_CHAR) of std_logic_vector(6 downto 0);
 
-	--constant C_IO_7SEGMENT_CHAR_ENCODING		: T_IO_7SEGMENT_CHAR_ENCODING := (
+	--constant C_IO_7SEGMENT_CHAR_ENCODING      : T_IO_7SEGMENT_CHAR_ENCODING := (
 		--IO_7SEGMENT_CHAR_0
 		--IO_7SEGMENT_CHAR_1
 		--IO_7SEGMENT_CHAR_2
@@ -120,8 +128,8 @@ package io is
 		--IO_7SEGMENT_CHAR_MINUS
 	--);
 
-	function io_7SegmentDisplayEncoding(hex	: std_logic_vector(3 downto 0); dot : std_logic := '0'; WITH_DOT : boolean := FALSE)	return std_logic_vector;
-	function io_7SegmentDisplayEncoding(digit	: T_BCD; dot : std_logic := '0'; WITH_DOT : boolean := FALSE)												return std_logic_vector;
+	function io_7SegmentDisplayEncoding(hex : std_logic_vector(3 downto 0); dot : std_logic := '0'; WITH_DOT : boolean := FALSE)    return std_logic_vector;
+	function io_7SegmentDisplayEncoding(digit   : T_BCD; dot : std_logic := '0'; WITH_DOT : boolean := FALSE)                                               return std_logic_vector;
 
 
 	-- MDIOController
@@ -184,18 +192,18 @@ package io is
   -- Component Declarations
   -- =========================================================================
   component io_FanControl
-    generic (
-      CLOCK_FREQ_MHZ	: real
-    );
-    port (
-      Clock						: in	std_logic;
-      Reset						: in	std_logic;
+	generic (
+	  CLOCK_FREQ_MHZ    : real
+	);
+	port (
+	  Clock             : in  std_logic;
+	  Reset             : in  std_logic;
 
-      Fan_PWM					: out	std_logic;
-      Fan_Tacho				: in	std_logic;
+	  Fan_PWM           : out std_logic;
+	  Fan_Tacho         : in  std_logic;
 
-      TachoFrequency	: out	std_logic_vector(15 downto 0)
-    );
+	  TachoFrequency    : out std_logic_vector(15 downto 0)
+	);
 	end component;
 
 end package;
@@ -261,34 +269,34 @@ package body io is
 		end loop;
 	end procedure;
 
-	function io_7SegmentDisplayEncoding(hex	: std_logic_vector(3 downto 0); dot : std_logic := '0'; WITH_DOT : boolean := FALSE) return std_logic_vector is
-		constant DOT_INDEX	: positive	:= ite(WITH_DOT, 7, 6);
-		variable Result			: std_logic_vector(ite(WITH_DOT, 7, 6) downto 0);
+	function io_7SegmentDisplayEncoding(hex : std_logic_vector(3 downto 0); dot : std_logic := '0'; WITH_DOT : boolean := FALSE) return std_logic_vector is
+		constant DOT_INDEX  : positive  := ite(WITH_DOT, 7, 6);
+		variable Result         : std_logic_vector(ite(WITH_DOT, 7, 6) downto 0);
 	begin
-		Result(DOT_INDEX)		:= dot;
-		case hex is							-- segments:			GFEDCBA			--	Segment Pos.
-			when x"0" =>		Result(6 downto 0)	:= "0111111";		--		 AAA
-			when x"1" =>		Result(6 downto 0)	:= "0000110";		--		F   B
-			when x"2" =>		Result(6 downto 0)	:= "1011011";		--		F   B
-			when x"3" =>		Result(6 downto 0)	:= "1001111";		--		 GGG
-			when x"4" =>		Result(6 downto 0)	:= "1100110";		--		E   C
-			when x"5" =>		Result(6 downto 0)	:= "1101101";		--		E   C
-			when x"6" =>		Result(6 downto 0)	:= "1111101";		--		 DDD  DOT
-			when x"7" =>		Result(6 downto 0)	:= "0000111";		--
-			when x"8" =>		Result(6 downto 0)	:= "1111111";		--	Index Pos.
-			when x"9" =>		Result(6 downto 0)	:= "1101111";		--		 000
-			when x"A" =>		Result(6 downto 0)	:= "1110111";		--		5   1
-			when x"B" =>		Result(6 downto 0)	:= "1111100";		--		5   1
-			when x"C" =>		Result(6 downto 0)	:= "0111001";		--		 666
-			when x"D" =>		Result(6 downto 0)	:= "1011110";		--		4   2
-			when x"E" =>		Result(6 downto 0)	:= "1111001";		--		4   2
-			when x"F" =>		Result(6 downto 0)	:= "1110001";		--		 333  7
-			when others =>	Result(6 downto 0)	:= "XXXXXXX";		--
+		Result(DOT_INDEX)       := dot;
+		case hex is         -- segments:            GFEDCBA         --  Segment Pos.
+			when x"0" =>        Result(6 downto 0)  := "0111111";   --       AAA
+			when x"1" =>        Result(6 downto 0)  := "0000110";   --      F   B
+			when x"2" =>        Result(6 downto 0)  := "1011011";   --      F   B
+			when x"3" =>        Result(6 downto 0)  := "1001111";   --       GGG
+			when x"4" =>        Result(6 downto 0)  := "1100110";   --      E   C
+			when x"5" =>        Result(6 downto 0)  := "1101101";   --      E   C
+			when x"6" =>        Result(6 downto 0)  := "1111101";   --       DDD  DOT
+			when x"7" =>        Result(6 downto 0)  := "0000111";   --
+			when x"8" =>        Result(6 downto 0)  := "1111111";   --  Index Pos.
+			when x"9" =>        Result(6 downto 0)  := "1101111";   --       000
+			when x"A" =>        Result(6 downto 0)  := "1110111";   --      5   1
+			when x"B" =>        Result(6 downto 0)  := "1111100";   --      5   1
+			when x"C" =>        Result(6 downto 0)  := "0111001";   --       666
+			when x"D" =>        Result(6 downto 0)  := "1011110";   --      4   2
+			when x"E" =>        Result(6 downto 0)  := "1111001";   --      4   2
+			when x"F" =>        Result(6 downto 0)  := "1110001";   --       333  7
+			when others =>  Result(6 downto 0)  := "XXXXXXX";       --
 		end case;
 		return Result;
 	end function;
 
-	function io_7SegmentDisplayEncoding(digit	: T_BCD; dot : std_logic := '0'; WITH_DOT : boolean := FALSE) return std_logic_vector is
+	function io_7SegmentDisplayEncoding(digit   : T_BCD; dot : std_logic := '0'; WITH_DOT : boolean := FALSE) return std_logic_vector is
 	begin
 		return io_7SegmentDisplayEncoding(std_logic_vector(digit), dot, WITH_DOT);
 	end function;

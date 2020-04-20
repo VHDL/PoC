@@ -85,16 +85,7 @@ end entity;
 
 architecture rtl of ocram_sdp is
   constant DEPTH : positive := 2**A_BITS;
-  
-  function best_Ram_type return T_RAM_TYPE is
-  begin
-  	if RAM_TYPE = RAM_TYPE_AUTO then
-  		return get_ram_type(A_BITS, D_BITS);
-		else
-			return RAM_TYPE;
-		end if;
-  end function;
-	constant RAM_TYPE_i : T_RAM_TYPE := best_Ram_type;
+
 begin
 
 	gInfer : if not SIMULATION and ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
@@ -137,8 +128,8 @@ begin
 		end function;
 
 		signal ram : ram_t	:= ocram_InitMemory(FILENAME);
-		attribute ramstyle  of ram : signal is get_ramstyle(RAM_TYPE_i);
-		attribute ram_style of ram : signal is get_ram_style(RAM_TYPE_i);
+		attribute ramstyle  of ram : signal is get_ramstyle_string(RAM_TYPE);
+		attribute ram_style of ram : signal is get_ram_style_string(RAM_TYPE);
 
 	begin
 		process(wclk)
