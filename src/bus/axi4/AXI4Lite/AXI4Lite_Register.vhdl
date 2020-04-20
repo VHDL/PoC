@@ -339,6 +339,7 @@ begin
 				rdata_mux : for i in hit_r'range loop
 					if (hit_r(i)) = '1' then
 						axi_rdata <= RegisterFile(i);
+						break;
 					end if;
 				end loop;
 			end if;
