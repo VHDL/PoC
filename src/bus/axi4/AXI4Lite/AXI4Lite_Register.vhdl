@@ -39,8 +39,8 @@ use     work.axi4lite.all;
 entity AXI4Lite_Register is
 	generic (
 		DEBUG                         : boolean := false;
-		IGNORE_HIGH_ADDR              : boolean := false;
-		DISABLE_ADDR_CHECK            : boolean := true;
+		IGNORE_HIGH_ADDR              : boolean := true;
+		DISABLE_ADDR_CHECK            : boolean := false;
 	 	CONFIG                        : T_AXI4_Register_Description_Vector
 	);
 	port (
