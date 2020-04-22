@@ -336,10 +336,9 @@ begin
 				-- acceptance of read address by the slave (axi_arready), 
 				-- output the read data 
 				-- Read address mux
-				rdata_mux : for i in hit_r'range loop
+				rdata_mux : for i in hit_r'high downto hit_r'low loop
 					if (hit_r(i)) = '1' then
 						axi_rdata <= RegisterFile(i);
-						exit;
 					end if;
 				end loop;
 			end if;
