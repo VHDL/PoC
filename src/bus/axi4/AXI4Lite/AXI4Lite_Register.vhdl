@@ -411,7 +411,7 @@ begin
 	Interrupt_gen : for i in Is_Interrupt'range generate
 		constant num : natural := Interrupt_range(i);
 	begin
-		process(Clock)
+		process(S_AXI_ACLK)
 		begin
 			case CONFIG(num).rw_config is
 				when readWriteable =>
