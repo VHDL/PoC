@@ -351,6 +351,14 @@ begin
 
 	-- Output register or memory read data
 	process(S_AXI_ACLK) is
+		function first_out(slv : std_logic_vector; reg : T_SLVV) return std_logic_vector is
+		begin
+			for i in slv'low to slv'high loop
+				if (slv(i)) = '1' then
+					return reg(i);
+				end if;
+			end loop;
+		end function;
 	begin
 		if (rising_edge (S_AXI_ACLK)) then
 			if  (S_AXI_ARESETN = '0')  then
@@ -360,11 +368,13 @@ begin
 				-- acceptance of read address by the slave (axi_arready), 
 				-- output the read data 
 				-- Read address mux
-				rdata_mux : for i in hit_r'high downto hit_r'low loop
-					if (hit_r(i)) = '1' then
-						axi_rdata <= RegisterFile(i);
-					end if;
-				end loop;
+				
+				axi_rdata <= first_out(hit_r, RegisterFile);
+--				rdata_mux : for i in hit_r'high downto hit_r'low loop
+--					if (hit_r(i)) = '1' then
+--						axi_rdata <= RegisterFile(i);
+--					end if;
+--				end loop;
 			end if;
 		end if;
 	end process;  
