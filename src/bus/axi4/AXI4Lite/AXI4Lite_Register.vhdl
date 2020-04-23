@@ -359,7 +359,7 @@ begin
 				end if;
 			end loop;
 		end function;
-		function lssb_idx_with_loop(slv : std_logic_vector; reg : T_SLVV) return integer is
+		function lssb_idx_with_loop(slv : std_logic_vector) return integer is
 		begin
 			for i in slv'low to slv'high loop
 				if (slv(i)) = '1' then
@@ -380,11 +380,11 @@ begin
 --				axi_rdata <= RegisterFile(lssb_idx(hit_r));
 				axi_rdata <= RegisterFile(lssb_idx_with_loop(hit_r));
 --				axi_rdata <= first_out(hit_r, RegisterFile);
---				rdata_mux : for i in hit_r'high downto hit_r'low loop
---					if (hit_r(i)) = '1' then
---						axi_rdata <= RegisterFile(i);
---					end if;
---				end loop;
+				rdata_mux : for i in hit_r'high downto hit_r'low loop
+					if (hit_r(i)) = '1' then
+						axi_rdata <= RegisterFile(i);
+					end if;
+				end loop;
 			end if;
 		end if;
 	end process;  
