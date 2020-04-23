@@ -369,7 +369,8 @@ begin
 				-- output the read data 
 				-- Read address mux
 				
-				axi_rdata <= first_out(hit_r, RegisterFile);
+				axi_rdata <= RegisterFile(lssb_idx(hit_r));
+--				axi_rdata <= first_out(hit_r, RegisterFile);
 --				rdata_mux : for i in hit_r'high downto hit_r'low loop
 --					if (hit_r(i)) = '1' then
 --						axi_rdata <= RegisterFile(i);
