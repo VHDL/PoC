@@ -166,6 +166,8 @@ package strings is
 	function str_ralign(str : string; Length : natural; FillChar : character := ' ') return string;
 	function str_toLower(str : string)												return string;
 	function str_toUpper(str : string)												return string;
+	
+	function normalize_path(path : string) return string;
 end package;
 
 
@@ -1027,5 +1029,18 @@ package body strings is
 		end loop;
 		return Result;
 	end function;
-
+	
+	function normalize_path(path : string) return string is
+		variable temp : string(path'range) := path;
+	begin
+		for i in path'range loop
+			if temp(i) = '\' then
+				temp(i) := '/';
+			end if;
+		end loop;
+		if temp(temp'high) = '/' then
+			return temp;
+		end if;
+		return temp & '/';
+	end function;
 end package body;
