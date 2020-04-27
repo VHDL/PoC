@@ -32,7 +32,7 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-use     work.my_project.MY_PROJECT_DIR;
+use     work.config.all;
 use     work.utils.all;
 use     work.vectors.all;
 use     work.strings.all;
@@ -62,7 +62,7 @@ architecture rtl of AXI4Lite_GitVersionRegister is
 	constant num_Version_register : natural          := get_num_Version_register;
   
   constant CONFIG      : T_AXI4_Register_Description_Vector       := get_Dummy_Descriptor(num_Version_register);
-	constant VersionData : T_SLVV_32(0 to num_Version_register - 1) := read_Version_from_mem(MY_PROJECT_DIR & "/" & VERSION_FILE_NAME);
+	constant VersionData : T_SLVV_32(0 to num_Version_register - 1) := read_Version_from_mem(normalize_path(PROJECT_DIR) & VERSION_FILE_NAME);
 		
 	function to_slvv(data : T_SLVV_32) return T_SLVV is
 		variable temp : T_SLVV(VersionData'range)(DATA_BITS -1 downto 0) := (others => (others => '0'));
