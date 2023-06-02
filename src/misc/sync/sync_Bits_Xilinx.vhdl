@@ -59,76 +59,79 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.std_logic_1164.all;
 
-library PoC;
-use     PoC.utils.all;
-use     PoC.sync.all;
+use     work.utils.all;
+use     work.sync.all;
 
 
 entity sync_Bits_Xilinx is
   generic (
-    BITS          : positive            := 1;                       -- number of bit to be synchronized
-    INIT          : std_logic_vector    := x"00000000";             -- initialization bits
-    SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low    -- generate SYNC_DEPTH many stages, at least 2
+    BITS            : positive            := 1;                       -- number of bit to be synchronized
+    INIT            : std_logic_vector    := x"00000000";             -- initialization bits
+    SYNC_DEPTH      : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;    -- generate SYNC_DEPTH many stages, at least 2
+    FALSE_PATH      : boolean             := true;
+    REGISTER_OUTPUT : boolean             := true
   );
   port (
-    Clock         : in  std_logic;                                  -- <Clock>  output clock domain
-    Input         : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
-    Output        : out std_logic_vector(BITS - 1 downto 0)         -- @Clock:  output bits
+    Clock           : in  std_logic;                                  -- <Clock>  output clock domain
+    Input           : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
+    Output          : out std_logic_vector(BITS - 1 downto 0) := (others => '0')-- @Clock:  output bits
   );
 end entity;
 
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.std_logic_1164.all;
 
 library UniSim;
 use     UniSim.vComponents.all;
 
-library PoC;
-use     PoC.sync.all;
+use     work.sync.all;
 
 
 entity sync_Bit_Xilinx is
   generic (
-    INIT          : bit;                                            -- initialization bits
-    SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low    -- generate SYNC_DEPTH many stages, at least 2
+    INIT            : bit;                                            -- initialization bits
+    FALSE_PATH      : boolean             := true;
+    SYNC_DEPTH      : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;   -- generate SYNC_DEPTH many stages, at least 2
+    REGISTER_OUTPUT : boolean             := true
   );
   port (
-    Clock         : in  std_logic;                                  -- <Clock>  output clock domain
-    Input         : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
-    Output        : out std_logic_vector(BITS - 1 downto 0)         -- @Clock:  output bits
+    Clock           : in  std_logic;                                  -- <Clock>  output clock domain
+    Input           : in  std_logic;        							-- @async:  input bits
+    Output          : out std_logic         							-- @Clock:  output bits
   );
 end entity;
 
 
 architecture rtl of sync_Bits_Xilinx is
-	constant INIT_I            : bit_vector    := to_bitvector(resize(descend(INIT), BITS));
+	constant INIT_I          : bit_vector    := to_bitvector(resize(descend(INIT), BITS));
 begin
 	gen : for i in 0 to BITS - 1 generate
-		Sync : entity PoC.sync_Bit_Xilinx
+		Sync : entity work.sync_Bit_Xilinx
 			generic map (
-				INIT        => INIT_I(i),
-				SYNC_DEPTH  => SYNC_DEPTH
+				INIT            => INIT_I(i),
+				FALSE_PATH      => FALSE_PATH,
+				SYNC_DEPTH      => SYNC_DEPTH,
+				REGISTER_OUTPUT => REGISTER_OUTPUT
 			)
 			port map (
-				Clock    => Clock,
-				Input    => Input(i),
-				Output  => Output(i)
+				Clock           => Clock,
+				Input           => Input(i),
+				Output          => Output(i)
 			);
 	end generate;
 end architecture;
 
 
 architecture rtl of sync_Bit_Xilinx is
-	attribute ASYNC_REG        : string;
-	attribute SHREG_EXTRACT    : string;
-	attribute RLOC            : string;
+	attribute ASYNC_REG     : string;
+	attribute SHREG_EXTRACT : string;
 
-	signal Data_async        : std_logic;
+	signal Data_async       : std_logic;
 	signal Data_meta        : std_logic;
-	signal Data_sync        : std_logic;
+	signal Data_sync        : std_logic_vector(SYNC_DEPTH - 1 downto 0);
 
 	-- Mark register Data_async's input as asynchronous
 	attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
@@ -137,34 +140,52 @@ architecture rtl of sync_Bit_Xilinx is
 	attribute SHREG_EXTRACT of Data_meta  : signal is "NO";
 	attribute SHREG_EXTRACT of Data_sync  : signal is "NO";
 
-	-- Assign synchronization FF pairs to the same slice -> minimal routing delay
-	attribute RLOC of Data_meta            : signal is "X0Y0";
-	attribute RLOC of Data_sync            : signal is "X0Y0";
 
 begin
-	assert (SYNC_DEPTH = 2) report "Xilinx synchronizer supports only 2 stages. It could be extended to 4 or 8 on new FPGA series." severity WARNING;
-
 	Data_async  <= Input;
 
-	FF1_METASTABILITY_FFS : FD
-		generic map (
-			INIT    => INIT
-		)
-		port map (
-			C        => Clock,
-			D        => Data_async,
-			Q        => Data_meta
-		);
+	FALSE_PATH_gen : if FALSE_PATH generate
+		METASTABILITY_FF_FALSE_PATH : FD
+			generic map (
+				INIT    => INIT
+			)
+			port map (
+				C        => Clock,
+				D        => Data_async,
+				Q        => Data_meta
+			);
+	else generate
+		METASTABILITY_FF_MAX_DELAY : FD
+			generic map (
+				INIT    => INIT
+			)
+			port map (
+				C        => Clock,
+				D        => Data_async,
+				Q        => Data_meta
+			);	
+	end generate;
 
-	FF2 : FD
-		generic map (
-			INIT    => INIT
-		)
-		port map (
-			C        => Clock,
-			D        => Data_meta,
-			Q        => Data_sync
-		);
+	Data_sync(0) <= Data_meta;
+	
+	gen: for i in 0 to SYNC_DEPTH - 2 generate
+		FF : FD
+			generic map (
+				INIT    => INIT
+			)
+			port map (
+				C        => Clock,
+				D        => Data_sync(i),
+				Q        => Data_sync(i + 1)
+			);
+		end generate;
 
-	Output  <= Data_sync;
+	reg_out_gen : if REGISTER_OUTPUT generate
+		signal Output_d : std_logic := '0';
+	begin
+		Output_d <= Data_sync(Data_sync'high) when rising_edge(Clock);
+		Output   <= Output_d;
+	else generate
+		Output   <= Data_sync(Data_sync'high);
+	end generate;
 end architecture;

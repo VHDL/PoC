@@ -101,8 +101,9 @@ package strings is
 
 	-- to_string
 	function to_string(Value : boolean) return string;
-	function to_string(Value : integer; base : positive := 10) return string;
-	function to_string(slv : std_logic_vector; format : character; Length : natural := 0; fill : character := '0') return string;
+	function to_string(Value : integer; base : positive) return string;
+	function to_string(slv : std_logic_vector; format : character := 'h'; Length : natural := 0; fill : character := '0') return string;
+	function to_string(slv : unsigned;         format : character := 'h'; Length : natural := 0; fill : character := '0') return string;
 	function to_string(rawstring : T_RAWSTRING) return string;
 	function to_string(Value : T_BCD_VECTOR) return string;
 
@@ -142,6 +143,8 @@ package strings is
 	function chr_toUpper(chr : character) return character;
 
 	-- String functions
+	function str_low(str : string) return integer;
+	function str_normalize(str : string) return string;
 	function str_length(str : string)										return natural;
 	function str_equal(str1 : string; str2 : string)		return boolean;
 	function str_match(str1 : string; str2 : string)		return boolean;
@@ -155,6 +158,7 @@ package strings is
 	function str_ifind(str : string; chr : character)		return boolean;
 	function str_ifind(str : string; pattern : string)	return boolean;
 	function str_replace(str : string; pattern : string; replace : string)	return string;
+	function str_replace_all(str : string; pattern : character; replace : character)	return string;
 	function str_substr(str : string; start : integer := 0; Length : integer := 0) return string;
 	function str_ltrim(str : string; char : character := ' ')	return string;
 	function str_rtrim(str : string; char : character := ' ')	return string;
@@ -164,19 +168,56 @@ package strings is
 	function str_ralign(str : string; Length : natural; FillChar : character := ' ') return string;
 	function str_toLower(str : string)												return string;
 	function str_toUpper(str : string)												return string;
+
+
+
+	--String Descriptor functions:
+	--A Set of configurations can be provided through string-descriptor. A string-descriptor is a string with
+	--values that are separated with one or more separation-characters.
+	--
+	--Eg.: "element00,element01;element10,element11;element20,element21"
+	--
+	--These functions help to access these elements
+	--=======================================
+	function check_descriptor(               str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return boolean;
+	function get_descriptor_number(          str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return natural;
+	function get_descriptor_sub_number(      str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return natural;
+	function get_descriptor_element_position(str : string; Subelement : natural := 0; Separator_0 : character := ';'; Separator_1 : character := ',') return T_NATVEC;
+	function get_descriptor_element_length(  str : string; Subelement : natural := 0; Separator_0 : character := ';'; Separator_1 : character := ',') return T_NATVEC;
+
+
+
+	--Function has a copy in PoC.config_private
+	function normalize_path(path : string) return string;
 end package;
 
 
 package body strings is
 	--
-	function to_IPStyle(str : string) return T_IPSTYLE is
+	function str_low(str : string) return integer is
 	begin
-		for i in T_IPSTYLE'pos(T_IPSTYLE'low) to T_IPSTYLE'pos(T_IPSTYLE'high) loop
-			if str_imatch(str, T_IPSTYLE'image(T_IPSTYLE'val(i))) then
-				return T_IPSTYLE'val(i);
+		return str'low;
+	end function;
+
+	function str_normalize(str : string) return string is
+		variable temp : string(1 to str'length);
+	begin
+		for i in str'range loop
+			temp(i - str'low +1) := str(i);
+		end loop;
+		return temp;
+	end function;
+
+	function to_IPStyle(str : string) return T_IPSTYLE is
+		--gives the low place of string back
+		-- This WORKAROUND may be needed for Vivado <=2017.4 or GHDL <=0.36-dev
+	begin
+		for i in T_IPSTYLE loop
+			if str_imatch(str_toUpper(str), str_toUpper(T_IPSTYLE'image(i)))
+			or str_imatch(str_toUpper(str), str_toUpper(T_IPSTYLE'image(i)(str_low(T_IPSTYLE'image(i))+8 to str_low(T_IPSTYLE'image(i))+str_length(T_IPSTYLE'image(i))-1))) then	--start from char 8 to get rid of prefix
+				return i;
 			end if;
 		end loop;
-
 		report "Unknown IPStyle: '" & str & "'" severity FAILURE;
 		return IPSTYLE_UNKNOWN;
 	end function;
@@ -410,20 +451,20 @@ package body strings is
 	end function;
 
 	-- convert an integer Value to a STRING using an arbitrary base
-	function to_string(Value : integer; base : positive := 10) return string is
-		constant absValue		: natural								:= abs Value;
-		constant len		 		: positive							:= log10ceilnz(absValue);
-		variable power			: positive;
-		variable Result			: string(1 to len);
+	function to_string(Value : integer; base : positive) return string is
+		constant absValue : natural  := abs Value;
+		constant len      : positive := log10ceilnz(absValue);
+		variable power    : positive;
+		variable Result   : string(1 to len);
 	begin
-		power		:= 1;
+		power := 1;
 
 		if base = 10 then
 			return integer'image(Value);
 		else
 			for i in len downto 1 loop
-				Result(i)		:= to_HexChar(absValue / power mod base);
-				power				:= power * base;
+				Result(i) := to_HexChar(absValue / power mod base);
+				power     := power * base;
 			end loop;
 
 			if Value < 0 then
@@ -435,7 +476,7 @@ package body strings is
 	end function;
 
 	-- QUESTION: rename to slv_format(..) ?
-	function to_string(slv : std_logic_vector; format : character; Length : natural := 0; fill : character := '0') return string is
+	function to_string(slv : std_logic_vector; format : character := 'h'; Length : natural := 0; fill : character := '0') return string is
 		constant int					: integer				:= ite((slv'length <= 31), to_integer(unsigned(resize(slv, 31))), 0);
 		constant str					: string				:= integer'image(int);
 		constant bin_len			: positive			:= slv'length;
@@ -452,7 +493,7 @@ package body strings is
 
 		if (format = 'b') then
 			for i in Result'reverse_range loop
-				Result(i)		:= to_char(slv(j));
+				Result(i)		:= to_char(slv(j + slv'low));
 				j						:= j + 1;
 			end loop;
 		elsif (format = 'd') then
@@ -465,7 +506,7 @@ package body strings is
 			Result(Result'length - str'length + 1 to Result'high)	:= str;
 		elsif (format = 'h') then
 			for i in Result'reverse_range loop
-				Result(i)		:= to_HexChar(unsigned(slv((j * 4) + 3 downto (j * 4))));
+				Result(i)		:= to_HexChar(unsigned(slv(imin((j * 4) + 3 + slv'low, slv'high) downto (j * 4) + slv'low)));
 				j						:= j + 1;
 			end loop;
 		else
@@ -491,6 +532,11 @@ package body strings is
 			Result(Result'high - (i - Value'low))	:= to_HexChar(unsigned(Value(i)));
 		end loop;
 		return Result;
+	end function;
+	
+	function to_string(slv : unsigned; format : character := 'h'; Length : natural := 0; fill : character := '0') return string is
+	begin
+		return to_string(std_logic_vector(slv), format, Length, fill);
 	end function;
 
 	-- to_slv
@@ -671,7 +717,7 @@ package body strings is
 			-- WORKAROUND: for Altera Quartus-II
 			--	Version:	15.0
 			--	Issue:		array bounds are check regardless of the hierarchy and control flow
-			Result(1 to bound(Size, 1, str'length)) := ite((str'length > 0), str(1 to imin(Size, str'length)), ConstNUL);
+			Result(1 to bound(Size, 1, str'length)) := ite((str'length > 0), str(str'low to imin(Size, str'length) + str'low -1), ConstNUL);
 		end if;
 		return Result;
 	end function;
@@ -759,10 +805,26 @@ package body strings is
 				return TRUE;
 			end if;
 		end loop;
-		-- check special cases,
-		return (((str1'length = len) and (str2'length = len)) or									-- both strings are fully consumed and equal
-						((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or		-- str1 is longer, but str_length equals len
-						((str2'length > len) and (str2(str2'low + len) = C_POC_NUL)));		-- str2 is longer, but str_length equals len
+
+		-- WORKAROUND: for Xilinx Vivado
+		--	Version:	2017.4
+		--	Issue:
+		--		Expressions in a RETURN statement are not obeying to the short-circuit
+		--		operator evaluation rules of VHDL.
+		--	Solution:
+		--		But, the evaluation of expressions is handled correctly in IF statements.
+
+		-- check special cases
+		if (((str1'length = len) and (str2'length = len)) or										-- both strings are fully consumed and equal
+				((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or			-- str1 is longer, but str_length equals len
+				((str2'length > len) and (str2(str2'low + len) = C_POC_NUL))) then	-- str2 is longer, but str_length equals len
+			return true;
+		else
+			return false;
+		end if;
+--		return (((str1'length = len) and (str2'length = len)) or									-- both strings are fully consumed and equal
+--						((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or		-- str1 is longer, but str_length equals len
+--						((str2'length > len) and (str2(str2'low + len) = C_POC_NUL)));		-- str2 is longer, but str_length equals len
 	end function;
 
 	-- compare two POC_NUL terminated STRINGs; case insentitve
@@ -799,13 +861,13 @@ package body strings is
 	-- search for chr in a STRING and return the position; case insentitve; return -1 on error
 	function str_ipos(str : string; chr : character; start : natural := 0) return integer is
 	begin
-		return str_pos(str_toLower(str), chr_toLower(chr));
+		return str_pos(str_toLower(str), chr_toLower(chr), start);
 	end function;
 
 	-- search for pattern in a STRING and return the position; case insentitve; return -1 on error
 	function str_ipos(str : string; pattern : string; start : natural := 0) return integer is
 	begin
-		return str_pos(str_toLower(str), str_toLower(pattern));
+		return str_pos(str_toLower(str), str_toLower(pattern), start);
 	end function;
 
 --	function str_pos(str1 : STRING; str2 : STRING) return INTEGER is
@@ -880,6 +942,19 @@ package body strings is
 		else
 			return str;
 		end if;
+	end function;
+
+	-- replace all pattern characters in a string
+	function str_replace_all(str : string; pattern : character; replace : character)	return string is
+		variable temp : str'subtype := str;
+	begin
+		for i in temp'range loop
+			if temp(i) = pattern then
+				temp(i) := replace;
+			end if;
+		end loop;
+
+		return temp;
 	end function;
 
 	-- return a sub-string of STRING str
@@ -994,4 +1069,126 @@ package body strings is
 		return Result;
 	end function;
 
+	--Function has a copy in PoC.config_private
+	function normalize_path(path : string) return string is
+		variable temp : string(path'range) := path;
+	begin
+		for i in path'range loop
+			if temp(i) = '\' then
+				temp(i) := '/';
+			end if;
+		end loop;
+		if temp(temp'high) = '/' then
+			return temp;
+		end if;
+		return temp & '/';
+	end function;
+
+
+	--string-descriptor
+	function check_descriptor(               str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return boolean is
+		variable current_num : integer := 0;
+		variable last_num    : integer := -1;
+	begin
+		for i in str'range loop
+			if str(i) = Separator_0 then
+					if last_num = -1 then
+						last_num    := current_num;
+					elsif last_num /= current_num then
+						assert false
+						report "PoC.strings.check_descriptor: Provided string has unmatching Sub-Sizes! String is: '" & str & "' Failing position: " & integer'image(i - str'low)
+						severity failure;
+						return false;
+					end if;
+
+					current_num := 0;
+
+			elsif str(i) = Separator_1 then
+					current_num := current_num +1;
+
+			end if;
+		end loop;
+
+		if last_num /= current_num then
+			assert false
+			report "PoC.strings.check_descriptor: Provided string has unmatching Sub-Sizes! String is: '" & str & "' Failing position: " & integer'image(str'high)
+			severity failure;
+			return false;
+		else
+			return true;
+		end if;
+	end function;
+
+	function get_descriptor_number(          str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return natural is
+		variable result : natural := 1;
+	begin
+		for i in str'range loop
+			if str(i) = Separator_0 then
+				result := result +1;
+			end if;
+		end loop;
+
+		return result;
+	end function;
+
+	function get_descriptor_sub_number(      str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return natural is
+		variable result : natural := 1;
+	begin
+		for i in str'range loop
+			if str(i) = Separator_1 then
+				result := result +1;
+			elsif str(i) = Separator_0 then
+				return result;
+			end if;
+		end loop;
+
+		return result;
+	end function;
+
+	function get_descriptor_element_position(str : string; Subelement : natural := 0; Separator_0 : character := ';'; Separator_1 : character := ',') return T_NATVEC is
+		variable result     : T_NATVEC(0 to get_descriptor_number(str) -1);
+		variable pos        : natural := 0;
+		variable pos_sub    : natural := 0;
+		variable got_in_set : boolean := false;
+	begin
+		for i in str'range loop
+			if (pos_sub = Subelement) and not got_in_set then
+				result(pos) := i;
+				pos         := pos +1;
+				got_in_set  := true;
+			end if;
+
+			if str(i) = Separator_0 then
+				pos_sub    := 0;
+				got_in_set := false;
+			elsif str(i) = Separator_1 then
+				pos_sub    := pos_sub +1;
+			end if;
+		end loop;
+
+		return result;
+	end function;
+
+	function get_descriptor_element_length(  str : string; Subelement : natural := 0; Separator_0 : character := ';'; Separator_1 : character := ',') return T_NATVEC is
+		variable result     : T_NATVEC(0 to get_descriptor_number(str) -1);
+		variable pos        : natural := 0;
+		variable pos_sub    : natural := 0;
+		variable length     : natural := 0;
+	begin
+		for i in str'range loop
+			if str(i) = Separator_0 then
+				pos_sub     := 0;
+				result(pos) := length;
+				pos         := pos +1;
+				length      := 0;
+			elsif str(i) = Separator_1 then
+				pos_sub    := pos_sub +1;
+			elsif pos_sub = Subelement then
+				length      := length +1;
+			end if;
+		end loop;
+
+		result(pos) := length;
+		return result;
+	end function;
 end package body;

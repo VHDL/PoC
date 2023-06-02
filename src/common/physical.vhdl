@@ -95,14 +95,16 @@ package physical is
 	type		T_MEMVEC						is array(natural range <>) of MEMORY;
 
 	-- if true: TimingToCycles reports difference between expected and actual result
-	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: boolean		:= TRUE;
+	constant C_PHYSICAL_REPORT_TIMING_DEVIATION		: boolean		:= true;
 
 	-- conversion functions
-	function to_time(f : FREQ)	return time; -- can be used by testbenches without restrictions
-	function to_time(f : FREQ)	return T_TIME;
-	function to_freq(p : T_TIME)	return FREQ;
-	function to_freq(br : BAUD)	return FREQ;
-	function to_baud(str : string)	return BAUD;
+	function to_time(f : FREQ)	   return time; -- can be used by testbenches without restrictions
+	function to_time(f : FREQ)	   return T_TIME;
+	function to_freq(p : T_TIME)   return FREQ;
+	function to_freq(br : BAUD)	   return FREQ;
+	function to_baud(str : string) return BAUD;
+	function to_baud(f : FREQ)     return BAUD;
+	function to_baud(p : T_TIME)   return BAUD;
 
 	-- inter-type arithmetic
 	function div(a : time; b : time) return real;
@@ -413,6 +415,38 @@ package body physical is
 			report "to_baud: Unknown format" severity FAILURE;
 		end if;
 		return 0 Bd;
+	end function;
+	
+	function to_baud(f : FREQ)     return BAUD is
+		variable res : BAUD;
+	begin
+		if SYNTHESIS_TOOL = SYNTHESIS_TOOL_XILINX_VIVADO then --Vivado does not itself complain about divide by zero
+			if f <= 0 Hz then -- yes, can be negative in Vivado!
+				report "to_baud: Invalid f=" & FREQ'image(f) severity failure;
+				return 0 Bd;
+			end if;
+		end if;
+		res := (f / 1 Hz)	* 1  Bd;
+		if (POC_VERBOSE = TRUE) then
+			report "to_baud: f= " & to_string(f, 3) & "  return " & to_string(res, 3) severity note;
+		end if;
+		return res;
+	end function;
+	
+	function to_baud(p : T_TIME)   return BAUD is
+		variable res : BAUD;
+	begin
+		if p <= 0.0 then
+			report "to_freq: Invalid p=" & T_TIME'image(p) severity failure;
+			return 0 Bd;
+		end if;
+		if (p >= 500.0e-12) then	res := integer(1.0 / p) * 1 Bd;
+			else report "to_baud: input period exceeds output Boudrate scale." severity failure;
+		end if;
+		if POC_VERBOSE then
+			report "to_baud: p= " & to_string(p, 3) & "  return " & to_string(res, 3) severity note;
+		end if;
+		return res;
 	end function;
 
 	-- inter-type arithmetic

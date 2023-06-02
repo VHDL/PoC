@@ -139,7 +139,8 @@ begin
 	syncClk2 : entity PoC.sync_Bits
 		generic map (
 			BITS        => 1,             -- number of bit to be synchronized
-			SYNC_DEPTH  => SYNC_DEPTH
+			SYNC_DEPTH  => SYNC_DEPTH,
+			REGISTER_OUTPUT => false
 		)
 		port map (
 			Clock       => Clock2,        -- <Clock>  output clock domain
@@ -150,7 +151,8 @@ begin
 	syncClk1 : entity PoC.sync_Bits
 		generic map (
 			BITS        => 1,             -- number of bit to be synchronized
-			SYNC_DEPTH  => SYNC_DEPTH
+			SYNC_DEPTH  => SYNC_DEPTH,
+			REGISTER_OUTPUT => false
 		)
 		port map (
 			Clock       => Clock1,        -- <Clock>  output clock domain

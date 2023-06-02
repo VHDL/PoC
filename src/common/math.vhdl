@@ -29,14 +29,21 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use		IEEE.std_logic_1164.all;
+use		IEEE.numeric_std.all;
+use     IEEE.math_real.all;
 
 library PoC;
-use			PoC.utils.all;
+use		PoC.utils.all;
 
 
 package math is
+  type T_FRACTIONAL is record
+    whole       : integer;    --integer part
+    numerator   : natural;    --numerator
+    denominator : natural;    --denominator
+  end record;
+  
 	-- figurate numbers
 	function squareNumber(N : natural) return natural;
 	function cubicNumber(N : natural) return natural;
@@ -50,6 +57,15 @@ package math is
 	function greatestCommonDivisor(N1 : positive; N2 : positive) return positive;
 	-- least common multiple (lcm)
 	function leastCommonMultiple(N1 : positive; N2 : positive) return positive;
+  
+  -- calculate fraction of positive float and give out as vector of integers
+  -- ReturnValue.whole        -> the real's integer part
+  -- ReturnValue.numerator    -> numerator of the real's fractional part
+  -- ReturnValue.denominator  -> denominator of the real's fractional part
+  function fract(F : real; maxDenominator : natural := 1000; maxError : real := 1.0E-6) return T_FRACTIONAL;
+  -- calculate time increments to met fraction
+  function fract2timing(numerator : natural; denominator : natural) return T_NATVEC;
+  function fract2timing(fractional : T_FRACTIONAL)                  return T_NATVEC;
 end package;
 
 package body math is
@@ -102,4 +118,71 @@ package body math is
 	begin
 		return ((N1 * N2) / greatestCommonDivisor(N1, N2));
 	end function;
+  
+  -- calculate fraction of positive float and give out as vector of integers
+  function fract(F : real; maxDenominator : natural := 1000; maxError : real := 1.0E-6) return T_FRACTIONAL is
+    constant fulls        : integer := integer(trunc(F));
+    constant remainder    : real    := ite(F >= 0.0, F - trunc(F), -F - trunc(-F));
+    variable numerator    : natural := 0;
+    variable denominator  : natural := 1;
+    variable newFraction  : real    := 0.0;
+    variable Error        : real    := remainder;
+    variable result       : T_FRACTIONAL := (whole => fulls, denominator => 1, numerator => 0);
+    variable bestError    : real    := remainder;
+  begin
+    while (Error > maxError) and (denominator < maxDenominator) loop
+      if newFraction > remainder then
+        denominator := denominator +1;
+        numerator   := numerator -1;
+      elsif (numerator +1) = denominator then
+        denominator := denominator +1;
+      else
+        numerator   := numerator +1;
+      end if;
+       
+      newFraction := real(numerator) / real(denominator);
+      Error := REALMAX(remainder, newFraction) - REALMIN(remainder, newFraction);
+      if Error < bestError then
+        bestError := Error;
+        result.numerator := numerator;
+        result.denominator := denominator;
+      end if;
+    end loop;
+    assert (bestError < maxError) report "Didn't find suitable fraction for F=" & real'image(F) & "! Target Error=" & real'image(maxError) & " Actual Error=" & real'image(bestError) & "!" severity failure;
+    if result.numerator = 0 and result.denominator = 1 then
+      result.whole  := fulls -1;
+      result.numerator := 1;
+      result.denominator := 1;
+    end if;
+    return result;
+  end function;
+  
+  -- calculate time increments to met fraction
+  function fract2timing(numerator : natural; denominator : natural) return T_NATVEC is
+    constant fractionalInReal: real     := real(numerator) / real(denominator);
+    variable actualNumerator : natural  := 1;
+    variable tab             : natural  := 0;
+    variable increment       : real  := fractionalInReal;
+    variable remainder       : real  := fractionalInReal;
+    variable result          : T_NATVEC(0 to numerator -1) := (others => 0);
+  begin
+    while actualNumerator <= denominator -1 loop
+      if remainder  >= 1.0 then
+        result(tab) := actualNumerator;
+        remainder   := remainder -1.0 +increment;
+        tab         := tab +1;
+        actualNumerator := actualNumerator +1;
+      else
+        remainder   := remainder +increment;
+        actualNumerator := actualNumerator +1;
+      end if;
+    end loop;   
+    result(result'high) := denominator;
+    return result;
+  end function;  
+  -- calculate time increments to met fraction
+  function fract2timing(fractional : T_FRACTIONAL) return T_NATVEC is
+  begin
+    return fract2timing(fractional.numerator,fractional.denominator);
+  end function;
 end package body;

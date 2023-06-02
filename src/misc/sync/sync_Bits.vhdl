@@ -69,7 +69,9 @@ entity sync_Bits is
   generic (
     BITS          : positive            := 1;                       -- number of bit to be synchronized
     INIT          : std_logic_vector    := x"00000000";             -- initialization bits
-    SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low    -- generate SYNC_DEPTH many stages, at least 2
+    SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;    -- generate SYNC_DEPTH many stages, at least 2
+    FALSE_PATH      : boolean             := true;
+    REGISTER_OUTPUT : boolean             := true
   );
   port (
     Clock         : in  std_logic;                                  -- <Clock>  output clock domain
@@ -134,9 +136,11 @@ begin
   genXilinx : if (DEV_INFO.Vendor = VENDOR_XILINX) generate
     sync : sync_Bits_Xilinx
       generic map (
-        BITS        => BITS,
-        INIT        => INIT_I,
-        SYNC_DEPTH  => SYNC_DEPTH
+        BITS            => BITS,
+        INIT            => INIT_I,
+        SYNC_DEPTH      => SYNC_DEPTH,
+        FALSE_PATH      => FALSE_PATH,
+        REGISTER_OUTPUT => REGISTER_OUTPUT
       )
       port map (
         Clock      => Clock,

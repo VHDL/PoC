@@ -197,8 +197,12 @@ begin
 						NewTagSeqCounter_rst <= '0';
 --						NewTagSeqCounter_en		<= '1';
 						TagMemory_we				 <= '1';
-
-						Replace_NextState <= ST_REPLACE;
+						
+						if FA_CHUNKS = 1 then
+							Replaced <= '1';
+						else
+							Replace_NextState <= ST_REPLACE;
+						end if;
 					end if;
 
 				when ST_REPLACE =>
@@ -243,8 +247,15 @@ begin
 							TagSeqCounter_rst <= '0';
 --							TagSeqCounter_en		<= '1';
 							TagHits_en				<= '1';
-
-							Request_NextState <= ST_COMPARE;
+							
+							if FA_CHUNKS = 1 then
+								TagSeqCounter_rst <= '1';
+								RequestComplete   <= '1';
+								Request_NextState <= ST_READ;
+							
+							else
+								Request_NextState <= ST_COMPARE;
+							end if;
 						end if;
 					end if;
 
@@ -283,7 +294,14 @@ begin
 --							TagSeqCounter_en		<= '1';
 							TagHits_en				<= '1';
 
-							Request_NextState <= ST_COMPARE;
+							if FA_CHUNKS = 1 then
+								TagSeqCounter_rst <= '1';
+								RequestComplete   <= '1';
+								Request_NextState <= ST_READ;
+							
+							else
+								Request_NextState <= ST_COMPARE;
+							end if;
 						end if;
 					end if;
 
@@ -363,7 +381,7 @@ begin
 		end process;
 
 		-- convert hit-vector to binary index (cache line address)
-		MemoryIndex_us <= onehot2bin(TagHits_nxt);
+		MemoryIndex_us <= onehot2bin(TagHits_nxt, 0);
 		MemoryIndex_i	 <= std_logic_vector(MemoryIndex_us);
 
 		-- latching the ReplaceIndex
