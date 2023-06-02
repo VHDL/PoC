@@ -15,8 +15,9 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
--- Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Copyright 2023-2024 PLC2 Design GmbH, Germany
 --
@@ -1085,9 +1086,9 @@ package body utils is
 	function indexof(vec : T_NATVEC; comp : natural; falseNum : integer := -1) return integer is
 	begin
 	for i in vec'range loop
-	  if vec(i) = comp then
+		if vec(i) = comp then
 		return i;
-	  end if;
+		end if;
 	end loop;
 	return falseNum;
 	end function;
@@ -1095,9 +1096,9 @@ package body utils is
 	function indexof(vec : T_INTVEC; comp : integer; falseNum : integer := -1) return integer is
 	begin
 	for i in vec'range loop
-	  if vec(i) = comp then
+		if vec(i) = comp then
 		return i;
-	  end if;
+		end if;
 	end loop;
 	return falseNum;
 	end function;
@@ -1105,9 +1106,9 @@ package body utils is
 	function indexof(vec : T_POSVEC; comp : positive; falseNum : integer := -1) return integer is
 	begin
 	for i in vec'range loop
-	  if vec(i) = comp then
+		if vec(i) = comp then
 		return i;
-	  end if;
+		end if;
 	end loop;
 	return falseNum;
 	end function;
@@ -1117,9 +1118,9 @@ package body utils is
 	constant lower : real := comp - (comp * epsilon);
 	begin
 	for i in vec'range loop
-	  if (vec(i) >= lower) and (vec(i) <= upper) then
+		if (vec(i) >= lower) and (vec(i) <= upper) then
 		return i;
-	  end if;
+		end if;
 	end loop;
 	return falseNum;
 	end function;
@@ -1225,7 +1226,7 @@ package body utils is
 	-- short for std_logic_vector(to_unsigned(Value, Size))
 	-- the return value is guaranteed to have the range (Size-1 downto 0)
 	function to_slv(value : natural; size : positive) return std_logic_vector is
-	  constant res : std_logic_vector(size-1 downto 0) := std_logic_vector(to_unsigned(value, size));
+		constant res : std_logic_vector(size-1 downto 0) := std_logic_vector(to_unsigned(value, size));
 	begin
 		return res;
 	end function;
@@ -1309,8 +1310,8 @@ package body utils is
 	function is_sl(c : character) return boolean is
 	begin
 		case c is
-		  when 'U'|'X'|'0'|'1'|'Z'|'W'|'L'|'H'|'-' => return  true;
-		  when others                              => return  false;
+			when 'U'|'X'|'0'|'1'|'Z'|'W'|'L'|'H'|'-' => return  true;
+			when others                              => return  false;
 		end case;
 	end function;
 
@@ -1458,7 +1459,7 @@ package body utils is
 	begin
 		tmp := '0' & gray_val;
 		for i in tmp'left-1 downto 0 loop
-		  tmp(i) := tmp(i+1) xor tmp(i);
+			tmp(i) := tmp(i+1) xor tmp(i);
 		end loop;
 		res := tmp(tmp'left-1 downto 0);
 		return  res;
@@ -1621,13 +1622,13 @@ package body utils is
 		variable  res_dn : bit_vector(high2b downto vec'low);
 	begin
 		if vec'ascending then
-		  res_up := (others => fill);
-		  res_up(vec'low to highcp) := vec(vec'low to highcp);
-		  return res_up;
+			res_up := (others => fill);
+			res_up(vec'low to highcp) := vec(vec'low to highcp);
+			return res_up;
 		else
-		  res_dn := (others => fill);
-		  res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
-		  return  res_dn;
+			res_dn := (others => fill);
+			res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
+			return  res_dn;
 		end if;
 	end function;
 
@@ -1655,11 +1656,11 @@ package body utils is
 		variable res_dn : std_logic_vector(vec'high+ofs downto vec'low +ofs);
 	begin
 		if vec'ascending then
-		  res_up := vec;
-		  return res_up;
+			res_up := vec;
+			return res_up;
 		else
-		  res_dn := vec;
-		  return res_dn;
+			res_dn := vec;
+			return res_dn;
 		end if;
 	end function;
 

@@ -3,6 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:          Patrick Lehmann
+--                   Stefan Unrein
 --
 -- Package:          VHDL package for component declarations, types and
 --                  functions associated to the PoC.misc.sync namespace
@@ -13,6 +14,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -36,15 +38,15 @@ use     IEEE.NUMERIC_STD.all;
 
 package sync is
 	subtype T_MISC_SYNC_DEPTH    is integer range 2 to 16;
-  type    T_SYNC_MODE          is (SYNC_MODE_UNORDERED, SYNC_MODE_ORDERED, SYNC_MODE_STRICTLY_ORDERED);
+	type    T_SYNC_MODE          is (SYNC_MODE_UNORDERED, SYNC_MODE_ORDERED, SYNC_MODE_STRICTLY_ORDERED);
 
 	component sync_Bits is
 		generic (
-			BITS          : positive            := 1;                     -- number of bit to be synchronized
-			INIT          : std_logic_vector    := x"00000000";           -- initialization bits
-			SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;  -- generate SYNC_DEPTH many stages, at least 2
+			BITS            : positive            := 1;                     -- number of bit to be synchronized
+			INIT            : std_logic_vector    := x"00000000";           -- initialization bits
+			SYNC_DEPTH      : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;  -- generate SYNC_DEPTH many stages, at least 2
 			FALSE_PATH      : boolean             := true;
-    	REGISTER_OUTPUT : boolean             := true
+			REGISTER_OUTPUT : boolean             := true
 		);
 		port (
 			Clock         : in  std_logic;                                -- <Clock>  output clock domain
@@ -72,7 +74,7 @@ package sync is
 			INIT          : std_logic_vector    := x"00000000";           -- initialization bits
 			SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;  -- generate SYNC_DEPTH many stages, at least 2
 			FALSE_PATH      : boolean             := true;
-    	REGISTER_OUTPUT : boolean             := true
+			REGISTER_OUTPUT : boolean             := true
 		);
 		port (
 			Clock         : in  std_logic;                                -- Clock to be synchronized to
@@ -88,7 +90,7 @@ package sync is
 		port (
 			Clock         : in  std_logic;                                -- <Clock>  output clock domain
 			Input         : in  std_logic;                                -- @async:  reset input
-    	D             : in  std_logic := '0';
+			D             : in  std_logic := '0';
 			Output        : out std_logic                                 -- @Clock:  reset output
 		);
 	end component;
@@ -100,7 +102,7 @@ package sync is
 		port (
 			Clock         : in  std_logic;                                -- <Clock>  output clock domain
 			Input         : in  std_logic;                                -- @async:  reset input
-    	D             : in  std_logic := '0';
+			D             : in  std_logic := '0';
 			Output        : out std_logic                                 -- @Clock:  reset output
 		);
 	end component;
@@ -112,7 +114,7 @@ package sync is
 		port (
 			Clock         : in  std_logic;                                -- <Clock>  output clock domain
 			Input         : in  std_logic;                                -- @async:  reset input
-    	D             : in  std_logic := '0';
+			D             : in  std_logic := '0';
 			Output        : out std_logic                                 -- @Clock:  reset output
 		);
 	end component;

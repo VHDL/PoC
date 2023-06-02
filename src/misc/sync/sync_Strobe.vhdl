@@ -28,6 +28,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -48,8 +49,7 @@ library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use     PoC.sync.all;
+use     work.sync.all;
 
 
 entity sync_Strobe is

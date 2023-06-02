@@ -23,6 +23,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -43,9 +44,8 @@ library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use     PoC.utils.all;
-use     PoC.sync.all;
+use     work.utils.all;
+use     work.sync.all;
 
 
 entity sync_Command is
@@ -90,9 +90,9 @@ architecture rtl of sync_Command is
 	attribute SHREG_EXTRACT of D5  : signal is "NO";
 
 	signal syncClk1_In    : std_logic;
-	signal syncClk1_Out    : std_logic;
+	signal syncClk1_Out   : std_logic;
 	signal syncClk2_In    : std_logic;
-	signal syncClk2_Out    : std_logic;
+	signal syncClk2_Out   : std_logic;
 
 begin
 	-- input D-FF @Clock1 -> changed detection

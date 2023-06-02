@@ -15,6 +15,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -35,9 +36,8 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-library PoC;
-use     PoC.utils.all;
-use     PoC.strings.all;
+use     work.utils.all;
+use     work.strings.all;
 
 
 package vectors is

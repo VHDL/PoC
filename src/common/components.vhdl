@@ -2,30 +2,31 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:           Patrick Lehmann
 --
--- Package:				 	Common primitives described as a function
+-- Package:           Common primitives described as a function
 --
 -- Description:
 -- -------------------------------------
---		This packages describes common primitives like flip flops and multiplexers
---		as a function to use them as one-liners.
+--    This packages describes common primitives like flip flops and multiplexers
+--    as a function to use them as one-liners.
 --
---	ATTENSION:
---		The parameter 'constant INIT' of some functions is actually the reset
---		value, not the initial value after device programming (e.g. for FPGAs),
---		this value MUST be set via signal declaration!
+--  ATTENSION:
+--    The parameter 'constant INIT' of some functions is actually the reset
+--    value, not the initial value after device programming (e.g. for FPGAs),
+--    this value MUST be set via signal declaration!
 --
 -- License:
 -- =============================================================================
+-- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,11 +36,10 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
+use     work.utils.all;
 
 
 package components is
@@ -49,47 +49,47 @@ package components is
 	-- FlipFlop functions
 	-- ===========================================================================
 	-- RS-FlipFlops
-	function ffrs(q : std_logic;	rst : std_logic := '0'; set : std_logic := '0') return std_logic;				-- RS-FlipFlop with dominant rst
-	function ffsr(q : std_logic;	rst : std_logic := '0'; set : std_logic := '0') return std_logic;				-- RS-FlipFlop with dominant set
+	function ffrs(q : std_logic;  rst : std_logic := '0'; set : std_logic := '0') return std_logic;        -- RS-FlipFlop with dominant rst
+	function ffsr(q : std_logic;  rst : std_logic := '0'; set : std_logic := '0') return std_logic;        -- RS-FlipFlop with dominant set
 	-- D-FlipFlops (Delay)
-	function ffdre(q : std_logic;					d : std_logic;				rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic := '0')												return std_logic;					-- D-FlipFlop with reset and enable
-	function ffdre(q : std_logic_vector;	d : std_logic_vector;	rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic_vector := (0 to 0 => '0'))	return std_logic_vector;	-- D-FlipFlop with reset and enable
-	function ffdse(q : std_logic;					d : std_logic;				set : std_logic := '0'; en : std_logic := '1')																													return std_logic;					-- D-FlipFlop with set and enable
+	function ffdre(q : std_logic;          d : std_logic;        rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic := '0')                        return std_logic;          -- D-FlipFlop with reset and enable
+	function ffdre(q : std_logic_vector;   d : std_logic_vector; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic_vector := (0 to 0 => '0'))  return std_logic_vector;  -- D-FlipFlop with reset and enable
+	function ffdse(q : std_logic;          d : std_logic;        set : std_logic := '0'; en : std_logic := '1')                                                          return std_logic;          -- D-FlipFlop with set and enable
 	-- T-FlipFlops (Toggle)
-	function fftre(q : std_logic;					t : std_logic;				rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic := '0')												return std_logic;					-- T-FlipFlop with reset and enable
-	function fftse(q : std_logic;					t : std_logic;				set : std_logic := '0'; en : std_logic := '1')																													return std_logic;					-- T-FlipFlop with set and enable
+	function fftre(q : std_logic;          t : std_logic;        rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic := '0')                        return std_logic;          -- T-FlipFlop with reset and enable
+	function fftse(q : std_logic;          t : std_logic;        set : std_logic := '0'; en : std_logic := '1')                                                          return std_logic;          -- T-FlipFlop with set and enable
 
 	-- counter
-	function upcounter_next(cnt : unsigned; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : natural := 0) return unsigned;
-	function upcounter_equal(cnt : unsigned; value : natural) return std_logic;
-	function downcounter_next(cnt : signed; init : unsigned; rst : std_logic := '0'; en : std_logic := '1') return signed;
-	function downcounter_next(cnt : signed; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : integer := 0) return signed;
-	function downcounter_equal(cnt : signed; value : integer) return std_logic;
-	function downcounter_neg(cnt : signed) return std_logic;
+	function upcounter_next(   cnt : unsigned;   rst : std_logic := '0'; en : std_logic := '1'; constant INIT : natural := 0)     return unsigned;
+	function upcounter_equal(  cnt : unsigned; value : natural) return std_logic;
+	function downcounter_next( cnt : signed;    init : unsigned;        rst : std_logic := '0';            en : std_logic := '1') return signed;
+	function downcounter_next( cnt : signed;     rst : std_logic := '0'; en : std_logic := '1'; constant INIT : integer := 0)     return signed;
+	function downcounter_equal(cnt : signed;   value : integer) return std_logic;
+	function downcounter_neg(  cnt : signed) return std_logic;
 
 	-- shiftregisters
-	function shreg_left(q : std_logic_vector; i : std_logic; en : std_logic := '1') return std_logic_vector;
+	function shreg_left( q : std_logic_vector; i : std_logic; en : std_logic := '1') return std_logic_vector;
 	function shreg_right(q : std_logic_vector; i : std_logic; en : std_logic := '1') return std_logic_vector;
 	-- rotate registers
-	function rreg_left(q : std_logic_vector; en : std_logic := '1') return std_logic_vector;
+	function rreg_left( q : std_logic_vector; en : std_logic := '1') return std_logic_vector;
 	function rreg_right(q : std_logic_vector; en : std_logic := '1') return std_logic_vector;
 
 	-- compare
 	function comp(value1 : std_logic_vector; value2 : std_logic_vector) return std_logic_vector;
-	function comp(value1 : unsigned; value2 : unsigned) return unsigned;
-	function comp(value1 : signed; value2 : signed) return signed;
-	function comp_allzero(value	: std_logic_vector)	return std_logic;
-	function comp_allzero(value	: unsigned)					return std_logic;
-	function comp_allzero(value	: signed)						return std_logic;
-	function comp_allone(value	: std_logic_vector)	return std_logic;
-	function comp_allone(value	: unsigned)					return std_logic;
-	function comp_allone(value	: signed)						return std_logic;
+	function comp(value1 : unsigned;         value2 : unsigned) return unsigned;
+	function comp(value1 : signed;           value2 : signed)   return signed;
+	function comp_allzero(value : std_logic_vector) return std_logic;
+	function comp_allzero(value : unsigned)         return std_logic;
+	function comp_allzero(value : signed)           return std_logic;
+	function comp_allone( value : std_logic_vector) return std_logic;
+	function comp_allone( value : unsigned)         return std_logic;
+	function comp_allone( value : signed)           return std_logic;
 
 	-- multiplexing
-	function mux(sel : std_logic; sl0		: std_logic;				sl1		: std_logic)				return std_logic;
-	function mux(sel : std_logic; slv0	: std_logic_vector;	slv1	: std_logic_vector)	return std_logic_vector;
-	function mux(sel : std_logic; us0		: unsigned;					us1		: unsigned)					return unsigned;
-	function mux(sel : std_logic; s0		: signed;						s1		: signed)						return signed;
+	function mux(sel : std_logic; sl0  : std_logic;        sl1  : std_logic)        return std_logic;
+	function mux(sel : std_logic; slv0 : std_logic_vector; slv1 : std_logic_vector) return std_logic_vector;
+	function mux(sel : std_logic; us0  : unsigned;         us1  : unsigned)         return unsigned;
+	function mux(sel : std_logic; s0   : signed;           s1   : signed)           return signed;
 end package;
 
 
@@ -123,11 +123,11 @@ package body components is
 	end function;
 
 	function ffdre(q : std_logic_vector; d : std_logic_vector; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic_vector := (0 to 0 => '0')) return std_logic_vector is
-		constant INIT_I		: std_logic_vector(q'range)		:= resize(INIT, q'length);
-		variable Result		: std_logic_vector(q'range);
+		constant INIT_I    : std_logic_vector(q'range)    := resize(INIT, q'length);
+		variable Result    : std_logic_vector(q'range);
 	begin
 		for i in q'range loop
-			Result(i)		:= ffdre(q => q(i), d => d(i), rst => rst, en => en, INIT => INIT_I(i));
+			Result(i)    := ffdre(q => q(i), d => d(i), rst => rst, en => en, INIT => INIT_I(i));
 		end loop;
 		return Result;
 	end function;
@@ -207,7 +207,7 @@ package body components is
 			return cnt;
 		end if;
 	end function;
-  
+	
 	function downcounter_next(cnt : signed; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : integer := 0) return signed is
 	begin
 		if (rst = '1') then
@@ -255,9 +255,9 @@ package body components is
 	-- compare functions
 	-- ===========================================================================
 	-- Returns, when
-	--	1-		=> value1 < value2 (difference is negative)
-	--	00		=> value1 = value2 (difference is zero)
-	--	-1		=> value1 > value2 (difference is positive)
+	--  1-    => value1 < value2 (difference is negative)
+	--  00    => value1 = value2 (difference is zero)
+	--  -1    => value1 > value2 (difference is positive)
 	function comp(value1 : std_logic_vector; value2 : std_logic_vector) return std_logic_vector is
 	begin
 		report "Comparing two STD_LOGIC_VECTORs - implicit conversion to UNSIGNED" severity WARNING;
@@ -286,32 +286,32 @@ package body components is
 		end if;
 	end function;
 
-	function comp_allzero(value	: std_logic_vector) return std_logic is
+	function comp_allzero(value  : std_logic_vector) return std_logic is
 	begin
 		return comp_allzero(unsigned(value));
 	end function;
 
-	function comp_allzero(value	: unsigned) return std_logic is
+	function comp_allzero(value  : unsigned) return std_logic is
 	begin
 		return to_sl(value = (value'range => '0'));
 	end function;
 
-	function comp_allzero(value	: signed) return std_logic is
+	function comp_allzero(value  : signed) return std_logic is
 	begin
 		return to_sl(value = (value'range => '0'));
 	end function;
 
-	function comp_allone(value	: std_logic_vector) return std_logic is
+	function comp_allone(value  : std_logic_vector) return std_logic is
 	begin
 		return comp_allone(unsigned(value));
 	end function;
 
-	function comp_allone(value	: unsigned) return std_logic is
+	function comp_allone(value  : unsigned) return std_logic is
 	begin
 		return to_sl(value = (value'range => '1'));
 	end function;
 
-	function comp_allone(value	: signed) return std_logic is
+	function comp_allone(value  : signed) return std_logic is
 	begin
 		return to_sl(value = (value'range => '1'));
 	end function;

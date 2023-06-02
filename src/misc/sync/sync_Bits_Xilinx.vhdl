@@ -2,7 +2,8 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:           Patrick Lehmann
+-- Authors:          Patrick Lehmann
+--                   Stefan Unrein
 --
 -- Entity:           sync_Bits_Xilinx
 --
@@ -42,6 +43,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -66,18 +68,18 @@ use     work.sync.all;
 
 
 entity sync_Bits_Xilinx is
-  generic (
-    BITS            : positive            := 1;                       -- number of bit to be synchronized
-    INIT            : std_logic_vector    := x"00000000";             -- initialization bits
-    SYNC_DEPTH      : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;    -- generate SYNC_DEPTH many stages, at least 2
-    FALSE_PATH      : boolean             := true;
-    REGISTER_OUTPUT : boolean             := true
-  );
-  port (
-    Clock           : in  std_logic;                                  -- <Clock>  output clock domain
-    Input           : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
-    Output          : out std_logic_vector(BITS - 1 downto 0) := (others => '0')-- @Clock:  output bits
-  );
+	generic (
+		BITS            : positive            := 1;                       -- number of bit to be synchronized
+		INIT            : std_logic_vector    := x"00000000";             -- initialization bits
+		SYNC_DEPTH      : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;    -- generate SYNC_DEPTH many stages, at least 2
+		FALSE_PATH      : boolean             := true;
+		REGISTER_OUTPUT : boolean             := true
+	);
+	port (
+		Clock           : in  std_logic;                                  -- <Clock>  output clock domain
+		Input           : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
+		Output          : out std_logic_vector(BITS - 1 downto 0) := (others => '0')-- @Clock:  output bits
+	);
 end entity;
 
 
@@ -91,17 +93,17 @@ use     work.sync.all;
 
 
 entity sync_Bit_Xilinx is
-  generic (
-    INIT            : bit;                                            -- initialization bits
-    FALSE_PATH      : boolean             := true;
-    SYNC_DEPTH      : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;   -- generate SYNC_DEPTH many stages, at least 2
-    REGISTER_OUTPUT : boolean             := true
-  );
-  port (
-    Clock           : in  std_logic;                                  -- <Clock>  output clock domain
-    Input           : in  std_logic;        							-- @async:  input bits
-    Output          : out std_logic         							-- @Clock:  output bits
-  );
+	generic (
+		INIT            : bit;                                            -- initialization bits
+		FALSE_PATH      : boolean             := true;
+		SYNC_DEPTH      : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;   -- generate SYNC_DEPTH many stages, at least 2
+		REGISTER_OUTPUT : boolean             := true
+	);
+	port (
+		Clock           : in  std_logic;                                  -- <Clock>  output clock domain
+		Input           : in  std_logic;                      -- @async:  input bits
+		Output          : out std_logic                       -- @Clock:  output bits
+	);
 end entity;
 
 
@@ -134,7 +136,7 @@ architecture rtl of sync_Bit_Xilinx is
 	signal Data_sync        : std_logic_vector(SYNC_DEPTH - 1 downto 0);
 
 	-- Mark register Data_async's input as asynchronous
-	attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
+	attribute ASYNC_REG     of Data_meta  : signal is "TRUE";
 
 	-- Prevent XST from translating two FFs into SRL plus FF
 	attribute SHREG_EXTRACT of Data_meta  : signal is "NO";
@@ -150,9 +152,9 @@ begin
 				INIT    => INIT
 			)
 			port map (
-				C        => Clock,
-				D        => Data_async,
-				Q        => Data_meta
+				C       => Clock,
+				D       => Data_async,
+				Q       => Data_meta
 			);
 	else generate
 		METASTABILITY_FF_MAX_DELAY : FD
@@ -160,10 +162,10 @@ begin
 				INIT    => INIT
 			)
 			port map (
-				C        => Clock,
-				D        => Data_async,
-				Q        => Data_meta
-			);	
+				C       => Clock,
+				D       => Data_async,
+				Q       => Data_meta
+			);  
 	end generate;
 
 	Data_sync(0) <= Data_meta;
@@ -174,9 +176,9 @@ begin
 				INIT    => INIT
 			)
 			port map (
-				C        => Clock,
-				D        => Data_sync(i),
-				Q        => Data_sync(i + 1)
+				C       => Clock,
+				D       => Data_sync(i),
+				Q       => Data_sync(i + 1)
 			);
 		end generate;
 
