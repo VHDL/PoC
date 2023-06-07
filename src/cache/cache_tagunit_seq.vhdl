@@ -423,7 +423,7 @@ begin
 		TagIndex  <= MemoryIndex_i when rising_edge(Clock);
 
 		-- replacement policy
-		Policy : entity PoC.cache_replacement_policy
+		Policy : entity work.cache_replacement_policy
 			generic map (
 				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 				CACHE_WAYS         => FA_CACHE_LINES
@@ -440,11 +440,11 @@ begin
 				Invalidate => Request_Invalidate,
 				HitWay     => TagIndex
 			);
-	end generate;
+
 	-- ==========================================================================================================================================================
 	-- Direct-Mapped Cache
 	-- ==========================================================================================================================================================
-	genDM : if ASSOCIATIVITY = 1 generate
+	elsif ASSOCIATIVITY = 1 generate
 		constant FA_CACHE_LINES        : positive := CACHE_LINES;
 		constant FA_TAG_BITS          : positive := TAG_BITS;
 		constant FA_MEMORY_INDEX_BITS : positive := log2ceilnz(FA_CACHE_LINES);
@@ -460,6 +460,8 @@ begin
 		signal TagHit_i   : std_logic;
 		signal TagMiss_i : std_logic;
 	begin
+		assert false report "PoC.cache_tagunit_seq:: Implementation of 'ASSOCIATIVITY = 1' not available!" severity failure;
+
 	-- -- generate comparators
 	-- genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
 		-- TagHits(I)      <= to_sl(TagMemory(I) = FA_Tag);
@@ -514,11 +516,11 @@ begin
 				-- Index                      => Policy_Index(I)
 			-- );
 	-- end generate;
-	end generate;
+
 	-- ==========================================================================================================================================================
 	-- Set-Assoziative Cache
 	-- ==========================================================================================================================================================
-	genSA : if (ASSOCIATIVITY > 1) and (SETS > 1) generate
+	elsif (ASSOCIATIVITY > 1) and (SETS > 1) generate
 		constant FA_CACHE_LINES        : positive := CACHE_LINES;
 		constant SETINDEX_BITS        : natural   := log2ceil(SETS);
 		constant FA_TAG_BITS          : positive := TAG_BITS;
@@ -535,6 +537,8 @@ begin
 		signal TagHit_i   : std_logic;
 		signal TagMiss_i : std_logic;
 	begin
+		assert false report "PoC.cache_tagunit_seq:: Implementation of '(ASSOCIATIVITY > 1) and (SETS > 1)' not available!" severity failure;
+		
 	 -- -- generate comparators
 	 -- genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
 		 -- TagHits(I)      <= to_sl(TagMemory(I) = FA_Tag);
