@@ -161,16 +161,16 @@ begin
 				D_BITS   : positive;
 				FILENAME : string);
 			port (
-				clk1 : in   std_logic;
-				clk2 : in   std_logic;
-				ce1   : in   std_logic;
-				ce2   : in   std_logic;
-				we1   : in   std_logic;
-				we2   : in   std_logic;
-				a1   : in   unsigned(A_BITS-1 downto 0);
-				a2   : in   unsigned(A_BITS-1 downto 0);
-				d1   : in   std_logic_vector(D_BITS-1 downto 0);
-				d2   : in   std_logic_vector(D_BITS-1 downto 0);
+				clk1 : in  std_logic;
+				clk2 : in  std_logic;
+				ce1  : in  std_logic;
+				ce2  : in  std_logic;
+				we1  : in  std_logic;
+				we2  : in  std_logic;
+				a1   : in  unsigned(A_BITS-1 downto 0);
+				a2   : in  unsigned(A_BITS-1 downto 0);
+				d1   : in  std_logic_vector(D_BITS-1 downto 0);
+				d2   : in  std_logic_vector(D_BITS-1 downto 0);
 				q1   : out std_logic_vector(D_BITS-1 downto 0);
 				q2   : out std_logic_vector(D_BITS-1 downto 0));
 		end component ocram_tdp_sim;
@@ -183,10 +183,10 @@ begin
 			port map (
 				clk1 => wclk,
 				clk2 => rclk,
-				ce1   => wce,
-				ce2   => rce,
-				we1   => we,
-				we2   => '0',
+				ce1  => wce,
+				ce2  => rce,
+				we1  => we,
+				we2  => '0',
 				a1   => wa,
 				a2   => ra,
 				d1   => d,

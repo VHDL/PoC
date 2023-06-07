@@ -46,7 +46,6 @@ use     IEEE.NUMERIC_STD.all;
 use     work.utils.all;
 use     work.sync.all;
 
-
 entity sync_Vector is
 	generic (
 		MASTER_BITS   : natural             := 8;                       -- number of bits for internal change detection
@@ -138,7 +137,7 @@ begin
 	Busy          <= Busy_i;
 	Changed       <= D3;
 
-	syncClk2 : entity PoC.sync_Bits
+	syncClk2 : entity work.sync_Bits
 		generic map (
 			BITS        => 1,           -- number of bit to be synchronized
 			SYNC_DEPTH  => SYNC_DEPTH,
@@ -150,7 +149,7 @@ begin
 			Output(0) => syncClk2_Out   -- @Clock:  output bits
 		);
 
-	syncClk1 : entity PoC.sync_Bits
+	syncClk1 : entity work.sync_Bits
 		generic map (
 			BITS        => 1,           -- number of bit to be synchronized
 			SYNC_DEPTH  => SYNC_DEPTH,

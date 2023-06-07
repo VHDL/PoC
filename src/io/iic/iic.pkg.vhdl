@@ -153,7 +153,7 @@ package iic is
 	);
 
 	type T_IO_IIC_COMMAND_VECTOR  is array(natural range <>) of T_IO_IIC_COMMAND;
-	type T_IO_IIC_STATUS_VECTOR    is array(natural range <>) of T_IO_IIC_STATUS;
+	type T_IO_IIC_STATUS_VECTOR   is array(natural range <>) of T_IO_IIC_STATUS;
 	type T_IO_IIC_ERROR_VECTOR    is array(natural range <>) of T_IO_IIC_ERROR;
 end package;
 

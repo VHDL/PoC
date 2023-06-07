@@ -136,7 +136,7 @@ begin
 	Busy          <= Busy_i;
 	Changed        <= D4;
 
-	syncClk2 : entity PoC.sync_Bits
+	syncClk2 : entity work.sync_Bits
 		generic map (
 			BITS        => 1,             -- number of bit to be synchronized
 			SYNC_DEPTH  => SYNC_DEPTH,
@@ -148,7 +148,7 @@ begin
 			Output(0)   => syncClk2_Out   -- @Clock:  output bits
 		);
 
-	syncClk1 : entity PoC.sync_Bits
+	syncClk1 : entity work.sync_Bits
 		generic map (
 			BITS        => 1,             -- number of bit to be synchronized
 			SYNC_DEPTH  => SYNC_DEPTH,
