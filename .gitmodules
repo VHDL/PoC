@@ -1,18 +1,9 @@
-[submodule "lib/vunit"]
-	path = lib/vunit
-	url = ../vunit.git
 [submodule "lib/osvvm"]
 	path = lib/osvvm
 	url = ../OSVVM.git
-[submodule "lib/cocotb"]
-	path = lib/cocotb
-	url = ../cocotb.git
 [submodule "docs/_themes/sphinx_rtd_theme"]
 	path = docs/_themes/sphinx_rtd_theme
 	url = ../sphinx_rtd_theme.git
-[submodule "lib/uvvm"]
-	path = lib/uvvm
-	url = ../UVVM.git
 [submodule "lib/pyIPCMI"]
 	path = lib/pyIPCMI
 	url = ../pyIPCMI.git
