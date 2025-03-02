@@ -136,8 +136,8 @@ html_css_files = [
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-html_logo = str(Path(html_static_path[0]) / "logo.png")
-html_favicon = str(Path(html_static_path[0]) / "icon.png")
+html_logo = str(Path(html_static_path[0]) / "icons/The-PoC-Library-Icon.png")
+html_favicon = str(Path(html_static_path[0]) / "icons/The-PoC-Library-FavIcon.png")
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = f"{project}Doc"

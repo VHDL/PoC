@@ -1,24 +1,11 @@
-.wy-table-responsive table td {
-	white-space: normal;
-}
-
-/* Set text justification in paragraphs and list items to fully justified */
-.section p {
-	text-align:justify;
-}
-
-.simple li {
-	text-align:justify;
-}
-
 .release-notes  {
-#  margin-bottom:44px;
+  /*margin-bottom:44px;*/
   list-style-type: none;
   display:table;
 }
 
 .release-notes .container ul {
-#  margin-bottom:44px;
+  /*margin-bottom:44px;*/
   list-style-type: none;
   display:table;
 }
