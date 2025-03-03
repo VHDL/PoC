@@ -115,8 +115,8 @@ the [Download][222] page for further details. The installation directory is refe
 
 Protocol | Git Clone Command
 -------- | :-----------------------------------------------------------
-HTTPS    | `git clone --recursive https://github.com/VLSI-EDA/PoC.git PoC`
-SSH      | `git clone --recursive ssh://git@github.com:VLSI-EDA/PoC.git PoC`
+HTTPS    | `git clone --recursive https://github.com/VHDL/PoC.git PoC`
+SSH      | `git clone --recursive ssh://git@github.com:VHDL/PoC.git PoC`
 
 [221]: https://github.com/VLSI-EDA/PoC/archive/Vivado.zip
 [222]: http://poc-library.readthedocs.io/en/latest/UsingPoC/Download.html
@@ -155,7 +155,7 @@ of steps can be found at [Integration][2412].
 ```powershell
 cd ProjectRoot
 mkdir lib | cd
-git submodule add https://github.com:VLSI-EDA/PoC.git PoC
+git submodule add https://github.com:VHDL/PoC.git PoC
 cd PoC
 git remote rename origin github
 cd ..\..
@@ -191,7 +191,7 @@ cp lib\PoC\src\common\my_config.vhdl.template src\common\my_config.vhdl
 cp lib\PoC\src\common\my_project.vhdl.template src\common\my_project.vhdl
 ```
 
-[my_config.vhdl](https://github.com/VLSI-EDA/PoC/blob/Vivado/src/common/my_config.vhdl.template) defines
+[my_config.vhdl](https://github.com/VHDL/PoC/blob/Vivado/src/common/my_config.vhdl.template) defines
 two global constants, which need to be adjusted:
 
 ```vhdl
@@ -199,7 +199,7 @@ constant MY_BOARD            : string := "CHANGE THIS"; -- e.g. Custom, ML505, K
 constant MY_DEVICE           : string := "CHANGE THIS"; -- e.g. None, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
 ```
 
-[my_project.vhdl](https://github.com/VLSI-EDA/PoC/blob/Vivado/src/common/my_project.vhdl.template) also
+[my_project.vhdl](https://github.com/VHDL/PoC/blob/Vivado/src/common/my_project.vhdl.template) also
 defines two global constants, which need to be adjusted:
 
 ```vhdl

@@ -1,4 +1,4 @@
-.. _IP:list_expirelist:
+.. _IP:sort_expirelist:
 
 PoC.sort.ExpireList
 ###################

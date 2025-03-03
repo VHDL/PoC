@@ -1,13 +1,14 @@
-
 Who uses PoC?
 #############
 
 PoC has a related Git repository called `PoC-Examples <https://github.com/VLSI-EDA/PoC-Examples>`_
 on GitHub. This repository hosts a list of example and reference implementations
-of the PoC-Library. Additional to reading an IP cores documention and viewing
+of the PoC-Library. Additional to reading an IP cores documentation and viewing
 its characteristic stimulus waveform in a simulation, it can helper to
 investigate an IP core usage example from that repository.
 
+* `plc2 Design GmbH <https://github.com/PLC2>`_ |br|
+  Used in internal products, design services and trainings.
 
 * `The Q27 Project <https://github.com/preusser/q27>`_ |br|
   27-Queens Puzzle: Massively Parellel Enumeration and Solution Counting

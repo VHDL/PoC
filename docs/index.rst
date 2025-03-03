@@ -62,6 +62,12 @@ shipped with a Python based infrastructure to offer a command line based fronten
 
    .. rubric:: News
 
+.. note::
+
+   In Feb. 2025, The PoC-Library was forked to the VHDL namespace at GitHub, which is operated by the Open-Source VHDL
+   Group (OSVG). It's planned to update The PoC-Library (new features, bug fixes, etc) as well as removing some burdens
+   like Xilinx ISE support.
+
 See :ref:`Change Log <CHANGE>` for latest updates.
 
 
@@ -85,7 +91,7 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
      author={{Chair of VLSI Design, Diagnostics and Architecture}},
      organization={{Technische Universität Dresden}},
      year={2016},
-     url={https://github.com/VLSI-EDA/PoC},
+     url={https://github.com/VHDL/PoC},
      urldate={2016-10-28},
    }
 
