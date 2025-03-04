@@ -8,7 +8,7 @@ its characteristic stimulus waveform in a simulation, it can helper to
 investigate an IP core usage example from that repository.
 
 * `plc2 Design GmbH <https://github.com/PLC2>`_ |br|
-  Used in internal products, design services and trainings.
+  Used in products, development services and trainings.
 
 * `The Q27 Project <https://github.com/preusser/q27>`_ |br|
   27-Queens Puzzle: Massively Parellel Enumeration and Solution Counting
