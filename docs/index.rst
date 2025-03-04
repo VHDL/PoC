@@ -108,6 +108,8 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
    QuickStart
    GetInvolved/index
    References/Licenses/License
+   References/Licenses/Doc-License
+
 
 .. raw:: latex
 
