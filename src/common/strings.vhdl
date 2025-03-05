@@ -169,24 +169,6 @@ package strings is
 	function str_toLower(str : string)                        return string;
 	function str_toUpper(str : string)                        return string;
 
-
-
-	--String Descriptor functions:
-	--A Set of configurations can be provided through string-descriptor. A string-descriptor is a string with
-	--values that are separated with one or more separation-characters.
-	--
-	--Eg.: "element00,element01;element10,element11;element20,element21"
-	--
-	--These functions help to access these elements
-	--=======================================
-	function check_descriptor(               str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return boolean;
-	function get_descriptor_number(          str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return natural;
-	function get_descriptor_sub_number(      str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return natural;
-	function get_descriptor_element_position(str : string; Subelement : natural := 0; Separator_0 : character := ';'; Separator_1 : character := ',') return T_NATVEC;
-	function get_descriptor_element_length(  str : string; Subelement : natural := 0; Separator_0 : character := ';'; Separator_1 : character := ',') return T_NATVEC;
-
-
-
 	--Function has a copy in PoC.config_private
 	function normalize_path(path : string) return string;
 end package;
@@ -533,7 +515,7 @@ package body strings is
 		end loop;
 		return Result;
 	end function;
-	
+
 	function to_string(slv : unsigned; format : character := 'h'; Length : natural := 0; fill : character := '0') return string is
 	begin
 		return to_string(std_logic_vector(slv), format, Length, fill);
@@ -1084,111 +1066,4 @@ package body strings is
 		return temp & '/';
 	end function;
 
-
-	--string-descriptor
-	function check_descriptor(               str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return boolean is
-		variable current_num : integer := 0;
-		variable last_num    : integer := -1;
-	begin
-		for i in str'range loop
-			if str(i) = Separator_0 then
-					if last_num = -1 then
-						last_num    := current_num;
-					elsif last_num /= current_num then
-						assert false
-						report "PoC.strings.check_descriptor: Provided string has unmatching Sub-Sizes! String is: '" & str & "' Failing position: " & integer'image(i - str'low)
-						severity failure;
-						return false;
-					end if;
-
-					current_num := 0;
-
-			elsif str(i) = Separator_1 then
-					current_num := current_num +1;
-
-			end if;
-		end loop;
-
-		if last_num /= current_num then
-			assert false
-			report "PoC.strings.check_descriptor: Provided string has unmatching Sub-Sizes! String is: '" & str & "' Failing position: " & integer'image(str'high)
-			severity failure;
-			return false;
-		else
-			return true;
-		end if;
-	end function;
-
-	function get_descriptor_number(          str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return natural is
-		variable result : natural := 1;
-	begin
-		for i in str'range loop
-			if str(i) = Separator_0 then
-				result := result +1;
-			end if;
-		end loop;
-
-		return result;
-	end function;
-
-	function get_descriptor_sub_number(      str : string;                            Separator_0 : character := ';'; Separator_1 : character := ',') return natural is
-		variable result : natural := 1;
-	begin
-		for i in str'range loop
-			if str(i) = Separator_1 then
-				result := result +1;
-			elsif str(i) = Separator_0 then
-				return result;
-			end if;
-		end loop;
-
-		return result;
-	end function;
-
-	function get_descriptor_element_position(str : string; Subelement : natural := 0; Separator_0 : character := ';'; Separator_1 : character := ',') return T_NATVEC is
-		variable result     : T_NATVEC(0 to get_descriptor_number(str) -1);
-		variable pos        : natural := 0;
-		variable pos_sub    : natural := 0;
-		variable got_in_set : boolean := false;
-	begin
-		for i in str'range loop
-			if (pos_sub = Subelement) and not got_in_set then
-				result(pos) := i;
-				pos         := pos +1;
-				got_in_set  := true;
-			end if;
-
-			if str(i) = Separator_0 then
-				pos_sub    := 0;
-				got_in_set := false;
-			elsif str(i) = Separator_1 then
-				pos_sub    := pos_sub +1;
-			end if;
-		end loop;
-
-		return result;
-	end function;
-
-	function get_descriptor_element_length(  str : string; Subelement : natural := 0; Separator_0 : character := ';'; Separator_1 : character := ',') return T_NATVEC is
-		variable result     : T_NATVEC(0 to get_descriptor_number(str) -1);
-		variable pos        : natural := 0;
-		variable pos_sub    : natural := 0;
-		variable length     : natural := 0;
-	begin
-		for i in str'range loop
-			if str(i) = Separator_0 then
-				pos_sub     := 0;
-				result(pos) := length;
-				pos         := pos +1;
-				length      := 0;
-			elsif str(i) = Separator_1 then
-				pos_sub    := pos_sub +1;
-			elsif pos_sub = Subelement then
-				length      := length +1;
-			end if;
-		end loop;
-
-		result(pos) := length;
-		return result;
-	end function;
 end package body;

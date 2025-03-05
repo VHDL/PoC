@@ -348,17 +348,6 @@ package utils is
 	-- Binary-Code to Gray-Code
 	function bin2gray(value : std_logic_vector) return std_logic_vector;
 	function bin2gray(value : unsigned)         return std_logic_vector;
-
-	-- Key Value Pair
-	-- ============================================================================
-
-	type key_value_pair is record
-		key   : string(1 to 64);
-		value : string(1 to 64);
-	end record;
-	type key_value_pair_v is array(natural range <>) of key_value_pair;
-
-	constant C_key_value_pair_empty : key_value_pair := (key => (1 to 64 => ' '), value => (1 to 64 => ' '));
 end package;
 
 
