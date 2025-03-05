@@ -1,9 +1,6 @@
 [submodule "lib/osvvm"]
 	path = lib/osvvm
 	url = ../OSVVM.git
-[submodule "docs/_themes/sphinx_rtd_theme"]
-	path = docs/_themes/sphinx_rtd_theme
-	url = ../sphinx_rtd_theme.git
 [submodule "lib/pyIPCMI"]
 	path = lib/pyIPCMI
 	url = ../pyIPCMI.git

@@ -19,8 +19,7 @@ This namespace is for Xilinx specific modules.
  * :ref:`IP:xil_ICAP`
  * :ref:`IP:xil_Reconfigurator`
  * :ref:`IP:xil_SystemMonitor`
- * :ref:`IP:xil_SystemMonitor_Virtex6`
- * :ref:`IP:xil_SystemMonitor_Series7`
+ * :ref:`IP:xil_SystemMonitor`
 
 
 .. toctree::
@@ -44,5 +43,4 @@ This namespace is for Xilinx specific modules.
    xil_ICAP <xil_ICAP>
    xil_Reconfigurator <xil_Reconfigurator>
    xil_SystemMonitor <xil_SystemMonitor>
-   xil_SystemMonitor_Virtex6 <xil_SystemMonitor_Virtex6>
-   xil_SystemMonitor_Series7 <xil_SystemMonitor_Series7>
+   xil_SystemMonitor_Virtex6 <xil_SystemMonitor>

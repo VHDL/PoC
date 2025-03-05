@@ -3,6 +3,10 @@
 Which Tool Chains are supported?
 ################################
 
+.. caution::
+
+   The list of tools is outdated. It will be updated and all tools will be reevaluated within the next releases.
+
 The PoC-Library and its Python-based infrastructure currently supports the following free and commercial vendor tool chains:
 
 * Synthesis Tool Chains:

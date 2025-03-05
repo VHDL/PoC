@@ -13,10 +13,6 @@ which contains a link to the orginal license file source.
    ApacheLicense2.0
    Apache License 2.0 - ICLA <ApacheLicense2.0_ICLA>
    Apache License 2.0 - CCLA <ApacheLicense2.0_CCLA>
-   ArtisticLicense2.0
-   Cocotb - BSD License <Cocotb_BSDLicense>
-   UVVM - MIT License <UVVM_MIT>
-   MozillaPublicLicense2.0
 
 .. rubric:: Footnotes
 

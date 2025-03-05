@@ -1,23 +1,20 @@
 <!--- DO NOT EDIT! This file is generated from .tpl --->
 # The PoC-Library
 
-[![Build Status by Travis-CI](https://travis-ci.org/VLSI-EDA/PoC.svg?branch=Vivado)](https://travis-ci.org/VLSI-EDA/PoC/branches)
-[![Build status by AppVeyor](https://ci.appveyor.com/api/projects/status/r5dtv6amsppigpsp/branch/Vivado?svg=true)](https://ci.appveyor.com/project/Paebbels/poc/branch/Vivado)
-[![Documentation Status](https://readthedocs.org/projects/poc-library/badge/?version=latest)](http://poc-library.readthedocs.io/en/latest/?badge=latest)
-[![Python Infrastructure tested by Landscape.io](https://landscape.io/github/VLSI-EDA/PoC/Vivado/landscape.svg?style=flat)](https://landscape.io/github/VLSI-EDA/PoC/Vivado)
-[![Requirements Status](https://requires.io/github/VLSI-EDA/PoC/requirements.svg?branch=Vivado)](https://requires.io/github/VLSI-EDA/PoC/requirements/?branch=Vivado)  
-[![Join the chat at https://gitter.im/VLSI-EDA/PoC](https://badges.gitter.im/VLSI-EDA/PoC.svg)](https://gitter.im/VLSI-EDA/PoC)
-[![Subscribe for news at https://gitter.im/VLSI-EDA/News](https://img.shields.io/badge/news-Subscribe%20to%20VLSI--EDA%2FNews-orange.svg)](https://gitter.im/VLSI-EDA/News)  
+[![Sourcecode on GitHub](https://img.shields.io/badge/VHDL-PoC-63bf7f?longCache=true&style=flat-square&longCache=true&logo=GitHub)](https://GitHub.com/VHDL/PoC)
+[![Sourcecode License](https://img.shields.io/badge/code-Apache%202.0-97CA00?longCache=true&style=flat-square&longCache=true&logo=Apache)](LICENSE.md)
+[![Documentation](https://img.shields.io/website?longCache=true&style=flat-square&label=VHDL.github.io%2FPoC&logo=GitHub&logoColor=fff&up_color=blueviolet&up_message=Read%20now%20%E2%9E%9A&url=https%3A%2F%2FVHDL.github.io%2FPoC%2Findex.html)](https://VHDL.github.io/PoC/)
+[![Documentation License](https://img.shields.io/badge/doc-CC--BY%204.0-green?longCache=true&style=flat-square&logo=CreativeCommons&logoColor=fff)](docs/Doc-License.rst)    
 ![Latest tag](https://img.shields.io/github/tag/VLSI-EDA/PoC.svg?style=flat)
 [![Latest release](https://img.shields.io/github/release/VLSI-EDA/PoC.svg?style=flat)](https://github.com/VLSI-EDA/PoC/releases)
-[![Apache License 2.0](https://img.shields.io/github/license/VLSI-EDA/PoC.svg?style=flat)](LICENSE.md)
 
-
+<!--
 This library is published and maintained by **Chair for VLSI Design, Diagnostics and Architecture** - 
 Faculty of Computer Science, Technische Universität Dresden, Germany 
 **http://vlsi-eda.inf.tu-dresden.de**
 
 ![Technische Universität Dresden](https://github.com/VLSI-EDA/PoC/wiki/images/logo_tud.gif)
+-->
 
 Table of Content:
 --------------------------------------------------------------------------------
@@ -53,7 +50,7 @@ infrastructure to offer a command line based frontend.
 ## 2 Quick Start Guide
 
 This **Quick Start Guide** gives a fast and simple introduction into PoC. All topics can be found in
-the [Using PoC][201] section at [ReadTheDocs.io][202] with much more details and examples.
+the [Using PoC][201] section at [VHDL.GitHub.io/PoC][202] with much more details and examples.
 
 
 ### 2.1 Requirements and Dependencies
@@ -63,7 +60,7 @@ generating IP cores. PoC uses Python 3 as a platform independent scripting envir
 scripts are wrapped in Bash or PowerShell scripts, to hide some platform specifics of Darwin, Linux or
 Windows. See [Requirements][211] for further details.
 
-[211]: http://poc-library.readthedocs.io/en/latest/UsingPoC/Requirements.html
+[211]: http://VHDL.github.io/PoC/UsingPoC/Requirements.html
 
 
 #### PoC requires:
@@ -74,8 +71,8 @@ Windows. See [Requirements][211] for further details.
     -  **Bash** on Linux and OS X
     -  **PowerShell** on Windows
 
-[2111]: http://poc-library.readthedocs.io/en/latest/WhatIsPoC/SupportedToolChains.html
-[2112]: http://poc-library.readthedocs.io/en/latest/WhatIsPoC/SupportedToolChains.html
+[2111]: http://VHDL.github.io/PoC/WhatIsPoC/SupportedToolChains.html
+[2112]: http://VHDL.github.io/PoC/WhatIsPoC/SupportedToolChains.html
 
 
 #### PoC optionally requires:
@@ -84,27 +81,18 @@ Windows. See [Requirements][211] for further details.
 
 
 #### PoC depends on third part libraries:
- -  [Cocotb][2131]  
-    A coroutine based cosimulation library for writing VHDL and Verilog testbenches in Python.
- -  [OS-VVM][2132]  
+  -  [OSVVM][2132]  
     Open Source VHDL Verification Methodology.
- -  [UVVM][2133]  
-    Universal VHDL Verification Methodology.
- -  [VUnit][2134]  
-    An unit testing framework for VHDL.
-  
+   
 All dependencies are available as GitHub repositories and are linked to PoC as Git submodules into the
 [`PoCRoot\lib`][205] directory. See [Third Party Libraries][206] for more details on these libraries.
 
-[2131]: https://github.com/potentialventures/cocotb
-[2132]: https://github.com/JimLewis/OSVVM
-[2133]: https://github.com/UVVM/UVVM_All
-[2134]: https://github.com/VUnit/vunit
+[2132]: https://github.com/OSVVM/OSVVM
 
-[201]: http://poc-library.readthedocs.io/en/latest/UsingPoC/index.html
-[202]: http://poc-library.readthedocs.io/
-[205]: https://github.com/VLSI-EDA/PoC/tree/Vivado/lib
-[206]: http://poc-library.readthedocs.io/en/latest/Miscelaneous/ThirdParty.html
+[201]: http://VHDL.github.io/PoC/UsingPoC/index.html
+[202]: http://VHDL.github.io/PoC/
+[205]: https://github.com/VHDL/PoC/tree/Vivado/lib
+[206]: http://VHDL.github.io/PoC/Miscelaneous/ThirdParty.html
 
 
 ### 2.2 Download
@@ -115,11 +103,11 @@ the [Download][222] page for further details. The installation directory is refe
 
 Protocol | Git Clone Command
 -------- | :-----------------------------------------------------------
-HTTPS    | `git clone --recursive https://github.com/VLSI-EDA/PoC.git PoC`
-SSH      | `git clone --recursive ssh://git@github.com:VLSI-EDA/PoC.git PoC`
+HTTPS    | `git clone --recursive https://github.com/VHDL/PoC.git PoC`
+SSH      | `git clone --recursive ssh://git@github.com:VHDL/PoC.git PoC`
 
 [221]: https://github.com/VLSI-EDA/PoC/archive/Vivado.zip
-[222]: http://poc-library.readthedocs.io/en/latest/UsingPoC/Download.html
+[222]: http://VHDL.github.io/PoC/UsingPoC/Download.html
 
 ### 2.3 Configuring PoC on a Local System
 
@@ -137,7 +125,7 @@ cd PoCRoot
 Use the keyboard buttons: `Y` to accept, `N` to decline, `P` to skip/pass a step and `Return` to accept
 a default value displayed in brackets.
 
-[231]: http://poc-library.readthedocs.io/en/latest/UsingPoC/PoCConfiguration.html
+[231]: http://VHDL.github.io/PoC/UsingPoC/PoCConfiguration.html
 
 ### 2.4 Integration
 
@@ -155,7 +143,7 @@ of steps can be found at [Integration][2412].
 ```powershell
 cd ProjectRoot
 mkdir lib | cd
-git submodule add https://github.com:VLSI-EDA/PoC.git PoC
+git submodule add https://github.com:VHDL/PoC.git PoC
 cd PoC
 git remote rename origin github
 cd ..\..
@@ -164,7 +152,7 @@ git commit -m "Added new git submodule PoC in 'lib\PoC' (PoC-Library)."
 ```
 
 [2411]: http://git-scm.com/book/en/v2/Git-Tools-Submodules
-[2412]: http://poc-library.readthedocs.io/en/latest/UsingPoC/Integration.html
+[2412]: http://VHDL.github.io/PoC/UsingPoC/Integration.html
 
 #### b) Configuring PoC
 
@@ -176,7 +164,7 @@ cd ProjectRoot
 .\lib\PoC\poc.ps1 configure
 ```
 
-[2421]: http://poc-library.readthedocs.io/en/latest/UsingPoC/PoCConfiguration.html
+[2421]: http://VHDL.github.io/PoC/UsingPoC/PoCConfiguration.html
 
 #### c) Creating PoC's `my_config.vhdl` and `my_project.vhdl` Files
 
@@ -191,7 +179,7 @@ cp lib\PoC\src\common\my_config.vhdl.template src\common\my_config.vhdl
 cp lib\PoC\src\common\my_project.vhdl.template src\common\my_project.vhdl
 ```
 
-[my_config.vhdl](https://github.com/VLSI-EDA/PoC/blob/Vivado/src/common/my_config.vhdl.template) defines
+[my_config.vhdl](https://github.com/VHDL/PoC/blob/Vivado/src/common/my_config.vhdl.template) defines
 two global constants, which need to be adjusted:
 
 ```vhdl
@@ -199,7 +187,7 @@ constant MY_BOARD            : string := "CHANGE THIS"; -- e.g. Custom, ML505, K
 constant MY_DEVICE           : string := "CHANGE THIS"; -- e.g. None, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
 ```
 
-[my_project.vhdl](https://github.com/VLSI-EDA/PoC/blob/Vivado/src/common/my_project.vhdl.template) also
+[my_project.vhdl](https://github.com/VHDL/PoC/blob/Vivado/src/common/my_project.vhdl.template) also
 defines two global constants, which need to be adjusted:
 
 ```vhdl
@@ -209,7 +197,7 @@ constant MY_OPERATING_SYSTEM : string := "CHANGE THIS"; -- e.g. WINDOWS, LINUX
 
 Further informations are provided at [Creating my_config/my_project.vhdl][2431].
 
-[2431]: http://poc-library.readthedocs.io/en/latest/UsingPoC/VHDLConfiguration.html
+[2431]: http://VHDL.github.io/PoC/UsingPoC/VHDLConfiguration.html
 
 #### d) Adding PoC's Common Packages to a Synthesis or Simulation Project
 
@@ -232,7 +220,7 @@ Some IP Cores are shipped as pre-configured vendor IP Cores. If such IP cores sh
 project, it's recommended to use PoC to create, compile and if needed patch these IP cores. See
 [Synthesis][2461] for more details.
 
-[2461]: http://poc-library.readthedocs.io/en/latest/UsingPoC/Synthesis.html
+[2461]: http://VHDL.github.io/PoC/UsingPoC/Synthesis.html
 
 
 ### 2.5 Updating
@@ -255,8 +243,8 @@ git merge
  -  [**Running one or more netlist generation flows**][252]  
     The installation can also be checked by running one or more of PoC's synthesis flows.
 
-[251]: http://poc-library.readthedocs.io/en/latest/UsingPoC/Simulation.html
-[252]: http://poc-library.readthedocs.io/en/latest/UsingPoC/Synthesis.html 
+[251]: http://VHDL.github.io/PoC/UsingPoC/Simulation.html
+[252]: http://VHDL.github.io/PoC/UsingPoC/Synthesis.html 
 
 
 ## 3. Common Notes
@@ -296,10 +284,10 @@ The PoC-Library hosted at [GitHub.com](https://www.github.com). Please use the f
 # BibLaTex example entry
 @online{poc,
   title={{PoC - Pile of Cores}},
-  author={{Chair of VLSI Design, Diagnostics and Architecture}},
-  organization={{Technische Universität Dresden}},
-  year={2016},
-  url={https://github.com/VLSI-EDA/PoC},
-  urldate={2016-10-28},
+  author={{Contributors of the Open Source VHDL Group}},
+  organization={{OSVG}},
+  year={2025},
+  url={https://github.com/VHDL/PoC},
+  urldate={2025-03-04},
 }
 ```
