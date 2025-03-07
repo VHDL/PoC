@@ -8,9 +8,8 @@ jobs:
   Documentation:
     uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r4
     with:
-      requirements: '-r docs/requirements.txt'
-      doc_directory: 'docs'
-      coverage_report_json_directory: "coverage"
+      requirements:   '-r docs/requirements.txt'
+      doc_directory:  'docs'
       html_artifact:  'PoC-HTML'
       latex_artifact: 'PoC-LaTeX'
 
@@ -20,7 +19,7 @@ jobs:
       - Documentation
     with:
       doc:      'PoC-HTML'
-      coverage: 'PoC-Coverage-HTML'
+#      coverage: 'PoC-Coverage-HTML'
 
   Release:
     uses: pyTooling/Actions/.github/workflows/NightlyRelease.yml@r4
