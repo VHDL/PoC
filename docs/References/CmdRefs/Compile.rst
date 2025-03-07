@@ -62,22 +62,6 @@ for all major VHDL revisions (93, 2008).
    Compile-OSVVM-ps1
 
 
-.. rubric:: Pre-compile UVVM Libraries
-
-.. toctree::
-
-   Compile-UVVM-sh
-   Compile-UVVM-ps1
-
-
-.. rubric:: Pre-compile Xilinx ISE Libraries
-
-.. toctree::
-
-   Compile-Xilinx-ISE-sh
-   Compile-Xilinx-ISE-ps1
-
-
 .. rubric:: Pre-compile Xilinx Vivado Libraries
 
 .. toctree::
