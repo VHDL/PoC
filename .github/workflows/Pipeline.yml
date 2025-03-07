@@ -1,0 +1,48 @@
+name: Verify PoC and Generate Documentation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  Documentation:
+    uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r4
+    with:
+      requirements: '-r docs/requirements.txt'
+      doc_directory: 'docs'
+      coverage_report_json_directory: "coverage"
+      html_artifact:  'PoC-HTML'
+      latex_artifact: 'PoC-LaTeX'
+
+  PublishToGitHubPages:
+    uses: pyTooling/Actions/.github/workflows/PublishToGitHubPages.yml@dev
+    needs:
+      - Documentation
+    with:
+      doc:      'PoC-HTML'
+      coverage: 'PoC-Coverage-HTML'
+
+  Release:
+    uses: pyTooling/Actions/.github/workflows/NightlyRelease.yml@r4
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+#      - Ubuntu
+#      - Windows
+#      - PublishCoverageResults
+#      - PublishTestResults
+      - PublishToGitHubPages
+    secrets: inherit
+    permissions:
+      contents: write
+      actions: write
+      attestations: write
+    with:
+      prerelease: true
+      replacements: |
+        poc=1.3.0
+      nightly_name: "v1.3.0"
+      nightly_description: |
+        # The PoC-Library %poc%
+      inventory-json: "inventory.json"
+      inventory-version: "1.3.0"
+      assets: |
