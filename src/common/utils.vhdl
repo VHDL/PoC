@@ -15,7 +15,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
+-- Copyright 2023-2025 PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -245,7 +245,7 @@ package utils is
 
 	-- Hamming Weight
 	--Example from: https://riptutorial.com/vhdl/example/32304/computing-the-hamming-weight-of-a-vector
-	function hamming_weight(v: std_logic_vector) return natural;
+	function hammingWeight(v: std_logic_vector) return natural;
 
 	-- NO slv_xnor! This operation would not be well-defined as
 	-- not xor(vec) /= vec_{n-1} xnor ... xnor vec_1 xnor vec_0 iff n is odd.
@@ -272,10 +272,8 @@ package utils is
 	--
 	-- @synthesis supported
 	--
-	function resize(vec : bit_vector; length : natural; fill : bit := '0')
-	return bit_vector;
-	function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0')
-	return std_logic_vector;
+	function resize(vec : bit_vector; length : natural; fill : bit := '0') return bit_vector;
+	function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0') return std_logic_vector;
 
 	-- Shift the index range of a vector by the specified offset.
 	function move(vec : std_logic_vector; ofs : integer) return std_logic_vector;
@@ -339,8 +337,9 @@ package utils is
 	function gray2bin (gray_val : std_logic_vector) return unsigned;
 
 	-- Binary-Code to One-Hot-Code
-	function bin2onehot(value : std_logic_vector)  return std_logic_vector;
-	function bin2onehot(value : unsigned)          return std_logic_vector;
+	function bin2onehot(binary : std_logic_vector; bits : natural := 0) return std_logic_vector;
+	function bin2onehot(binary : unsigned;         bits : natural := 0) return std_logic_vector;
+
 	-- Binary-Code to One-Cold-Code
 	function bin2onecold(value : std_logic_vector) return std_logic_vector;
 	function bin2onecold(value : unsigned)         return std_logic_vector;
@@ -356,14 +355,16 @@ package body utils is
 	-- Environment
 	-- ==========================================================================
 	function is_simulation return boolean is
+		variable temp : boolean := false;
 	begin
 		-- WORKAROUND: for Xilinx ISE
 		--    Version:    all versions with enabled 'use_new_parser' option
 		--    Issue:      Is_X('X') does not evaluate to TRUE in synthesis
 		--    Solution:   Use '--synthesis translate_on/off' pragmas
 		--synthesis translate_off
+		temp := true;
 		--synthesis translate_on
-		return Is_X('X');
+		return temp;
 	end function;
 
 	-- deferred constant assignment
@@ -1157,7 +1158,7 @@ package body utils is
 	end function;
 
 	--Example from: https://riptutorial.com/vhdl/example/32304/computing-the-hamming-weight-of-a-vector
-	function hamming_weight(v: std_logic_vector) return natural is
+	function hammingWeight(v: std_logic_vector) return natural is
 		constant size: natural := v'length;
 		constant vv: std_logic_vector(size - 1 downto 0) := v;
 		variable h: natural;
@@ -1166,7 +1167,7 @@ package body utils is
 		if size = 1 and vv(0) = '1' then
 			h := 1;
 		elsif size > 1 then
-			h := hamming_weight(vv(size - 1 downto size / 2)) + hamming_weight(vv(size / 2 - 1 downto 0));
+			h := hammingWeight(vv(size - 1 downto size / 2)) + hammingWeight(vv(size / 2 - 1 downto 0));
 		end if;
 		return h;
 	end function;
@@ -1460,17 +1461,16 @@ package body utils is
 	end function;
 
 	-- Binary-Code to One-Hot-Code
-	function bin2onehot(Value : std_logic_vector) return std_logic_vector is
-		variable result : std_logic_vector(2**Value'length - 1 downto 0);
+	function bin2onehot(binary : unsigned; bits : natural := 0) return std_logic_vector is
+		variable result : unsigned(2**binary'length - 1 downto 0) := (others => '0');
 	begin
-		result    := (others => '0');
-		result(to_index(Value, 0)) := '1';
-		return result;
+		result(to_integer(binary)) := '1';
+		return std_logic_vector(resize(result, ite(bits = 0, result'length, bits)));
 	end function;
 
-	function bin2onehot(Value : unsigned) return std_logic_vector is
+	function bin2onehot(binary : std_logic_vector; bits : natural := 0) return std_logic_vector is
 	begin
-		return bin2onehot(std_logic_vector(Value));
+		return bin2onehot(unsigned(binary), bits);
 	end function;
 
 	-- Binary-Code to Gray-Code
@@ -1546,7 +1546,7 @@ package body utils is
 				return i;
 			end if;
 		end loop;
-		return 0;
+		return arg'low;
 	end function;
 
 	function lssb_idx(arg : bit_vector) return integer is
@@ -1606,7 +1606,7 @@ package body utils is
 
 	function resize(vec : bit_vector; length : natural; fill : bit := '0') return bit_vector is
 		constant  high2b : natural := vec'low+length-1;
-		constant  highcp : natural := imin(vec'high, high2b);
+		constant  highcp : integer := imin(vec'high, high2b); --integer to support also NULL range
 		variable  res_up : bit_vector(vec'low to high2b);
 		variable  res_dn : bit_vector(high2b downto vec'low);
 	begin
@@ -1622,10 +1622,10 @@ package body utils is
 	end function;
 
 	function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0') return std_logic_vector is
-		constant  high2b : natural := vec'low+length-1;
-		constant  highcp : natural := imin(vec'high, high2b);
-		variable  res_up : std_logic_vector(vec'low to high2b);
-		variable  res_dn : std_logic_vector(high2b downto vec'low);
+		constant  high2b  : natural := vec'low+length-1;
+		constant  highcp  : integer := imin(vec'high, high2b); --integer to support also NULL range
+		variable  res_up  : std_logic_vector(vec'low to high2b);
+		variable  res_dn  : std_logic_vector(high2b downto vec'low);
 	begin
 		if vec'ascending then
 			res_up := (others => fill);
