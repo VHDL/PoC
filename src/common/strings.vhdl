@@ -15,7 +15,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
+-- Copyright 2023-2025 PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -170,7 +170,7 @@ package strings is
 	function str_toUpper(str : string)                        return string;
 
 	--Function has a copy in PoC.config_private
-	function normalize_path(path : string) return string;
+	function normalizePath(path : string) return string;
 end package;
 
 
@@ -1052,7 +1052,7 @@ package body strings is
 	end function;
 
 	--Function has a copy in PoC.config_private
-	function normalize_path(path : string) return string is
+	function normalizePath(path : string) return string is
 		variable temp : string(path'range) := path;
 	begin
 		for i in path'range loop

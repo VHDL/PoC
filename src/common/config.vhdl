@@ -16,7 +16,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
+-- Copyright 2023-2025 PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -85,9 +85,9 @@ package config_private is
 	constant C_BOARD_INFO_LIST            : T_BOARD_INFO_VECTOR;
 
 	function conf(str : string) return T_BOARD_CONFIG_STRING;
-	
-	--Copy of Funktion from PoC.strings.normalize_path
-	function normalize_path(path : string) return string;
+
+	--Copy of Funktion from PoC.strings.normalizePath
+	function normalizePath(path : string) return string;
 end package;
 
 
@@ -157,7 +157,7 @@ package body config_private is
 	constant C_BOARD_ETH_SOFT_MII_LAN8720A        : T_BOARD_ETHERNET_DESC := brd_CreateEthernet("SOFT", "MII",  "SMSC_LAN8720A",  x"01", "MII",   "MDIO");
 	constant C_BOARD_ETH_SOFT_MII_DP83848J        : T_BOARD_ETHERNET_DESC := brd_CreateEthernet("SOFT", "MII",  "TI_DP83848J",    x"01", "MII",   "MDIO");
 	constant C_BOARD_ETH_SOFT_RGMII_RTL8211E_VL   : T_BOARD_ETHERNET_DESC := brd_CreateEthernet("SOFT", "MII",  "RTL8211E-VL",    x"01", "RGMII", "MDIO");
-	
+
 	constant C_BOARD_ETH_NONE : T_BOARD_ETHERNET_DESC_VECTOR(T_BOARD_ETHERNET_DESC_INDEX)  := (others => C_BOARD_ETH_EMPTY);
 
 
@@ -396,9 +396,9 @@ package body config_private is
 			EthernetCount =>  0
 		)
 	);
-	
-	--Copy of Funktion from PoC.strings.normalize_path
-	function normalize_path(path : string) return string is
+
+	--Copy of Funktion from PoC.strings.normalizePath
+	function normalizePath(path : string) return string is
 		variable temp : string(path'range) := path;
 	begin
 		if path'length = 0 then
@@ -429,7 +429,7 @@ use     work.utils.all;
 
 
 package config is
-	constant PROJECT_DIR        : string  := normalize_path(MY_PROJECT_DIR);
+	constant PROJECT_DIR        : string  := normalizePath(MY_PROJECT_DIR);
 	constant OPERATING_SYSTEM   : string  := MY_OPERATING_SYSTEM;
 	constant POC_VERBOSE        : boolean := MY_VERBOSE;
 
@@ -498,7 +498,7 @@ package config is
 		DEVICE_MAX2, DEVICE_MAX10,                                          -- Altera.Max
 		DEVICE_ARRIA1, DEVICE_ARRIA2, DEVICE_ARRIA5, DEVICE_ARRIA10,        -- Altera.Arria
 		DEVICE_CYCLONE1, DEVICE_CYCLONE2, DEVICE_CYCLONE3, DEVICE_CYCLONE4, -- Altera.Cyclone
-		DEVICE_CYCLONE5,                                                  --                       
+		DEVICE_CYCLONE5,                                                  --
 		DEVICE_STRATIX1, DEVICE_STRATIX2, DEVICE_STRATIX3, DEVICE_STRATIX4, -- Altera.Stratix
 			DEVICE_STRATIX5, DEVICE_STRATIX10,                                --
 		-- Lattice
@@ -577,7 +577,7 @@ package config is
 		TransceiverType : T_TRANSCEIVER;
 		LUT_FanIn       : positive;
 	end record;
-	
+
 	constant THIS_DEVICE : T_DEVICE_INFO;
 
 	-- Functions extracting board and PCB properties from "MY_BOARD"
@@ -645,7 +645,7 @@ package body config is
 		return (((character'pos('a') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('z'))) or
 		        ((character'pos('A') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('Z'))));
 	end function;
-	
+
 	function chr_isLowerAlpha(chr : character) return boolean is
 	begin
 		return (character'pos('a') <= character'pos(chr)) and (character'pos(chr) <= character'pos('z'));
@@ -718,7 +718,7 @@ package body config is
 		end loop;
 		return FALSE;
 	end function;
-	
+
 	function chr_toUpper(chr : character) return character is
 	begin
 		if chr_isLowerAlpha(chr) then
@@ -727,7 +727,7 @@ package body config is
 			return chr;
 		end if;
 	end function;
-	
+
 	function str_toUpper(str : string) return string is
 		variable Result    : string(str'range);
 	begin
@@ -843,37 +843,37 @@ package body config is
 	begin
 		return str_trim(C_BOARD_INFO_LIST(BRD).UART.BaudRate);
 	end function;
-	
+
 	function BOARD_ETH_IPStyle(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY) return string is
 		constant BRD  : natural := BOARD(BoardConfig);
 	begin
 		return str_trim(C_BOARD_INFO_LIST(BRD).Ethernet(EthID).IPStyle);
 	end function;
-	
+
 	function BOARD_ETH_RS_DataInterface(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY) return string is
 		constant BRD  : natural := BOARD(BoardConfig);
 	begin
 		return str_trim(C_BOARD_INFO_LIST(BRD).Ethernet(EthID).RS_DataInterface);
 	end function;
-	
+
 	function BOARD_ETH_PHY_Device(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY) return string is
 		constant BRD  : natural := BOARD(BoardConfig);
 	begin
 		return str_trim(C_BOARD_INFO_LIST(BRD).Ethernet(EthID).PHY_Device);
 	end function;
-	
+
 	function BOARD_ETH_PHY_DeviceAddress(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY) return std_logic_vector is
 		constant BRD  : natural := BOARD(BoardConfig);
 	begin
 		return C_BOARD_INFO_LIST(BRD).Ethernet(EthID).PHY_DeviceAddress;
 	end function;
-	
+
 	function BOARD_ETH_PHY_DataInterface(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY) return string is
 		constant BRD  : natural := BOARD(BoardConfig);
 	begin
 		return str_trim(C_BOARD_INFO_LIST(BRD).Ethernet(EthID).PHY_DataInterface);
 	end function;
-	
+
 	function BOARD_ETH_PHY_ManagementInterface(EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY) return string is
 		constant BRD  : natural := BOARD(BoardConfig);
 	begin
@@ -960,10 +960,10 @@ package body config is
 				elsif  (MY_DEV(1 to 4) = "LFE5") then    return DEVICE_ECP5;
 				else  report "Unknown Lattice device in MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end if;
-				
+
 			when VENDOR_MICROSEMI =>
 				report "Unknown Microsemi device in MY_DEVICE = '" & MY_DEV & "'" severity failure;
-			
+
 			when VENDOR_XILINX =>
 				case DEV_STR is
 					when "7A"   =>    return DEVICE_ARTIX7;
@@ -979,8 +979,8 @@ package body config is
 					when "VU"   =>    return DEVICE_VIRTEX_ULTRA;
 					when "7Z"   =>    return DEVICE_ZYNQ7;
 					when "ZU"  =>    return DEVICE_ZYNQ_ULTRA_PLUS;
-					-- TODO: Add DEVICE_KINTEX_ULTRA_PLUS,  DEVICE_VIRTEX_ULTRA_PLUS  
-					when others =>  report "Unknown Xilinx device in MY_DEVICE = '" & MY_DEV & "'" severity failure;            
+					-- TODO: Add DEVICE_KINTEX_ULTRA_PLUS,  DEVICE_VIRTEX_ULTRA_PLUS
+					when others =>  report "Unknown Xilinx device in MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end case;
 
 			when others => report "Unknown vendor in MY_DEVICE = " & MY_DEV & "." severity failure;
@@ -1017,7 +1017,7 @@ package body config is
 					when 'S' =>    return DEVICE_FAMILY_SPARTAN;
 					when 'V' =>    return DEVICE_FAMILY_VIRTEX;
 					when 'Z' =>    return DEVICE_FAMILY_ZYNQ;
-					when others =>  
+					when others =>
 						case MY_DEV(3) is
 							when 'Z' => return DEVICE_FAMILY_ZYNQ;
 							when others => report "Unknown Xilinx device family in MY_DEVICE = '" & MY_DEV & "'" severity failure;
@@ -1135,12 +1135,12 @@ package body config is
 				elsif  ((DEV_SUB_STR = "LX") and (    str_find(MY_DEV(7 to MY_DEV'high), "T"))) then  return DEVICE_SUBTYPE_LXT;
 				else  report "Unknown Virtex-5 subtype: MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end if;
-			
+
 			when DEVICE_SPARTAN7 =>
 				if    str_find(MY_DEV(7 to MY_DEV'high), "X") then                                     return DEVICE_SUBTYPE_X;
 				else  report "Unknown Spartan-7 subtype: MY_DEVICE = '" & MY_DEV & "'" severity failure;
 				end if;
-			
+
 			when DEVICE_VIRTEX4 =>
 				report "Unkown Virtex 4" severity failure;
 
@@ -1245,7 +1245,7 @@ package body config is
 					when DEVICE_SUBTYPE_LXT =>    return TRANSCEIVER_GTPE1;
 					when others =>   report "Unknown Spartan-6 subtype: " & T_DEVICE_SUBTYPE'image(DEV_SUB) severity failure;
 				end case;
-			
+
 			when DEVICE_SPARTAN7 =>           return TRANSCEIVER_NONE;
 
 			when DEVICE_VIRTEX4 =>
@@ -1276,7 +1276,7 @@ package body config is
 				case DEV_SUB is
 					when DEVICE_SUBTYPE_T =>      return TRANSCEIVER_GTXE2;
 					when DEVICE_SUBTYPE_X =>      return TRANSCEIVER_GTXE2;
-					
+
 					when DEVICE_SUBTYPE_XT =>
 						if DEV_NUM = 485 then       return TRANSCEIVER_GTXE2;
 						else                        return TRANSCEIVER_GTHE2;
@@ -1356,6 +1356,6 @@ package body config is
 			end case;
 		end if;
 	end function;
-	
+
 	constant THIS_DEVICE : T_DEVICE_INFO := DEVICE_INFO(MY_DEVICE);
 end package body;
