@@ -32,7 +32,7 @@ context Common is
 	library PoC ;
 	use PoC.config.all;
 	use PoC.debug.all;
-	use PoC.FileIO.all;
+--	use PoC.FileIO.all;
 	use PoC.math.all;
 	use PoC.physical.all;
 	use PoC.strings.all;

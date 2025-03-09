@@ -5,6 +5,114 @@ on:
   pull_request:
 
 jobs:
+  Build-OSVVM:
+    name: Build OSVVM
+    runs-on: ubuntu-24.04
+    steps:
+      - name: ⏬ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: true
+
+      - name: 🔧 Install tcllib
+        run: sudo apt-get install -y --no-install-recommends tcllib
+
+      - name: Setup GHDL ${{ inputs.ghdl_backend }}
+        uses: ghdl/setup-ghdl@v1
+        with:
+          version: latest
+          backend: llvm
+
+      - name: Prepare
+        run: |
+          mkdir -p temp/ghdl
+
+      - name: 🔨 Pre-compile OSVVM
+        run: |
+          cd temp/ghdl
+
+          printf "=================\n"
+          tee run.tcl <<EOF
+          source ../../lib/OSVVM-Scripts/StartGHDL.tcl
+          build ../../lib/OsvvmLibraries.pro
+          EOF
+          printf "=================\n"
+
+          tclsh run.tcl
+
+      - name: 📤 Upload 'GHDL-OSVVM' artifacts
+        uses: pyTooling/upload-artifact@v4
+        with:
+          name: GHDL-OSVVM
+          working-directory: temp/ghdl
+          path: '*'
+          retention-days: 1
+
+  Build-PoC:
+    name: Build PoC
+    runs-on: ubuntu-24.04
+    needs:
+      - Build-OSVVM
+    steps:
+      - name: ⏬ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: true
+
+      - name: 🔧 Install tcllib
+        run: sudo apt-get install -y --no-install-recommends tcllib
+
+      - name: Setup GHDL ${{ inputs.ghdl_backend }}
+        uses: ghdl/setup-ghdl@v1
+        with:
+          version: latest
+          backend: llvm
+
+      - name: Prepare
+        run: |
+          mkdir -p temp/ghdl
+
+          mv src/common/my_project.vhdl.template tb/common/my_project.vhdl
+
+      - name: 📥 Download artifacts 'GHDL-OSVVM' from 'Build-OSVVM' job
+        uses: pyTooling/download-artifact@v4
+        with:
+          name: GHDL-OSVVM
+          path: temp/ghdl
+
+      - name: 🔨 Pre-compile PoC
+        run: |
+          cd temp/ghdl
+
+          printf "=================\n"
+          tee run.tcl <<EOF
+          source ../../lib/OSVVM-Scripts/StartGHDL.tcl
+
+          variable OMIT_XILINX_FILES 1
+
+          SetExtendedAnalyzeOptions  {-frelaxed -Wno-specs}
+          SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
+
+          library PoC
+          analyze ../../tb/common/my_project.vhdl
+          analyze ../../tb/common/my_config_GENERIC.vhdl
+
+          build ../../src/PoC.pro
+          EOF
+
+          printf "=================\n"
+          tclsh run.tcl
+
+      - name: 📤 Upload 'GHDL-OSVVM' artifacts
+        uses: pyTooling/upload-artifact@v4
+        with:
+          name: GHDL-OSVVM
+          working-directory: temp/ghdl
+          path: '*'
+          retention-days: 1
+
   Documentation:
     uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r4
     with:
@@ -17,6 +125,7 @@ jobs:
     uses: pyTooling/Actions/.github/workflows/PublishToGitHubPages.yml@dev
     needs:
       - Documentation
+      - Build-PoC
     with:
       doc:      'PoC-HTML'
 #      coverage: 'PoC-Coverage-HTML'
