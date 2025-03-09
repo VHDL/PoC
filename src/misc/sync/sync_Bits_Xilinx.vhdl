@@ -43,7 +43,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
+-- Copyright 2023-2025 PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -73,7 +73,7 @@ entity sync_Bits_Xilinx is
 		INIT            : std_logic_vector    := x"00000000";             -- initialization bits
 		SYNC_DEPTH      : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;    -- generate SYNC_DEPTH many stages, at least 2
 		FALSE_PATH      : boolean             := true;
-		REGISTER_OUTPUT : boolean             := true
+		REGISTER_OUTPUT : boolean             := false
 	);
 	port (
 		Clock           : in  std_logic;                                  -- <Clock>  output clock domain
