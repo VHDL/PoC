@@ -1,6 +1,3 @@
 [submodule "lib/osvvm"]
 	path = lib/osvvm
 	url = ../OSVVM.git
-[submodule "lib/pyIPCMI"]
-	path = lib/pyIPCMI
-	url = ../pyIPCMI.git
