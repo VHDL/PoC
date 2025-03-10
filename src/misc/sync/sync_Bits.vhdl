@@ -85,10 +85,42 @@ architecture rtl of sync_Bits is
 	constant INIT_I   : std_logic_vector     := resize(descend(INIT), BITS);
 	constant DEV_INFO : T_DEVICE_INFO        := DEVICE_INFO;
 begin
-	genGeneric : if ((DEV_INFO.Vendor /= VENDOR_ALTERA) and (DEV_INFO.Vendor /= VENDOR_XILINX)) generate
+
+	genVendor : if (DEV_INFO.Vendor = VENDOR_ALTERA) generate
+		-- use dedicated and optimized 2 D-FF synchronizer for Altera FPGAs
+		sync : sync_Bits_Altera
+			generic map (
+				BITS        => BITS,
+				INIT        => INIT_I,
+				SYNC_DEPTH  => SYNC_DEPTH,
+				FALSE_PATH      => FALSE_PATH,
+				REGISTER_OUTPUT => REGISTER_OUTPUT
+			)
+			port map (
+				Clock     => Clock,
+				Input     => Input,
+				Output    => Output
+			);
+
+	elsif (DEV_INFO.Vendor = VENDOR_XILINX) generate
+		-- use dedicated and optimized 2 D-FF synchronizer for Xilinx FPGAs
+		sync : sync_Bits_Xilinx
+			generic map (
+				BITS            => BITS,
+				INIT            => INIT_I,
+				SYNC_DEPTH      => SYNC_DEPTH,
+				FALSE_PATH      => FALSE_PATH,
+				REGISTER_OUTPUT => REGISTER_OUTPUT
+			)
+			port map (
+				Clock     => Clock,
+				Input     => Input,
+				Output    => Output
+			);
+
+	else generate
 		attribute ASYNC_REG              : string;
 		attribute SHREG_EXTRACT          : string;
-
 	begin
 		gen : for i in 0 to BITS - 1 generate
 			signal Data_async             : std_logic;
@@ -114,38 +146,13 @@ begin
 			end process;
 
 			Output(i)  <= Data_sync(Data_sync'high);
+
+			reg_out_gen : if REGISTER_OUTPUT generate
+			begin
+				Output(i) <= Data_sync(Data_sync'high) when rising_edge(Clock);
+			else generate
+				Output(i) <= Data_sync(Data_sync'high);
+			end generate;
 		end generate;
-	end generate;
-
-	-- use dedicated and optimized 2 D-FF synchronizer for Altera FPGAs
-	genAltera : if (DEV_INFO.Vendor = VENDOR_ALTERA) generate
-		sync : sync_Bits_Altera
-			generic map (
-				BITS        => BITS,
-				INIT        => INIT_I,
-				SYNC_DEPTH  => SYNC_DEPTH
-			)
-			port map (
-				Clock     => Clock,
-				Input     => Input,
-				Output    => Output
-			);
-	end generate;
-
-	-- use dedicated and optimized 2 D-FF synchronizer for Xilinx FPGAs
-	genXilinx : if (DEV_INFO.Vendor = VENDOR_XILINX) generate
-		sync : sync_Bits_Xilinx
-			generic map (
-				BITS            => BITS,
-				INIT            => INIT_I,
-				SYNC_DEPTH      => SYNC_DEPTH,
-				FALSE_PATH      => FALSE_PATH,
-				REGISTER_OUTPUT => REGISTER_OUTPUT
-			)
-			port map (
-				Clock     => Clock,
-				Input     => Input,
-				Output    => Output
-			);
 	end generate;
 end architecture;

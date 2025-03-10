@@ -44,16 +44,18 @@ use     work.sync.all;
 
 
 entity sync_Bits_Altera is
-  generic (
-    BITS          : positive            := 1;                       -- number of bit to be synchronized
-    INIT          : std_logic_vector    := x"00000000";             -- initialization bits
-    SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low    -- generate SYNC_DEPTH many stages, at least 2
-  );
-  port (
-    Clock         : in  std_logic;                                  -- <Clock>  output clock domain
-    Input         : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
-    Output        : out std_logic_vector(BITS - 1 downto 0)         -- @Clock:  output bits
-  );
+	generic (
+		BITS            : positive            := 1;                     -- number of bit to be synchronized
+		INIT            : std_logic_vector    := x"00000000";           -- initialization bits
+		SYNC_DEPTH      : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;  -- generate SYNC_DEPTH many stages, at least 2
+		FALSE_PATH      : boolean             := true;
+		REGISTER_OUTPUT : boolean             := false
+	);
+	port (
+		Clock         : in  std_logic;                                  -- <Clock>  output clock domain
+		Input         : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
+		Output        : out std_logic_vector(BITS - 1 downto 0)         -- @Clock:  output bits
+	);
 end entity;
 
 
@@ -64,6 +66,7 @@ architecture rtl of sync_Bits_Altera is
 	-- Apply a SDC constraint to meta stable flip flop
 	attribute ALTERA_ATTRIBUTE of rtl        : architecture is "-name SDC_STATEMENT ""set_false_path -to [get_registers {*|sync_Bits_Altera:*|\gen:*:Data_meta}] """;
 begin
+	assert false report "PoC.sync_Bits_Altera:: FALSE_PATH generic not implemented for this vendor and therefore ignored." severity note;
 	gen : for i in 0 to BITS - 1 generate
 		signal Data_async        : std_logic;
 		signal Data_meta        : std_logic                                    := INIT(i);
@@ -85,6 +88,12 @@ begin
 			end if;
 		end process;
 
-		Output(i)    <= Data_sync(Data_sync'high);
+
+		reg_out_gen : if REGISTER_OUTPUT generate
+		begin
+			Output(i) <= Data_sync(Data_sync'high) when rising_edge(Clock);
+		else generate
+			Output(i) <= Data_sync(Data_sync'high);
+		end generate;
 	end generate;
 end architecture;
