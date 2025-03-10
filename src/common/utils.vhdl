@@ -309,7 +309,7 @@ package utils is
 
 	-- Swap sub vectors in vector (endian reversal)
 	function swap(slv : std_logic_vector; Size : positive) return std_logic_vector;
-	function swap_Chunks(slv : std_logic_vector; Size : positive; NumChunks : positive := 1) return std_logic_vector;
+	function swapChunks(slv : std_logic_vector; Size : positive; NumChunks : positive := 1) return std_logic_vector;
 
 	-- Swap the bits in a chunk
 	function bit_swap(slv : std_logic_vector; Chunksize : positive) return std_logic_vector;
@@ -1349,7 +1349,7 @@ package body utils is
 		return result;
 	end function;
 
-	function swap_Chunks(slv : std_logic_vector; Size : positive; NumChunks : positive := 1) return std_logic_vector is
+	function swapChunks(slv : std_logic_vector; Size : positive; NumChunks : positive := 1) return std_logic_vector is
 		constant SegmentDepth : natural   := slv'length / NumChunks;
 		variable H            : natural;
 		variable L            : natural;

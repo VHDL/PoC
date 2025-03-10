@@ -174,8 +174,8 @@ package vectors is
 	function high(lenvec : T_NATVEC; index : natural) return natural;
 
 	-- Make vector of constant
-	function mk_const(const : std_logic;   length : natural) return std_logic_vector;
-	function mk_const(const : T_SLV_8;     length : natural) return T_SLVV_8;  -- FIXME; input should be std_logic_vector and output any SLVV
+	function genVector(const : std_logic;   length : natural) return std_logic_vector;
+	function genVector(const : T_SLV_8;     length : natural) return T_SLVV_8;  -- FIXME; input should be std_logic_vector and output any SLVV
 	-- FIXME: provide also for SLUV, SLSV
 
 	-- Assign procedures: assign_*
@@ -379,14 +379,14 @@ package body vectors is
 	end function;
 
 	-- Make vector of constant
-	function mk_const(const : std_logic;   length : natural) return std_logic_vector is
+	function genVector(const : std_logic;   length : natural) return std_logic_vector is
 		variable slv : std_logic_vector(length -1 downto 0) := (others => const);  -- FIXME: use (length - 1 downto 0 => ...) directly in return statement
 	begin
 		return slv;
 	end function;
 
 	-- FIXME: input as std_logic, return an SLVV of that size
-	function mk_const(const : T_SLV_8;     length : natural) return T_SLVV_8 is
+	function genVector(const : T_SLV_8;     length : natural) return T_SLVV_8 is
 		variable slv : T_SLVV_8(length -1 downto 0) := (others => const);  -- FIXME: use (length - 1 downto 0 => ...) directly in return statement
 	begin
 		return slv;
