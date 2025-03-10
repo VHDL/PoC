@@ -15,7 +15,6 @@ if { [info exists ::OMIT_XILINX_FILES] && $::OMIT_XILINX_FILES eq "1"} {
 	analyze ./xilinx/arith_prefix_and_xilinx.vhdl
 	analyze ./xilinx/arith_prefix_or_xilinx.vhdl
 }
-analyze ./arith_accumulator.vhdl
 analyze ./arith_addw.vhdl
 analyze ./arith_carrychain_inc.vhdl
 analyze ./arith_convert_bin2bcd.vhdl

@@ -7,7 +7,7 @@ include ./sync/sync.pro
 analyze ./misc_Delay.vhdl
 analyze ./misc_FrequencyMeasurement.vhdl
 
-analyze ./stat/stat.pkg.vhdl
+# analyze ./stat/stat.pkg.vhdl
 
 include ./filter/filter.pro
 
