@@ -2,9 +2,10 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:         Patrick Lehmann
+-- Authors:           Patrick Lehmann
+--                    Stefan Unrein
 --
--- Entity:          Synchronizes a reset signal across clock-domain boundaries
+-- Entity:            Synchronizes a reset signal across clock-domain boundaries
 --
 -- Description:
 -- -------------------------------------
@@ -32,6 +33,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2024      PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -63,6 +65,7 @@ entity sync_Reset is
 	port (
 		Clock         : in  std_logic;                                  -- <Clock>  output clock domain
 		Input         : in  std_logic;                                  -- @async:  reset input
+		D             : in  std_logic := '0';                           -- @Clock:  data input
 		Output        : out std_logic                                   -- @Clock:  reset output
 	);
 end entity;
@@ -70,39 +73,40 @@ end entity;
 
 architecture rtl of sync_Reset is
 begin
+
 	genGeneric : if (VENDOR /= VENDOR_ALTERA) and (VENDOR /= VENDOR_XILINX) generate
 		attribute ASYNC_REG                    : string;
 		attribute SHREG_EXTRACT                : string;
-
+	
 		signal Data_async                      : std_logic;
 		signal Data_meta                      : std_logic    := '1';
 		signal Data_sync                      : std_logic_vector(SYNC_DEPTH - 1 downto 0)    := (others => '1');
-
+	
 		-- Mark registers as asynchronous
 		attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
 		attribute ASYNC_REG      of Data_sync  : signal is "TRUE";
-
+	
 		-- Prevent XST from translating two FFs into SRL plus FF
 		attribute SHREG_EXTRACT of Data_meta  : signal is "NO";
 		attribute SHREG_EXTRACT of Data_sync  : signal is "NO";
-
+	
 	begin
 		Data_async  <= Input;
-
+	
 		process(Clock, Data_async)
 		begin
 			if (Data_async = '1') then
 				Data_meta    <= '1';
 				Data_sync    <= (others => '1');
 			elsif rising_edge(Clock) then
-				Data_meta    <= '0';
+				Data_meta    <= D;
 				Data_sync    <= Data_sync(Data_sync'high - 1 downto 0) & Data_meta;
 			end if;
 		end process;
-
+	
 		Output    <= Data_sync(Data_sync'high);
 	end generate;
-
+	
 	-- use dedicated and optimized 2 D-FF synchronizer for Altera FPGAs
 	genAltera : if VENDOR = VENDOR_ALTERA generate
 		sync : sync_Reset_Altera
@@ -111,6 +115,7 @@ begin
 			)
 			port map (
 				Clock       => Clock,
+				D           => D,
 				Input       => Input,
 				Output      => Output
 			);
@@ -124,8 +129,10 @@ begin
 			)
 			port map (
 				Clock       => Clock,
+				D           => D,
 				Input       => Input,
 				Output      => Output
 			);
 	end generate;
+
 end architecture;

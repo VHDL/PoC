@@ -3,8 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:           Patrick Lehmann
+--                    Stefan Unrein
 --
--- Entity:           sync_Reset_Altera
+-- Entity:            sync_Reset_Altera
 --
 -- Description:
 -- -------------------------------------
@@ -13,6 +14,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2024      PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -42,6 +44,7 @@ entity sync_Reset_Altera is
 	port (
 		Clock         : in  std_logic;                                  -- <Clock>  output clock domain
 		Input         : in  std_logic;                                  -- @async:  reset input
+		D             : in  std_logic := '0';                           -- @Clock:  data input
 		Output        : out std_logic                                   -- @Clock:  reset output
 	);
 end entity;
@@ -63,7 +66,7 @@ architecture rtl of sync_Reset_Altera is
 	attribute preserve of Data_meta            : signal is TRUE;
 	attribute preserve of Data_sync            : signal is TRUE;
 begin
-	Data_async  <= '0';
+	Data_async  <= D;
 
 	process(Clock, Input)
 	begin
