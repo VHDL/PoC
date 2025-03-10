@@ -28,9 +28,8 @@
 -- limitations under the License.
 -- =============================================================================
 
-library PoC;
-use			PoC.FileIO.all;
-use			PoC.sim_protected.all;
+use     work.FileIO.all;
+use     work.sim_protected.all;
 
 
 package sim_global is

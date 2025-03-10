@@ -69,15 +69,14 @@
 
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.strings.all;
-use			PoC.vectors.all;
-use			PoC.mem.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.strings.all;
+use     work.vectors.all;
+use     work.mem.all;
 
 
 entity ocram_tdp_wf is

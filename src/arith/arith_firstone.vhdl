@@ -44,8 +44,7 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-library PoC;
-use PoC.utils.all;
+use  work.utils.all;
 
 entity arith_firstone is
   generic (
@@ -64,8 +63,7 @@ end entity arith_firstone;
 library IEEE;
 use IEEE.numeric_std.all;
 
-library PoC;
-use PoC.config.all;
+use  work.config.all;
 
 architecture rtl of arith_firstone is
 begin

@@ -36,7 +36,7 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
 entity arith_counter_free is
 	generic (
@@ -54,10 +54,9 @@ end entity arith_counter_free;
 
 
 library IEEE;
-use IEEE.numeric_std.all;
+use     IEEE.numeric_std.all;
 
-library PoC;
-use PoC.utils.all;
+use      work.utils.all;
 
 architecture rtl of arith_counter_free is
 begin

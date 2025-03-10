@@ -40,8 +40,7 @@
 library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 
-library PoC;
-use     PoC.sync.all;
+use     work.sync.all;
 
 
 entity sync_Bits_Altera is

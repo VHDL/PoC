@@ -37,8 +37,7 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-library	PoC;
-use			Poc.utils.all;
+use     work.utils.all;
 
 
 entity fifo_shift is
@@ -66,8 +65,7 @@ end entity fifo_shift;
 library IEEE;
 use IEEE.numeric_std.all;
 
-library poc;
-use poc.utils.all;
+use  work.utils.all;
 
 architecture rtl of fifo_shift is
 

@@ -44,11 +44,10 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
-library	PoC;
-use			PoC.utils.all;
-use			PoC.arith.all;
+use     work.utils.all;
+use     work.arith.all;
 
 
 entity arith_addw is
@@ -73,7 +72,7 @@ end entity;
 use std.textio.all;
 
 library	IEEE;
-use			IEEE.numeric_std.all;
+use     IEEE.numeric_std.all;
 
 
 architecture rtl of arith_addw is

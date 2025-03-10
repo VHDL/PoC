@@ -63,7 +63,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-library poc;
 
 entity sdram_ctrl_de0 is
 

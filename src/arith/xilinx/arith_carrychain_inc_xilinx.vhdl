@@ -32,10 +32,10 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
 library	Unisim;
-use			Unisim.VComponents.all;
+use     Unisim.VComponents.all;
 
 
 entity arith_carrychain_inc_xilinx is

@@ -46,14 +46,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
 library	UniSim;
-use			UniSim.vComponents.all;
+use     UniSim.vComponents.all;
 
-library PoC;
-use     PoC.config.all;
+use     work.config.all;
 
 
 entity xil_SystemMonitor is
@@ -255,9 +254,9 @@ begin
 			port map (
 				CONVST        => '0',
 				CONVSTCLK     => '0',
-				
+
 				RESET         => Reset,
-				
+
 				DCLK          => '0',
 				DEN           => '0',
 				DADDR         => x"00",
@@ -265,19 +264,19 @@ begin
 				DI            => x"0000",
 				DO            => open,
 				DRDY          => open,
-				
+
 				ALM           => SysMon_Alarm,
 				OT            => Alarm_OverTemp,
-				
+
 				CHANNEL       => open,
 				BUSY          => open,
 				EOC           => open,
 				EOS           => open,
-				
+
 				JTAGBUSY      => open,
 				JTAGLOCKED    => open,
 				JTAGMODIFIED  => open,
-				
+
 				I2C_SCLK      => '0',
 				I2C_SDA       => '0',
 				I2C_SCLK_TS   => open,
@@ -341,14 +340,14 @@ begin
 				INIT_6B           => X"98BF", -- Vuser3 lower alarm limit
 				INIT_7A           => X"0000", -- DUAL0 Register
 				INIT_7B           => X"0000", -- DUAL1 Register
-				INIT_7C           => X"0000", -- DUAL2 Register 
+				INIT_7C           => X"0000", -- DUAL2 Register
 				INIT_7D           => X"0000", -- DUAL3 Register
 				SIM_DEVICE        => "ZYNQ_ULTRASCALE",
 				SIM_MONITOR_FILE  => "design.txt"
 			)
 			port map (
 				RESET         => Reset,
-					
+
 				DCLK          => '0',
 				DEN           => '0',
 				DADDR         => x"00",
@@ -356,13 +355,13 @@ begin
 				DI            => x"0000",
 				DO            => open,
 				DRDY          => open,
-					
+
 				VAUXN         => aux_channel_n,
 				VAUXP         => aux_channel_p,
-				
+
 				ALM           => SysMon_Alarm,
 				OT            => Alarm_OverTemp,
-				
+
 				CONVST        => '0',
 				CONVSTCLK     => '0',
 				BUSY          => open,
@@ -370,16 +369,16 @@ begin
 				CHANNEL       => open,
 				EOC           => open,
 				EOS           => open,
-				
+
 				JTAGBUSY      => open,
 				JTAGLOCKED    => open,
 				JTAGMODIFIED  => open,
-				
+
 				I2C_SCLK      => '0',
 				I2C_SDA       => '0',
 				I2C_SCLK_TS   => open,
 				I2C_SDA_TS    => open,
-				
+
 				SMBALERT_TS   => open,
 
 				MUXADDR       => open,

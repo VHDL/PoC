@@ -29,11 +29,11 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.math_real.all;
+use     IEEE.math_real.all;
 
 library	PoC;
--- use			PoC.my_project.all;
--- use			PoC.utils.all;
+-- use     work.my_project.all;
+-- use     work.utils.all;
 
 
 package ProtectedTypes is

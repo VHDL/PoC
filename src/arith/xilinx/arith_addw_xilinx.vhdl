@@ -45,10 +45,9 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
-library	PoC;
-use			PoC.arith.all;
+use     work.arith.all;
 
 
 entity arith_addw_xilinx is
@@ -70,16 +69,15 @@ entity arith_addw_xilinx is
 end entity;
 
 
-use			std.textio.all;
+use     std.textio.all;
 
 library	IEEE;
-use			IEEE.numeric_std.all;
+use     IEEE.numeric_std.all;
 
 library	UNISIM;
-use			UNISIM.vcomponents.all;
+use     UNISIM.vcomponents.all;
 
-library	PoC;
-use			PoC.utils.all;
+use     work.utils.all;
 
 
 architecture rtl of arith_addw_xilinx is

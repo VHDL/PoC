@@ -39,14 +39,13 @@
 
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
-library PoC;
-use			PoC.vectors.all;
-use			PoC.physical.all;
-use			PoC.components.all;
-use			PoC.utils.all;
-use			PoC.uart.all;
+use     work.vectors.all;
+use     work.physical.all;
+use     work.components.all;
+use     work.utils.all;
+use     work.uart.all;
 
 
 entity uart_fifo is

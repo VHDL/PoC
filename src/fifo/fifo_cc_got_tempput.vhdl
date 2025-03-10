@@ -73,13 +73,12 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library	poc;
-use			poc.config.all;
-use			poc.utils.all;
-use			poc.ocram.ocram_sdp;
+use     work.config.all;
+use     work.utils.all;
+use     work.ocram.ocram_sdp;
 
 
 entity fifo_cc_got_tempput is

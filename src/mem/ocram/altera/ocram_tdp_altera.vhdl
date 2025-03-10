@@ -34,16 +34,15 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 library	altera_mf;
-use			altera_mf.all;
+use     altera_mf.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.strings.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.strings.all;
 
 
 entity ocram_tdp_altera is

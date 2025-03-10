@@ -36,15 +36,14 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.strings.all;
-use			PoC.physical.all;
-use			PoC.components.all;
-use			PoC.uart.all;
+use     work.utils.all;
+use     work.strings.all;
+use     work.physical.all;
+use     work.components.all;
+use     work.uart.all;
 
 
 entity uart_bclk is

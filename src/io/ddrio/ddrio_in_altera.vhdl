@@ -30,13 +30,12 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
 library	Altera_mf;
-use			Altera_mf.Altera_MF_Components.all;
+use     Altera_mf.Altera_MF_Components.all;
 
-library poc;
-use poc.utils.all;
+use  work.utils.all;
 
 entity ddrio_in_altera is
 	generic (

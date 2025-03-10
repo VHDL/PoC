@@ -86,13 +86,12 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library	poc;
-use			poc.config.all;
-use			poc.utils.all;
-use			poc.ocram.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.ocram.all;
 
 
 entity fifo_cc_got is

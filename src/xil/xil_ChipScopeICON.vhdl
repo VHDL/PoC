@@ -47,10 +47,9 @@
 
 
 library	IEEE;
-use			IEEE.STD_LOGIC_1164.all;
+use     IEEE.STD_LOGIC_1164.all;
 
-library PoC;
-use			PoC.xil.all;
+use     work.xil.all;
 
 
 entity xil_ChipScopeICON is

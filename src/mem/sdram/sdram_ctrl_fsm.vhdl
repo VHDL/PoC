@@ -98,8 +98,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library poc;
-use poc.utils.all;
+use  work.utils.all;
 
 entity sdram_ctrl_fsm is
   generic (

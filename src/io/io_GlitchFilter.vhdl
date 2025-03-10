@@ -30,12 +30,11 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
--- use			PoC.io.all;
+use     work.utils.all;
+-- use     work.io.all;
 
 
 entity io_GlitchFilter is

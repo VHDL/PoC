@@ -30,8 +30,8 @@
 library  IEEE;
 use      IEEE.std_logic_1164.all;
 
-use      work.utils.all;
-use      work.physical.all;
+use     work.utils.all;
+use     work.physical.all;
 
 
 package uart is

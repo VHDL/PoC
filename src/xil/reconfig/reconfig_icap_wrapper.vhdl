@@ -37,8 +37,7 @@ use ieee.numeric_std.all;
 library UNISIM;
 use UNISIM.vcomponents.all;
 
-library poc;
-use poc.utils.all;
+use  work.utils.all;
 
 entity reconfig_icap_wrapper is
 	generic (

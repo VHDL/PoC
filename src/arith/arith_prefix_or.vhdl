@@ -32,12 +32,11 @@
 -- =============================================================================
 
 library	ieee;
-use			ieee.std_logic_1164.all;
-use			ieee.numeric_std.all;
+use     ieee.std_logic_1164.all;
+use     ieee.numeric_std.all;
 
-library	PoC;
-use			PoC.config.all;
-use			PoC.arith.all;
+use     work.config.all;
+use     work.arith.all;
 
 
 entity arith_prefix_or is
