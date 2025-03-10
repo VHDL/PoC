@@ -35,10 +35,10 @@
 -- =============================================================================
 
 library IEEE;
-use IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
-
 
 entity fifo_shift is
   generic (
@@ -61,11 +61,6 @@ entity fifo_shift is
     vld  : out std_logic                             -- Data Valid
   );
 end entity fifo_shift;
-
-library IEEE;
-use IEEE.numeric_std.all;
-
-use  work.utils.all;
 
 architecture rtl of fifo_shift is
 

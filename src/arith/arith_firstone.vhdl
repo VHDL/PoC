@@ -42,9 +42,11 @@
 -- =============================================================================
 
 library IEEE;
-use IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-use  work.utils.all;
+use     work.config.all;
+use     work.utils.all;
 
 entity arith_firstone is
   generic (
@@ -58,12 +60,6 @@ entity arith_firstone is
     bin  : out std_logic_vector(log2ceil(N)-1 downto 0)  -- Binary Grant Index
   );
 end entity arith_firstone;
-
-
-library IEEE;
-use IEEE.numeric_std.all;
-
-use  work.config.all;
 
 architecture rtl of arith_firstone is
 begin
