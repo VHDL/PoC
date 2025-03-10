@@ -34,13 +34,12 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.vectors.all;
-use			PoC.physical.all;
-use			PoC.pmod.all;
+use     work.vectors.all;
+use     work.physical.all;
+use     work.pmod.all;
 
 
 entity pmod_KYPD is

@@ -63,12 +63,11 @@
 
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
-library	PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.ddrio.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.ddrio.all;
 
 
 entity ddrio_in is

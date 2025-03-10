@@ -29,7 +29,7 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
 
 entity dstruct_stack is
@@ -57,10 +57,9 @@ end entity dstruct_stack;
 library IEEE;
 use IEEE.numeric_std.all;
 
-library PoC;
-use PoC.config.all;
-use PoC.utils.all;
-use PoC.ocram.all;
+use  work.config.all;
+use  work.utils.all;
+use  work.ocram.all;
 
 architecture rtl of dstruct_stack is
 

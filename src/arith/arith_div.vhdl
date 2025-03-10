@@ -64,8 +64,7 @@ end entity arith_div;
 library IEEE;
 use IEEE.numeric_std.all;
 
-library PoC;
-use PoC.utils.all;
+use  work.utils.all;
 
 -------------------------------------------------------------------------------
 -- This divider is an implementation by an iterative digit recurrence.

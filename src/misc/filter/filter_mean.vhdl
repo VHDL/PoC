@@ -28,10 +28,9 @@
 -- limitations under the License.
 -- =============================================================================
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
+use     IEEE.STD_LOGIC_1164.all;
 
-library PoC;
-use			PoC.utils.all;
+use     work.utils.all;
 
 
 entity filter_mean is

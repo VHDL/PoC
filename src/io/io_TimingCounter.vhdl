@@ -32,12 +32,11 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.my_config.all;
-use			PoC.utils.all;
+use     work.my_config.all;
+use     work.utils.all;
 
 
 entity io_TimingCounter is

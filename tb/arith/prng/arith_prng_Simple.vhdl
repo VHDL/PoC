@@ -2,12 +2,6 @@
 -- Authors:
 --   Jonas Schreiner
 --
--- License:
--- =============================================================================
--- Copyright (c) 2024 PLC2 Design GmbH - All Rights Reserved
--- Unauthorized copying of this file, via any medium is strictly prohibited.
--- Proprietary and confidential
--- =============================================================================
 
 library IEEE;
 use     IEEE.std_logic_1164.all;

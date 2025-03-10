@@ -43,10 +43,9 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
-library	poc;
-use			poc.utils.all;
+use     work.utils.all;
 
 
 entity arith_scaler is
@@ -70,7 +69,7 @@ end entity arith_scaler;
 
 
 library	IEEE;
-use			IEEE.numeric_std.all;
+use     IEEE.numeric_std.all;
 
 architecture rtl of arith_scaler is
 

@@ -1,13 +1,7 @@
 # =============================================================================
 # Authors:
 #	Adrian Weiland
-#
-# License:
-# =============================================================================
-# Copyright (c) 2024 PLC2 Design GmbH - All Rights Reserved
-# Unauthorized copying of this file, via any medium is strictly prohibited.
-# Proprietary and confidential
-# =============================================================================
+==========================================================================
 
 analyze ./arith.pkg.vhdl
 
@@ -21,7 +15,6 @@ if { [info exists ::OMIT_XILINX_FILES] && $::OMIT_XILINX_FILES eq "1"} {
 	analyze ./xilinx/arith_prefix_and_xilinx.vhdl
 	analyze ./xilinx/arith_prefix_or_xilinx.vhdl
 }
-analyze ./arith_accumulator.vhdl
 analyze ./arith_addw.vhdl
 analyze ./arith_carrychain_inc.vhdl
 analyze ./arith_convert_bin2bcd.vhdl

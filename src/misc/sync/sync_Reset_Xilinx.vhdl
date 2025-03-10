@@ -47,8 +47,7 @@ use     IEEE.STD_LOGIC_1164.all;
 library UniSim;
 use     UniSim.VComponents.all;
 
-library PoC;
-use     PoC.sync.all;
+use     work.sync.all;
 
 
 entity sync_Reset_Xilinx is

@@ -66,12 +66,11 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library	poc;
-use			PoC.utils.all;
-use			poc.ocram.all; -- "all" required by Quartus RTL simulation
+use     work.utils.all;
+use     work.ocram.all; -- "all" required by Quartus RTL simulation
 
 
 entity fifo_ic_got is

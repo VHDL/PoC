@@ -59,10 +59,9 @@
 library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 
-library PoC;
-use     PoC.config.all;
-use     PoC.utils.all;
-use     PoC.sync.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.sync.all;
 
 
 entity sync_Pulse is

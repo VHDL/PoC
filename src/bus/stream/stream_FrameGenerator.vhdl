@@ -29,12 +29,11 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			ieee.numeric_std.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     ieee.numeric_std.all;
 
-library	PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
+use     work.utils.all;
+use     work.vectors.all;
 
 
 entity stream_FrameGenerator is

@@ -31,12 +31,11 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library PoC;
-use			PoC.sim_types.all;
-use			PoC.sim_unprotected.all;
+use     work.sim_types.all;
+use     work.sim_unprotected.all;
 
 
 package simulation is

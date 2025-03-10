@@ -32,14 +32,13 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.physical.all;
-use			PoC.components.all;
-use			PoC.io.all;
+use     work.utils.all;
+use     work.physical.all;
+use     work.components.all;
+use     work.io.all;
 
 
 entity io_7SegmentMux_BCD is
