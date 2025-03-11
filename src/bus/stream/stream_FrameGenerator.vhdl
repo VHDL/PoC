@@ -285,7 +285,7 @@ begin
 		end if;
 	end process;
 
-	PRNG : entity PoC.arith_prng
+	PRNG: entity work.arith_prng
     generic map (
       BITS		=> DATA_BITS
 		)

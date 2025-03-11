@@ -133,7 +133,7 @@ begin
 	In_Meta_rst									<= get_col(LLMux_In_Meta_rev, META_RST_BIT);
 	In_Meta_DestMACAddress_nxt	<= get_col(LLMux_In_Meta_rev, META_DEST_NXT_BIT);
 
-	LLMux : entity PoC.stream_Mux
+	LLMux: entity work.stream_Mux
 		generic map (
 			PORTS									=> PORTS,
 			DATA_BITS							=> LLMux_Out_Data'length,

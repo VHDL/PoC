@@ -150,7 +150,7 @@ architecture rtl of sdram_ctrl_s3esk is
 
 begin  -- rtl
 
-  fsm: entity poc.sdram_ctrl_fsm
+  fsm: entity work.sdram_ctrl_fsm
     generic map (
       SDRAM_TYPE   => 1,                -- DDR-SDRAM
       A_BITS       => A_BITS,
@@ -188,7 +188,7 @@ begin  -- rtl
       rden_nxt         => rden_nxt,
       wren_nxt         => wren_nxt);
 
-  phy: entity poc.sdram_ctrl_phy_s3esk
+  phy: entity work.sdram_ctrl_phy_s3esk
     port map (
       clk        => clk,
       clk_n      => clk_n,

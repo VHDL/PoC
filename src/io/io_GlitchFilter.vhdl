@@ -124,7 +124,7 @@ begin
 		end case;
 	end process;
 
-	TC : entity PoC.io_TimingCounter
+	TC: entity work.io_TimingCounter
 		generic map (
 			TIMING_TABLE				=> TIMING_TABLE										-- timing table
 		)

@@ -122,7 +122,7 @@ begin
 		Busy(i)          <= Busy_i;
 	end generate;
 
-	syncClk2 : entity work.sync_Bits
+	syncClk2: entity work.sync_Bits
 		generic map (
 			BITS        => BITS,          -- number of bit to be synchronized
 			SYNC_DEPTH  => SYNC_DEPTH,
@@ -134,7 +134,7 @@ begin
 			Output      => syncClk2_Out   -- @Clock:  output bits
 		);
 
-	syncClk1 : entity work.sync_Bits
+	syncClk1: entity work.sync_Bits
 		generic map (
 			BITS        => BITS,          -- number of bit to be synchronized
 			SYNC_DEPTH  => SYNC_DEPTH,

@@ -97,7 +97,7 @@ begin
 	Counter_i	<= std_logic_vector(Counter_us);
 	Sum_i			<= std_logic_vector(Sum_us);
 
-  div : entity PoC.arith_div
+  div: entity work.arith_div
     generic map (
       A_BITS             => COUNTER_BITS,
       D_BITS             => COUNTER_BITS,

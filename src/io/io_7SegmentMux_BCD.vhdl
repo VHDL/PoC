@@ -65,7 +65,7 @@ architecture rtl of io_7SegmentMux_BCD is
 	signal DigitCounter_us		: unsigned(log2ceilnz(DIGITS) - 1 downto 0)	:= (others => '0');
 begin
 
-	Strobe : entity PoC.misc_StrobeGenerator
+	Strobe: entity work.misc_StrobeGenerator
 		generic map (
 			STROBE_PERIOD_CYCLES	=> TimingToCycles(to_time(REFRESH_RATE), CLOCK_FREQ),
 			INITIAL_STROBE				=> FALSE

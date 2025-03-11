@@ -32,21 +32,35 @@ jobs:
         run: |
           cd temp/ghdl
 
-          printf "=================\n"
           tee run.tcl <<EOF
           source ../../lib/OSVVM-Scripts/StartGHDL.tcl
-          build ../../lib/OsvvmLibraries.pro
+          build ../../lib/OsvvmLibraries.pro OsvvmLibraries
           EOF
           printf "=================\n"
 
           tclsh run.tcl
+
+      - name: 📤 Upload 'GHDL-OSVVM-Report' artifacts
+        uses: pyTooling/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: GHDL-OSVVM-Report
+          working-directory: temp/ghdl
+          path: |
+            logs
+            reports
+            *.html
+            *.xml
+            *.yml
+          retention-days: 1
 
       - name: 📤 Upload 'GHDL-OSVVM' artifacts
         uses: pyTooling/upload-artifact@v4
         with:
           name: GHDL-OSVVM
           working-directory: temp/ghdl
-          path: '*'
+          path: |
+            VHDL_LIBS
           retention-days: 1
 
   Build-PoC:
@@ -86,7 +100,6 @@ jobs:
         run: |
           cd temp/ghdl
 
-          printf "=================\n"
           tee run.tcl <<EOF
           source ../../lib/OSVVM-Scripts/StartGHDL.tcl
 
@@ -99,18 +112,33 @@ jobs:
           analyze ../../tb/common/my_project.vhdl
           analyze ../../tb/common/my_config_GENERIC.vhdl
 
-          build ../../src/PoC.pro
+          build ../../src/PoC.pro PoC
           EOF
 
           printf "=================\n"
           tclsh run.tcl
 
-      - name: 📤 Upload 'GHDL-OSVVM' artifacts
+      - name: 📤 Upload 'GHDL-PoC-Report' artifacts
+        uses: pyTooling/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: GHDL-PoC-Report
+          working-directory: temp/ghdl
+          path: |
+            logs
+            reports
+            *.html
+            *.xml
+            *.yml
+          retention-days: 1
+
+      - name: 📤 Upload 'GHDL-PoC' artifacts
         uses: pyTooling/upload-artifact@v4
         with:
-          name: GHDL-OSVVM
+          name: GHDL-PoC
           working-directory: temp/ghdl
-          path: '*'
+          path: |
+            VHDL_LIBS
           retention-days: 1
 
   Documentation:

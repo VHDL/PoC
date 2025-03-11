@@ -10,10 +10,10 @@
 --
 -- Description:
 -- -------------------------------------
--- This module creates a mirror of an input bit-vector to an output bit-vector 
--- in a different clock-domain. The data is always transfered to the other side 
--- if the lower MASTER_BITS have changed. If MASTER_BITS is set to zero, an 
--- external comparator or change can be given to the Strobe input. Data is only 
+-- This module creates a mirror of an input bit-vector to an output bit-vector
+-- in a different clock-domain. The data is always transfered to the other side
+-- if the lower MASTER_BITS have changed. If MASTER_BITS is set to zero, an
+-- external comparator or change can be given to the Strobe input. Data is only
 -- transfered if Busy is zero. A Strobe while Busy active will be ignored.
 --
 -- Constraints:
@@ -56,11 +56,11 @@ entity sync_Vector is
 	port (
 		Clock1        : in  std_logic;                                                  -- <Clock>  input clock
 		Clock2        : in  std_logic;                                                  -- <Clock>  output clock
-		
+
 		Input         : in  std_logic_vector((SLAVE_BITS + MASTER_BITS) - 1 downto 0);  -- @Clock1:  input vector
 		Busy          : out std_logic;                                                  -- @Clock1:  busy bit
 		Strobe        : in  std_logic := '0';                                           -- @Clock1:  Transfer Strobe, only if MASTER_BITS=0
-		
+
 		Output        : out std_logic_vector((SLAVE_BITS + MASTER_BITS) - 1 downto 0);  -- @Clock2:  output vector
 		Changed       : out  std_logic                                                  -- @Clock2:  changed bit
 	);
@@ -131,13 +131,13 @@ begin
 	else generate
 		Changed_Clk1  <= Strobe;
 	end generate;
-	
+
 	-- output signals
 	Output        <= D4;
 	Busy          <= Busy_i;
 	Changed       <= D3;
 
-	syncClk2 : entity work.sync_Bits
+	syncClk2: entity work.sync_Bits
 		generic map (
 			BITS        => 1,           -- number of bit to be synchronized
 			SYNC_DEPTH  => SYNC_DEPTH,
@@ -149,7 +149,7 @@ begin
 			Output(0) => syncClk2_Out   -- @Clock:  output bits
 		);
 
-	syncClk1 : entity work.sync_Bits
+	syncClk1: entity work.sync_Bits
 		generic map (
 			BITS        => 1,           -- number of bit to be synchronized
 			SYNC_DEPTH  => SYNC_DEPTH,

@@ -120,7 +120,7 @@ begin
 
 	In_Ack	<= not mux(FIFO_sel_r, FIFO_0_Full, FIFO_1_Full);
 
-	FIFO_0 : entity PoC.fifo_cc_got
+	FIFO_0: entity work.fifo_cc_got
 		generic map (
 			D_BITS							=> FIFO_BITS,					-- Data Width
 			MIN_DEPTH						=> FIFO_DEPTH,				-- Minimum FIFO Depth
@@ -142,7 +142,7 @@ begin
 			valid								=> FIFO_0_Valid
 		);
 
-	FIFO_1 : entity PoC.fifo_cc_got
+	FIFO_1: entity work.fifo_cc_got
 		generic map (
 			D_BITS							=> FIFO_BITS,					-- Data Width
 			MIN_DEPTH						=> FIFO_DEPTH,				-- Minimum FIFO Depth

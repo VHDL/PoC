@@ -107,7 +107,7 @@ begin
     Clear <= not Input(i) and Input_sync(i);
   end generate;
 
-  Sync : entity PoC.sync_Bits_Xilinx
+  Sync: entity work.sync_Bits_Xilinx
     generic map (
       BITS        => BITS,
       SYNC_DEPTH  => SYNC_DEPTH

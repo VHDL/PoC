@@ -138,7 +138,7 @@ architecture rtl of sdram_ctrl_de0 is
 
 begin  -- rtl
 
-  fsm: entity poc.sdram_ctrl_fsm
+  fsm: entity work.sdram_ctrl_fsm
     generic map (
       SDRAM_TYPE   => 0,                -- SDR-SDRAM
       A_BITS       => A_BITS,
@@ -176,7 +176,7 @@ begin  -- rtl
       rden_nxt         => rden_nxt,
       wren_nxt         => wren_nxt);
 
-  phy: entity poc.sdram_ctrl_phy_de0
+  phy: entity work.sdram_ctrl_phy_de0
     generic map (
       CL => CL)
     port map (

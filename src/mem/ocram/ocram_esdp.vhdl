@@ -123,7 +123,7 @@ begin
 		--
 		-- **Attention**: This encapsulation is mandatory for Xilinx Vivado,
 		-- otherwise Vivado synthesizes a lot of LUT-RAM instead of Block-RAM.
-		ram_tdp: entity poc.ocram_tdp
+		ram_tdp: entity work.ocram_tdp
 			generic map (
 				A_BITS	 => A_BITS,
 				D_BITS	 => D_BITS,

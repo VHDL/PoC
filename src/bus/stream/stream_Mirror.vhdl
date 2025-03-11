@@ -98,7 +98,7 @@ begin
 
 	In_Ack																		<= not FIFOGlue_Full;
 
-	FIFOGlue : entity PoC.fifo_glue
+	FIFOGlue: entity work.fifo_glue
 		generic map (
 			D_BITS		=> DATA_BITS + 2					-- Data Width
 		)

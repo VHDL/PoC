@@ -277,7 +277,7 @@ begin
 	Checksum			<= x"0000";
 
 
-	SourceIPv4Seq : entity PoC.misc_Sequencer
+	SourceIPv4Seq: entity work.misc_Sequencer
 		generic map (
 			INPUT_BITS						=> 32,
 			OUTPUT_BITS						=> 8,

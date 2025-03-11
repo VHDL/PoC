@@ -82,7 +82,7 @@ begin
     sync <= Input;
   end generate;
   genSync: if ADD_INPUT_SYNCHRONIZERS generate
-    sync_i : entity PoC.sync_Bits
+    sync_i: entity work.sync_Bits
       generic map (
         BITS => BITS,
 				INIT => INIT

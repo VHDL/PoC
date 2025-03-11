@@ -111,7 +111,7 @@ architecture rtl of sync_Bits_Xilinx is
 	constant INIT_I          : bit_vector    := to_bitvector(resize(descend(INIT), BITS));
 begin
 	gen : for i in 0 to BITS - 1 generate
-		Sync : entity work.sync_Bit_Xilinx
+		Sync: entity work.sync_Bit_Xilinx
 			generic map (
 				INIT            => INIT_I(i),
 				FALSE_PATH      => FALSE_PATH,
@@ -165,11 +165,11 @@ begin
 				C       => Clock,
 				D       => Data_async,
 				Q       => Data_meta
-			);  
+			);
 	end generate;
 
 	Data_sync(0) <= Data_meta;
-	
+
 	gen: for i in 0 to SYNC_DEPTH - 2 generate
 		FF : FD
 			generic map (

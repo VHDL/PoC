@@ -97,7 +97,7 @@ begin
 	In_Meta_SrcMACAddress_nxt		<= LLBuf_MetaIn_nxt(META_STREAMID_SRCADDR);
 	In_Meta_DestMACAddress_nxt	<= LLBuf_MetaIn_nxt(META_STREAMID_DESTADDR);
 
-	LLBuf : entity PoC.stream_Buffer
+	LLBuf: entity work.stream_Buffer
 		generic map (
 			FRAMES												=> MAX_FRAMES,
 			DATA_BITS											=> 8,

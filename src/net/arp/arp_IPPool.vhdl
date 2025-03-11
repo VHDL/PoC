@@ -128,8 +128,8 @@ begin
 	PoolResult					<= to_Cache_Result(CacheHit, CacheMiss);
 
 	-- Cache TagUnit
---	TU : entity PoC.Cache_TagUnit_seq
-	TU : entity PoC.cache_TagUnit_seq
+--	TU: entity work.Cache_TagUnit_seq
+	TU: entity work.cache_TagUnit_seq
 		generic map (
 			REPLACEMENT_POLICY				=> "LRU",
 			CACHE_LINES								=> CACHE_LINES,

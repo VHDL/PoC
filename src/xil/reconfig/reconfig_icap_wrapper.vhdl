@@ -132,7 +132,7 @@ begin
 	-- sync the written pci data into the user clk
 	-- writer: pci
 	-- reader: core
-	fifo_in : entity poc.fifo_ic_got
+	fifo_in: entity work.fifo_ic_got
 		generic map(
 			D_BITS			=> 32,
 			MIN_DEPTH		=> MIN_DEPTH_IN,
@@ -158,7 +158,7 @@ begin
 	-- sync data from this core to the pci bus
 	-- writer: core
 	-- reader: pci
-	fifo_out : entity poc.fifo_ic_got
+	fifo_out: entity work.fifo_ic_got
 		generic map(
 			D_BITS			=> 32,
 			MIN_DEPTH		=> MIN_DEPTH_OUT,
@@ -178,7 +178,7 @@ begin
 			dout   			=> read_data
 		);
 
-	icap_fsm_inst: entity poc.reconfig_icap_fsm port map(
+	icap_fsm_inst: entity work.reconfig_icap_fsm port map(
 		clk => clk_icap,
 		reset => reset_icap,
 		icap_in => icap_data_config_r,
@@ -204,7 +204,7 @@ begin
 		end if;
 	end process icap_reg_p;
 
-	icap_inst : entity poc.xil_ICAP
+	icap_inst: entity work.xil_ICAP
 	port map (
 		clk			=> clk_icap,
 		disable		=> icap_csb,
@@ -214,7 +214,7 @@ begin
 		rd_wr		=> icap_rw
 	);
 
-	strobe_sync : entity poc.sync_Strobe
+	strobe_sync: entity work.sync_Strobe
 	port map (
 		clock1 => clk,
 		clock2 => clk_icap,
@@ -223,14 +223,14 @@ begin
 		busy => open
 	);
 
-	reset_sync : entity poc.sync_Bits
+	reset_sync: entity work.sync_Bits
 	port map (
 		clock => clk_icap,
 		input(0) => reset,
 		output(0) => reset_icap
 	);
 
-	fsm_status_sync : entity poc.sync_vector
+	fsm_status_sync: entity work.sync_vector
 	generic map (
 		master_bits => 32
 	) port map (

@@ -117,7 +117,7 @@ begin
 				);
 		end generate;
 
-		sync : entity PoC.sync_Bits_Xilinx
+		sync: entity work.sync_Bits_Xilinx
 			generic map (
 				BITS			=> 2
 			)
@@ -131,7 +131,7 @@ begin
 
 		-- timer for warm-up control
 		-- ==========================================================================================================================================================
-		TC : entity PoC.io_TimingCounter
+		TC: entity work.io_TimingCounter
 			generic map (
 				TIMING_TABLE				=> (0 => TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
 			)
@@ -172,7 +172,7 @@ begin
 
 		-- timer for warm-up control
 		-- ==========================================================================================================================================================
-		TC : entity PoC.io_TimingCounter
+		TC: entity work.io_TimingCounter
 			generic map (
 				TIMING_TABLE				=> (0 => TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
 			)
@@ -198,7 +198,7 @@ begin
 
 	-- PWM signal modulator
 	-- ==========================================================================================================================================================
-	PWM : entity PoC.io_PulseWidthModulation
+	PWM: entity work.io_PulseWidthModulation
 		generic map (
 			CLOCK_FREQ					=> CLOCK_FREQ,				--
 			PWM_FREQ						=> PWM_FREQ,					--
@@ -228,7 +228,7 @@ begin
 			Tacho_sync <= Fan_Tacho;
 		end generate;
 		genSync : if ADD_INPUT_SYNCHRONIZERS generate
-			sync_i : entity PoC.sync_Bits
+			sync_i: entity work.sync_Bits
 				port map (
 					Clock  		=> Clock,					-- Clock to be synchronized to
 					Input(0)  => Fan_Tacho,			-- Data to be synchronized
@@ -236,7 +236,7 @@ begin
 				);
 		end generate;
 
-		Tacho : entity PoC.io_FrequencyCounter
+		Tacho: entity work.io_FrequencyCounter
 			generic map (
 				CLOCK_FREQ					=> CLOCK_FREQ,					--
 				TIMEBASE						=> (60.0 / 64.0),				-- ca. 1 second

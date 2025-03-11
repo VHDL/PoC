@@ -191,7 +191,7 @@ begin
 		-- Output
 		ReplaceWay <= LRU_Key;
 
-		LRU : entity PoC.sort_lru_cache
+		LRU: entity work.sort_lru_cache
 			generic map (
 				ELEMENTS => CACHE_WAYS
 			)

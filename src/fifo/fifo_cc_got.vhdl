@@ -165,7 +165,7 @@ begin
 		IP0_slv	<= std_logic_vector(IP0);
 		OP0_slv	<= std_logic_vector(OP0);
 
-		incIP : entity PoC.arith_carrychain_inc
+		incIP: entity work.arith_carrychain_inc
 			generic map (
 				BITS		=> A_BITS
 			)
@@ -174,7 +174,7 @@ begin
 				Y				=> IP1_slv
 			);
 
-		incOP : entity PoC.arith_carrychain_inc
+		incOP: entity work.arith_carrychain_inc
 			generic map (
 				BITS		=> A_BITS
 			)
@@ -313,7 +313,7 @@ begin
   begin
 
     -- Backing Memory
-    ram : entity PoC.ocram_sdp
+    ram: entity work.ocram_sdp
       generic map (
         A_BITS => A_BITS,
         D_BITS => D_BITS
