@@ -120,4 +120,40 @@ package sync is
 			Output        : out std_logic                                 -- @Clock:  reset output
 		);
 	end component;
+
+	component sync_Pulse is
+		generic (
+			BITS          : positive            := 1;                       -- number of bit to be synchronized
+			SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low    -- generate SYNC_DEPTH many stages, at least 2
+		);
+		port (
+			Clock         : in  std_logic;                                  -- <Clock>  output clock domain
+			Input         : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
+			Output        : out std_logic_vector(BITS - 1 downto 0)         -- @Clock:  output bits
+		);
+	end component;
+
+	component sync_Pulse_Altera is
+		generic (
+			BITS          : positive            := 1;                       -- number of bit to be synchronized
+			SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low    -- generate SYNC_DEPTH many stages, at least 2
+		);
+		port (
+			Clock         : in  std_logic;                                  -- <Clock>  output clock domain
+			Input         : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
+			Output        : out std_logic_vector(BITS - 1 downto 0)         -- @Clock:  output bits
+		);
+	end component;
+
+	component sync_Pulse_Xilinx is
+		generic (
+			BITS          : positive            := 1;                 -- number of bit to be synchronized
+			SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := 2                  -- generate SYNC_DEPTH many stages, at least 2
+		);
+		port (
+			Clock         : in  std_logic;                            -- Clock to be synchronized to
+			Input         : in  std_logic_vector(BITS - 1 downto 0);  -- Data to be synchronized
+			Output        : out  std_logic_vector(BITS - 1 downto 0)  -- synchronised data
+		);
+	end component;
 end package;

@@ -43,6 +43,7 @@
 library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 
+use     work.utils.all;
 use     work.sync.all;
 
 
@@ -68,8 +69,8 @@ architecture rtl of sync_Pulse_Altera is
 begin
 	gen : for i in 0 to BITS - 1 generate
 		signal Data_async        : std_logic;
-		signal Data_meta        : std_logic                                    := INIT(i);
-		signal Data_sync        : std_logic_vector(SYNC_DEPTH - 1 downto 0)    := (others => INIT(i));
+		signal Data_meta        : std_logic                                    := '0';
+		signal Data_sync        : std_logic_vector(SYNC_DEPTH - 1 downto 0)    := (others => '0');
 
 		-- preserve both registers (no optimization, shift register extraction, ...)
 		attribute PRESERVE of Data_meta            : signal is TRUE;
@@ -81,7 +82,7 @@ begin
 		begin
 			if ((not Input(i) and Data_sync(Data_sync'high)) = '1') then
 				Data_async <= '0';
-			elsif rising_edge(Input) then
+			elsif rising_edge(Input(i)) then
 				Data_async <= '1';
 			end if;
 		end process;

@@ -83,8 +83,6 @@ end entity;
 
 
 architecture rtl of sync_Pulse_Xilinx is
-  constant INIT_I           : bit_vector    := (0 to BITS - 1 => '0');
-
   signal Captured_async     : std_logic_vector(BITS - 1 downto 0);
   signal Input_sync         : std_logic_vector(BITS - 1 downto 0);
 
