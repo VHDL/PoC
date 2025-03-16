@@ -85,7 +85,7 @@ architecture rtl of dstruct_stack is
 begin
 
     -- Backing Memory
-    ram : entity poc.ocram_sp
+    ram: entity work.ocram_sp
     generic map(
 		A_BITS => A_BITS,
 		D_BITS => D_BITS,

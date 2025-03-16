@@ -93,7 +93,7 @@ begin
 	TX_Meta_SrcIPv6Address_nxt(I)		<= Meta_nxt(META_STREAMID_SRC);
 	TX_Meta_DestIPv6Address_nxt(I)	<= Meta_nxt(META_STREAMID_DEST);
 
-	Pipe : entity PoC.stream_Buffer
+	Pipe: entity work.stream_Buffer
 		generic map (
 			FRAMES												=> 2,
 			DATA_BITS											=> 8,

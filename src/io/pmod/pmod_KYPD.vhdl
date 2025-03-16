@@ -75,7 +75,7 @@ begin
 	RowVector		<= Rows_n;
 
 	-- initialize a 4x4 matrix scanner
-	scanner : entity PoC.io_KeyPadScanner
+	scanner: entity work.io_KeyPadScanner
 		generic map (
 			CLOCK_FREQ							=> CLOCK_FREQ,
 			SCAN_FREQ								=> SCAN_FREQ,
@@ -94,7 +94,7 @@ begin
 	-- serialize the keypad matrix for debouncing
 	KeyPadMatrix_slv	<= to_slv(KeyPadMatrix);
 
-	debounce : entity PoC.io_Debounce
+	debounce: entity work.io_Debounce
 		generic map (
 			CLOCK_FREQ							=> CLOCK_FREQ,
 			BOUNCE_TIME							=> BOUNCE_TIME,

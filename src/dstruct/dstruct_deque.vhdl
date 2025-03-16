@@ -114,7 +114,7 @@ architecture rtl of dstruct_deque is
 
 begin
 
-  ram : entity poc.ocram_tdp_wf
+  ram: entity work.ocram_tdp_wf
   generic map(
     A_BITS => A_BITS,
     D_BITS => D_BITS,

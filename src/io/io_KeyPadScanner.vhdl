@@ -88,7 +88,7 @@ begin
 
 	-- synchronize input signals
 	genSync : if ADD_INPUT_SYNCHRONIZERS generate
-		sync : entity PoC.sync_Bits
+		sync: entity work.sync_Bits
 			generic map (
 				BITS	=> ROWS
 			)

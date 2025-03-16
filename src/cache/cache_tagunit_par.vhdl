@@ -226,7 +226,7 @@ begin
 												TagMemory(to_integer(ReplaceWay_us));
 
 		-- replacement policy
-		Policy : entity PoC.cache_replacement_policy
+		Policy: entity work.cache_replacement_policy
 			generic map (
 				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 				CACHE_WAYS				 => ASSOCIATIVITY
@@ -483,7 +483,7 @@ begin
 
 		genSet : for cs in 0 to CACHE_SETS-1 generate
 		begin
-			Policy : entity PoC.cache_replacement_policy
+			Policy: entity work.cache_replacement_policy
 				generic map (
 					REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 					CACHE_WAYS				 => ASSOCIATIVITY

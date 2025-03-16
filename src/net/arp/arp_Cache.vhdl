@@ -248,8 +248,8 @@ begin
 	CacheResult					<= to_Cache_Result(CacheHit, CacheMiss);
 
 	-- Cache TagUnit
---	TU : entity PoC.Cache_TagUnit_seq
-	TU : entity PoC.cache_TagUnit_seq
+--	TU: entity work.Cache_TagUnit_seq
+	TU: entity work.cache_TagUnit_seq
 		generic map (
 			REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
 			CACHE_LINES								=> CACHE_LINES,
@@ -298,8 +298,8 @@ begin
 
 	Tick			<= TickCounter_s(TickCounter_s'high);
 
---	Exp : entity PoC.list_expire
-	Exp : entity PoC.list_expire
+--	Exp: entity work.list_expire
+	Exp: entity work.list_expire
 		generic map (
 			CLOCK_CYCLE_TICKS				=> 65536,
 			EXPIRATION_TIME_TICKS		=> 8192,

@@ -95,7 +95,7 @@ begin
 	MetaIn(META_ISKEY_BIT)																		<= In_IsKey;
 	MetaIn(META_BITS - 1 downto META_BITS - STREAM_META_BITS)	<= In_Meta;
 
-	gearup : entity PoC.gearbox_up_cc
+	gearup: entity work.gearbox_up_cc
 		generic map (
 			INPUT_BITS						=> STREAM_DATA_BITS,
 			OUTPUT_BITS						=> GEARBOX_BITS,
@@ -125,7 +125,7 @@ begin
 
 		-- mux(gearup_Valid, (SORTNET_SIZE * SORTNET_DATA_BITS downto 1 => 'U'), gearup_Data)
 
-		sort : entity PoC.sortnet_OddEvenSort
+		sort: entity work.sortnet_OddEvenSort
 			generic map (
 				INPUTS								=> SORTNET_SIZE,
 				KEY_BITS							=> SORTNET_KEY_BITS,
@@ -160,7 +160,7 @@ begin
 	begin
 		DataInputMatrix	<= to_slm(gearup_Data, SORTNET_SIZE, SORTNET_DATA_BITS);
 
-		sort : entity PoC.sortnet_OddEvenMergeSort
+		sort: entity work.sortnet_OddEvenMergeSort
 			generic map (
 				INPUTS								=> SORTNET_SIZE,
 				KEY_BITS							=> SORTNET_KEY_BITS,
@@ -195,7 +195,7 @@ begin
 	begin
 		DataInputMatrix	<= to_slm(gearup_Data, SORTNET_SIZE, SORTNET_DATA_BITS);
 
-		sort : entity PoC.sortnet_BitonicSort
+		sort: entity work.sortnet_BitonicSort
 			generic map (
 				INPUTS								=> SORTNET_SIZE,
 				KEY_BITS							=> SORTNET_KEY_BITS,
@@ -222,7 +222,7 @@ begin
 		sort_Data		<= to_slv(DataOutputMatrix);
 	end generate;
 
-	geardown : entity PoC.gearbox_down_cc
+	geardown: entity work.gearbox_down_cc
 		generic map (
 			INPUT_BITS						=> GEARBOX_BITS,
 			OUTPUT_BITS						=> STREAM_DATA_BITS,

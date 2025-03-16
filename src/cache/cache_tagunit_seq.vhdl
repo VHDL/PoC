@@ -197,7 +197,7 @@ begin
 						NewTagSeqCounter_rst <= '0';
 --						NewTagSeqCounter_en    <= '1';
 						TagMemory_we         <= '1';
-						
+
 						if FA_CHUNKS = 1 then
 							Replaced <= '1';
 						else
@@ -247,12 +247,12 @@ begin
 							TagSeqCounter_rst <= '0';
 --							TagSeqCounter_en    <= '1';
 							TagHits_en        <= '1';
-							
+
 							if FA_CHUNKS = 1 then
 								TagSeqCounter_rst <= '1';
 								RequestComplete   <= '1';
 								Request_NextState <= ST_READ;
-							
+
 							else
 								Request_NextState <= ST_COMPARE;
 							end if;
@@ -298,7 +298,7 @@ begin
 								TagSeqCounter_rst <= '1';
 								RequestComplete   <= '1';
 								Request_NextState <= ST_READ;
-							
+
 							else
 								Request_NextState <= ST_COMPARE;
 							end if;
@@ -423,7 +423,7 @@ begin
 		TagIndex  <= MemoryIndex_i when rising_edge(Clock);
 
 		-- replacement policy
-		Policy : entity work.cache_replacement_policy
+		Policy: entity work.cache_replacement_policy
 			generic map (
 				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 				CACHE_WAYS         => FA_CACHE_LINES
@@ -497,7 +497,7 @@ begin
 	-- TagMiss        <= TagMiss_i;
 
 	-- genPolicy : for i in 0 to SETS - 1 generate
-		-- policy : entity PoC.cache_replacement_policy
+		-- policy: entity work.cache_replacement_policy
 			-- generic map (
 				-- REPLACEMENT_POLICY        => REPLACEMENT_POLICY,
 				-- CACHE_LINES                => ASSOCIATIVITY,
@@ -538,7 +538,7 @@ begin
 		signal TagMiss_i : std_logic;
 	begin
 		assert false report "PoC.cache_tagunit_seq:: Implementation of '(ASSOCIATIVITY > 1) and (SETS > 1)' not available!" severity failure;
-		
+
 	 -- -- generate comparators
 	 -- genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
 		 -- TagHits(I)      <= to_sl(TagMemory(I) = FA_Tag);
@@ -574,7 +574,7 @@ begin
 	 -- TagMiss        <= TagMiss_i;
 
 	 -- genPolicy : for i in 0 to SETS - 1 generate
-		 -- policy : entity PoC.cache_replacement_policy
+		 -- policy: entity work.cache_replacement_policy
 			 -- generic map (
 				 -- REPLACEMENT_POLICY        => REPLACEMENT_POLICY,
 				 -- CACHE_LINES                => ASSOCIATIVITY,

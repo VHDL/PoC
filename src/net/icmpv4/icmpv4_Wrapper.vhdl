@@ -306,7 +306,7 @@ begin
 -- =============================================================================
 -- TX Path
 -- =============================================================================
-	TX : entity PoC.icmpv4_TX
+	TX: entity work.icmpv4_TX
 		generic map (
 			DEBUG								=> DEBUG,
 			SOURCE_IPV4ADDRESS						=> SOURCE_IPV4ADDRESS
@@ -346,7 +346,7 @@ begin
 -- =============================================================================
 -- RX Path
 -- =============================================================================
-	RX : entity PoC.icmpv4_RX
+	RX: entity work.icmpv4_RX
 		generic map (
 			DEBUG								=> DEBUG
 		)

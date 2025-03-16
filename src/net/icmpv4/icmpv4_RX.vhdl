@@ -397,7 +397,7 @@ begin
 
 	-- FIXME: monitor MetaFIFO_Full signal
 
-	PayloadFIFO : entity PoC.fifo_cc_got_tempgot
+	PayloadFIFO: entity work.fifo_cc_got_tempgot
 		generic map (
 			D_BITS							=> MetaFIFO_DataIn'length,	-- Data Width
 			MIN_DEPTH						=> 64,											-- Minimum FIFO Depth

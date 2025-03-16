@@ -124,7 +124,7 @@ begin
 	MovesDownCondRev <= reverse(MovesDownCond);
 	MovesDown        <= reverse(MovesDownRev);
 
-	MovesUpProp: entity poc.arith_prefix_and
+	MovesUpProp: entity work.arith_prefix_and
 		generic map (
 			N => ELEMENTS+1)
 		port map (
@@ -132,7 +132,7 @@ begin
 			x => MovesUpCond,
 			y => MovesUp);
 
-	MovesDownProp: entity poc.arith_prefix_and
+	MovesDownProp: entity work.arith_prefix_and
 		generic map (
 			N => ELEMENTS+1)
 		port map (

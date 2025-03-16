@@ -175,7 +175,7 @@ begin
 	ReplaceWrite <= Replace and ReadWrite;
 
 	-- Cache TagUnit
-	TU : entity PoC.cache_tagunit_par
+	TU: entity work.cache_tagunit_par
 		generic map (
 			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 			CACHE_LINES				 => CACHE_LINES,

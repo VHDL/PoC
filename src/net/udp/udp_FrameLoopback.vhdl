@@ -112,7 +112,7 @@ begin
 	In_Meta_SrcIPAddress_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_SRCADDR);
 	In_Meta_DestIPAddress_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_DESTADDR);
 
-	StmBuf : entity PoC.stream_Buffer
+	StmBuf: entity work.stream_Buffer
 		generic map (
 			FRAMES												=> MAX_FRAMES,
 			DATA_BITS											=> 8,

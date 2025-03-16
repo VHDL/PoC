@@ -67,7 +67,7 @@ end entity;
 architecture rtl of pmod_USBUART is
 
 begin
-	UART : entity PoC.uart_fifo
+	UART: entity work.uart_fifo
 		generic map (
 			CLOCK_FREQ							=> CLOCK_FREQ,
 			BAUDRATE								=> BAUDRATE,

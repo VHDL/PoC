@@ -96,7 +96,7 @@ begin
 	TimeBase_Counter_uf		<= TimeBase_Counter_s(TimeBase_Counter_s'high);
 	Stop									<= not TimeBase_Counter_s(TimeBase_Counter_s'high) and TimeBase_Counter_nxt(TimeBase_Counter_nxt'high);
 
-	sync1 : entity poc.sync_Strobe
+	sync1: entity work.sync_Strobe
 		generic map (
 			BITS			=> 2													-- number of bit to be synchronized
 		)

@@ -270,7 +270,7 @@ begin
 -- =============================================================================
 -- Responder Path
 -- =============================================================================
-	MACSeq1 : entity PoC.misc_Sequencer
+	MACSeq1: entity work.misc_Sequencer
 		generic map (
 			INPUT_BITS						=> 48,
 			OUTPUT_BITS						=> 8,
@@ -387,7 +387,7 @@ begin
 		end case;
 	end process;
 
-	BCRcv : entity PoC.arp_BroadCast_Receiver
+	BCRcv: entity work.arp_BroadCast_Receiver
 		generic map (
 			ALLOWED_PROTOCOL_IPV4					=> TRUE,
 			ALLOWED_PROTOCOL_IPV6					=> FALSE
@@ -420,7 +420,7 @@ begin
 			TargetIPAddress_Data					=> BCRcv_TargetIPv4Address_Data
 		);
 
-	IPPool : entity PoC.arp_IPPool
+	IPPool: entity work.arp_IPPool
 		generic map (
 			IPPOOL_SIZE										=> 8,
 			INITIAL_IPV4ADDRESSES					=> INITIAL_IPV4ADDRESSES
@@ -441,7 +441,7 @@ begin
 			PoolResult										=> IPPool_PoolResult
 		);
 
-	UCRsp : entity PoC.arp_UniCast_Responder
+	UCRsp: entity work.arp_UniCast_Responder
 --		generic map (
 --
 --		)
@@ -474,7 +474,7 @@ begin
 -- =============================================================================
 -- ARPCache Path
 -- =============================================================================
-	MACSeq2 : entity PoC.misc_Sequencer
+	MACSeq2: entity work.misc_Sequencer
 		generic map (
 			INPUT_BITS						=> 48,
 			OUTPUT_BITS						=> 8,
@@ -491,7 +491,7 @@ begin
 			Output								=> MACSeq2_SenderMACAddress_Data
 		);
 
-	IPSeq2 : entity PoC.misc_Sequencer
+	IPSeq2: entity work.misc_Sequencer
 		generic map (
 			INPUT_BITS						=> 32,
 			OUTPUT_BITS						=> 8,
@@ -679,7 +679,7 @@ begin
 
 	ARPReq_Timeout			<= ARPReq_TimeoutCounter_s(ARPReq_TimeoutCounter_s'high);
 
-	UCRcv : entity PoC.arp_UniCast_Receiver
+	UCRcv: entity work.arp_UniCast_Receiver
 		generic map (
 			ALLOWED_PROTOCOL_IPV4					=> TRUE,
 			ALLOWED_PROTOCOL_IPV6					=> FALSE
@@ -714,7 +714,7 @@ begin
 			TargetMACAddress_Data					=> UCRcv_TargetMACAddress_Data
 		);
 
-	ARPCache : entity PoC.arp_Cache
+	ARPCache: entity work.arp_Cache
 		generic map (
 			CLOCK_FREQ									=> CLOCK_FREQ,
 			REPLACEMENT_POLICY					=> "LRU",
@@ -744,7 +744,7 @@ begin
 			MACAddress_Data							=> ARPCache_MACAddress_Data
 		);
 
-	BCReq : entity PoC.arp_BroadCast_Requester
+	BCReq: entity work.arp_BroadCast_Requester
 --		generic map (
 --
 --		)
@@ -822,7 +822,7 @@ begin
 		UCRsp_TX_Meta_DestMACAddress_nxt				<= StmMux_In_Meta_rev(LLMUX_PORT_UCRSP, META_DEST_NXT_BIT);
 		assign_row(StmMux_In_Meta, UCRsp_TX_Meta_DestMACAddress_Data, LLMUX_PORT_UCRSP);
 
-		StmMux : entity PoC.stream_Mux
+		StmMux: entity work.stream_Mux
 			generic map (
 				PORTS									=> LLMUX_PORTS,
 				DATA_BITS							=> Eth_UC_TX_Data'length,
