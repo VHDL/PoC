@@ -34,6 +34,8 @@ use     IEEE.numeric_std.all;
 library osvvm;
 context osvvm.OsvvmContext;
 
+library PoC;
+
 
 entity arith_prng_TestHarness is
 end entity;
@@ -62,12 +64,12 @@ architecture TestHarness of arith_prng_TestHarness is
 	end component;
 
 begin
-	Osvvm.TbUtilPkg.CreateClock(
+	Osvvm.ClockResetPkg.CreateClock(
 		Clk    => Clock_100,
 		Period => TPERIOD_CLOCK
 	);
 
-	Osvvm.TbUtilPkg.CreateReset(
+	Osvvm.ClockResetPkg.CreateReset(
 		Reset       => Reset_100,
 		ResetActive => '1',
 		Clk         => Clock_100,

@@ -33,9 +33,6 @@ use     IEEE.std_logic_1164.all;
 library osvvm;
 context osvvm.OsvvmContext;
 
-library tb_common;
-use     tb_common.OsvvmTestCommonPkg.OSVVM_RESULTS_DIR;
-
 
 entity arith_prng_TestController is
 	port (
