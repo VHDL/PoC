@@ -19,12 +19,18 @@
 # limitations under the License.
 # =============================================================================
 
-variable OMIT_XILINX_FILES 1
+namespace eval ::poc {
+	variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
+	variable myProjectFile "../tb/common/my_project.vhdl"
+	variable vendor "GENRIC"; # GENRIC for vendor-less build; Xilinx, Altera,... for vendor specific build
+}
 
-build ../lib/osvvm/osvvm.pro
-build ../lib/OSVVM-Common/Common.pro
-build ../lib/OSVVM-AXI4/AXI4.pro
-build ../lib/OSVVM-UART/UART.pro
+source ../lib/OSVVM-Scripts/StartUp.tcl
+
+# build ../lib/osvvm/osvvm.pro
+# build ../lib/OSVVM-Common/Common.pro
+# build ../lib/OSVVM-AXI4/AXI4.pro
+# build ../lib/OSVVM-UART/UART.pro
 
 if {$::osvvm::ToolName eq "GHDL"} {
     SetExtendedAnalyzeOptions {-frelaxed -Wno-specs}
@@ -36,13 +42,6 @@ if {$::osvvm::ToolName eq "RiveraPRO"} {
 }
 
 
-library PoC
-
-analyze ../tb/common/my_project.vhdl
-analyze ../tb/common/my_config_GENERIC.vhdl
-
 build ../src/PoC.pro
-
-SetSaveWaves true
 
 build ../tb/RunAllTests.pro
