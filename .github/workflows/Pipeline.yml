@@ -106,13 +106,29 @@ jobs:
           variable OMIT_XILINX_FILES 1
 
           SetExtendedAnalyzeOptions  {-frelaxed -Wno-specs}
-          SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
 
           library PoC
           analyze ../../tb/common/my_project.vhdl
           analyze ../../tb/common/my_config_GENERIC.vhdl
 
           build ../../src/PoC.pro PoC
+          EOF
+
+          printf "=================\n"
+          tclsh run.tcl
+
+      - name: 📈 Simulate PoC
+        run: |
+          cd temp/ghdl
+
+          tee run.tcl <<EOF
+          source ../../lib/OSVVM-Scripts/StartGHDL.tcl
+
+          variable OMIT_XILINX_FILES 1
+
+          SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
+
+          build ../../tb/RunAllTests.pro
           EOF
 
           printf "=================\n"
