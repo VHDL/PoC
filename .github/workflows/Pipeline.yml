@@ -121,13 +121,13 @@ jobs:
           tee run.tcl <<EOF
           source ../../lib/OSVVM-Scripts/StartGHDL.tcl
 
-          variable OMIT_XILINX_FILES 1
+          namespace eval ::poc {
+            variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
+            variable myProjectFile "../tb/common/my_project.vhdl"
+            variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
+          }
 
           SetExtendedAnalyzeOptions  {-frelaxed -Wno-specs}
-
-          library PoC
-          analyze ../../tb/common/my_project.vhdl
-          analyze ../../tb/common/my_config_GENERIC.vhdl
 
           build ../../src/PoC.pro PoC
           EOF
@@ -142,7 +142,11 @@ jobs:
           tee run.tcl <<EOF
           source ../../lib/OSVVM-Scripts/StartGHDL.tcl
 
-          variable OMIT_XILINX_FILES 1
+          namespace eval ::poc {
+            variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
+            variable myProjectFile "../tb/common/my_project.vhdl"
+            variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
+          }
 
           SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
 
