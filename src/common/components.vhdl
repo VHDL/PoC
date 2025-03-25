@@ -18,7 +18,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -207,7 +207,7 @@ package body components is
 			return cnt;
 		end if;
 	end function;
-	
+
 	function downcounter_next(cnt : signed; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : integer := 0) return signed is
 	begin
 		if (rst = '1') then

@@ -35,7 +35,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --                     Chair for VLSI-Design, Diagnostics and Architecture
 --
@@ -417,7 +417,7 @@ package body physical is
 		end if;
 		return 0 Bd;
 	end function;
-	
+
 	function to_baud(f : FREQ)     return BAUD is
 		variable res : BAUD;
 	begin
@@ -433,7 +433,7 @@ package body physical is
 		end if;
 		return res;
 	end function;
-	
+
 	function to_baud(p : T_TIME)   return BAUD is
 		variable res : BAUD;
 	begin

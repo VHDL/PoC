@@ -13,7 +13,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2017-2019 Patrick Lehmann - Bötzingen, Germany
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -51,7 +51,7 @@ package iic is
 		Clock : std_logic;
 		Data  : std_logic;
 	end record;
-	
+
 	type T_IO_IIC_SERIAL_IN is record
 		Clock : std_logic;
 		Data  : std_logic;

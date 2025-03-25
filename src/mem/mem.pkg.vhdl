@@ -29,7 +29,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -71,7 +71,7 @@ package mem is
 		MEM_CONTENT_DECIMAL,
 		MEM_CONTENT_HEX
 	);
-	
+
 	type T_RAM_TYPE is (
 		RAM_TYPE_AUTO,
 		RAM_TYPE_OPTIMIZED,
@@ -89,11 +89,11 @@ package mem is
 		FORMAT : T_MEM_FILEFORMAT;
 		CONTENT : T_MEM_CONTENT := MEM_CONTENT_HEX
 	) return T_SLM;
-	
+
 	function get_ram_style_string(ram_style : T_RAM_TYPE) return string;
 	function get_ramstyle_string(ram_style : T_RAM_TYPE)  return string;
 	function get_ram_type(a : positive; d : positive) return T_INTVEC;
-	
+
 	function get_BRAM_half_width(a : positive) return integer;
 	function get_BRAM_full_width(a : positive) return integer;
 end package;
@@ -179,7 +179,7 @@ package body mem is
 		end loop;
 		return  Result;
 	end function;
-	
+
 	function get_ramstyle_string(ram_style : T_RAM_TYPE) return string is
 	begin
 		if VENDOR = VENDOR_ALTERA then
@@ -189,7 +189,7 @@ package body mem is
 			return "default";
 		end if;
 	end function;
-	
+
 	function get_ram_style_string(ram_style : T_RAM_TYPE)  return string is
 	begin
 		if VENDOR = VENDOR_XILINX then
@@ -204,14 +204,14 @@ package body mem is
 			return "";
 		end if;
 	end function;
-	
-	function get_ram_type(a : positive; d : positive) return T_INTVEC is    
+
+	function get_ram_type(a : positive; d : positive) return T_INTVEC is
 		constant URAM : natural := 0;
 		constant BRAM : natural := 1;
 --    constant LRAM : natural := 2;
-		
+
 		variable reminder  : natural := d;
-		
+
 		variable result : T_INTVEC(0 to 1) := (others => 0);
 	begin
 		--==================================================================
@@ -219,7 +219,7 @@ package body mem is
 		if a <= 8 then
 --      LRAM := d;
 			return result;
-			
+
 		--==================================================================
 		--512 => 36 bit BRAM/2
 		elsif a = 9 then
@@ -230,7 +230,7 @@ package body mem is
 --      else
 --        LRAM := (d - reminder);
 			end if;
-			
+
 		--==================================================================
 		--***********1k => 18bit BRAM/2***********
 		elsif a = 10 then
@@ -241,7 +241,7 @@ package body mem is
 --      else
 --        LRAM := (d - reminder);
 			end if;
-			
+
 		--==================================================================
 		--***********2k => 9bit BRAM/2***********
 		elsif a = 11 then
@@ -252,7 +252,7 @@ package body mem is
 --      else
 --        LRAM := (d - reminder);
 			end if;
-			
+
 		--==================================================================
 		--***********4k => URAM***********
 		elsif a = 12 then
@@ -271,7 +271,7 @@ package body mem is
 --          LRAM := (d - reminder);
 				end if;
 			end if;
-			
+
 		--==================================================================
 		--***********8k => Cascaded 2x URAM***********
 		elsif a = 13 then
@@ -288,7 +288,7 @@ package body mem is
 					result(BRAM) := result(BRAM) +1;
 				end if;
 			end if;
-			
+
 		--==================================================================
 		--***********16k => Cascaded 4x URAM***********
 		elsif a = 14 then
@@ -301,16 +301,16 @@ package body mem is
 			--***********remaining in BRAM***********
 				result(BRAM)     := reminder;
 			end if;
-			
+
 		--==================================================================
 		--***********For everithing else => use default/auto***********
 		else
 			result := (others => -1);
 		end if;
-		
+
 		return result;
 	end function;
-	
+
 	function get_BRAM_half_width(a : positive) return integer is
 	begin
 		if a = 9 then
@@ -325,11 +325,11 @@ package body mem is
 			return 2;
 		elsif a = 14 then
 			return 1;
-		else 
+		else
 			return -1;
 		end if;
 	end function;
-	
+
 	function get_BRAM_full_width(a : positive) return integer is
 	begin
 		if a = 9 then
@@ -346,7 +346,7 @@ package body mem is
 			return 2;
 		elsif a = 15 then
 			return 1;
-		else 
+		else
 			return -1;
 		end if;
 	end function;
