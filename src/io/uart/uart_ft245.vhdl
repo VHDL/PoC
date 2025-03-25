@@ -66,8 +66,7 @@ end entity;
 library IEEE;
 use IEEE.numeric_std.all;
 
-library PoC;
-use PoC.utils.all;
+use  work.utils.all;
 
 architecture rtl of uart_ft245 is
 

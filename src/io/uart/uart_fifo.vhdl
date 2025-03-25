@@ -39,14 +39,13 @@
 
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
-library PoC;
-use			PoC.vectors.all;
-use			PoC.physical.all;
-use			PoC.components.all;
-use			PoC.utils.all;
-use			PoC.uart.all;
+use     work.vectors.all;
+use     work.physical.all;
+use     work.components.all;
+use     work.utils.all;
+use     work.uart.all;
 
 
 entity uart_fifo is
@@ -122,7 +121,7 @@ begin
 	-- ===========================================================================
 	-- Transmit and Receive FIFOs
 	-- ===========================================================================
-	TXFIFO : entity PoC.fifo_cc_got
+	TXFIFO: entity work.fifo_cc_got
 		generic map (
 			D_BITS					=> 8,								-- Data Width
 			MIN_DEPTH				=> TX_MIN_DEPTH,		-- Minimum FIFO Depth
@@ -146,7 +145,7 @@ begin
 			fstate_rd				=> open
 		);
 
-  RXFIFO : entity PoC.fifo_cc_got
+  RXFIFO: entity work.fifo_cc_got
 		generic map (
 			D_BITS					=> 8,							-- Data Width
 			MIN_DEPTH				=> RX_MIN_DEPTH,		-- Minimum FIFO Depth
@@ -277,7 +276,7 @@ begin
 		UART_RX_sync <= UART_RX;
 	end generate;
 	genSync : if ADD_INPUT_SYNCHRONIZERS generate
-		sync_i : entity PoC.sync_Bits
+		sync_i: entity work.sync_Bits
 			port map (
 				Clock			=> Clock,					-- Clock to be synchronized to
 				Input(0)	=> UART_RX,				-- Data to be synchronized
@@ -287,7 +286,7 @@ begin
 	-- ===========================================================================
 	-- BitClock, Transmitter, Receiver
 	-- ===========================================================================
-	bclk : entity PoC.uart_bclk
+	bclk: entity work.uart_bclk
 		generic map (
 			CLOCK_FREQ	=> CLOCK_FREQ,
 			BAUDRATE		=> BAUDRATE
@@ -299,7 +298,7 @@ begin
 			bclk_x8			=> BitClock_x8
 		);
 
-	TX : entity PoC.uart_tx
+	TX: entity work.uart_tx
 		port map (
 			clk			=> Clock,
 			rst			=> Reset,
@@ -310,7 +309,7 @@ begin
 			ful			=> TXUART_Full
 		);
 
-	RX : entity PoC.uart_rx
+	RX: entity work.uart_rx
 		port map (
 			clk			=> Clock,
 			rst			=> Reset,

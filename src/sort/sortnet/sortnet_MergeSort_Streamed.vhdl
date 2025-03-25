@@ -29,13 +29,12 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.components.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.components.all;
 
 
 entity sortnet_MergeSort_Streamed is
@@ -121,7 +120,7 @@ begin
 
 	In_Ack	<= not mux(FIFO_sel_r, FIFO_0_Full, FIFO_1_Full);
 
-	FIFO_0 : entity PoC.fifo_cc_got
+	FIFO_0: entity work.fifo_cc_got
 		generic map (
 			D_BITS							=> FIFO_BITS,					-- Data Width
 			MIN_DEPTH						=> FIFO_DEPTH,				-- Minimum FIFO Depth
@@ -143,7 +142,7 @@ begin
 			valid								=> FIFO_0_Valid
 		);
 
-	FIFO_1 : entity PoC.fifo_cc_got
+	FIFO_1: entity work.fifo_cc_got
 		generic map (
 			D_BITS							=> FIFO_BITS,					-- Data Width
 			MIN_DEPTH						=> FIFO_DEPTH,				-- Minimum FIFO Depth

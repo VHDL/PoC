@@ -2,9 +2,9 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Patrick Lehmann
+-- Authors:         Patrick Lehmann
 --
--- Entity:					Tag-unit with sequential compare of tag.
+-- Entity:          Tag-unit with sequential compare of tag.
 --
 -- Description:
 -- -------------------------------------
@@ -12,14 +12,15 @@
 --
 -- License:
 -- =============================================================================
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,46 +30,45 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
+use     work.utils.all;
+use     work.vectors.all;
 
 entity cache_tagunit_seq is
 	generic (
-		REPLACEMENT_POLICY : string				:= "LRU";
-		CACHE_LINES				 : positive			:= 32;
-		ASSOCIATIVITY			 : positive			:= 32;
-		TAG_BITS					 : positive			:= 128;
-		CHUNK_BITS				 : positive			:= 8;
-		TAG_BYTE_ORDER		 : T_BYTE_ORDER := LITTLE_ENDIAN;
-		USE_INITIAL_TAGS	 : boolean			:= false;
-		INITIAL_TAGS			 : T_SLM				:= (0 downto 0 => (127 downto 0 => '0'))
+		REPLACEMENT_POLICY : string       := "LRU";
+		CACHE_LINES        : positive     := 32;
+		ASSOCIATIVITY      : positive     := 32;
+		TAG_BITS           : positive     := 128;
+		CHUNK_BITS         : positive     := 8;
+		TAG_BYTE_ORDER     : T_BYTE_ORDER := LITTLE_ENDIAN;
+		USE_INITIAL_TAGS   : boolean      := false;
+		INITIAL_TAGS       : T_SLM        := (0 downto 0 => (127 downto 0 => '0'))
 	);
 	port (
 		Clock : in std_logic;
 		Reset : in std_logic;
 
-		Replace							: in	std_logic;
-		Replaced						: out std_logic;
-		Replace_NewTag_rst	: out std_logic;
-		Replace_NewTag_rev	: out std_logic;
-		Replace_NewTag_nxt	: out std_logic;
-		Replace_NewTag_Data : in	std_logic_vector(CHUNK_BITS - 1 downto 0);
-		Replace_NewIndex		: out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
+		Replace             : in  std_logic;
+		Replaced            : out std_logic;
+		Replace_NewTag_rst  : out std_logic;
+		Replace_NewTag_rev  : out std_logic;
+		Replace_NewTag_nxt  : out std_logic;
+		Replace_NewTag_Data : in  std_logic_vector(CHUNK_BITS - 1 downto 0);
+		Replace_NewIndex    : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
 
-		Request						 : in	 std_logic;
-		Request_ReadWrite	 : in	 std_logic;
-		Request_Invalidate : in	 std_logic;
-		Request_Tag_rst		 : out std_logic;
-		Request_Tag_rev		 : out std_logic;
-		Request_Tag_nxt		 : out std_logic;
-		Request_Tag_Data	 : in	 std_logic_vector(CHUNK_BITS - 1 downto 0);
-		Request_Index			 : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
-		Request_TagHit		 : out std_logic;
-		Request_TagMiss		 : out std_logic
+		Request             : in  std_logic;
+		Request_ReadWrite   : in  std_logic;
+		Request_Invalidate  : in  std_logic;
+		Request_Tag_rst     : out std_logic;
+		Request_Tag_rev     : out std_logic;
+		Request_Tag_nxt     : out std_logic;
+		Request_Tag_Data    : in  std_logic_vector(CHUNK_BITS - 1 downto 0);
+		Request_Index       : out std_logic_vector(log2ceilnz(CACHE_LINES) - 1 downto 0);
+		Request_TagHit      : out std_logic;
+		Request_TagMiss     : out std_logic
 	);
 end entity;
 
@@ -83,10 +83,10 @@ begin
 	-- Full-Assoziative Cache
 	-- ==========================================================================================================================================================
 	genFA : if CACHE_LINES = ASSOCIATIVITY generate
-		constant FA_CACHE_LINES				: positive := ASSOCIATIVITY;
-		constant FA_TAG_BITS					: positive := TAG_BITS;
-		constant FA_CHUNKS						: positive := div_ceil(FA_TAG_BITS, CHUNK_BITS);
-		constant FA_CHUNK_INDEX_BITS	: positive := log2ceilnz(FA_CHUNKS);
+		constant FA_CACHE_LINES        : positive := ASSOCIATIVITY;
+		constant FA_TAG_BITS          : positive := TAG_BITS;
+		constant FA_CHUNKS            : positive := div_ceil(FA_TAG_BITS, CHUNK_BITS);
+		constant FA_CHUNK_INDEX_BITS  : positive := log2ceilnz(FA_CHUNKS);
 		constant FA_MEMORY_INDEX_BITS : positive := log2ceilnz(FA_CACHE_LINES);
 
 		constant FA_INITIAL_TAGS_RESIZED : T_SLM := resize(INITIAL_TAGS, FA_CACHE_LINES);
@@ -111,7 +111,7 @@ begin
 
 		function to_tagmemory(slm : T_SLM; row : natural) return T_TAG_LINE is
 			constant tag_line : std_logic_vector(slm'high(2) downto slm'low(2)) := get_row(slm, row);
-			variable result		: T_TAG_LINE(FA_CHUNKS - 1 downto 0);
+			variable result    : T_TAG_LINE(FA_CHUNKS - 1 downto 0);
 		begin
 --			report "tagline @row " & INTEGER'image(row) & " = " & to_string(tag_line, 'h') severity NOTE;
 			for I in result'range loop
@@ -120,43 +120,43 @@ begin
 			return result;
 		end function;
 
-		signal Replace_State		 : T_Replace_STATE := ST_IDLE;
+		signal Replace_State     : T_Replace_STATE := ST_IDLE;
 		signal Replace_NextState : T_Replace_STATE;
-		signal Request_State		 : T_REQUEST_STATE := ST_IDLE;
+		signal Request_State     : T_REQUEST_STATE := ST_IDLE;
 		signal Request_NextState : T_REQUEST_STATE;
 
 		signal RequestComplete : std_logic;
 
 		signal NewTagSeqCounter_rst : std_logic;
---		signal NewTagSeqCounter_en			: STD_LOGIC;
-		signal NewTagSeqCounter_us	: unsigned(FA_CHUNK_INDEX_BITS - 1 downto 0) := (others => '0');
-		signal TagSeqCounter_rst		: std_logic;
---		signal TagSeqCounter_en					: STD_LOGIC;
-		signal TagSeqCounter_us			: unsigned(FA_CHUNK_INDEX_BITS - 1 downto 0) := (others => '0');
+--		signal NewTagSeqCounter_en      : STD_LOGIC;
+		signal NewTagSeqCounter_us  : unsigned(FA_CHUNK_INDEX_BITS - 1 downto 0) := (others => '0');
+		signal TagSeqCounter_rst    : std_logic;
+--		signal TagSeqCounter_en          : STD_LOGIC;
+		signal TagSeqCounter_us      : unsigned(FA_CHUNK_INDEX_BITS - 1 downto 0) := (others => '0');
 
 		signal TagMemory_we : std_logic;
 
 		signal PartialTagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0);
-		signal TagHits_en			: std_logic;
-		signal TagHits_nxt		: std_logic_vector(FA_CACHE_LINES - 1 downto 0);
-		signal TagHits_nor		: std_logic;
-		signal TagHits_r			: std_logic_vector(FA_CACHE_LINES - 1 downto 0) := (others => '1');
+		signal TagHits_en     : std_logic;
+		signal TagHits_nxt    : std_logic_vector(FA_CACHE_LINES - 1 downto 0);
+		signal TagHits_nor    : std_logic;
+		signal TagHits_r      : std_logic_vector(FA_CACHE_LINES - 1 downto 0) := (others => '1');
 
 		signal MemoryIndex_us : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
-		signal MemoryIndex_i	: std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal MemoryIndex_i  : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
 
-		signal ValidMemory : std_logic_vector(FA_CACHE_LINES - 1 downto 0) := to_validvector(INITIAL_TAGS);
-		signal ValidHit		 : std_logic;
+		signal ValidMemory  : std_logic_vector(FA_CACHE_LINES - 1 downto 0) := to_validvector(INITIAL_TAGS);
+		signal ValidHit     : std_logic;
 
-		signal Policy_ReplaceIndex	 : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal Policy_ReplaceIndex   : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
 		signal Policy_ReplaceIndex_d : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0) := (others => '0');
-		signal ReplaceIndex_us			 : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal ReplaceIndex_us       : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
 
-		signal TagHit_i	 : std_logic;
+		signal TagHit_i  : std_logic;
 		signal TagMiss_i : std_logic;
 
-		signal TagAccess : std_logic																					 := '0';
-		signal TagIndex	 : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0) := (others => '0');
+		signal TagAccess  : std_logic                                           := '0';
+		signal TagIndex   : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0) := (others => '0');
 
 	begin
 		process(Clock)
@@ -179,15 +179,15 @@ begin
 			Replace_NewTag_rst <= '0';
 			Replace_NewTag_rev <= '0';
 			Replace_NewTag_nxt <= '0';
-			Replaced					 <= '0';
+			Replaced           <= '0';
 
 			NewTagSeqCounter_rst <= '0';
---			NewTagSeqCounter_en					<= '0';
-			TagMemory_we				 <= '0';
+--			NewTagSeqCounter_en          <= '0';
+			TagMemory_we         <= '0';
 
 			case Replace_State is
 				when ST_IDLE =>
-					Replace_NewTag_rst	 <= '1';
+					Replace_NewTag_rst   <= '1';
 					NewTagSeqCounter_rst <= '1';
 
 					if (Replace = '1') then
@@ -195,16 +195,20 @@ begin
 						Replace_NewTag_nxt <= '1';
 
 						NewTagSeqCounter_rst <= '0';
---						NewTagSeqCounter_en		<= '1';
-						TagMemory_we				 <= '1';
+--						NewTagSeqCounter_en    <= '1';
+						TagMemory_we         <= '1';
 
-						Replace_NextState <= ST_REPLACE;
+						if FA_CHUNKS = 1 then
+							Replaced <= '1';
+						else
+							Replace_NextState <= ST_REPLACE;
+						end if;
 					end if;
 
 				when ST_REPLACE =>
 					Replace_NewTag_nxt <= '1';
---					NewTagSeqCounter_en			<= '1';
-					TagMemory_we			 <= '1';
+--					NewTagSeqCounter_en      <= '1';
+					TagMemory_we       <= '1';
 
 					if NewTagSeqCounter_us = ite((TAG_BYTE_ORDER = LITTLE_ENDIAN), (FA_CHUNKS - 1), 0) then
 						Replaced <= '1';
@@ -220,8 +224,8 @@ begin
 			Request_NextState <= Request_State;
 
 			TagSeqCounter_rst <= '0';
---			TagSeqCounter_en						<= '0';
-			TagHits_en				<= '0';
+--			TagSeqCounter_en            <= '0';
+			TagHits_en        <= '0';
 
 			Request_Tag_rst <= '0';
 			Request_Tag_rev <= ite((TAG_BYTE_ORDER = LITTLE_ENDIAN), '0', '1');
@@ -230,7 +234,7 @@ begin
 
 			case Request_State is
 				when ST_IDLE =>
-					Request_Tag_rst		<= '1';
+					Request_Tag_rst    <= '1';
 					TagSeqCounter_rst <= '1';
 
 					if (Request = '1') then
@@ -241,22 +245,29 @@ begin
 							Request_Tag_nxt <= '1';
 
 							TagSeqCounter_rst <= '0';
---							TagSeqCounter_en		<= '1';
-							TagHits_en				<= '1';
+--							TagSeqCounter_en    <= '1';
+							TagHits_en        <= '1';
 
-							Request_NextState <= ST_COMPARE;
+							if FA_CHUNKS = 1 then
+								TagSeqCounter_rst <= '1';
+								RequestComplete   <= '1';
+								Request_NextState <= ST_READ;
+
+							else
+								Request_NextState <= ST_COMPARE;
+							end if;
 						end if;
 					end if;
 
 				when ST_COMPARE =>
 					Request_Tag_nxt <= '1';
---					TagSeqCounter_en				<= '1';
-					TagHits_en			<= '1';
+--					TagSeqCounter_en        <= '1';
+					TagHits_en      <= '1';
 
 					if (TagHits_nor = '1') then
-						Request_Tag_rst		<= '1';
+						Request_Tag_rst    <= '1';
 						TagSeqCounter_rst <= '1';
-						RequestComplete		<= '1';
+						RequestComplete    <= '1';
 
 						Request_NextState <= ST_IDLE;
 					else
@@ -268,22 +279,29 @@ begin
 					end if;
 
 				when ST_READ =>
-					Request_Tag_rst		<= '1';
+					Request_Tag_rst    <= '1';
 					TagSeqCounter_rst <= '1';
 
 					if (Request = '1') then
 						if (TagHits_nor = '1') then
-							RequestComplete		<= '1';
+							RequestComplete    <= '1';
 							Request_NextState <= ST_IDLE;
 						else
 							Request_Tag_rst <= '0';
 							Request_Tag_nxt <= '1';
 
 							TagSeqCounter_rst <= '0';
---							TagSeqCounter_en		<= '1';
-							TagHits_en				<= '1';
+--							TagSeqCounter_en    <= '1';
+							TagHits_en        <= '1';
 
-							Request_NextState <= ST_COMPARE;
+							if FA_CHUNKS = 1 then
+								TagSeqCounter_rst <= '1';
+								RequestComplete   <= '1';
+								Request_NextState <= ST_READ;
+
+							else
+								Request_NextState <= ST_COMPARE;
+							end if;
 						end if;
 					end if;
 
@@ -329,10 +347,10 @@ begin
 		-- generate comparators
 		genVectors : for I in 0 to FA_CACHE_LINES - 1 generate
 			constant C_TAGMEMORY : T_TAG_LINE(FA_CHUNKS - 1 downto 0) := to_tagmemory(FA_INITIAL_TAGS_RESIZED, I);
-			signal TagMemory		 : T_TAG_LINE(FA_CHUNKS - 1 downto 0) := C_TAGMEMORY;
+			signal TagMemory     : T_TAG_LINE(FA_CHUNKS - 1 downto 0) := C_TAGMEMORY;
 		begin
 --			genASS : for j in 0 to FA_CHUNKS - 1 generate
---				assert FALSE report "line=" & INTEGER'image(I) & "	chunk=" & INTEGER'image(J) & "	tag=" & to_string(C_TAGMEMORY(J), 'h') severity NOTE;
+--				assert FALSE report "line=" & INTEGER'image(I) & "  chunk=" & INTEGER'image(J) & "  tag=" & to_string(C_TAGMEMORY(J), 'h') severity NOTE;
 --			end generate;
 
 			process(Clock)
@@ -363,8 +381,8 @@ begin
 		end process;
 
 		-- convert hit-vector to binary index (cache line address)
-		MemoryIndex_us <= onehot2bin(TagHits_nxt);
-		MemoryIndex_i	 <= std_logic_vector(MemoryIndex_us);
+		MemoryIndex_us <= onehot2bin(TagHits_nxt, 0);
+		MemoryIndex_i   <= std_logic_vector(MemoryIndex_us);
 
 		-- latching the ReplaceIndex
 		process(Clock)
@@ -391,185 +409,189 @@ begin
 		ValidHit <= ValidMemory(to_integer(MemoryIndex_us));
 
 		-- hit/miss calculation
-		TagHit_i	<= slv_or(TagHits_nxt) and ValidHit and RequestComplete;
+		TagHit_i  <= slv_or(TagHits_nxt) and ValidHit and RequestComplete;
 		TagMiss_i <= not (slv_or(TagHits_nxt) and ValidHit) and RequestComplete;
 
 		-- outputs
-		Request_Index		<= MemoryIndex_i;
-		Request_TagHit	<= TagHit_i;
+		Request_Index    <= MemoryIndex_i;
+		Request_TagHit  <= TagHit_i;
 		Request_TagMiss <= TagMiss_i;
 
 		Replace_NewIndex <= Policy_ReplaceIndex;
 
-		TagAccess <= TagHit_i			 when rising_edge(Clock);
-		TagIndex	<= MemoryIndex_i when rising_edge(Clock);
+		TagAccess <= TagHit_i       when rising_edge(Clock);
+		TagIndex  <= MemoryIndex_i when rising_edge(Clock);
 
 		-- replacement policy
-		Policy : entity PoC.cache_replacement_policy
+		Policy: entity work.cache_replacement_policy
 			generic map (
 				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
-				CACHE_WAYS				 => FA_CACHE_LINES
+				CACHE_WAYS         => FA_CACHE_LINES
 			)
 			port map (
 				Clock => Clock,
 				Reset => Reset,
 
-				Replace		 => Replace,
+				Replace     => Replace,
 				ReplaceWay => Policy_ReplaceIndex,
 
-				TagAccess	 => TagAccess,
-				ReadWrite	 => Request_ReadWrite,
+				TagAccess   => TagAccess,
+				ReadWrite   => Request_ReadWrite,
 				Invalidate => Request_Invalidate,
-				HitWay		 => TagIndex
+				HitWay     => TagIndex
 			);
-	end generate;
+
 	-- ==========================================================================================================================================================
 	-- Direct-Mapped Cache
 	-- ==========================================================================================================================================================
-	genDM : if ASSOCIATIVITY = 1 generate
-		constant FA_CACHE_LINES				: positive := CACHE_LINES;
-		constant FA_TAG_BITS					: positive := TAG_BITS;
+	elsif ASSOCIATIVITY = 1 generate
+		constant FA_CACHE_LINES        : positive := CACHE_LINES;
+		constant FA_TAG_BITS          : positive := TAG_BITS;
 		constant FA_MEMORY_INDEX_BITS : positive := log2ceilnz(FA_CACHE_LINES);
 
-		signal FA_Tag	 : std_logic_vector(FA_TAG_BITS - 1 downto 0);
+		signal FA_Tag   : std_logic_vector(FA_TAG_BITS - 1 downto 0);
 		signal TagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0);
 
-		signal FA_MemoryIndex_i		: std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
-		signal FA_MemoryIndex_us	: unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal FA_MemoryIndex_i    : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal FA_MemoryIndex_us  : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
 		signal FA_ReplaceIndex_us : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
 
-		signal ValidHit	 : std_logic;
-		signal TagHit_i	 : std_logic;
+		signal ValidHit   : std_logic;
+		signal TagHit_i   : std_logic;
 		signal TagMiss_i : std_logic;
 	begin
---		-- generate comparators
---		genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
---			TagHits(I)			<= to_sl(TagMemory(I) = FA_Tag);
---		end generate;
---
---		-- convert hit-vector to binary index (cache line address)
---		FA_MemoryIndex_us		<= onehot2bin(TagHits);
---		FA_MemoryIndex_i		<= std_logic_vector(FA_MemoryIndex_us);
---
---		-- Memories
---		FA_ReplaceIndex_us	<= FA_MemoryIndex_us;
---
---		process(Clock)
---		begin
---			if rising_edge(Clock) then
---				if (Replace = '1') then
---					TagMemory(to_integer(FA_ReplaceIndex_us))		<= NewTag;
---					ValidMemory(to_integer(FA_ReplaceIndex_us)) <= '1';
---				end if;
---			end if;
---		end process;
---
---		-- access valid-vector
---		ValidHit					<= ValidMemory(to_integer(FA_MemoryIndex_us));
---
---		-- hit/miss calculation
---		TagHit_i					<=			slv_or(TagHits) AND ValidHit	AND Request;
---		TagMiss_i				<= NOT (slv_or(TagHits) AND ValidHit) AND Request;
---
---		-- outputs
---		Index					<= FA_MemoryIndex_i;
---		TagHit				<= TagHit_i;
---		TagMiss				<= TagMiss_i;
---
---		genPolicy : for i in 0 to SETS - 1 generate
---			policy : entity PoC.cache_replacement_policy
---				generic map (
---					REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
---					CACHE_LINES								=> ASSOCIATIVITY,
---					INITIAL_VALIDS						=> INITIAL_VALIDS(I * ASSOCIATIVITY + ASSOCIATIVITY - 1 downto I * ASSOCIATIVITY)
---				)
---				port map (
---					Clock											=> Clock,
---					Reset											=> Reset,
---
---					Replace										=> Policy_Replace(I),
---					ReplaceIndex							=> Policy_ReplaceIndex(I),
---
---					TagAccess									=> TagAccess(I),
---					Request_ReadWrite									=> Request_ReadWrite(I),
---					Invalidate								=> Invalidate(I),
---					Index											=> Policy_Index(I)
---				);
---		end generate;
-	end generate;
+		assert false report "PoC.cache_tagunit_seq:: Implementation of 'ASSOCIATIVITY = 1' not available!" severity failure;
+
+	-- -- generate comparators
+	-- genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
+		-- TagHits(I)      <= to_sl(TagMemory(I) = FA_Tag);
+	-- end generate;
+
+	-- -- convert hit-vector to binary index (cache line address)
+	-- FA_MemoryIndex_us    <= onehot2bin(TagHits);
+	-- FA_MemoryIndex_i    <= std_logic_vector(FA_MemoryIndex_us);
+
+	-- -- Memories
+	-- FA_ReplaceIndex_us  <= FA_MemoryIndex_us;
+
+	-- process(Clock)
+	-- begin
+		-- if rising_edge(Clock) then
+			-- if (Replace = '1') then
+				-- TagMemory(to_integer(FA_ReplaceIndex_us))    <= NewTag;
+				-- ValidMemory(to_integer(FA_ReplaceIndex_us)) <= '1';
+			-- end if;
+		-- end if;
+	-- end process;
+
+	-- -- access valid-vector
+	-- ValidHit          <= ValidMemory(to_integer(FA_MemoryIndex_us));
+
+	-- -- hit/miss calculation
+	-- TagHit_i          <=      slv_or(TagHits) AND ValidHit  AND Request;
+	-- TagMiss_i        <= NOT (slv_or(TagHits) AND ValidHit) AND Request;
+
+	-- -- outputs
+	-- Index          <= FA_MemoryIndex_i;
+	-- TagHit        <= TagHit_i;
+	-- TagMiss        <= TagMiss_i;
+
+	-- genPolicy : for i in 0 to SETS - 1 generate
+		-- policy: entity work.cache_replacement_policy
+			-- generic map (
+				-- REPLACEMENT_POLICY        => REPLACEMENT_POLICY,
+				-- CACHE_LINES                => ASSOCIATIVITY,
+				-- INITIAL_VALIDS            => INITIAL_VALIDS(I * ASSOCIATIVITY + ASSOCIATIVITY - 1 downto I * ASSOCIATIVITY)
+			-- )
+			-- port map (
+				-- Clock                      => Clock,
+				-- Reset                      => Reset,
+
+				-- Replace                    => Policy_Replace(I),
+				-- ReplaceIndex              => Policy_ReplaceIndex(I),
+
+				-- TagAccess                  => TagAccess(I),
+				-- Request_ReadWrite                  => Request_ReadWrite(I),
+				-- Invalidate                => Invalidate(I),
+				-- Index                      => Policy_Index(I)
+			-- );
+	-- end generate;
+
 	-- ==========================================================================================================================================================
 	-- Set-Assoziative Cache
 	-- ==========================================================================================================================================================
-	genSA : if (ASSOCIATIVITY > 1) and (SETS > 1) generate
-		constant FA_CACHE_LINES				: positive := CACHE_LINES;
-		constant SETINDEX_BITS				: natural	 := log2ceil(SETS);
-		constant FA_TAG_BITS					: positive := TAG_BITS;
+	elsif (ASSOCIATIVITY > 1) and (SETS > 1) generate
+		constant FA_CACHE_LINES        : positive := CACHE_LINES;
+		constant SETINDEX_BITS        : natural   := log2ceil(SETS);
+		constant FA_TAG_BITS          : positive := TAG_BITS;
 		constant FA_MEMORY_INDEX_BITS : positive := log2ceilnz(FA_CACHE_LINES);
 
-		signal FA_Tag	 : std_logic_vector(FA_TAG_BITS - 1 downto 0);
+		signal FA_Tag   : std_logic_vector(FA_TAG_BITS - 1 downto 0);
 		signal TagHits : std_logic_vector(FA_CACHE_LINES - 1 downto 0);
 
-		signal FA_MemoryIndex_i		: std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
-		signal FA_MemoryIndex_us	: unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal FA_MemoryIndex_i    : std_logic_vector(FA_MEMORY_INDEX_BITS - 1 downto 0);
+		signal FA_MemoryIndex_us  : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
 		signal FA_ReplaceIndex_us : unsigned(FA_MEMORY_INDEX_BITS - 1 downto 0);
 
-		signal ValidHit	 : std_logic;
-		signal TagHit_i	 : std_logic;
+		signal ValidHit   : std_logic;
+		signal TagHit_i   : std_logic;
 		signal TagMiss_i : std_logic;
 	begin
---		-- generate comparators
---		genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
---			TagHits(I)			<= to_sl(TagMemory(I) = FA_Tag);
---		end generate;
---
---		-- convert hit-vector to binary index (cache line address)
---		FA_MemoryIndex_us		<= onehot2bin(TagHits);
---		FA_MemoryIndex_i		<= std_logic_vector(FA_MemoryIndex_us);
---
---		-- Memories
---		FA_ReplaceIndex_us	<= FA_MemoryIndex_us;
---
---		process(Clock)
---		begin
---			if rising_edge(Clock) then
---				if (Replace = '1') then
---					TagMemory(to_integer(FA_ReplaceIndex_us))		<= NewTag;
---					ValidMemory(to_integer(FA_ReplaceIndex_us)) <= '1';
---				end if;
---			end if;
---		end process;
---
---		-- access valid-vector
---		ValidHit					<= ValidMemory(to_integer(FA_MemoryIndex_us));
---
---		-- hit/miss calculation
---		TagHit_i					<=			slv_or(TagHits) AND ValidHit	AND Request;
---		TagMiss_i				<= NOT (slv_or(TagHits) AND ValidHit) AND Request;
---
---		-- outputs
---		Index					<= FA_MemoryIndex_i;
---		TagHit				<= TagHit_i;
---		TagMiss				<= TagMiss_i;
---
---		genPolicy : for i in 0 to SETS - 1 generate
---			policy : entity PoC.cache_replacement_policy
---				generic map (
---					REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
---					CACHE_LINES								=> ASSOCIATIVITY,
---					INITIAL_VALIDS						=> INITIAL_VALIDS(I * ASSOCIATIVITY + ASSOCIATIVITY - 1 downto I * ASSOCIATIVITY)
---				)
---				port map (
---					Clock											=> Clock,
---					Reset											=> Reset,
---
---					Replace										=> Policy_Replace(I),
---					ReplaceIndex							=> Policy_ReplaceIndex(I),
---
---					TagAccess									=> TagAccess(I),
---					Request_ReadWrite									=> Request_ReadWrite(I),
---					Invalidate								=> Invalidate(I),
---					Index											=> Policy_Index(I)
---				);
---		end generate;
+		assert false report "PoC.cache_tagunit_seq:: Implementation of '(ASSOCIATIVITY > 1) and (SETS > 1)' not available!" severity failure;
+
+	 -- -- generate comparators
+	 -- genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
+		 -- TagHits(I)      <= to_sl(TagMemory(I) = FA_Tag);
+	 -- end generate;
+
+	 -- -- convert hit-vector to binary index (cache line address)
+	 -- FA_MemoryIndex_us    <= onehot2bin(TagHits);
+	 -- FA_MemoryIndex_i    <= std_logic_vector(FA_MemoryIndex_us);
+
+	 -- -- Memories
+	 -- FA_ReplaceIndex_us  <= FA_MemoryIndex_us;
+
+	 -- process(Clock)
+	 -- begin
+		 -- if rising_edge(Clock) then
+			 -- if (Replace = '1') then
+				 -- TagMemory(to_integer(FA_ReplaceIndex_us))    <= NewTag;
+				 -- ValidMemory(to_integer(FA_ReplaceIndex_us)) <= '1';
+			 -- end if;
+		 -- end if;
+	 -- end process;
+
+	 -- -- access valid-vector
+	 -- ValidHit          <= ValidMemory(to_integer(FA_MemoryIndex_us));
+
+	 -- -- hit/miss calculation
+	 -- TagHit_i          <=      slv_or(TagHits) AND ValidHit  AND Request;
+	 -- TagMiss_i        <= NOT (slv_or(TagHits) AND ValidHit) AND Request;
+
+	 -- -- outputs
+	 -- Index          <= FA_MemoryIndex_i;
+	 -- TagHit        <= TagHit_i;
+	 -- TagMiss        <= TagMiss_i;
+
+	 -- genPolicy : for i in 0 to SETS - 1 generate
+		 -- policy: entity work.cache_replacement_policy
+			 -- generic map (
+				 -- REPLACEMENT_POLICY        => REPLACEMENT_POLICY,
+				 -- CACHE_LINES                => ASSOCIATIVITY,
+				 -- INITIAL_VALIDS            => INITIAL_VALIDS(I * ASSOCIATIVITY + ASSOCIATIVITY - 1 downto I * ASSOCIATIVITY)
+			 -- )
+			 -- port map (
+				 -- Clock                      => Clock,
+				 -- Reset                      => Reset,
+
+				 -- Replace                    => Policy_Replace(I),
+				 -- ReplaceIndex              => Policy_ReplaceIndex(I),
+
+				 -- TagAccess                  => TagAccess(I),
+				 -- Request_ReadWrite                  => Request_ReadWrite(I),
+				 -- Invalidate                => Invalidate(I),
+				 -- Index                      => Policy_Index(I)
+			 -- );
+	 -- end generate;
 	end generate;
 end architecture;

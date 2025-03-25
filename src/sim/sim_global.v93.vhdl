@@ -28,9 +28,8 @@
 -- limitations under the License.
 -- =============================================================================
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.sim_types.all;
+use     work.utils.all;
+use     work.sim_types.all;
 
 
 package sim_global is

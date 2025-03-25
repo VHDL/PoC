@@ -44,12 +44,17 @@
 -- limitations under the License.
 -- =============================================================================
 
+use     std.textio.all;
+
 library	IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library	PoC;
-use			PoC.arith.all;
+library	UNISIM;
+use     UNISIM.vcomponents.all;
 
+use     work.utils.all;
+use     work.arith.all;
 
 entity arith_addw_xilinx is
   generic (
@@ -68,19 +73,6 @@ entity arith_addw_xilinx is
     cout : out std_logic
   );
 end entity;
-
-
-use			std.textio.all;
-
-library	IEEE;
-use			IEEE.numeric_std.all;
-
-library	UNISIM;
-use			UNISIM.vcomponents.all;
-
-library	PoC;
-use			PoC.utils.all;
-
 
 architecture rtl of arith_addw_xilinx is
 

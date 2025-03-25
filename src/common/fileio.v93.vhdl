@@ -37,12 +37,11 @@
 -- limitations under the License.
 -- =============================================================================
 
-use			STD.TextIO.all;
+use     STD.TextIO.all;
 
-library	PoC;
-use			PoC.my_project.all;
-use			PoC.strings.all;
-use			PoC.utils.all;
+use     work.my_project.all;
+use     work.strings.all;
+use     work.utils.all;
 
 
 package FileIO is

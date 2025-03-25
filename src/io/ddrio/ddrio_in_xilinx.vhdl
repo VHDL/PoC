@@ -30,10 +30,10 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
 library	UniSim;
-use			UniSim.vComponents.all;
+use     UniSim.vComponents.all;
 
 
 entity ddrio_in_xilinx is

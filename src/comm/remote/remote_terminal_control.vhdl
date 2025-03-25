@@ -80,8 +80,7 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-library poc;
-use poc.functions.all;
+use  work.functions.all;
 
 entity remote_terminal_control is
   generic (

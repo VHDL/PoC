@@ -40,6 +40,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -59,89 +60,99 @@
 library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 
-library PoC;
-use     PoC.config.all;
-use     PoC.utils.all;
-use     PoC.sync.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.sync.all;
 
 
 entity sync_Bits is
-  generic (
-    BITS          : positive            := 1;                       -- number of bit to be synchronized
-    INIT          : std_logic_vector    := x"00000000";             -- initialization bits
-    SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low    -- generate SYNC_DEPTH many stages, at least 2
-  );
-  port (
-    Clock         : in  std_logic;                                  -- <Clock>  output clock domain
-    Input         : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
-    Output        : out std_logic_vector(BITS - 1 downto 0)         -- @Clock:  output bits
-  );
+	generic (
+		BITS          : positive            := 1;                       -- number of bit to be synchronized
+		INIT          : std_logic_vector    := x"00000000";             -- initialization bits
+		SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low;    -- generate SYNC_DEPTH many stages, at least 2
+		FALSE_PATH      : boolean             := true;
+		REGISTER_OUTPUT : boolean             := false
+	);
+	port (
+		Clock         : in  std_logic;                                  -- <Clock>  output clock domain
+		Input         : in  std_logic_vector(BITS - 1 downto 0);        -- @async:  input bits
+		Output        : out std_logic_vector(BITS - 1 downto 0)         -- @Clock:  output bits
+	);
 end entity;
 
 
 architecture rtl of sync_Bits is
-  constant INIT_I    : std_logic_vector    := resize(descend(INIT), BITS);
-  constant DEV_INFO : T_DEVICE_INFO        := DEVICE_INFO;
+	constant INIT_I   : std_logic_vector     := resize(descend(INIT), BITS);
+	constant DEV_INFO : T_DEVICE_INFO        := DEVICE_INFO;
 begin
-  genGeneric : if ((DEV_INFO.Vendor /= VENDOR_ALTERA) and (DEV_INFO.Vendor /= VENDOR_XILINX)) generate
-    attribute ASYNC_REG              : string;
-    attribute SHREG_EXTRACT          : string;
 
-  begin
-    gen : for i in 0 to BITS - 1 generate
-      signal Data_async              : std_logic;
-      signal Data_meta              : std_logic                                    := INIT_I(i);
-      signal Data_sync              : std_logic_vector(SYNC_DEPTH - 1 downto 1)    := (others => INIT_I(i));
+	genVendor : if (DEV_INFO.Vendor = VENDOR_ALTERA) generate
+		-- use dedicated and optimized 2 D-FF synchronizer for Altera FPGAs
+		sync : sync_Bits_Altera
+			generic map (
+				BITS        => BITS,
+				INIT        => INIT_I,
+				SYNC_DEPTH  => SYNC_DEPTH,
+				FALSE_PATH      => FALSE_PATH,
+				REGISTER_OUTPUT => REGISTER_OUTPUT
+			)
+			port map (
+				Clock     => Clock,
+				Input     => Input,
+				Output    => Output
+			);
 
-      -- Mark register DataSync_async's input as asynchronous and ignore timings (TIG)
-      attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
+	elsif (DEV_INFO.Vendor = VENDOR_XILINX) generate
+		-- use dedicated and optimized 2 D-FF synchronizer for Xilinx FPGAs
+		sync : sync_Bits_Xilinx
+			generic map (
+				BITS            => BITS,
+				INIT            => INIT_I,
+				SYNC_DEPTH      => SYNC_DEPTH,
+				FALSE_PATH      => FALSE_PATH,
+				REGISTER_OUTPUT => REGISTER_OUTPUT
+			)
+			port map (
+				Clock     => Clock,
+				Input     => Input,
+				Output    => Output
+			);
 
-      -- Prevent XST from translating two FFs into SRL plus FF
-      attribute SHREG_EXTRACT of Data_meta  : signal is "NO";
-      attribute SHREG_EXTRACT of Data_sync  : signal is "NO";
+	else generate
+		attribute ASYNC_REG              : string;
+		attribute SHREG_EXTRACT          : string;
+	begin
+		gen : for i in 0 to BITS - 1 generate
+			signal Data_async             : std_logic;
+			signal Data_meta              : std_logic                                    := INIT_I(i);
+			signal Data_sync              : std_logic_vector(SYNC_DEPTH - 1 downto 1)    := (others => INIT_I(i));
 
-    begin
-      Data_async      <= Input(i);
+			-- Mark register DataSync_async's input as asynchronous and ignore timings (TIG)
+			attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
 
-      process(Clock)
-      begin
-        if rising_edge(Clock) then
-          Data_meta    <= Data_async;
-          Data_sync    <= Data_sync(Data_sync'high - 1 downto 1) & Data_meta;
-        end if;
-      end process;
+			-- Prevent XST from translating two FFs into SRL plus FF
+			attribute SHREG_EXTRACT of Data_meta  : signal is "NO";
+			attribute SHREG_EXTRACT of Data_sync  : signal is "NO";
 
-      Output(i)  <= Data_sync(Data_sync'high);
-    end generate;
-  end generate;
+		begin
+			Data_async      <= Input(i);
 
-  -- use dedicated and optimized 2 D-FF synchronizer for Altera FPGAs
-  genAltera : if (DEV_INFO.Vendor = VENDOR_ALTERA) generate
-    sync : sync_Bits_Altera
-      generic map (
-        BITS        => BITS,
-        INIT        => INIT_I,
-        SYNC_DEPTH  => SYNC_DEPTH
-      )
-      port map (
-        Clock      => Clock,
-        Input      => Input,
-        Output    => Output
-      );
-  end generate;
+			process(Clock)
+			begin
+				if rising_edge(Clock) then
+					Data_meta    <= Data_async;
+					Data_sync    <= Data_sync(Data_sync'high - 1 downto 1) & Data_meta;
+				end if;
+			end process;
 
-  -- use dedicated and optimized 2 D-FF synchronizer for Xilinx FPGAs
-  genXilinx : if (DEV_INFO.Vendor = VENDOR_XILINX) generate
-    sync : sync_Bits_Xilinx
-      generic map (
-        BITS        => BITS,
-        INIT        => INIT_I,
-        SYNC_DEPTH  => SYNC_DEPTH
-      )
-      port map (
-        Clock      => Clock,
-        Input      => Input,
-        Output    => Output
-      );
-  end generate;
+			Output(i)  <= Data_sync(Data_sync'high);
+
+			reg_out_gen : if REGISTER_OUTPUT generate
+			begin
+				Output(i) <= Data_sync(Data_sync'high) when rising_edge(Clock);
+			else generate
+				Output(i) <= Data_sync(Data_sync'high);
+			end generate;
+		end generate;
+	end generate;
 end architecture;

@@ -7,7 +7,7 @@ PoC.net.FramePerformanceCounter
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/net/net_FramePerformanceCounter.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/net/net_FramePerformanceCounter.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40

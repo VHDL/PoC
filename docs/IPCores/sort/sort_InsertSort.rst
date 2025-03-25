@@ -1,4 +1,4 @@
-.. _IP:list_lru_systolic:
+.. _IP:sort_insertsort:
 
 PoC.sort.InsertSort
 ###################

@@ -29,13 +29,12 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
 
 
 entity stream_Mirror is
@@ -99,7 +98,7 @@ begin
 
 	In_Ack																		<= not FIFOGlue_Full;
 
-	FIFOGlue : entity PoC.fifo_glue
+	FIFOGlue: entity work.fifo_glue
 		generic map (
 			D_BITS		=> DATA_BITS + 2					-- Data Width
 		)

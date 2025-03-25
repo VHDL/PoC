@@ -47,11 +47,10 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.all;
 
-library PoC;
-use PoC.config.all;
-use PoC.utils.all;
-use PoC.vectors.all;
-use PoC.components.all;
+use  work.config.all;
+use  work.utils.all;
+use  work.vectors.all;
+use  work.components.all;
 
 entity sort_lru_cache is
 	generic (
@@ -125,7 +124,7 @@ begin
 	MovesDownCondRev <= reverse(MovesDownCond);
 	MovesDown        <= reverse(MovesDownRev);
 
-	MovesUpProp: entity poc.arith_prefix_and
+	MovesUpProp: entity work.arith_prefix_and
 		generic map (
 			N => ELEMENTS+1)
 		port map (
@@ -133,7 +132,7 @@ begin
 			x => MovesUpCond,
 			y => MovesUp);
 
-	MovesDownProp: entity poc.arith_prefix_and
+	MovesDownProp: entity work.arith_prefix_and
 		generic map (
 			N => ELEMENTS+1)
 		port map (

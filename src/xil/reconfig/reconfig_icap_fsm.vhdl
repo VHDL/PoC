@@ -35,9 +35,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library poc;
-use POC.utils.all;
-use POC.vectors.all;
+use  work.utils.all;
+use  work.vectors.all;
 
 entity reconfig_icap_fsm is
 	port  (

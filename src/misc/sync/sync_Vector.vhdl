@@ -4,17 +4,17 @@
 -- =============================================================================
 -- Authors:         Steffen Koehler
 --                  Patrick Lehmann
+--                  Stefan Unrein
 --
 -- Entity:          Synchronizes a signal vector across clock-domain boundaries
 --
 -- Description:
 -- -------------------------------------
--- This module synchronizes a vector of bits from clock-domain ``Clock1`` to
--- clock-domain ``Clock2``. The clock-domain boundary crossing is done by a
--- change comparator, a T-FF, two synchronizer D-FFs and a reconstructive
--- XOR indicating a value change on the input. This changed signal is used
--- to capture the input for the new output. A busy flag is additionally
--- calculated for the input clock domain.
+-- This module creates a mirror of an input bit-vector to an output bit-vector
+-- in a different clock-domain. The data is always transfered to the other side
+-- if the lower MASTER_BITS have changed. If MASTER_BITS is set to zero, an
+-- external comparator or change can be given to the Strobe input. Data is only
+-- transfered if Busy is zero. A Strobe while Busy active will be ignored.
 --
 -- Constraints:
 --   This module uses sub modules which need to be constrained. Please
@@ -24,6 +24,7 @@
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
+-- Copryright 2017-2025 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -42,14 +43,12 @@ library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use     PoC.utils.all;
-use     PoC.sync.all;
-
+use     work.utils.all;
+use     work.sync.all;
 
 entity sync_Vector is
 	generic (
-		MASTER_BITS   : positive            := 8;                       -- number of bit to be synchronized
+		MASTER_BITS   : natural             := 8;                       -- number of bits for internal change detection
 		SLAVE_BITS    : natural             := 0;
 		INIT          : std_logic_vector    := x"00000000";             --
 		SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low    -- generate SYNC_DEPTH many stages, at least 2
@@ -57,9 +56,12 @@ entity sync_Vector is
 	port (
 		Clock1        : in  std_logic;                                                  -- <Clock>  input clock
 		Clock2        : in  std_logic;                                                  -- <Clock>  output clock
-		Input         : in  std_logic_vector((MASTER_BITS + SLAVE_BITS) - 1 downto 0);  -- @Clock1:  input vector
-		Output        : out std_logic_vector((MASTER_BITS + SLAVE_BITS) - 1 downto 0);  -- @Clock2:  output vector
-		Busy          : out  std_logic;                                                 -- @Clock1:  busy bit
+
+		Input         : in  std_logic_vector((SLAVE_BITS + MASTER_BITS) - 1 downto 0);  -- @Clock1:  input vector
+		Busy          : out std_logic;                                                  -- @Clock1:  busy bit
+		Strobe        : in  std_logic := '0';                                           -- @Clock1:  Transfer Strobe, only if MASTER_BITS=0
+
+		Output        : out std_logic_vector((SLAVE_BITS + MASTER_BITS) - 1 downto 0);  -- @Clock2:  output vector
 		Changed       : out  std_logic                                                  -- @Clock2:  changed bit
 	);
 end entity;
@@ -121,19 +123,25 @@ begin
 	syncClk2_In   <= T1;
 	syncClk1_In   <= D2;
 
-	Changed_Clk1  <='0' when (D0(MASTER_BITS - 1 downto 0) = Input(MASTER_BITS - 1 downto 0)) else '1'; -- input change detection
 	Changed_Clk2  <= syncClk2_Out xor D2;                                                               -- level change detection; restore strobe signal from flag
 	Busy_i        <= T1 xor syncClk1_Out;                                                               -- calculate busy signal
+
+	Change_detection_gen : if MASTER_BITS > 0 generate
+		Changed_Clk1  <='0' when (D0(MASTER_BITS - 1 downto 0) = Input(MASTER_BITS - 1 downto 0)) else '1'; -- input change detection
+	else generate
+		Changed_Clk1  <= Strobe;
+	end generate;
 
 	-- output signals
 	Output        <= D4;
 	Busy          <= Busy_i;
 	Changed       <= D3;
 
-	syncClk2 : entity PoC.sync_Bits
+	syncClk2: entity work.sync_Bits
 		generic map (
 			BITS        => 1,           -- number of bit to be synchronized
-			SYNC_DEPTH  => SYNC_DEPTH
+			SYNC_DEPTH  => SYNC_DEPTH,
+			REGISTER_OUTPUT => false
 		)
 		port map (
 			Clock     => Clock2,        -- <Clock>  output clock domain
@@ -141,10 +149,11 @@ begin
 			Output(0) => syncClk2_Out   -- @Clock:  output bits
 		);
 
-	syncClk1 : entity PoC.sync_Bits
+	syncClk1: entity work.sync_Bits
 		generic map (
 			BITS        => 1,           -- number of bit to be synchronized
-			SYNC_DEPTH  => SYNC_DEPTH
+			SYNC_DEPTH  => SYNC_DEPTH,
+			REGISTER_OUTPUT => false
 		)
 		port map (
 			Clock     => Clock1,        -- <Clock>  output clock domain

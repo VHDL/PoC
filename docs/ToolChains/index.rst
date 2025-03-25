@@ -22,10 +22,6 @@ Mentor QuestaSim
 
 Special feature: embedded poc prodecures to recompile relaunch, rerun and save waveforms...
 
-Xilinx ISE
-==========
-
-* Describe the ``use_new_parser yes`` option
 
 Xilinx Vivado
 =============

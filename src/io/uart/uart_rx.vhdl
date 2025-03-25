@@ -30,8 +30,8 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 library	PoC;
 
@@ -75,7 +75,7 @@ architecture rtl of uart_rx is
 
 begin
   -- Input synchronization
-	sync :  entity PoC.sync_Bits
+	sync: entity work.sync_Bits
 		generic map (
 			INIT					=> (SYNC_DEPTH - 1 downto 0 => '1'),	-- initialitation bits
 			SYNC_DEPTH		=> SYNC_DEPTH													-- generate SYNC_DEPTH many stages, at least 2

@@ -81,9 +81,8 @@ end entity fifo_ic_assembly;
 library IEEE;
 use	IEEE.numeric_std.all;
 
-library	PoC;
-use PoC.utils.all;
-use PoC.ocram.all;
+use  work.utils.all;
+use  work.ocram.all;
 
 architecture rtl of fifo_ic_assembly is
 

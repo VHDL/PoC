@@ -31,7 +31,7 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
 
 entity dstruct_deque is
@@ -65,10 +65,9 @@ end entity dstruct_deque;
 library IEEE;
 use IEEE.numeric_std.all;
 
-library PoC;
-use PoC.config.all;
-use PoC.utils.all;
-use PoC.ocram.all;
+use  work.config.all;
+use  work.utils.all;
+use  work.ocram.all;
 
 architecture rtl of dstruct_deque is
   -- Constants
@@ -115,7 +114,7 @@ architecture rtl of dstruct_deque is
 
 begin
 
-  ram : entity poc.ocram_tdp_wf
+  ram: entity work.ocram_tdp_wf
   generic map(
     A_BITS => A_BITS,
     D_BITS => D_BITS,

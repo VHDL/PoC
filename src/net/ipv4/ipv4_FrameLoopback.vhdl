@@ -29,14 +29,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.net.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.net.all;
 
 
 entity ipv4_FrameLoopback is
@@ -104,7 +103,7 @@ begin
 	In_Meta_SrcIPv4Address_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_SRCADDR);
 	In_Meta_DestIPv4Address_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_DESTADDR);
 
-	StmBuf : entity PoC.stream_Buffer
+	StmBuf: entity work.stream_Buffer
 		generic map (
 			FRAMES												=> MAX_FRAMES,
 			DATA_BITS											=> 8,

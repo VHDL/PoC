@@ -1,18 +1,15 @@
-[submodule "lib/vunit"]
-	path = lib/vunit
-	url = ../vunit.git
 [submodule "lib/osvvm"]
 	path = lib/osvvm
 	url = ../OSVVM.git
-[submodule "lib/cocotb"]
-	path = lib/cocotb
-	url = ../cocotb.git
-[submodule "docs/_themes/sphinx_rtd_theme"]
-	path = docs/_themes/sphinx_rtd_theme
-	url = ../sphinx_rtd_theme.git
-[submodule "lib/uvvm"]
-	path = lib/uvvm
-	url = ../UVVM.git
-[submodule "lib/pyIPCMI"]
-	path = lib/pyIPCMI
-	url = ../pyIPCMI.git
+[submodule "lib/OSVVM-AXI4"]
+	path = lib/OSVVM-AXI4
+	url = ../OSVVM-AXI4.git
+[submodule "lib/OSVVM-Common"]
+	path = lib/OSVVM-Common
+	url = ../OSVVM-Common.git
+[submodule "lib/OSVVM-Scripts"]
+	path = lib/OSVVM-Scripts
+	url = ../OSVVM-Scripts.git
+[submodule "lib/OSVVM-UART"]
+	path = lib/OSVVM-UART
+	url = ../OSVVM-UART.git

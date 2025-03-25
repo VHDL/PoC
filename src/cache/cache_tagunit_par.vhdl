@@ -104,12 +104,11 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
+use     work.utils.all;
+use     work.vectors.all;
 
 entity cache_tagunit_par is
 	generic (
@@ -227,7 +226,7 @@ begin
 												TagMemory(to_integer(ReplaceWay_us));
 
 		-- replacement policy
-		Policy : entity PoC.cache_replacement_policy
+		Policy: entity work.cache_replacement_policy
 			generic map (
 				REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 				CACHE_WAYS				 => ASSOCIATIVITY
@@ -484,7 +483,7 @@ begin
 
 		genSet : for cs in 0 to CACHE_SETS-1 generate
 		begin
-			Policy : entity PoC.cache_replacement_policy
+			Policy: entity work.cache_replacement_policy
 				generic map (
 					REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 					CACHE_WAYS				 => ASSOCIATIVITY

@@ -29,14 +29,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.net.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.net.all;
 
 
 entity mac_Wrapper is
@@ -200,7 +199,7 @@ architecture rtl of mac_Wrapper is
 
 begin
 
-	RX_DestMAC : entity PoC.mac_RX_DestMAC_Switch
+	RX_DestMAC: entity work.mac_RX_DestMAC_Switch
 		generic map (
 			DEBUG								=> DEBUG,
 			MAC_ADDRESSES									=> INTERFACE_ADDRESSES,
@@ -256,7 +255,7 @@ begin
 --		assert FALSE report "Filter:      Count=" & INTEGER'image(FILTER_COUNT) severity NOTE;
 --		assert FALSE report "PortIndex:   From="	& INTEGER'image(PORT_INDEX_FROM) & " to=" & INTEGER'image(PORT_INDEX_TO) severity NOTE;
 
-		RX_SrcMAC : entity PoC.mac_RX_SrcMAC_Filter
+		RX_SrcMAC: entity work.mac_RX_SrcMAC_Filter
 			generic map (
 				DEBUG								=> DEBUG,
 				MAC_ADDRESSES									=> FILTER_ADDRESSES,
@@ -287,7 +286,7 @@ begin
 				Out_Meta_SrcMACAddress_Data		=> SrcEth_RX_Meta_SrcMACAddress_Data
 			);
 
-		RX_EthType : entity PoC.mac_RX_Type_Switch
+		RX_EthType: entity work.mac_RX_Type_Switch
 			generic map (
 				DEBUG								=> DEBUG,
 				ETHERNET_TYPES								=> SWITCH_TYPES
@@ -321,7 +320,7 @@ begin
 			);
 
 		-- Ethernet Type prepender
-		TX_EthType : entity PoC.mac_TX_Type_Prepender
+		TX_EthType: entity work.mac_TX_Type_Prepender
 			generic map (
 				ETHERNET_TYPES								=> SWITCH_TYPES
 			)
@@ -350,7 +349,7 @@ begin
 	end generate;
 
 	-- Ethernet SourceMAC prepender
-	TX_SrcMAC : entity PoC.mac_TX_SrcMAC_Prepender
+	TX_SrcMAC: entity work.mac_TX_SrcMAC_Prepender
 		generic map (
 			MAC_ADDRESSES									=> INTERFACE_ADDRESSES
 		)
@@ -378,7 +377,7 @@ begin
 		);
 
 	-- Ethernet SourceMAC prepender
-	TX_DestMAC : entity PoC.mac_TX_DestMAC_Prepender
+	TX_DestMAC: entity work.mac_TX_DestMAC_Prepender
 		port map(
 			Clock													=> Clock,
 			Reset													=> Reset,

@@ -79,19 +79,17 @@
 -- limitations under the License.
 -- =============================================================================
 
-library STD;
-use			STD.TextIO.all;
+use     STD.TextIO.all;
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.strings.all;
-use			PoC.vectors.all;
-use			PoC.mem.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.strings.all;
+use     work.vectors.all;
+use     work.mem.all;
 
 
 entity ocram_esdp is
@@ -125,7 +123,7 @@ begin
 		--
 		-- **Attention**: This encapsulation is mandatory for Xilinx Vivado,
 		-- otherwise Vivado synthesizes a lot of LUT-RAM instead of Block-RAM.
-		ram_tdp: entity poc.ocram_tdp
+		ram_tdp: entity work.ocram_tdp
 			generic map (
 				A_BITS	 => A_BITS,
 				D_BITS	 => D_BITS,

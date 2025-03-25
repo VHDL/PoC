@@ -59,10 +59,9 @@
 library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 
-library PoC;
-use     PoC.config.all;
-use     PoC.utils.all;
-use     PoC.sync.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.sync.all;
 
 
 entity sync_Pulse is
@@ -86,9 +85,9 @@ begin
 		attribute SHREG_EXTRACT          : string;
 	begin
 		gen : for i in 0 to BITS - 1 generate
-			signal Data_async              : std_logic;
-			signal Data_meta              : std_logic                                    := INIT_I(i);
-			signal Data_sync              : std_logic_vector(SYNC_DEPTH - 1 downto 1)    := (others => INIT_I(i));
+			signal Data_async             : std_logic;
+			signal Data_meta              : std_logic                                    := '0';
+			signal Data_sync              : std_logic_vector(SYNC_DEPTH - 1 downto 1)    := (others => '0');
 
 			-- Mark register DataSync_async's input as asynchronous and ignore timings (TIG)
 			attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
@@ -102,7 +101,7 @@ begin
 			begin
 				if ((not Input(i) and Data_sync(Data_sync'high)) = '1') then
 					Data_async <= '0';
-				elsif rising_edge(Input) then
+				elsif rising_edge(Input(i)) then
 					Data_async <= '1';
 				end if;
 			end process;

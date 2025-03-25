@@ -32,13 +32,12 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
 
 
 entity stream_Buffer is
@@ -184,7 +183,7 @@ begin
 		end case;
 	end process;
 
-	DataFIFO : entity PoC.fifo_cc_got
+	DataFIFO: entity work.fifo_cc_got
 		generic map (
 			D_BITS							=> DATA_BITS + 1,								-- Data Width
 			MIN_DEPTH						=> (DATA_FIFO_DEPTH * FRAMES),	-- Minimum FIFO Depth
@@ -287,7 +286,7 @@ begin
 			MetaFIFO_put				<= Writer_Counter_en;
 			MetaFIFO_DataIn			<= In_Meta_Data(high(META_BITS, i) downto low(META_BITS, i));
 
-			MetaFIFO : entity PoC.fifo_cc_got_tempgot
+			MetaFIFO: entity work.fifo_cc_got_tempgot
 				generic map (
 					D_BITS							=> META_BITS(i),										-- Data Width
 					MIN_DEPTH						=> (META_FIFO_DEPTH(i) * FRAMES),		-- Minimum FIFO Depth
