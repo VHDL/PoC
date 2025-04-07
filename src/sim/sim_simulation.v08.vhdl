@@ -30,19 +30,18 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
-use			IEEE.math_real.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
+use     IEEE.math_real.all;
 
-library PoC;
-use			PoC.utils.all;
--- use			PoC.strings.all;
-use			PoC.vectors.all;
-use			PoC.physical.all;
+use     work.utils.all;
+-- use     work.strings.all;
+use     work.vectors.all;
+use     work.physical.all;
 
-use			PoC.sim_global.all;
-use			PoC.sim_types.all;
-use			PoC.sim_protected.all;
+use     work.sim_global.all;
+use     work.sim_types.all;
+use     work.sim_protected.all;
 
 
 package simulation is

@@ -4,10 +4,11 @@
 
    \part{Introduction}
 
-This library is published and maintained by **Chair for VLSI Design, Diagnostics
-and Architecture** - Faculty of Computer Science, Technische Universität Dresden,
-Germany |br|
-`https://tu-dresden.de/ing/informatik/ti/vlsi <https://tu-dresden.de/ing/informatik/ti/vlsi>`_
+.. #
+   This library is published and maintained by **Chair for VLSI Design, Diagnostics
+   and Architecture** - Faculty of Computer Science, Technische Universität Dresden,
+   Germany |br|
+   `https://tu-dresden.de/ing/informatik/ti/vlsi <https://tu-dresden.de/ing/informatik/ti/vlsi>`_
 
 .. only:: html
 
@@ -25,41 +26,13 @@ Germany |br|
 
 .. only:: html
 
-   |SHIELD:svg:GH-Logo|
-   |SHIELD:svg:Travis-CI|
-   |SHIELD:svg:AppVeyor|
-   |SHIELD:svg:Landscape|
-   |SHIELD:svg:Requirements|
-   |br|
-   |SHIELD:svg:Gitter:PoC|
-   |SHIELD:svg:Gitter:News|
-   |br|
-   |SHIELD:svg:GH-Tag|
-   |SHIELD:svg:GH-Release|
-   |SHIELD:svg:License-Code|
-   |SHIELD:svg:License-Docs|
-   |hr|
+   |SHIELD:svg:PoC-github| |SHIELD:svg:PoC-src-license| |SHIELD:svg:PoC-ghp-doc| |SHIELD:svg:PoC-doc-license|
+
 
 .. only:: latex
 
-   .. image:: https://img.shields.io/badge/-VLSI--EDA/PoC-323131.png?style=flat&logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAABKVBMVEX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FOe9X6AAAAYnRSTlMAAQIDBAcIDA0PEBESFBUWGBkeHyEoMTIzNDU4OTw%2BP0JGWVxeX2BiY2RlZ2hvc3R1eHp%2Bio%2BXm52epKmqq62usLe5wcLDxMnQ0dLW2tvc3t%2Fh4uPo6uvs8fLz9fb3%2Bvv8%2FsuNaVkAAAF7SURBVHgBjdHZW9NAFAXwE0iElCARZCkuIotEUFyQBSJERBEILaAo6d6e%2F%2F%2BPcO58aZslD%2Fxe5mHuPfOdbzA06R1e1sn65aE3ibw5v8OBjj%2BHNHuvx5Tenp1av2bOdSJkKWKBaAmxhYiFogVoEzckw%2BModXcckryZgDigsgLLu1MVT09V1TvPwgqVAyhlinmpMjsCZWRWCsxTlAEEFIvIWKQIALdLsYaMNYqui02KPw4ynN8Um%2FAp1pGzTuEj1Ek2cmz9dogmlVsUuKXSBEUFBaoUoKihQI0iPqaQMxWvnlOsImeV4hz7FBcmMswLin0sU9tBxg61ZYw3qB25SHhyRK0xDuySX179INtfN8qjOvz5u6BNjbsAplvsbVm%2FqAQGFOMb%2B1rTULZJPnsqf%2FMC2kv2bUOYZ%2BR3lLzPr0ehPWbszITmVsn3GCqRWtVFbKZC%2Fvz45tOj1EBlBgPOCUUpOXDiIMF4%2Bzc98G%2FDQNrY1tW9Bc26v%2Fowhof6D6AkqSgsdGGuAAAAAElFTkSuQmCC
-      :target: https://www.github.com/VLSI-EDA/PoC
-      :alt: Source Code on GitHub
+   |SHIELD:png:PoC-github| |SHIELD:png:PoC-src-license| |SHIELD:png:PoC-ghp-doc| |SHIELD:png:PoC-doc-license|
 
-.. #
-   |SHIELD:png:GH-Logo|
-   |SHIELD:png:Travis-CI|
-   |SHIELD:png:AppVeyor|
-   |SHIELD:png:Landscape|
-   |SHIELD:png:Requirements|
-   |br|
-   |SHIELD:png:Gitter:PoC|
-   |SHIELD:png:Gitter:News|
-   |br|
-   |SHIELD:png:GH-Tag|
-   |SHIELD:png:GH-Release|
-   |SHIELD:png:License-Code|
-   |SHIELD:png:License-Docs|
 
 The PoC-Library Documentation
 #############################
@@ -89,6 +62,16 @@ shipped with a Python based infrastructure to offer a command line based fronten
 
    .. rubric:: News
 
+.. attention::
+
+   In **Feb. 2025**, The PoC-Library was forked to the VHDL namespace at GitHub, which is operated by the Open-Source
+   VHDL Group (OSVG). It's planned to update The PoC-Library (new features, bug fixes, etc) as well as removing some
+   burdens like Xilinx ISE support.
+
+   In **July 2025**, the changes made, upcoming changes as well as a roadmap will be presented at
+   `FPGA Conference Europe 2025 <https://www.fpga-conference.eu/>`__ in Munich. Besides general PoC updates, a first
+   AXI4-Lite IP core will be release to The PoC-Library.
+
 See :ref:`Change Log <CHANGE>` for latest updates.
 
 
@@ -109,20 +92,12 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
    # BibLaTex example entry
    @online{poc,
      title={{PoC - Pile of Cores}},
-     author={{Chair of VLSI Design, Diagnostics and Architecture}},
-     organization={{Technische Universität Dresden}},
-     year={2016},
-     url={https://github.com/VLSI-EDA/PoC},
-     urldate={2016-10-28},
+     author={{Contributors of the Open Source VHDL Group}},
+     organization={{OSVG}},
+     year={2025},
+     url={https://github.com/VHDL/PoC},
+     urldate={2025-03-04},
    }
-
-------------------------------------
-
-.. |docdate| date:: %b %d, %Y - %H:%M
-
-.. only:: html
-
-   This document was generated on |docdate|.
 
 
 .. toctree::
@@ -133,6 +108,8 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
    QuickStart
    GetInvolved/index
    References/Licenses/License
+   References/Licenses/Doc-License
+
 
 .. raw:: latex
 
@@ -152,12 +129,13 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
 
 .. raw:: latex
 
-   \part{References}
+   \part{References and Reports}
 
 .. toctree::
-   :caption: References
+   :caption: References and Reports
    :hidden:
 
+   unittests/index
    References/CommandReference
    References/Database
    PyInfrastructure/index

@@ -23,6 +23,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -43,9 +44,8 @@ library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use     PoC.utils.all;
-use     PoC.sync.all;
+use     work.utils.all;
+use     work.sync.all;
 
 
 entity sync_Command is
@@ -90,9 +90,9 @@ architecture rtl of sync_Command is
 	attribute SHREG_EXTRACT of D5  : signal is "NO";
 
 	signal syncClk1_In    : std_logic;
-	signal syncClk1_Out    : std_logic;
+	signal syncClk1_Out   : std_logic;
 	signal syncClk2_In    : std_logic;
-	signal syncClk2_Out    : std_logic;
+	signal syncClk2_Out   : std_logic;
 
 begin
 	-- input D-FF @Clock1 -> changed detection
@@ -136,10 +136,11 @@ begin
 	Busy          <= Busy_i;
 	Changed        <= D4;
 
-	syncClk2 : entity PoC.sync_Bits
+	syncClk2: entity work.sync_Bits
 		generic map (
 			BITS        => 1,             -- number of bit to be synchronized
-			SYNC_DEPTH  => SYNC_DEPTH
+			SYNC_DEPTH  => SYNC_DEPTH,
+			REGISTER_OUTPUT => false
 		)
 		port map (
 			Clock       => Clock2,        -- <Clock>  output clock domain
@@ -147,10 +148,11 @@ begin
 			Output(0)   => syncClk2_Out   -- @Clock:  output bits
 		);
 
-	syncClk1 : entity PoC.sync_Bits
+	syncClk1: entity work.sync_Bits
 		generic map (
 			BITS        => 1,             -- number of bit to be synchronized
-			SYNC_DEPTH  => SYNC_DEPTH
+			SYNC_DEPTH  => SYNC_DEPTH,
+			REGISTER_OUTPUT => false
 		)
 		port map (
 			Clock       => Clock1,        -- <Clock>  output clock domain

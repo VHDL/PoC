@@ -29,14 +29,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.net.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.net.all;
 
 
 entity udp_Wrapper is
@@ -292,7 +291,7 @@ begin
 	TX_Meta_SrcIPAddress_nxt	<= get_col(StmMux_In_Meta_rev,	STMMUX_META_SRCIP_NXT_BIT);
 	TX_Meta_DestIPAddress_nxt	<= get_col(StmMux_In_Meta_rev,	STMMUX_META_DESTIP_NXT_BIT);
 
-	TX_StmMux : entity PoC.stream_Mux
+	TX_StmMux: entity work.stream_Mux
 		generic map (
 			PORTS									=> UDP_SWITCH_PORTS,
 			DATA_BITS							=> StmMux_Out_Data'length,
@@ -326,7 +325,7 @@ begin
 
 	TX_FCS_MetaIn_Data	<= StmMux_Out_Meta;
 
-	TX_FCS : entity PoC.net_FrameChecksum
+	TX_FCS: entity work.net_FrameChecksum
 		generic map (
 			MAX_FRAMES						=> 4,
 			MAX_FRAME_LENGTH			=> 2048,
@@ -370,7 +369,7 @@ begin
 	TX_FCS_Meta_DestPort							<= TX_FCS_MetaOut_Data(high(TX_FCS_META_BITS, TX_FCS_META_STREAMID_DESTPORT) downto low(TX_FCS_META_BITS, TX_FCS_META_STREAMID_DESTPORT));
 --	TX_FCS_Meta_Length								<= TX_FCS_MetaOut_Data(high(TX_FCS_META_BITS, TX_FCS_META_STREAMID_LEN)			 downto low(TX_FCS_META_BITS, TX_FCS_META_STREAMID_LEN));
 
-	TX_UDP : entity PoC.udp_TX
+	TX_UDP: entity work.udp_TX
 		generic map (
 			DEBUG												=> DEBUG,
 			IP_VERSION									=> IP_VERSION
@@ -410,7 +409,7 @@ begin
 -- =============================================================================
 -- RX Path
 -- =============================================================================
-	RX_UDP : entity PoC.udp_RX
+	RX_UDP: entity work.udp_RX
 		generic map (
 			DEBUG														=> DEBUG,
 			IP_VERSION											=> IP_VERSION
@@ -480,7 +479,7 @@ begin
 	StmDeMux_Out_MetaIn(high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCPORT) 	downto	low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_SRCPORT))	<= UDP_RX_Meta_SrcPort;
 	StmDeMux_Out_MetaIn(high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTPORT)	downto	low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_DESTPORT))	<= UDP_RX_Meta_DestPort;
 
-	RX_StmDeMux : entity PoC.stream_DeMux
+	RX_StmDeMux: entity work.stream_DeMux
 		generic map (
 			PORTS										=> UDP_SWITCH_PORTS,
 			DATA_BITS								=> STMDEMUX_DATA_BITS,

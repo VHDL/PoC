@@ -31,14 +31,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.physical.all;
-use			PoC.components.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.physical.all;
+use     work.components.all;
 
 
 entity misc_FrequencyMeasurement is
@@ -57,7 +56,7 @@ end entity;
 
 
 architecture rtl of misc_FrequencyMeasurement is
-	constant TIMEBASE_COUNTER_MAX			: positive																:= TimingToCycles(ite(SIMULATION, 10 us, 1 sec), REFERENCE_CLOCK_FREQ);
+	constant TIMEBASE_COUNTER_MAX			: positive																:= TimingToCycles(ite(SIMULATION, 10.0e-6, 1.0), REFERENCE_CLOCK_FREQ);
 	constant TIMEBASE_COUNTER_BITS		: positive																:= log2ceilnz(TIMEBASE_COUNTER_MAX);
 
 	signal TimeBase_Counter_rst				: std_logic;
@@ -97,7 +96,7 @@ begin
 	TimeBase_Counter_uf		<= TimeBase_Counter_s(TimeBase_Counter_s'high);
 	Stop									<= not TimeBase_Counter_s(TimeBase_Counter_s'high) and TimeBase_Counter_nxt(TimeBase_Counter_nxt'high);
 
-	sync1 : entity poc.sync_Strobe
+	sync1: entity work.sync_Strobe
 		generic map (
 			BITS			=> 2													-- number of bit to be synchronized
 		)

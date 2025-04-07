@@ -36,15 +36,14 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.strings.all;
-use			PoC.physical.all;
-use			PoC.components.all;
-use			PoC.uart.all;
+use     work.utils.all;
+use     work.strings.all;
+use     work.physical.all;
+use     work.components.all;
+use     work.uart.all;
 
 
 entity uart_bclk is
@@ -63,7 +62,7 @@ end entity;
 
 architecture rtl of uart_bclk is
 	constant UART_OVERSAMPLING_RATE		: positive					:= 8;
-	constant TIME_UNIT_INTERVAL				: time							:= 1 sec / (to_real(BAUDRATE, 1 Bd) * real(UART_OVERSAMPLING_RATE));
+	constant TIME_UNIT_INTERVAL				: T_TIME						:= 1.0 / (to_real(BAUDRATE, 1 Bd) * real(UART_OVERSAMPLING_RATE));
 	constant BAUDRATE_COUNTER_MAX			: positive					:= TimingToCycles(TIME_UNIT_INTERVAL, CLOCK_FREQ);
 	constant BAUDRATE_COUNTER_BITS		: positive					:= log2ceilnz(BAUDRATE_COUNTER_MAX + 1);
 

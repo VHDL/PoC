@@ -31,15 +31,14 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.physical.all;
-use			PoC.components.all;
-use			PoC.io.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.physical.all;
+use     work.components.all;
+use     work.io.all;
 
 
 entity io_7SegmentMux_HEX is
@@ -66,7 +65,7 @@ architecture rtl of io_7SegmentMux_HEX is
 	signal DigitCounter_us		: unsigned(log2ceilnz(DIGITS) - 1 downto 0)	:= (others => '0');
 begin
 
-	Strobe : entity PoC.misc_StrobeGenerator
+	Strobe: entity work.misc_StrobeGenerator
 		generic map (
 			STROBE_PERIOD_CYCLES	=> TimingToCycles(to_time(REFRESH_RATE), CLOCK_FREQ),
 			INITIAL_STROBE				=> FALSE

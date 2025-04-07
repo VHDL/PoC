@@ -3,6 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:           Patrick Lehmann
+--                    Stefan Unrein
 --
 -- Entity:           sync_Reset_Xilinx
 --
@@ -25,6 +26,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -47,17 +49,18 @@ use     IEEE.STD_LOGIC_1164.all;
 library UniSim;
 use     UniSim.VComponents.all;
 
-library PoC;
-use     PoC.sync.all;
+use     work.sync.all;
 
 
 entity sync_Reset_Xilinx is
 	generic (
+		REGISTER_OUTPUT : boolean           := true;
 		SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low    -- generate SYNC_DEPTH many stages, at least 2
 	);
 	port (
 		Clock         : in  std_logic;                                  -- <Clock>  output clock domain
 		Input         : in  std_logic;                                  -- @async:  reset input
+		D             : in  std_logic := '0';                           -- @Clock:  data input
 		Output        : out std_logic                                   -- @Clock:  reset output
 	);
 end entity;
@@ -65,8 +68,6 @@ end entity;
 
 architecture rtl of sync_Reset_Xilinx is
 	attribute ASYNC_REG                     : string;
-	attribute SHREG_EXTRACT                 : string;
-	attribute RLOC                          : string;
 
 	signal Reset_async                      : std_logic;
 	signal Reset_meta                       : std_logic;
@@ -75,14 +76,6 @@ architecture rtl of sync_Reset_Xilinx is
 	-- Mark register "Reset_meta" and "Output" as asynchronous
 	attribute ASYNC_REG of Reset_meta       : signal is "TRUE";
 	attribute ASYNC_REG of Reset_sync       : signal is "TRUE";
-
-	-- Prevent XST from translating two FFs into SRL plus FF
-	attribute SHREG_EXTRACT of Reset_meta   : signal is "NO";
-	attribute SHREG_EXTRACT of Reset_sync   : signal is "NO";
-
-	-- Assign synchronization FF pairs to the same slice -> minimal routing delay
-	attribute RLOC of Reset_meta            : signal is "X0Y0";
-	attribute RLOC of Reset_sync            : signal is "X0Y0";
 
 begin
 	assert (SYNC_DEPTH = 2) report "Xilinx synchronizer supports only 2 stages. It could be extended to 4 or 8 on new FPGA series." severity WARNING;
@@ -96,7 +89,7 @@ begin
 		port map (
 			C        => Clock,
 			PRE      => Reset_async,
-			D        => '0',
+			D        => D,
 			Q        => Reset_meta
 	);
 
@@ -111,5 +104,12 @@ begin
 			Q        => Reset_sync
 	);
 
-	Output  <= Reset_sync;
+	Out_gen : if REGISTER_OUTPUT generate
+		signal Output_d : std_logic := '0';
+	begin
+		Output_d <= Reset_sync when rising_edge(Clock);
+		Output   <= Output_d;
+	else generate
+		Output   <= Reset_sync;
+	end generate;
 end architecture;

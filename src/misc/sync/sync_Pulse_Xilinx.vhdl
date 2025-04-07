@@ -62,9 +62,8 @@
 library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 
-library PoC;
-use     PoC.utils.all;
-use     PoC.sync.all;
+use     work.utils.all;
+use     work.sync.all;
 
 library UniSim;
 use     UniSim.VComponents.all;
@@ -84,11 +83,9 @@ end entity;
 
 
 architecture rtl of sync_Pulse_Xilinx is
-  constant INIT_I           : bit_vector    := (0 to BITS - 1 => '0');
-
   signal Captured_async     : std_logic_vector(BITS - 1 downto 0);
   signal Input_sync         : std_logic_vector(BITS - 1 downto 0);
-  
+
 begin
   gen : for i in 0 to BITS - 1 generate
     signal Clear            : std_logic;
@@ -108,7 +105,7 @@ begin
     Clear <= not Input(i) and Input_sync(i);
   end generate;
 
-  Sync : entity PoC.sync_Bits_Xilinx
+  Sync: entity work.sync_Bits_Xilinx
     generic map (
       BITS        => BITS,
       SYNC_DEPTH  => SYNC_DEPTH

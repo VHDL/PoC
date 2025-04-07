@@ -31,10 +31,9 @@
 -- limitations under the License.
 -- =============================================================================
 
-use			STD.TextIO.all;
+use     STD.TextIO.all;
 
-library	PoC;
-use			PoC.strings.all;
+use     work.strings.all;
 
 
 package debug is

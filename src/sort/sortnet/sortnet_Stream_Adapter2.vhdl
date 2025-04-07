@@ -29,14 +29,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.components.all;
-use			PoC.sortnet.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.components.all;
+use     work.sortnet.all;
 
 
 entity sortnet_Stream_Adapter2 is
@@ -131,7 +130,7 @@ begin
 	MetaIn(META_ISKEY_BIT)																		<= In_IsKey;
 	MetaIn(META_BITS - 1 downto META_BITS - STREAM_META_BITS)	<= In_Meta;
 
-	gearup : entity PoC.gearbox_up_cc
+	gearup: entity work.gearbox_up_cc
 		generic map (
 			INPUT_BITS						=> STREAM_DATA_BITS,
 			OUTPUT_BITS						=> GEARBOX_BITS,
@@ -163,7 +162,7 @@ begin
 		-- MetaInputMatric		<=
 		-- mux(gearup_Valid, (SORTNET_SIZE * SORTNET_DATA_BITS downto 1 => 'U'), gearup_Data)
 
-		sort : entity PoC.sortnet_OddEvenSort
+		sort: entity work.sortnet_OddEvenSort
 			generic map (
 				INPUTS								=> SORTNET_SIZE,
 				KEY_BITS							=> SORTNET_KEY_BITS,
@@ -200,7 +199,7 @@ begin
 	begin
 		DataInputMatrix	<= to_slm(gearup_Data, SORTNET_SIZE, SORTNET_DATA_BITS);
 
-		sort : entity PoC.sortnet_OddEvenMergeSort
+		sort: entity work.sortnet_OddEvenMergeSort
 			generic map (
 				INPUTS								=> SORTNET_SIZE,
 				KEY_BITS							=> SORTNET_KEY_BITS,
@@ -237,7 +236,7 @@ begin
 	begin
 		DataInputMatrix	<= to_slm(gearup_Data, SORTNET_SIZE, SORTNET_DATA_BITS);
 
-		sort : entity PoC.sortnet_BitonicSort
+		sort: entity work.sortnet_BitonicSort
 			generic map (
 				INPUTS								=> SORTNET_SIZE,
 				KEY_BITS							=> SORTNET_KEY_BITS,
@@ -273,7 +272,7 @@ begin
 	begin
 		DataInputMatrix	<= to_slm(sort_Data, SORTNET_SIZE, SORTNET_DATA_BITS);
 
-		transform : entity PoC.sortnet_Transform
+		transform: entity work.sortnet_Transform
 			generic map (
 				ROWS				=> SORTNET_SIZE,
 				COLUMNS			=> DATA_COLUMNS,
@@ -317,7 +316,7 @@ begin
 		genMerge : for i in 0 to MERGENET_STAGES - 1 generate
 			constant FIFO_DEPTH		: positive	:= 2**i * SORTNET_SIZE;
 		begin
-			merge : entity PoC.sortnet_MergeSort_Streamed
+			merge: entity work.sortnet_MergeSort_Streamed
 				generic map (
 					FIFO_DEPTH	=> FIFO_DEPTH,
 					KEY_BITS		=> SORTNET_KEY_BITS,
@@ -355,7 +354,7 @@ begin
 
 	merge_Sync		<= merge_SOF and merge_Valid;
 
-	geardown : entity PoC.gearbox_down_cc
+	geardown: entity work.gearbox_down_cc
 		generic map (
 			INPUT_BITS						=> MERGE_BITS,
 			OUTPUT_BITS						=> STREAM_DATA_BITS,

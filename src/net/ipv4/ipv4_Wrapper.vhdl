@@ -29,14 +29,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.net.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.net.all;
 
 
 entity ipv4_Wrapper is
@@ -257,7 +256,7 @@ begin
 		TX_Meta_SrcIPv4Address_nxt(i)		<= StmBuf_MetaIn_nxt(TXSTMBUF_META_STREAMID_SRCADR);
 		TX_Meta_DestIPv4Address_nxt(i)	<= StmBuf_MetaIn_nxt(TXSTMBUF_META_STREAMID_DESTADR);
 
-		TX_StmBuf : entity PoC.stream_Buffer
+		TX_StmBuf: entity work.stream_Buffer
 			generic map (
 				FRAMES												=> 2,
 				DATA_BITS											=> 8,
@@ -310,7 +309,7 @@ begin
 	end generate;
 
 
-	TX_StmMux : entity PoC.stream_Mux
+	TX_StmMux: entity work.stream_Mux
 		generic map (
 			PORTS									=> IPV4_SWITCH_PORTS,
 			DATA_BITS							=> TX_StmMux_Data'length,
@@ -347,7 +346,7 @@ begin
 	TX_StmMux_Meta_rev(TXSTMMUX_META_SRC_NXT_BIT)		<= IPv4_TX_Meta_SrcIPv4Address_nxt;
 	TX_StmMux_Meta_rev(TXSTMMUX_META_DEST_NXT_BIT)	<= IPv4_TX_Meta_DestIPv4Address_nxt;
 
-	IPv4_TX : entity PoC.ipv4_TX
+	IPv4_TX: entity work.ipv4_TX
 		generic map (
 			DEBUG													=> DEBUG
 		)
@@ -391,7 +390,7 @@ begin
 -- =============================================================================
 -- RX Path
 -- =============================================================================
-	IPv4_RX : entity PoC.ipv4_RX
+	IPv4_RX: entity work.ipv4_RX
 		generic map (
 			DEBUG														=> DEBUG
 		)
@@ -450,7 +449,7 @@ begin
 	RX_StmDeMux_MetaIn(high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_LENGTH)	downto	low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_LENGTH))		<= IPv4_RX_Meta_Length;
 	RX_StmDeMux_MetaIn(high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_PROTO)		downto	low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_PROTO))		<= IPv4_RX_Meta_Protocol;
 
-	RX_LLDeMux : entity PoC.stream_DeMux
+	RX_LLDeMux: entity work.stream_DeMux
 		generic map (
 			PORTS										=> IPV4_SWITCH_PORTS,
 			DATA_BITS								=> STMDEMUX_DATA_BITS,

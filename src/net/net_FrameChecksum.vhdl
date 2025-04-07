@@ -29,13 +29,12 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
 
 
 entity net_FrameChecksum is
@@ -312,7 +311,7 @@ begin
 	DataFIFO_DataIn(In_Data'range)		<= In_Data;
 	DataFIFO_DataIn(EOF_BIT)					<= In_EOF;
 
-	DataFIFO : entity PoC.fifo_cc_got
+	DataFIFO: entity work.fifo_cc_got
 		generic map (
 			D_BITS							=> DataFIFO_DataIn'length,			-- Data Width
 			MIN_DEPTH						=> MAX_FRAME_LENGTH,						-- Minimum FIFO Depth
@@ -340,7 +339,7 @@ begin
 	MetaFIFO_Misc_DataIn(Checksum'range)		<= ite((WordCounter_us(0) = to_sl(Writer_State /= ST_CARRY_1)), Checksum, swap(Checksum, 8));
 	MetaFIFO_Misc_DataIn(WordCount'range)		<= WordCount;
 
-	MetaFIFO_Misc : entity PoC.fifo_cc_got
+	MetaFIFO_Misc: entity work.fifo_cc_got
 		generic map (
 			D_BITS							=> MetaFIFO_Misc_DataIn'length,							-- Data Width
 			MIN_DEPTH						=> MAX_FRAMES,															-- Minimum FIFO Depth
@@ -421,7 +420,7 @@ begin
 		MetaFIFO_put				<= Writer_Counter_en;
 		MetaFIFO_DataIn			<= In_Meta_Data(high(META_BITS, i) downto low(META_BITS, i));
 
-		MetaFIFO : entity PoC.fifo_cc_got_tempgot
+		MetaFIFO: entity work.fifo_cc_got_tempgot
 			generic map (
 				D_BITS							=> MetaFIFO_DataIn'length,							-- Data Width
 				MIN_DEPTH						=> (META_FIFO_DEPTH(i) * MAX_FRAMES),		-- Minimum FIFO Depth

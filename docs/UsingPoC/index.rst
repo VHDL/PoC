@@ -21,7 +21,7 @@ are fulfilled. Chose one of the following integration kinds:
     **Disadvantages:**
 
     * Manual updating via download and file overwrites.
-    * Updated IP cores need to be copyed again into the destination project.
+    * Updated IP cores need to be copied again into the destination project.
     * Using different PoC versions in different projects is not possible.
     * No possibility to contribute bugfixes and extensions via Git pull requests.
 
@@ -31,7 +31,7 @@ are fulfilled. Chose one of the following integration kinds:
 
 * Stand-Alone IP Core Library cloned from Git:
     Download PoC via ``git clone`` from GitHub as latest branch copy. IP cores
-    can be copyed into one or more destination projects or the projects link to
+    can be copied into one or more destination projects or the projects link to
     the selected IP core source files.
 
     **Advantages:**
@@ -45,7 +45,7 @@ are fulfilled. Chose one of the following integration kinds:
 
     **Disadvantages:**
 
-    * Updated IP cores need to be copyed again into the destination project.
+    * Updated IP cores need to be copied again into the destination project.
     * Using different PoC versions in different projects is not possible
 
     **Next steps:** |br|

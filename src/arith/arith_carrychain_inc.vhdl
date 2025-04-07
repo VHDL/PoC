@@ -31,13 +31,12 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library	PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.arith.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.arith.all;
 
 
 entity arith_carrychain_inc is

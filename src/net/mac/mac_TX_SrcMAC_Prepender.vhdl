@@ -29,14 +29,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.net.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.net.all;
 
 
 entity mac_TX_SrcMAC_Prepender is
@@ -134,7 +133,7 @@ begin
 	In_Meta_rst									<= get_col(LLMux_In_Meta_rev, META_RST_BIT);
 	In_Meta_DestMACAddress_nxt	<= get_col(LLMux_In_Meta_rev, META_DEST_NXT_BIT);
 
-	LLMux : entity PoC.stream_Mux
+	LLMux: entity work.stream_Mux
 		generic map (
 			PORTS									=> PORTS,
 			DATA_BITS							=> LLMux_Out_Data'length,

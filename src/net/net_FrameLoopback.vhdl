@@ -29,13 +29,12 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
 
 
 entity FrameLoopback is
@@ -94,7 +93,7 @@ begin
 	TX_Meta_SrcIPv6Address_nxt(I)		<= Meta_nxt(META_STREAMID_SRC);
 	TX_Meta_DestIPv6Address_nxt(I)	<= Meta_nxt(META_STREAMID_DEST);
 
-	Pipe : entity PoC.stream_Buffer
+	Pipe: entity work.stream_Buffer
 		generic map (
 			FRAMES												=> 2,
 			DATA_BITS											=> 8,

@@ -34,14 +34,13 @@
 -- =============================================================================
 --
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.STD_LOGIC_TEXTIO.all;
-use			IEEE.NUMERIC_STD.all;
-use			STD.TEXTIO.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.STD_LOGIC_TEXTIO.all;
+use     IEEE.NUMERIC_STD.all;
+use     STD.TEXTIO.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.strings.all;
+use     work.utils.all;
+use     work.strings.all;
 
 
 package sim_VCDParser is

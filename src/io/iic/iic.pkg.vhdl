@@ -2,25 +2,26 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Patrick Lehmann
+-- Authors:         Patrick Lehmann
 --
--- Package:					VHDL package for component declarations, types and
---									functions associated to the PoC.io.iic namespace
+-- Package:         VHDL package for component declarations, types and
+--                  functions associated to the PoC.io.iic namespace
 --
 -- Description:
 -- -------------------------------------
---		For detailed documentation see below.
+--    For detailed documentation see below.
 --
 -- License:
 -- =============================================================================
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,27 +31,50 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.physical.all;
-use			PoC.io.all;
+use      work.utils.all;
+use      work.physical.all;
+use      work.io.all;
 
 
 package iic is
+	alias T_IO_TRISTATE is work.io.T_IO_TRISTATE;
+
 	type T_IO_IIC_SERIAL is record
 		Clock : T_IO_TRISTATE;
 		Data  : T_IO_TRISTATE;
 	end record;
+
+	type T_IO_IIC_SERIAL_PAD is record
+		Clock : std_logic;
+		Data  : std_logic;
+	end record;
+
+	type T_IO_IIC_SERIAL_IN is record
+		Clock : std_logic;
+		Data  : std_logic;
+	end record;
+	type T_IO_IIC_SERIAL_OUT is record
+		Clock_o : std_logic;
+		Clock_t : std_logic;
+		Data_o  : std_logic;
+		Data_t  : std_logic;
+	end record;
+
+	constant C_IO_IIC_SERIAL_INIT : T_IO_IIC_SERIAL := (C_IO_TRISTATE_INIT, C_IO_TRISTATE_INIT);
 
 	type T_IO_IIC_SERIAL_PCB is record
 		Clock : std_logic;
 		Data  : std_logic;
 	end record;
 
+	constant C_IO_IIC_SERIAL_PCB_INIT : T_IO_IIC_SERIAL_PCB := ('Z', 'Z');
+
 	type T_IO_IIC_SERIAL_VECTOR     is array(natural range <>) of T_IO_IIC_SERIAL;
+	type T_IO_IIC_SERIAL_IN_VECTOR  is array(natural range <>) of T_IO_IIC_SERIAL_IN;
+	type T_IO_IIC_SERIAL_OUT_VECTOR is array(natural range <>) of T_IO_IIC_SERIAL_OUT;
 	type T_IO_IIC_SERIAL_PCB_VECTOR is array(natural range <>) of T_IO_IIC_SERIAL_PCB;
 
 	-- Drive std_logic values from Tri-State signals and in reverse.
@@ -63,12 +87,12 @@ package iic is
 	-- IICBusController
 	-- ==========================================================================================================================================================
 	type T_IO_IIC_BUSMODE is (
-		IO_IIC_BUSMODE_SMBUS,							--   100 kHz; additional timing restrictions
-		IO_IIC_BUSMODE_STANDARDMODE,			--   100 kHz
-		IO_IIC_BUSMODE_FASTMODE,					--   400 kHz
-		IO_IIC_BUSMODE_FASTMODEPLUS,			-- 1.000 kHz
-		IO_IIC_BUSMODE_HIGHSPEEDMODE,			-- 3.400 kHz
-		IO_IIC_BUSMODE_ULTRAFASTMODE			-- 5.000 kHz; unidirectional
+		IO_IIC_BUSMODE_SMBUS,             --   100 kHz; additional timing restrictions
+		IO_IIC_BUSMODE_STANDARDMODE,      --   100 kHz
+		IO_IIC_BUSMODE_FASTMODE,          --   400 kHz
+		IO_IIC_BUSMODE_FASTMODEPLUS,      -- 1.000 kHz
+		IO_IIC_BUSMODE_HIGHSPEEDMODE,     -- 3.400 kHz
+		IO_IIC_BUSMODE_ULTRAFASTMODE      -- 5.000 kHz; unidirectional
 	);
 
 	type T_IO_IICBUS_COMMAND is (
@@ -99,7 +123,7 @@ package iic is
 	-- ==========================================================================================================================================================
 	type T_IO_IIC_COMMAND is (
 		IO_IIC_CMD_NONE,
-		IO_IIC_CMD_QUICKCOMMAND_READ,	-- use this to check for an device address
+		IO_IIC_CMD_QUICKCOMMAND_READ,  -- use this to check for an device address
 		IO_IIC_CMD_QUICKCOMMAND_WRITE,
 		IO_IIC_CMD_SEND_BYTES,
 		IO_IIC_CMD_RECEIVE_BYTES,
@@ -128,9 +152,9 @@ package iic is
 		IO_IIC_ERROR_FSM
 	);
 
-	type T_IO_IIC_COMMAND_VECTOR	is array(natural range <>) of T_IO_IIC_COMMAND;
-	type T_IO_IIC_STATUS_VECTOR		is array(natural range <>) of T_IO_IIC_STATUS;
-	type T_IO_IIC_ERROR_VECTOR		is array(natural range <>) of T_IO_IIC_ERROR;
+	type T_IO_IIC_COMMAND_VECTOR  is array(natural range <>) of T_IO_IIC_COMMAND;
+	type T_IO_IIC_STATUS_VECTOR   is array(natural range <>) of T_IO_IIC_STATUS;
+	type T_IO_IIC_ERROR_VECTOR    is array(natural range <>) of T_IO_IIC_ERROR;
 end package;
 
 

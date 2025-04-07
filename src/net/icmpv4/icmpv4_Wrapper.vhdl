@@ -29,14 +29,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.net.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.net.all;
 
 
 entity icmpv4_Wrapper is
@@ -307,7 +306,7 @@ begin
 -- =============================================================================
 -- TX Path
 -- =============================================================================
-	TX : entity PoC.icmpv4_TX
+	TX: entity work.icmpv4_TX
 		generic map (
 			DEBUG								=> DEBUG,
 			SOURCE_IPV4ADDRESS						=> SOURCE_IPV4ADDRESS
@@ -347,7 +346,7 @@ begin
 -- =============================================================================
 -- RX Path
 -- =============================================================================
-	RX : entity PoC.icmpv4_RX
+	RX: entity work.icmpv4_RX
 		generic map (
 			DEBUG								=> DEBUG
 		)

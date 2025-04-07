@@ -39,12 +39,11 @@
 
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.components.all;
+use     work.utils.all;
+use     work.components.all;
 
 
 entity gearbox_down_dc is

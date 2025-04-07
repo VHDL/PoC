@@ -32,9 +32,9 @@
 #
 from sys import path as sys_path
 
-sys_path.append("../lib/pyIPCMI")
+sys_path.append("../py")
 
-from pyIPCMI import pyIPCMI
+from PoC import PileOfCores
 
 # entry point
 parser = PileOfCores(False, False, False, True, sphinx=True).MainParser

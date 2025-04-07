@@ -79,34 +79,16 @@ See :ref:`USING:Require` for further details.
 
 .. rubric:: PoC depends on third part libraries:
 
-.. |gh-cocotb| image:: _static/logos/GitHub-Mark-32px.png
-               :scale: 40
-               :target: https://github.com/potentialventures/cocotb
-               :alt: Source Code on GitHub
 .. |gh-osvvm| image:: _static/logos/GitHub-Mark-32px.png
               :scale: 40
               :target: https://github.com/JimLewis/OSVVM
               :alt: Source Code on GitHub
-.. |gh-uvvm| image:: _static/logos/GitHub-Mark-32px.png
-             :scale: 40
-             :target: https://github.com/UVVM/UVVM_All
-             :alt: Source Code on GitHub
-.. |gh-vunit| image:: _static/logos/GitHub-Mark-32px.png
-              :scale: 40
-              :target: https://github.com/VUnit/vunit
-              :alt: Source Code on GitHub
 
-* :ref:`THIRD:Cocotb` |gh-cocotb| |br|
-  A coroutine based cosimulation library for writing VHDL and Verilog testbenches in Python.
 * :ref:`THIRD:OSVVM` |gh-osvvm| |br|
   Open Source VHDL Verification Methodology.
-* :ref:`THIRD:UVVM` |gh-uvvm| |br|
-  Universal VHDL Verification Methodology.
-* :ref:`THIRD:VUnit` |gh-vunit| |br|
-  An unit testing framework for VHDL.
 
 All dependencies are available as GitHub repositories and are linked to
-PoC as Git submodules into the `PoCRoot\\lib <https://github.com/VLSI-EDA/PoC/tree/master/lib>`_
+PoC as Git submodules into the `PoCRoot\\lib <https://github.com/VHDL/PoC/tree/master/lib>`_
 directory. See :ref:`Third Party Libraries <THIRD>` for more details on these
 libraries.
 
@@ -116,7 +98,7 @@ libraries.
 Download
 ********
 
-The PoC-Library can be downloaded as a `zip-file <https://github.com/VLSI-EDA/PoC/archive/master.zip>`_
+The PoC-Library can be downloaded as a `zip-file <https://github.com/VHDL/PoC/archive/master.zip>`_
 (latest 'master' branch), cloned with ``git clone`` or embedded with
 ``git submodule add`` from GitHub. GitHub offers HTTPS and SSH as transfer
 protocols. See the :ref:`Download <USING:Download>` page for further
@@ -125,9 +107,9 @@ details. The installation directory is referred to as ``PoCRoot``.
 +----------+---------------------------------------------------------------------+
 | Protocol | Git Clone Command                                                   |
 +==========+=====================================================================+
-| HTTPS    | ``git clone --recursive https://github.com/VLSI-EDA/PoC.git PoC``   |
+| HTTPS    | ``git clone --recursive https://github.com/VHDL/PoC.git PoC``       |
 +----------+---------------------------------------------------------------------+
-| SSH      | ``git clone --recursive ssh://git@github.com:VLSI-EDA/PoC.git PoC`` |
+| SSH      | ``git clone --recursive ssh://git@github.com:VHDL/PoC.git PoC``     |
 +----------+---------------------------------------------------------------------+
 
 
@@ -178,7 +160,7 @@ list of steps can be found at :doc:`Integration </UsingPoC/Integration>`.
 
    cd ProjectRoot
    mkdir lib | cd
-   git submodule add https://github.com/VLSI-EDA/PoC.git PoC
+   git submodule add https://github.com/VHDL/PoC.git PoC
    cd PoC
    git remote rename origin github
    cd ..\..
@@ -212,14 +194,14 @@ in the files:
    cp lib\PoC\src\common\my_config.vhdl.template src\common\my_config.vhdl
    cp lib\PoC\src\common\my_project.vhdl.template src\common\my_project.vhdl
 
-`my_config.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/common/my_config.vhdl.template>`_ defines two global constants, which need to be adjusted:
+`my_config.vhdl <https://github.com/VHDL/PoC/blob/master/src/common/my_config.vhdl.template>`_ defines two global constants, which need to be adjusted:
 
 .. code-block:: vhdl
 
    constant MY_BOARD            : string := "CHANGE THIS"; -- e.g. Custom, ML505, KC705, Atlys
    constant MY_DEVICE           : string := "CHANGE THIS"; -- e.g. None, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
 
-`my_project.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/common/my_project.vhdl.template>`_
+`my_project.vhdl <https://github.com/VHDL/PoC/blob/master/src/common/my_project.vhdl.template>`_
 also defines two global constants, which need to be adjusted:
 
 .. code-block:: vhdl

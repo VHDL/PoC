@@ -112,12 +112,11 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
+use     work.utils.all;
+use     work.vectors.all;
 
 
 entity cache_par2 is
@@ -176,7 +175,7 @@ begin
 	ReplaceWrite <= Replace and ReadWrite;
 
 	-- Cache TagUnit
-	TU : entity PoC.cache_tagunit_par
+	TU: entity work.cache_tagunit_par
 		generic map (
 			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 			CACHE_LINES				 => CACHE_LINES,

@@ -28,6 +28,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -48,14 +49,12 @@ library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
 use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use     PoC.sync.all;
-
+use     work.sync.all;
 
 entity sync_Strobe is
 	generic (
 		BITS                : positive            := 1;                       -- number of bit to be synchronized
-		GATED_INPUT_BY_BUSY : boolean             := TRUE;                    -- use gated input (by busy signal)
+		GATED_INPUT_BY_BUSY : boolean             := TRUE;                    -- accept only new strobe after old strobe was transfered
 		SYNC_DEPTH          : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low    -- generate SYNC_DEPTH many stages, at least 2
 	);
 	port (
@@ -123,10 +122,11 @@ begin
 		Busy(i)          <= Busy_i;
 	end generate;
 
-	syncClk2 : entity PoC.sync_Bits
+	syncClk2: entity work.sync_Bits
 		generic map (
 			BITS        => BITS,          -- number of bit to be synchronized
-			SYNC_DEPTH  => SYNC_DEPTH
+			SYNC_DEPTH  => SYNC_DEPTH,
+			REGISTER_OUTPUT => false
 		)
 		port map (
 			Clock       => Clock2,        -- <Clock>  output clock domain
@@ -134,10 +134,11 @@ begin
 			Output      => syncClk2_Out   -- @Clock:  output bits
 		);
 
-	syncClk1 : entity PoC.sync_Bits
+	syncClk1: entity work.sync_Bits
 		generic map (
 			BITS        => BITS,          -- number of bit to be synchronized
-			SYNC_DEPTH  => SYNC_DEPTH
+			SYNC_DEPTH  => SYNC_DEPTH,
+			REGISTER_OUTPUT => false
 		)
 		port map (
 			Clock       => Clock1,        -- <Clock>  output clock domain

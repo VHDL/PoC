@@ -48,16 +48,15 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
+use     IEEE.STD_LOGIC_1164.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.strings.all;
-use			PoC.vectors.all;
-use			PoC.physical.all;
-use			PoC.components.all;
-use			PoC.xil.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.strings.all;
+use     work.vectors.all;
+use     work.physical.all;
+use     work.components.all;
+use     work.xil.all;
 
 
 entity io_FanControl is
@@ -82,9 +81,7 @@ end entity;
 
 
 architecture rtl of io_FanControl is
-	-- constant TIME_STARTUP			: TIME																					:= 500 ms;		-- StartUp time
-	-- Use frequencies only to make Vivado work.
-	constant TIME_STARTUP_INVERSE : FREQ																					:= 2 Hz;		-- StartUp time
+	constant TIME_STARTUP			: T_TIME																						:= 500.0e-3;		-- StartUp time
 	constant PWM_RESOLUTION		: positive																					:= 4;					-- 4 Bit resolution => 0 to 15 steps
 	constant PWM_FREQ					: FREQ																							:= 10 Hz;			--
 
@@ -120,7 +117,7 @@ begin
 				);
 		end generate;
 
-		sync : entity PoC.sync_Bits_Xilinx
+		sync: entity work.sync_Bits_Xilinx
 			generic map (
 				BITS			=> 2
 			)
@@ -134,9 +131,9 @@ begin
 
 		-- timer for warm-up control
 		-- ==========================================================================================================================================================
-		TC : entity PoC.io_TimingCounter
+		TC: entity work.io_TimingCounter
 			generic map (
-				TIMING_TABLE				=> (0 => CLOCK_FREQ/TIME_STARTUP_INVERSE)	-- timing table
+				TIMING_TABLE				=> (0 => TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
 			)
 			port map (
 				Clock								=> Clock,				-- clock
@@ -175,9 +172,9 @@ begin
 
 		-- timer for warm-up control
 		-- ==========================================================================================================================================================
-		TC : entity PoC.io_TimingCounter
+		TC: entity work.io_TimingCounter
 			generic map (
-				TIMING_TABLE				=> (0 => CLOCK_FREQ/TIME_STARTUP_INVERSE)	-- timing table
+				TIMING_TABLE				=> (0 => TimingToCycles(TIME_STARTUP, CLOCK_FREQ))	-- timing table
 			)
 			port map (
 				Clock								=> Clock,				-- clock
@@ -201,7 +198,7 @@ begin
 
 	-- PWM signal modulator
 	-- ==========================================================================================================================================================
-	PWM : entity PoC.io_PulseWidthModulation
+	PWM: entity work.io_PulseWidthModulation
 		generic map (
 			CLOCK_FREQ					=> CLOCK_FREQ,				--
 			PWM_FREQ						=> PWM_FREQ,					--
@@ -231,7 +228,7 @@ begin
 			Tacho_sync <= Fan_Tacho;
 		end generate;
 		genSync : if ADD_INPUT_SYNCHRONIZERS generate
-			sync_i : entity PoC.sync_Bits
+			sync_i: entity work.sync_Bits
 				port map (
 					Clock  		=> Clock,					-- Clock to be synchronized to
 					Input(0)  => Fan_Tacho,			-- Data to be synchronized
@@ -239,10 +236,10 @@ begin
 				);
 		end generate;
 
-		Tacho : entity PoC.io_FrequencyCounter
+		Tacho: entity work.io_FrequencyCounter
 			generic map (
 				CLOCK_FREQ					=> CLOCK_FREQ,					--
-				TIMEBASE						=> (60 sec / 64),				-- ca. 1 second
+				TIMEBASE						=> (60.0 / 64.0),				-- ca. 1 second
 				RESOLUTION					=> 8										-- max. ca. 256 RPS -> max. ca. 16k RPM
 			)
 			port map (

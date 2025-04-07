@@ -29,13 +29,12 @@
 -- =============================================================================
 
 library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library	PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use     PoC.arith.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.arith.all;
 
 
 entity stat_Average is
@@ -98,7 +97,7 @@ begin
 	Counter_i	<= std_logic_vector(Counter_us);
 	Sum_i			<= std_logic_vector(Sum_us);
 
-  div : entity PoC.arith_div
+  div: entity work.arith_div
     generic map (
       A_BITS             => COUNTER_BITS,
       D_BITS             => COUNTER_BITS,

@@ -27,10 +27,10 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
 library UNISIM;
-use			UNISIM.vComponents.all;
+use     UNISIM.vComponents.all;
 
 
 entity arith_inc_ovcy_xilinx is

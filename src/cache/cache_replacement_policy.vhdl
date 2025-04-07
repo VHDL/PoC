@@ -75,11 +75,10 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.all;
 
-library PoC;
-use PoC.config.all;
-use PoC.utils.all;
-use PoC.vectors.all;
-use PoC.strings.all;
+use  work.config.all;
+use  work.utils.all;
+use  work.vectors.all;
+use  work.strings.all;
 
 
 entity cache_replacement_policy is
@@ -192,7 +191,7 @@ begin
 		-- Output
 		ReplaceWay <= LRU_Key;
 
-		LRU : entity PoC.sort_lru_cache
+		LRU: entity work.sort_lru_cache
 			generic map (
 				ELEMENTS => CACHE_WAYS
 			)

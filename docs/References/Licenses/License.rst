@@ -1,11 +1,15 @@
-.. Note:: This is a local copy of the `Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`_.
+.. _SRCLICENSE:
+
+.. note:: This is a local copy of the `Apache License Version 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`__.
+
+.. attention:: This **Apache License, 2.0** applies to all **source and configuration files of project**, **except documentation**.
 
 Apache License 2.0
 ##################
 
 Version 2.0, January 2004
 
-**TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION**
+:xlarge:`TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION`
 
 
 1. Definitions.
@@ -113,7 +117,7 @@ incurred by, or claims asserted against, such Contributor by reason of your acce
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-**Appendix: How to apply the Apache License to your work**
+:xlarge:`Appendix: How to apply the Apache License to your work`
 
 To apply the Apache License to your work, attach the following boilerplate notice, with the fields enclosed by brackets "[]" replaced with your own identifying
 information. (Don't include the brackets!) The text should be enclosed in the appropriate comment syntax for the file format. We also recommend that a file or
@@ -134,4 +138,3 @@ class name and description of purpose be included on the same "printed page" as 
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
-

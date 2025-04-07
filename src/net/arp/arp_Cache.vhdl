@@ -29,16 +29,15 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.physical.all;
-use			PoC.cache.all;
-use			PoC.net.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.physical.all;
+use     work.cache.all;
+use     work.net.all;
 
 
 entity arp_Cache is
@@ -153,7 +152,7 @@ architecture rtl of arp_Cache is
 	signal TU_TagHit							: std_logic;
 	signal TU_TagMiss							: std_logic;
 
-	constant TICKCOUNTER_RES			: time																																			:= 10 ms;
+	constant TICKCOUNTER_RES			: T_TIME																																		:= 10.0e-3;
 	constant TICKCOUNTER_MAX			: positive																																	:= TimingToCycles(TICKCOUNTER_RES, CLOCK_FREQ);
 	constant TICKCOUNTER_BITS			: positive																																	:= log2ceilnz(TICKCOUNTER_MAX);
 
@@ -249,8 +248,8 @@ begin
 	CacheResult					<= to_Cache_Result(CacheHit, CacheMiss);
 
 	-- Cache TagUnit
---	TU : entity PoC.Cache_TagUnit_seq
-	TU : entity PoC.cache_TagUnit_seq
+--	TU: entity work.Cache_TagUnit_seq
+	TU: entity work.cache_TagUnit_seq
 		generic map (
 			REPLACEMENT_POLICY				=> REPLACEMENT_POLICY,
 			CACHE_LINES								=> CACHE_LINES,
@@ -299,8 +298,8 @@ begin
 
 	Tick			<= TickCounter_s(TickCounter_s'high);
 
---	Exp : entity PoC.list_expire
-	Exp : entity PoC.list_expire
+--	Exp: entity work.list_expire
+	Exp: entity work.list_expire
 		generic map (
 			CLOCK_CYCLE_TICKS				=> 65536,
 			EXPIRATION_TIME_TICKS		=> 8192,

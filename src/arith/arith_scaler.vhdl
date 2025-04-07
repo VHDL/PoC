@@ -1,10 +1,10 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Thomas B. Preusser
+-- Authors:         Thomas B. Preusser
 --
--- Entity:					A flexible scaler for fixed-point values.
+-- Entity:          A flexible scaler for fixed-point values.
 --
 -- Description:
 -- -------------------------------------
@@ -27,13 +27,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,35 +42,30 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	IEEE;
-use			IEEE.std_logic_1164.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library	poc;
-use			poc.utils.all;
-
+use     work.utils.all;
 
 entity arith_scaler is
 	generic (
-		MULS : T_POSVEC := (0 => 1);	-- The set of multipliers to choose from in scaling operations.
-		DIVS : T_POSVEC := (0 => 1)		-- The set of divisors to choose from in scaling operations.
+		MULS : T_POSVEC := (0 => 1);  -- The set of multipliers to choose from in scaling operations.
+		DIVS : T_POSVEC := (0 => 1)   -- The set of divisors to choose from in scaling operations.
 	);
 	port (
-		clk	 : in	std_logic;
-		rst	 : in	std_logic;
+		clk   : in  std_logic;
+		rst   : in  std_logic;
 
-		start : in	std_logic;					-- Start of Computation
-		arg	 : in	std_logic_vector;			-- Fixed-point value to be scaled
-		msel	: in	std_logic_vector(log2ceil(MULS'length)-1 downto 0) := (others => '0');
-		dsel	: in	std_logic_vector(log2ceil(DIVS'length)-1 downto 0) := (others => '0');
+		start : in  std_logic;          -- Start of Computation
+		arg   : in  std_logic_vector;   -- Fixed-point value to be scaled
+		msel  : in  std_logic_vector(log2ceil(MULS'length)-1 downto 0) := (others => '0');
+		dsel  : in  std_logic_vector(log2ceil(DIVS'length)-1 downto 0) := (others => '0');
 
-		done	: out std_logic;					-- Completion
-		res		: out std_logic_vector		-- Result
+		done  : out std_logic;          -- Completion
+		res    : out std_logic_vector   -- Result
 	);
 end entity arith_scaler;
-
-
-library	IEEE;
-use			IEEE.numeric_std.all;
 
 architecture rtl of arith_scaler is
 
@@ -81,14 +76,14 @@ architecture rtl of arith_scaler is
 
 	-- Division Properties
 	type tDivProps is
-		record	-- Properties of the operation for a divisor
-			steps : T_POSVEC(DIVS'range);	-- Steps to perform
-			align : T_POSVEC(DIVS'range);	-- Left-aligned divisor
+		record  -- Properties of the operation for a divisor
+			steps : T_POSVEC(DIVS'range);  -- Steps to perform
+			align : T_POSVEC(DIVS'range);  -- Left-aligned divisor
 		end record;
 
 	function computeProps return tDivProps is
-		variable	res			 : tDivProps;
-		variable	min_steps : positive;
+		variable  res       : tDivProps;
+		variable  min_steps : positive;
 	begin
 		for i in DIVS'range loop
 			res.steps(i) := N+X - log2ceil(DIVS(i)+1) + 1;
@@ -97,7 +92,7 @@ architecture rtl of arith_scaler is
 		for i in DIVS'range loop
 			res.align(i) := DIVS(i) * 2**(res.steps(i) - min_steps);
 		end loop;
-		return	res;
+		return  res;
 	end computeProps;
 
 	constant DIV_PROPS : tDivProps := computeProps;
@@ -106,13 +101,13 @@ architecture rtl of arith_scaler is
 	constant MAX_DIV_STEPS : positive := imax(DIV_PROPS.steps);
 	constant MAX_ANY_STEPS : positive := imax(MAX_MUL_STEPS, MAX_DIV_STEPS);
 
-	subtype tResMask	is std_logic_vector(MAX_DIV_STEPS-1 downto 0);
-	type		tResMasks is array(natural range<>) of tResMask;
+	subtype tResMask  is std_logic_vector(MAX_DIV_STEPS-1 downto 0);
+	type    tResMasks is array(natural range<>) of tResMask;
 	function computeMasks return tResMasks is
 		variable res : tResMasks(DIVS'range);
 	begin
 		for i in DIVS'range loop
-			res(i)																:= (others => '0');
+			res(i)                                := (others => '0');
 			res(i)(DIV_PROPS.steps(i)-1 downto 0) := (others => '1');
 		end loop;
 		return res;
@@ -120,11 +115,11 @@ architecture rtl of arith_scaler is
 	constant RES_MASKS : tResMasks(DIVS'range) := computeMasks;
 
 	-- Values computed for the selected multiplier/divisor pair.
-	signal muloffset	: unsigned(X-1 downto 0);	-- Offset for correct rounding.
-	signal multiplier : unsigned(X	 downto 0);	-- The actual multiplier value.
-	signal divisor		: unsigned(R-1 downto 0);	-- The actual divisor value.
-	signal divcini		: unsigned(log2ceil(MAX_ANY_STEPS)-1 downto 0);	-- Count for division steps.
-	signal divmask		: tResMask;								-- Result Mask
+	signal muloffset  : unsigned(X-1 downto 0);  -- Offset for correct rounding.
+	signal multiplier : unsigned(X   downto 0);  -- The actual multiplier value.
+	signal divisor    : unsigned(R-1 downto 0);  -- The actual divisor value.
+	signal divcini    : unsigned(log2ceil(MAX_ANY_STEPS)-1 downto 0);  -- Count for division steps.
+	signal divmask    : tResMask;                -- Result Mask
 
 begin
 
@@ -167,35 +162,35 @@ begin
 			end if;
 		end process;
 		muloffset <= (others => 'X') when Is_X(dsel) else
-								 to_unsigned(DIVS(to_integer(unsigned(dsel)))/2, muloffset'length);
-		divisor	 <= (others => 'X') when Is_X(std_logic_vector(DS)) else
-								 to_unsigned(DIV_PROPS.align(to_integer(DS)), divisor'length);
-		divcini	 <= (others => 'X') when Is_X(std_logic_vector(DS)) else
-								 to_unsigned(DIV_PROPS.steps(to_integer(DS))-1, divcini'length);
-		divmask	 <= (others => 'X') when Is_X(std_logic_vector(DS)) else
-								 RES_MASKS(to_integer(DS));
+								to_unsigned(DIVS(to_integer(unsigned(dsel)))/2, muloffset'length);
+		divisor   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
+								to_unsigned(DIV_PROPS.align(to_integer(DS)), divisor'length);
+		divcini   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
+								to_unsigned(DIV_PROPS.steps(to_integer(DS))-1, divcini'length);
+		divmask   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
+								RES_MASKS(to_integer(DS));
 	end generate genMultiDiv;
 	genSingleDiv: if DIVS'length = 1 generate
 		muloffset <= to_unsigned(DIVS(0)/2, muloffset'length);
-		divisor	 <= to_unsigned(DIV_PROPS.align(0), divisor'length);
-		divcini	 <= to_unsigned(DIV_PROPS.steps(0)-1, divcini'length);
-		divmask	 <= RES_MASKS(0);
+		divisor   <= to_unsigned(DIV_PROPS.align(0), divisor'length);
+		divcini   <= to_unsigned(DIV_PROPS.steps(0)-1, divcini'length);
+		divmask   <= RES_MASKS(0);
 	end generate genSingleDiv;
 
 	-----------------------------------------------------------------------------
 	-- Implementation of Scaling Operation
 	blkMain : block
 		signal C : unsigned(1+log2ceil(MAX_ANY_STEPS) downto 0) := ('0', others => '-');
-		signal Q : unsigned(X+N											 downto 0) := (others			=> '-');
+		signal Q : unsigned(X+N                       downto 0) := (others      => '-');
 	begin
 		process(clk)
 			variable cnxt : unsigned(C'range);
-			variable d		: unsigned(R downto 0);
+			variable d    : unsigned(R downto 0);
 		begin
 			if rising_edge(clk) then
 				if rst = '1' then
 					C <= ('0', others => '-');
-					Q <= (others			=> '-');
+					Q <= (others      => '-');
 				else
 					if start = '1' then
 						C <= "11" & to_unsigned(MAX_MUL_STEPS-1, C'length-2);
@@ -232,7 +227,7 @@ begin
 		process(Q, divmask)
 			variable r : std_logic_vector(res'length-1 downto 0);
 		begin
-			r	 := (others => '0');
+			r   := (others => '0');
 			r(imin(r'left, tResMask'left) downto 0) :=
 				std_logic_vector(Q(imin(r'left, tResMask'left) downto 0)) and
 				divmask(imin(r'left, tResMask'left) downto 0);

@@ -2,27 +2,30 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Thomas B. Preusser
---									Martin Zabel
---									Patrick Lehmann
---									Paul Genssler
+-- Authors:   Thomas B. Preusser
+--            Martin Zabel
+--            Patrick Lehmann
+--            Paul Genssler
 --
--- Package:					Common functions and types
+-- Package:   Common functions and types
 --
 -- Description:
 -- -------------------------------------
---		For detailed documentation see below.
+--            For detailed documentation see below.
 --
 -- License:
 -- =============================================================================
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
+--
+-- Copryright 2017-2025 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--        http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +34,7 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	IEEE;
+library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 use     IEEE.math_real.all;
@@ -39,41 +42,64 @@ use     IEEE.math_real.all;
 
 package utils is
 
-  -- Environment
+	-- Environment
 	-- ==========================================================================
-  -- Distinguishes simulation from synthesis
-	constant SIMULATION					: boolean;				-- deferred constant declaration
+	-- Distinguishes simulation from synthesis
+	constant SIMULATION : boolean;                -- deferred constant declaration
 
 	-- Type declarations
 	-- ==========================================================================
 
-  --+ Vectors of primitive standard types +++++++++++++++++++++++++++++++++++++
-	type		T_BOOLVEC						is array(natural range <>) of boolean;
-	type		T_INTVEC						is array(natural range <>) of integer;
-	type		T_NATVEC						is array(natural range <>) of natural;
-	type		T_POSVEC						is array(natural range <>) of positive;
-	type		T_REALVEC						is array(natural range <>) of REAL;
+	--+ Vectors of primitive standard types +++++++++++++++++++++++++++++++++++++
+	type T_BOOLVEC is array(natural range <>) of boolean;
+	type T_INTVEC  is array(natural range <>) of integer;
+	type T_NATVEC  is array(natural range <>) of natural;
+	type T_POSVEC  is array(natural range <>) of positive;
+	type T_REALVEC is array(natural range <>) of real;
+
+	function "/"(vec : T_INTVEC; int : integer) return T_INTVEC;
+	function "*"(vec : T_INTVEC; int : integer) return T_INTVEC;
+	function "-"(vec : T_INTVEC; int : integer) return T_INTVEC;
+	function "+"(vec : T_INTVEC; int : integer) return T_INTVEC;
+	function "/"(vec : T_NATVEC; int : positive) return T_NATVEC;
+	function "*"(vec : T_NATVEC; int : natural) return T_NATVEC;
+	function "-"(vec : T_NATVEC; int : integer) return T_NATVEC;
+	function "+"(vec : T_NATVEC; int : integer) return T_NATVEC;
+	function "/"(vec : T_POSVEC; int : positive) return T_POSVEC;
+	function "*"(vec : T_POSVEC; int : positive) return T_POSVEC;
+	function "-"(vec : T_POSVEC; int : integer) return T_POSVEC;
+	function "+"(vec : T_POSVEC; int : integer) return T_POSVEC;
+	function "/"(vec : T_REALVEC; int : real) return T_REALVEC;
+	function "*"(vec : T_REALVEC; int : real) return T_REALVEC;
+	function "-"(vec : T_REALVEC; int : real) return T_REALVEC;
+	function "+"(vec : T_REALVEC; int : real) return T_REALVEC;
+
+	--Filter
+	function remove_zero(vec : T_NATVEC) return T_POSVEC;
+	function remove_zero(vec : T_POSVEC) return T_POSVEC;
+	function remove_zero(vec : T_NATVEC) return T_NATVEC;
+	function remove_zero(vec : T_POSVEC) return T_NATVEC;
 
 	--+ Integer subranges sometimes useful for speeding up simulation ++++++++++
-	subtype T_INT_8							is integer range -128 to 127;
-	subtype T_INT_16						is integer range -32768 to 32767;
-	subtype T_UINT_8						is integer range 0 to 255;
-	subtype T_UINT_16						is integer range 0 to 65535;
+	subtype T_INT_8   is integer range -128 to 127;
+	subtype T_INT_16  is integer range -32768 to 32767;
+	subtype T_UINT_8  is integer range 0 to 255;
+	subtype T_UINT_16 is integer range 0 to 65535;
 
 	--+ Enums ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	-- Intellectual Property (IP) type
-	type T_IPSTYLE        is (IPSTYLE_UNKNOWN, IPSTYLE_HARD, IPSTYLE_SOFT);
+	type T_IPSTYLE is (IPSTYLE_UNKNOWN, IPSTYLE_HARD, IPSTYLE_SOFT);
 
 	-- Bit order
-	type T_BIT_ORDER      is (LSB_FIRST, MSB_FIRST);
+	type T_BIT_ORDER is (LSB_FIRST, MSB_FIRST);
 	function "not"(left : T_BIT_ORDER) return T_BIT_ORDER;
 
 	-- Byte order (Endian)
-	type T_BYTE_ORDER     is (LITTLE_ENDIAN, BIG_ENDIAN);
+	type T_BYTE_ORDER is (LITTLE_ENDIAN, BIG_ENDIAN);
 	function "not"(left : T_BYTE_ORDER) return T_BYTE_ORDER;
 
 	-- Active logic level
-  type T_POLARITY       is (HIGH_ACTIVE, LOW_ACTIVE);
+	type T_POLARITY is (HIGH_ACTIVE, LOW_ACTIVE);
 	function "not"(left : T_POLARITY) return T_POLARITY;
 	function "xor"(left : T_POLARITY; right : bit) return bit;
 	function "xor"(left : T_POLARITY; right : bit_vector) return bit_vector;
@@ -91,52 +117,52 @@ package utils is
 	function "xnor"(left : bit_vector; right : T_POLARITY) return bit_vector;
 	function "xnor"(left : std_logic; right : T_POLARITY) return std_logic;
 	function "xnor"(left : std_logic_vector; right : T_POLARITY) return std_logic_vector;
-	
+
 	-- active clock edge
-	type T_CLOCK_EDGE     is (RISING_EDGE, FALLING_EDGE);
+	type T_CLOCK_EDGE is (RISING_EDGE, FALLING_EDGE);
 	function "not"(left : T_CLOCK_EDGE) return T_CLOCK_EDGE;
 
 	-- rounding style
-	type T_ROUNDING_STYLE	is (ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
+	type T_ROUNDING_STYLE is (ROUND_TO_NEAREST, ROUND_TO_ZERO, ROUND_TO_INF, ROUND_UP, ROUND_DOWN);
 
 	-- define a new unrelated type T_BCD for arithmetic
 	-- QUESTION: extract to an own BCD package?
-	--	=> overloaded operators for +/-/=/... and conversion functions
-	type T_BCD				is array(3 downto 0) of std_logic;
-	type T_BCD_VECTOR	is array(natural range <>) of T_BCD;
-	constant C_BCD_MINUS	: T_BCD		:= "1010";
-	constant C_BCD_OFF		: T_BCD		:= "1011";
+	--    => overloaded operators for +/-/=/... and conversion functions
+	type T_BCD        is array(3 downto 0) of std_logic;
+	type T_BCD_VECTOR is array(natural range <>) of T_BCD;
+	constant C_BCD_MINUS : T_BCD := "1010";
+	constant C_BCD_OFF   : T_BCD := "1011";
 
 
 	-- Function declarations
 	-- ==========================================================================
 
-  --+ Division ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  -- Calculates: ceil(a / b)
+	--+ Division ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	-- Calculates: ceil(a / b)
 	function div_ceil(a : natural; b : positive) return natural;
 
-  --+ Power +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  -- is input a power of 2?
-	function is_pow2(int : natural)			return boolean;
-  -- round to next power of 2
-	function ceil_pow2(int : natural)		return positive;
-  -- round to previous power of 2
-	function floor_pow2(int : natural)	return natural;
+	--+ Power +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	-- is input a power of 2?
+	function is_pow2(int : natural) return boolean;
+	-- round to next power of 2
+	function ceil_pow2(int : natural) return positive;
+	-- round to previous power of 2
+	function floor_pow2(int : natural) return natural;
 
-  --+ Logarithm ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  -- Calculates: ceil(ld(arg))
-  function log2ceil(arg : positive) return natural;
-  -- Calculates: max(1, ceil(ld(arg)))
-  function log2ceilnz(arg : positive) return positive;
-  -- Calculates: ceil(lg(arg))
-	function log10ceil(arg		: positive)	return natural;
-  -- Calculates: max(1, ceil(lg(arg)))
-	function log10ceilnz(arg	: positive)	return positive;
+	--+ Logarithm ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	-- Calculates: ceil(ld(arg))
+	function log2ceil(arg : positive) return natural;
+	-- Calculates: max(1, ceil(ld(arg)))
+	function log2ceilnz(arg : positive) return positive;
+	-- Calculates: ceil(lg(arg))
+	function log10ceil(arg : positive) return natural;
+	-- Calculates: max(1, ceil(lg(arg)))
+	function log10ceilnz(arg : natural) return positive;
 
 	--+ if-then-else (ite) +++++++++++++++++++++++++++++++++++++++++++++++++++++
 	function ite(cond : boolean; value1 : boolean; value2 : boolean) return boolean;
 	function ite(cond : boolean; value1 : integer; value2 : integer) return integer;
-	function ite(cond : boolean; value1 : REAL;	value2 : REAL) return REAL;
+	function ite(cond : boolean; value1 : real; value2 : real) return real;
 	function ite(cond : boolean; value1 : std_logic; value2 : std_logic) return std_logic;
 	function ite(cond : boolean; value1 : std_logic_vector; value2 : std_logic_vector) return std_logic_vector;
 	function ite(cond : boolean; value1 : bit_vector; value2 : bit_vector) return bit_vector;
@@ -149,49 +175,56 @@ package utils is
 	function inc_if(cond : boolean; value : integer; increment : integer := 1) return integer;
 	function dec_if(cond : boolean; value : integer; decrement : integer := 1) return integer;
 
-  --+ Max / Min / Sum ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	function imin(arg1 : integer; arg2 : integer) return integer;		-- Calculates: min(arg1, arg2) for integers
+	--+ Max / Min / Sum ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	function imin(arg1 : integer; arg2 : integer) return integer; -- Calculates: min(arg1, arg2) for integers
 	alias rmin is IEEE.math_real.realmin[real, real return real];
-	-- function rmin(arg1 : real; arg2 : real) return real;						-- Calculates: min(arg1, arg2) for reals
+	-- function rmin(arg1 : real; arg2 : real) return real; -- Calculates: min(arg1, arg2) for reals
 
-	function imin(vec : T_INTVEC) return integer;										-- Calculates: min(vec) for a integer vector
-	function imin(vec : T_NATVEC) return natural;										-- Calculates: min(vec) for a natural vector
-	function imin(vec : T_POSVEC) return positive;									-- Calculates: min(vec) for a positive vector
-	function rmin(vec : T_REALVEC) return real;	       							-- Calculates: min(vec) of real vector
+	function imin(vec : T_INTVEC) return integer;  -- Calculates: min(vec) for a integer vector
+	function imin(vec : T_NATVEC) return natural;  -- Calculates: min(vec) for a natural vector
+	function imin(vec : T_POSVEC) return positive; -- Calculates: min(vec) for a positive vector
+	function rmin(vec : T_REALVEC) return real;    -- Calculates: min(vec) of real vector
 
-	function imax(arg1 : integer; arg2 : integer) return integer;		-- Calculates: max(arg1, arg2) for integers
+	function imax(arg1 : integer; arg2 : integer) return integer; -- Calculates: max(arg1, arg2) for integers
 	alias rmax is IEEE.math_real.realmax[real, real return real];
-	-- function rmax(arg1 : real; arg2 : real) return real;						-- Calculates: max(arg1, arg2) for reals
+	-- function rmax(arg1 : real; arg2 : real) return real;       -- Calculates: max(arg1, arg2) for reals
 
-	function imax(vec : T_INTVEC) return integer;										-- Calculates: max(vec) for a integer vector
-	function imax(vec : T_NATVEC) return natural;										-- Calculates: max(vec) for a natural vector
-	function imax(vec : T_POSVEC) return positive;									-- Calculates: max(vec) for a positive vector
-	function rmax(vec : T_REALVEC) return real;	       							-- Calculates: max(vec) of real vector
+	function imax(vec : T_INTVEC) return integer;  -- Calculates: max(vec) for a integer vector
+	function imax(vec : T_NATVEC) return natural;  -- Calculates: max(vec) for a natural vector
+	function imax(vec : T_POSVEC) return positive; -- Calculates: max(vec) for a positive vector
+	function rmax(vec : T_REALVEC) return real;    -- Calculates: max(vec) of real vector
 
-	function isum(vec : T_NATVEC) return natural;										-- Calculates: sum(vec) for a natural vector
-	function isum(vec : T_POSVEC) return natural;										-- Calculates: sum(vec) for a positive vector
-	function isum(vec : T_INTVEC) return integer; 									-- Calculates: sum(vec) of integer vector
-	function rsum(vec : T_REALVEC) return real;	       							-- Calculates: sum(vec) of real vector
+	function isum(vec : T_NATVEC) return natural;  -- Calculates: sum(vec) for a natural vector
+	function isum(vec : T_POSVEC) return natural;  -- Calculates: sum(vec) for a positive vector
+	function isum(vec : T_INTVEC) return integer;  -- Calculates: sum(vec) of integer vector
+	function rsum(vec : T_REALVEC) return real;    -- Calculates: sum(vec) of real vector
+
+	--+ Find index in array +++++++++++++++++++++++++++++++++++++++++++++++++++
+	function indexof(vec : T_INTVEC;  comp : integer;  falseNum : integer := -1) return integer;
+	function indexof(vec : T_NATVEC;  comp : natural;  falseNum : integer := -1) return integer;
+	function indexof(vec : T_POSVEC;  comp : positive; falseNum : integer := -1) return integer;
+	function indexof(vec : T_REALVEC; comp : real;     falseNum : integer := -1; epsilon : real := 1.0E-6) return integer;
 
 	--+ Conversions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	-- to integer: to_int
-	function to_int(bool : boolean; zero : integer := 0; one : integer := 1)		return integer;
-	function to_int(sl : std_logic; zero : integer := 0; one : integer := 1)		return integer;
+	function to_int(bool : boolean; zero : integer := 0; one : integer := 1) return integer;
+	function to_int(sl : std_logic; zero : integer := 0; one : integer := 1) return integer;
 
 	-- to std_logic: to_sl
-	function to_sl(Value : boolean)		return std_logic;
+	function to_sl(Value : boolean)   return std_logic;
 	function to_sl(Value : character) return std_logic;
 
 	-- to std_logic_vector: to_slv
-	function to_slv(Value : natural; Size : positive)		return std_logic_vector;					-- short for std_logic_vector(to_unsigned(Value, Size))
+	function to_slv(Value : natural; Size : positive)   return std_logic_vector; -- short for std_logic_vector(to_unsigned(Value, Size))
+	function to_slv(Value : unsigned)                   return std_logic_vector; -- short for std_logic_vector(Value)
 
 	function to_BCD(Digit : integer) return T_BCD;
 	function to_BCD(Digit : character) return T_BCD;
 	function to_BCD(Digit : unsigned) return T_BCD;
 	function to_BCD(Digit : std_logic_vector) return T_BCD;
 	function to_BCD_Vector(Value : integer; Size : natural := 0; Fill : T_BCD := x"0") return T_BCD_VECTOR;
-	function to_BCD_Vector(Value : string; Size : natural := 0; Fill : T_BCD := x"0") return T_BCD_VECTOR;
+	function to_BCD_Vector(Value : string;  Size : natural := 0; Fill : T_BCD := x"0") return T_BCD_VECTOR;
 
 	-- TODO: comment
 	function bound(index : integer; lowerBound : integer; upperBound : integer) return integer;
@@ -203,41 +236,44 @@ package utils is
 
 	--+ Basic Vector Utilities +++++++++++++++++++++++++++++++++++++++++++++++++
 
-  -- Aggregate functions
-  function slv_or  (vec : std_logic_vector) return std_logic;
-  function slv_nor (vec : std_logic_vector) return std_logic;
-  function slv_and (vec : std_logic_vector) return std_logic;
-  function slv_nand(vec : std_logic_vector) return std_logic;
-  function slv_xor (vec : std_logic_vector) return std_logic;
+	-- Aggregate functions
+	function slv_or  (vec : std_logic_vector) return std_logic;
+	function slv_nor (vec : std_logic_vector) return std_logic;
+	function slv_and (vec : std_logic_vector) return std_logic;
+	function slv_nand(vec : std_logic_vector) return std_logic;
+	function slv_xor (vec : std_logic_vector) return std_logic;
+
+	-- Hamming Weight
+	--Example from: https://riptutorial.com/vhdl/example/32304/computing-the-hamming-weight-of-a-vector
+	function hammingWeight(v: std_logic_vector) return natural;
+
 	-- NO slv_xnor! This operation would not be well-defined as
 	-- not xor(vec) /= vec_{n-1} xnor ... xnor vec_1 xnor vec_0 iff n is odd.
 
-  -- Reverses the elements of the passed Vector.
-  --
-  -- @synthesis supported
-  --
+	-- Reverses the elements of the passed Vector.
+	--
+	-- @synthesis supported
+	--
 	function reverse(vec : std_logic_vector) return std_logic_vector;
 	function reverse(vec : bit_vector) return bit_vector;
 	function reverse(vec : unsigned) return unsigned;
 
 	-- scale a value into a range [Minimum, Maximum]
-	function scale(Value : integer;	Minimum : integer;	Maximum : integer; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST)	return integer;
-	function scale(Value : REAL;		Minimum : integer;	Maximum : integer; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST)	return integer;
-	function scale(Value : REAL;		Minimum : REAL;			Maximum : REAL)																														return REAL;
+	function scale(Value : integer; Minimum : integer; Maximum : integer; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return integer;
+	function scale(Value : real;    Minimum : integer; Maximum : integer; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return integer;
+	function scale(Value : real;    Minimum : real;    Maximum : real) return real;
 
-  -- Resizes the vector to the specified length. The adjustment is make on
-  -- on the 'high end of the vector. The 'low index remains as in the argument.
-  -- If the result vector is larger, the extension uses the provided fill value
-  -- (default: '0').
+	-- Resizes the vector to the specified length. The adjustment is make on
+	-- on the 'high end of the vector. The 'low index remains as in the argument.
+	-- If the result vector is larger, the extension uses the provided fill value
+	-- (default: '0').
 	-- Use the resize functions of the numeric_std package for value-preserving
 	-- resizes of the signed and unsigned data types.
 	--
-  -- @synthesis supported
-  --
-  function resize(vec : bit_vector; length : natural; fill : bit := '0')
-    return bit_vector;
-  function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0')
-    return std_logic_vector;
+	-- @synthesis supported
+	--
+	function resize(vec : bit_vector; length : natural; fill : bit := '0') return bit_vector;
+	function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0') return std_logic_vector;
 
 	-- Shift the index range of a vector by the specified offset.
 	function move(vec : std_logic_vector; ofs : integer) return std_logic_vector;
@@ -245,34 +281,35 @@ package utils is
 	-- Shift the index range of a vector making vec'low = 0.
 	function movez(vec : std_logic_vector) return std_logic_vector;
 
-  function ascend(vec : std_logic_vector) return std_logic_vector;
-  function descend(vec : std_logic_vector) return std_logic_vector;
+	function ascend(vec : std_logic_vector) return std_logic_vector;
+	function descend(vec : std_logic_vector) return std_logic_vector;
 
-  -- Least-Significant Set Bit (lssb):
-  -- Computes a vector of the same length as the argument with
-  -- at most one bit set at the rightmost '1' found in arg.
-  --
-  -- @synthesis supported
-  --
-  function lssb(arg : std_logic_vector) return std_logic_vector;
-  function lssb(arg : bit_vector) return bit_vector;
+	-- Least-Significant Set Bit (lssb):
+	-- Computes a vector of the same length as the argument with
+	-- at most one bit set at the rightmost '1' found in arg.
+	--
+	-- @synthesis supported
+	--
+	function lssb(arg : std_logic_vector) return std_logic_vector;
+	function lssb(arg : bit_vector) return bit_vector;
 
-  -- Returns the index of the least-significant set bit.
-  --
-  -- @synthesis supported
-  --
-  function lssb_idx(arg : std_logic_vector) return integer;
-  function lssb_idx(arg : bit_vector) return integer;
+	-- Returns the index of the least-significant set bit.
+	--
+	-- @synthesis supported
+	--
+	function lssb_idx(arg : std_logic_vector) return integer;
+	function lssb_idx(arg : bit_vector) return integer;
 
 	-- Most-Significant Set Bit (mssb): computes a vector of the same length
 	-- with at most one bit set at the leftmost '1' found in arg.
 	function mssb(arg : std_logic_vector) return std_logic_vector;
-  function mssb(arg : bit_vector) return bit_vector;
+	function mssb(arg : bit_vector) return bit_vector;
 	function mssb_idx(arg : std_logic_vector) return integer;
-  function mssb_idx(arg : bit_vector) return integer;
+	function mssb_idx(arg : bit_vector) return integer;
 
 	-- Swap sub vectors in vector (endian reversal)
 	function swap(slv : std_logic_vector; Size : positive) return std_logic_vector;
+	function swapChunks(slv : std_logic_vector; Size : positive; NumChunks : positive := 1) return std_logic_vector;
 
 	-- Swap the bits in a chunk
 	function bit_swap(slv : std_logic_vector; Chunksize : positive) return std_logic_vector;
@@ -284,7 +321,7 @@ package utils is
 
 	-- Encodings
 	-- ===========================================================================
-  -- One-Hot-Code to Binary-Code.
+	-- One-Hot-Code to Binary-Code.
 	--  If a non-negative value empty_val is specified, its unsigned
 	--  representation will be returned upon an all-zero input. As a consequence
 	--  of specifying this value, no simulation warnings will be issued upon empty
@@ -292,16 +329,17 @@ package utils is
 	--  will always raise a simulation warning.
 	function onehot2bin(onehot : std_logic_vector; empty_val : integer := -1) return unsigned;
 
-  -- Converts Gray-Code into Binary-Code.
-  --
-  -- @synthesis supported
-  --
-  function gray2bin (gray_val : std_logic_vector) return std_logic_vector;
-  function gray2bin (gray_val : std_logic_vector) return unsigned;
+	-- Converts Gray-Code into Binary-Code.
+	--
+	-- @synthesis supported
+	--
+	function gray2bin (gray_val : std_logic_vector) return std_logic_vector;
+	function gray2bin (gray_val : std_logic_vector) return unsigned;
 
 	-- Binary-Code to One-Hot-Code
-	function bin2onehot(value : std_logic_vector)  return std_logic_vector;
-	function bin2onehot(value : unsigned)          return std_logic_vector;
+	function bin2onehot(binary : std_logic_vector; bits : natural := 0) return std_logic_vector;
+	function bin2onehot(binary : unsigned;         bits : natural := 0) return std_logic_vector;
+
 	-- Binary-Code to One-Cold-Code
 	function bin2onecold(value : std_logic_vector) return std_logic_vector;
 	function bin2onecold(value : unsigned)         return std_logic_vector;
@@ -317,21 +355,223 @@ package body utils is
 	-- Environment
 	-- ==========================================================================
 	function is_simulation return boolean is
-		variable ret : boolean;
+		variable temp : boolean := false;
 	begin
-		ret := false;
 		-- WORKAROUND: for Xilinx ISE
-		--	Version:	all versions with enabled 'use_new_parser' option
-		--	Issue:		Is_X('X') does not evaluate to FALSE in synthesis
-		--	Solution:	Use '--synthesis translate_on/off' pragmas
+		--    Version:    all versions with enabled 'use_new_parser' option
+		--    Issue:      Is_X('X') does not evaluate to TRUE in synthesis
+		--    Solution:   Use '--synthesis translate_on/off' pragmas
 		--synthesis translate_off
-		if Is_X('X') then ret := true; end if;
+		temp := true;
 		--synthesis translate_on
-		return	ret;
+		return temp;
 	end function;
 
 	-- deferred constant assignment
-	constant SIMULATION	: boolean		:= is_simulation;
+	constant SIMULATION : boolean := is_simulation;
+
+	-- Vector Opperations
+	-- ===========================================================================
+	function "/"(vec : T_INTVEC; int : integer) return T_INTVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) / int;
+		end loop;
+		return result;
+	end function;
+
+	function "*"(vec : T_INTVEC; int : integer) return T_INTVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) * int;
+		end loop;
+		return result;
+	end function;
+
+	function "-"(vec : T_INTVEC; int : integer) return T_INTVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) - int;
+		end loop;
+		return result;
+	end function;
+
+	function "+"(vec : T_INTVEC; int : integer) return T_INTVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) + int;
+		end loop;
+		return result;
+	end function;
+
+	function "/"(vec : T_NATVEC; int : positive) return T_NATVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) / int;
+		end loop;
+		return result;
+	end function;
+
+	function "*"(vec : T_NATVEC; int : natural) return T_NATVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) * int;
+		end loop;
+		return result;
+	end function;
+
+	function "-"(vec : T_NATVEC; int : integer) return T_NATVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) - int;
+		end loop;
+		return result;
+	end function;
+
+	function "+"(vec : T_NATVEC; int : integer) return T_NATVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) + int;
+		end loop;
+		return result;
+	end function;
+
+	function "/"(vec : T_POSVEC; int : positive) return T_POSVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) / int;
+		end loop;
+		return result;
+	end function;
+
+	function "*"(vec : T_POSVEC; int : positive) return T_POSVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) * int;
+		end loop;
+		return result;
+	end function;
+
+	function "-"(vec : T_POSVEC; int : integer) return T_POSVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) - int;
+		end loop;
+		return result;
+	end function;
+
+	function "+"(vec : T_POSVEC; int : integer) return T_POSVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) + int;
+		end loop;
+		return result;
+	end function;
+
+	function "/"(vec : T_REALVEC; int : real) return T_REALVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) / int;
+		end loop;
+		return result;
+	end function;
+
+	function "*"(vec : T_REALVEC; int : real) return T_REALVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) * int;
+		end loop;
+		return result;
+	end function;
+
+	function "-"(vec : T_REALVEC; int : real) return T_REALVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) - int;
+		end loop;
+		return result;
+	end function;
+
+	function "+"(vec : T_REALVEC; int : real) return T_REALVEC is
+		variable result : vec'subtype;
+	begin
+		for i in vec'range loop
+			result(i) := vec(i) + int;
+		end loop;
+		return result;
+	end function;
+
+
+	function remove_zero(vec : T_NATVEC) return T_POSVEC is
+		variable temp : T_POSVEC(0 to vec'high);
+		variable pos  : natural := 0;
+	begin
+		for i in 0 to vec'length -1 loop
+			if vec(i) > 0 then
+				temp(pos) := vec(i + vec'low);
+				pos       := pos +1;
+			end if;
+		end loop;
+
+		return temp(0 to pos -1);
+	end function;
+
+	function remove_zero(vec : T_POSVEC) return T_POSVEC is
+		variable temp : T_POSVEC(0 to vec'high);
+		variable pos  : natural := 0;
+	begin
+		for i in 0 to vec'length -1 loop
+			if vec(i) > 0 then
+				temp(pos) := vec(i + vec'low);
+				pos       := pos +1;
+			end if;
+		end loop;
+
+		return temp(0 to pos -1);
+	end function;
+
+	function remove_zero(vec : T_NATVEC) return T_NATVEC is
+		variable temp : T_NATVEC(0 to vec'high);
+		variable pos  : natural := 0;
+	begin
+		for i in 0 to vec'length -1 loop
+			if vec(i) > 0 then
+				temp(pos) := vec(i + vec'low);
+				pos       := pos +1;
+			end if;
+		end loop;
+
+		return temp(0 to pos -1);
+	end function;
+
+	function remove_zero(vec : T_POSVEC) return T_NATVEC is
+		variable temp : T_NATVEC(0 to vec'high);
+		variable pos  : natural := 0;
+	begin
+		for i in 0 to vec'length -1 loop
+			if vec(i) > 0 then
+				temp(pos) := vec(i + vec'low);
+				pos       := pos +1;
+			end if;
+		end loop;
+
+		return temp(0 to pos -1);
+	end function;
 
 	-- New operators for new enumeration types
 	-- ===========================================================================
@@ -352,114 +592,114 @@ package body utils is
 	begin
 		return T_POLARITY'val((T_POLARITY'pos(left) + 1) mod 2);
 	end function;
-	
+
 	function "xor"(left : T_POLARITY; right : bit) return bit is
 	begin
 		if (left = HIGH_ACTIVE) then
 			return right;
 		else
 			return not right;
-		end if; 
+		end if;
 	end function;
-	
+
 	function "xor"(left : T_POLARITY; right : bit_vector) return bit_vector is
 	begin
 		if (left = HIGH_ACTIVE) then
 			return right;
 		else
 			return not right;
-		end if; 
+		end if;
 	end function;
-	
+
 	function "xor"(left : T_POLARITY; right : std_logic) return std_logic is
 	begin
 		if (left = HIGH_ACTIVE) then
 			return right;
 		else
 			return not right;
-		end if; 
+		end if;
 	end function;
-	
+
 	function "xor"(left : T_POLARITY; right : std_logic_vector) return std_logic_vector is
 	begin
 		if (left = HIGH_ACTIVE) then
 			return right;
 		else
 			return not right;
-		end if; 
+		end if;
 	end function;
-	
+
 	function "xor"(left : bit; right : T_POLARITY) return bit is
 	begin
-			if (right = HIGH_ACTIVE) then
-				return left;
-			else
-				return not left;
-			end if; 
+		if (right = HIGH_ACTIVE) then
+			return left;
+		else
+			return not left;
+		end if;
 	end function;
-	
+
 	function "xor"(left : bit_vector; right : T_POLARITY) return bit_vector is
 	begin
-			if (right = HIGH_ACTIVE) then
-				return left;
-			else
-				return not left;
-			end if; 
+		if (right = HIGH_ACTIVE) then
+			return left;
+		else
+			return not left;
+		end if;
 	end function;
-	
+
 	function "xor"(left : std_logic; right : T_POLARITY) return std_logic is
 	begin
 		if (right = HIGH_ACTIVE) then
 			return left;
 		else
 			return not left;
-		end if; 
+		end if;
 	end function;
-	
+
 	function "xor"(left : std_logic_vector; right : T_POLARITY) return std_logic_vector is
 	begin
 		if (right = HIGH_ACTIVE) then
 			return left;
 		else
 			return not left;
-		end if; 
+		end if;
 	end function;
-	
+
 	function "xnor"(left : T_POLARITY; right : bit) return bit is
 	begin
 		return not (left xor right);
 	end function;
-	
+
 	function "xnor"(left : T_POLARITY; right : bit_vector) return bit_vector is
 	begin
 		return not (left xor right);
 	end function;
-	
+
 	function "xnor"(left : T_POLARITY; right : std_logic) return std_logic is
 	begin
 		return not (left xor right);
 	end function;
-	
+
 	function "xnor"(left : T_POLARITY; right : std_logic_vector) return std_logic_vector is
 	begin
 		return not (left xor right);
 	end function;
-	
+
 	function "xnor"(left : bit; right : T_POLARITY) return bit is
 	begin
 		return not (left xor right);
 	end function;
-	
+
 	function "xnor"(left : bit_vector; right : T_POLARITY) return bit_vector is
 	begin
 		return not (left xor right);
 	end function;
-	
+
 	function "xnor"(left : std_logic; right : T_POLARITY) return std_logic is
 	begin
 		return not (left xor right);
 	end function;
-	
+
 	function "xnor"(left : std_logic_vector; right : T_POLARITY) return std_logic_vector is
 	begin
 		return not (left xor right);
@@ -470,12 +710,12 @@ package body utils is
 	begin
 		return T_CLOCK_EDGE'val((T_CLOCK_EDGE'pos(left) + 1) mod 2);
 	end function;
-	
+
 
 	-- Divisions: div_*
 	-- ===========================================================================
 	-- integer division; always round-up
-	function div_ceil(a : natural; b : positive) return natural is	-- calculates: ceil(a / b)
+	function div_ceil(a : natural; b : positive) return natural is    -- calculates: ceil(a / b)
 	begin
 		return (a + (b - 1)) / b;
 	end function;
@@ -498,7 +738,7 @@ package body utils is
 	function floor_pow2(int : natural) return natural is
 		variable temp : unsigned(30 downto 0);
 	begin
-		temp	:= to_unsigned(int, 31);
+		temp    := to_unsigned(int, 31);
 		for i in temp'range loop
 			if (temp(i) = '1') then
 				return 2 ** i;
@@ -511,12 +751,10 @@ package body utils is
 	-- ==========================================================================
 	-- return log2; always rounded up
 	function log2ceil(arg : positive) return natural is
-		variable tmp : positive;
-		variable log : natural;
+		variable tmp : positive := 2;
+		variable log : natural  := 1;
 	begin
-		if arg = 1 then	return 0; end if;
-		tmp := 1;
-		log := 0;
+		if arg = 1 then    return 0; end if;
 		while arg > tmp loop
 			tmp := tmp * 2;
 			log := log + 1;
@@ -532,12 +770,10 @@ package body utils is
 
 	-- return log10; always rounded up
 	function log10ceil(arg : positive) return natural is
-		variable tmp : positive;
-		variable log : natural;
+		variable tmp : positive := 10;
+		variable log : natural  := 1;
 	begin
-		if arg = 1 then	return 0; end if;
-		tmp := 1;
-		log := 0;
+		if arg = 1 then    return 0; end if;
 		while arg > tmp loop
 			tmp := tmp * 10;
 			log := log + 1;
@@ -546,10 +782,15 @@ package body utils is
 	end function;
 
 	-- return log2; always rounded up; the return value is >= 1
-	function log10ceilnz(arg : positive) return positive is
+	function log10ceilnz(arg : natural) return positive is
 	begin
-		return imax(1, log10ceil(arg));
+		if arg = 0 then
+			return 1;
+		else
+			return imax(1, log10ceil(arg));
+		end if;
 	end function;
+
 
 	-- if-then-else (ite)
 	-- ==========================================================================
@@ -617,13 +858,13 @@ package body utils is
 	end function;
 
 	function ite(cond : boolean; value1 : signed; value2 : signed) return signed is
-		begin
-			if cond then
-				return value1;
-			else
-				return value2;
-			end if;
-		end function;
+	begin
+		if cond then
+			return value1;
+		else
+			return value2;
+		end if;
+	end function;
 
 	function ite(cond : boolean; value1 : character; value2 : character) return character is
 	begin
@@ -646,22 +887,22 @@ package body utils is
 	-- conditional increment / decrement
 	-- ===========================================================================
 	-- return the by increment incremented Value if cond is true else passthrough Value
-	function inc_if(cond : boolean; Value : integer; increment : integer := 1) return integer is
+	function inc_if(cond : boolean; value : integer; increment : integer := 1) return integer is
 	begin
 		if cond then
-			return Value + increment;
+			return value + increment;
 		else
-			return Value;
+			return value;
 		end if;
 	end function;
 
 	-- return the by decrement decremented Value if cond is true else passthrough Value
-	function dec_if(cond : boolean; Value : integer; decrement : integer := 1) return integer is
+	function dec_if(cond : boolean; value : integer; decrement : integer := 1) return integer is
 	begin
 		if cond then
-			return Value - decrement;
+			return value - decrement;
 		else
-			return Value;
+			return value;
 		end if;
 	end function;
 
@@ -669,8 +910,11 @@ package body utils is
 	-- ===========================================================================
 	function imin(arg1 : integer; arg2 : integer) return integer is
 	begin
-		if arg1 < arg2 then return arg1; end if;
-		return arg2;
+		if arg1 < arg2 then
+			return arg1;
+		else
+			return arg2;
+		end if;
 	end function;
 
 	-- function rmin(arg1 : real; arg2 : real) return real is
@@ -680,51 +924,51 @@ package body utils is
 	-- end function;
 
 	function imin(vec : T_INTVEC) return integer is
-		variable Result		: integer;
+		variable result : integer;
 	begin
-		Result	:= integer'high;
+		result := integer'high;
 		for i in vec'range loop
-			if vec(i) < Result then
-				Result	:= vec(i);
+			if vec(i) < result then
+				result := vec(i);
 			end if;
 		end loop;
-		return Result;
+		return result;
 	end function;
 
 	function imin(vec : T_NATVEC) return natural is
-		variable Result		: natural;
+		variable result : natural;
 	begin
-		Result	:= natural'high;
+		result := natural'high;
 		for i in vec'range loop
-			if vec(i) < Result then
-				Result	:= vec(i);
+			if vec(i) < result then
+				result := vec(i);
 			end if;
 		end loop;
-		return Result;
+		return result;
 	end function;
 
 	function imin(vec : T_POSVEC) return positive is
-		variable Result		: positive;
+		variable result : positive;
 	begin
-		Result	:= positive'high;
+		result := positive'high;
 		for i in vec'range loop
-			if vec(i) < Result then
-				Result	:= vec(i);
+			if vec(i) < result then
+				result := vec(i);
 			end if;
 		end loop;
-		return Result;
+		return result;
 	end function;
 
-	function rmin(vec : T_REALVEC) return REAL is
-		variable  Result : REAL;
+	function rmin(vec : T_REALVEC) return real is
+		variable  result : real;
 	begin
-		Result	:= REAL'high;
+		result := real'high;
 		for i in vec'range loop
-			if vec(i) < Result then
-				Result := vec(i);
+			if vec(i) < result then
+				result := vec(i);
 			end if;
 		end loop;
-		return  Result;
+		return  result;
 	end function;
 
 	function imax(arg1 : integer; arg2 : integer) return integer is
@@ -740,103 +984,147 @@ package body utils is
 	-- end function;
 
 	function imax(vec : T_INTVEC) return integer is
-		variable Result		: integer;
+		variable result : integer;
 	begin
-		Result		:= integer'low;
+		result := integer'low;
 		for i in vec'range loop
-			if vec(i) > Result then
-				Result	:= vec(i);
+			if vec(i) > result then
+				result := vec(i);
 			end if;
 		end loop;
-		return Result;
+		return result;
 	end function;
 
 	function imax(vec : T_NATVEC) return natural is
-		variable Result		: natural;
+		variable result : natural;
 	begin
-		Result		:= natural'low;
+		result := natural'low;
 		for i in vec'range loop
-			if vec(i) > Result then
-				Result	:= vec(i);
+			if vec(i) > result then
+				result := vec(i);
 			end if;
 		end loop;
-		return Result;
+		return result;
 	end function;
 
 	function imax(vec : T_POSVEC) return positive is
-		variable Result		: positive;
+		variable result : positive;
 	begin
-		Result		:= positive'low;
+		result := positive'low;
 		for i in vec'range loop
-			if vec(i) > Result then
-				Result	:= vec(i);
+			if vec(i) > result then
+				result := vec(i);
 			end if;
 		end loop;
-		return Result;
+		return result;
 	end function;
 
-	function rmax(vec : T_REALVEC) return REAL is
-		variable  Result : REAL;
+	function rmax(vec : T_REALVEC) return real is
+		variable  result : real;
 	begin
-		Result		:= REAL'low;
+		result := real'low;
 		for i in vec'range loop
-			if vec(i) > Result then
-				Result := vec(i);
+			if vec(i) > result then
+				result := vec(i);
 			end if;
 		end loop;
-		return  Result;
+		return  result;
 	end function;
 
 	function isum(vec : T_INTVEC) return integer is
-		variable  Result : integer;
+		variable  result : integer;
 	begin
-		Result		:= 0;
+		result := 0;
 		for i in vec'range loop
-			Result	:= Result + vec(i);
+			result := result + vec(i);
 		end loop;
-		return  Result;
+		return  result;
 	end function;
 
 	function isum(vec : T_NATVEC) return natural is
-		variable Result		: natural;
+		variable result : natural;
 	begin
-		Result		:= 0;
+		result := 0;
 		for i in vec'range loop
-			Result	:= Result + vec(i);
+			result := result + vec(i);
 		end loop;
-		return Result;
+		return result;
 	end function;
 
 	function isum(vec : T_POSVEC) return natural is
-		variable Result : natural;
+		variable result : natural;
 	begin
-		Result := 0;
+		result := 0;
 		for i in vec'range loop
-			Result := Result + vec(i);
+			result := result + vec(i);
 		end loop;
-		return Result;
+		return result;
 	end function;
 
-	function rsum(vec : T_REALVEC) return REAL is
-		variable  Result : REAL;
+	function rsum(vec : T_REALVEC) return real is
+		variable  result : real;
 	begin
-		Result		:= 0.0;
+		result := 0.0;
 		for i in vec'range loop
-			Result	:= Result + vec(i);
+			result := result + vec(i);
 		end loop;
-		return  Result;
+		return  result;
+	end function;
+
+	-- Find Index in array
+	--=============================================================================
+	function indexof(vec : T_NATVEC; comp : natural; falseNum : integer := -1) return integer is
+	begin
+	for i in vec'range loop
+		if vec(i) = comp then
+		return i;
+		end if;
+	end loop;
+	return falseNum;
+	end function;
+
+	function indexof(vec : T_INTVEC; comp : integer; falseNum : integer := -1) return integer is
+	begin
+	for i in vec'range loop
+		if vec(i) = comp then
+		return i;
+		end if;
+	end loop;
+	return falseNum;
+	end function;
+
+	function indexof(vec : T_POSVEC; comp : positive; falseNum : integer := -1) return integer is
+	begin
+	for i in vec'range loop
+		if vec(i) = comp then
+		return i;
+		end if;
+	end loop;
+	return falseNum;
+	end function;
+
+	function indexof(vec : T_REALVEC; comp : real; falseNum : integer := -1; epsilon : real := 1.0E-6) return integer is
+	constant upper : real := comp + (comp * epsilon);
+	constant lower : real := comp - (comp * epsilon);
+	begin
+	for i in vec'range loop
+		if (vec(i) >= lower) and (vec(i) <= upper) then
+		return i;
+		end if;
+	end loop;
+	return falseNum;
 	end function;
 
 	-- Vector aggregate functions: slv_*
 	-- ==========================================================================
 	function slv_or(vec : std_logic_vector) return std_logic is
-		variable Result : std_logic;
+		variable result : std_logic;
 	begin
-		Result		:= '0';
+		result := '0';
 		for i in vec'range loop
-			Result	:= Result or vec(i);
+			result := result or vec(i);
 		end loop;
-		return Result;
+		return result;
 	end function;
 
 	function slv_nor(vec : std_logic_vector) return std_logic is
@@ -845,13 +1133,13 @@ package body utils is
 	end function;
 
 	function slv_and(vec : std_logic_vector) return std_logic is
-		variable Result : std_logic;
+		variable result : std_logic;
 	begin
-		Result		:= '1';
+		result := '1';
 		for i in vec'range loop
-			Result	:= Result and vec(i);
+			result := result and vec(i);
 		end loop;
-		return Result;
+		return result;
 	end function;
 
 	function slv_nand(vec : std_logic_vector) return std_logic is
@@ -867,6 +1155,21 @@ package body utils is
 			res := res xor vec(i);
 		end loop;
 		return  res;
+	end function;
+
+	--Example from: https://riptutorial.com/vhdl/example/32304/computing-the-hamming-weight-of-a-vector
+	function hammingWeight(v: std_logic_vector) return natural is
+		constant size: natural := v'length;
+		constant vv: std_logic_vector(size - 1 downto 0) := v;
+		variable h: natural;
+	begin
+		h := 0;
+		if size = 1 and vv(0) = '1' then
+			h := 1;
+		elsif size > 1 then
+			h := hammingWeight(vv(size - 1 downto size / 2)) + hammingWeight(vv(size / 2 - 1 downto 0));
+		end if;
+		return h;
 	end function;
 
 	-- ===========================================================================
@@ -888,23 +1191,23 @@ package body utils is
 
 	-- Convert to bit: to_sl
 	-- ===========================================================================
-	function to_sl(Value : boolean) return std_logic is
+	function to_sl(value : boolean) return std_logic is
 	begin
-		return ite(Value, '1', '0');
+		return ite(value, '1', '0');
 	end function;
 
-	function to_sl(Value : character) return std_logic is
+	function to_sl(value : character) return std_logic is
 	begin
-		case Value is
-			when 'U' =>			return 'U';
-			when '0' =>			return '0';
-			when '1' =>			return '1';
-			when 'Z' =>			return 'Z';
-			when 'W' =>			return 'W';
-			when 'L' =>			return 'L';
-			when 'H' =>			return 'H';
-			when '-' =>			return '-';
-			when others =>	return 'X';
+		case value is
+			when 'U' =>    return 'U';
+			when '0' =>    return '0';
+			when '1' =>    return '1';
+			when 'Z' =>    return 'Z';
+			when 'W' =>    return 'W';
+			when 'L' =>    return 'L';
+			when 'H' =>    return 'H';
+			when '-' =>    return '-';
+			when others => return 'X';
 		end case;
 	end function;
 
@@ -912,10 +1215,15 @@ package body utils is
 	-- ===========================================================================
 	-- short for std_logic_vector(to_unsigned(Value, Size))
 	-- the return value is guaranteed to have the range (Size-1 downto 0)
-	function to_slv(Value : natural; Size : positive) return std_logic_vector is
-	  constant res : std_logic_vector(Size-1 downto 0) := std_logic_vector(to_unsigned(Value, Size));
+	function to_slv(value : natural; size : positive) return std_logic_vector is
+		constant res : std_logic_vector(size-1 downto 0) := std_logic_vector(to_unsigned(value, size));
 	begin
 		return res;
+	end function;
+
+	function to_slv(value : unsigned) return std_logic_vector is
+	begin
+		return std_logic_vector(value);
 	end function;
 
 	-- Convert to T_BCD or T_BCD_VECTOR: to_BCD*
@@ -946,13 +1254,13 @@ package body utils is
 	end function;
 
 	function to_BCD_Vector(Value : string; Size : natural := 0; Fill : T_BCD := x"0") return T_BCD_VECTOR is
-		variable Result			: T_BCD_VECTOR(Size - 1 downto 0);
+		variable result : T_BCD_VECTOR(Size - 1 downto 0);
 	begin
-		Result	:= (others => Fill);
+		result := (others => Fill);
 		for i in Value'range loop
-			Result(Value'length - (i - Value'low) - 1)	:= to_BCD(Value(i));
+			result(Value'length - (i - Value'low) - 1) := to_BCD(Value(i));
 		end loop;
-		return Result;
+		return result;
 	end function;
 
 	-- bound array indices for simulation, to prevent out of range errors
@@ -970,7 +1278,9 @@ package body utils is
 	function to_index(slv : unsigned; max : natural := 0) return integer is
 		variable res : integer;
 	begin
-		if (slv'length = 0) then	return 0;	end if;
+		if (slv'length = 0) then
+			return 0;
+		end if;
 
 		res := to_integer(slv);
 		if SIMULATION and max > 0 then
@@ -985,15 +1295,15 @@ package body utils is
 		return to_index(unsigned(slv), max);
 	end function;
 
-  -- is_*
-  -- ===========================================================================
-  function is_sl(c : character) return boolean is
-  begin
-    case c is
-      when 'U'|'X'|'0'|'1'|'Z'|'W'|'L'|'H'|'-' => return  true;
-      when others                              => return  false;
-    end case;
-  end function;
+	-- is_*
+	-- ===========================================================================
+	function is_sl(c : character) return boolean is
+	begin
+		case c is
+			when 'U'|'X'|'0'|'1'|'Z'|'W'|'L'|'H'|'-' => return  true;
+			when others                              => return  false;
+		end case;
+	end function;
 
 
 	-- Reverse vector elements
@@ -1003,14 +1313,14 @@ package body utils is
 		for i in vec'low to vec'high loop
 			res(vec'low + (vec'high-i)) := vec(i);
 		end loop;
-		return	res;
+		return    res;
 	end function;
 
 	function reverse(vec : bit_vector) return bit_vector is
 		variable res : bit_vector(vec'range);
 	begin
-    res := to_bitvector(reverse(to_stdlogicvector(vec)));
-    return  res;
+		res := to_bitvector(reverse(to_stdlogicvector(vec)));
+		return  res;
 	end function;
 
 	function reverse(vec : unsigned) return unsigned is
@@ -1022,38 +1332,52 @@ package body utils is
 	-- Swap sub vectors in vector
 	-- ==========================================================================
 	function swap(slv : std_logic_vector; Size : positive) return std_logic_vector is
-		constant SegmentCount	: natural													:= slv'length / Size;
-		variable FromH				: natural;
-		variable FromL				: natural;
-		variable ToH					: natural;
-		variable ToL					: natural;
-		variable Result : std_logic_vector(slv'length - 1 downto 0);
+		constant SegmentCount : natural := slv'length / Size;
+		variable FromH        : natural;
+		variable FromL        : natural;
+		variable ToH          : natural;
+		variable ToL          : natural;
+		variable result       : std_logic_vector(slv'length - 1 downto 0);
 	begin
 		for i in 0 to SegmentCount - 1 loop
-			FromH		:= ((i + 1) * Size) - 1;
-			FromL		:= i * Size;
-			ToH			:= ((SegmentCount - i) * Size) - 1;
-			ToL			:= (SegmentCount - i - 1) * Size;
-			Result(ToH downto ToL)	:= slv(FromH downto FromL);
+			FromH := ((i + 1) * Size) - 1 + slv'low;
+			FromL := i * Size + slv'low;
+			ToH   := ((SegmentCount - i) * Size) - 1;
+			ToL   := (SegmentCount - i - 1) * Size;
+			result(ToH downto ToL) := slv(FromH downto FromL);
 		end loop;
-		return Result;
+		return result;
+	end function;
+
+	function swapChunks(slv : std_logic_vector; Size : positive; NumChunks : positive := 1) return std_logic_vector is
+		constant SegmentDepth : natural   := slv'length / NumChunks;
+		variable H            : natural;
+		variable L            : natural;
+		variable result       : std_logic_vector(slv'length - 1 downto 0);
+	begin
+		for i in 0 to NumChunks - 1 loop
+			H := ((i + 1) * SegmentDepth) - 1;
+			L := i * SegmentDepth;
+			result(H downto L) := swap(slv(H downto L), Size);
+		end loop;
+		return result;
 	end function;
 
 
 	-- Swap the bits in a chunk
 	-- ==========================================================================
 	function bit_swap(slv : std_logic_vector; Chunksize : positive) return std_logic_vector is
-		constant SegmentCount	: natural	:= slv'length / Chunksize;
-		variable FromH				: natural;
-		variable FromL				: natural;
-		variable Result			: std_logic_vector(slv'length - 1 downto 0);
+		constant SegmentCount : natural := slv'length / Chunksize;
+		variable FromH        : natural;
+		variable FromL        : natural;
+		variable result       : std_logic_vector(slv'length - 1 downto 0);
 	begin
 		for i in 0 to SegmentCount - 1 loop
-			FromH		:= ((i + 1) * Chunksize) - 1;
-			FromL		:= i * Chunksize;
-			Result(FromH downto FromL)	:= reverse(slv(FromH downto FromL));
+			FromH := ((i + 1) * Chunksize) - 1;
+			FromL := i * Chunksize;
+			result(FromH downto FromL) := reverse(slv(FromH downto FromL));
 		end loop;
-		return Result;
+		return result;
 	end function;
 
 
@@ -1092,7 +1416,7 @@ package body utils is
 	-- binary encoding conversion functions
 	-- ==========================================================================
 	-- One-Hot-Code to Binary-Code
-  function onehot2bin(onehot : std_logic_vector; empty_val : integer := -1) return unsigned is
+	function onehot2bin(onehot : std_logic_vector; empty_val : integer := -1) return unsigned is
 		variable res : unsigned(log2ceilnz(imax(onehot'high, empty_val)+1)-1 downto 0);
 		variable chk : natural;
 	begin
@@ -1115,7 +1439,7 @@ package body utils is
 				res := (others => 'X'); -- computed result is implementation-dependant
 			end if;
 		end if;
-		return	res;
+		return res;
 	end function;
 
 	-- Gray-Code to Binary-Code
@@ -1124,30 +1448,29 @@ package body utils is
 		variable res : std_logic_vector(gray_val'range);
 	begin
 		tmp := '0' & gray_val;
-    for i in tmp'left-1 downto 0 loop
-      tmp(i) := tmp(i+1) xor tmp(i);
-    end loop;
-    res := tmp(tmp'left-1 downto 0);
+		for i in tmp'left-1 downto 0 loop
+			tmp(i) := tmp(i+1) xor tmp(i);
+		end loop;
+		res := tmp(tmp'left-1 downto 0);
 		return  res;
 	end function;
-	
+
 	function gray2bin(gray_val : std_logic_vector) return unsigned is
 	begin
 		return unsigned(std_logic_vector'(gray2bin(gray_val)));
 	end function;
 
 	-- Binary-Code to One-Hot-Code
-	function bin2onehot(Value : std_logic_vector) return std_logic_vector is
-		variable result		: std_logic_vector(2**Value'length - 1 downto 0);
+	function bin2onehot(binary : unsigned; bits : natural := 0) return std_logic_vector is
+		variable result : unsigned(2**binary'length - 1 downto 0) := (others => '0');
 	begin
-		result	:= (others => '0');
-		result(to_index(Value, 0)) := '1';
-		return result;
+		result(to_integer(binary)) := '1';
+		return std_logic_vector(resize(result, ite(bits = 0, result'length, bits)));
 	end function;
-			
-	function bin2onehot(Value : unsigned) return std_logic_vector is
+
+	function bin2onehot(binary : std_logic_vector; bits : natural := 0) return std_logic_vector is
 	begin
-		return bin2onehot(std_logic_vector(Value));
+		return bin2onehot(unsigned(binary), bits);
 	end function;
 
 	-- Binary-Code to Gray-Code
@@ -1159,7 +1482,7 @@ package body utils is
 		res := tmp(Value'length downto 1);
 		return  res;
 	end function;
-					
+
 	function bin2gray(Value : unsigned) return std_logic_vector is
 	begin
 		return bin2gray(std_logic_vector(Value));
@@ -1170,7 +1493,7 @@ package body utils is
 	begin
 		return not bin2onehot(value);
 	end function;
-							
+
 	function bin2onecold(Value : unsigned) return std_logic_vector is
 	begin
 		return bin2onecold(std_logic_vector(Value));
@@ -1181,54 +1504,70 @@ package body utils is
 	-- ==========================================================================
 	-- Least-Significant Set Bit (lssb): computes a vector of the same length with at most one bit set at the rightmost '1' found in arg.
 	function lssb(arg : std_logic_vector) return std_logic_vector is
-    variable  res : std_logic_vector(arg'range);
+		variable temp : arg'subtype := (others => '0');
 	begin
-		res := arg and std_logic_vector(unsigned(not arg)+1);
-    return  res;
+		for i in arg'low to arg'high loop
+			if arg(i) = '1' then
+				temp(i) := '1';
+				exit;
+			end if;
+		end loop;
+		return temp;
 	end function;
 
-  function lssb(arg : bit_vector) return bit_vector is
-    variable  res : bit_vector(arg'range);
-  begin
-    res := to_bitvector(lssb(to_stdlogicvector(arg)));
-    return  res;
-  end function;
+	function lssb(arg : bit_vector) return bit_vector is
+	begin
+		return to_bitvector(lssb(to_stdlogicvector(arg)));
+	end function;
 
 	-- Most-Significant Set Bit (mssb): computes a vector of the same length with at most one bit set at the leftmost '1' found in arg.
 	function mssb(arg : std_logic_vector) return std_logic_vector is
+		variable temp : arg'subtype := (others => '0');
 	begin
-		return	reverse(lssb(reverse(arg)));
+		for i in arg'high downto arg'low loop
+			if arg(i) = '1' then
+				temp(i) := '1';
+				exit;
+			end if;
+		end loop;
+		return temp;
 	end function;
 
-  function mssb(arg : bit_vector) return bit_vector is
-  begin
-    return  reverse(lssb(reverse(arg)));
-  end function;
+	function mssb(arg : bit_vector) return bit_vector is
+	begin
+		return to_bitvector(mssb(to_stdlogicvector(arg)));
+	end function;
 
 	-- Index of lssb
 	function lssb_idx(arg : std_logic_vector) return integer is
 	begin
-		return  to_integer(onehot2bin(lssb(arg)));
+		for i in arg'low to arg'high loop
+			if arg(i) = '1' then
+				return i;
+			end if;
+		end loop;
+		return arg'low;
 	end function;
 
 	function lssb_idx(arg : bit_vector) return integer is
-    variable  slv : std_logic_vector(arg'range);
 	begin
-    slv := to_stdlogicvector(arg);
-		return  lssb_idx(slv);
+		return lssb_idx(to_stdlogicvector(arg));
 	end function;
 
 	-- Index of mssb
 	function mssb_idx(arg : std_logic_vector) return integer is
 	begin
-		return to_integer(onehot2bin(mssb(arg)));
+		for i in arg'high downto arg'low loop
+			if arg(i) = '1' then
+				return i;
+			end if;
+		end loop;
+		return arg'high;
 	end function;
 
 	function mssb_idx(arg : bit_vector) return integer is
-    variable  slv : std_logic_vector(arg'range);
 	begin
-    slv := to_stdlogicvector(arg);
-		return mssb_idx(slv);
+		return mssb_idx(to_stdlogicvector(arg));
 	end function;
 
 	-- scale a value into a given range
@@ -1237,99 +1576,100 @@ package body utils is
 		return scale(real(Value), Minimum, Maximum, RoundingStyle);
 	end function;
 
-	function scale(Value : REAL; Minimum : integer; Maximum : integer; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return integer is
-		variable Result	: REAL;
+	function scale(Value : real; Minimum : integer; Maximum : integer; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return integer is
+		variable result : real;
 	begin
 		if Maximum < Minimum then
 			return integer'low;
 		else
-			Result	:= real(Value) * ((real(Maximum) + 0.5) - (real(Minimum) - 0.5)) + (real(Minimum) - 0.5);
+			result := real(Value) * ((real(Maximum) + 0.5) - (real(Minimum) - 0.5)) + (real(Minimum) - 0.5);
 			case RoundingStyle is
-				when ROUND_TO_NEAREST =>	return integer(round(Result));
-				when ROUND_TO_ZERO =>			report "scale: unsupported RoundingStyle." severity FAILURE;
-				when ROUND_TO_INF =>			report "scale: unsupported RoundingStyle." severity FAILURE;
-				when ROUND_UP =>					return integer(ceil(Result));
-				when ROUND_DOWN =>				return integer(floor(Result));
-				when others =>						report "scale: unsupported RoundingStyle." severity FAILURE;
+				when ROUND_TO_NEAREST => return integer(round(result));
+				when ROUND_TO_ZERO =>    report "scale: unsupported RoundingStyle." severity FAILURE;
+				when ROUND_TO_INF =>     report "scale: unsupported RoundingStyle." severity FAILURE;
+				when ROUND_UP =>         return integer(ceil(result));
+				when ROUND_DOWN =>       return integer(floor(result));
+				when others =>           report "scale: unsupported RoundingStyle." severity FAILURE;
 			end case;
-			return integer(Result);
+			return integer(result);
 		end if;
 	end function;
 
-	function scale(Value : REAL; Minimum : REAL; Maximum : REAL) return REAL is
+	function scale(Value : real; Minimum : real; Maximum : real) return real is
 	begin
 		if Maximum < Minimum then
-			return REAL'low;
+			return real'low;
 		else
 			return Value * (Maximum - Minimum) + Minimum;
 		end if;
 	end function;
 
 	function resize(vec : bit_vector; length : natural; fill : bit := '0') return bit_vector is
-    constant  high2b : natural := vec'low+length-1;
-		constant  highcp : natural := imin(vec'high, high2b);
-    variable  res_up : bit_vector(vec'low to high2b);
-    variable  res_dn : bit_vector(high2b downto vec'low);
+		constant  high2b : natural := vec'low+length-1;
+		constant  highcp : integer := imin(vec'high, high2b); --integer to support also NULL range
+		variable  res_up : bit_vector(vec'low to high2b);
+		variable  res_dn : bit_vector(high2b downto vec'low);
 	begin
-    if vec'ascending then
-      res_up := (others => fill);
-      res_up(vec'low to highcp) := vec(vec'low to highcp);
-      return  res_up;
-    else
-      res_dn := (others => fill);
-      res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
-      return  res_dn;
+		if vec'ascending then
+			res_up := (others => fill);
+			res_up(vec'low to highcp) := vec(vec'low to highcp);
+			return res_up;
+		else
+			res_dn := (others => fill);
+			res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
+			return  res_dn;
 		end if;
 	end function;
 
 	function resize(vec : std_logic_vector; length : natural; fill : std_logic := '0') return std_logic_vector is
-    constant  high2b : natural := vec'low+length-1;
-		constant  highcp : natural := imin(vec'high, high2b);
-    variable  res_up : std_logic_vector(vec'low to high2b);
-    variable  res_dn : std_logic_vector(high2b downto vec'low);
+		constant  high2b  : natural := vec'low+length-1;
+		constant  highcp  : integer := imin(vec'high, high2b); --integer to support also NULL range
+		variable  res_up  : std_logic_vector(vec'low to high2b);
+		variable  res_dn  : std_logic_vector(high2b downto vec'low);
 	begin
-    if vec'ascending then
-      res_up := (others => fill);
-      res_up(vec'low to highcp) := vec(vec'low to highcp);
-      return  res_up;
-    else
-      res_dn := (others => fill);
-      res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
-      return  res_dn;
+		if vec'ascending then
+			res_up := (others => fill);
+			res_up(vec'low to highcp) := vec(vec'low to highcp);
+			return res_up;
+		else
+			res_dn := (others => fill);
+			res_dn(highcp downto vec'low) := vec(highcp downto vec'low);
+			return res_dn;
 		end if;
 	end function;
 
 	-- Move vector boundaries
 	-- ==========================================================================
-  function move(vec : std_logic_vector; ofs : integer) return std_logic_vector is
-    variable res_up : std_logic_vector(vec'low +ofs to     vec'high+ofs);
-    variable res_dn : std_logic_vector(vec'high+ofs downto vec'low +ofs);
-  begin
-    if vec'ascending then
-      res_up := vec;
-      return  res_up;
-    else
-      res_dn := vec;
-      return  res_dn;
-    end if;
-  end function;
-
-	function movez(vec : std_logic_vector) return std_logic_vector is
-  begin
-    return  move(vec, -vec'low);
-  end function;
-
-  function ascend(vec : std_logic_vector)	return std_logic_vector is
-		variable  res : std_logic_vector(vec'low to vec'high);
+	function move(vec : std_logic_vector; ofs : integer) return std_logic_vector is
+		variable res_up : std_logic_vector(vec'low +ofs to     vec'high+ofs);
+		variable res_dn : std_logic_vector(vec'high+ofs downto vec'low +ofs);
 	begin
-		res := vec;
-		return  res;
+		if vec'ascending then
+			res_up := vec;
+			return res_up;
+		else
+			res_dn := vec;
+			return res_dn;
+		end if;
 	end function;
 
-  function descend(vec : std_logic_vector)	return std_logic_vector is
+	function movez(vec : std_logic_vector) return std_logic_vector is
+	begin
+	return  move(vec, -vec'low);
+	end function;
+
+	function ascend(vec : std_logic_vector) return std_logic_vector is
+		variable res : std_logic_vector(vec'low to vec'high);
+	begin
+		res := vec;
+		return res;
+	end function;
+
+	function descend(vec : std_logic_vector) return std_logic_vector is
 		variable  res : std_logic_vector(vec'high downto vec'low);
 	begin
 		res := vec;
-		return  res;
+		return res;
 	end function;
+
 end package body;

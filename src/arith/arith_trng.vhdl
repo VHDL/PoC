@@ -56,9 +56,8 @@ entity arith_trng is
 end entity;
 
 
-library PoC;
-use PoC.utils.all;
-use PoC.sync.sync_Bits;
+use  work.utils.all;
+use  work.sync.sync_Bits;
 
 architecture rtl of arith_trng is
   signal osc : std_logic_vector(BITS-1 downto 0) := (others => '-');  -- Oscillators

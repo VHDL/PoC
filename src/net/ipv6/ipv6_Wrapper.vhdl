@@ -29,14 +29,13 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.config.all;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.net.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.net.all;
 
 
 entity ipv6_Wrapper is
@@ -262,7 +261,7 @@ begin
 		TX_Meta_SrcIPv6Address_nxt(i)		<= StmBuf_MetaIn_nxt(TXSTMBUF_META_STREAMID_SRCADR);
 		TX_Meta_DestIPv6Address_nxt(i)	<= StmBuf_MetaIn_nxt(TXSTMBUF_META_STREAMID_DESTADR);
 
-		TX_StmBuf : entity PoC.stream_Buffer
+		TX_StmBuf: entity work.stream_Buffer
 			generic map (
 				FRAMES												=> 2,
 				DATA_BITS											=> 8,
@@ -314,7 +313,7 @@ begin
 		assign_row(StmMux_In_Meta, StmMux_MetaIn_Data,	i);
 	end generate;
 
-	TX_StmMux : entity PoC.stream_Mux
+	TX_StmMux: entity work.stream_Mux
 		generic map (
 			PORTS									=> IPV6_SWITCH_PORTS,
 			DATA_BITS							=> TX_StmMux_Data'length,
@@ -351,7 +350,7 @@ begin
 	TX_StmMux_Meta_rev(TXSTMMUX_META_SRC_NXT_BIT)		<= IPv6_TX_Meta_SrcIPv6Address_nxt;
 	TX_StmMux_Meta_rev(TXSTMMUX_META_DEST_NXT_BIT)	<= IPv6_TX_Meta_DestIPv6Address_nxt;
 
-	TX_IPv6 : entity PoC.ipv6_TX
+	TX_IPv6: entity work.ipv6_TX
 		generic map (
 			DEBUG													=> DEBUG
 		)
@@ -397,7 +396,7 @@ begin
 -- =============================================================================
 -- RX Path
 -- =============================================================================
-	RX_IPv6 : entity PoC.ipv6_RX
+	RX_IPv6: entity work.ipv6_RX
 		generic map (
 			DEBUG														=> DEBUG
 		)
@@ -458,7 +457,7 @@ begin
 	RX_StmDeMux_MetaIn(high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_LENGTH)	downto	low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_LENGTH))		<= IPv6_RX_Meta_Length;
 	RX_StmDeMux_MetaIn(high(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_HEADER)	downto	low(STMDEMUX_META_BITS, STMDEMUX_META_STREAMID_HEADER))		<= IPv6_RX_Meta_NextHeader;
 
-	RX_StmDeMux : entity PoC.stream_DeMux
+	RX_StmDeMux: entity work.stream_DeMux
 		generic map (
 			PORTS										=> IPV6_SWITCH_PORTS,
 			DATA_BITS								=> STMDEMUX_DATA_BITS,
