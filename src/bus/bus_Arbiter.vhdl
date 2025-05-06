@@ -15,8 +15,9 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+-- Copyright 2024      PLC2 Design GmbH, Endingen - Germany
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -121,7 +122,7 @@ begin
 						ChannelPointer_bin_d	<=  (others => '0');
 					elsif (ChannelPointer_en = '1') then
 						ChannelPointer_d			<= ChannelPointer_nxt;
-						ChannelPointer_bin_d	<= std_logic_vector(onehot2bin(ChannelPointer_nxt));
+						ChannelPointer_bin_d	<= std_logic_vector(onehot2bin(ChannelPointer_nxt, 0));
 					end if;
 				end if;
 			end process;
