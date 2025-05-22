@@ -4,16 +4,22 @@
 
 analyze ./arith.pkg.vhdl
 
-if { [info exists ::OMIT_XILINX_FILES] && $::OMIT_XILINX_FILES eq "1"} {
-	puts "Skip xilinx file."
-} else {
+if { $::poc::vendor eq "Xilinx" } {
 	analyze ./xilinx/arith_carrychain_inc_xilinx.vhdl
 	analyze ./xilinx/arith_cca_xilinx.vhdl
 	analyze ./xilinx/arith_addw_xilinx.vhdl
 	analyze ./xilinx/arith_inc_ovcy_xilinx.vhdl
 	analyze ./xilinx/arith_prefix_and_xilinx.vhdl
 	analyze ./xilinx/arith_prefix_or_xilinx.vhdl
+
+} elseif { $::poc::vendor eq "Altera" } {
+	puts "No Altera files for arith."
+
+} elseif { $::poc::vendor ne "GENERIC" } {
+	puts "Unknow vendor '$::poc::vendor' in arith!"
+	exit 1
 }
+
 analyze ./arith_addw.vhdl
 analyze ./arith_carrychain_inc.vhdl
 analyze ./arith_convert_bin2bcd.vhdl

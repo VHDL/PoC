@@ -13,7 +13,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023      PLC2 Design GmbH, Endingen - Germany
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -44,7 +44,7 @@ package math is
 		numerator   : natural;    --numerator
 		denominator : natural;    --denominator
 	end record;
-	
+
 	-- figurate numbers
 	function squareNumber(N : natural) return natural;
 	function cubicNumber(N : natural) return natural;
@@ -58,7 +58,7 @@ package math is
 	function greatestCommonDivisor(N1 : positive; N2 : positive) return positive;
 	-- least common multiple (lcm)
 	function leastCommonMultiple(N1 : positive; N2 : positive) return positive;
-	
+
 	-- calculate fraction of positive float and give out as vector of integers
 	-- ReturnValue.whole        -> the real's integer part
 	-- ReturnValue.numerator    -> numerator of the real's fractional part
@@ -119,7 +119,7 @@ package body math is
 	begin
 		return ((N1 * N2) / greatestCommonDivisor(N1, N2));
 	end function;
-	
+
 	-- calculate fraction of positive float and give out as vector of integers
 	function fract(F : real; maxDenominator : natural := 1000; maxError : real := 1.0E-6) return T_FRACTIONAL is
 		constant fulls        : integer := integer(trunc(F));
@@ -140,7 +140,7 @@ package body math is
 			else
 				numerator   := numerator +1;
 			end if;
-			 
+
 			newFraction := real(numerator) / real(denominator);
 			Error := REALMAX(remainder, newFraction) - REALMIN(remainder, newFraction);
 			if Error < bestError then
@@ -157,7 +157,7 @@ package body math is
 		end if;
 		return result;
 	end function;
-	
+
 	-- calculate time increments to met fraction
 	function fract2timing(numerator : natural; denominator : natural) return T_NATVEC is
 		constant fractionalInReal: real     := real(numerator) / real(denominator);
@@ -177,10 +177,10 @@ package body math is
 				remainder   := remainder +increment;
 				actualNumerator := actualNumerator +1;
 			end if;
-		end loop;   
+		end loop;
 		result(result'high) := denominator;
 		return result;
-	end function;  
+	end function;
 	-- calculate time increments to met fraction
 	function fract2timing(fractional : T_FRACTIONAL) return T_NATVEC is
 	begin

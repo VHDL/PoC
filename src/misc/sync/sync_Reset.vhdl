@@ -33,7 +33,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2024      PLC2 Design GmbH, Endingen - Germany
+-- Copryright 2017-2025 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -77,22 +77,22 @@ begin
 	genGeneric : if (VENDOR /= VENDOR_ALTERA) and (VENDOR /= VENDOR_XILINX) generate
 		attribute ASYNC_REG                    : string;
 		attribute SHREG_EXTRACT                : string;
-	
+
 		signal Data_async                      : std_logic;
 		signal Data_meta                      : std_logic    := '1';
 		signal Data_sync                      : std_logic_vector(SYNC_DEPTH - 1 downto 0)    := (others => '1');
-	
+
 		-- Mark registers as asynchronous
 		attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
 		attribute ASYNC_REG      of Data_sync  : signal is "TRUE";
-	
+
 		-- Prevent XST from translating two FFs into SRL plus FF
 		attribute SHREG_EXTRACT of Data_meta  : signal is "NO";
 		attribute SHREG_EXTRACT of Data_sync  : signal is "NO";
-	
+
 	begin
 		Data_async  <= Input;
-	
+
 		process(Clock, Data_async)
 		begin
 			if (Data_async = '1') then
@@ -103,10 +103,10 @@ begin
 				Data_sync    <= Data_sync(Data_sync'high - 1 downto 0) & Data_meta;
 			end if;
 		end process;
-	
+
 		Output    <= Data_sync(Data_sync'high);
 	end generate;
-	
+
 	-- use dedicated and optimized 2 D-FF synchronizer for Altera FPGAs
 	genAltera : if VENDOR = VENDOR_ALTERA generate
 		sync : sync_Reset_Altera

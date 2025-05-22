@@ -12,7 +12,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023-2025 PLC2 Design GmbH, Endingen - Germany
+-- Copryright 2017-2025 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -31,7 +31,13 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-context work.common;
+library osvvm;
+context osvvm.OsvvmContext;
+
+library PoC;
+use     PoC.utils.all;
+use     PoC.vectors.all;
+use     PoC.strings.all;
 
 architecture Simple of arith_prng_TestController is
 	signal TestDone : integer_barrier := 1;
@@ -50,7 +56,7 @@ begin
 		SetLogEnable(DEBUG,  FALSE);
 		wait for 0 ns; wait for 0 ns;
 
-		TranscriptOpen(OSVVM_RESULTS_DIR & "arith_prng_Simple.log");
+		TranscriptOpen;
 		SetTranscriptMirror(TRUE);
 
 		wait until Reset = '0';
@@ -61,7 +67,6 @@ begin
 		AlertIf(ProcID, GetAffirmCount < 1, "Test is not Self-Checking");
 
 		EndOfTestReports(ReportAll => TRUE);
-		TranscriptClose;
 		std.env.stop;
 	end process;
 

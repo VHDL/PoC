@@ -12,7 +12,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023-2025 PLC2 Design GmbH, Endingen - Germany
+-- Copryright 2017-2025 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -32,9 +32,6 @@ use     IEEE.std_logic_1164.all;
 
 library osvvm;
 context osvvm.OsvvmContext;
-
-library tb_common;
-use     tb_common.OsvvmTestCommonPkg.OSVVM_RESULTS_DIR;
 
 
 entity arith_prng_TestController is

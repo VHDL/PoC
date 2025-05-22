@@ -12,7 +12,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2023-2025 PLC2 Design GmbH, Endingen - Germany
+-- Copryright 2017-2025 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ use     IEEE.numeric_std.all;
 
 library osvvm;
 context osvvm.OsvvmContext;
+
+library PoC;
 
 
 entity arith_prng_TestHarness is
@@ -62,12 +64,12 @@ architecture TestHarness of arith_prng_TestHarness is
 	end component;
 
 begin
-	Osvvm.TbUtilPkg.CreateClock(
+	Osvvm.ClockResetPkg.CreateClock(
 		Clk    => Clock_100,
 		Period => TPERIOD_CLOCK
 	);
 
-	Osvvm.TbUtilPkg.CreateReset(
+	Osvvm.ClockResetPkg.CreateReset(
 		Reset       => Reset_100,
 		ResetActive => '1',
 		Clk         => Clock_100,

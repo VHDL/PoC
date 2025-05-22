@@ -5,6 +5,9 @@
 
 library PoC
 
+analyze $::poc::myConfigFile
+analyze $::poc::myProjectFile
+
 include ./common/common.pro
 include ./arith/arith.pro
 include ./mem/mem.pro

@@ -1,6 +1,6 @@
 # =============================================================================
 # Authors:
-#	Jonas Schreiner
+#	Adrian Weiland, Jonas Schreiner
 #
 # License:
 # =============================================================================
@@ -19,29 +19,14 @@
 # limitations under the License.
 # =============================================================================
 
-namespace eval ::poc {
-	variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
-	variable myProjectFile "../tb/common/my_project.vhdl"
-	variable vendor "GENRIC"; # GENRIC for vendor-less build; Xilinx, Altera,... for vendor specific build
-}
-
-source ../lib/OSVVM-Scripts/StartUp.tcl
-
-# build ../lib/osvvm/osvvm.pro
-# build ../lib/OSVVM-Common/Common.pro
-# build ../lib/OSVVM-AXI4/AXI4.pro
-# build ../lib/OSVVM-UART/UART.pro
-
-if {$::osvvm::ToolName eq "GHDL"} {
-    SetExtendedAnalyzeOptions {-frelaxed -Wno-specs}
-    SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
-}
-
-if {$::osvvm::ToolName eq "RiveraPRO"} {
-    SetExtendedSimulationOptions {-unbounderror}
-}
-
-
-build ../src/PoC.pro
-
-build ../tb/RunAllTests.pro
+include ./arith/RunAllTests.pro
+#include ./bus/RunAllTests.pro
+#include ./cache/RunAllTests.pro
+#include ./common/RunAllTests.pro
+#include ./dstruct/RunAllTests.pro
+#include ./fifo/RunAllTests.pro
+#include ./io/RunAllTests.pro
+#include ./mem/RunAllTests.pro
+#include ./misc/RunAllTests.pro
+#include ./sim/RunAllTests.pro
+#include ./sort/RunAllTests.pro

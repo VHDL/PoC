@@ -14,7 +14,7 @@
 #
 # License:
 # ==============================================================================
-# Copyright 2017-2018 Patrick Lehmann - Bötzingen, Germany
+# Copryright 2017-2025 The PoC-Library Authors
 # Copyright 2007-2016 Technische Universität Dresden - Germany
 #											Chair of VLSI-Design, Diagnostics and Architecture
 #
@@ -136,7 +136,7 @@ GetVSimDirectories() {
 	PoC_sh=$1
 	VERBOSE=$2
 	DEBUG=$2
-	
+
 	# Get QuestaSim/ModelSim binary
 	test $VERBOSE -eq 1 && echo "  Query pyIPCMI for 'ModelSim:BinaryDirectory'"
 	test $DEBUG   -eq 1 && echo "    $PoC_sh query ModelSim:BinaryDirectory 2>/dev/null"
