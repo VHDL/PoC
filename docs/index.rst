@@ -129,12 +129,13 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
 
 .. raw:: latex
 
-   \part{References}
+   \part{References and Reports}
 
 .. toctree::
-   :caption: References
+   :caption: References and Reports
    :hidden:
 
+   unittests/index
    References/CommandReference
    References/Database
    PyInfrastructure/index

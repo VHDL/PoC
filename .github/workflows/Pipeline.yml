@@ -127,6 +127,7 @@ jobs:
             variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
           }
 
+          set ::osvvm::AnalyzeErrorStopCount  1
           SetExtendedAnalyzeOptions  {-frelaxed -Wno-specs}
 
           build ../../src/PoC.pro PoC
@@ -166,8 +167,17 @@ jobs:
             logs
             reports
             *.html
-            *.xml
             *.yml
+          retention-days: 1
+
+      - name: 📤 Upload 'GHDL-PoC-Report-XML' artifacts
+        uses: pyTooling/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: GHDL-PoC-Report-XML
+          working-directory: temp/ghdl
+          path: |
+            *.xml
           retention-days: 1
 
       - name: 📤 Upload 'GHDL-PoC' artifacts
@@ -181,11 +191,14 @@ jobs:
 
   Documentation:
     uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r4
+    needs:
+      - Build-PoC
     with:
-      requirements:   '-r docs/requirements.txt'
-      doc_directory:  'docs'
-      html_artifact:  'PoC-HTML'
-      latex_artifact: 'PoC-LaTeX'
+      requirements:          '-r docs/requirements.txt'
+      doc_directory:         'docs'
+      unittest_xml_artifact: 'GHDL-PoC-Report-XML'
+      html_artifact:         'PoC-HTML'
+      latex_artifact:        'PoC-LaTeX'
 
   PublishToGitHubPages:
     uses: pyTooling/Actions/.github/workflows/PublishToGitHubPages.yml@dev
