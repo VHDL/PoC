@@ -55,15 +55,15 @@ use     IEEE.std_logic_1164.all;
 
 
 package AXI4Stream is
-  type T_AXI4Stream_M2S is record
-    Valid : std_logic;
-    Data  : std_logic_vector;
-    Keep  : std_logic_vector;
-    Last  : std_logic;
-    User  : std_logic_vector;
-    Dest  : std_logic_vector;
-    ID    : std_logic_vector;
-  end record;
+	type T_AXI4Stream_M2S is record
+		Valid : std_logic;
+		Data  : std_logic_vector;
+		Keep  : std_logic_vector;
+		Last  : std_logic;
+		User  : std_logic_vector;
+		Dest  : std_logic_vector;
+		ID    : std_logic_vector;
+	end record;
 
 	type T_AXI4Stream_S2M is record
 		Ready : std_logic;
@@ -74,52 +74,53 @@ package AXI4Stream is
 	type T_AXI4Stream_S2M_VECTOR is array(natural range <>) of T_AXI4Stream_S2M;
 
 	function Initialize_AXI4Stream_M2S(DataBits : natural; UserBits : positive := 1; DestBits : positive := 1; IDBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_M2S;
-	function Initialize_AXI4Stream_S2M(                    UserBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_S2M;
+	function Initialize_AXI4Stream_S2M(UserBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_S2M;
 
-	function BlockTransaction(       BlockTransaction : std_logic; In_M2S : T_AXI4Stream_M2S) return T_AXI4Stream_M2S;
-	function BlockTransaction(       BlockTransaction : std_logic; In_S2M : T_AXI4Stream_S2M) return T_AXI4Stream_S2M;
-	function get_TotalDataBits(                                    In_M2S : T_AXI4Stream_M2S) return positive;
-	function serialize(                                            In_M2S : T_AXI4Stream_M2S) return std_logic_vector; --Puts all data-fields in a std_logic_vector
+	function BlockTransaction(BlockTransaction : std_logic; In_M2S : T_AXI4Stream_M2S) return T_AXI4Stream_M2S;
+	function BlockTransaction(BlockTransaction : std_logic; In_S2M : T_AXI4Stream_S2M) return T_AXI4Stream_S2M;
+	function get_TotalDataBits(In_M2S : T_AXI4Stream_M2S) return positive;
+	function serialize(In_M2S         : T_AXI4Stream_M2S) return std_logic_vector; --Puts all data-fields in a std_logic_vector
 	function get_LastFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic;
 	function get_DataFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector;
 	function get_UserFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector;
 	function get_DestFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector;
-	function get_IDFromSerialized(  Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector;
+	function get_IDFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector;
 	function get_KeepFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector;
+
 end package;
 
-
 package body AXI4Stream is
+
 	function Initialize_AXI4Stream_M2S(DataBits : natural; UserBits : positive := 1; DestBits : positive := 1; IDBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_M2S is
 		constant init : T_AXI4Stream_M2S(
-				Data(DataBits -1 downto 0),
-				User(UserBits -1 downto 0),
-				Dest(DestBits -1 downto 0),
-				ID(    IDBits -1 downto 0),
-				Keep((DataBits / 8) -1 downto 0)
-			) := (
-				Valid => Value,
-				Data  => (others => Value),
-				Keep  => (others => Value),
-				Last  => Value,
-				Dest  => (others => Value),
-				ID    => (others => Value),
-				User  => (others => Value)
-			);
-	begin
-		return init;
-	end function;
-
-	function Initialize_AXI4Stream_S2M(UserBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_S2M is
-		constant init : T_AXI4Stream_S2M(User(UserBits -1 downto 0)) := (
-			Ready    => Value,
-			User     => (others => Value)
+			Data(DataBits - 1 downto 0),
+			User(UserBits - 1 downto 0),
+			Dest(DestBits - 1 downto 0),
+			ID(IDBits - 1 downto 0),
+			Keep((DataBits / 8) - 1 downto 0)
+		) := (
+			Valid => Value,
+			Data => (others => Value),
+			Keep => (others => Value),
+			Last  => Value,
+			Dest => (others => Value),
+			ID => (others => Value),
+			User => (others => Value)
 		);
 	begin
 		return init;
 	end function;
 
-	function BlockTransaction(       BlockTransaction : std_logic; In_M2S : T_AXI4Stream_M2S) return T_AXI4Stream_M2S is
+	function Initialize_AXI4Stream_S2M(UserBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_S2M is
+		constant init : T_AXI4Stream_S2M(User(UserBits - 1 downto 0)) := (
+			Ready => Value,
+			User => (others => Value)
+		);
+	begin
+		return init;
+	end function;
+
+	function BlockTransaction(BlockTransaction : std_logic; In_M2S : T_AXI4Stream_M2S) return T_AXI4Stream_M2S is
 		variable temp : In_M2S'subtype;
 	begin
 		temp.Valid := In_M2S.Valid and not BlockTransaction;
@@ -132,7 +133,7 @@ package body AXI4Stream is
 		return temp;
 	end function;
 
-	function BlockTransaction(       BlockTransaction : std_logic; In_S2M : T_AXI4Stream_S2M) return T_AXI4Stream_S2M is
+	function BlockTransaction(BlockTransaction : std_logic; In_S2M : T_AXI4Stream_S2M) return T_AXI4Stream_S2M is
 		variable temp : In_S2M'subtype;
 	begin
 		temp.Ready := In_S2M.Ready and not BlockTransaction;
@@ -140,12 +141,12 @@ package body AXI4Stream is
 		return temp;
 	end function;
 
-	function get_TotalDataBits(     In_M2S : T_AXI4Stream_M2S) return positive is
+	function get_TotalDataBits(In_M2S : T_AXI4Stream_M2S) return positive is
 	begin
 		return In_M2S.Data'length + 1 + In_M2S.User'length + In_M2S.Dest'length + In_M2S.ID'length + In_M2S.Keep'length;
 	end function;
 
-	function serialize(             In_M2S : T_AXI4Stream_M2S) return std_logic_vector is
+	function serialize(In_M2S : T_AXI4Stream_M2S) return std_logic_vector is
 	begin
 		return In_M2S.ID & In_M2S.Dest & In_M2S.User & In_M2S.Last & In_M2S.Keep & In_M2S.Data;
 	end function;
@@ -159,41 +160,39 @@ package body AXI4Stream is
 	function get_DataFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector is
 	begin
 		assert get_TotalDataBits(In_M2S) = Serialized'length report "AXI4Stream.pkg.get_LastFromSerialized:: Size of Serialized Data does not metch packing size of In_M2S!" severity failure;
-		return Serialized(In_M2S.Data'length -1 + Serialized'low downto Serialized'low);
+		return Serialized(In_M2S.Data'length - 1 + Serialized'low downto Serialized'low);
 	end function;
 
 	function get_KeepFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector is
 	begin
 		assert get_TotalDataBits(In_M2S) = Serialized'length report "AXI4Stream.pkg.get_LastFromSerialized:: Size of Serialized Data does not metch packing size of In_M2S!" severity failure;
-		return Serialized(In_M2S.Keep'length -1 + In_M2S.Data'length + Serialized'low downto In_M2S.Data'length + Serialized'low);
+		return Serialized(In_M2S.Keep'length - 1 + In_M2S.Data'length + Serialized'low downto In_M2S.Data'length + Serialized'low);
 	end function;
 
 	function get_UserFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector is
 	begin
 		assert get_TotalDataBits(In_M2S) = Serialized'length report "AXI4Stream.pkg.get_LastFromSerialized:: Size of Serialized Data does not metch packing size of In_M2S!" severity failure;
-		return Serialized(In_M2S.User'length -1 + 1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low downto
-		                                          1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low);
+		return Serialized(In_M2S.User'length - 1 + 1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low downto
+		1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low);
 	end function;
 
 	function get_DestFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector is
 	begin
 		assert get_TotalDataBits(In_M2S) = Serialized'length report "AXI4Stream.pkg.get_LastFromSerialized:: Size of Serialized Data does not metch packing size of In_M2S!" severity failure;
-		return Serialized(In_M2S.Dest'length -1 + In_M2S.User'length + 1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low downto
-		                                          In_M2S.User'length + 1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low);
+		return Serialized(In_M2S.Dest'length - 1 + In_M2S.User'length + 1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low downto
+		In_M2S.User'length + 1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low);
 	end function;
 
-	function get_IDFromSerialized(  Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector is
+	function get_IDFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic_vector is
 	begin
 		assert get_TotalDataBits(In_M2S) = Serialized'length report "AXI4Stream.pkg.get_LastFromSerialized:: Size of Serialized Data does not metch packing size of In_M2S!" severity failure;
-		return Serialized(In_M2S.ID'length -1 + In_M2S.Dest'length + In_M2S.User'length + 1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low downto
-		                                        In_M2S.Dest'length + In_M2S.User'length + 1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low);
+		return Serialized(In_M2S.ID'length - 1 + In_M2S.Dest'length + In_M2S.User'length + 1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low downto
+		In_M2S.Dest'length + In_M2S.User'length + 1 + In_M2S.Keep'length + In_M2S.Data'length + Serialized'low);
 	end function;
 
 end package body;
 
 use work.AXI4Stream.all;
-
-
 package AXI4Stream_Sized is
 	generic (
 		DATA_BITS     : positive;
@@ -208,7 +207,7 @@ package AXI4Stream_Sized is
 		Data(DATA_BITS - 1 downto 0),
 		Keep(KEEP_BITS - 1 downto 0),
 		Dest(DEST_BITS - 1 downto 0),
-		ID(    ID_BITS - 1 downto 0),
+		ID(ID_BITS - 1 downto 0),
 		User(USER_BITS - 1 downto 0)
 	);
 	subtype SIZED_S2M is T_AXI4STREAM_S2M(
@@ -219,7 +218,7 @@ package AXI4Stream_Sized is
 		Data(DATA_BITS - 1 downto 0),
 		Keep(KEEP_BITS - 1 downto 0),
 		Dest(DEST_BITS - 1 downto 0),
-		ID(    ID_BITS - 1 downto 0),
+		ID(ID_BITS - 1 downto 0),
 		User(USER_BITS - 1 downto 0)
 	);
 	subtype SIZED_S2M_VECTOR is T_AXI4STREAM_S2M_VECTOR(open)(

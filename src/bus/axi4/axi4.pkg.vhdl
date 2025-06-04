@@ -43,191 +43,150 @@ use     work.AXI4Lite.all;
 use     work.AXI4_Full.all;
 
 package AXI4 is
-  --ATTENTION::Whe using this function, keep in mind that return id is always zero!
+	--ATTENTION::Whe using this function, keep in mind that return id is always zero!
 	--           Use only when connected AXI4Full is not using ID!
 	--           If ID is needed, use Moduel "AXI4_to_AXI4Lite"
-  function to_AXI4LITE_BUS(full : T_AXI4_BUS_M2S; databit : natural := 0) return T_AXI4LITE_BUS_M2S;
-  function to_AXI4LITE_BUS(full : T_AXI4_BUS_S2M; databit : natural := 0) return T_AXI4LITE_BUS_S2M;
+	function to_AXI4LITE_BUS(full : T_AXI4_BUS_M2S; databit : natural := 0) return T_AXI4LITE_BUS_M2S;
+	function to_AXI4LITE_BUS(full : T_AXI4_BUS_S2M; databit : natural := 0) return T_AXI4LITE_BUS_S2M;
 
-  function to_AXI4_BUS(lite : T_AXI4LITE_BUS_M2S; databit : natural := 0; id_bits : positive := 1; user_bits : positive := 1) return T_AXI4_BUS_M2S;
-  function to_AXI4_BUS(lite : T_AXI4LITE_BUS_S2M; databit : natural := 0; id_bits : positive := 1; user_bits : positive := 1) return T_AXI4_BUS_S2M;
+	function to_AXI4_BUS(lite : T_AXI4LITE_BUS_M2S; databit : natural := 0; id_bits : positive := 1; user_bits : positive := 1) return T_AXI4_BUS_M2S;
+	function to_AXI4_BUS(lite : T_AXI4LITE_BUS_S2M; databit : natural := 0; id_bits : positive := 1; user_bits : positive := 1) return T_AXI4_BUS_S2M;
 
-  -- AXI4 common types and constants
-  alias T_AXI4_Response               is work.AXI4_Common.T_AXI4_Response;
-	alias C_AXI4_RESPONSE_OKAY          is work.AXI4_Common.C_AXI4_RESPONSE_OKAY;
-	alias C_AXI4_RESPONSE_EX_OKAY       is work.AXI4_Common.C_AXI4_RESPONSE_EX_OKAY;
-	alias C_AXI4_RESPONSE_SLAVE_ERROR   is work.AXI4_Common.C_AXI4_RESPONSE_SLAVE_ERROR;
-	alias C_AXI4_RESPONSE_DECODE_ERROR  is work.AXI4_Common.C_AXI4_RESPONSE_DECODE_ERROR;
-	alias C_AXI4_RESPONSE_INIT          is work.AXI4_Common.C_AXI4_RESPONSE_INIT;
+	-- AXI4 common types and constants
+	alias T_AXI4_Response is work.AXI4_Common.T_AXI4_Response;
+	alias C_AXI4_RESPONSE_OKAY is work.AXI4_Common.C_AXI4_RESPONSE_OKAY;
+	alias C_AXI4_RESPONSE_EX_OKAY is work.AXI4_Common.C_AXI4_RESPONSE_EX_OKAY;
+	alias C_AXI4_RESPONSE_SLAVE_ERROR is work.AXI4_Common.C_AXI4_RESPONSE_SLAVE_ERROR;
+	alias C_AXI4_RESPONSE_DECODE_ERROR is work.AXI4_Common.C_AXI4_RESPONSE_DECODE_ERROR;
+	alias C_AXI4_RESPONSE_INIT is work.AXI4_Common.C_AXI4_RESPONSE_INIT;
 
-  alias T_AXI4_Cache                  is work.AXI4_Common.T_AXI4_Cache;
-  alias C_AXI4_CACHE_INIT             is work.AXI4_Common.C_AXI4_CACHE_INIT;
-  alias C_AXI4_CACHE                  is work.AXI4_Common.C_AXI4_CACHE;
+	alias T_AXI4_Cache is work.AXI4_Common.T_AXI4_Cache;
+	alias C_AXI4_CACHE_INIT is work.AXI4_Common.C_AXI4_CACHE_INIT;
+	alias C_AXI4_CACHE is work.AXI4_Common.C_AXI4_CACHE;
 
-  alias T_AXI4_QoS                    is work.AXI4_Common.T_AXI4_QoS;
-  alias C_AXI4_QOS_INIT               is work.AXI4_Common.C_AXI4_QOS_INIT;
+	alias T_AXI4_QoS is work.AXI4_Common.T_AXI4_QoS;
+	alias C_AXI4_QOS_INIT is work.AXI4_Common.C_AXI4_QOS_INIT;
 
-  alias T_AXI4_Region                 is work.AXI4_Common.T_AXI4_Region;
-  alias C_AXI4_REGION_INIT            is work.AXI4_Common.C_AXI4_REGION_INIT;
+	alias T_AXI4_Region is work.AXI4_Common.T_AXI4_Region;
+	alias C_AXI4_REGION_INIT is work.AXI4_Common.C_AXI4_REGION_INIT;
 
-  alias T_AXI4_Size                   is work.AXI4_Common.T_AXI4_Size;
-  alias C_AXI4_SIZE_1                 is work.AXI4_Common.C_AXI4_SIZE_1;
-  alias C_AXI4_SIZE_2                 is work.AXI4_Common.C_AXI4_SIZE_2;
-  alias C_AXI4_SIZE_4                 is work.AXI4_Common.C_AXI4_SIZE_4;
-  alias C_AXI4_SIZE_8                 is work.AXI4_Common.C_AXI4_SIZE_8;
-  alias C_AXI4_SIZE_16                is work.AXI4_Common.C_AXI4_SIZE_16;
-  alias C_AXI4_SIZE_32                is work.AXI4_Common.C_AXI4_SIZE_32;
-  alias C_AXI4_SIZE_64                is work.AXI4_Common.C_AXI4_SIZE_64;
-  alias C_AXI4_SIZE_128               is work.AXI4_Common.C_AXI4_SIZE_128;
-  alias C_AXI4_SIZE_INIT              is work.AXI4_Common.C_AXI4_SIZE_INIT;
+	alias T_AXI4_Size is work.AXI4_Common.T_AXI4_Size;
+	alias C_AXI4_SIZE_1 is work.AXI4_Common.C_AXI4_SIZE_1;
+	alias C_AXI4_SIZE_2 is work.AXI4_Common.C_AXI4_SIZE_2;
+	alias C_AXI4_SIZE_4 is work.AXI4_Common.C_AXI4_SIZE_4;
+	alias C_AXI4_SIZE_8 is work.AXI4_Common.C_AXI4_SIZE_8;
+	alias C_AXI4_SIZE_16 is work.AXI4_Common.C_AXI4_SIZE_16;
+	alias C_AXI4_SIZE_32 is work.AXI4_Common.C_AXI4_SIZE_32;
+	alias C_AXI4_SIZE_64 is work.AXI4_Common.C_AXI4_SIZE_64;
+	alias C_AXI4_SIZE_128 is work.AXI4_Common.C_AXI4_SIZE_128;
+	alias C_AXI4_SIZE_INIT is work.AXI4_Common.C_AXI4_SIZE_INIT;
 
-  alias T_AXI4_Burst                  is work.AXI4_Common.T_AXI4_Burst;
-  alias C_AXI4_BURST_FIXED            is work.AXI4_Common.C_AXI4_BURST_FIXED;
-  alias C_AXI4_BURST_INCR             is work.AXI4_Common.C_AXI4_BURST_INCR;
-  alias C_AXI4_BURST_WRAP             is work.AXI4_Common.C_AXI4_BURST_WRAP;
-  alias C_AXI4_BURST_INIT             is work.AXI4_Common.C_AXI4_BURST_INIT;
+	alias T_AXI4_Burst is work.AXI4_Common.T_AXI4_Burst;
+	alias C_AXI4_BURST_FIXED is work.AXI4_Common.C_AXI4_BURST_FIXED;
+	alias C_AXI4_BURST_INCR is work.AXI4_Common.C_AXI4_BURST_INCR;
+	alias C_AXI4_BURST_WRAP is work.AXI4_Common.C_AXI4_BURST_WRAP;
+	alias C_AXI4_BURST_INIT is work.AXI4_Common.C_AXI4_BURST_INIT;
 
-  alias T_AXI4_Protect                is work.AXI4_Common.T_AXI4_Protect;
-  alias C_AXI4_PROTECT_INIT           is work.AXI4_Common.C_AXI4_PROTECT_INIT;
-  alias C_AXI4_PROTECT                is work.AXI4_Common.C_AXI4_PROTECT;
-
-
-	-- AXI4 (full)
---	alias T_AXI4_Bus_M2S           is work.AXI4_Full.T_AXI4_Bus_M2S;
---	alias T_AXI4_Bus_S2M           is work.AXI4_Full.T_AXI4_Bus_S2M;
---  alias T_AXI4_Bus               is work.AXI4_Full.T_AXI4_Bus;
-
---  alias T_AXI4_Bus_M2S_VECTOR    is work.AXI4_Full.T_AXI4_Bus_M2S_VECTOR;
---  alias T_AXI4_Bus_S2M_VECTOR    is work.AXI4_Full.T_AXI4_Bus_S2M_VECTOR;
---  alias T_AXI4_Bus_VECTOR        is work.AXI4_Full.T_AXI4_Bus_VECTOR;
-
---	alias Initialize_AXI4_Bus_M2S  is work.AXI4_Full.Initialize_AXI4_Bus_M2S[natural, natural, natural, natural, std_logic return T_AXI4_Bus_M2S];
---	alias Initialize_AXI4_Bus_S2M  is work.AXI4_Full.Initialize_AXI4_Bus_S2M[natural, natural, natural, natural, std_logic return T_AXI4_Bus_S2M];
---	alias Initialize_AXI4_Bus      is work.AXI4_Full.Initialize_AXI4_Bus    [natural, natural, natural, natural return T_AXI4_Bus];
-
-
-	-- AXI4-Lite
---	alias T_AXI4Lite_Bus_M2S           is work.AXI4Lite.T_AXI4Lite_Bus_M2S;
---	alias T_AXI4Lite_Bus_S2M           is work.AXI4Lite.T_AXI4Lite_Bus_S2M;
---  alias T_AXI4Lite_Bus               is work.AXI4Lite.T_AXI4Lite_Bus;
-
---  alias T_AXI4Lite_Bus_M2S_VECTOR    is work.AXI4Lite.T_AXI4Lite_Bus_M2S_VECTOR;
---  alias T_AXI4Lite_Bus_S2M_VECTOR    is work.AXI4Lite.T_AXI4Lite_Bus_S2M_VECTOR;
---  alias T_AXI4Lite_Bus_VECTOR        is work.AXI4Lite.T_AXI4Lite_Bus_VECTOR;
-
---	alias Initialize_AXI4Lite_Bus_M2S  is work.AXI4Lite.Initialize_AXI4Lite_Bus_M2S[natural, natural, std_logic return T_AXI4Lite_Bus_M2S];
---	alias Initialize_AXI4Lite_Bus_S2M  is work.AXI4Lite.Initialize_AXI4Lite_Bus_S2M[natural, natural, std_logic return T_AXI4Lite_Bus_S2M];
---	alias Initialize_AXI4Lite_Bus      is work.AXI4Lite.Initialize_AXI4Lite_Bus    [natural, natural return T_AXI4Lite_Bus];
-
-
-	-- AXI4-Stream
---	alias T_AXI4Stream_M2S is work.AXI4Stream.T_AXI4Stream_M2S;
---	alias T_AXI4Stream_S2M is work.AXI4Stream.T_AXI4Stream_S2M;
-
---	alias T_AXI4Stream_M2S_VECTOR is work.AXI4Stream.T_AXI4Stream_M2S_VECTOR;
---	alias T_AXI4Stream_S2M_VECTOR is work.AXI4Stream.T_AXI4Stream_S2M_VECTOR;
-
---	alias Initialize_AXI4Stream_M2S is work.AXI4Stream.Initialize_AXI4Stream_M2S[natural, natural, std_logic return T_AXI4Stream_M2S];
---	alias Initialize_AXI4Stream_S2M is work.AXI4Stream.Initialize_AXI4Stream_S2M[         natural, std_logic return T_AXI4Stream_S2M];
+	alias T_AXI4_Protect is work.AXI4_Common.T_AXI4_Protect;
+	alias C_AXI4_PROTECT_INIT is work.AXI4_Common.C_AXI4_PROTECT_INIT;
+	alias C_AXI4_PROTECT is work.AXI4_Common.C_AXI4_PROTECT;
 end package;
-
-
 package body AXI4 is
 
-  function to_AXI4LITE_BUS(full : T_AXI4_BUS_M2S; databit : natural := 0) return T_AXI4LITE_BUS_M2S is
-  	constant addrbit   : natural := full.AWAddr'length;
-  	constant databit_i : natural := ite(databit = 0, full.WData'length, databit);
-  	variable temp : T_AXI4LITE_BUS_M2S(AWAddr(addrbit -1 DOWNTO 0), WData(databit_i-1 DOWNTO 0), WStrb((databit_i/8)-1 DOWNTO 0), ARAddr(addrbit -1 DOWNTO 0));
-  begin
-  	temp.AWValid     := full.AWValid;
-		temp.AWAddr      := full.AWAddr ;
-		temp.AWCache     := full.AWCache;
-		temp.AWProt      := full.AWProt ;
-		temp.WValid      := full.WValid ;
-		temp.WData       := resize(full.WData, databit_i)  ;
-		temp.WStrb       := resize(full.WStrb, databit_i/8)  ;
-		temp.BReady      := full.BReady ;
-		temp.ARValid     := full.ARValid;
-		temp.ARAddr      := full.ARAddr ;
-		temp.ARCache     := full.ARCache;
-		temp.ARProt      := full.ARProt ;
-		temp.RReady      := full.RReady ;
-  	return temp;
-  end function;
-
-  function to_AXI4LITE_BUS(full : T_AXI4_BUS_S2M; databit : natural := 0) return T_AXI4LITE_BUS_S2M is
-  	constant databit_i : natural := ite(databit = 0, full.RData'length, databit);
-		variable temp : T_AXI4LITE_BUS_S2M(RData(databit_i -1 DOWNTO 0));
+	function to_AXI4LITE_BUS(full : T_AXI4_BUS_M2S; databit : natural := 0) return T_AXI4LITE_BUS_M2S is
+		constant addrbit   : natural                                      := full.AWAddr'length;
+		constant databit_i : natural                                      := ite(databit = 0, full.WData'length, databit);
+		variable temp      : T_AXI4LITE_BUS_M2S(AWAddr(addrbit - 1 downto 0), WData(databit_i - 1 downto 0), WStrb((databit_i/8) - 1 downto 0), ARAddr(addrbit - 1 downto 0));
 	begin
-		temp.WReady      := full.WReady ;
-		temp.BValid      := full.BValid ;
-		temp.BResp       := full.BResp  ;
-		temp.ARReady     := full.ARReady;
-		temp.AWReady     := full.AWReady;
-		temp.RValid      := full.RValid ;
-		temp.RData       := resize(full.RData, databit_i)  ;
-		temp.RResp       := full.RResp  ;
+		temp.AWValid := full.AWValid;
+		temp.AWAddr  := full.AWAddr;
+		temp.AWCache := full.AWCache;
+		temp.AWProt  := full.AWProt;
+		temp.WValid  := full.WValid;
+		temp.WData   := resize(full.WData, databit_i);
+		temp.WStrb   := resize(full.WStrb, databit_i/8);
+		temp.BReady  := full.BReady;
+		temp.ARValid := full.ARValid;
+		temp.ARAddr  := full.ARAddr;
+		temp.ARCache := full.ARCache;
+		temp.ARProt  := full.ARProt;
+		temp.RReady  := full.RReady;
 		return temp;
 	end function;
 
-  function to_AXI4_BUS(lite : T_AXI4LITE_BUS_M2S; databit : natural := 0; id_bits : positive := 1; user_bits : positive := 1) return T_AXI4_BUS_M2S is
-  	constant addrbit   : natural := lite.AWAddr'length;
-  	constant databit_i : natural := ite(databit = 0, lite.WData'length, databit);
-  	variable temp : T_AXI4_BUS_M2S(AWAddr(addrbit -1 DOWNTO 0), WData(databit_i-1 DOWNTO 0), WStrb((databit_i/8)-1 DOWNTO 0),
-		                               ARAddr(addrbit -1 DOWNTO 0), AWID(id_bits -1 DOWNTO 0), AWUser(user_bits -1 DOWNTO 0),
-		                               WUser(user_bits -1 DOWNTO 0), ARID(id_bits -1 DOWNTO 0), ARUser(user_bits -1 DOWNTO 0));
-  begin
-		temp.AWAddr      := lite.AWAddr ;
-		temp.AWValid     := lite.AWValid;
-		temp.WValid      := lite.WValid ;
-		temp.WLast       := '1';
-		temp.WData       := resize(lite.WData, databit_i)  ;
-		temp.WStrb       := resize(lite.WStrb, databit_i/8)  ;
-		temp.BReady      := lite.BReady ;
-		temp.ARValid     := lite.ARValid;
-		temp.ARAddr      := lite.ARAddr ;
-		temp.RReady      := lite.RReady ;
-		temp.AWCache     := lite.AWCache;
-		temp.AWProt      := lite.AWProt ;
-		temp.ARCache     := lite.ARCache;
-		temp.ARProt      := lite.ARProt ;
-		temp.ARLen       := (others => '0');
-		temp.AWLen       := (others => '0');
-		temp.ARLock      := (others => '0');
-		temp.AWLock      := (others => '0');
-		temp.ARQOS       := (others => '0');
-		temp.ARRegion    := (others => '0');
-		temp.AWQOS       := (others => '0');
-		temp.AWRegion    := (others => '0');
-		temp.AWBurst     := C_AXI4_BURST_FIXED;
-		temp.ARBurst     := C_AXI4_BURST_FIXED;
-		temp.ARSize      := std_logic_vector(to_unsigned(log2ceil(ite(databit_i >= lite.WData'length, lite.WData'length, databit) /8),3));
-		temp.AWSize      := std_logic_vector(to_unsigned(log2ceil(ite(databit_i >= lite.WData'length, lite.WData'length, databit) /8),3));
-		temp.ARUser      := (others => '0');
-		temp.WUser       := (others => '0');
-		temp.AWUser      := (others => '0');
-		temp.AWID        := (others => '0');
-		temp.ARID        := (others => '0');
-  	return temp;
-  end function;
-
-  function to_AXI4_BUS(lite : T_AXI4LITE_BUS_S2M; databit : natural := 0; id_bits : positive := 1; user_bits : positive := 1) return T_AXI4_BUS_S2M is
-  	constant databit_i : natural := ite(databit = 0, lite.RData'length, databit);
-  	variable temp : T_AXI4_Bus_S2M(RData(databit_i -1 DOWNTO 0), BID(id_bits -1 DOWNTO 0), BUser(user_bits -1 DOWNTO 0), RID(id_bits -1 DOWNTO 0), RUser(user_bits -1 DOWNTO 0));
-  begin
-		temp.AWReady     := lite.AWReady;
-		temp.WReady      := lite.WReady ;
-		temp.BValid      := lite.BValid ;
-		temp.BResp       := lite.BResp  ;
-		temp.ARReady     := lite.ARReady;
-		temp.RValid      := lite.RValid ;
-		temp.RData       := resize(lite.RData, databit_i)  ;
-		temp.RResp       := lite.RResp  ;
-		temp.RLast       := '1';
-		temp.BID         := (others => '0');
-		temp.BUser       := (others => '0');
-		temp.RID         := (others => '0');
-		temp.RUser       := (others => '0');
+	function to_AXI4LITE_BUS(full : T_AXI4_BUS_S2M; databit : natural := 0) return T_AXI4LITE_BUS_S2M is
+		constant databit_i : natural                                      := ite(databit = 0, full.RData'length, databit);
+		variable temp      : T_AXI4LITE_BUS_S2M(RData(databit_i - 1 downto 0));
+	begin
+		temp.WReady  := full.WReady;
+		temp.BValid  := full.BValid;
+		temp.BResp   := full.BResp;
+		temp.ARReady := full.ARReady;
+		temp.AWReady := full.AWReady;
+		temp.RValid  := full.RValid;
+		temp.RData   := resize(full.RData, databit_i);
+		temp.RResp   := full.RResp;
 		return temp;
-  end function;
+	end function;
+
+	function to_AXI4_BUS(lite : T_AXI4LITE_BUS_M2S; databit : natural := 0; id_bits : positive := 1; user_bits : positive := 1) return T_AXI4_BUS_M2S is
+		constant addrbit   : natural := lite.AWAddr'length;
+		constant databit_i : natural := ite(databit = 0, lite.WData'length, databit);
+		variable temp      : T_AXI4_BUS_M2S(AWAddr(addrbit - 1 downto 0), WData(databit_i - 1 downto 0), WStrb((databit_i/8) - 1 downto 0),
+		ARAddr(addrbit - 1 downto 0), AWID(id_bits - 1 downto 0), AWUser(user_bits - 1 downto 0),
+		WUser(user_bits - 1 downto 0), ARID(id_bits - 1 downto 0), ARUser(user_bits - 1 downto 0));
+	begin
+		temp.AWAddr   := lite.AWAddr;
+		temp.AWValid  := lite.AWValid;
+		temp.WValid   := lite.WValid;
+		temp.WLast    := '1';
+		temp.WData    := resize(lite.WData, databit_i);
+		temp.WStrb    := resize(lite.WStrb, databit_i/8);
+		temp.BReady   := lite.BReady;
+		temp.ARValid  := lite.ARValid;
+		temp.ARAddr   := lite.ARAddr;
+		temp.RReady   := lite.RReady;
+		temp.AWCache  := lite.AWCache;
+		temp.AWProt   := lite.AWProt;
+		temp.ARCache  := lite.ARCache;
+		temp.ARProt   := lite.ARProt;
+		temp.ARLen    := (others => '0');
+		temp.AWLen    := (others => '0');
+		temp.ARLock   := (others => '0');
+		temp.AWLock   := (others => '0');
+		temp.ARQOS    := (others => '0');
+		temp.ARRegion := (others => '0');
+		temp.AWQOS    := (others => '0');
+		temp.AWRegion := (others => '0');
+		temp.AWBurst  := C_AXI4_BURST_FIXED;
+		temp.ARBurst  := C_AXI4_BURST_FIXED;
+		temp.ARSize   := std_logic_vector(to_unsigned(log2ceil(ite(databit_i >= lite.WData'length, lite.WData'length, databit) /8), 3));
+		temp.AWSize   := std_logic_vector(to_unsigned(log2ceil(ite(databit_i >= lite.WData'length, lite.WData'length, databit) /8), 3));
+		temp.ARUser   := (others => '0');
+		temp.WUser    := (others => '0');
+		temp.AWUser   := (others => '0');
+		temp.AWID     := (others => '0');
+		temp.ARID     := (others => '0');
+		return temp;
+	end function;
+
+	function to_AXI4_BUS(lite : T_AXI4LITE_BUS_S2M; databit : natural := 0; id_bits : positive := 1; user_bits : positive := 1) return T_AXI4_BUS_S2M is
+		constant databit_i : natural := ite(databit = 0, lite.RData'length, databit);
+		variable temp      : T_AXI4_Bus_S2M(RData(databit_i - 1 downto 0), BID(id_bits - 1 downto 0), BUser(user_bits - 1 downto 0), RID(id_bits - 1 downto 0), RUser(user_bits - 1 downto 0));
+	begin
+		temp.AWReady := lite.AWReady;
+		temp.WReady  := lite.WReady;
+		temp.BValid  := lite.BValid;
+		temp.BResp   := lite.BResp;
+		temp.ARReady := lite.ARReady;
+		temp.RValid  := lite.RValid;
+		temp.RData   := resize(lite.RData, databit_i);
+		temp.RResp   := lite.RResp;
+		temp.RLast   := '1';
+		temp.BID     := (others => '0');
+		temp.BUser   := (others => '0');
+		temp.RID     := (others => '0');
+		temp.RUser   := (others => '0');
+		return temp;
+	end function;
 end package body;
