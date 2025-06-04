@@ -42,7 +42,7 @@ entity arith_convert_bin2bcd is
 		BITS                : positive := 8;
 		DIGITS              : positive := 3;
 		RADIX               : positive := 2;
-		REGISTER_OUTPUT     : boolean  := FALSE     
+		REGISTER_OUTPUT     : boolean  := FALSE
 	);
 	port (
 		Clock               : in std_logic;
@@ -77,8 +77,8 @@ architecture rtl of arith_convert_bin2bcd is
 
 	signal Sign_d          : std_logic                                  := '0';
 	signal DelayShifter    : std_logic_vector(BINARY_SHIFTS downto 0)   := '1' & (BINARY_SHIFTS - 1 downto 0 => '0');
-	
-	
+
+
 
 	function nextBCD(Value : unsigned(4 downto 0)) return unsigned is
 		constant Temp : unsigned(4 downto 0) := Value - 10;
@@ -159,5 +159,5 @@ begin
 			BCDDigits_d  <= T_BCD(std_logic_vector(Digit_d)) when rising_edge(Clock) and Busy = '0';
 			BCDDigits(i) <= BCDDigits_d;
 		end generate;
-	end generate; 
-end;
+	end generate;
+end architecture;

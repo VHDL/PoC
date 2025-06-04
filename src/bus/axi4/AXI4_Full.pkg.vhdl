@@ -35,7 +35,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2024      PLC2 Design GmbH - Endingen, Germany
+-- Copyright 2017-2025 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -114,8 +114,8 @@ package AXI4_Full is
 	end record;
 	type T_AXI4_Bus_S2M_VECTOR is array(natural range <>) of T_AXI4_Bus_S2M;
 
-	function BlockTransaction(InBus : T_AXI4_Bus_S2M; Enable : std_logic) return T_AXI4_Bus_S2M;
-	function BlockTransaction(InBus : T_AXI4_Bus_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_S2M_VECTOR;
+	function EnableTransaction(InBus : T_AXI4_Bus_S2M; Enable : std_logic) return T_AXI4_Bus_S2M;
+	function EnableTransaction(InBus : T_AXI4_Bus_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_S2M_VECTOR;
 
 	function DisableWrite(InBus : T_AXI4_Bus_S2M) return T_AXI4_Bus_S2M;
 	function DisableWrite(InBus : T_AXI4_Bus_S2M_VECTOR) return T_AXI4_Bus_S2M_VECTOR;
@@ -157,8 +157,8 @@ package AXI4_Full is
 	end record;
 	type T_AXI4_Bus_M2S_VECTOR is array(natural range <>) of T_AXI4_Bus_M2S;
 
-	function BlockTransaction(InBus : T_AXI4_Bus_M2S; Enable : std_logic) return T_AXI4_Bus_M2S;
-	function BlockTransaction(InBus : T_AXI4_Bus_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_M2S_VECTOR;
+	function EnableTransaction(InBus : T_AXI4_Bus_M2S; Enable : std_logic) return T_AXI4_Bus_M2S;
+	function EnableTransaction(InBus : T_AXI4_Bus_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_M2S_VECTOR;
 
 	function DisableWrite(InBus : T_AXI4_Bus_M2S) return T_AXI4_Bus_M2S;
 	function DisableWrite(InBus : T_AXI4_Bus_M2S_VECTOR) return T_AXI4_Bus_M2S_VECTOR;
@@ -187,7 +187,7 @@ package AXI4_Full is
 end package;
 package body AXI4_Full is
 
-	function BlockTransaction(InBus : T_AXI4_Bus_M2S; Enable : std_logic) return T_AXI4_Bus_M2S is
+	function EnableTransaction(InBus : T_AXI4_Bus_M2S; Enable : std_logic) return T_AXI4_Bus_M2S is
 		variable temp : InBus'subtype;
 	begin
 		temp.AWID     := InBus.AWID;
@@ -224,11 +224,11 @@ package body AXI4_Full is
 		return temp;
 	end function;
 
-	function BlockTransaction(InBus : T_AXI4_Bus_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_M2S_VECTOR is
+	function EnableTransaction(InBus : T_AXI4_Bus_M2S_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_M2S_VECTOR is
 		variable temp : InBus'subtype;
 	begin
 		for i in InBus'range loop
-			temp(i) := BlockTransaction(InBus(i), Enable(i));
+			temp(i) := EnableTransaction(InBus(i), Enable(i));
 		end loop;
 		return temp;
 	end function;
@@ -391,7 +391,7 @@ package body AXI4_Full is
 		return temp;
 	end function;
 
-	function BlockTransaction(InBus : T_AXI4_Bus_S2M; Enable : std_logic) return T_AXI4_Bus_S2M is
+	function EnableTransaction(InBus : T_AXI4_Bus_S2M; Enable : std_logic) return T_AXI4_Bus_S2M is
 		variable temp : InBus'subtype;
 	begin
 		temp.AWReady := InBus.AWReady and Enable;
@@ -410,11 +410,11 @@ package body AXI4_Full is
 		return temp;
 	end function;
 
-	function BlockTransaction(InBus : T_AXI4_Bus_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_S2M_VECTOR is
+	function EnableTransaction(InBus : T_AXI4_Bus_S2M_VECTOR; Enable : std_logic_vector) return T_AXI4_Bus_S2M_VECTOR is
 		variable temp : InBus'subtype;
 	begin
 		for i in InBus'range loop
-			temp(i) := BlockTransaction(InBus(i), Enable(i));
+			temp(i) := EnableTransaction(InBus(i), Enable(i));
 		end loop;
 		return temp;
 	end function;

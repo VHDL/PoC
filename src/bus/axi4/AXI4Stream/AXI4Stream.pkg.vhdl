@@ -35,7 +35,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2024      PLC2 Design GmbH - Endingen, Germany
+-- Copyright 2017-2025 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -76,8 +76,8 @@ package AXI4Stream is
 	function Initialize_AXI4Stream_M2S(DataBits : natural; UserBits : positive := 1; DestBits : positive := 1; IDBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_M2S;
 	function Initialize_AXI4Stream_S2M(UserBits : positive := 1; Value : std_logic := 'Z') return T_AXI4Stream_S2M;
 
-	function BlockTransaction(BlockTransaction : std_logic; In_M2S : T_AXI4Stream_M2S) return T_AXI4Stream_M2S;
-	function BlockTransaction(BlockTransaction : std_logic; In_S2M : T_AXI4Stream_S2M) return T_AXI4Stream_S2M;
+	function EnableTransaction(EnableTransaction : std_logic; In_M2S : T_AXI4Stream_M2S) return T_AXI4Stream_M2S;
+	function EnableTransaction(EnableTransaction : std_logic; In_S2M : T_AXI4Stream_S2M) return T_AXI4Stream_S2M;
 	function get_TotalDataBits(In_M2S : T_AXI4Stream_M2S) return positive;
 	function serialize(In_M2S         : T_AXI4Stream_M2S) return std_logic_vector; --Puts all data-fields in a std_logic_vector
 	function get_LastFromSerialized(Serialized : std_logic_vector; In_M2S : T_AXI4Stream_M2S) return std_logic;
@@ -120,10 +120,10 @@ package body AXI4Stream is
 		return init;
 	end function;
 
-	function BlockTransaction(BlockTransaction : std_logic; In_M2S : T_AXI4Stream_M2S) return T_AXI4Stream_M2S is
+	function EnableTransaction(EnableTransaction : std_logic; In_M2S : T_AXI4Stream_M2S) return T_AXI4Stream_M2S is
 		variable temp : In_M2S'subtype;
 	begin
-		temp.Valid := In_M2S.Valid and not BlockTransaction;
+		temp.Valid := In_M2S.Valid and not EnableTransaction;
 		temp.Data  := In_M2S.Data;
 		temp.Keep  := In_M2S.Keep;
 		temp.Last  := In_M2S.Last;
@@ -133,10 +133,10 @@ package body AXI4Stream is
 		return temp;
 	end function;
 
-	function BlockTransaction(BlockTransaction : std_logic; In_S2M : T_AXI4Stream_S2M) return T_AXI4Stream_S2M is
+	function EnableTransaction(EnableTransaction : std_logic; In_S2M : T_AXI4Stream_S2M) return T_AXI4Stream_S2M is
 		variable temp : In_S2M'subtype;
 	begin
-		temp.Ready := In_S2M.Ready and not BlockTransaction;
+		temp.Ready := In_S2M.Ready and not EnableTransaction;
 		temp.User  := In_S2M.User;
 		return temp;
 	end function;
