@@ -132,18 +132,6 @@ package AXI4Lite is
 	constant Data_Width    : natural := 32;
 	constant Name_Width    : natural := 64;
 
-	type T_AXI4_Register is record
-		Address : unsigned(Address_Width - 1 downto 0);
-		Data    : std_logic_vector(Data_Width - 1 downto 0);
-		Mask    : std_logic_vector(Data_Width - 1 downto 0);
-	end record;
-
-	function to_AXI4_Register(Name : string             := ""; Address : unsigned(Address_Width - 1 downto 0); Data : std_logic_vector(Data_Width - 1 downto 0); Mask : std_logic_vector(Data_Width - 1 downto 0)) return T_AXI4_Register;
-	function Initialize_AXI4_register(Value : std_logic := 'Z') return T_AXI4_Register;
-
-	type T_AXI4_Register_Vector is array (natural range <>) of T_AXI4_Register;
-
-	--------Define generic AXI4L Register Configuration--------
 	type T_ReadWrite_Config is (
 		constant_fromInit,
 		readable, readable_non_reg,
@@ -155,7 +143,7 @@ package AXI4Lite is
 	);
 	attribute Count of T_ReadWrite_Config : type is T_ReadWrite_Config'pos(T_ReadWrite_Config'high) + 1;
 
-	type T_AXI4_Register_Description is record
+	type T_AXI4_Register is record
 		Name                  : string(1 to Name_Width);
 		Address               : unsigned(Address_Width - 1 downto 0);
 		rw_config             : T_ReadWrite_Config;
@@ -164,63 +152,63 @@ package AXI4Lite is
 		Is_Interrupt_Register : boolean;
 	end record;
 
-	function to_string(reg : T_AXI4_Register_Description) return string;
+	function to_string(reg : T_AXI4_Register) return string;
 
-	type T_AXI4_Register_Description_Vector is array (natural range <>) of T_AXI4_Register_Description;
+	type T_AXI4_Register_Vector is array (natural range <>) of T_AXI4_Register;
 
 	--------File IO--------
-	impure function write_csv_file(FileName : string; reg : T_AXI4_Register_Description_Vector) return boolean;
-	impure function read_csv_file(FileName : string) return T_AXI4_Register_Description_Vector;
+	impure function write_csv_file(FileName : string; reg : T_AXI4_Register_Vector) return boolean;
+	impure function read_csv_file(FileName : string) return T_AXI4_Register_Vector;
 	impure function write_yml_file(
 		FileName : string;
-		reg      : T_AXI4_Register_Description_Vector;
+		reg      : T_AXI4_Register_Vector;
 		reg_name : string;
 		defines  : key_value_pair_v := (0 to 0 => C_key_value_pair_empty);
 		enums    : key_value_pair_v := (0 to 0 => C_key_value_pair_empty)
 	) return boolean;
 
 	--------Modify config--------
-	function filter_Register_Description_Vector(str : string; description_vector : T_AXI4_Register_Description_Vector) return T_AXI4_Register_Description_Vector;
-	function filter_Register_Description_Vector(char : character; description_vector : T_AXI4_Register_Description_Vector) return T_AXI4_Register_Description_Vector;
-	function Filter_DescriptionVector(Config : T_AXI4_Register_Description_Vector; filter : std_logic_vector) return T_AXI4_Register_Description_Vector;
-	function add_Prefix(prefix : string; Config : T_AXI4_Register_Description_Vector; offset : unsigned(Address_Width - 1 downto 0) := (others => '0')) return T_AXI4_Register_Description_Vector;
+	function filter_Register_Description_Vector(str : string; description_vector : T_AXI4_Register_Vector) return T_AXI4_Register_Vector;
+	function filter_Register_Description_Vector(char : character; description_vector : T_AXI4_Register_Vector) return T_AXI4_Register_Vector;
+	function Filter_DescriptionVector(Config : T_AXI4_Register_Vector; filter : std_logic_vector) return T_AXI4_Register_Vector;
+	function add_Prefix(prefix : string; Config : T_AXI4_Register_Vector; offset : unsigned(Address_Width - 1 downto 0) := (others => '0')) return T_AXI4_Register_Vector;
 
-	function to_AXI4_Register_Description(
+	function to_AXI4_Register(
 		Name                  : string := "";
 		Address               : unsigned(Address_Width - 1 downto 0);
 		writeable             : boolean;
 		Init_Value            : std_logic_vector(Data_Width - 1 downto 0) := (others => '0');
 		Auto_Clear_Mask       : std_logic_vector(Data_Width - 1 downto 0) := (others => '0');
 		Is_Interrupt_Register : boolean                                   := false
-	) return T_AXI4_Register_Description;
+	) return T_AXI4_Register;
 
-	function to_AXI4_Register_Description(
+	function to_AXI4_Register(
 		Name                  : string := "";
 		Address               : unsigned(Address_Width - 1 downto 0);
 		rw_config             : T_ReadWrite_Config                        := readWriteable;
 		Init_Value            : std_logic_vector(Data_Width - 1 downto 0) := (others => '0');
 		Auto_Clear_Mask       : std_logic_vector(Data_Width - 1 downto 0) := (others => '0');
 		Is_Interrupt_Register : boolean                                   := false
-	) return T_AXI4_Register_Description;
+	) return T_AXI4_Register;
 
 	--------Helper functions for usage--------
-	function get_addresses(description_vector     : T_AXI4_Register_Description_Vector) return T_SLUV;
-	function get_InitValue(description_vector     : T_AXI4_Register_Description_Vector) return T_SLVV;
-	function get_AutoClearMask(description_vector : T_AXI4_Register_Description_Vector) return T_SLVV;
-	function get_index(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer;
-	function get_NumberOfIndexes(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer;
-	function get_indexRange(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return T_INTVEC;
-	function get_Address(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return unsigned;
-	function get_Name(Address : unsigned(Address_Width - 1 downto 0); Register_Vector : T_AXI4_Register_Description_Vector) return string;
-	function get_Interrupt_count(Register_Vector : T_AXI4_Register_Description_Vector) return natural;
-	function get_Interrupt_range(Register_Vector : T_AXI4_Register_Description_Vector) return T_NATVEC;
-	function get_RegisterAddressBits(Config : T_AXI4_Register_Description_Vector) return positive;
-	function get_strobeVector(Config : T_AXI4_Register_Description_Vector) return std_logic_vector;
+	function get_addresses(description_vector     : T_AXI4_Register_Vector) return T_SLUV;
+	function get_InitValue(description_vector     : T_AXI4_Register_Vector) return T_SLVV;
+	function get_AutoClearMask(description_vector : T_AXI4_Register_Vector) return T_SLVV;
+	function get_index(Name : string; Register_Vector : T_AXI4_Register_Vector) return integer;
+	function get_NumberOfIndexes(Name : string; Register_Vector : T_AXI4_Register_Vector) return integer;
+	function get_indexRange(Name : string; Register_Vector : T_AXI4_Register_Vector) return T_INTVEC;
+	function get_Address(Name : string; Register_Vector : T_AXI4_Register_Vector) return unsigned;
+	function get_Name(Address : unsigned(Address_Width - 1 downto 0); Register_Vector : T_AXI4_Register_Vector) return string;
+	function get_Interrupt_count(Register_Vector : T_AXI4_Register_Vector) return natural;
+	function get_Interrupt_range(Register_Vector : T_AXI4_Register_Vector) return T_NATVEC;
+	function get_RegisterAddressBits(Config : T_AXI4_Register_Vector) return positive;
+	function get_strobeVector(Config : T_AXI4_Register_Vector) return std_logic_vector;
 
-	function normalize(Config : T_AXI4_Register_Description_Vector) return T_AXI4_Register_Description_Vector;
+	function normalize(Config : T_AXI4_Register_Vector) return T_AXI4_Register_Vector;
 
 	--------Special Register Configurations--------
-	constant Atomic_RegisterDescription_Vector : T_AXI4_Register_Description_Vector(0 to 3);
+	constant Atomic_RegisterDescription_Vector : T_AXI4_Register_Vector(0 to 3);
 
 	procedure Make_AtomicRegister(
 		--		signal   Clock                     : in  std_logic;
@@ -234,7 +222,7 @@ package AXI4Lite is
 		signal nextValue_reg               : out std_logic_vector(Data_Width - 1 downto 0)
 	);
 
-	constant IO_RegisterDescription_Vector : T_AXI4_Register_Description_Vector(0 to 7);
+	constant IO_RegisterDescription_Vector : T_AXI4_Register_Vector(0 to 7);
 
 	procedure Make_IORegister(
 		--		signal Clock                     : in  std_logic;
@@ -257,13 +245,13 @@ package AXI4Lite is
 	-- procedure to easily define a description vector inside a function--
 	----------------------------------------------------------------------
 	-- **To use this procedure, this variables need to be defined:
-	--	  variable temp : T_AXI4_Register_Description_Vector(0 to 127);
+	--	  variable temp : T_AXI4_Register_Vector(0 to 127);
 	--	  variable idx  : natural := 0;
 	--	  variable addr : natural := 0;
 	-- **Example:
 	--    assign(temp, idx, addr, Name => "Control", rw_Config => readWriteable);
 	--	procedure assign(
-	--		variable description_vector : inout T_AXI4_Register_Description_Vector;
+	--		variable description_vector : inout T_AXI4_Register_Vector;
 	--		variable idx                : inout natural;
 	--		variable addr               : inout natural;
 	--		constant offset             : in    natural := 4;
@@ -274,7 +262,7 @@ package AXI4Lite is
 	--		constant Is_Interrupt_Register : in boolean := false
 	--	);
 	--	procedure assign(
-	--		variable description_vector : inout T_AXI4_Register_Description_Vector;
+	--		variable description_vector : inout T_AXI4_Register_Vector;
 	--		variable idx                : inout natural;
 	--		variable addr               : inout natural;
 	--		constant offset             : in    natural := 4;
@@ -447,31 +435,7 @@ package body AXI4Lite is
 		);
 	end function;
 
-	-------Define AXI Register structure-------------
-	function to_AXI4_Register(Name : string := ""; Address : unsigned(Address_Width - 1 downto 0); Data : std_logic_vector(Data_Width - 1 downto 0); Mask : std_logic_vector(Data_Width - 1 downto 0)) return T_AXI4_Register is
-		variable temp : T_AXI4_Register         := (
-		Address => Address,
-		Data    => Data,
-		Mask    => Mask
-		);
-	begin
-		return temp;
-	end function;
-	
-	function Initialize_AXI4_register(Value : std_logic       := 'Z') return T_AXI4_Register is
-		variable temp                           : T_AXI4_Register :=
-		to_AXI4_Register(
-		Name => "",
-		Address => (Address_Width - 1 downto 0 => Value),
-		Data => (Data_Width - 1 downto 0 => Value),
-		Mask => (Data_Width - 1 downto 0 => Value)
-		);
-	begin
-		return temp;
-	end function;
-	-------------------------------------------------------------------------------------------------------------
-
-	function to_string(reg : T_AXI4_Register_Description) return string is
+	function to_string(reg : T_AXI4_Register) return string is
 	begin
 		return " Name: " & str_replace_all(resize(reg.Name, Name_Width), NUL, ' ')
 		& ", Address: 0x" & to_string(std_logic_vector(reg.address), 'h', 4)
@@ -480,7 +444,7 @@ package body AXI4Lite is
 		& ", rw_config: " & T_ReadWrite_Config'image(reg.rw_config);
 	end function;
 
-	impure function write_csv_file(FileName : string; reg : T_AXI4_Register_Description_Vector) return boolean is
+	impure function write_csv_file(FileName : string; reg : T_AXI4_Register_Vector) return boolean is
 		constant QM          : character := '"';
 		constant size_header : natural   := imax(FileName'length, 51);
 		file FileHandle      : TEXT open write_MODE is FileName;
@@ -494,7 +458,7 @@ package body AXI4Lite is
 
 	begin
 		write("Automatically generated File from VHDL PoC Library");
-		write("Poc.AXI4Lite.T_AXI4_Register_Description");
+		write("Poc.AXI4Lite.T_AXI4_Register");
 		write("generated CSV File");
 		write(" ");
 		write(" ");
@@ -514,7 +478,7 @@ package body AXI4Lite is
 		return true;
 	end function;
 
-	impure function read_csv_file(FileName : string) return T_AXI4_Register_Description_Vector is
+	impure function read_csv_file(FileName : string) return T_AXI4_Register_Vector is
 		file FileHandle                        : TEXT open read_MODE is FileName;
 		variable CurrentLine                   : LINE;
 		variable Len                           : natural;
@@ -523,7 +487,7 @@ package body AXI4Lite is
 		variable result_s : string(1 to 128) := Init;
 
 		variable Pos  : natural := 0;
-		variable temp : T_AXI4_Register_Description_Vector(0 to 511);
+		variable temp : T_AXI4_Register_Vector(0 to 511);
 
 		variable elem : T_POSVEC(0 to 5);
 
@@ -566,7 +530,7 @@ package body AXI4Lite is
 				Is_Interrupt_Register := false;
 			end if;
 
-			temp(Pos) := to_AXI4_Register_Description(
+			temp(Pos) := to_AXI4_Register(
 			Name,                 --: string := "";
 			Address,              --: unsigned(Address_Width -1 downto 0);
 			rw_config,            --: T_ReadWrite_Config := readWriteable;
@@ -587,8 +551,8 @@ package body AXI4Lite is
 		return temp(0 to Pos - 1);
 	end function;
 
-	function normalize(Config : T_AXI4_Register_Description_Vector) return T_AXI4_Register_Description_Vector is
-		variable temp             : T_AXI4_Register_Description_Vector(0 to Config'length - 1);
+	function normalize(Config : T_AXI4_Register_Vector) return T_AXI4_Register_Vector is
+		variable temp             : T_AXI4_Register_Vector(0 to Config'length - 1);
 	begin
 		for i in 0 to Config'length - 1 loop
 			temp(i) := Config(i + Config'low);
@@ -596,14 +560,14 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function to_AXI4_Register_Description(Name : string := "";
+	function to_AXI4_Register(Name : string := "";
 		Address                                    : unsigned(Address_Width - 1 downto 0);
 		writeable                                  : boolean;
 		Init_Value                                 : std_logic_vector(Data_Width - 1 downto 0) := (others => '0');
 		Auto_Clear_Mask                            : std_logic_vector(Data_Width - 1 downto 0) := (others => '0');
 		Is_Interrupt_Register                      : boolean                                   := false
-	) return T_AXI4_Register_Description is
-		variable temp : T_AXI4_Register_Description := (
+	) return T_AXI4_Register is
+		variable temp : T_AXI4_Register := (
 			Name                  => resize(Name, Name_Width),
 			Address               => Address,
 			rw_config             => readWriteable,
@@ -618,14 +582,14 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function to_AXI4_Register_Description(Name : string := "";
+	function to_AXI4_Register(Name : string := "";
 		Address                                    : unsigned(Address_Width - 1 downto 0);
 		rw_config                                  : T_ReadWrite_Config                        := readWriteable;
 		Init_Value                                 : std_logic_vector(Data_Width - 1 downto 0) := (others => '0');
 		Auto_Clear_Mask                            : std_logic_vector(Data_Width - 1 downto 0) := (others => '0');
 		Is_Interrupt_Register                      : boolean                                   := false
-	) return T_AXI4_Register_Description is
-		variable temp : T_AXI4_Register_Description := (
+	) return T_AXI4_Register is
+		variable temp : T_AXI4_Register := (
 			Name                  => resize(Name, Name_Width),
 			Address               => Address,
 			rw_config             => rw_config,
@@ -638,7 +602,7 @@ package body AXI4Lite is
 	end function;
 
 	procedure assign(
-		variable description_vector    : inout T_AXI4_Register_Description_Vector;
+		variable description_vector    : inout T_AXI4_Register_Vector;
 		variable idx                   : inout natural;
 		variable addr                  : inout natural;
 		constant offset                : in natural := 4;
@@ -648,7 +612,7 @@ package body AXI4Lite is
 		constant Auto_Clear_Mask       : in std_logic_vector(Data_Width - 1 downto 0) := (others => '0');
 		constant Is_Interrupt_Register : in boolean                                   := false
 	) is begin
-		description_vector(idx) := to_AXI4_Register_Description(
+		description_vector(idx) := to_AXI4_Register(
 			Name                  => Name,
 			Address               => to_unsigned(addr, 32),
 			writeable             => writeable,
@@ -661,7 +625,7 @@ package body AXI4Lite is
 	end procedure;
 
 	procedure assign(
-		variable description_vector    : inout T_AXI4_Register_Description_Vector;
+		variable description_vector    : inout T_AXI4_Register_Vector;
 		variable idx                   : inout natural;
 		variable addr                  : inout natural;
 		constant offset                : in natural := 4;
@@ -671,7 +635,7 @@ package body AXI4Lite is
 		constant Auto_Clear_Mask       : in std_logic_vector(Data_Width - 1 downto 0) := (others => '0');
 		constant Is_Interrupt_Register : in boolean                                   := false
 	) is begin
-		description_vector(idx) := to_AXI4_Register_Description(
+		description_vector(idx) := to_AXI4_Register(
 		Name                  => Name,
 		Address               => to_unsigned(addr, 32),
 		rw_Config             => rw_config,
@@ -683,7 +647,7 @@ package body AXI4Lite is
 		addr := addr + offset;
 	end procedure;
 
-	function filter_Register_Description_Vector(str : string; description_vector : T_AXI4_Register_Description_Vector) return T_AXI4_Register_Description_Vector is
+	function filter_Register_Description_Vector(str : string; description_vector : T_AXI4_Register_Vector) return T_AXI4_Register_Vector is
 		variable temp : description_vector'subtype;
 		variable pos  : integer := 0;
 	begin
@@ -697,7 +661,7 @@ package body AXI4Lite is
 		return temp(0 to pos - 1);
 	end function;
 
-	function filter_Register_Description_Vector(char : character; description_vector : T_AXI4_Register_Description_Vector) return T_AXI4_Register_Description_Vector is
+	function filter_Register_Description_Vector(char : character; description_vector : T_AXI4_Register_Vector) return T_AXI4_Register_Vector is
 		variable temp : description_vector'subtype;
 		variable pos  : integer := 0;
 	begin
@@ -711,7 +675,7 @@ package body AXI4Lite is
 		return temp(0 to pos - 1);
 	end function;
 
-	function add_Prefix(prefix : string; Config : T_AXI4_Register_Description_Vector; offset : unsigned(Address_Width - 1 downto 0) := (others => '0')) return T_AXI4_Register_Description_Vector is
+	function add_Prefix(prefix : string; Config : T_AXI4_Register_Vector; offset : unsigned(Address_Width - 1 downto 0) := (others => '0')) return T_AXI4_Register_Vector is
 		variable temp : Config'subtype;
 	begin
 		for i in temp'range loop
@@ -722,7 +686,7 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function get_addresses(description_vector : T_AXI4_Register_Description_Vector) return T_SLUV is
+	function get_addresses(description_vector : T_AXI4_Register_Vector) return T_SLUV is
 		variable temp                             : T_SLUV(description_vector'range)(Address_Width - 1 downto 0);
 	begin
 		for i in temp'range loop
@@ -731,7 +695,7 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function get_initValue(description_vector : T_AXI4_Register_Description_Vector) return T_SLVV is
+	function get_initValue(description_vector : T_AXI4_Register_Vector) return T_SLVV is
 		variable temp                             : T_SLVV(description_vector'range)(Data_Width - 1 downto 0);
 	begin
 		for i in temp'range loop
@@ -740,7 +704,7 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function get_AutoClearMask(description_vector : T_AXI4_Register_Description_Vector) return T_SLVV is
+	function get_AutoClearMask(description_vector : T_AXI4_Register_Vector) return T_SLVV is
 		variable temp                                 : T_SLVV(description_vector'range)(Data_Width - 1 downto 0);
 	begin
 		for i in temp'range loop
@@ -749,7 +713,7 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function get_RegisterAddressBits(Config : T_AXI4_Register_Description_Vector) return positive is
+	function get_RegisterAddressBits(Config : T_AXI4_Register_Vector) return positive is
 		variable temp                           : positive := 1;
 	begin
 		for i in Config'range loop
@@ -760,7 +724,7 @@ package body AXI4Lite is
 		return log2ceil(temp + 1);
 	end function;
 
-	function get_strobeVector(Config : T_AXI4_Register_Description_Vector) return std_logic_vector is
+	function get_strobeVector(Config : T_AXI4_Register_Vector) return std_logic_vector is
 		variable temp                    : std_logic_vector(Config'range);
 	begin
 		for i in Config'range loop
@@ -773,8 +737,8 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function Filter_DescriptionVector(Config : T_AXI4_Register_Description_Vector; filter : std_logic_vector) return T_AXI4_Register_Description_Vector is
-		variable temp : T_AXI4_Register_Description_Vector(0 to hamming_weight(filter) - 1);
+	function Filter_DescriptionVector(Config : T_AXI4_Register_Vector; filter : std_logic_vector) return T_AXI4_Register_Vector is
+		variable temp : T_AXI4_Register_Vector(0 to hamming_weight(filter) - 1);
 		variable pos  : natural := 0;
 	begin
 		assert Config'length = filter'length report "PoC.AXI4Lite.pkg: Filter_DescriptionVector: Config has not the same size as Filter!" severity failure;
@@ -787,7 +751,7 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function get_index(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer is
+	function get_index(Name : string; Register_Vector : T_AXI4_Register_Vector) return integer is
 	begin
 		for i in Register_Vector'range loop
 			if str_imatch(Register_Vector(i).Name, Name) then
@@ -804,7 +768,7 @@ package body AXI4Lite is
 		return -1;
 	end function;
 
-	function get_NumberOfIndexes(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return integer is
+	function get_NumberOfIndexes(Name : string; Register_Vector : T_AXI4_Register_Vector) return integer is
 		variable temp : integer := 0;
 	begin
 		for i in Register_Vector'range loop
@@ -815,7 +779,7 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function get_indexRange(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return T_INTVEC is
+	function get_indexRange(Name : string; Register_Vector : T_AXI4_Register_Vector) return T_INTVEC is
 		variable temp : T_INTVEC(0 to get_NumberOfIndexes(Name, Register_Vector) - 1) := (others => - 1);
 		variable pos  : integer                                                       := 0;
 	begin
@@ -828,7 +792,7 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function get_Address(Name : string; Register_Vector : T_AXI4_Register_Description_Vector) return unsigned is
+	function get_Address(Name : string; Register_Vector : T_AXI4_Register_Vector) return unsigned is
 	begin
 		for i in Register_Vector'range loop
 			if str_imatch(Register_Vector(i).Name, Name) then
@@ -844,7 +808,7 @@ package body AXI4Lite is
 		return unsigned'(Address_Width - 1 downto 0 => '1');
 	end function;
 
-	function get_Name(Address : unsigned(Address_Width - 1 downto 0); Register_Vector : T_AXI4_Register_Description_Vector) return string is
+	function get_Name(Address : unsigned(Address_Width - 1 downto 0); Register_Vector : T_AXI4_Register_Vector) return string is
 	begin
 		for i in Register_Vector'range loop
 			if Register_Vector(i).Address = Address then
@@ -860,7 +824,7 @@ package body AXI4Lite is
 		return resize("", Name_Width);
 	end function;
 
-	function get_Interrupt_count(Register_Vector : T_AXI4_Register_Description_Vector) return natural is
+	function get_Interrupt_count(Register_Vector : T_AXI4_Register_Vector) return natural is
 		variable temp                                : natural := 0;
 	begin
 		for i in Register_Vector'range loop
@@ -871,7 +835,7 @@ package body AXI4Lite is
 		return temp;
 	end function;
 
-	function get_Interrupt_range(Register_Vector : T_AXI4_Register_Description_Vector) return T_NATVEC is
+	function get_Interrupt_range(Register_Vector : T_AXI4_Register_Vector) return T_NATVEC is
 		variable temp                                : T_NATVEC(0 to get_Interrupt_count(Register_Vector) - 1) := (others => 0);
 		variable count                               : natural                                                 := 0;
 	begin
@@ -963,14 +927,14 @@ package body AXI4Lite is
 	end procedure;
 
 	--------------INIT
-	constant Atomic_RegisterDescription_Vector : T_AXI4_Register_Description_Vector(0 to 3) := (
-		0 => to_AXI4_Register_Description("ATOMIC_Value", to_unsigned(0, 32), readWriteable_non_reg),
-		1 => to_AXI4_Register_Description("ATOMIC_BitTgl", to_unsigned(4, 32), readWriteable_non_reg),
-		2 => to_AXI4_Register_Description("ATOMIC_BitSet", to_unsigned(8, 32), readWriteable_non_reg),
-		3 => to_AXI4_Register_Description("ATOMIC_BitClr", to_unsigned(12, 32), readWriteable_non_reg)
+	constant Atomic_RegisterDescription_Vector : T_AXI4_Register_Vector(0 to 3) := (
+		0 => to_AXI4_Register("ATOMIC_Value", to_unsigned(0, 32), readWriteable_non_reg),
+		1 => to_AXI4_Register("ATOMIC_BitTgl", to_unsigned(4, 32), readWriteable_non_reg),
+		2 => to_AXI4_Register("ATOMIC_BitSet", to_unsigned(8, 32), readWriteable_non_reg),
+		3 => to_AXI4_Register("ATOMIC_BitClr", to_unsigned(12, 32), readWriteable_non_reg)
 	);
 
-	constant IO_RegisterDescription_Vector : T_AXI4_Register_Description_Vector(0 to 7) := (
+	constant IO_RegisterDescription_Vector : T_AXI4_Register_Vector(0 to 7) := (
 		add_Prefix("IO.", Atomic_RegisterDescription_Vector, to_unsigned(0, Address_Width)) &
 		add_Prefix("T.", Atomic_RegisterDescription_Vector, to_unsigned(Atomic_RegisterDescription_Vector'length * 4, Address_Width))
 	);
