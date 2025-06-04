@@ -3,8 +3,6 @@
 #	Adrian Weiland
 # =============================================================================
 
-include ./sync/sync.pro
-
 analyze ./misc_Delay.vhdl
 analyze ./misc_FrequencyMeasurement.vhdl
 

@@ -11,6 +11,7 @@ analyze $::poc::myProjectFile
 include ./common/common.pro
 include ./arith/arith.pro
 include ./mem/mem.pro
+include ./sync/sync.pro
 include ./misc/misc.pro
 include ./fifo/fifo.pro
 
