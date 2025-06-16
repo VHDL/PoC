@@ -3,6 +3,10 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:				 	Stefan Unrein
+--                          Jonas Schreiner
+--                          Patrick Lehmann
+--                          Asif Iqbal
+--                          Max Kraft-Kugler
 --
 -- Entity:				 	Generic AXI4-Lite register
 --
@@ -38,7 +42,7 @@ entity AXI4Lite_Register is
 		INTERRUPT_ENABLE_REGISTER_ADDRESS : unsigned        := (31 downto 0 => 32x"0");
 		INTERRUPT_MATCH_REGISTER_ADDRESS  : unsigned        := (31 downto 0 => 32x"4");
 		RESPONSE_ON_ERROR                 : T_AXI4_Response := C_AXI4_RESPONSE_DECODE_ERROR;
-		CONFIG                            : T_AXI4_Register_Description_Vector
+		CONFIG                            : T_AXI4_Register_Vector
 	);
 	port (
 		S_AXI_ACLK                        : in  std_logic;
@@ -48,9 +52,9 @@ entity AXI4Lite_Register is
 		S_AXI_s2m                         : out T_AXI4Lite_BUS_S2M;
 		S_AXI_IRQ                         : out std_logic := '0';
 
-		RegisterFile_ReadPort             : out T_SLVV(0 to CONFIG'Length - 1)(Data_Width - 1 downto 0);
+		RegisterFile_ReadPort             : out T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
 		RegisterFile_ReadPort_hit         : out std_logic_vector(0 to CONFIG'Length - 1);
-		RegisterFile_WritePort            : in  T_SLVV(0 to CONFIG'Length - 1)(Data_Width - 1 downto 0);
+		RegisterFile_WritePort            : in  T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
 		RegisterFile_WritePort_hit        : out std_logic_vector(0 to CONFIG'Length - 1);
 		RegisterFile_WritePort_strobe     : in  std_logic_vector(0 to CONFIG'Length - 1) := get_strobeVector(CONFIG)
 	);
@@ -69,26 +73,26 @@ architecture rtl of AXI4Lite_Register is
 	constant NUMBER_INTERRUPT_REGISTERS : natural  := get_Interrupt_count(CONFIG);
 	constant ENABLE_INTERRUPT           : boolean  := NUMBER_INTERRUPT_REGISTERS > 0;
 
-	constant Interrupt_EN_Reg           : T_AXI4_Register_Description := to_AXI4_Register_Description(
-		Name       => "Interrupt_Enable_Register",
-		Address    => INTERRUPT_ENABLE_REGISTER_ADDRESS,
-		rw_config  => readWriteable,
-		Init_Value => (others => '1')
---		Auto_Clear_Mask => (others => '0'),
---		Is_Interrupt_Register => false
+	constant Interrupt_EN_Reg           : T_AXI4_Register := to_AXI4_Register(
+		Name         => "Interrupt_Enable_Register",
+		Address      => INTERRUPT_ENABLE_REGISTER_ADDRESS,
+		RegisterMode => ReadWrite,
+		Init_Value   => (others => '1')
+--		AutoClear_Mask => (others => '0'),
+--		IsInterruptRegister => false
 	);
 
-	constant Interrupt_Match_Reg        : T_AXI4_Register_Description := to_AXI4_Register_Description(
-		Name       => "Interrupt_Match_Register",
-		Address    => INTERRUPT_MATCH_REGISTER_ADDRESS,
-		rw_config  => readable_non_reg,
-		Init_Value => (others => '0'),
---		Auto_Clear_Mask => (others => '0'),
-		Is_Interrupt_Register => false
+	constant Interrupt_Match_Reg        : T_AXI4_Register := to_AXI4_Register(
+		Name         => "Interrupt_Match_Register",
+		Address      => INTERRUPT_MATCH_REGISTER_ADDRESS,
+		RegisterMode => ReadOnly_NotRegistered,
+		Init_Value   => (others => '0'),
+--		AutoClear_Mask => (others => '0'),
+		IsInterruptRegister => false
 	);
 
-	function gen_config return T_AXI4_Register_Description_Vector is
-		variable temp : T_AXI4_Register_Description_Vector(0 to CONFIG'length + 1);
+	function gen_config return T_AXI4_Register_Vector is
+		variable temp : T_AXI4_Register_Vector(0 to CONFIG'length + 1);
 	begin
 		temp(0 to Config'length - 1) := CONFIG;
 		temp(Config'length)          := Interrupt_EN_Reg;
@@ -99,7 +103,7 @@ architecture rtl of AXI4Lite_Register is
 		return temp(0 to CONFIG'length - 1);
 	end function;
 
-	constant CONFIG_i                   : T_AXI4_Register_Description_Vector := gen_config;
+	constant CONFIG_i                   : T_AXI4_Register_Vector := gen_config;
 
 	constant Interrupt_range            : T_NATVEC := get_Interrupt_range(CONFIG_i);
 
@@ -165,7 +169,7 @@ architecture rtl of AXI4Lite_Register is
 	signal hit_w_1      : std_logic_vector(0 to CONFIG_i'Length - 1);
 	signal is_high_w    : std_logic;
 
-	function Register_init(CONFIG_i : T_AXI4_Register_Description_Vector) return T_SLVV is
+	function Register_init(CONFIG_i : T_AXI4_Register_Vector) return T_SLVV is
 		variable Result : T_SLVV(0 to CONFIG_i'Length - 1)(DATA_BITS_intern - 1 downto 0);
 	begin
 		for i in 0 to CONFIG_i'Length - 1 loop
@@ -263,8 +267,8 @@ begin
 			else
 				for i in CONFIG_i'range loop
 					--Latch Value Funktion
-					case CONFIG_i(i).rw_config is
-						when latchValue_clearOnWrite   | latchValue_clearOnRead   =>
+					case CONFIG_i(i).RegisterMode is
+						when LatchValue_ClearOnWrite   | LatchValue_ClearOnRead   =>
 							--latch value on change
 							if(latched(i) = '0') and (RegisterFile_WritePort_strobe(i) = '1') then
 								RegisterFile(i) <= RegisterFile_WritePort(i);
@@ -277,7 +281,7 @@ begin
 								RegisterFile(i) <= CONFIG_i(i).Init_Value;
 							end if;
 
-						when latchHighBit_clearOnWrite | latchHighBit_clearOnRead =>
+						when LatchHighBit_ClearOnWrite | LatchHighBit_ClearOnRead =>
 							--latch '1' in Register
 							if (RegisterFile_WritePort_strobe(i) = '1') then
 								RegisterFile(i) <= RegisterFile(i) or RegisterFile_WritePort(i);
@@ -292,7 +296,7 @@ begin
 							end if;
 
 
-						when latchLowBit_clearOnWrite  | latchLowBit_clearOnRead  =>
+						when LatchLowBit_ClearOnWrite  | LatchLowBit_ClearOnRead  =>
 							--latch '0' in Register
 							if (RegisterFile_WritePort_strobe(i) = '1') then
 								RegisterFile(i) <= RegisterFile(i) and RegisterFile_WritePort(i);
@@ -306,7 +310,7 @@ begin
 								end if;
 							end if;
 
-						when readWriteable =>
+						when ReadWrite =>
 							if i <= CONFIG'high then
 								if (slv_reg_wren = '1') and (hit_w(i) = '1') then
 									for ii in S_AXI_m2s.WStrb(3 downto 0)'range loop
@@ -325,7 +329,7 @@ begin
 								elsif (RegisterFile_WritePort_strobe(i) = '1') then
 									RegisterFile(i) <= RegisterFile_WritePort(i);
 								else
-									RegisterFile(i) <= RegisterFile(i) and (not CONFIG_i(i).Auto_Clear_Mask);
+									RegisterFile(i) <= RegisterFile(i) and (not CONFIG_i(i).AutoClear_Mask);
 								end if;
 
 							else  --Interrupt Enable Register
@@ -339,32 +343,32 @@ begin
 								end if;
 							end if;
 
-						when readable =>
+						when ReadOnly =>
 							if (RegisterFile_WritePort_strobe(i) = '1') then
 								RegisterFile(i) <= RegisterFile_WritePort(i);
 							end if;
 
-						when readable_non_reg =>  --only dummy, readable_non_reg will be connected via mux
+						when ReadOnly_NotRegistered =>  --only dummy, ReadOnly_NotRegistered will be connected via mux
 							if i <= CONFIG'high then
 								if (RegisterFile_WritePort_strobe(i) = '1') then
 									RegisterFile(i) <= RegisterFile_WritePort(i);
 								end if;
 							end if;
 
-						when constant_fromInit => --only dummy, constant_fromInit will be connected via mux
+						when ConstantValue => --only dummy, ConstantValue will be connected via mux
 							if (RegisterFile_WritePort_strobe(i) = '1') then
 								RegisterFile(i) <= RegisterFile_WritePort(i);
 							end if;
 
-						when readWriteable_non_reg => --only dummy, readWriteable_non_reg will be connected via mux
+						when ReadWrite_NotRegistered => --only dummy, ReadWrite_NotRegistered will be connected via mux
 							if (RegisterFile_WritePort_strobe(i) = '1') then
 								RegisterFile(i) <= RegisterFile_WritePort(i);
 							end if;
 
 						when others =>
 							--Unsupported
-							assert false report "AXI4Lite_Register::: rw_config : "
-											& T_ReadWrite_Config'image(CONFIG_i(i).rw_config)
+							assert false report "AXI4Lite_Register::: RegisterMode : "
+											& T_AXI4Lite_RegisterModes'image(CONFIG_i(i).RegisterMode)
 											& " of Config(" & integer'image(i) & ") is not supported!" severity failure;
 					end case;
 				end loop;
@@ -396,19 +400,19 @@ begin
 	clear_latch_w <= slv_reg_wren and (hit_w or hit_w_1);
 
 	RedPort_gen : for i in CONFIG'range generate
-		RedPort_gen_i : if CONFIG_i(i).rw_config = readable_non_reg generate
+		RedPort_gen_i : if CONFIG_i(i).RegisterMode = ReadOnly_NotRegistered generate
 			RegisterFile_ReadPort(i)     <= RegisterFile_WritePort(i);
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(S_AXI_ACLK);
 			
-		elsif CONFIG_i(i).rw_config = readWriteable_non_reg and not MODE_64bit generate
+		elsif CONFIG_i(i).RegisterMode = ReadWrite_NotRegistered and not MODE_64bit generate
 			RegisterFile_ReadPort(i)     <= S_AXI_m2s.WData;
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i);
 			
-		elsif CONFIG_i(i).rw_config = readWriteable_non_reg and MODE_64bit generate
+		elsif CONFIG_i(i).RegisterMode = ReadWrite_NotRegistered and MODE_64bit generate
 			RegisterFile_ReadPort(i)     <= S_AXI_m2s.WData(31 downto 0) when CONFIG_i(i).Address(ADDR_LSB) = '0' else S_AXI_m2s.WData(63 downto 32); -- Select if this is the lower or higher 32b register
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i);
 			
-		elsif CONFIG_i(i).rw_config = constant_fromInit generate
+		elsif CONFIG_i(i).RegisterMode = ConstantValue generate
 			RegisterFile_ReadPort(i)     <= CONFIG_i(i).Init_Value;
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(S_AXI_ACLK);
 			
@@ -514,11 +518,11 @@ begin
 	begin
 		read_mux_gen_i : if i = CONFIG_i'high and ENABLE_INTERRUPT generate
 			axi_rdata_mux(i) <= reverse(resize(Is_Interrupt, DATA_BITS_intern));
-	   elsif CONFIG_i(i).rw_config = readable_non_reg generate
+	   elsif CONFIG_i(i).RegisterMode = ReadOnly_NotRegistered generate
 			axi_rdata_mux(i) <= RegisterFile_WritePort(i);
-		elsif CONFIG_i(i).rw_config = readWriteable_non_reg generate
+		elsif CONFIG_i(i).RegisterMode = ReadWrite_NotRegistered generate
 			axi_rdata_mux(i) <= RegisterFile_WritePort(i);
-		elsif CONFIG_i(i).rw_config = constant_fromInit generate
+		elsif CONFIG_i(i).RegisterMode = ConstantValue generate
 			axi_rdata_mux(i) <= CONFIG_i(i).Init_Value;
 		else generate
 			axi_rdata_mux(i) <= RegisterFile(i);
@@ -545,9 +549,9 @@ begin
 		hit_r(i)     <= '1' when (is_config = '1') and (is_high_r = '1') else '0';
 
 		clear_latch_r(i)  <= slv_reg_rden_re and (hit_r(i) or hit_r_1(i)) and to_sl(
-				(CONFIG_i(i).rw_config = latchValue_clearOnRead) or
-				(CONFIG_i(i).rw_config = latchHighBit_clearOnRead) or
-				(CONFIG_i(i).rw_config = latchLowBit_clearOnRead)
+				(CONFIG_i(i).RegisterMode = LatchValue_ClearOnRead) or
+				(CONFIG_i(i).RegisterMode = LatchHighBit_ClearOnRead) or
+				(CONFIG_i(i).RegisterMode = LatchLowBit_ClearOnRead)
 			);
 	end generate;
 
@@ -555,11 +559,11 @@ begin
 	hit_gen_w : for i in hit_w'range generate
 		constant config_addr : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB) := CONFIG_i(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB);
 		constant is_config   : std_logic := to_sl(
-												(CONFIG_i(i).rw_config = readWriteable)
-											or (CONFIG_i(i).rw_config = readWriteable_non_reg)
-											or (CONFIG_i(i).rw_config = latchValue_clearOnWrite)
-											or (CONFIG_i(i).rw_config = latchHighBit_clearOnWrite)
-											or (CONFIG_i(i).rw_config = latchLowBit_clearOnWrite)
+												(CONFIG_i(i).RegisterMode = ReadWrite)
+											or (CONFIG_i(i).RegisterMode = ReadWrite_NotRegistered)
+											or (CONFIG_i(i).RegisterMode = LatchValue_ClearOnWrite)
+											or (CONFIG_i(i).RegisterMode = LatchHighBit_ClearOnWrite)
+											or (CONFIG_i(i).RegisterMode = LatchLowBit_ClearOnWrite)
 											);
 		signal is_address    : std_logic;
 	begin
@@ -577,11 +581,11 @@ begin
 			constant config_addr  : unsigned(REG_ADDRESS_BITS - 1 downto ADDR_LSB) := CONFIG_i(i).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB) -1;
 			constant is_config    : std_logic := ite( config_addr  = CONFIG_i(i - 1).Address(REG_ADDRESS_BITS - 1 downto ADDR_LSB)
 														and CONFIG_i(i - 1).Address(ADDR_LSB) = '0'               --Data aligned access
---														and (CONFIG_i(i).rw_config = CONFIG_i(i -1).rw_config)
-														and (  (CONFIG_i(i).rw_config = readWriteable)
-															or (CONFIG_i(i).rw_config = latchValue_clearOnWrite)
-															or (CONFIG_i(i).rw_config = latchHighBit_clearOnWrite)
-															or (CONFIG_i(i).rw_config = latchLowBit_clearOnWrite))
+--														and (CONFIG_i(i).RegisterMode = CONFIG_i(i -1).RegisterMode)
+														and (  (CONFIG_i(i).RegisterMode = ReadWrite)
+															or (CONFIG_i(i).RegisterMode = LatchValue_ClearOnWrite)
+															or (CONFIG_i(i).RegisterMode = LatchHighBit_ClearOnWrite)
+															or (CONFIG_i(i).RegisterMode = LatchLowBit_ClearOnWrite))
 														, '1', '0');
 		begin
 			assert (is_config /= '1' or not VERBOSE)
@@ -616,24 +620,24 @@ begin
 		begin
 			process(all)
 			begin
-				case CONFIG_i(num).rw_config is
-					when latchValue_clearOnRead | latchValue_clearOnWrite =>
+				case CONFIG_i(num).RegisterMode is
+					when LatchValue_ClearOnRead | LatchValue_ClearOnWrite =>
 						Is_Interrupt(i) <= latched(num) and RegisterFile(CONFIG'high + 1)(i) and not (clear_latch_w(num) or clear_latch_r(num));
 
-					when latchHighBit_clearOnRead | latchHighBit_clearOnWrite =>
+					when LatchHighBit_ClearOnRead | LatchHighBit_ClearOnWrite =>
 						Is_Interrupt(i) <= slv_or(RegisterFile(num)) and RegisterFile(CONFIG'high + 1)(i) and not (clear_latch_w(num) or clear_latch_r(num));
 
-					when latchLowBit_clearOnRead | latchLowBit_clearOnWrite =>
+					when LatchLowBit_ClearOnRead | LatchLowBit_ClearOnWrite =>
 						Is_Interrupt(i) <= not slv_and(RegisterFile(num)) and RegisterFile(CONFIG'high + 1)(i) and not (clear_latch_w(num) or clear_latch_r(num));
 
-					when readable =>
+					when ReadOnly =>
 						Is_Interrupt(i) <= slv_or(RegisterFile(num)) and RegisterFile(CONFIG'high + 1)(i) and not (slv_reg_rden_re and (hit_r(num) or hit_r_1(num)));
 
-					when readable_non_reg =>
+					when ReadOnly_NotRegistered =>
 						Is_Interrupt(i) <= slv_or(RegisterFile_WritePort(num)) and RegisterFile(CONFIG'high + 1)(i) and not (slv_reg_rden_re and (hit_r(num) or hit_r_1(num)));
 
 					when others =>
-						assert false report "AXI4Lite_Register::: Interrupt_gen : IRQ Register for type " & T_ReadWrite_Config'image(CONFIG_i(num).rw_config) & " is not possible!" severity failure;
+						assert false report "AXI4Lite_Register::: Interrupt_gen : IRQ Register for type " & T_AXI4Lite_RegisterModes'image(CONFIG_i(num).RegisterMode) & " is not possible!" severity failure;
 
 				end case;
 			end process;
