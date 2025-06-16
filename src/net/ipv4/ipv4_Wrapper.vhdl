@@ -256,7 +256,7 @@ begin
 		TX_Meta_SrcIPv4Address_nxt(i)		<= StmBuf_MetaIn_nxt(TXSTMBUF_META_STREAMID_SRCADR);
 		TX_Meta_DestIPv4Address_nxt(i)	<= StmBuf_MetaIn_nxt(TXSTMBUF_META_STREAMID_DESTADR);
 
-		TX_StmBuf: entity work.stream_Buffer
+		TX_StmBuf: entity work.stream_FIFO
 			generic map (
 				FRAMES												=> 2,
 				DATA_BITS											=> 8,

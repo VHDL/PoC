@@ -331,7 +331,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/stream/stream_Buffer.vhdl
+  - name: src/bus/stream/stream_FIFO.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -451,7 +451,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_Buffer.vhdl
+  - name: src/bus/axi4/AXI4Stream/AXI4Stream_FIFO.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -459,7 +459,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_Buffer_CDC.vhdl
+  - name: src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_CDC.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -467,7 +467,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_Buffer_tempgot.vhdl
+  - name: src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_tempgot.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -475,7 +475,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_Buffer_tempput.vhdl
+  - name: src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_tempput.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -491,7 +491,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_Glue.vhdl
+  - name: src/bus/axi4/AXI4Stream/AXI4Stream_Stage.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -715,7 +715,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/fifo/fifo_glue.vhdl
+  - name: src/fifo/fifo_stage.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false

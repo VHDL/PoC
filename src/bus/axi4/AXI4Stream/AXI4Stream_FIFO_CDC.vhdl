@@ -27,7 +27,7 @@ use     work.components.all;
 use     work.axi4Stream.all;
 
 
-entity AXI4Stream_Buffer_CDC is
+entity AXI4Stream_FIFO_CDC is
 	generic (
 		FRAMES               : positive := 2;
 		MAX_PACKET_DEPTH     : positive := 8;
@@ -49,7 +49,7 @@ entity AXI4Stream_Buffer_CDC is
 end entity;
 
 
-architecture rtl of AXI4Stream_Buffer_CDC is
+architecture rtl of AXI4Stream_FIFO_CDC is
 	constant DATA_BITS        : positive := In_M2S.Data'length;
 	constant LAST_BITS        : positive := 1; -- Last is always single bit
 	constant KEEP_BITS        : positive := In_M2S.Keep'length;

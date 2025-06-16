@@ -40,7 +40,7 @@ use     work.utils.all;
 use     work.vectors.all;
 
 
-entity stream_Buffer is
+entity stream_FIFO is
 	generic (
 		FRAMES						: positive																								:= 2;
 		DATA_BITS					: positive																								:= 8;
@@ -73,7 +73,7 @@ entity stream_Buffer is
 end entity;
 
 
-architecture rtl of stream_Buffer is
+architecture rtl of stream_FIFO is
 	attribute FSM_ENCODING						: string;
 
 	constant META_STREAMS							: positive																						:= META_BITS'length;

@@ -9,4 +9,4 @@ include				"src/common/common.files"										# load common packages
 
 # PoC.bus.stream
 vhdl		PoC		"src/bus/stream/stream.pkg.vhdl"						# PoC.bus.stream package
-vhdl		PoC		"src/bus/stream/stream_Buffer.vhdl"					# Top-Level
+vhdl		PoC		"src/bus/stream/stream_FIFO.vhdl"					# Top-Level
