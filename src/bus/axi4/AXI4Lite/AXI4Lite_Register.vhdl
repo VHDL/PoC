@@ -8,11 +8,18 @@
 --                          Asif Iqbal
 --                          Max Kraft-Kugler
 --
--- Entity:				 	Generic AXI4-Lite register
+-- Entity:				 	AXI4Lite_Register
 --
 -- Description:
 -- -------------------------------------
--- .. TODO:: No documentation available.
+-- A generic AXI4Liter-Register implementation. 
+-- It has support for 32-bit and 64-bit AXI4Lite data-width and up to 32-bit 
+-- address-witdh. To get a 64-bit register, simply connect a 64-bit bus. Two 
+-- 32-bit registers will be combined together to one 64-bit register.
+--
+-- The registers can be described with the CONFIG generic. Use the function 
+-- to_AXI4_Register to describe a single 32-bit register. For a description of 
+-- all features, see the full documentation.
 --
 -- License:
 -- =============================================================================
