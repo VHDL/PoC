@@ -4,11 +4,17 @@
 -- =============================================================================
 -- Authors:         Stefan Unrein
 --
--- Entity:          A generic AXI4-Stream buffer (FIFO).
+-- Entity:          AXI4Stream_FIFO_tempgot
 --
 -- Description:
 -- -------------------------------------
--- .. TODO:: No documentation available.
+-- A wrapper of fifo_cc_tempgot for the AXI4-Stream interface. The size of the
+-- data-channels is
+-- FRAMES * FRAMES_DEPTH, the size of the control-channels is FRAMES.
+-- With the Out_Commit and Out_Rollback ports you can implement a retransmit-FIFO.
+-- A strobe to Out_Rollback puts the read-pointer back to the last commited
+-- position. Data is then read out again from here. A strobe to Out_Commit frees
+-- up the RAM up to the current read-pointer.
 --
 -- License:
 -- =============================================================================
@@ -54,9 +60,9 @@ architecture rtl of AXI4Stream_FIFO_tempgot is
 	constant KEEP_BITS        : positive       := In_M2S.Keep'length;
 	constant DEST_BITS        : positive       := In_M2S.Dest'length;
 	constant ID_BITS          : positive       := In_M2S.ID'length;
-	
+
 	constant INCLUDE_META     : boolean        := (METADATA_IS_DYNAMIC) and (USER_BITS > 0);
-	
+
 	type T_WRITER_STATE is (ST_IDLE, ST_FRAME);
 	type T_READER_STATE is (ST_IDLE, ST_FRAME);
 
@@ -69,14 +75,14 @@ architecture rtl of AXI4Stream_FIFO_tempgot is
 	constant Keep_Pos         : natural  := 1;
 	constant Last_Pos         : natural  := 2;
 	constant User_Pos         : natural  := 3;
-	
+
 	constant Data_Bits_Vec  : T_NATVEC := (
-		Keep_Pos       => KEEP_BITS, 
-		Data_Pos       => DATA_BITS, 
+		Keep_Pos       => KEEP_BITS,
+		Data_Pos       => DATA_BITS,
 		Last_Pos       => 1,
 		User_Pos       => USER_BITS
 	);
-	
+
 	signal DataFIFO_put               : std_logic;
 	signal DataFIFO_DataIn            : std_logic_vector(isum(Data_Bits_Vec) -1 downto 0);
 	signal DataFIFO_Full              : std_logic;
@@ -97,7 +103,7 @@ architecture rtl of AXI4Stream_FIFO_tempgot is
 begin
 	In_SOF      <= In_M2S.Valid and not started;
 	started     <= ffrs(q => started, rst => ((In_M2S.Valid and In_M2S.Last) or Reset), set => (In_M2S.Valid)) when rising_edge(Clock);
-	
+
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
@@ -119,7 +125,7 @@ begin
 
 		DataFIFO_put                      <= '0';
 		MetaFIFO_put                      <= '0';
-		
+
 		DataFIFO_DataIn(high(Data_Bits_Vec, Data_Pos) downto low(Data_Bits_Vec, Data_Pos))<= In_M2S.Data;
 		DataFIFO_DataIn(high(Data_Bits_Vec, Keep_Pos) downto low(Data_Bits_Vec, Keep_Pos))<= In_M2S.Keep;
 		DataFIFO_DataIn(high(Data_Bits_Vec, Last_Pos))                                    <= In_M2S.Last;
@@ -128,7 +134,7 @@ begin
 		if (METADATA_IS_DYNAMIC) and (USER_BITS > 0) then
 			DataFIFO_DataIn(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos)) <= In_M2S.User;
 		end if;
-		
+
 		case Writer_State is
 			when ST_IDLE =>
 				In_S2M.Ready  <= not DataFIFO_Full and not MetaFIFO_Full;
@@ -159,7 +165,7 @@ begin
 		Out_M2S_i.Data <= DataFIFO_DataOut(high(Data_Bits_Vec, Data_Pos) downto low(Data_Bits_Vec, Data_Pos));
 		Out_M2S_i.Last <= DataFIFO_DataOut(high(Data_Bits_Vec, Last_Pos))                                    ;
 		Out_M2S_i.Keep <= DataFIFO_DataOut(high(Data_Bits_Vec, Keep_Pos) downto low(Data_Bits_Vec, Keep_Pos));
-		
+
 		-- split dynamic metadata and data from fifo output
 		if (METADATA_IS_DYNAMIC) and (USER_BITS > 0) then
 			Out_M2S_i.User <= DataFIFO_DataOut(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos));
@@ -213,7 +219,7 @@ begin
 		dout								=> DataFIFO_DataOut(high(Data_Bits_Vec, ite(INCLUDE_META, User_Pos, Last_Pos)) downto low(Data_Bits_Vec, 0)),
 		valid								=> DataFIFO_Valid,
 		fstate_rd						=> open,
-		
+
 		commit              => Out_Commit,
 		rollback            => Out_Rollback
 	);
@@ -224,7 +230,7 @@ begin
 		constant Dest_Pos         : natural  := 0;
 		constant ID_Pos           : natural  := 1;
 		constant User_Pos         : natural  := 2;
-		
+
 		constant Data_Bits_Vec  : T_NATVEC := (
 			Dest_Pos       => DEST_BITS,
 			ID_Pos         => ID_BITS,
@@ -237,12 +243,12 @@ begin
 		Meta_In(high(Data_Bits_Vec, ID_Pos  ) downto low(Data_Bits_Vec, ID_Pos  )) <= In_M2S.ID;
 		Out_M2S_i.Dest             <= Meta_Out(high(Data_Bits_Vec, Dest_Pos) downto low(Data_Bits_Vec, Dest_Pos));
 		Out_M2S_i.ID               <= Meta_Out(high(Data_Bits_Vec, ID_Pos  ) downto low(Data_Bits_Vec, ID_Pos  ));
-		
+
 		data_gen : if not METADATA_IS_DYNAMIC generate
 			Meta_In(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos)) <= In_M2S.User;
 			Out_M2S_i.User           <= Meta_Out(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos));
 		end generate;
-		
+
 		MetaFIFO : entity work.fifo_cc_got_tempgot
 		generic map (
 			D_BITS            => Meta_In'length,								-- Data Width
@@ -269,7 +275,7 @@ begin
 			dout         => Meta_Out,
 			valid        => open,
 			fstate_rd    => open,
-		
+
 			commit              => Out_Commit,
 			rollback            => Out_Rollback
 		);

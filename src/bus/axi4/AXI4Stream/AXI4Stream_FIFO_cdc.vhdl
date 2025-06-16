@@ -4,11 +4,13 @@
 -- =============================================================================
 -- Authors:         Stefan Unrein
 --
--- Entity:          A generic AXI4-Stream buffer (FIFO).
+-- Entity:          AXI4Stream_FIFO_cdc
 --
 -- Description:
 -- -------------------------------------
--- .. TODO:: No documentation available.
+-- A wrapper of fifo_ic_got for the AXI4-Stream interface. It implements a
+-- CDC-FIFO. The size of the data-channels is FRAMES * FRAMES_DEPTH, the size
+-- of the control-channels is FRAMES.
 --
 -- License:
 -- =============================================================================
@@ -27,7 +29,7 @@ use     work.components.all;
 use     work.axi4Stream.all;
 
 
-entity AXI4Stream_FIFO_CDC is
+entity AXI4Stream_FIFO_cdc is
 	generic (
 		FRAMES               : positive := 2;
 		MAX_PACKET_DEPTH     : positive := 8;
@@ -49,7 +51,7 @@ entity AXI4Stream_FIFO_CDC is
 end entity;
 
 
-architecture rtl of AXI4Stream_FIFO_CDC is
+architecture rtl of AXI4Stream_FIFO_cdc is
 	constant DATA_BITS        : positive := In_M2S.Data'length;
 	constant LAST_BITS        : positive := 1; -- Last is always single bit
 	constant KEEP_BITS        : positive := In_M2S.Keep'length;
@@ -62,13 +64,13 @@ architecture rtl of AXI4Stream_FIFO_CDC is
 	constant KEEP_POS         : natural  := 2;
 	constant USER_POS         : natural  := 3;
 
-	constant FIFO_BIT_VEC     : T_POSVEC := ( 
+	constant FIFO_BIT_VEC     : T_POSVEC := (
 		DATA_POS => DATA_BITS,
 		LAST_POS => LAST_BITS,
 		KEEP_POS => KEEP_BITS,
 		USER_POS => USER_BITS
-	); 
-	
+	);
+
 	type T_WRITER_STATE is (ST_IDLE, ST_FRAME);
 
 	signal Writer_State       : T_WRITER_STATE  := ST_IDLE;
@@ -83,9 +85,9 @@ architecture rtl of AXI4Stream_FIFO_CDC is
 	signal DataFIFO_got       : std_logic;
 	signal DataFIFO_DataOut   : std_logic_vector(DataFIFO_DataIn'range);
 	signal DataFIFO_Valid     : std_logic;
-	
+
 	signal Out_M2S_i          : Out_M2S'subtype;
-	
+
 begin
 
 	process(In_Clock)
@@ -97,7 +99,7 @@ begin
 				Writer_State          <= Writer_NextState;
 			end if;
 		end if;
-	end process;  
+	end process;
 
 	Write_proc : process(all)
 	begin
@@ -111,7 +113,7 @@ begin
 		DataFIFO_DataIn(high(FIFO_BIT_VEC, DATA_POS) downto low(FIFO_BIT_VEC, DATA_POS)) <= In_M2S.Data;
 		DataFIFO_DataIn(                                    low(FIFO_BIT_VEC, LAST_POS)) <= In_M2S.Last;
 		DataFIFO_DataIn(high(FIFO_BIT_VEC, KEEP_POS) downto low(FIFO_BIT_VEC, KEEP_POS)) <= In_M2S.Keep;
-		
+
 		-- concatinate dynamic metadata with data
 		if (USER_IS_DYNAMIC) and (USER_BITS > 0) then
 			DataFIFO_DataIn(high(FIFO_BIT_VEC, USER_POS) downto low(FIFO_BIT_VEC, USER_POS)) <= In_M2S.User;
@@ -122,11 +124,11 @@ begin
 				In_S2M.Ready  <= not DataFIFO_Full and not MetaFIFO_Full;
 				DataFIFO_put  <= In_M2S.Valid      and not MetaFIFO_Full;
 				MetaFIFO_put  <= In_M2S.Valid      and not DataFIFO_Full;
-				
+
 				if ((In_M2S.Valid and not In_M2S.Last and not MetaFIFO_Full and not DataFIFO_Full) = '1') then
 					Writer_NextState            <= ST_FRAME;
 				end if;
-				
+
 			when ST_FRAME =>
 				In_S2M.Ready                  <= not DataFIFO_Full;
 				DataFIFO_put                  <= In_M2S.Valid;
@@ -143,11 +145,11 @@ begin
 	begin
 		Out_M2S_i.Valid  <= DataFIFO_Valid;
 		DataFIFO_got     <= Out_S2M.Ready;
-		
+
 		Out_M2S_i.Data   <= DataFIFO_DataOut(high(FIFO_BIT_VEC, DATA_POS) downto low(FIFO_BIT_VEC, DATA_POS));
 		Out_M2S_i.Last   <= DataFIFO_DataOut(                                    low(FIFO_BIT_VEC, LAST_POS));
 		Out_M2S_i.Keep   <= DataFIFO_DataOut(high(FIFO_BIT_VEC, KEEP_POS) downto low(FIFO_BIT_VEC, KEEP_POS));
-		
+
 		-- split dynamic metadata and data from fifo output
 		if (USER_IS_DYNAMIC) and (USER_BITS > 0) then
 			Out_M2S_i.User   <= DataFIFO_DataOut(high(FIFO_BIT_VEC, USER_POS) downto low(FIFO_BIT_VEC, USER_POS));
@@ -181,14 +183,14 @@ begin
 			valid               => DataFIFO_Valid,
 			fstate_rd           => open
 		);
-		
+
 	Out_M2S     <= Out_M2S_i;
 
 	genMeta : if ((not USER_IS_DYNAMIC) and (USER_BITS > 0)) or (DEST_BITS > 0) or (ID_BITS > 0) generate
 		constant Dest_Pos         : natural  := 0;
 		constant ID_Pos           : natural  := 1;
 		constant User_Pos         : natural  := 2;
-		
+
 		constant Data_Bits_Vec  : T_NATVEC := (
 			Dest_Pos       => DEST_BITS,
 			ID_Pos         => ID_BITS,
@@ -201,12 +203,12 @@ begin
 		Meta_In(high(Data_Bits_Vec, ID_Pos  ) downto low(Data_Bits_Vec, ID_Pos  )) <= In_M2S.ID;
 		Out_M2S_i.Dest             <= Meta_Out(high(Data_Bits_Vec, Dest_Pos) downto low(Data_Bits_Vec, Dest_Pos));
 		Out_M2S_i.ID               <= Meta_Out(high(Data_Bits_Vec, ID_Pos  ) downto low(Data_Bits_Vec, ID_Pos  ));
-		
+
 		data_gen : if not USER_IS_DYNAMIC generate
 			Meta_In(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos)) <= In_M2S.User;
 			Out_M2S_i.User           <= Meta_Out(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos));
 		end generate;
-		
+
 		NO_META_FIFO_gen : if not NO_META_FIFO generate
 			MetaFIFO : entity work.fifo_ic_got
 			generic map (

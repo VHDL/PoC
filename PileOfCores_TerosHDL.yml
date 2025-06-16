@@ -403,7 +403,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4_FIFO_CDC.vhdl
+  - name: src/bus/axi4/AXI4_FIFO_cdc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -459,7 +459,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_CDC.vhdl
+  - name: src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_cdc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -523,7 +523,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Lite/AXI4Lite_FIFO_CDC.vhdl
+  - name: src/bus/axi4/AXI4Lite/AXI4Lite_FIFO_cdc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false

@@ -4,11 +4,12 @@
 -- =============================================================================
 -- Authors:  Stefan Unrein
 --
--- Entity:   A generic AXI4-Stream buffer (FIFO).
+-- Entity:   AXI4Stream_FIFO
 --
 -- Description:
 -- -------------------------------------
--- .. TODO:: No documentation available.
+-- A wrapper of fifo_cc_got for the AXI4-Stream interface. The size of the data-channels is
+-- FRAMES * FRAMES_DEPTH, the size of the control-channels is FRAMES.
 --
 -- License:
 -- =============================================================================
@@ -55,7 +56,7 @@ architecture rtl of AXI4Stream_FIFO is
 	constant KEEP_BITS        : positive       := In_M2S.Keep'length;
 	constant DEST_BITS        : positive       := In_M2S.Dest'length;
 	constant ID_BITS          : positive       := In_M2S.ID'length;
-	
+
 	constant INCLUDE_META     : boolean        := (METADATA_IS_DYNAMIC) and (USER_BITS > 0);
 
 	type T_WRITER_STATE is (ST_IDLE, ST_FRAME);
@@ -70,10 +71,10 @@ architecture rtl of AXI4Stream_FIFO is
 	constant Keep_Pos         : natural  := 1;
 	constant Last_Pos         : natural  := 2;
 	constant User_Pos         : natural  := 3;
-	
+
 	constant Data_Bits_Vec  : T_NATVEC := (
-		Keep_Pos       => KEEP_BITS, 
-		Data_Pos       => DATA_BITS, 
+		Keep_Pos       => KEEP_BITS,
+		Data_Pos       => DATA_BITS,
 		Last_Pos       => 1,
 		User_Pos       => USER_BITS
 	);
@@ -87,7 +88,7 @@ architecture rtl of AXI4Stream_FIFO is
 	signal DataFIFO_got       : std_logic;
 	signal DataFIFO_DataOut   : std_logic_vector(DataFIFO_DataIn'range);
 	signal DataFIFO_Valid     : std_logic;
-	
+
 	signal Out_M2S_i          : Out_M2S'subtype;
 
 begin
@@ -111,11 +112,11 @@ begin
 		In_S2M.Ready                         <= '0';
 		DataFIFO_put                         <= '0';
 		MetaFIFO_put                         <= '0';
-		
+
 		DataFIFO_DataIn(high(Data_Bits_Vec, Data_Pos) downto low(Data_Bits_Vec, Data_Pos)) <= In_M2S.Data;
 		DataFIFO_DataIn(high(Data_Bits_Vec, Last_Pos))                                     <= In_M2S.Last;
 		DataFIFO_DataIn(high(Data_Bits_Vec, Keep_Pos) downto low(Data_Bits_Vec, Keep_Pos)) <= In_M2S.Keep;
-		
+
 		-- concatinate dynamic metadata with data
 		if (METADATA_IS_DYNAMIC) and (USER_BITS > 0) then
 			DataFIFO_DataIn(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos)) <= In_M2S.User;
@@ -151,7 +152,7 @@ begin
 		Out_M2S_i.Data <= DataFIFO_DataOut(high(Data_Bits_Vec, Data_Pos) downto low(Data_Bits_Vec, Data_Pos));
 		Out_M2S_i.Last <= DataFIFO_DataOut(high(Data_Bits_Vec, Last_Pos))                                    ;
 		Out_M2S_i.Keep <= DataFIFO_DataOut(high(Data_Bits_Vec, Keep_Pos) downto low(Data_Bits_Vec, Keep_Pos));
-		
+
 		-- split dynamic metadata and data from fifo output
 		if (METADATA_IS_DYNAMIC) and (USER_BITS > 0) then
 			Out_M2S_i.User <= DataFIFO_DataOut(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos));
@@ -185,14 +186,14 @@ begin
 
 		inst_cc_got : entity work.fifo_cc_got
 		generic map (
-			D_BITS         => ite(METADATA_IS_DYNAMIC and (USER_BITS > 0), isum(Data_Bits_Vec), isum(Data_Bits_Vec(0 to Last_Pos))),								-- Data Width
-			MIN_DEPTH      => (MAX_PACKET_DEPTH * FRAMES),	-- Minimum FIFO Depth
+			D_BITS         => ite(METADATA_IS_DYNAMIC and (USER_BITS > 0), isum(Data_Bits_Vec), isum(Data_Bits_Vec(0 to Last_Pos))),  -- Data Width
+			MIN_DEPTH      => (MAX_PACKET_DEPTH * FRAMES),  -- Minimum FIFO Depth
 			RAM_TYPE       => RAM_TYPE,
-			DATA_REG       => ((MAX_PACKET_DEPTH * FRAMES) <= 128),											-- Store Data Content in Registers
-			STATE_REG      => TRUE,												-- Registered Full/Empty Indicators
-			OUTPUT_REG     => FALSE,												-- Registered FIFO Output
-			ESTATE_WR_BITS => 0,														-- Empty State Bits
-			FSTATE_RD_BITS => 0														-- Full State Bits
+			DATA_REG       => ((MAX_PACKET_DEPTH * FRAMES) <= 128), -- Store Data Content in Registers
+			STATE_REG      => TRUE,                                 -- Registered Full/Empty Indicators
+			OUTPUT_REG     => FALSE,                                -- Registered FIFO Output
+			ESTATE_WR_BITS => 0,                                    -- Empty State Bits
+			FSTATE_RD_BITS => 0                                     -- Full State Bits
 		)
 		port map (
 			-- Global Reset and Clock
@@ -243,7 +244,7 @@ begin
 		constant Dest_Pos         : natural  := 0;
 		constant ID_Pos           : natural  := 1;
 		constant User_Pos         : natural  := 2;
-		
+
 		constant Data_Bits_Vec  : T_NATVEC := (
 			Dest_Pos       => DEST_BITS,
 			ID_Pos         => ID_BITS,
@@ -256,21 +257,21 @@ begin
 		Meta_In(high(Data_Bits_Vec, ID_Pos  ) downto low(Data_Bits_Vec, ID_Pos  )) <= In_M2S.ID;
 		Out_M2S_i.Dest             <= Meta_Out(high(Data_Bits_Vec, Dest_Pos) downto low(Data_Bits_Vec, Dest_Pos));
 		Out_M2S_i.ID               <= Meta_Out(high(Data_Bits_Vec, ID_Pos  ) downto low(Data_Bits_Vec, ID_Pos  ));
-		
+
 		data_gen : if not METADATA_IS_DYNAMIC generate
 			Meta_In(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos)) <= In_M2S.User;
 			Out_M2S_i.User           <= Meta_Out(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos));
 		end generate;
-		
+
 		MetaFIFO : entity work.fifo_cc_got
 		generic map (
-			D_BITS          => Meta_In'length, -- Data Width
-			MIN_DEPTH       => imax(FRAMES, 16),               -- Minimum FIFO Depth
+			D_BITS          => Meta_In'length,                               -- Data Width
+			MIN_DEPTH       => imax(FRAMES, 16),                             -- Minimum FIFO Depth
 			DATA_REG        => ((Meta_In'length * imax(FRAMES, 16)) <= 128), -- Store Data Content in Registers
-			STATE_REG       => TRUE,                          -- Registered Full/Empty Indicators
-			OUTPUT_REG      => FALSE,                         -- Registered FIFO Output
-			ESTATE_WR_BITS  => 0,                             -- Empty State Bits
-			FSTATE_RD_BITS  => 0                              -- Full State Bits
+			STATE_REG       => TRUE,                                         -- Registered Full/Empty Indicators
+			OUTPUT_REG      => FALSE,                                        -- Registered FIFO Output
+			ESTATE_WR_BITS  => 0,                                            -- Empty State Bits
+			FSTATE_RD_BITS  => 0                                             -- Full State Bits
 		)
 		port map (
 			-- Global Reset and Clock
@@ -289,7 +290,7 @@ begin
 			valid        => open,
 			fstate_rd    => open
 		);
-		
+
 	else generate
 		MetaFIFO_Full <= '0';
 	end generate;

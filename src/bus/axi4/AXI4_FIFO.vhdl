@@ -4,11 +4,13 @@
 -- =============================================================================
 -- Authors:         Stefan Unrein
 --
--- Entity:          A generic AXI4-Full buffer (FIFO).
+-- Entity:          AXI4_FIFO
 --
 -- Description:
 -- -------------------------------------
--- .. TODO:: No documentation available.
+-- A wrapper of fifo_cc_got for AXI4-MM interface.  It creates a separate
+-- FIFO for every of the five substreams. The size of the data-channels is
+-- FRAMES * FRAMES_DEPTH, the size of the control-channels is FRAMES.
 --
 -- License:
 -- =============================================================================
@@ -69,7 +71,7 @@ architecture rtl of AXI4_FIFO is
 	constant Strobe_POS     : natural := 2;
 	--Ready/Write-Response-Only
 	constant Resp_POS       : natural := 2;
-	
+
 	constant W_Addr_BIT_VEC   : T_POSVEC := ( ID_POS    => In_M2S.AWID'length,    User_POS    => In_M2S.AWUser'length,    Addr_POS => In_M2S.AWAddr'length,
 	                                          Cache_POS => In_M2S.AWCache'length, Protect_POS => In_M2S.AWProt'length,    Len_POS  => In_M2S.AWLen'length,
 	                                          Size_POS  => In_M2S.AWSize'length,  Burst_POS   => In_M2S.AWBurst'length,   Lock_POS => LOCK_BITS,
@@ -87,13 +89,13 @@ architecture rtl of AXI4_FIFO is
 	                                       Data_POS => In_S2M.RData'length, Last_POS => LAST_BITS
 		);
 	constant B_BIT_VEC      : T_POSVEC := (ID_POS => In_S2M.BID'length, User_POS => In_S2M.BUser'length, Resp_POS => In_S2M.BResp'length);
-	
+
 	constant AW_POS         : natural := 0;
 	constant AR_POS         : natural := 1;
 	constant W_POS          : natural := 2;
 	constant R_POS          : natural := 3;
 	constant B_POS          : natural := 4;
-													
+
 	constant BIT_VEC        : T_POSVEC := (
       AW_POS => isum(W_Addr_BIT_VEC),
       AR_POS => isum(R_Addr_BIT_VEC),
@@ -101,7 +103,7 @@ architecture rtl of AXI4_FIFO is
 			R_POS  => isum(R_BIT_VEC),
 			B_POS  => isum(B_BIT_VEC)
 		);
-		
+
 	constant MIN_DEPTH      : T_NATVEC := (
 			AW_POS => FRAMES,
 			AR_POS => FRAMES,
@@ -341,14 +343,14 @@ begin
 		DataFIFO_put       <= In_Valid_vec(i) and not DataFIFO_Full;
 		In_Ready_vec(i)    <= not DataFIFO_Full;
 		DataFIFO_DataIn_i  <= DataFIFO_DataIn(high(BIT_VEC,i) downto low(BIT_VEC,i));
-		
+
 		DataFIFO_DataOut(high(BIT_VEC,i) downto low(BIT_VEC,i)) <= DataFIFO_DataOut_i;
 		DataFIFO_got       <= Out_Ready_vec(i);
 		Out_Valid_vec(i)   <= DataFIFO_Valid;
-		
+
 		gen_cc_got : if FRAMES > 3 generate
 		begin
-		
+
 			inst_cc_got : entity work.fifo_cc_got
 			generic map (
 				D_BITS              => BIT_VEC(i),    -- Data Width
@@ -376,7 +378,7 @@ begin
 				fstate_rd           => open
 			);
 		else generate
-		
+
 			inst_stage : entity work.fifo_stage
 			generic map(
 				D_BITS          => BIT_VEC(i),
@@ -400,7 +402,7 @@ begin
 			);
 
 		end generate;
-		
+
 	end generate;
 
 

@@ -2,9 +2,9 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Thomas B. Preusser
+-- Authors:          Thomas B. Preusser
 --
--- Entity:					Address-based FIFO stream assembly, independent clocks (ic)
+-- Entity:          Address-based FIFO stream assembly, independent clocks (ic)
 --
 -- Description:
 -- -------------------------------------
@@ -30,7 +30,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,19 +39,19 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	IEEE;
-use	IEEE.std_logic_1164.all;
+library  IEEE;
+use      IEEE.std_logic_1164.all;
 
 entity fifo_ic_assembly is
-  generic (
-    D_BITS : positive;  								-- Data Width
-    A_BITS : positive;  								-- Address Bits
-    G_BITS : positive  									-- Generation Guard Bits
-  );
-  port (
-    -- Write Interface
-    clk_wr : in std_logic;
-    rst_wr : in std_logic;
+	generic (
+		D_BITS : positive;                  -- Data Width
+		A_BITS : positive;                  -- Address Bits
+		G_BITS : positive                    -- Generation Guard Bits
+	);
+	port (
+		-- Write Interface
+		clk_wr : in std_logic;
+		rst_wr : in std_logic;
 
 		-- Only write addresses in the range [base, base+2**(A_BITS-G_BITS)) are
 		-- acceptable. This is equivalent to the test
@@ -63,23 +63,23 @@ entity fifo_ic_assembly is
 		base   : out std_logic_vector(A_BITS-1 downto 0);
 		failed : out std_logic;
 
-    addr : in  std_logic_vector(A_BITS-1 downto 0);
-    din  : in  std_logic_vector(D_BITS-1 downto 0);
-    put  : in  std_logic;
+		addr : in  std_logic_vector(A_BITS-1 downto 0);
+		din  : in  std_logic_vector(D_BITS-1 downto 0);
+		put  : in  std_logic;
 
-    -- Read Interface
-    clk_rd : in std_logic;
-    rst_rd : in std_logic;
+		-- Read Interface
+		clk_rd : in std_logic;
+		rst_rd : in std_logic;
 
-    dout : out std_logic_vector(D_BITS-1 downto 0);
-    vld  : out std_logic;
-    got  : in  std_logic
-  );
+		dout : out std_logic_vector(D_BITS-1 downto 0);
+		vld  : out std_logic;
+		got  : in  std_logic
+	);
 end entity fifo_ic_assembly;
 
 
 library IEEE;
-use	IEEE.numeric_std.all;
+use  IEEE.numeric_std.all;
 
 use  work.utils.all;
 use  work.ocram.all;
@@ -108,28 +108,28 @@ architecture rtl of fifo_ic_assembly is
 
 begin
 
-  -----------------------------------------------------------------------------
-  -- Write clock domain
-  blkWrite : block
-    signal InitCnt : unsigned(AN downto 0)               := (others => '0');
-    signal OPmeta  : std_logic_vector(A_BITS-1 downto 0) := (others => '0');
-    signal OPsync  : std_logic_vector(A_BITS-1 downto 0) := (others => '0');
-    signal OPbin   : std_logic_vector(A_BITS-1 downto 0) := '1' & (A_BITS-2 downto 0 => '0');
-    signal Fail    : std_logic                           := '0';
-  begin
-    process(clk_wr)
+	-----------------------------------------------------------------------------
+	-- Write clock domain
+	blkWrite : block
+		signal InitCnt : unsigned(AN downto 0)               := (others => '0');
+		signal OPmeta  : std_logic_vector(A_BITS-1 downto 0) := (others => '0');
+		signal OPsync  : std_logic_vector(A_BITS-1 downto 0) := (others => '0');
+		signal OPbin   : std_logic_vector(A_BITS-1 downto 0) := '1' & (A_BITS-2 downto 0 => '0');
+		signal Fail    : std_logic                           := '0';
+	begin
+		process(clk_wr)
 			variable tmp : unsigned(A_BITS-1 downto 0);
-    begin
-      if rising_edge(clk_wr) then
-        if rst_wr = '1' then
-          InitCnt <= (others => '0');
-          OPmeta  <= (others => '0');
-          OPsync  <= (others => '0');
-          OPbin   <= '1' & (A_BITS-2 downto 0 => '0');
-          Fail    <= '0';
-        else
-          OPmeta  <= OPgray;
-          OPsync  <= OPmeta;
+		begin
+			if rising_edge(clk_wr) then
+				if rst_wr = '1' then
+					InitCnt <= (others => '0');
+					OPmeta  <= (others => '0');
+					OPsync  <= (others => '0');
+					OPbin   <= '1' & (A_BITS-2 downto 0 => '0');
+					Fail    <= '0';
+				else
+					OPmeta  <= OPgray;
+					OPsync  <= OPmeta;
 
 					if InitCnt(InitCnt'left) = '0' then
 						InitCnt <= InitCnt + 1;
@@ -143,62 +143,62 @@ begin
 							Fail <= '1';
 						end if;
 					end if;
-        end if;
-      end if;
-    end process;
-    wa <= InitCnt(AN-1 downto 0) when InitCnt(InitCnt'left) = '0' else
-          unsigned(addr(AN-1 downto 0));
-    di <= (1 to G_BITS => '1') & (1 to D_BITS => '-') when InitCnt(InitCnt'left) = '0' else
-          (genmask_alternate(A_BITS-AN) xor (A_BITS-1 downto AN => addr(AN))) & din;
-    we <= put or not InitCnt(InitCnt'left);
+				end if;
+			end if;
+		end process;
+		wa <= InitCnt(AN-1 downto 0) when InitCnt(InitCnt'left) = '0' else
+					unsigned(addr(AN-1 downto 0));
+		di <= (1 to G_BITS => '1') & (1 to D_BITS => '-') when InitCnt(InitCnt'left) = '0' else
+					(genmask_alternate(A_BITS-AN) xor (A_BITS-1 downto AN => addr(AN))) & din;
+		we <= put or not InitCnt(InitCnt'left);
 
-    -- Module Outputs
-    base   <= OPbin;
-    failed <= Fail;
+		-- Module Outputs
+		base   <= OPbin;
+		failed <= Fail;
 
-  end block blkWrite;
+	end block blkWrite;
 
-  blkRead : block
+	blkRead : block
 
-    -- Init Delay to allow writer to invalidate memory contents
-    signal InitDelay : unsigned(1 downto 0) := (others => '0');
+		-- Init Delay to allow writer to invalidate memory contents
+		signal InitDelay : unsigned(1 downto 0) := (others => '0');
 
-    -- Output Pointer for Reading
-    signal OP    : unsigned(A_BITS-1 downto 0) := (others => '0');
-    signal OPnxt : unsigned(A_BITS-1 downto 0);
+		-- Output Pointer for Reading
+		signal OP    : unsigned(A_BITS-1 downto 0) := (others => '0');
+		signal OPnxt : unsigned(A_BITS-1 downto 0);
 
 		-- Internal check result
 		signal vldi : std_logic;
 
-  begin
-    process(clk_rd)
-    begin
-      if rising_edge(clk_rd) then
-        if rst_rd = '1' then
+	begin
+		process(clk_rd)
+		begin
+			if rising_edge(clk_rd) then
+				if rst_rd = '1' then
 					InitDelay <= (others => '0');
-          OP				<= (others => '0');
-          OPgray		<= (others => '0');
-        else
+					OP        <= (others => '0');
+					OPgray    <= (others => '0');
+				else
 					if InitDelay(InitDelay'left) = '0' then
 						InitDelay <= InitDelay + 1;
 					end if;
-          OP     <= OPnxt;
-          OPgray <= bin2gray(std_logic_vector(OP));
-        end if;
-      end if;
-    end process;
-    OPnxt <= OP+1 when vldi = '1' and got = '1' else OP;
-    ra    <= OPnxt(AN-1 downto 0);
-    vldi  <= '0' when InitDelay(InitDelay'left) = '0' else
-             'X' when Is_X(do(DN-1 downto D_BITS)) else
-             '1' when do(DN-1 downto D_BITS) = (genmask_alternate(A_BITS-AN) xor (A_BITS-1 downto AN => OP(AN))) else
-             '0';
+					OP     <= OPnxt;
+					OPgray <= bin2gray(std_logic_vector(OP));
+				end if;
+			end if;
+		end process;
+		OPnxt <= OP+1 when vldi = '1' and got = '1' else OP;
+		ra    <= OPnxt(AN-1 downto 0);
+		vldi  <= '0' when InitDelay(InitDelay'left) = '0' else
+						'X' when Is_X(do(DN-1 downto D_BITS)) else
+						'1' when do(DN-1 downto D_BITS) = (genmask_alternate(A_BITS-AN) xor (A_BITS-1 downto AN => OP(AN))) else
+						'0';
 
 		-- Module Outputs
 		dout <= do(D_BITS-1 downto 0);
-    vld  <= vldi;
+		vld  <= vldi;
 
-  end block blkRead;
+	end block blkRead;
 
 	-- Backing internal assembly memory
 	ram : ocram_sdp

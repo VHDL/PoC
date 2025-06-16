@@ -4,11 +4,26 @@
 -- =============================================================================
 -- Authors:         Stefan Unrein
 --
--- Entity:          A generic AXI4-Stream buffer (FIFO).
+-- Entity:          AXI4Stream_FIFO_tempput
 --
 -- Description:
 -- -------------------------------------
--- .. TODO:: No documentation available.
+-- A wrapper of fifo_cc_tempput for the AXI4-Stream interface. The size of the
+-- data-channels is FRAMES * FRAMES_DEPTH, the size of the control-channels is FRAMES.
+--
+-- With the In_Commit and In_Rollback ports you can implement e.g. a packet-FIFO.
+-- A strobe to In_Commit transmits the current write-pointer to the read side and
+-- allows therfore the readout. By setting the port
+--   In_Commit => In_M2S.Valid and In_M2S.Last and In_S2M.Ready
+-- you can create a packet-FIFO, which allows the readout of the packet only if
+-- the full packet is available.
+-- NOTE: The FIFO needs to be as large as the maximum processed packet-size,
+-- otherwise this FIFO will be in a dead-lock.
+--
+-- A strobe to In_Rollback puts the read-pointer back to the last commited
+-- position. This allows to distroy the packet after it was written into the FIFO.
+-- Usually necessary if the packet is checked for bit-errors and should be distroyed
+-- if so.
 --
 -- License:
 -- =============================================================================
@@ -31,7 +46,7 @@ use     work.mem.all;
 
 entity AXI4Stream_FIFO_tempput is
 	generic (
-		RAM_TYPE            : T_RAM_TYPE := RAM_TYPE_OPTIMIZED;--RAM_TYPE_AUTO;     
+		RAM_TYPE            : T_RAM_TYPE := RAM_TYPE_OPTIMIZED;--RAM_TYPE_AUTO;
 		FRAMES              : positive   := 2;
 		MAX_PACKET_DEPTH    : positive   := 8;
 		USER_IS_DYNAMIC     : boolean    := true;
@@ -62,7 +77,7 @@ architecture rtl of AXI4Stream_FIFO_tempput is
 	constant KEEP_BITS        : positive       := In_M2S.Keep'length;
 	constant DEST_BITS        : positive       := In_M2S.Dest'length;
 	constant ID_BITS          : positive       := In_M2S.ID'length;
-	
+
 	constant INCLUDE_META     : boolean        := (USER_IS_DYNAMIC) and (USER_BITS > 0);
 
 	type T_WRITER_STATE is (ST_IDLE, ST_FRAME);
@@ -77,10 +92,10 @@ architecture rtl of AXI4Stream_FIFO_tempput is
 	constant Keep_Pos         : natural  := 1;
 	constant Last_Pos         : natural  := 2;
 	constant User_Pos         : natural  := 3;
-	
+
 	constant Data_Bits_Vec  : T_NATVEC := (
-		Keep_Pos       => KEEP_BITS, 
-		Data_Pos       => DATA_BITS, 
+		Keep_Pos       => KEEP_BITS,
+		Data_Pos       => DATA_BITS,
 		Last_Pos       => 1,
 		User_Pos       => USER_BITS
 	);
@@ -103,10 +118,10 @@ architecture rtl of AXI4Stream_FIFO_tempput is
 
 begin
 	assert not NO_META_FIFO report "PoC.AXI4Stream_FIFO_tempput:: NO_META_FIFO is set. Meta Fifo is removed! Dest, ID and, depending on USER_IS_DYNAMIC, User is removed" severity warning;
-	
+
 	In_SOF      <= In_M2S.Valid and not started;
 	started     <= ffrs(q => started, rst => ((In_M2S.Valid and In_M2S.Last) or Reset), set => (In_M2S.Valid)) when rising_edge(Clock);
-	
+
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
@@ -126,11 +141,11 @@ begin
 		In_S2M.Ready                         <= '0';
 		DataFIFO_put                         <= '0';
 		MetaFIFO_put                         <= '0';
-		
+
 		DataFIFO_DataIn(high(Data_Bits_Vec, Data_Pos) downto low(Data_Bits_Vec, Data_Pos)) <= In_M2S.Data;
 		DataFIFO_DataIn(high(Data_Bits_Vec, Last_Pos))                                     <= In_M2S.Last;
 		DataFIFO_DataIn(high(Data_Bits_Vec, Keep_Pos) downto low(Data_Bits_Vec, Keep_Pos)) <= In_M2S.Keep;
-		
+
 		-- concatinate dynamic metadata with data
 		if (USER_IS_DYNAMIC) and (USER_BITS > 0) then
 			DataFIFO_DataIn(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos)) <= In_M2S.User;
@@ -166,7 +181,7 @@ begin
 		Out_M2S_i.Data <= DataFIFO_DataOut(high(Data_Bits_Vec, Data_Pos) downto low(Data_Bits_Vec, Data_Pos));
 		Out_M2S_i.Last <= DataFIFO_DataOut(high(Data_Bits_Vec, Last_Pos))                                    ;
 		Out_M2S_i.Keep <= DataFIFO_DataOut(high(Data_Bits_Vec, Keep_Pos) downto low(Data_Bits_Vec, Keep_Pos));
-		
+
 		-- split dynamic metadata and data from fifo output
 		if (USER_IS_DYNAMIC) and (USER_BITS > 0) then
 			Out_M2S_i.User <= DataFIFO_DataOut(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos));
@@ -215,7 +230,7 @@ begin
 		din            => DataFIFO_DataIn(high(Data_Bits_Vec, ite(INCLUDE_META, User_Pos, Last_Pos)) downto low(Data_Bits_Vec, 0)),
 		full           => DataFIFO_Full,
 		estate_wr      => estate_wr,
-		
+
 		commit         => In_Commit,
 		rollback       => In_Rollback,
 
@@ -225,14 +240,14 @@ begin
 		valid          => DataFIFO_Valid,
 		fstate_rd      => fstate_rd
 	);
-		
+
 	Out_M2S     <= Out_M2S_i;
 
 	genMeta : if (((not USER_IS_DYNAMIC) and (USER_BITS > 0)) or (DEST_BITS > 0) or (ID_BITS > 0)) generate
 		constant Dest_Pos         : natural  := 0;
 		constant ID_Pos           : natural  := 1;
 		constant User_Pos         : natural  := 2;
-		
+
 		constant Data_Bits_Vec  : T_NATVEC := (
 			Dest_Pos       => DEST_BITS,
 			ID_Pos         => ID_BITS,
@@ -245,12 +260,12 @@ begin
 		Meta_In(high(Data_Bits_Vec, ID_Pos  ) downto low(Data_Bits_Vec, ID_Pos  )) <= In_M2S.ID;
 		Out_M2S_i.Dest             <= Meta_Out(high(Data_Bits_Vec, Dest_Pos) downto low(Data_Bits_Vec, Dest_Pos));
 		Out_M2S_i.ID               <= Meta_Out(high(Data_Bits_Vec, ID_Pos  ) downto low(Data_Bits_Vec, ID_Pos  ));
-		
+
 		data_gen : if not USER_IS_DYNAMIC generate
 			Meta_In(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos)) <= In_M2S.User;
 			Out_M2S_i.User           <= Meta_Out(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos));
 		end generate;
-		
+
 		NO_META_FIFO_gen : if not NO_META_FIFO generate
 			MetaFIFO : entity work.fifo_cc_got_tempput
 			generic map (
@@ -266,16 +281,16 @@ begin
 				-- Global Reset and Clock
 				clk          => Clock,
 				rst          => Reset,
-	
+
 				-- Writing Interface
 				put          => MetaFIFO_put,
 				din          => Meta_In,
 				full         => MetaFIFO_Full,
 				estate_wr    => open,
-			
+
 				commit       => In_Commit,
 				rollback     => In_Rollback,
-				
+
 				-- Reading Interface
 				got          => Out_M2S_i.Valid and Out_M2S_i.Last and Out_S2M.Ready,
 				dout         => Meta_Out,

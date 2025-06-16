@@ -2,11 +2,11 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Thomas B. Preusser
---									Steffen Koehler
---									Martin Zabel
+-- Authors:         Thomas B. Preusser
+--                  Steffen Koehler
+--                  Martin Zabel
 --
--- Entity:					FIFO, independent clocks (ic), first-word-fall-through mode
+-- Entity:          FIFO, independent clocks (ic), first-word-fall-through mode
 --
 -- Description:
 -- -------------------------------------
@@ -56,7 +56,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -65,7 +65,7 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	IEEE;
+library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
@@ -112,7 +112,7 @@ architecture rtl of fifo_ic_got is
   signal IP1 : std_logic_vector(AN-1 downto 0);                     -- IP + 1
   signal IP0 : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Write Pointer IP
   signal IPz : std_logic_vector(AN-1 downto 0) := (others => '0');  -- IP delayed by one clock
-	signal OPs : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Sync stage: OP0 -> OPc
+  signal OPs : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Sync stage: OP0 -> OPc
   signal OPc : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Copy of OP
   signal Ful : std_logic                       := '0';              -- RAM full
 
@@ -163,7 +163,7 @@ begin
       if rst_wr = '1' then
         IP0 <= (others => '0');
         IPz <= (others => '0');
-				OPs <= (others => '0');
+        OPs <= (others => '0');
         OPc <= (others => '0');
         Ful <= '0';
       else
@@ -218,7 +218,7 @@ begin
     if rising_edge(clk_rd) then
       if rst_rd = '1' then
         OP0 <= (others => '0');
-				IPs <= (others => '0');
+        IPs <= (others => '0');
         IPc <= (others => '0');
         Avl <= '0';
         Vld <= '0';
