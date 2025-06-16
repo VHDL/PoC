@@ -33,7 +33,7 @@
 library	IEEE;
 use     IEEE.std_logic_1164.all;
 
-entity fifo_glue is
+entity fifo_stage is
   generic (
     D_BITS : positive              							     -- Data Width
   );
@@ -52,10 +52,10 @@ entity fifo_glue is
     do  : out std_logic_vector(D_BITS-1 downto 0);  -- Data Output
     got : in  std_logic                             -- Data Consumed
   );
-end entity fifo_glue;
+end entity fifo_stage;
 
 
-architecture rtl of fifo_glue is
+architecture rtl of fifo_stage is
 
   -- Data Buffer Registers
   signal A, B : std_logic_vector(D_BITS-1 downto 0);

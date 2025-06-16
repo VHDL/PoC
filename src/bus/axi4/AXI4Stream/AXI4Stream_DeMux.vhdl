@@ -31,7 +31,7 @@ use     work.axi4stream.all;
 entity AXI4Stream_DeMux is
 	generic (
 		ADD_MIRROR_MODE     : boolean   := false;
-		ADD_OUTPUT_GLUE     : boolean   := ADD_MIRROR_MODE;
+		ADD_OUTPUT_STAGE    : boolean   := ADD_MIRROR_MODE;
 		ENABLE_REVERSE_USER : boolean   := false
 	);
 	port (
@@ -186,9 +186,9 @@ begin
 		Out_M2S_d(i).ID       <= In_M2S.ID;
 		Out_M2S_d(i).Last     <= In_M2S.Last;
 		
-		Out_Glue : entity work.AXI4Stream_Glue
+		Out_stage : entity work.AXI4Stream_stage
 		generic map(
-			PIPELINE_STAGES   => ite(ADD_OUTPUT_GLUE, 1, 0)
+			PIPELINE_STAGES   => ite(ADD_OUTPUT_STAGE, 1, 0)
 		)
 		port map(
 			Clock             => Clock,

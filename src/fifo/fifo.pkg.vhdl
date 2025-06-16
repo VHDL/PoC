@@ -42,7 +42,7 @@ use     work.utils.all;
 package fifo is
 
   -- Minimal FIFO with single clock to decouple enable domains.
-  component fifo_glue
+  component fifo_stage
     generic (
       D_BITS : positive                   -- Data Width
     );
@@ -64,7 +64,7 @@ package fifo is
   end component;
 
   -- Minimal Local-Link-FIFO with single clock and first-word-fall-through mode.
-  component fifo_ll_glue
+  component fifo_ll_stage
     generic (
       D_BITS          : positive;
       FRAME_USER_BITS : natural;

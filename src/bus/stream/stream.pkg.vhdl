@@ -85,12 +85,12 @@ package stream is
 		function Resize_meta(    M2S : T_Stream_M2S; length : natural) return T_Stream_M2S;
 		function Replace_meta(   M2S : T_Stream_M2S; slv : std_logic_vector) return T_Stream_M2S;
 
-		type T_Stream_Glue_Meta_Kind is (
+		type T_Stream_Stage_Meta_Kind is (
 				With_Data,
 				None,
 				Single_Reg
 		);
-		function ite(cond : boolean; value1 : T_Stream_Glue_Meta_Kind; value2 : T_Stream_Glue_Meta_Kind) return T_Stream_Glue_Meta_Kind;
+		function ite(cond : boolean; value1 : T_Stream_Stage_Meta_Kind; value2 : T_Stream_Stage_Meta_Kind) return T_Stream_Stage_Meta_Kind;
 
 
 	attribute Count : integer;
@@ -775,7 +775,7 @@ package body stream is
 		end function;
 
 
-		function ite(cond : boolean; value1 : T_Stream_Glue_Meta_Kind; value2 : T_Stream_Glue_Meta_Kind) return T_Stream_Glue_Meta_Kind is
+		function ite(cond : boolean; value1 : T_Stream_stage_Meta_Kind; value2 : T_Stream_stage_Meta_Kind) return T_Stream_stage_Meta_Kind is
 		begin
 				if cond then
 						return value1;

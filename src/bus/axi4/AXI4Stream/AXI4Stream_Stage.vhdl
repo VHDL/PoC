@@ -4,7 +4,7 @@
 -- =============================================================================
 -- Authors:                 Max Kraft-Kugler
 --
--- Entity:                  A generic AXI4-Stream Glue (Two-Stage FIFO).
+-- Entity:                  A generic AXI4-Stream Stage (Two-Stage FIFO).
 --
 -- Description:
 -- -------------------------------------
@@ -25,7 +25,7 @@ use     work.vectors.all;
 use     work.axi4stream.all;
 
 
-entity AXI4Stream_Glue is
+entity AXI4Stream_Stage is
 	generic (
 		PIPELINE_STAGES   : natural := 2
 	);
@@ -42,7 +42,7 @@ entity AXI4Stream_Glue is
 end entity;
 
 
-architecture rtl of AXI4Stream_Glue is
+architecture rtl of AXI4Stream_Stage is
 	constant Data_Pos       : natural  := 0;
 	constant Keep_Pos       : natural  := 1;
 	constant Last_Pos       : natural  := 2;
@@ -75,7 +75,7 @@ begin
 	FIFO_put      <= In_M2S.Valid;
 	In_S2M.Ready  <= not FIFO_full;
 
-	FIFO : entity work.fifo_glue
+	FIFO : entity work.fifo_stage
 	generic map (
 		D_BITS          => isum(Data_Bits_Vec),
 		PIPELINE_STAGES => PIPELINE_STAGES

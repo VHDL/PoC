@@ -73,12 +73,12 @@ architecture rtl of stream_Mirror is
 	attribute KEEP							: boolean;
 	attribute FSM_ENCODING			: string;
 
-	signal FIFOGlue_put					: std_logic;
-	signal FIFOGlue_DataIn			: std_logic_vector(DATA_BITS + 1 downto 0);
-	signal FIFOGlue_Full				: std_logic;
-	signal FIFOGlue_Valid				: std_logic;
-	signal FIFOGlue_DataOut			: std_logic_vector(DATA_BITS + 1 downto 0);
-	signal FIFOGlue_got					: std_logic;
+	signal FIFOstage_put					: std_logic;
+	signal FIFOstage_DataIn			: std_logic_vector(DATA_BITS + 1 downto 0);
+	signal FIFOstage_Full				: std_logic;
+	signal FIFOstage_Valid				: std_logic;
+	signal FIFOstage_DataOut			: std_logic_vector(DATA_BITS + 1 downto 0);
+	signal FIFOstage_got					: std_logic;
 
 	signal Ack_i								: std_logic;
 	signal Mask_r								: std_logic_vector(PORTS - 1 downto 0)												:= (others => '1');
@@ -91,14 +91,14 @@ begin
 
 	-- Data path
 	-- ==========================================================================================================================================================
-	FIFOGlue_put															<= In_Valid;
-	FIFOGlue_DataIn(DATA_BITS - 1 downto 0)		<= In_Data;
-	FIFOGlue_DataIn(DATA_BITS + 0)						<= In_SOF;
-	FIFOGlue_DataIn(DATA_BITS + 1)						<= In_EOF;
+	FIFOstage_put															<= In_Valid;
+	FIFOstage_DataIn(DATA_BITS - 1 downto 0)		<= In_Data;
+	FIFOstage_DataIn(DATA_BITS + 0)						<= In_SOF;
+	FIFOstage_DataIn(DATA_BITS + 1)						<= In_EOF;
 
-	In_Ack																		<= not FIFOGlue_Full;
+	In_Ack																		<= not FIFOstage_Full;
 
-	FIFOGlue: entity work.fifo_glue
+	FIFOstage: entity work.fifo_stage
 		generic map (
 			D_BITS		=> DATA_BITS + 2					-- Data Width
 		)
@@ -108,27 +108,27 @@ begin
 			rst				=> Reset,									-- Synchronous Reset
 
 			-- Input
-			put				=> FIFOGlue_put,					-- Put Value
-			di				=> FIFOGlue_DataIn,				-- Data Input
-			ful				=> FIFOGlue_Full,					-- Full
+			put				=> FIFOstage_put,					-- Put Value
+			di				=> FIFOstage_DataIn,				-- Data Input
+			ful				=> FIFOstage_Full,					-- Full
 
 			-- Output
-			vld				=> FIFOGlue_Valid,				-- Data Available
-			do				=> FIFOGlue_DataOut,			-- Data Output
-			got				=> FIFOGlue_got						-- Data Consumed
+			vld				=> FIFOstage_Valid,				-- Data Available
+			do				=> FIFOstage_DataOut,			-- Data Output
+			got				=> FIFOstage_got						-- Data Consumed
   );
 
 	genPorts : for i in 0 to PORTS - 1 generate
-		assign_row(Out_Data_i, FIFOGlue_DataOut(DATA_BITS - 1 downto 0), i);
+		assign_row(Out_Data_i, FIFOstage_DataOut(DATA_BITS - 1 downto 0), i);
 	end generate;
 
 	Ack_i					<= slv_and(Out_Ack) or slv_and(not Mask_r or Out_Ack);
-	FIFOGlue_got	<= Ack_i;
+	FIFOstage_got	<= Ack_i;
 
-	Out_Valid			<= (PORTS - 1 downto 0 => FIFOGlue_Valid) and Mask_r;
+	Out_Valid			<= (PORTS - 1 downto 0 => FIFOstage_Valid) and Mask_r;
 	Out_Data			<= Out_Data_i;
-	Out_SOF				<= (PORTS - 1 downto 0 => FIFOGlue_DataOut(DATA_BITS + 0));
-	Out_EOF				<= (PORTS - 1 downto 0 => FIFOGlue_DataOut(DATA_BITS + 1));
+	Out_SOF				<= (PORTS - 1 downto 0 => FIFOstage_DataOut(DATA_BITS + 0));
+	Out_EOF				<= (PORTS - 1 downto 0 => FIFOstage_DataOut(DATA_BITS + 1));
 
 	process(Clock)
 	begin

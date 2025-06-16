@@ -232,7 +232,7 @@ begin
 			);
 		else generate
 		
-			inst_glue : entity work.fifo_glue
+			inst_stage : entity work.fifo_stage
 			generic map(
 				D_BITS          => BIT_VEC(i),
 				PIPELINE_STAGES => FRAMES +1,

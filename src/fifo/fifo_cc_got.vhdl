@@ -64,7 +64,7 @@
 --   For a FIFO with dependent clocks.
 -- :ref:`IP:fifo_ic_got`
 --   For a FIFO with independent clocks (cross-clock FIFO).
--- :ref:`IP:fifo_glue`
+-- :ref:`IP:fifo_stage`
 --   For a minimal FIFO / pipeline decoupling.
 --
 -- License:

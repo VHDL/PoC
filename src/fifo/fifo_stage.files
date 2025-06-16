@@ -8,4 +8,4 @@
 include				"src/common/common.files"										# load common packages
 
 # PoC.fifo
-vhdl		PoC		"src/fifo/fifo_glue.vhdl"										# Top-Level
+vhdl		PoC		"src/fifo/fifo_stage.vhdl"										# Top-Level
