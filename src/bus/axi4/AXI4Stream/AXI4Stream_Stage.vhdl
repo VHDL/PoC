@@ -37,7 +37,7 @@ use     work.axi4stream.all;
 
 entity AXI4Stream_Stage is
 	generic (
-		PIPELINE_STAGES   : natural := 2
+		STAGES            : natural := 2
 	);
 	port (
 		Clock             : in  std_logic;
@@ -87,8 +87,8 @@ begin
 
 	FIFO : entity work.fifo_stage
 	generic map (
-		D_BITS          => isum(Data_Bits_Vec),
-		PIPELINE_STAGES => PIPELINE_STAGES
+		D_BITS   => isum(Data_Bits_Vec),
+		STAGES   => STAGES
 	)
 	port map (
 		-- Global Reset and Clock

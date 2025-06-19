@@ -219,7 +219,7 @@ begin
 		end case;
 	end process;
 
-	inst_cc_got_tempput : entity work.fifo_cc_got_tempput
+	DataFifo : entity work.fifo_cc_got_tempput
 	generic map (
 		RAM_TYPE       => RAM_TYPE,
 		D_BITS         => ite(USER_IS_DYNAMIC and (USER_BITS > 0), isum(Data_Bits_Vec), isum(Data_Bits_Vec(0 to Last_Pos))),								-- Data Width

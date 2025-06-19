@@ -41,7 +41,7 @@ use     work.axi4stream.all;
 entity AXI4Stream_DeMux is
 	generic (
 		ADD_MIRROR_MODE     : boolean   := false;
-		ADD_OUTPUT_STAGE    : boolean   := ADD_MIRROR_MODE;
+		OUTPUT_STAGES       : natural   := 0;
 		ENABLE_REVERSE_USER : boolean   := false
 	);
 	port (
@@ -88,11 +88,11 @@ begin
 		report "'MuxControl' and 'Out_M2S' needs to have same range(one-hot-encoding)."
 		severity FAILURE;
 
-	assign_gen : for i in 0 to PORTS -1 generate
+	genAssign : for i in 0 to PORTS -1 generate
 		Out_Ready(i)  <= Out_S2M_d(i).Ready;
 	end generate;
 
-	Mirror_gen : if ADD_MIRROR_MODE generate
+	genMirror : if ADD_MIRROR_MODE generate
 		process(Clock)
 		begin
 			if rising_edge(Clock) then
@@ -183,7 +183,7 @@ begin
 
 	ChannelPointer_d    <= DeMuxControl when rising_edge(Clock) and ChannelPointer_en = '1';
 
-	Reverse_user_gen : if ENABLE_REVERSE_USER generate
+	genReverseUser : if ENABLE_REVERSE_USER generate
 		In_S2M.User         <= Out_S2M_d(lssb_idx(ChannelPointer)).User;
 	end generate;
 
@@ -196,9 +196,9 @@ begin
 		Out_M2S_d(i).ID       <= In_M2S.ID;
 		Out_M2S_d(i).Last     <= In_M2S.Last;
 
-		Out_stage : entity work.AXI4Stream_stage
+		OutStage : entity work.AXI4Stream_stage
 		generic map(
-			PIPELINE_STAGES   => ite(ADD_OUTPUT_STAGE, 1, 0)
+			STAGES            => OUTPUT_STAGES
 		)
 		port map(
 			Clock             => Clock,

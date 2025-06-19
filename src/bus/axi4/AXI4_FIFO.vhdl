@@ -392,7 +392,7 @@ begin
 			inst_stage : entity work.fifo_stage
 			generic map(
 				D_BITS          => BIT_VEC(i),
-				PIPELINE_STAGES => FRAMES +1,
+				STAGES          => FRAMES +1,
 				LIGHT_WEIGHT    => (i = AW_POS) or (i = AR_POS) or (i = B_POS)
 			)
 			port map(

@@ -203,7 +203,7 @@ begin
 		end case;
 	end process;
 
-	inst_cc_got_tempgot : entity work.fifo_cc_got_tempgot
+	DataFifo : entity work.fifo_cc_got_tempgot
 	generic map (
 		D_BITS							=> ite(METADATA_IS_DYNAMIC and (USER_BITS > 0), isum(Data_Bits_Vec), isum(Data_Bits_Vec(0 to Last_Pos))),								-- Data Width
 		MIN_DEPTH						=> (MAX_PACKET_DEPTH * FRAMES),	-- Minimum FIFO Depth

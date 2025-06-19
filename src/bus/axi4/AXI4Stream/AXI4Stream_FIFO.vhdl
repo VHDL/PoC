@@ -191,10 +191,10 @@ begin
 	end process;
 
 	----------------------------------------------------------------------------
-	gen_DataFIFO : if FRAMES > 2 or MAX_PACKET_DEPTH > 2 generate
+	gen : if FRAMES > 2 or MAX_PACKET_DEPTH > 2 generate
 	begin
 
-		inst_cc_got : entity work.fifo_cc_got
+		DataFifo : entity work.fifo_cc_got
 		generic map (
 			D_BITS         => ite(METADATA_IS_DYNAMIC and (USER_BITS > 0), isum(Data_Bits_Vec), isum(Data_Bits_Vec(0 to Last_Pos))),  -- Data Width
 			MIN_DEPTH      => (MAX_PACKET_DEPTH * FRAMES),  -- Minimum FIFO Depth
@@ -224,10 +224,10 @@ begin
 		);
 	else generate
 
-		inst_stage : entity work.fifo_stage
+		Stage : entity work.fifo_stage
 		generic map(
 			D_BITS          => ite(METADATA_IS_DYNAMIC and (USER_BITS > 0), isum(Data_Bits_Vec), isum(Data_Bits_Vec(0 to Last_Pos))),
-			PIPELINE_STAGES => FRAMES
+			STAGES          => FRAMES
 		)
 		port map(
 			-- Control

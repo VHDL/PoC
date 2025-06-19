@@ -108,7 +108,7 @@ begin
 	RequestWithSelf    <= slv_or(RequestVector);
 	RequestWithoutSelf <= slv_or(RequestVector and not ChannelPointer_d);
 
-	mapping_gen : for i in 0 to PORTS -1 generate
+	genMapping : for i in 0 to PORTS -1 generate
 		RequestVector(i) <= In_M2S(i).Valid and (MuxControl(i) or not to_sl(USE_CONTROL_VECTOR));
 		In_S2M(i).Ready  <= (Out_S2M.Ready and FSM_Dataflow_en) and ChannelPointer(i);
 	end generate;

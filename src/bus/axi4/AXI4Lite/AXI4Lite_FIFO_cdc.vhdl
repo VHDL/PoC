@@ -9,8 +9,9 @@
 -- Description:
 -- -------------------------------------
 -- A wrapper of fifo_ic_got for AXI4-Lite interface.  It creates a separate
--- CDC-FIFO for every of the five substreams. The size of the data-channels is
--- FRAMES * FRAMES_DEPTH, the size of the control-channels is FRAMES.
+-- CDC-FIFO for every of the five substreams.
+--
+-- TRANSACTIONS: Defines how many AXI4Lite transactions should be buffered.
 --
 -- License:
 -- =============================================================================
@@ -42,7 +43,7 @@ use			work.axi4_Common.all;
 
 entity AXI4Lite_FIFO_cdc is
 	generic (
-		FRAMES         : positive := 2;
+		TRANSACTIONS   : positive := 2;
 		DATA_REG       : boolean  := false;  -- Store Data Content in Registers
 		OUTPUT_REG     : boolean  := false   -- Registered FIFO Output
 	);
@@ -200,7 +201,7 @@ begin
                                       low(BIT_VEC,B_POS) + low(B_BIT_VEC,Resp_POS));
 
 
-  gen_fifo : for i in 0 to 4 generate
+  gen : for i in 0 to 4 generate
     signal DataFIFO_put       : std_logic;
     signal DataFIFO_DataIn_i  : std_logic_vector(BIT_VEC(i) -1 downto 0);
     signal DataFIFO_DataOut_i : std_logic_vector(BIT_VEC(i) -1 downto 0);
@@ -217,10 +218,10 @@ begin
     DataFIFO_got       <= Out_Ready_vec(i);
     Out_Valid_vec(i)   <= DataFIFO_Valid;
 
-		inst_ic_got : entity work.fifo_ic_got
+		DataFifo : entity work.fifo_ic_got
 		generic map (
 			D_BITS             => BIT_VEC(i),
-			MIN_DEPTH          => FRAMES,
+			MIN_DEPTH          => TRANSACTIONS,
 			DATA_REG           => DATA_REG,
 			OUTPUT_REG         => OUTPUT_REG,
 			ESTATE_WR_BITS     => 0,

@@ -9,9 +9,11 @@
 -- Description:
 -- -------------------------------------
 -- A wrapper of fifo_cc_got for AXI4-Lite interface.  It creates a separate
--- FIFO for every of the five substreams. The size of the data-channels is
--- FRAMES * FRAMES_DEPTH, the size of the control-channels is FRAMES.
+-- FIFO for every of the five substreams.
 --
+-- TRANSACTIONS: Defines how many AXI4Lite transactions should be buffered. 
+-- A value of up to 3 is generating a stage of this depth, a value above 3 
+-- creates a real FIFO.
 --
 -- License:
 -- =============================================================================
@@ -43,7 +45,7 @@ use     work.axi4_Common.all;
 
 entity AXI4Lite_FIFO is
 	generic (
-		FRAMES            : natural           := 2
+		TRANSACTIONS            : natural           := 2
 	);
 	port (
 		Clock             : in  std_logic;
@@ -214,13 +216,13 @@ begin
 		DataFIFO_got       <= Out_Ready_vec(i);
 		Out_Valid_vec(i)   <= DataFIFO_Valid;
 
-		gen_cc_got : if FRAMES > 3 generate
+		gen : if TRANSACTIONS > 3 generate
 		begin
 
-			inst_cc_got : entity work.fifo_cc_got
+			DataFifo : entity work.fifo_cc_got
 			generic map (
 				D_BITS              => BIT_VEC(i),
-				MIN_DEPTH           => FRAMES,
+				MIN_DEPTH           => TRANSACTIONS,
 				DATA_REG            => FALSE,
 				STATE_REG           => TRUE,
 				OUTPUT_REG          => FALSE,
@@ -245,10 +247,10 @@ begin
 			);
 		else generate
 
-			inst_stage : entity work.fifo_stage
+			Stage : entity work.fifo_stage
 			generic map(
 				D_BITS          => BIT_VEC(i),
-				PIPELINE_STAGES => FRAMES +1,
+				STAGES          => STAGES +1,
 				LIGHT_WEIGHT    => true
 			)
 			port map(
