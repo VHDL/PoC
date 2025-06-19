@@ -12,20 +12,30 @@
 --
 -- Description:
 -- -------------------------------------
--- A generic AXI4Liter-Register implementation. 
--- It has support for 32-bit and 64-bit AXI4Lite data-width and up to 32-bit 
--- address-witdh. To get a 64-bit register, simply connect a 64-bit bus. Two 
+-- A generic AXI4Liter-Register implementation.
+-- It has support for 32-bit and 64-bit AXI4Lite data-width and up to 32-bit
+-- address-witdh. To get a 64-bit register, simply connect a 64-bit bus. Two
 -- 32-bit registers will be combined together to one 64-bit register.
 --
--- The registers can be described with the CONFIG generic. Use the function 
--- to_AXI4_Register to describe a single 32-bit register. For a description of 
+-- The registers can be described with the CONFIG generic. Use the function
+-- to_AXI4_Register to describe a single 32-bit register. For a description of
 -- all features, see the full documentation.
 --
 -- License:
 -- =============================================================================
--- Copyright (c) 2024 PLC2 Design GmbH - All Rights Reserved
--- Unauthorized copying of this file, via any medium is strictly prohibited.
--- Proprietary and confidential
+-- Copryright 2017-2025 The PoC-Library Authors
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--        http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 -- =============================================================================
 
 library IEEE;
@@ -410,23 +420,23 @@ begin
 		RedPort_gen_i : if CONFIG_i(i).RegisterMode = ReadOnly_NotRegistered generate
 			RegisterFile_ReadPort(i)     <= RegisterFile_WritePort(i);
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(S_AXI_ACLK);
-			
+
 		elsif CONFIG_i(i).RegisterMode = ReadWrite_NotRegistered and not MODE_64bit generate
 			RegisterFile_ReadPort(i)     <= S_AXI_m2s.WData;
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i);
-			
+
 		elsif CONFIG_i(i).RegisterMode = ReadWrite_NotRegistered and MODE_64bit generate
 			RegisterFile_ReadPort(i)     <= S_AXI_m2s.WData(31 downto 0) when CONFIG_i(i).Address(ADDR_LSB) = '0' else S_AXI_m2s.WData(63 downto 32); -- Select if this is the lower or higher 32b register
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i);
-			
+
 		elsif CONFIG_i(i).RegisterMode = ConstantValue generate
 			RegisterFile_ReadPort(i)     <= CONFIG_i(i).Init_Value;
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(S_AXI_ACLK);
-			
+
 		else generate
 			RegisterFile_ReadPort(i)     <= RegisterFile(i);
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(S_AXI_ACLK);
-			
+
 		end generate;
 	end generate;
 

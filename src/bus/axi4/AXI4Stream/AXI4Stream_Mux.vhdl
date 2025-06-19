@@ -10,21 +10,31 @@
 --
 -- Description:
 -- -------------------------------------
--- The IP core module provides a multiplexing function between generic 
+-- The IP core module provides a multiplexing function between generic
 -- AXI4 stream channel to one AXI4 stream channel.
 -- Features
 -- * Round Robin bus arbitration if the mux control is not enabled.
--- * index or port win value is append into MSB of destination signal if the 
+-- * index or port win value is append into MSB of destination signal if the
 --   "APPEND_DEST_BITS" generic is enabled.
--- * For example, for 2 channel multiplexer if the data from channel 1 is 
---   going through then MSB of Dest port will be "1". Size of Dest will be 
+-- * For example, for 2 channel multiplexer if the data from channel 1 is
+--   going through then MSB of Dest port will be "1". Size of Dest will be
 --   increased by log2ceilnz(PORTS).
 --
 -- License:
 -- =============================================================================
--- Copyright (c) 2024 PLC2 Design GmbH - All Rights Reserved
--- Unauthorized copying of this file, via any medium is strictly prohibited.
--- Proprietary and confidential
+-- Copryright 2017-2025 The PoC-Library Authors
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--        http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 -- =============================================================================
 
 library IEEE;

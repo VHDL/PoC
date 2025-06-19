@@ -11,11 +11,21 @@
 --
 -- License:
 -- =============================================================================
--- Copyright (c) 2024 PLC2 Design GmbH - All Rights Reserved
--- Unauthorized copying of this file, via any medium is strictly prohibited.
--- Proprietary and confidential
+-- Copryright 2017-2025 The PoC-Library Authors
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--        http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 -- =============================================================================
-	
+
 library IEEE;
 use			IEEE.std_logic_1164.all;
 use			IEEE.numeric_std.all;
@@ -43,7 +53,7 @@ end entity;
 
 architecture rtl of AXI4_to_AXI4Lite is
 	constant RESPONSE_FIFO_DEPTH : positive := 16; --Using SRL16E, depth is maximum 16
-	
+
 	signal Response_B_fifo_ful  : std_logic;
 	signal Response_R_fifo_ful  : std_logic;
 begin
@@ -62,8 +72,8 @@ begin
 	Out_M2S.ARCache     <= In_M2S.ARCache;
 	Out_M2S.ARProt      <= In_M2S.ARProt ;
 	Out_M2S.RReady      <= In_M2S.RReady ;
-	
-	
+
+
 	In_S2M.AWReady     <= Out_S2M.AWReady and not Response_B_fifo_ful;
 	In_S2M.WReady      <= Out_S2M.WReady ;
 	In_S2M.BValid      <= Out_S2M.BValid ;
@@ -78,7 +88,7 @@ begin
 	--  NVC doesn't support inference of others through unconstrained port of type record.
 	In_S2M.BUser(In_S2M.BUser'range) <= (others => '0');
 	In_S2M.RUser(In_S2M.RUser'range) <= (others => '0');
-	
+
 	Response_R_fifo : entity work.fifo_shift
 	generic map(
 		D_BITS    => In_M2S.AWID'length,
@@ -99,7 +109,7 @@ begin
 		dout => In_S2M.RID,
 		vld  => open
 	);
-	
+
 	Response_B_fifo : entity work.fifo_shift
 	generic map(
 		D_BITS    => In_M2S.AWID'length,
@@ -121,5 +131,5 @@ begin
 		vld  => open
 	);
 
-	
+
 end architecture;

@@ -12,9 +12,19 @@
 --
 -- License:
 -- =============================================================================
--- Copyright (c) 2024 PLC2 Design GmbH - All Rights Reserved
--- Unauthorized copying of this file, via any medium is strictly prohibited.
--- Proprietary and confidential
+-- Copryright 2017-2025 The PoC-Library Authors
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--        http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 -- =============================================================================
 
 library IEEE;
@@ -50,8 +60,8 @@ architecture rtl of AXI4Stream_Stage is
 	constant Dest_Pos       : natural  := 4;
 	constant ID_Pos         : natural  := 5;
 	constant Data_Bits_Vec  : T_NATVEC := (
-		Keep_Pos       => In_M2S.Keep'length, 
-		Data_Pos       => In_M2S.Data'length, 
+		Keep_Pos       => In_M2S.Keep'length,
+		Data_Pos       => In_M2S.Data'length,
 		Last_Pos       => 1,
 		User_Pos       => In_M2S.User'length,
 		Dest_Pos       => In_M2S.Dest'length,
@@ -71,7 +81,7 @@ begin
 	FIFO_data_in(high(Data_Bits_Vec, User_Pos) downto low(Data_Bits_Vec, User_Pos)) <= In_M2S.User;
 	FIFO_data_in(high(Data_Bits_Vec, Dest_Pos) downto low(Data_Bits_Vec, Dest_Pos)) <= In_M2S.Dest;
 	FIFO_data_in(high(Data_Bits_Vec, ID_Pos  ) downto low(Data_Bits_Vec, ID_Pos  )) <= In_M2S.ID;
-	
+
 	FIFO_put      <= In_M2S.Valid;
 	In_S2M.Ready  <= not FIFO_full;
 

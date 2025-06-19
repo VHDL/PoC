@@ -13,9 +13,19 @@
 --
 -- License:
 -- =============================================================================
--- Copyright (c) 2024 PLC2 Design GmbH - All Rights Reserved
--- Unauthorized copying of this file, via any medium is strictly prohibited.
--- Proprietary and confidential
+-- Copryright 2017-2025 The PoC-Library Authors
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--        http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 -- =============================================================================
 
 library IEEE;
@@ -51,7 +61,7 @@ end entity;
 
 architecture rtl of AXI4Stream_DeMux is
 	constant PORTS              : positive := Out_M2S'length;
-	
+
 	type T_STATE is (ST_IDLE, ST_DATAFLOW, ST_DISCARD_FRAME);
 
 	signal State                : T_STATE  := ST_IDLE;
@@ -68,20 +78,20 @@ architecture rtl of AXI4Stream_DeMux is
 	signal ChannelPointer_d     : DeMuxControl'subtype      := (others => '0');
 
 	signal Out_Ready            : DeMuxControl'subtype;
-	
+
 	signal Valid_Mask_r         : DeMuxControl'subtype      := (others => '1');
 	signal Out_M2S_d            : Out_M2S'subtype;
 	signal Out_S2M_d            : Out_S2M'subtype;
-	
+
 begin
 	assert (DeMuxControl'high = Out_M2S'high) and (DeMuxControl'low = Out_M2S'low)
 		report "'MuxControl' and 'Out_M2S' needs to have same range(one-hot-encoding)."
 		severity FAILURE;
-	
+
 	assign_gen : for i in 0 to PORTS -1 generate
 		Out_Ready(i)  <= Out_S2M_d(i).Ready;
 	end generate;
-	
+
 	Mirror_gen : if ADD_MIRROR_MODE generate
 		process(Clock)
 		begin
@@ -93,15 +103,15 @@ begin
 				end if;
 			end if;
 		end process;
-		
+
 		In_Ack_i     <= slv_and(not Valid_Mask_r or (Out_Ready or not ChannelPointer));
-		
+
 	else generate
-	
+
 		Valid_Mask_r <= (others => '1');
 		In_Ack_i     <= slv_or(Out_Ready  and ChannelPointer);
 	end generate;
-	
+
 	DiscardFrame  <= slv_nor(DeMuxControl);
 
 	Is_EOF      <= In_M2S.Valid and In_M2S.Last;
@@ -133,11 +143,11 @@ begin
 
 				if (In_M2S.Valid = '1') then
 					ChannelPointer_en   <= '1';
-					
+
 					if (DiscardFrame = '0') then
 						In_S2M.Ready        <= In_Ack_i;
 						Out_Valid_i         <= '1';
-						
+
 						if ((Is_EOF and In_Ack_i) = '1') then
 							NextState         <= ST_IDLE;
 						else
@@ -145,7 +155,7 @@ begin
 						end if;
 					else
 						In_S2M.Ready        <= '1';
-						
+
 						if (Is_EOF = '1') then
 							NextState         <= ST_IDLE;
 						else
@@ -176,7 +186,7 @@ begin
 	Reverse_user_gen : if ENABLE_REVERSE_USER generate
 		In_S2M.User         <= Out_S2M_d(lssb_idx(ChannelPointer)).User;
 	end generate;
-	
+
 	genOutput : for i in 0 to PORTS - 1 generate
 		Out_M2S_d(i).Valid    <= Out_Valid_i and ChannelPointer(i) and Valid_Mask_r(i);
 		Out_M2S_d(i).Data     <= In_M2S.Data;
@@ -185,7 +195,7 @@ begin
 		Out_M2S_d(i).Dest     <= In_M2S.Dest;
 		Out_M2S_d(i).ID       <= In_M2S.ID;
 		Out_M2S_d(i).Last     <= In_M2S.Last;
-		
+
 		Out_stage : entity work.AXI4Stream_stage
 		generic map(
 			PIPELINE_STAGES   => ite(ADD_OUTPUT_STAGE, 1, 0)
