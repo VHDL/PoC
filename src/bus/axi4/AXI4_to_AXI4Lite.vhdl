@@ -38,6 +38,9 @@ use			work.axi4Lite.all;
 
 
 entity AXI4_to_AXI4Lite is
+	generic (
+		RESPONSE_FIFO_DEPTH : positive := 16 --Using SRL16E, depth is maximum 16
+	);
 	port (
 		Clock             : in  std_logic;
 		Reset             : in  std_logic;
@@ -52,8 +55,6 @@ end entity;
 
 
 architecture rtl of AXI4_to_AXI4Lite is
-	constant RESPONSE_FIFO_DEPTH : positive := 16; --Using SRL16E, depth is maximum 16
-
 	signal Response_B_fifo_ful  : std_logic;
 	signal Response_R_fifo_ful  : std_logic;
 begin

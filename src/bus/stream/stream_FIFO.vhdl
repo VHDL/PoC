@@ -116,9 +116,7 @@ begin
 		end if;
 	end process;
 
-	process(Writer_State,
-					In_Valid, In_Data, In_SOF, In_EOF,
-					DataFIFO_Full)
+	process(all)
 	begin
 		Writer_NextState                  <= Writer_State;
 
@@ -150,9 +148,7 @@ begin
 	end process;
 
 
-	process(Reader_State,
-					Out_Ack,
-					DataFIFO_Valid, DataFIFO_DataOut)
+	process(all)
 	begin
 		Reader_NextState                <= Reader_State;
 

@@ -345,7 +345,7 @@ begin
                                       low(BIT_VEC,B_POS) + low(R_BIT_VEC,ID_POS));
 
 
-  gen_fifo : for i in 0 to 4 generate
+  gen : for i in 0 to 4 generate
     signal DataFIFO_put       : std_logic;
     signal DataFIFO_DataIn_i  : std_logic_vector(BIT_VEC(i) -1 downto 0);
     signal DataFIFO_DataOut_i : std_logic_vector(BIT_VEC(i) -1 downto 0);
@@ -362,7 +362,7 @@ begin
     DataFIFO_got       <= Out_Ready_vec(i);
     Out_Valid_vec(i)   <= DataFIFO_Valid;
 
-		inst_ic_got : entity work.fifo_ic_got
+		DataFifo : entity work.fifo_ic_got
 		generic map (
 			D_BITS							=> BIT_VEC(i),                  -- Data Width
 			MIN_DEPTH						=> MIN_DEPTH(i),	              -- Minimum FIFO Depth

@@ -30,12 +30,13 @@
 -- =============================================================================
 
 library IEEE;
-use IEEE.STD_LOGIC_1164.all;
-use IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.NUMERIC_STD.all;
 
 use work.config.all;
 use work.utils.all;
 use work.vectors.all;
+
 entity stream_Mirror is
 	generic (
 		PORTS       : positive := 2;
