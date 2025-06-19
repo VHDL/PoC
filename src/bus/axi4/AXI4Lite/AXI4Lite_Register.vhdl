@@ -23,7 +23,7 @@
 --
 -- License:
 -- =============================================================================
--- Copryright 2017-2025 The PoC-Library Authors
+-- Copyright 2025-2025 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -62,8 +62,8 @@ entity AXI4Lite_Register is
 		CONFIG                            : T_AXI4_Register_Vector
 	);
 	port (
-		S_AXI_ACLK                        : in  std_logic;
-		S_AXI_ARESETN                     : in  std_logic;
+		Clock                             : in  std_logic;
+		Reset                             : in  std_logic;
 
 		S_AXI_m2s                         : in  T_AXI4Lite_BUS_M2S;
 		S_AXI_s2m                         : out T_AXI4Lite_BUS_S2M;
@@ -242,10 +242,10 @@ begin
 	S_AXI_s2m.RValid  <= axi_rvalid;
 
 	-------- WRITE TRANSACTION DEPENDECIES --------
-	process (S_AXI_ACLK)
+	process (Clock)
 	begin
-		if rising_edge(S_AXI_ACLK) then
-			if (S_AXI_ARESETN = '0') then
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				axi_awready <= '0';
 				axi_awaddr <= (others => '0');
 			elsif (axi_awready = '0' and S_AXI_m2s.AWValid = '1' and S_AXI_m2s.WValid = '1') then
@@ -258,10 +258,10 @@ begin
 		end if;
 	end process;
 
-	process (S_AXI_ACLK)
+	process (Clock)
 	begin
-		if rising_edge(S_AXI_ACLK) then
-			if (S_AXI_ARESETN = '0') then
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				axi_wready <= '0';
 			elsif (axi_wready = '0' and S_AXI_m2s.AWValid = '1' and S_AXI_m2s.WValid = '1') then
 				axi_wready <= '1';
@@ -273,10 +273,10 @@ begin
 
 
 	----------- RegisterFile write process ----------------
-	process(S_AXI_ACLK)
+	process(Clock)
 	begin
-		if rising_edge(S_AXI_ACLK) then
-			if ((S_AXI_ARESETN = '0')) then
+		if rising_edge(Clock) then
+			if ((Reset = '1')) then
 				if INIT_ON_RESET then
 					RegisterFile <= Register_init(CONFIG_i);
 				end if;
@@ -395,10 +395,10 @@ begin
 
 
 	------------- Write Response --------------
-	process (S_AXI_ACLK)
+	process (Clock)
 	begin
-		if rising_edge(S_AXI_ACLK) then
-			if (S_AXI_ARESETN = '0') then
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				axi_bvalid  <= '0';
 				axi_bresp   <= C_AXI4_RESPONSE_OKAY;
 			else
@@ -419,7 +419,7 @@ begin
 	RedPort_gen : for i in CONFIG'range generate
 		RedPort_gen_i : if CONFIG_i(i).RegisterMode = ReadOnly_NotRegistered generate
 			RegisterFile_ReadPort(i)     <= RegisterFile_WritePort(i);
-			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(S_AXI_ACLK);
+			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(Clock);
 
 		elsif CONFIG_i(i).RegisterMode = ReadWrite_NotRegistered and not MODE_64bit generate
 			RegisterFile_ReadPort(i)     <= S_AXI_m2s.WData;
@@ -431,21 +431,21 @@ begin
 
 		elsif CONFIG_i(i).RegisterMode = ConstantValue generate
 			RegisterFile_ReadPort(i)     <= CONFIG_i(i).Init_Value;
-			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(S_AXI_ACLK);
+			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(Clock);
 
 		else generate
 			RegisterFile_ReadPort(i)     <= RegisterFile(i);
-			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(S_AXI_ACLK);
+			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(Clock);
 
 		end generate;
 	end generate;
 
 
 	-------- READ TRANSACTION DEPENDECIES --------
-	process (S_AXI_ACLK)
+	process (Clock)
 	begin
-		if rising_edge(S_AXI_ACLK) then
-			if (S_AXI_ARESETN = '0') then
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				axi_arready <= '0';
 				axi_araddr  <= (others => '1');
 			elsif (axi_arready = '0' and S_AXI_m2s.ARValid = '1' and outstanding_read = '0') then
@@ -457,10 +457,10 @@ begin
 		end if;
 	end process;
 
-	process (S_AXI_ACLK)
+	process (Clock)
 	begin
-		if rising_edge(S_AXI_ACLK) then
-			if (S_AXI_ARESETN = '0') then
+		if rising_edge(Clock) then
+			if (Reset = '1') then
 				axi_rvalid <= '0';
 				axi_rresp  <= C_AXI4_RESPONSE_OKAY;
 			elsif slv_reg_rden = '1' then
@@ -473,14 +473,14 @@ begin
 	end process;
 
 	--Read Signals
-	outstanding_read           <= (outstanding_read or slv_reg_rden) and not (not S_AXI_ARESETN or S_AXI_m2s.RReady) when rising_edge(S_AXI_ACLK);
+	outstanding_read           <= (outstanding_read or slv_reg_rden) and not (Reset or S_AXI_m2s.RReady) when rising_edge(Clock);
 	slv_reg_rden               <= S_AXI_m2s.ARValid and axi_arready and (not axi_rvalid);
-	slv_reg_rden_d             <= slv_reg_rden when rising_edge(S_AXI_ACLK);
+	slv_reg_rden_d             <= slv_reg_rden when rising_edge(Clock);
 	slv_reg_rden_re            <= slv_reg_rden and not slv_reg_rden_d;
 	RegisterFile_WritePort_hit <= slv_reg_rden_re and (hit_r(CONFIG'range) or hit_r_1(CONFIG'range));
 
 	-- Output register or memory read data
-	process(S_AXI_ACLK) is
+	process(Clock) is
 		function first_out(slv : std_logic_vector; reg : T_SLVV) return std_logic_vector is
 		begin
 			for i in slv'low to slv'high loop
@@ -501,9 +501,9 @@ begin
 		end function;
 		variable idx : integer;
 	begin
-		if (rising_edge (S_AXI_ACLK)) then
+		if (rising_edge (Clock)) then
 			idx := lssb_idx_with_loop(hit_r);
-			if  (S_AXI_ARESETN = '0')  then
+			if  (Reset = '0')  then
 				axi_rdata  <= (others => '0');
 			elsif (slv_reg_rden_re = '1') then
 				-- When there is a valid read address (S_AXI_m2s.ARValid) with
@@ -660,7 +660,7 @@ begin
 			end process;
 		end generate;
 
-		Is_Interrupt_d  <= Is_Interrupt when rising_edge(S_AXI_ACLK);
+		Is_Interrupt_d  <= Is_Interrupt when rising_edge(Clock);
 		Is_Interrupt_re <= Is_Interrupt and not Is_Interrupt_d;
 
 		S_AXI_IRQ <= or(Is_Interrupt_re) when INTERRUPT_IS_STROBE else or(Is_Interrupt);
