@@ -1,13 +1,32 @@
+-- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
+-- vim: tabstop=2:shiftwidth=2:noexpandtab
+-- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:
--- Iqbal Asif (PLC2 Design GmbH)
--- Patrick Lehmann (PLC2 Design GmbH)
+--                  Iqbal Asif (PLC2 Design GmbH)
+--                  Patrick Lehmann (PLC2 Design GmbH)
+--
+-- Entity:          AXI4Lite_Register_TestHarness
+--
+-- Description:
+-- -------------------------------------
+-- Testharness of OSVVM Testbench of entity AXI4Lite_Register
 --
 -- License:
 -- =============================================================================
--- Copyright (c) 2024 PLC2 Design GmbH - All Rights Reserved
--- Unauthorized copying of this file, via any medium is strictly prohibited.
--- Proprietary and confidential
+-- Copyright 2025-2025 The PoC-Library Authors
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--        http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
 -- =============================================================================
 
 library IEEE;
@@ -91,39 +110,39 @@ architecture sim of AXI4Lite_Register_TestHarness is
 	);
 
 	component AXI4Lite_Register_TestController is
-	generic (
-		CONFIG : T_AXI4_Register_Vector
-	);
-	port (
-		-- Global Signal Interface
-		Clk    : in std_logic;
-		nReset : in std_logic;
+		generic (
+			CONFIG : T_AXI4_Register_Vector
+		);
+		port (
+			-- Global Signal Interface
+			Clk    : in std_logic;
+			nReset : in std_logic;
 
-		Irq : in std_logic;
+			Irq : in std_logic;
 
-		ReadPort  : in T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
-		WritePort : out T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0) := (others => (others => '0'));
+			ReadPort  : in T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
+			WritePort : out T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0) := (others => (others => '0'));
 
-		-- Transaction Interfaces
-		AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType
-	);
+			-- Transaction Interfaces
+			AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType
+		);
 	end component;
 
 begin
 
 	-- create Clock for TB and 100 Mhz
 	Osvvm.ClockResetPkg.CreateClock (
-	Clk    => Clk,
-	Period => Tperiod_Clk
+		Clk    => Clk,
+		Period => Tperiod_Clk
 	);
 
 	-- create nReset
 	Osvvm.ClockResetPkg.CreateReset (
-	Reset       => nReset,
-	ResetActive => '0',
-	Clk         => Clk,
-	Period      => 7 * tperiod_Clk,
-	tpd         => 0 ns
+		Reset       => nReset,
+		ResetActive => '0',
+		Clk         => Clk,
+		Period      => 7 * tperiod_Clk,
+		tpd         => 0 ns
 	);
 
 	Master_Config : entity OSVVM_AXI4.Axi4LiteManager
@@ -153,7 +172,6 @@ begin
 	DUT : entity PoC.AXI4Lite_Register
 	generic map(
 		CONFIG                            => Reg_Config,
-		VERBOSE                           => False,
 		INTERRUPT_IS_STROBE               => TRUE,
 		INTERRUPT_ENABLE_REGISTER_ADDRESS => 32x"864",
 		INTERRUPT_MATCH_REGISTER_ADDRESS  => 32x"868"
@@ -163,30 +181,30 @@ begin
 		S_AXI_ACLK    => Clk,
 		S_AXI_ARESETN => nReset,
 
-		S_AXI_m2s.AWValid => AxiLiteBus.WriteAddress.Valid,
-		S_AXI_m2s.AWAddr  => AxiLiteBus.WriteAddress.Addr,
-		S_AXI_m2s.AWCache => (others => '0'),
-		S_AXI_m2s.AWProt  => AxiLiteBus.WriteAddress.Prot,
-		S_AXI_m2s.WValid  => AxiLiteBus.WriteData.Valid,
-		S_AXI_m2s.WData   => AxiLiteBus.WriteData.Data,
-		S_AXI_m2s.WStrb   => AxiLiteBus.WriteData.Strb,
-		S_AXI_m2s.BReady  => AxiLiteBus.WriteResponse.Ready,
-		S_AXI_m2s.ARValid => AxiLiteBus.ReadAddress.Valid,
-		S_AXI_m2s.ARAddr  => AxiLiteBus.ReadAddress.Addr,
-		S_AXI_m2s.ARCache => (others => '0'),
-		S_AXI_m2s.ARProt  => AxiLiteBus.ReadAddress.Prot,
-		S_AXI_m2s.RReady  => AxiLiteBus.ReadData.Ready,
+		AXI4Lite_m2s.AWValid => AxiLiteBus.WriteAddress.Valid,
+		AXI4Lite_m2s.AWAddr  => AxiLiteBus.WriteAddress.Addr,
+		AXI4Lite_m2s.AWCache => (others => '0'),
+		AXI4Lite_m2s.AWProt  => AxiLiteBus.WriteAddress.Prot,
+		AXI4Lite_m2s.WValid  => AxiLiteBus.WriteData.Valid,
+		AXI4Lite_m2s.WData   => AxiLiteBus.WriteData.Data,
+		AXI4Lite_m2s.WStrb   => AxiLiteBus.WriteData.Strb,
+		AXI4Lite_m2s.BReady  => AxiLiteBus.WriteResponse.Ready,
+		AXI4Lite_m2s.ARValid => AxiLiteBus.ReadAddress.Valid,
+		AXI4Lite_m2s.ARAddr  => AxiLiteBus.ReadAddress.Addr,
+		AXI4Lite_m2s.ARCache => (others => '0'),
+		AXI4Lite_m2s.ARProt  => AxiLiteBus.ReadAddress.Prot,
+		AXI4Lite_m2s.RReady  => AxiLiteBus.ReadData.Ready,
 
-		S_AXI_s2m.WReady  => AxiLiteBus.WriteData.Ready,
-		S_AXI_s2m.BValid  => AxiLiteBus.WriteResponse.Valid,
-		S_AXI_s2m.BResp   => AxiLiteBus.WriteResponse.Resp,
-		S_AXI_s2m.ARReady => AxiLiteBus.ReadAddress.Ready,
-		S_AXI_s2m.AWReady => AxiLiteBus.WriteAddress.Ready,
-		S_AXI_s2m.RValid  => AxiLiteBus.ReadData.Valid,
-		S_AXI_s2m.RData   => AxiLiteBus.ReadData.Data,
-		S_AXI_s2m.RResp   => AxiLiteBus.ReadData.Resp,
+		AXI4Lite_s2m.WReady  => AxiLiteBus.WriteData.Ready,
+		AXI4Lite_s2m.BValid  => AxiLiteBus.WriteResponse.Valid,
+		AXI4Lite_s2m.BResp   => AxiLiteBus.WriteResponse.Resp,
+		AXI4Lite_s2m.ARReady => AxiLiteBus.ReadAddress.Ready,
+		AXI4Lite_s2m.AWReady => AxiLiteBus.WriteAddress.Ready,
+		AXI4Lite_s2m.RValid  => AxiLiteBus.ReadData.Valid,
+		AXI4Lite_s2m.RData   => AxiLiteBus.ReadData.Data,
+		AXI4Lite_s2m.RResp   => AxiLiteBus.ReadData.Resp,
 
-		S_AXI_IRQ => Main_Interrupt,
+		AXI4Lite_IRQ => Main_Interrupt,
 
 		RegisterFile_ReadPort         => Reg_ReadPort,
 		RegisterFile_ReadPort_hit     => Reg_ReadPort_hit,

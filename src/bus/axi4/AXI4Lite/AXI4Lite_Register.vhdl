@@ -50,24 +50,23 @@ use     work.axi4lite.all;
 
 entity AXI4Lite_Register is
 	generic (
-		MARK_DEBUG_SIGNALS                : boolean         := false;
-		VERBOSE                           : boolean         := false;
-		IGNORE_HIGH_ADDRESS               : boolean         := true;
-		DISABLE_ADDRESS_CHECK             : boolean         := false;
-		INIT_ON_RESET                     : boolean         := true;
-		INTERRUPT_IS_STROBE               : boolean         := true;
-		INTERRUPT_ENABLE_REGISTER_ADDRESS : unsigned        := (31 downto 0 => 32x"0");
-		INTERRUPT_MATCH_REGISTER_ADDRESS  : unsigned        := (31 downto 0 => 32x"4");
-		RESPONSE_ON_ERROR                 : T_AXI4_Response := C_AXI4_RESPONSE_DECODE_ERROR;
-		CONFIG                            : T_AXI4_Register_Vector
+		CONFIG                            : T_AXI4_Register_Vector;                          -- Register configuration
+		INTERRUPT_IS_STROBE               : boolean         := true;                         -- If set to true, generates a strobe for an interrupt, on false, generate level interrupt
+		INTERRUPT_ENABLE_REGISTER_ADDRESS : unsigned        := (31 downto 0 => 32x"0");      -- Address of the interrupt-enable-register, ignored if no interrupt register defined in config
+		INTERRUPT_MATCH_REGISTER_ADDRESS  : unsigned        := (31 downto 0 => 32x"4");      -- Address of the interrupt-match-register, ignored if no interrupt register defined in config
+		INIT_ON_RESET                     : boolean         := true;                         -- If set to true, registers are initialized with INIT_VALUE of config when Reset is applied, if false, to Reset is connected. If init value is not important, this can save number of control-sets and eases routing
+		IGNORE_HIGH_ADDRESS               : boolean         := true;                         -- Disables the High-Address Check. If the Base-Address of the whole register can be ignored, leave as true, otherwhise, the addresses in the config need be set with base-address
+		RESPONSE_ON_ERROR                 : T_AXI4_Response := C_AXI4_RESPONSE_DECODE_ERROR; -- If not address matches then config of the AXI4Lite transaction, return this code
+		DISABLE_ADDRESS_CHECK             : boolean         := false;                        -- If set to true, disable the address-check of the config structure. If the config is valid and has no overlapping addresses, can be set to false to save synthesis time for large registers
+		DEBUG                             : boolean         := false                         -- Enables debug synthesis logs and sets important signals as mark_debug for simple in-hardware debugging
 	);
 	port (
 		Clock                             : in  std_logic;
 		Reset                             : in  std_logic;
 
-		S_AXI_m2s                         : in  T_AXI4Lite_BUS_M2S;
-		S_AXI_s2m                         : out T_AXI4Lite_BUS_S2M;
-		S_AXI_IRQ                         : out std_logic := '0';
+		AXI4Lite_m2s                      : in  T_AXI4Lite_BUS_M2S;
+		AXI4Lite_s2m                      : out T_AXI4Lite_BUS_S2M;
+		AXI4Lite_IRQ                      : out std_logic := '0';
 
 		RegisterFile_ReadPort             : out T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
 		RegisterFile_ReadPort_hit         : out std_logic_vector(0 to CONFIG'Length - 1);
@@ -76,14 +75,14 @@ entity AXI4Lite_Register is
 		RegisterFile_WritePort_strobe     : in  std_logic_vector(0 to CONFIG'Length - 1) := get_strobeVector(CONFIG)
 	);
 	attribute MARK_DEBUG : string;
-	attribute mark_debug of S_AXI_IRQ     : signal is to_string(MARK_DEBUG_SIGNALS);
+	attribute mark_debug of AXI4Lite_IRQ     : signal is to_string(DEBUG);
 end entity;
 
 
 architecture rtl of AXI4Lite_Register is
 	constant Assert_prefix              : string   := "PoC.Axi4LiteRegister";
-	constant ADDRESS_BITS               : positive := S_AXI_m2s.AWAddr'length;
-	constant DATA_BITS                  : positive := S_AXI_m2s.WData'length;
+	constant ADDRESS_BITS               : positive := AXI4Lite_m2s.AWAddr'length;
+	constant DATA_BITS                  : positive := AXI4Lite_m2s.WData'length;
 	constant DATA_BITS_intern           : positive := 32;
 	constant MODE_64bit                 : boolean  := DATA_BITS = 64;
 
@@ -95,8 +94,6 @@ architecture rtl of AXI4Lite_Register is
 		Address      => INTERRUPT_ENABLE_REGISTER_ADDRESS,
 		RegisterMode => ReadWrite,
 		Init_Value   => (others => '1')
---		AutoClear_Mask => (others => '0'),
---		IsInterruptRegister => false
 	);
 
 	constant Interrupt_Match_Reg        : T_AXI4_Register := to_AXI4_Register(
@@ -104,7 +101,6 @@ architecture rtl of AXI4Lite_Register is
 		Address      => INTERRUPT_MATCH_REGISTER_ADDRESS,
 		RegisterMode => ReadOnly_NotRegistered,
 		Init_Value   => (others => '0'),
---		AutoClear_Mask => (others => '0'),
 		IsInterruptRegister => false
 	);
 
@@ -208,21 +204,21 @@ architecture rtl of AXI4Lite_Register is
 
 	signal outstanding_read  : std_logic := '0';
 
-	attribute mark_debug of hit_r          : signal is to_string(MARK_DEBUG_SIGNALS);
-	attribute mark_debug of hit_w          : signal is to_string(MARK_DEBUG_SIGNALS);
-	attribute mark_debug of hit_r_1        : signal is to_string(MARK_DEBUG_SIGNALS);
-	attribute mark_debug of hit_w_1        : signal is to_string(MARK_DEBUG_SIGNALS);
-	attribute mark_debug of axi_awaddr     : signal is to_string(MARK_DEBUG_SIGNALS);
-	attribute mark_debug of axi_araddr     : signal is to_string(MARK_DEBUG_SIGNALS);
-	attribute mark_debug of Is_Interrupt   : signal is to_string(MARK_DEBUG_SIGNALS);
+	attribute mark_debug of hit_r          : signal is to_string(DEBUG);
+	attribute mark_debug of hit_w          : signal is to_string(DEBUG);
+	attribute mark_debug of hit_r_1        : signal is to_string(DEBUG);
+	attribute mark_debug of hit_w_1        : signal is to_string(DEBUG);
+	attribute mark_debug of axi_awaddr     : signal is to_string(DEBUG);
+	attribute mark_debug of axi_araddr     : signal is to_string(DEBUG);
+	attribute mark_debug of Is_Interrupt   : signal is to_string(DEBUG);
 begin
-	assert not VERBOSE report "========================== " & Assert_prefix & " ==========================" severity note;
-	assert not VERBOSE report "ADDR_LSB          = " & integer'image(ADDR_LSB)         severity note;
-	assert not VERBOSE report "ADDRESS_BITS      = " & integer'image(ADDRESS_BITS)     severity note;
-	assert not VERBOSE report "REG_ADDRESS_BITS  = " & integer'image(REG_ADDRESS_BITS) severity note;
-	assert not VERBOSE report "Number of Configs = " & integer'image(CONFIG_i'length)    severity note;
-	assert not VERBOSE report print_CONFIG severity note;
-	assert not VERBOSE report "=================== END of  & Assert_prefix &  ==========================" severity note;
+	assert not DEBUG report "========================== " & Assert_prefix & " ==========================" severity note;
+	assert not DEBUG report "ADDR_LSB          = " & integer'image(ADDR_LSB)         severity note;
+	assert not DEBUG report "ADDRESS_BITS      = " & integer'image(ADDRESS_BITS)     severity note;
+	assert not DEBUG report "REG_ADDRESS_BITS  = " & integer'image(REG_ADDRESS_BITS) severity note;
+	assert not DEBUG report "Number of Configs = " & integer'image(CONFIG_i'length)    severity note;
+	assert not DEBUG report print_CONFIG severity note;
+	assert not DEBUG report "=================== END of  & Assert_prefix &  ==========================" severity note;
 
 	assert ADDRESS_BITS >= REG_ADDRESS_BITS report Assert_prefix & " Error:: Connected AXI4Lite Bus has not enough Address-Bits to address all Register-Spaces!" severity failure;
 	assert check_for_ADDR_conflicts         report Assert_prefix & " Error:: Addressconflict in Config!" severity failure;
@@ -232,14 +228,14 @@ begin
 	assert DATA_BITS = 32 or DATA_BITS = 64 report Assert_prefix & ":: DATA_BITS = " & integer'image(DATA_BITS) & ", only 32 or 64 bit is supported!" severity failure;
 	assert DATA_BITS /= 64                  report Assert_prefix & ":: Using experimental 64-bit Mode!" severity warning;
 
-	S_AXI_s2m.AWReady <= axi_awready;
-	S_AXI_s2m.WReady  <= axi_wready;
-	S_AXI_s2m.BResp   <= axi_bresp;
-	S_AXI_s2m.BValid  <= axi_bvalid;
-	S_AXI_s2m.ARReady <= axi_arready;
-	S_AXI_s2m.RData   <= axi_rdata;
-	S_AXI_s2m.RResp   <= axi_rresp;
-	S_AXI_s2m.RValid  <= axi_rvalid;
+	AXI4Lite_s2m.AWReady <= axi_awready;
+	AXI4Lite_s2m.WReady  <= axi_wready;
+	AXI4Lite_s2m.BResp   <= axi_bresp;
+	AXI4Lite_s2m.BValid  <= axi_bvalid;
+	AXI4Lite_s2m.ARReady <= axi_arready;
+	AXI4Lite_s2m.RData   <= axi_rdata;
+	AXI4Lite_s2m.RResp   <= axi_rresp;
+	AXI4Lite_s2m.RValid  <= axi_rvalid;
 
 	-------- WRITE TRANSACTION DEPENDECIES --------
 	process (Clock)
@@ -248,10 +244,10 @@ begin
 			if (Reset = '1') then
 				axi_awready <= '0';
 				axi_awaddr <= (others => '0');
-			elsif (axi_awready = '0' and S_AXI_m2s.AWValid = '1' and S_AXI_m2s.WValid = '1') then
+			elsif (axi_awready = '0' and AXI4Lite_m2s.AWValid = '1' and AXI4Lite_m2s.WValid = '1') then
 				axi_awready <= '1';
 				-- Write Address latching
-				axi_awaddr <= S_AXI_m2s.AWAddr(S_AXI_m2s.AWAddr'high downto ADDR_LSB);
+				axi_awaddr <= AXI4Lite_m2s.AWAddr(AXI4Lite_m2s.AWAddr'high downto ADDR_LSB);
 			else
 				axi_awready <= '0';
 			end if;
@@ -263,7 +259,7 @@ begin
 		if rising_edge(Clock) then
 			if (Reset = '1') then
 				axi_wready <= '0';
-			elsif (axi_wready = '0' and S_AXI_m2s.AWValid = '1' and S_AXI_m2s.WValid = '1') then
+			elsif (axi_wready = '0' and AXI4Lite_m2s.AWValid = '1' and AXI4Lite_m2s.WValid = '1') then
 				axi_wready <= '1';
 			else
 				axi_wready <= '0';
@@ -330,17 +326,17 @@ begin
 						when ReadWrite =>
 							if i <= CONFIG'high then
 								if (slv_reg_wren = '1') and (hit_w(i) = '1') then
-									for ii in S_AXI_m2s.WStrb(3 downto 0)'range loop
+									for ii in AXI4Lite_m2s.WStrb(3 downto 0)'range loop
 										-- Respective byte enables are asserted as per write strobes
-										if (S_AXI_m2s.WStrb(ii) = '1' ) then
-											RegisterFile(i)(ii * 8 + 7 downto ii * 8) <= S_AXI_m2s.WData(8 * ii + 7 downto 8 * ii);
+										if (AXI4Lite_m2s.WStrb(ii) = '1' ) then
+											RegisterFile(i)(ii * 8 + 7 downto ii * 8) <= AXI4Lite_m2s.WData(8 * ii + 7 downto 8 * ii);
 										end if;
 									end loop;
 								elsif (slv_reg_wren = '1') and (hit_w_1(i) = '1') and MODE_64bit then
-									for ii in S_AXI_m2s.WStrb(7 downto 4)'range loop
+									for ii in AXI4Lite_m2s.WStrb(7 downto 4)'range loop
 										-- Respective byte enables are asserted as per write strobes
-										if (S_AXI_m2s.WStrb(ii) = '1' ) then
-											RegisterFile(i)((ii -4) * 8 + 7 downto (ii -4) * 8) <= S_AXI_m2s.WData(8 * ii + 7 downto 8 * ii);
+										if (AXI4Lite_m2s.WStrb(ii) = '1' ) then
+											RegisterFile(i)((ii -4) * 8 + 7 downto (ii -4) * 8) <= AXI4Lite_m2s.WData(8 * ii + 7 downto 8 * ii);
 										end if;
 									end loop;
 								elsif (RegisterFile_WritePort_strobe(i) = '1') then
@@ -351,10 +347,10 @@ begin
 
 							else  --Interrupt Enable Register
 								if (hit_w(i) = '1') and (slv_reg_wren = '1') then
-									for ii in S_AXI_m2s.WStrb(3 downto 0)'range loop
+									for ii in AXI4Lite_m2s.WStrb(3 downto 0)'range loop
 										-- Respective byte enables are asserted as per write strobes
-										if (S_AXI_m2s.WStrb(ii) = '1' ) then
-											RegisterFile(i)(ii * 8 + 7 downto ii * 8) <= S_AXI_m2s.WData(8 * ii + 7 downto 8 * ii);
+										if (AXI4Lite_m2s.WStrb(ii) = '1' ) then
+											RegisterFile(i)(ii * 8 + 7 downto ii * 8) <= AXI4Lite_m2s.WData(8 * ii + 7 downto 8 * ii);
 										end if;
 									end loop;
 								end if;
@@ -405,7 +401,7 @@ begin
 				if (axi_bvalid = '0' and slv_reg_wren = '1') then
 					axi_bvalid  <= '1';
 					axi_bresp   <= C_AXI4_RESPONSE_OKAY when unsigned(hit_w or hit_w_1) /= 0 else RESPONSE_ON_ERROR;
-				elsif (S_AXI_m2s.BReady = '1' and axi_bvalid = '1') then
+				elsif (AXI4Lite_m2s.BReady = '1' and axi_bvalid = '1') then
 					axi_bvalid <= '0';
 				end if;
 			end if;
@@ -413,7 +409,7 @@ begin
 	end process;
 
 	--Write Signals
-	slv_reg_wren <= axi_wready and axi_awready and S_AXI_m2s.AWValid and S_AXI_m2s.WValid;
+	slv_reg_wren <= axi_wready and axi_awready and AXI4Lite_m2s.AWValid and AXI4Lite_m2s.WValid;
 	clear_latch_w <= slv_reg_wren and (hit_w or hit_w_1);
 
 	RedPort_gen : for i in CONFIG'range generate
@@ -422,11 +418,11 @@ begin
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i) when rising_edge(Clock);
 
 		elsif CONFIG_i(i).RegisterMode = ReadWrite_NotRegistered and not MODE_64bit generate
-			RegisterFile_ReadPort(i)     <= S_AXI_m2s.WData;
+			RegisterFile_ReadPort(i)     <= AXI4Lite_m2s.WData;
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i);
 
 		elsif CONFIG_i(i).RegisterMode = ReadWrite_NotRegistered and MODE_64bit generate
-			RegisterFile_ReadPort(i)     <= S_AXI_m2s.WData(31 downto 0) when CONFIG_i(i).Address(ADDR_LSB) = '0' else S_AXI_m2s.WData(63 downto 32); -- Select if this is the lower or higher 32b register
+			RegisterFile_ReadPort(i)     <= AXI4Lite_m2s.WData(31 downto 0) when CONFIG_i(i).Address(ADDR_LSB) = '0' else AXI4Lite_m2s.WData(63 downto 32); -- Select if this is the lower or higher 32b register
 			RegisterFile_ReadPort_hit(i) <= clear_latch_w(i);
 
 		elsif CONFIG_i(i).RegisterMode = ConstantValue generate
@@ -448,9 +444,9 @@ begin
 			if (Reset = '1') then
 				axi_arready <= '0';
 				axi_araddr  <= (others => '1');
-			elsif (axi_arready = '0' and S_AXI_m2s.ARValid = '1' and outstanding_read = '0') then
+			elsif (axi_arready = '0' and AXI4Lite_m2s.ARValid = '1' and outstanding_read = '0') then
 				axi_arready <= '1';
-				axi_araddr  <= S_AXI_m2s.ARAddr(S_AXI_m2s.ARAddr'high downto ADDR_LSB);
+				axi_araddr  <= AXI4Lite_m2s.ARAddr(AXI4Lite_m2s.ARAddr'high downto ADDR_LSB);
 			else
 				axi_arready <= '0';
 			end if;
@@ -466,15 +462,15 @@ begin
 			elsif slv_reg_rden = '1' then
 				axi_rvalid <= '1';
 				axi_rresp  <= C_AXI4_RESPONSE_OKAY when unsigned(hit_r) /= 0 else RESPONSE_ON_ERROR;
-			elsif S_AXI_m2s.RReady = '1' then
+			elsif AXI4Lite_m2s.RReady = '1' then
 				axi_rvalid <= '0';
 			end if;
 		end if;
 	end process;
 
 	--Read Signals
-	outstanding_read           <= (outstanding_read or slv_reg_rden) and not (Reset or S_AXI_m2s.RReady) when rising_edge(Clock);
-	slv_reg_rden               <= S_AXI_m2s.ARValid and axi_arready and (not axi_rvalid);
+	outstanding_read           <= (outstanding_read or slv_reg_rden) and not (Reset or AXI4Lite_m2s.RReady) when rising_edge(Clock);
+	slv_reg_rden               <= AXI4Lite_m2s.ARValid and axi_arready and (not axi_rvalid);
 	slv_reg_rden_d             <= slv_reg_rden when rising_edge(Clock);
 	slv_reg_rden_re            <= slv_reg_rden and not slv_reg_rden_d;
 	RegisterFile_WritePort_hit <= slv_reg_rden_re and (hit_r(CONFIG'range) or hit_r_1(CONFIG'range));
@@ -506,7 +502,7 @@ begin
 			if  (Reset = '0')  then
 				axi_rdata  <= (others => '0');
 			elsif (slv_reg_rden_re = '1') then
-				-- When there is a valid read address (S_AXI_m2s.ARValid) with
+				-- When there is a valid read address (AXI4Lite_m2s.ARValid) with
 				-- acceptance of read address by the slave (axi_arready),
 				-- output the read data
 				-- Read address mux
@@ -605,7 +601,7 @@ begin
 															or (CONFIG_i(i).RegisterMode = LatchLowBit_ClearOnWrite))
 														, '1', '0');
 		begin
-			assert (is_config /= '1' or not VERBOSE)
+			assert (is_config /= '1' or not DEBUG)
 			  report Assert_prefix & ":: Creating 64bit-Write-Register for Config(" & integer'image(i) & ") and Config(" & integer'image(i - 1) & ")"
 			  severity note;
 			hit_w_1(i)  <= is_address_w(i -1) when (is_config = '1') else '0';
@@ -617,7 +613,7 @@ begin
 														and CONFIG_i(i - 1).Address(ADDR_LSB) = '0'               --Data aligned access
 														, '1', '0');
 		begin
-			assert (is_config /= '1' or not VERBOSE)
+			assert (is_config /= '1' or not DEBUG)
 				report Assert_prefix & ":: Creating 64bit-Read-Register for Config(" & integer'image(i) & ") and Config(" & integer'image(i -1) & ")"
 				severity note;
 			hit_r_1(i)   <= hit_r(i - 1) when (is_config = '1') else '0';
@@ -663,11 +659,11 @@ begin
 		Is_Interrupt_d  <= Is_Interrupt when rising_edge(Clock);
 		Is_Interrupt_re <= Is_Interrupt and not Is_Interrupt_d;
 
-		S_AXI_IRQ <= or(Is_Interrupt_re) when INTERRUPT_IS_STROBE else or(Is_Interrupt);
+		AXI4Lite_IRQ <= or(Is_Interrupt_re) when INTERRUPT_IS_STROBE else or(Is_Interrupt);
 
 	else generate
 
-		S_AXI_IRQ <= '0';
+		AXI4Lite_IRQ <= '0';
 	end generate;
 
 end architecture;
