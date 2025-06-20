@@ -1,0 +1,137 @@
+/*
+ * Disable odd/even coloring for docutils tables if it's a coverage table.
+ * Otherwise, the 'nth-child' rule will always override row colors indicating the coverage level.
+ */
+.rst-content table.docutils:not(.field-list) tr:nth-child(2n-1) td {
+	background-color: unset;
+}
+
+/*
+ * Coloring for 0..30, 30..50, 50..80, 80..90, 90.100% coverage
+ */
+/* very good */
+table.report-codecov-table > tbody > tr.report-cov-below100,
+table.report-codecov-legend > tbody > tr.report-cov-below100,
+table.report-doccov-table > tbody > tr.report-cov-below100,
+table.report-doccov-legend > tbody > tr.report-cov-below100 {
+	background: hsl(120 75% 75%);
+}
+
+/* good */
+table.report-codecov-table > tbody > tr.report-cov-below95,
+table.report-codecov-legend > tbody > tr.report-cov-below95,
+table.report-doccov-table > tbody > tr.report-cov-below95,
+table.report-doccov-legend > tbody > tr.report-cov-below95 {
+	background: hsl(90 75% 75%);
+}
+table.report-codecov-table > tbody > tr.report-cov-below90,
+table.report-codecov-legend > tbody > tr.report-cov-below90,
+table.report-doccov-table > tbody > tr.report-cov-below90,
+table.report-doccov-legend > tbody > tr.report-cov-below90 {
+	background: hsl(75 75% 75%);
+}
+table.report-codecov-table > tbody > tr.report-cov-below85,
+table.report-codecov-legend > tbody > tr.report-cov-below85,
+table.report-doccov-table > tbody > tr.report-cov-below85,
+table.report-doccov-legend > tbody > tr.report-cov-below85 {
+	background: hsl(60 75% 77%);
+}
+/* modest */
+table.report-codecov-table > tbody > tr.report-cov-below80,
+table.report-codecov-legend > tbody > tr.report-cov-below80,
+table.report-doccov-table > tbody > tr.report-cov-below80,
+table.report-doccov-legend > tbody > tr.report-cov-below80 {
+	background: hsl(45 75% 80%);
+}
+table.report-codecov-table > tbody > tr.report-cov-below70,
+table.report-codecov-legend > tbody > tr.report-cov-below70,
+table.report-doccov-table > tbody > tr.report-cov-below70,
+table.report-doccov-legend > tbody > tr.report-cov-below70 {
+	background: hsl(30 75% 85%);
+}
+table.report-codecov-table > tbody > tr.report-cov-below60,
+table.report-codecov-legend > tbody > tr.report-cov-below60,
+table.report-doccov-table > tbody > tr.report-cov-below60,
+table.report-doccov-legend > tbody > tr.report-cov-below60 {
+	background: hsl(15 75% 85%);
+}
+/* bad */
+table.report-codecov-table > tbody > tr.report-cov-below50,
+table.report-codecov-legend > tbody > tr.report-cov-below50,
+table.report-doccov-table > tbody > tr.report-cov-below50,
+table.report-doccov-legend > tbody > tr.report-cov-below50 {
+	background: hsl(0 75% 85%);
+}
+table.report-codecov-table > tbody > tr.report-cov-below40,
+table.report-codecov-legend > tbody > tr.report-cov-below40,
+table.report-doccov-table > tbody > tr.report-cov-below40,
+table.report-doccov-legend > tbody > tr.report-cov-below40 {
+	background: hsl(285 75% 85%);
+}
+/* very bad */
+table.report-codecov-table > tbody > tr.report-cov-below30,
+table.report-codecov-legend > tbody > tr.report-cov-below30,
+table.report-doccov-table > tbody > tr.report-cov-below30,
+table.report-doccov-legend > tbody > tr.report-cov-below30 {
+	background: hsl(270 75% 85%);
+}
+table.report-codecov-table > tbody > tr.report-cov-below20,
+table.report-codecov-legend > tbody > tr.report-cov-below20,
+table.report-doccov-table > tbody > tr.report-cov-below20,
+table.report-doccov-legend > tbody > tr.report-cov-below20 {
+	background: hsl(255 75% 85%);
+}
+table.report-codecov-table > tbody > tr.report-cov-below10,
+table.report-codecov-legend > tbody > tr.report-cov-below10,
+table.report-doccov-table > tbody > tr.report-cov-below10,
+table.report-doccov-legend > tbody > tr.report-cov-below10 {
+	background: hsl(240 75% 85%);
+}
+/* internal error */
+.report-cov-error{
+	background: rgba(255, 0, 0, .4);
+}
+
+table.report-unittest-table > thead > tr,
+table.report-codecov-table > thead > tr,
+table.report-codecov-legend > thead > tr,
+table.report-doccov-table > thead > tr,
+table.report-doccov-legend > thead > tr {
+	background: #ebebeb;
+}
+table.report-unittest-table > tbody > tr:hover {
+	background-color: rgba(0,187, 255, 0.5); /* #88d0ff; */
+}
+table.report-unittest-table > tbody > tr.report-summary,
+table.report-codecov-table > tbody > tr.report-summary,
+table.report-doccov-table > tbody > tr.report-summary {
+	font-weight: bold;
+}
+table.report-unittest-table > tbody > tr.report-summary {
+	background: #ebebeb;
+}
+table.report-unittest-table > tbody > tr.testsuitesummary-unknown,
+table.report-unittest-table > tbody > tr.testsuite-unknown,
+table.report-unittest-table > tbody > tr.testcase-unknown {
+	background: hsl(0 75% 65%);
+}
+table.report-unittest-table > tbody > tr.testsuitesummary-failed,
+table.report-unittest-table > tbody > tr.testsuitesummary-skipped,
+table.report-unittest-table > tbody > tr.testsuitesummary-excluded,
+table.report-unittest-table > tbody > tr.testsuite-failed,
+table.report-unittest-table > tbody > tr.testcase-failed {
+	background: hsl(0 75% 90%);
+}
+table.report-unittest-table > tbody > tr.testsuite-excluded,
+table.report-unittest-table > tbody > tr.testcase-excluded {
+	background: #ebebeb;
+}
+table.report-unittest-table > tbody > tr.testsuite-skipped,
+table.report-unittest-table > tbody > tr.testcase-skipped {
+	background: hsl(60 75% 77%);
+}
+table.report-unittest-table > tbody > tr.report-summary.testsuitesummary-passed /*,
+table.report-unittest-table > tbody > tr.testsuite-passed,
+table.report-unittest-table > tbody > tr.testcase-passed */ {
+	background: hsl(120 75% 90%);
+}
