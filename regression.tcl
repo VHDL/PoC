@@ -27,10 +27,7 @@ namespace eval ::poc {
 
 source ../lib/OSVVM-Scripts/StartUp.tcl
 
-build ../lib/osvvm/osvvm.pro
-build ../lib/OSVVM-Common/Common.pro
-build ../lib/OSVVM-AXI4/AXI4.pro
-# build ../lib/OSVVM-UART/UART.pro
+build ../lib/OsvvmLibraries.pro
 
 if {$::osvvm::ToolName eq "GHDL"} {
     SetExtendedAnalyzeOptions {-frelaxed -Wno-specs}

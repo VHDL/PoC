@@ -40,9 +40,9 @@
 include ./osvvm/osvvm.pro
 include ./OSVVM-Common/Common.pro
 
-if {[DirectoryExists UART]} {
+if {[DirectoryExists OSVVM-UART]} {
   include ./OSVVM-UART/UART.pro
 }
-if {[DirectoryExists AXI4]} {
+if {[DirectoryExists OSVVM-AXI4]} {
   include ./OSVVM-AXI4/AXI4.pro
 }
