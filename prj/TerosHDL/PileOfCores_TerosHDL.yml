@@ -1875,14 +1875,6 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../../../home/stefanunrein
-    file_type: none
-    file_version: !<tag:yaml.org,2002:js/undefined> ''
-    is_include_file: false
-    include_path: ''
-    logical_name: TB
-    is_manual: false
-    source_type: none
   - name: >-
       ../../tb/bus/axi4/AXI4Lite/AXI4Lite_Register/AXI4Lite_Register_TestController.vhdl
     file_type: vhdlSource
@@ -1907,6 +1899,14 @@ files:
     is_include_file: false
     include_path: ''
     logical_name: TB
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/ocram_sdp_optimized.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
     is_manual: true
     source_type: none
 hooks:
