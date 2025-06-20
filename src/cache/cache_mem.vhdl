@@ -66,7 +66,7 @@
 --   critical path (clock-to-output delay) for ``cpu_rdy``, the throughput is
 --   degraded to one request per 2 clock cycles at maximum.
 --
--- * 2: then 2 requests are buffered by :ref:`IP:fifo_glue`. This setting has
+-- * 2: then 2 requests are buffered by :ref:`IP:fifo_stage`. This setting has
 --   the lowest area requirements without degrading the performance.
 --
 -- * >2: then the requests are buffered by :ref:`IP:fifo_cc_got`. The number of
@@ -109,6 +109,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2025      The PoC-Library Authors
 -- Copyright 2016-2016 Technische Universitaet Dresden - Germany
 --										 Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -278,7 +279,7 @@ begin
     signal valid : std_logic;
     signal dout  : std_logic_vector(D_BITS-1 downto 0);
 	begin
-		req_fifo: entity work.fifo_glue
+		req_fifo: entity work.fifo_stage
 			generic map (
 				D_BITS => D_BITS)
 			port map (

@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copryright 2017-2025 The PoC-Library Authors
+# Copyright 2025-2025 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,15 +22,12 @@
 namespace eval ::poc {
 	variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
 	variable myProjectFile "../tb/common/my_project.vhdl"
-	variable vendor "GENRIC"; # GENRIC for vendor-less build; Xilinx, Altera,... for vendor specific build
+	variable vendor "GENERIC"; # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
 }
 
 source ../lib/OSVVM-Scripts/StartUp.tcl
 
-# build ../lib/osvvm/osvvm.pro
-# build ../lib/OSVVM-Common/Common.pro
-# build ../lib/OSVVM-AXI4/AXI4.pro
-# build ../lib/OSVVM-UART/UART.pro
+build ../lib/OsvvmLibraries.pro
 
 if {$::osvvm::ToolName eq "GHDL"} {
     SetExtendedAnalyzeOptions {-frelaxed -Wno-specs}
@@ -40,8 +37,12 @@ if {$::osvvm::ToolName eq "GHDL"} {
 if {$::osvvm::ToolName eq "RiveraPRO"} {
     SetExtendedSimulationOptions {-unbounderror}
 }
+#set ::osvvm::AnalyzeErrorStopCount 1
+#set ::osvvm::SimulateErrorStopCount 1
 
 
 build ../src/PoC.pro
+
+#SetSaveWaves
 
 build ../tb/RunAllTests.pro

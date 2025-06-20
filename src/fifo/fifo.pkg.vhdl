@@ -42,9 +42,11 @@ use     work.utils.all;
 package fifo is
 
   -- Minimal FIFO with single clock to decouple enable domains.
-  component fifo_glue
+  component fifo_Stage
     generic (
-      D_BITS : positive                   -- Data Width
+      D_BITS       : positive;
+      STAGES       : natural := 1;
+      LIGHT_WEIGHT : boolean := FALSE
     );
     port (
       -- Control
@@ -61,35 +63,6 @@ package fifo is
       do  : out std_logic_vector(D_BITS - 1 downto 0);  -- Data Output
       got : in  std_logic                             -- Data Consumed
     );
-  end component;
-
-  -- Minimal Local-Link-FIFO with single clock and first-word-fall-through mode.
-  component fifo_ll_glue
-    generic (
-      D_BITS          : positive;
-      FRAME_USER_BITS : natural;
-      REGISTER_PATH   : boolean
-      );
-    port (
-      clk   : in std_logic;
-      reset : in std_logic;
-
-      -- in port
-      sof_in        : in  std_logic;
-      data_in       : in  std_logic_vector(D_BITS downto 1);
-      frame_data_in : in  std_logic_vector(imax(1, FRAME_USER_BITS) downto 1);
-      eof_in        : in  std_logic;
-      src_rdy_in    : in  std_logic;
-      dst_rdy_in    : out std_logic;
-
-      -- out port
-      sof_out        : out std_logic;
-      data_out       : out std_logic_vector(D_BITS downto 1);
-      frame_data_out : out std_logic_vector(imax(1, FRAME_USER_BITS) downto 1);
-      eof_out        : out std_logic;
-      src_rdy_out    : out std_logic;
-      dst_rdy_out    : in  std_logic
-      );
   end component;
 
   -- Simple FIFO backed by a shift register.
@@ -142,23 +115,6 @@ package fifo is
       valid     : out std_logic;
       fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS - 1) downto 0)
     );
-  end component;
-
-  component fifo_dc_got_sm
-    generic (
-      D_BITS    : positive;
-      MIN_DEPTH : positive);
-    port (
-      clk_wr : in  std_logic;
-      rst_wr : in  std_logic;
-      put    : in  std_logic;
-      din    : in  std_logic_vector(D_BITS - 1 downto 0);
-      full   : out std_logic;
-      clk_rd : in  std_logic;
-      rst_rd : in  std_logic;
-      got    : in  std_logic;
-      valid  : out std_logic;
-      dout   : out std_logic_vector(D_BITS - 1 downto 0));
   end component;
 
   component fifo_ic_got

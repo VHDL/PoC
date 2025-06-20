@@ -30,7 +30,7 @@ clock) refer to the write- and read-side clock relationship.
 
     This FIFO needs to be constrained, so static timing analysis will report the correct results. See the [constraint folder][const_fifo] for applieable constraint files for your synthesis tool.
 
- -  [`fifo_glue`][fifo_glue] implements a two-stage FIFO (one common clock, got-interface)
+ -  [`fifo_stage`][fifo_stage] implements a two-stage FIFO (one common clock, got-interface)
  -  [`fifo_shift`][fifo_shift] implements a regular FIFO (one common clock,
     got-interface, optimized for FPGAs with shifter primitives)
 
@@ -43,7 +43,7 @@ clock) refer to the write- and read-side clock relationship.
  [fifo_dc_got]:			fifo_dc_got.vhdl
  [fifo_ic_got]:			fifo_ic_got.vhdl
  [fifo_ic_assembly]:	fifo_ic_assembly.vhdl
- [fifo_glue]:			fifo_glue.vhdl
+ [fifo_stage]:			fifo_stage.vhdl
  [fifo_shift]:			fifo_shift.vhdl
 
 

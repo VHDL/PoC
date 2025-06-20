@@ -8,7 +8,7 @@
 include       "src/common/common.files"                   # load common packages
 
 # PoC.fifo
-include       "src/fifo/fifo_glue.files"
+include       "src/fifo/fifo_stage.files"
 include       "src/fifo/fifo_cc_got.files"
 
 # PoC.cache

@@ -103,7 +103,7 @@ begin
 	In_Meta_SrcIPv4Address_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_SRCADDR);
 	In_Meta_DestIPv4Address_nxt		<= StmBuf_MetaIn_nxt(META_STREAMID_DESTADDR);
 
-	StmBuf: entity work.stream_Buffer
+	StmBuf: entity work.stream_FIFO
 		generic map (
 			FRAMES												=> MAX_FRAMES,
 			DATA_BITS											=> 8,

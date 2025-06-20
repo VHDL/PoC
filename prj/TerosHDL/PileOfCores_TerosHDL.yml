@@ -1,0 +1,2218 @@
+name: PileOfCores
+project_disk_path: ''
+project_type: genericProject
+toplevel: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Register.vhdl
+files:
+  - name: ../../src/common/common.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/components.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/config.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/debug.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/fileio.v08.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/fileio.v93.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/math.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/my_config.vhdl.template
+    file_type: none
+    file_version: !<tag:yaml.org,2002:js/undefined> ''
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/my_project.vhdl.template
+    file_type: none
+    file_version: !<tag:yaml.org,2002:js/undefined> ''
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/physical.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/protected.v08.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/strings.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/utils.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/common/vectors.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_addw.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_carrychain_inc.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_cca.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_convert_bin2bcd.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_counter_bcd.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_counter_free.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_counter_gray.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_counter_ring.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_div.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_firstone.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_prefix_and.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_prefix_or.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_prng.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_same.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_scaler.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_shifter_barrel.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_sqrt.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/arith_trng.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/xilinx/arith_addw_xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/xilinx/arith_carrychain_inc_xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/xilinx/arith_cca_xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/xilinx/arith_inc_ovcy_xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/xilinx/arith_prefix_and_xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/arith/xilinx/arith_prefix_or_xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/bus_Arbiter.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/stream/stream.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/stream/stream_FIFO.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/stream/stream_DeMux.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/stream/stream_FrameGenerator.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/stream/stream_Mirror.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/stream/stream_Mux.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/stream/stream_Source.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/axi4.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4_Common.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4_FIFO.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4_FIFO_cdc.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4_Full.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4_Termination_Manager.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4_Termination_Subordinate.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4_to_AXI4Lite.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_FIFO.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_cdc.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_tempgot.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_tempput.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_DeMux.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_Stage.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_Mux.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_FIFO.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_FIFO_cdc.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_OSVVM.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Register.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Termination_Manager.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Termination_Subordinate.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/cache/cache.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/cache/cache_cpu.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/cache/cache_mem.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/cache/cache_par.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/cache/cache_par2.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/cache/cache_replacement_policy.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/cache/cache_tagunit_par.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/cache/cache_tagunit_seq.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/comm/comm.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/comm/comm_crc.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/comm/comm_scramble.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/comm/remote/remote_terminal_control.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/dstruct/dstruct.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/dstruct/dstruct_deque.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/dstruct/dstruct_stack.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/fifo/fifo.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/fifo/fifo_cc_got.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/fifo/fifo_cc_got_tempgot.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/fifo/fifo_cc_got_tempput.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/fifo/fifo_stage.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/fifo/fifo_ic_assembly.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/fifo/fifo_ic_got.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/fifo/fifo_shift.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/io.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/io_7SegmentMux_BCD.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/io_7SegmentMux_HEX.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/io_Debounce.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/io_FanControl.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/io_FrequencyCounter.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/io_GlitchFilter.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/io_KeyPadScanner.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/io_PulseWidthModulation.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/io_TimingCounter.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/uart/uart.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/uart/uart_bclk.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/uart/uart_fifo.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/uart/uart_ft245.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/uart/uart_rx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/uart/uart_tx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/pmod/pmod.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/pmod/pmod_KYPD.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/pmod/pmod_SSD.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/pmod/pmod_USBUART.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/iic/iic.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/ddrio/ddrio.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/ddrio/ddrio_in.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/ddrio/ddrio_in_altera.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/ddrio/ddrio_inout.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/ddrio/ddrio_inout_altera.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/ddrio/ddrio_inout_xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/ddrio/ddrio_in_xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/ddrio/ddrio_out.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/ddrio/ddrio_out_altera.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/io/ddrio/ddrio_out_xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/mem.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/sdram/sdram_ctrl_de0.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/sdram/sdram_ctrl_fsm.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/sdram/sdram_ctrl_phy_de0.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/sdram/sdram_ctrl_phy_s3esk.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/sdram/sdram_ctrl_s3esk.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocrom/ocrom.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocrom/ocrom_dp.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocrom/ocrom_sp.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/ocram.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/ocram_esdp.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/ocram_sdp.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/ocram_sdp_wf.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/ocram_sp.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/ocram_tdp.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/ocram_tdp_sim.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/ocram_tdp_wf.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/altera/ocram_sp_altera.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/altera/ocram_tdp_altera.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/lut/lut_Sine.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ddr3/ddr3_mem2mig_adapter_Series7.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/misc_bit_lz.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/misc_Delay.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/misc_FrequencyMeasurement.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/filter/filter_and.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/filter/filter_mean.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/filter/filter_or.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/stat/stat_Average.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/stat/stat_Histogram.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/stat/stat_Maximum.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/stat/stat_Minimum.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/gearbox/gearbox_down_cc.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/gearbox/gearbox_down_dc.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/gearbox/gearbox_up_cc.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/misc/gearbox/gearbox_up_dc.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sort/sort_lru_cache.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sort/sort_lru_list.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sort/sortnet/sortnet.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sort/sortnet/sortnet_BitonicSort.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sort/sortnet/sortnet_MergeSort_Streamed.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sort/sortnet/sortnet_OddEvenSort.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sort/sortnet/sortnet_Stream_Adapter.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sort/sortnet/sortnet_Stream_Adapter2.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sort/sortnet/sortnet_Transform.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Bits.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Bits_Altera.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Bits_Xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Command.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Pulse.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Pulse_Altera.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Pulse_Xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Reset.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Reset_Altera.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Reset_Xilinx.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Strobe.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sync/sync_Vector.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/xil/xil.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/xil/xil_BSCAN.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/xil/xil_ChipScopeICON.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/xil/xil_ICAP.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/xil/xil_Reconfigurator.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/xil/xil_SystemMonitor.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/xil/reconfig/reconfig_icap_fsm.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/xil/reconfig/reconfig_icap_wrapper.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_global.v08.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_global.v93.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_protected.v08.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_random.v08.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_random.v93.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_simulation.v08.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_simulation.v93.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_types.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_unprotected.v93.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_VCDParser.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/sim/sim_waveform.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/net.pkg.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/net_FrameChecksum.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/net_FrameLoopback.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/udp/udp_FrameLoopback.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/udp/udp_RX.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/udp/udp_TX.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/udp/udp_Wrapper.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/mac/mac_FrameLoopback.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/mac/mac_RX_DestMAC_Switch.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/mac/mac_RX_SrcMAC_Filter.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/mac/mac_RX_Type_Switch.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/mac/mac_TX_DestMAC_Prepender.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/mac/mac_TX_SrcMAC_Prepender.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/mac/mac_Wrapper.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/ipv6/ipv6_FrameLoopback.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/ipv6/ipv6_RX.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/ipv6/ipv6_TX.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/ipv6/ipv6_Wrapper.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/ipv4/ipv4_FrameLoopback.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/ipv4/ipv4_RX.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/ipv4/ipv4_TX.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/ipv4/ipv4_Wrapper.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/icmpv4/icmpv4_RX.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/icmpv4/icmpv4_TX.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/icmpv4/icmpv4_Wrapper.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/arp/arp_BroadCast_Receiver.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/arp/arp_BroadCast_Requester.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/arp/arp_Cache.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/arp/arp_IPPool.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/arp/arp_UniCast_Receiver.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/arp/arp_UniCast_Responder.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/net/arp/arp_Wrapper.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: >-
+      ../../tb/bus/axi4/AXI4Lite/AXI4Lite_Register/AXI4Lite_Register_TestController.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: TB
+    is_manual: true
+    source_type: none
+  - name: >-
+      ../../tb/bus/axi4/AXI4Lite/AXI4Lite_Register/AXI4Lite_Register_TestHarness.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: TB
+    is_manual: true
+    source_type: none
+  - name: ../../tb/bus/axi4/AXI4Lite/AXI4Lite_Register/TC_RandomReadWrite.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: TB
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/ocram/ocram_sdp_optimized.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+hooks:
+  pre_build: []
+  post_build: []
+  pre_run: []
+  post_run: []
+watchers: []
+configuration:
+  general:
+    general:
+      pypath: ''
+      makepath: ''
+      go_to_definition_vhdl: true
+      go_to_definition_verilog: true
+      developer_mode: false
+  documentation:
+    general:
+      language: english
+      symbol_vhdl: '!'
+      symbol_verilog: '!'
+      dependency_graph: true
+      self_contained: true
+      fsm: true
+      ports: all
+      generics: all
+      instantiations: all
+      signals: all
+      constants: all
+      types: all
+      process: all
+      functions: all
+      tasks: all
+      magic_config_path: ''
+  editor:
+    general:
+      stutter_comment_shortcuts: false
+      stutter_block_width: 80
+      stutter_max_width: 0
+      stutter_delimiters: false
+      stutter_bracket_shortcuts: false
+  formatter:
+    general:
+      formatter_verilog: istyle
+      formatter_vhdl: standalone
+    istyle:
+      style: ansi
+      indentation_size: 2
+    s3sv:
+      one_bind_per_line: false
+      one_declaration_per_line: false
+      use_tabs: false
+      indentation_size: 2
+    verible:
+      format_args: ''
+    standalone:
+      keyword_case: lowercase
+      name_case: lowercase
+      indentation: "\t"
+      align_port_generic: true
+      align_comment: true
+      remove_comments: false
+      remove_reports: false
+      check_alias: false
+      new_line_after_then: new_line
+      new_line_after_semicolon: new_line
+      new_line_after_else: none
+      new_line_after_port: new_line
+      new_line_after_generic: new_line
+    svg:
+      configuration: ''
+      core_number: 2
+      aditional_arguments: ''
+  linter:
+    general:
+      linter_vhdl: none
+      linter_verilog: modelsim
+      lstyle_verilog: disabled
+      lstyle_vhdl: disabled
+    vhdlls:
+      standard: v2008
+      ignoreVunit: false
+      vunitPath: ''
+    ghdl:
+      arguments: ''
+    icarus:
+      arguments: ''
+    modelsim:
+      vhdl_arguments: ''
+      verilog_arguments: ''
+    verible:
+      arguments: ''
+    verilator:
+      arguments: ''
+    vivado:
+      vhdl_arguments: ''
+      verilog_arguments: ''
+    vsg:
+      arguments: ''
+  schematic:
+    general:
+      backend: yowasp
+      extra: ''
+      args: ''
+      args_ghdl: ''
+  templates:
+    general:
+      header_file_path: ''
+      indent: '  '
+      clock_generation_style: inline
+      instance_style: inline
+  tools:
+    general:
+      select_tool: ghdl
+      manual_compilation_order: ''
+      execution_mode: cmd
+      waveform_viewer: tool
+      gtkwave_installation_path: ''
+      gtkwave_extra_arguments: ''
+    quartus:
+      installation_path: ''
+      family: ''
+      device: ''
+      optimization_mode: BALANCED
+      allow_register_retiming: true
+      wave_file_questa: ''
+    vsg:
+      installation_path: ''
+    osvvm:
+      installation_path: ''
+      tclsh_binary: ''
+      simulator_name: ghdl
+    ascenlint:
+      installation_path: ''
+      ascentlint_options: []
+    cocotb:
+      installation_path: ''
+      simulator_name: ghdl
+      compile_args: ''
+      run_args: ''
+      plusargs: ''
+    diamond:
+      installation_path: ''
+      part: ''
+    ghdl:
+      installation_path: ''
+      waveform: vcd
+      analyze_options: []
+      run_options: []
+    icarus:
+      installation_path: ''
+      timescale: ''
+      iverilog_options: []
+    icestorm:
+      installation_path: ''
+      pnr: none
+      arch: xilinx
+      output_format: json
+      yosys_as_subtool: false
+      makefile_name: ''
+      arachne_pnr_options: []
+      nextpnr_options: []
+      yosys_synth_options: []
+    ise:
+      installation_path: ''
+      family: ''
+      device: ''
+      package: ''
+      speed: ''
+    isem:
+      installation_path: ''
+      fuse_options: []
+      isim_options: []
+    modelsim:
+      installation_path: ''
+      vcom_options: []
+      vlog_options: []
+      vsim_options: []
+    morty:
+      installation_path: ''
+      morty_options: []
+    radiant:
+      installation_path: ''
+      part: ''
+    rivierapro:
+      installation_path: ''
+      compilation_mode: ''
+      vlog_options: []
+      vsim_options: []
+    spyglass:
+      installation_path: ''
+      methodology: ''
+      goals: []
+      spyglass_options: []
+      rule_parameters: []
+    symbiyosys:
+      installation_path: ''
+      tasknames: []
+    symbiflow:
+      installation_path: ''
+      package: ''
+      part: ''
+      vendor: ''
+      pnr: vpr
+      vpr_options: ''
+      environment_script: ''
+    trellis:
+      installation_path: ''
+      arch: xilinx
+      output_format: json
+      yosys_as_subtool: false
+      makefile_name: ''
+      script_name: ''
+      nextpnr_options: []
+      yosys_synth_options: []
+    vcs:
+      installation_path: ''
+      vcs_options: []
+      run_options: []
+    verible:
+      installation_path: ''
+    verilator:
+      installation_path: ''
+      mode: lint-only
+      libs: []
+      verilator_options: []
+      make_options: []
+      run_options: []
+    vivado:
+      installation_path: ''
+      part: ''
+      synth: ''
+      pnr: vivado
+      jtag_freq: 10000
+      hw_target: ''
+    vunit:
+      installation_path: ''
+      simulator_name: ghdl
+      runpy_mode: standalone
+      extra_options: ''
+      enable_array_util_lib: false
+      enable_com_lib: false
+      enable_json4vhdl_lib: false
+      enable_osvvm_lib: false
+      enable_random_lib: false
+      enable_verification_components_lib: false
+    xcelium:
+      installation_path: ''
+      xmvhdl_options: []
+      xmvlog_options: []
+      xmsim_options: []
+      xrun_options: []
+    xsim:
+      installation_path: ''
+      xelab_options: []
+      xsim_options: []
+    yosys:
+      installation_path: ''
+      arch: xilinx
+      output_format: json
+      yosys_as_subtool: false
+      makefile_name: ''
+      script_name: ''
+      yosys_synth_options: []
+    openfpga:
+      installation_path: ''
+      arch: ''
+      task_options: []
+    activehdl:
+      installation_path: ''
+    questa:
+      installation_path: ''
+    raptor:
+      installation_path: ''
+      target_device: 1GE100
+      vhdl_version: VHDL_1993
+      verilog_version: V_2001
+      sv_version: SV_2012
+      optimization: none
+      effort: high
+      fsm_encoding: onehot
+      carry: auto
+      pnr_netlist_language: verilog
+      dsp_limit: 154
+      block_ram_limit: 154
+      fast_synthesis: false
+      top_level: ''
+      sim_source_list: []
+      simulate_rtl: false
+      waveform_rtl: syn_tb_rtl.fst
+      simulator_rtl: ghdl
+      simulation_options_rtl: '--stop-time=1000ns'
+      simulate_gate: false
+      waveform_gate: syn_tb_gate.fst
+      simulator_gate: ghdl
+      simulation_options_gate: '--stop-time=1000ns'
+      simulate_pnr: false
+      waveform_pnr: sim_pnr.fst
+      simulator_pnr: ghdl
+      simulation_options_pnr: '--stop-time=1000ns'
+tool_options:
+  ghdl:
+    name: ghdl
+    installation_path: ''
+    config:
+      installation_path: ''
+      waveform: vcd
+      analyze_options: []
+      run_options: []
