@@ -50,6 +50,8 @@
 -- limitations under the License.
 -- =============================================================================
 
+use     STD.TextIO.all;
+
 library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
@@ -160,14 +162,7 @@ package AXI4Lite is
 
 	--------File IO--------
 	impure function write_csv_file(FileName : string; reg : T_AXI4_Register_Vector) return boolean;
-	impure function read_csv_file(FileName : string) return T_AXI4_Register_Vector;
-	impure function write_yml_file(
-		FileName : string;
-		reg      : T_AXI4_Register_Vector;
-		reg_name : string;
-		defines  : key_value_pair_v := (0 to 0 => C_key_value_pair_empty);
-		enums    : key_value_pair_v := (0 to 0 => C_key_value_pair_empty)
-	) return boolean;
+	impure function read_csv_file(FileName : string) return T_AXI4_Register_Vector; -- Experimental. Read register configuration from csv
 
 	--------Modify config--------
 	function filter_Register_Description_Vector(str : string; description_vector : T_AXI4_Register_Vector) return T_AXI4_Register_Vector;
@@ -242,18 +237,6 @@ package AXI4Lite is
 	--	  variable idx  : natural := 0;
 	--	  variable addr : natural := 0;
 	-- **Example:
-	--    assign(temp, idx, addr, Name => "Control", RegisterMode => ReadWrite);
-	--	procedure assign(
-	--		variable description_vector : inout T_AXI4_Register_Vector;
-	--		variable idx                : inout natural;
-	--		variable addr               : inout natural;
-	--		constant offset             : in    natural := 4;
-	--		constant Name               : in    string := "";
-	--		constant writeable          : in    boolean;
-	--		constant Init_Value         : in    std_logic_vector(DATA_BITS -1 downto 0) := (others => '0');
-	--		constant AutoClear_Mask     : in    std_logic_vector(DATA_BITS -1 downto 0) := (others => '0');
-	--		constant IsInterruptRegister   : in boolean := false
-	--	);
 	--	procedure assign(
 	--		variable description_vector : inout T_AXI4_Register_Vector;
 	--		variable idx                : inout natural;
@@ -579,29 +562,6 @@ package body AXI4Lite is
 		variable addr                  : inout natural;
 		constant offset                : in natural := 4;
 		constant Name                  : in string  := "";
-		constant writeable             : in boolean;
-		constant Init_Value            : in std_logic_vector(DATA_BITS - 1 downto 0) := (others => '0');
-		constant AutoClear_Mask        : in std_logic_vector(DATA_BITS - 1 downto 0) := (others => '0');
-		constant IsInterruptRegister   : in boolean                                   := false
-	) is begin
-		description_vector(idx) := to_AXI4_Register(
-			Name                  => Name,
-			Address               => to_unsigned(addr, 32),
-			writeable             => writeable,
-			Init_Value            => Init_Value,
-			AutoClear_Mask        => AutoClear_Mask ,
-			IsInterruptRegister   => IsInterruptRegister  
-		);
-		idx  := idx + 1;
-		addr := addr + offset;
-	end procedure;
-
-	procedure assign(
-		variable description_vector    : inout T_AXI4_Register_Vector;
-		variable idx                   : inout natural;
-		variable addr                  : inout natural;
-		constant offset                : in natural := 4;
-		constant Name                  : in string  := "";
 		constant RegisterMode          : in T_AXI4Lite_RegisterModes;
 		constant Init_Value            : in std_logic_vector(DATA_BITS - 1 downto 0) := (others => '0');
 		constant AutoClear_Mask        : in std_logic_vector(DATA_BITS - 1 downto 0) := (others => '0');
@@ -710,7 +670,7 @@ package body AXI4Lite is
 	end function;
 
 	function Filter_DescriptionVector(Config : T_AXI4_Register_Vector; filter : std_logic_vector) return T_AXI4_Register_Vector is
-		variable temp : T_AXI4_Register_Vector(0 to hamming_weight(filter) - 1);
+		variable temp : T_AXI4_Register_Vector(0 to hammingWeight(filter) - 1);
 		variable pos  : natural := 0;
 	begin
 		assert Config'length = filter'length report "PoC.AXI4Lite.pkg: Filter_DescriptionVector: Config has not the same size as Filter!" severity failure;

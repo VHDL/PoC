@@ -37,7 +37,7 @@ use     work.axi4_Full.all;
 use     work.fifo.all;
 
 
-entity AXI4_Termination_Slave is
+entity AXI4_Termination_Subordinate is
 	generic(
 		RESPONSE_CODE : T_AXI4_Response := C_AXI4_RESPONSE_SLAVE_ERROR
 	);
@@ -50,7 +50,7 @@ entity AXI4_Termination_Slave is
 end entity;
 
 
-architecture rtl of AXI4_Termination_Slave is
+architecture rtl of AXI4_Termination_Subordinate is
 	signal fifo_aw_valid : std_logic;
 	signal fifo_w_valid  : std_logic;
 	signal AWFull_i      : std_logic;

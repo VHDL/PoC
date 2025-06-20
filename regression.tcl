@@ -22,7 +22,7 @@
 namespace eval ::poc {
 	variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
 	variable myProjectFile "../tb/common/my_project.vhdl"
-	variable vendor "GENRIC"; # GENRIC for vendor-less build; Xilinx, Altera,... for vendor specific build
+	variable vendor "GENERIC"; # GENRIC for vendor-less build; Xilinx, Altera,... for vendor specific build
 }
 
 source ../lib/OSVVM-Scripts/StartUp.tcl
@@ -40,6 +40,8 @@ if {$::osvvm::ToolName eq "GHDL"} {
 if {$::osvvm::ToolName eq "RiveraPRO"} {
     SetExtendedSimulationOptions {-unbounderror}
 }
+set ::osvvm::AnalyzeErrorStopCount 1
+set ::osvvm::SimulateErrorStopCount 1
 
 
 build ../src/PoC.pro

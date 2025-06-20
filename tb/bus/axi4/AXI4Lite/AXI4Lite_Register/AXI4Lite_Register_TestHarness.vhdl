@@ -88,8 +88,8 @@ architecture sim of AXI4Lite_Register_TestHarness is
 	signal Reg_WritePort_hit    : std_logic_vector(0 to Reg_Config'Length - 1);
 	signal Reg_WritePort_strobe : std_logic_vector(0 to Reg_Config'Length - 1) := get_strobeVector(Reg_Config);
 
-	signal Clk            : std_logic;
-	signal nReset         : std_logic;
+	signal Clock          : std_logic;
+	signal Reset          : std_logic;
 	signal Main_Interrupt : std_logic;
 
 	-- Testbench Transaction Interface
@@ -115,8 +115,8 @@ architecture sim of AXI4Lite_Register_TestHarness is
 		);
 		port (
 			-- Global Signal Interface
-			Clk    : in std_logic;
-			nReset : in std_logic;
+			Clock  : in std_logic;
+			Reset  : in std_logic;
 
 			Irq : in std_logic;
 
@@ -132,15 +132,15 @@ begin
 
 	-- create Clock for TB and 100 Mhz
 	Osvvm.ClockResetPkg.CreateClock (
-		Clk    => Clk,
+		Clk    => Clock,
 		Period => Tperiod_Clk
 	);
 
 	-- create nReset
 	Osvvm.ClockResetPkg.CreateReset (
-		Reset       => nReset,
-		ResetActive => '0',
-		Clk         => Clk,
+		Reset       => Reset,
+		ResetActive => '1',
+		Clk         => Clock,
 		Period      => 7 * tperiod_Clk,
 		tpd         => 0 ns
 	);
@@ -162,8 +162,8 @@ begin
 	)
 	port map
 	(
-		Clk    => Clk,
-		nReset => nReset,
+		Clk    => Clock,
+		nReset => not Reset,
 
 		TransRec => AxiMasterTransRec, -- Testbench Transaction Interface
 		AxiBus   => AxiLiteBus         -- AXI Master Functional Interface
@@ -178,8 +178,8 @@ begin
 	)
 	port map
 	(
-		S_AXI_ACLK    => Clk,
-		S_AXI_ARESETN => nReset,
+		Clock    => Clock,
+		Reset    => Reset,
 
 		AXI4Lite_m2s.AWValid => AxiLiteBus.WriteAddress.Valid,
 		AXI4Lite_m2s.AWAddr  => AxiLiteBus.WriteAddress.Addr,
@@ -219,8 +219,8 @@ begin
 	)
 	port map
 	(
-		Clk    => Clk,
-		nReset => nReset,
+		Clock => Clock,
+		Reset => Reset,
 
 		Irq => Main_Interrupt,
 

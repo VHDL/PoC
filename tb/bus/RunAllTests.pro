@@ -1,6 +1,7 @@
 # =============================================================================
 # Authors:
 #	Adrian Weiland
+#	Jonas Schreiner
 #
 # License:
 # =============================================================================
@@ -9,6 +10,10 @@
 # Proprietary and confidential
 # =============================================================================
 
-analyze bus_Arbiter.vhdl
-include ./stream/stream.pro
-include ./axi4/axi4.pro
+# TestSuite PoC.bus
+# Deactivated to avoid failure on non-existing testcases
+
+library tb_bus
+
+include ./axi4/RunAllTests.pro
+# include ./stream/RunAllTests.pro

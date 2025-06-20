@@ -1,9 +1,9 @@
 name: PileOfCores
 project_disk_path: ''
 project_type: genericProject
-toplevel: src/bus/axi4/AXI4Lite/AXI4Lite_Register.vhdl
+toplevel: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Register.vhdl
 files:
-  - name: src/common/common.vhdl
+  - name: ../../src/common/common.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -11,7 +11,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/components.vhdl
+  - name: ../../src/common/components.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -19,7 +19,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/config.vhdl
+  - name: ../../src/common/config.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -27,7 +27,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/debug.vhdl
+  - name: ../../src/common/debug.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -35,7 +35,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/fileio.v08.vhdl
+  - name: ../../src/common/fileio.v08.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -43,7 +43,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/fileio.v93.vhdl
+  - name: ../../src/common/fileio.v93.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -51,7 +51,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/math.vhdl
+  - name: ../../src/common/math.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -59,7 +59,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/my_config.vhdl.template
+  - name: ../../src/common/my_config.vhdl.template
     file_type: none
     file_version: !<tag:yaml.org,2002:js/undefined> ''
     is_include_file: false
@@ -67,7 +67,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/my_project.vhdl.template
+  - name: ../../src/common/my_project.vhdl.template
     file_type: none
     file_version: !<tag:yaml.org,2002:js/undefined> ''
     is_include_file: false
@@ -75,7 +75,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/physical.vhdl
+  - name: ../../src/common/physical.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -83,7 +83,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/protected.v08.vhdl
+  - name: ../../src/common/protected.v08.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -91,7 +91,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/strings.vhdl
+  - name: ../../src/common/strings.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -99,7 +99,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/utils.vhdl
+  - name: ../../src/common/utils.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -107,7 +107,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/common/vectors.vhdl
+  - name: ../../src/common/vectors.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -115,7 +115,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith.pkg.vhdl
+  - name: ../../src/arith/arith.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -123,7 +123,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_addw.vhdl
+  - name: ../../src/arith/arith_addw.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -131,7 +131,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_carrychain_inc.vhdl
+  - name: ../../src/arith/arith_carrychain_inc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -139,7 +139,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_cca.vhdl
+  - name: ../../src/arith/arith_cca.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -147,7 +147,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_convert_bin2bcd.vhdl
+  - name: ../../src/arith/arith_convert_bin2bcd.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -155,7 +155,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_counter_bcd.vhdl
+  - name: ../../src/arith/arith_counter_bcd.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -163,7 +163,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_counter_free.vhdl
+  - name: ../../src/arith/arith_counter_free.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -171,7 +171,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_counter_gray.vhdl
+  - name: ../../src/arith/arith_counter_gray.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -179,7 +179,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_counter_ring.vhdl
+  - name: ../../src/arith/arith_counter_ring.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -187,7 +187,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_div.vhdl
+  - name: ../../src/arith/arith_div.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -195,7 +195,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_firstone.vhdl
+  - name: ../../src/arith/arith_firstone.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -203,7 +203,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_prefix_and.vhdl
+  - name: ../../src/arith/arith_prefix_and.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -211,7 +211,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_prefix_or.vhdl
+  - name: ../../src/arith/arith_prefix_or.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -219,7 +219,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_prng.vhdl
+  - name: ../../src/arith/arith_prng.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -227,7 +227,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_same.vhdl
+  - name: ../../src/arith/arith_same.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -235,7 +235,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_scaler.vhdl
+  - name: ../../src/arith/arith_scaler.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -243,7 +243,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_shifter_barrel.vhdl
+  - name: ../../src/arith/arith_shifter_barrel.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -251,7 +251,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_sqrt.vhdl
+  - name: ../../src/arith/arith_sqrt.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -259,7 +259,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/arith_trng.vhdl
+  - name: ../../src/arith/arith_trng.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -267,7 +267,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/xilinx/arith_addw_xilinx.vhdl
+  - name: ../../src/arith/xilinx/arith_addw_xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -275,7 +275,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/xilinx/arith_carrychain_inc_xilinx.vhdl
+  - name: ../../src/arith/xilinx/arith_carrychain_inc_xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -283,7 +283,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/xilinx/arith_cca_xilinx.vhdl
+  - name: ../../src/arith/xilinx/arith_cca_xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -291,7 +291,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/xilinx/arith_inc_ovcy_xilinx.vhdl
+  - name: ../../src/arith/xilinx/arith_inc_ovcy_xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -299,7 +299,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/xilinx/arith_prefix_and_xilinx.vhdl
+  - name: ../../src/arith/xilinx/arith_prefix_and_xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -307,7 +307,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/arith/xilinx/arith_prefix_or_xilinx.vhdl
+  - name: ../../src/arith/xilinx/arith_prefix_or_xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -315,7 +315,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/bus_Arbiter.vhdl
+  - name: ../../src/bus/bus_Arbiter.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -323,7 +323,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/stream/stream.pkg.vhdl
+  - name: ../../src/bus/stream/stream.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -331,7 +331,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/stream/stream_FIFO.vhdl
+  - name: ../../src/bus/stream/stream_FIFO.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -339,7 +339,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/stream/stream_DeMux.vhdl
+  - name: ../../src/bus/stream/stream_DeMux.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -347,7 +347,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/stream/stream_FrameGenerator.vhdl
+  - name: ../../src/bus/stream/stream_FrameGenerator.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -355,7 +355,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/stream/stream_Mirror.vhdl
+  - name: ../../src/bus/stream/stream_Mirror.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -363,7 +363,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/stream/stream_Mux.vhdl
+  - name: ../../src/bus/stream/stream_Mux.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -371,7 +371,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/stream/stream_Source.vhdl
+  - name: ../../src/bus/stream/stream_Source.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -379,7 +379,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/axi4.pkg.vhdl
+  - name: ../../src/bus/axi4/axi4.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -387,7 +387,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4_Common.pkg.vhdl
+  - name: ../../src/bus/axi4/AXI4_Common.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -395,7 +395,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4_FIFO.vhdl
+  - name: ../../src/bus/axi4/AXI4_FIFO.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -403,7 +403,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4_FIFO_cdc.vhdl
+  - name: ../../src/bus/axi4/AXI4_FIFO_cdc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -411,7 +411,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4_Full.pkg.vhdl
+  - name: ../../src/bus/axi4/AXI4_Full.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -419,7 +419,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4_Termination_Master.vhdl
+  - name: ../../src/bus/axi4/AXI4_Termination_Manager.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -427,7 +427,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4_Termination_Slave.vhdl
+  - name: ../../src/bus/axi4/AXI4_Termination_Subordinate.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -435,7 +435,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4_to_AXI4Lite.vhdl
+  - name: ../../src/bus/axi4/AXI4_to_AXI4Lite.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -443,7 +443,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream.pkg.vhdl
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -451,7 +451,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_FIFO.vhdl
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_FIFO.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -459,7 +459,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_cdc.vhdl
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_cdc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -467,7 +467,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_tempgot.vhdl
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_tempgot.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -475,7 +475,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_tempput.vhdl
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_FIFO_tempput.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -483,7 +483,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_DeMux.vhdl
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_DeMux.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -491,7 +491,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_Stage.vhdl
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_Stage.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -499,7 +499,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Stream/AXI4Stream_Mux.vhdl
+  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_Mux.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -507,7 +507,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Lite/AXI4Lite.pkg.vhdl
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -515,7 +515,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Lite/AXI4Lite_FIFO.vhdl
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_FIFO.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -523,7 +523,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Lite/AXI4Lite_FIFO_cdc.vhdl
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_FIFO_cdc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -531,7 +531,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Lite/AXI4Lite_OSVVM.pkg.vhdl
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_OSVVM.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -539,7 +539,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Lite/AXI4Lite_Register.vhdl
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Register.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -547,7 +547,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Lite/AXI4Lite_Termination_Master.vhdl
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Termination_Manager.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -555,7 +555,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/bus/axi4/AXI4Lite/AXI4Lite_Termination_Slave.vhdl
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Termination_Subordinate.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -563,7 +563,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/cache/cache.pkg.vhdl
+  - name: ../../src/cache/cache.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -571,7 +571,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/cache/cache_cpu.vhdl
+  - name: ../../src/cache/cache_cpu.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -579,7 +579,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/cache/cache_mem.vhdl
+  - name: ../../src/cache/cache_mem.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -587,7 +587,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/cache/cache_par.vhdl
+  - name: ../../src/cache/cache_par.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -595,7 +595,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/cache/cache_par2.vhdl
+  - name: ../../src/cache/cache_par2.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -603,7 +603,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/cache/cache_replacement_policy.vhdl
+  - name: ../../src/cache/cache_replacement_policy.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -611,7 +611,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/cache/cache_tagunit_par.vhdl
+  - name: ../../src/cache/cache_tagunit_par.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -619,7 +619,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/cache/cache_tagunit_seq.vhdl
+  - name: ../../src/cache/cache_tagunit_seq.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -627,7 +627,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/comm/comm.pkg.vhdl
+  - name: ../../src/comm/comm.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -635,7 +635,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/comm/comm_crc.vhdl
+  - name: ../../src/comm/comm_crc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -643,7 +643,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/comm/comm_scramble.vhdl
+  - name: ../../src/comm/comm_scramble.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -651,7 +651,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/comm/remote/remote_terminal_control.vhdl
+  - name: ../../src/comm/remote/remote_terminal_control.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -659,7 +659,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/dstruct/dstruct.pkg.vhdl
+  - name: ../../src/dstruct/dstruct.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -667,7 +667,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/dstruct/dstruct_deque.vhdl
+  - name: ../../src/dstruct/dstruct_deque.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -675,7 +675,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/dstruct/dstruct_stack.vhdl
+  - name: ../../src/dstruct/dstruct_stack.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -683,7 +683,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/fifo/fifo.pkg.vhdl
+  - name: ../../src/fifo/fifo.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -691,7 +691,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/fifo/fifo_cc_got.vhdl
+  - name: ../../src/fifo/fifo_cc_got.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -699,7 +699,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/fifo/fifo_cc_got_tempgot.vhdl
+  - name: ../../src/fifo/fifo_cc_got_tempgot.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -707,7 +707,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/fifo/fifo_cc_got_tempput.vhdl
+  - name: ../../src/fifo/fifo_cc_got_tempput.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -715,7 +715,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/fifo/fifo_stage.vhdl
+  - name: ../../src/fifo/fifo_stage.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -723,7 +723,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/fifo/fifo_ic_assembly.vhdl
+  - name: ../../src/fifo/fifo_ic_assembly.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -731,7 +731,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/fifo/fifo_ic_got.vhdl
+  - name: ../../src/fifo/fifo_ic_got.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -739,7 +739,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/fifo/fifo_shift.vhdl
+  - name: ../../src/fifo/fifo_shift.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -747,7 +747,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/io.pkg.vhdl
+  - name: ../../src/io/io.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -755,7 +755,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/io_7SegmentMux_BCD.vhdl
+  - name: ../../src/io/io_7SegmentMux_BCD.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -763,7 +763,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/io_7SegmentMux_HEX.vhdl
+  - name: ../../src/io/io_7SegmentMux_HEX.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -771,7 +771,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/io_Debounce.vhdl
+  - name: ../../src/io/io_Debounce.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -779,7 +779,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/io_FanControl.vhdl
+  - name: ../../src/io/io_FanControl.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -787,7 +787,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/io_FrequencyCounter.vhdl
+  - name: ../../src/io/io_FrequencyCounter.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -795,7 +795,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/io_GlitchFilter.vhdl
+  - name: ../../src/io/io_GlitchFilter.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -803,7 +803,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/io_KeyPadScanner.vhdl
+  - name: ../../src/io/io_KeyPadScanner.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -811,7 +811,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/io_PulseWidthModulation.vhdl
+  - name: ../../src/io/io_PulseWidthModulation.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -819,7 +819,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/io_TimingCounter.vhdl
+  - name: ../../src/io/io_TimingCounter.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -827,7 +827,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/uart/uart.pkg.vhdl
+  - name: ../../src/io/uart/uart.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -835,7 +835,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/uart/uart_bclk.vhdl
+  - name: ../../src/io/uart/uart_bclk.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -843,7 +843,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/uart/uart_fifo.vhdl
+  - name: ../../src/io/uart/uart_fifo.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -851,7 +851,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/uart/uart_ft245.vhdl
+  - name: ../../src/io/uart/uart_ft245.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -859,7 +859,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/uart/uart_rx.vhdl
+  - name: ../../src/io/uart/uart_rx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -867,7 +867,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/uart/uart_tx.vhdl
+  - name: ../../src/io/uart/uart_tx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -875,7 +875,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/pmod/pmod.pkg.vhdl
+  - name: ../../src/io/pmod/pmod.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -883,7 +883,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/pmod/pmod_KYPD.vhdl
+  - name: ../../src/io/pmod/pmod_KYPD.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -891,7 +891,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/pmod/pmod_SSD.vhdl
+  - name: ../../src/io/pmod/pmod_SSD.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -899,7 +899,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/pmod/pmod_USBUART.vhdl
+  - name: ../../src/io/pmod/pmod_USBUART.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -907,7 +907,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/iic/iic.pkg.vhdl
+  - name: ../../src/io/iic/iic.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -915,7 +915,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/ddrio/ddrio.pkg.vhdl
+  - name: ../../src/io/ddrio/ddrio.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -923,7 +923,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/ddrio/ddrio_in.vhdl
+  - name: ../../src/io/ddrio/ddrio_in.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -931,7 +931,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/ddrio/ddrio_in_altera.vhdl
+  - name: ../../src/io/ddrio/ddrio_in_altera.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -939,7 +939,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/ddrio/ddrio_inout.vhdl
+  - name: ../../src/io/ddrio/ddrio_inout.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -947,7 +947,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/ddrio/ddrio_inout_altera.vhdl
+  - name: ../../src/io/ddrio/ddrio_inout_altera.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -955,7 +955,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/ddrio/ddrio_inout_xilinx.vhdl
+  - name: ../../src/io/ddrio/ddrio_inout_xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -963,7 +963,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/ddrio/ddrio_in_xilinx.vhdl
+  - name: ../../src/io/ddrio/ddrio_in_xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -971,7 +971,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/ddrio/ddrio_out.vhdl
+  - name: ../../src/io/ddrio/ddrio_out.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -979,7 +979,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/ddrio/ddrio_out_altera.vhdl
+  - name: ../../src/io/ddrio/ddrio_out_altera.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -987,7 +987,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/io/ddrio/ddrio_out_xilinx.vhdl
+  - name: ../../src/io/ddrio/ddrio_out_xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -995,7 +995,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/mem.pkg.vhdl
+  - name: ../../src/mem/mem.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1003,7 +1003,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/sdram/sdram_ctrl_de0.vhdl
+  - name: ../../src/mem/sdram/sdram_ctrl_de0.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1011,7 +1011,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/sdram/sdram_ctrl_fsm.vhdl
+  - name: ../../src/mem/sdram/sdram_ctrl_fsm.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1019,7 +1019,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/sdram/sdram_ctrl_phy_de0.vhdl
+  - name: ../../src/mem/sdram/sdram_ctrl_phy_de0.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1027,7 +1027,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/sdram/sdram_ctrl_phy_s3esk.vhdl
+  - name: ../../src/mem/sdram/sdram_ctrl_phy_s3esk.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1035,7 +1035,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/sdram/sdram_ctrl_s3esk.vhdl
+  - name: ../../src/mem/sdram/sdram_ctrl_s3esk.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1043,7 +1043,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocrom/ocrom.pkg.vhdl
+  - name: ../../src/mem/ocrom/ocrom.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1051,7 +1051,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocrom/ocrom_dp.vhdl
+  - name: ../../src/mem/ocrom/ocrom_dp.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1059,7 +1059,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocrom/ocrom_sp.vhdl
+  - name: ../../src/mem/ocrom/ocrom_sp.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1067,7 +1067,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocram/ocram.pkg.vhdl
+  - name: ../../src/mem/ocram/ocram.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1075,7 +1075,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocram/ocram_esdp.vhdl
+  - name: ../../src/mem/ocram/ocram_esdp.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1083,7 +1083,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocram/ocram_sdp.vhdl
+  - name: ../../src/mem/ocram/ocram_sdp.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1091,7 +1091,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocram/ocram_sdp_wf.vhdl
+  - name: ../../src/mem/ocram/ocram_sdp_wf.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1099,7 +1099,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocram/ocram_sp.vhdl
+  - name: ../../src/mem/ocram/ocram_sp.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1107,7 +1107,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocram/ocram_tdp.vhdl
+  - name: ../../src/mem/ocram/ocram_tdp.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1115,7 +1115,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocram/ocram_tdp_sim.vhdl
+  - name: ../../src/mem/ocram/ocram_tdp_sim.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1123,7 +1123,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocram/ocram_tdp_wf.vhdl
+  - name: ../../src/mem/ocram/ocram_tdp_wf.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1131,7 +1131,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocram/altera/ocram_sp_altera.vhdl
+  - name: ../../src/mem/ocram/altera/ocram_sp_altera.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1139,7 +1139,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ocram/altera/ocram_tdp_altera.vhdl
+  - name: ../../src/mem/ocram/altera/ocram_tdp_altera.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1147,7 +1147,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/lut/lut_Sine.vhdl
+  - name: ../../src/mem/lut/lut_Sine.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1155,7 +1155,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ddr3/ddr3_mem2mig_adapter_Series7.vhdl
+  - name: ../../src/mem/ddr3/ddr3_mem2mig_adapter_Series7.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1163,7 +1163,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl
+  - name: ../../src/mem/ddr2/ddr2_mem2mig_adapter_Spartan6.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1171,7 +1171,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/misc_bit_lz.vhdl
+  - name: ../../src/misc/misc_bit_lz.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1179,7 +1179,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/misc_Delay.vhdl
+  - name: ../../src/misc/misc_Delay.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1187,7 +1187,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/misc_FrequencyMeasurement.vhdl
+  - name: ../../src/misc/misc_FrequencyMeasurement.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1195,7 +1195,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/filter/filter_and.vhdl
+  - name: ../../src/misc/filter/filter_and.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1203,7 +1203,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/filter/filter_mean.vhdl
+  - name: ../../src/misc/filter/filter_mean.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1211,7 +1211,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/filter/filter_or.vhdl
+  - name: ../../src/misc/filter/filter_or.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1219,7 +1219,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/stat/stat_Average.vhdl
+  - name: ../../src/misc/stat/stat_Average.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1227,7 +1227,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/stat/stat_Histogram.vhdl
+  - name: ../../src/misc/stat/stat_Histogram.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1235,7 +1235,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/stat/stat_Maximum.vhdl
+  - name: ../../src/misc/stat/stat_Maximum.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1243,7 +1243,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/stat/stat_Minimum.vhdl
+  - name: ../../src/misc/stat/stat_Minimum.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1251,7 +1251,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/gearbox/gearbox_down_cc.vhdl
+  - name: ../../src/misc/gearbox/gearbox_down_cc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1259,7 +1259,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/gearbox/gearbox_down_dc.vhdl
+  - name: ../../src/misc/gearbox/gearbox_down_dc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1267,7 +1267,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/gearbox/gearbox_up_cc.vhdl
+  - name: ../../src/misc/gearbox/gearbox_up_cc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1275,7 +1275,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/misc/gearbox/gearbox_up_dc.vhdl
+  - name: ../../src/misc/gearbox/gearbox_up_dc.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1283,7 +1283,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sort/sort_lru_cache.vhdl
+  - name: ../../src/sort/sort_lru_cache.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1291,7 +1291,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sort/sort_lru_list.vhdl
+  - name: ../../src/sort/sort_lru_list.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1299,7 +1299,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sort/sortnet/sortnet.pkg.vhdl
+  - name: ../../src/sort/sortnet/sortnet.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1307,7 +1307,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sort/sortnet/sortnet_BitonicSort.vhdl
+  - name: ../../src/sort/sortnet/sortnet_BitonicSort.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1315,7 +1315,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sort/sortnet/sortnet_MergeSort_Streamed.vhdl
+  - name: ../../src/sort/sortnet/sortnet_MergeSort_Streamed.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1323,7 +1323,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl
+  - name: ../../src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1331,7 +1331,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sort/sortnet/sortnet_OddEvenSort.vhdl
+  - name: ../../src/sort/sortnet/sortnet_OddEvenSort.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1339,7 +1339,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sort/sortnet/sortnet_Stream_Adapter.vhdl
+  - name: ../../src/sort/sortnet/sortnet_Stream_Adapter.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1347,7 +1347,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sort/sortnet/sortnet_Stream_Adapter2.vhdl
+  - name: ../../src/sort/sortnet/sortnet_Stream_Adapter2.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1355,7 +1355,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sort/sortnet/sortnet_Transform.vhdl
+  - name: ../../src/sort/sortnet/sortnet_Transform.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1363,7 +1363,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync.pkg.vhdl
+  - name: ../../src/sync/sync.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1371,7 +1371,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Bits.vhdl
+  - name: ../../src/sync/sync_Bits.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1379,7 +1379,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Bits_Altera.vhdl
+  - name: ../../src/sync/sync_Bits_Altera.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1387,7 +1387,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Bits_Xilinx.vhdl
+  - name: ../../src/sync/sync_Bits_Xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1395,7 +1395,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Command.vhdl
+  - name: ../../src/sync/sync_Command.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1403,7 +1403,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Pulse.vhdl
+  - name: ../../src/sync/sync_Pulse.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1411,7 +1411,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Pulse_Altera.vhdl
+  - name: ../../src/sync/sync_Pulse_Altera.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1419,7 +1419,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Pulse_Xilinx.vhdl
+  - name: ../../src/sync/sync_Pulse_Xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1427,7 +1427,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Reset.vhdl
+  - name: ../../src/sync/sync_Reset.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1435,7 +1435,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Reset_Altera.vhdl
+  - name: ../../src/sync/sync_Reset_Altera.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1443,7 +1443,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Reset_Xilinx.vhdl
+  - name: ../../src/sync/sync_Reset_Xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1451,7 +1451,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Strobe.vhdl
+  - name: ../../src/sync/sync_Strobe.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1459,7 +1459,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sync/sync_Vector.vhdl
+  - name: ../../src/sync/sync_Vector.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1467,7 +1467,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/xil/xil.pkg.vhdl
+  - name: ../../src/xil/xil.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1475,7 +1475,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/xil/xil_BSCAN.vhdl
+  - name: ../../src/xil/xil_BSCAN.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1483,7 +1483,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/xil/xil_ChipScopeICON.vhdl
+  - name: ../../src/xil/xil_ChipScopeICON.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1491,7 +1491,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/xil/xil_ICAP.vhdl
+  - name: ../../src/xil/xil_ICAP.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1499,7 +1499,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/xil/xil_Reconfigurator.vhdl
+  - name: ../../src/xil/xil_Reconfigurator.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1507,7 +1507,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/xil/xil_SystemMonitor.vhdl
+  - name: ../../src/xil/xil_SystemMonitor.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1515,7 +1515,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/xil/reconfig/reconfig_icap_fsm.vhdl
+  - name: ../../src/xil/reconfig/reconfig_icap_fsm.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1523,7 +1523,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/xil/reconfig/reconfig_icap_wrapper.vhdl
+  - name: ../../src/xil/reconfig/reconfig_icap_wrapper.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1531,7 +1531,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_global.v08.vhdl
+  - name: ../../src/sim/sim_global.v08.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1539,7 +1539,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_global.v93.vhdl
+  - name: ../../src/sim/sim_global.v93.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1547,7 +1547,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_protected.v08.vhdl
+  - name: ../../src/sim/sim_protected.v08.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1555,7 +1555,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_random.v08.vhdl
+  - name: ../../src/sim/sim_random.v08.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1563,7 +1563,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_random.v93.vhdl
+  - name: ../../src/sim/sim_random.v93.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1571,7 +1571,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_simulation.v08.vhdl
+  - name: ../../src/sim/sim_simulation.v08.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1579,7 +1579,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_simulation.v93.vhdl
+  - name: ../../src/sim/sim_simulation.v93.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1587,7 +1587,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_types.vhdl
+  - name: ../../src/sim/sim_types.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1595,7 +1595,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_unprotected.v93.vhdl
+  - name: ../../src/sim/sim_unprotected.v93.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1603,7 +1603,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_VCDParser.vhdl
+  - name: ../../src/sim/sim_VCDParser.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1611,7 +1611,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/sim/sim_waveform.vhdl
+  - name: ../../src/sim/sim_waveform.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1619,7 +1619,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/net.pkg.vhdl
+  - name: ../../src/net/net.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1627,7 +1627,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/net_FrameChecksum.vhdl
+  - name: ../../src/net/net_FrameChecksum.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1635,7 +1635,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/net_FrameLoopback.vhdl
+  - name: ../../src/net/net_FrameLoopback.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1643,7 +1643,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/udp/udp_FrameLoopback.vhdl
+  - name: ../../src/net/udp/udp_FrameLoopback.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1651,7 +1651,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/udp/udp_RX.vhdl
+  - name: ../../src/net/udp/udp_RX.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1659,7 +1659,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/udp/udp_TX.vhdl
+  - name: ../../src/net/udp/udp_TX.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1667,7 +1667,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/udp/udp_Wrapper.vhdl
+  - name: ../../src/net/udp/udp_Wrapper.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1675,7 +1675,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/mac/mac_FrameLoopback.vhdl
+  - name: ../../src/net/mac/mac_FrameLoopback.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1683,7 +1683,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/mac/mac_RX_DestMAC_Switch.vhdl
+  - name: ../../src/net/mac/mac_RX_DestMAC_Switch.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1691,7 +1691,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/mac/mac_RX_SrcMAC_Filter.vhdl
+  - name: ../../src/net/mac/mac_RX_SrcMAC_Filter.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1699,7 +1699,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/mac/mac_RX_Type_Switch.vhdl
+  - name: ../../src/net/mac/mac_RX_Type_Switch.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1707,7 +1707,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/mac/mac_TX_DestMAC_Prepender.vhdl
+  - name: ../../src/net/mac/mac_TX_DestMAC_Prepender.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1715,7 +1715,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/mac/mac_TX_SrcMAC_Prepender.vhdl
+  - name: ../../src/net/mac/mac_TX_SrcMAC_Prepender.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1723,7 +1723,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/mac/mac_Wrapper.vhdl
+  - name: ../../src/net/mac/mac_Wrapper.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1731,7 +1731,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/ipv6/ipv6_FrameLoopback.vhdl
+  - name: ../../src/net/ipv6/ipv6_FrameLoopback.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1739,7 +1739,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/ipv6/ipv6_RX.vhdl
+  - name: ../../src/net/ipv6/ipv6_RX.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1747,7 +1747,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/ipv6/ipv6_TX.vhdl
+  - name: ../../src/net/ipv6/ipv6_TX.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1755,7 +1755,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/ipv6/ipv6_Wrapper.vhdl
+  - name: ../../src/net/ipv6/ipv6_Wrapper.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1763,7 +1763,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/ipv4/ipv4_FrameLoopback.vhdl
+  - name: ../../src/net/ipv4/ipv4_FrameLoopback.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1771,7 +1771,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/ipv4/ipv4_RX.vhdl
+  - name: ../../src/net/ipv4/ipv4_RX.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1779,7 +1779,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/ipv4/ipv4_TX.vhdl
+  - name: ../../src/net/ipv4/ipv4_TX.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1787,7 +1787,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/ipv4/ipv4_Wrapper.vhdl
+  - name: ../../src/net/ipv4/ipv4_Wrapper.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1795,7 +1795,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/icmpv4/icmpv4_RX.vhdl
+  - name: ../../src/net/icmpv4/icmpv4_RX.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1803,7 +1803,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/icmpv4/icmpv4_TX.vhdl
+  - name: ../../src/net/icmpv4/icmpv4_TX.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1811,7 +1811,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/icmpv4/icmpv4_Wrapper.vhdl
+  - name: ../../src/net/icmpv4/icmpv4_Wrapper.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1819,7 +1819,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/arp/arp_BroadCast_Receiver.vhdl
+  - name: ../../src/net/arp/arp_BroadCast_Receiver.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1827,7 +1827,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/arp/arp_BroadCast_Requester.vhdl
+  - name: ../../src/net/arp/arp_BroadCast_Requester.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1835,7 +1835,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/arp/arp_Cache.vhdl
+  - name: ../../src/net/arp/arp_Cache.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1843,7 +1843,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/arp/arp_IPPool.vhdl
+  - name: ../../src/net/arp/arp_IPPool.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1851,7 +1851,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/arp/arp_UniCast_Receiver.vhdl
+  - name: ../../src/net/arp/arp_UniCast_Receiver.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1859,7 +1859,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/arp/arp_UniCast_Responder.vhdl
+  - name: ../../src/net/arp/arp_UniCast_Responder.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1867,7 +1867,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: src/net/arp/arp_Wrapper.vhdl
+  - name: ../../src/net/arp/arp_Wrapper.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1875,7 +1875,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../home/stefanunrein
+  - name: ../../../../home/stefanunrein
     file_type: none
     file_version: !<tag:yaml.org,2002:js/undefined> ''
     is_include_file: false
@@ -1884,7 +1884,7 @@ files:
     is_manual: false
     source_type: none
   - name: >-
-      tb/bus/axi4/AXI4Lite/AXI4Lite_Register/AXI4Lite_Register_TestController.vhdl
+      ../../tb/bus/axi4/AXI4Lite/AXI4Lite_Register/AXI4Lite_Register_TestController.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1892,7 +1892,8 @@ files:
     logical_name: TB
     is_manual: true
     source_type: none
-  - name: tb/bus/axi4/AXI4Lite/AXI4Lite_Register/AXI4Lite_Register_TestHarness.vhdl
+  - name: >-
+      ../../tb/bus/axi4/AXI4Lite/AXI4Lite_Register/AXI4Lite_Register_TestHarness.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1900,7 +1901,7 @@ files:
     logical_name: TB
     is_manual: true
     source_type: none
-  - name: tb/bus/axi4/AXI4Lite/AXI4Lite_Register/TC_RandomReadWrite.vhdl
+  - name: ../../tb/bus/axi4/AXI4Lite/AXI4Lite_Register/TC_RandomReadWrite.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false

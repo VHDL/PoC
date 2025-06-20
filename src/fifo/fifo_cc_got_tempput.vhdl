@@ -6,6 +6,7 @@
 --                  Steffen Koehler
 --                  Martin Zabel
 --                  Patrick Lehmann
+--                  Stefan Unrein
 --
 -- Entity:          FIFO, common clock (cc), pipelined interface, writes only become effective after explicit commit
 --
@@ -56,6 +57,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2025-2025 The PoC-Library Authors
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -78,41 +80,40 @@ use     IEEE.numeric_std.all;
 
 use     work.config.all;
 use     work.utils.all;
+use     work.mem.all;
 use     work.ocram.ocram_sdp;
-
 
 entity fifo_cc_got_tempput is
 	generic (
-		D_BITS         : positive;          -- Data Width
-		MIN_DEPTH      : positive;          -- Minimum FIFO Depth
-		DATA_REG       : boolean := false;  -- Store Data Content in Registers
-		STATE_REG      : boolean := false;  -- Registered Full/Empty Indicators
-		OUTPUT_REG     : boolean := false;  -- Registered FIFO Output
-		ESTATE_WR_BITS : natural := 0;      -- Empty State Bits
-		FSTATE_RD_BITS : natural := 0       -- Full State Bits
+		RAM_TYPE       : T_RAM_TYPE := RAM_TYPE_OPTIMIZED;--RAM_TYPE_AUTO;     
+		D_BITS         : positive;         -- Data Width
+		MIN_DEPTH      : positive;         -- Minimum FIFO Depth
+		DATA_REG       : boolean := false; -- Store Data Content in Registers
+		STATE_REG      : boolean := false; -- Registered Full/Empty Indicators
+		OUTPUT_REG     : boolean := false; -- Registered FIFO Output
+		ESTATE_WR_BITS : natural := 0;     -- Empty State Bits
+		FSTATE_RD_BITS : natural := 0      -- Full State Bits
 	);
 	port (
 		-- Global Reset and Clock
-		rst, clk : in  std_logic;
+		rst, clk : in std_logic;
 
 		-- Writing Interface
-		put       : in  std_logic;                            -- Write Request
-		din       : in  std_logic_vector(D_BITS-1 downto 0);  -- Input Data
+		put       : in std_logic;                             -- Write Request
+		din       : in std_logic_vector(D_BITS - 1 downto 0); -- Input Data
 		full      : out std_logic;
-		estate_wr : out std_logic_vector(imax(0, ESTATE_WR_BITS-1) downto 0);
+		estate_wr : out std_logic_vector(imax(0, ESTATE_WR_BITS - 1) downto 0);
 
-		commit    : in  std_logic;
-		rollback  : in  std_logic;
+		commit   : in std_logic;
+		rollback : in std_logic;
 
 		-- Reading Interface
-		got       : in  std_logic;                            -- Read Completed
-		dout      : out std_logic_vector(D_BITS-1 downto 0);  -- Output Data
+		got       : in std_logic;                              -- Read Completed
+		dout      : out std_logic_vector(D_BITS - 1 downto 0); -- Output Data
 		valid     : out std_logic;
-		fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS-1) downto 0)
+		fstate_rd : out std_logic_vector(imax(0, FSTATE_RD_BITS - 1) downto 0)
 	);
-end entity fifo_cc_got_tempput;
-
-
+end entity;
 architecture rtl of fifo_cc_got_tempput is
 
 	-- Address Width
@@ -125,25 +126,25 @@ architecture rtl of fifo_cc_got_tempput is
 	-- Memory Pointers
 
 	-- Actual Input and Output Pointers
-	signal IP0 : unsigned(A_BITS-1 downto 0) := (others => '0');
-	signal OP0 : unsigned(A_BITS-1 downto 0) := (others => '0');
+	signal IP0 : unsigned(A_BITS - 1 downto 0) := (others => '0');
+	signal OP0 : unsigned(A_BITS - 1 downto 0) := (others => '0');
 
 	-- Incremented Input and Output Pointers
-	signal IP1 : unsigned(A_BITS-1 downto 0);
-	signal OP1 : unsigned(A_BITS-1 downto 0);
+	signal IP1 : unsigned(A_BITS - 1 downto 0);
+	signal OP1 : unsigned(A_BITS - 1 downto 0);
 
 	-- Committed Write Pointer (Commit Marker)
-	signal IPm : unsigned(A_BITS-1 downto 0) := (others => '0');
+	signal IPm : unsigned(A_BITS - 1 downto 0) := (others => '0');
 
 	-----------------------------------------------------------------------------
 	-- Backing Memory Connectivity
 
 	-- Write Port
-	signal wa : unsigned(A_BITS-1 downto 0);
+	signal wa : unsigned(A_BITS - 1 downto 0);
 	signal we : std_logic;
 
 	-- Read Port
-	signal ra : unsigned(A_BITS-1 downto 0);
+	signal ra : unsigned(A_BITS - 1 downto 0);
 	signal re : std_logic;
 
 	-- Internal full and empty indicators
@@ -154,38 +155,40 @@ begin
 
 	-----------------------------------------------------------------------------
 	-- Pointer Logic
-	blkPointer : block
-		signal IP0_slv    : std_logic_vector(IP0'range);
-		signal IP1_slv    : std_logic_vector(IP0'range);
-		signal OP0_slv    : std_logic_vector(IP0'range);
-		signal OP1_slv    : std_logic_vector(IP0'range);
+	blkPointer     : block
+		signal IP0_slv : std_logic_vector(IP0'range);
+		signal IP1_slv : std_logic_vector(IP0'range);
+		signal OP0_slv : std_logic_vector(IP0'range);
+		signal OP1_slv : std_logic_vector(IP0'range);
 	begin
-		IP0_slv  <= std_logic_vector(IP0);
-		OP0_slv  <= std_logic_vector(OP0);
+		IP0_slv <= std_logic_vector(IP0);
+		OP0_slv <= std_logic_vector(OP0);
 
-		incIP: entity work.arith_carrychain_inc
-			generic map (
-				BITS    => A_BITS
+		incIP : entity work.arith_carrychain_inc
+			generic map(
+				BITS => A_BITS
 			)
-			port map (
-				X        => IP0_slv,
-				Y        => IP1_slv
+			port map
+			(
+				X => IP0_slv,
+				Y => IP1_slv
 			);
 
-		incOP: entity work.arith_carrychain_inc
-			generic map (
-				BITS    => A_BITS
+		incOP : entity work.arith_carrychain_inc
+			generic map(
+				BITS => A_BITS
 			)
-			port map (
-				X        => OP0_slv,
-				Y        => OP1_slv
+			port map
+			(
+				X => OP0_slv,
+				Y => OP1_slv
 			);
 
-		IP1      <= unsigned(IP1_slv);
-		OP1      <= unsigned(OP1_slv);
+		IP1 <= unsigned(IP1_slv);
+		OP1 <= unsigned(OP1_slv);
 	end block;
 
-	process(clk)
+	process (clk)
 	begin
 		if rising_edge(clk) then
 			if rst = '1' then
@@ -221,19 +224,19 @@ begin
 	ra <= OP0;
 
 	-- Fill State Computation (soft indicators)
-	process(fulli, IP0, IPm, OP0)
-		variable  d : std_logic_vector(A_BITS-1 downto 0);
+	process (fulli, IP0, IPm, OP0)
+		variable d : std_logic_vector(A_BITS - 1 downto 0);
 	begin
 
 		-- Available Space
 		if ESTATE_WR_BITS > 0 then
 			-- Compute Pointer Difference
 			if fulli = '1' then
-				d := (others => '1');              -- true number minus one when full
+				d := (others => '1'); -- true number minus one when full
 			else
-				d := std_logic_vector(IP0 - OP0);  -- true number of valid entries
+				d := std_logic_vector(IP0 - OP0); -- true number of valid entries
 			end if;
-			estate_wr <= not d(d'left downto d'left-ESTATE_WR_BITS+1);
+			estate_wr <= not d(d'left downto d'left - ESTATE_WR_BITS + 1);
 		else
 			estate_wr <= (others => 'X');
 		end if;
@@ -242,11 +245,11 @@ begin
 		if FSTATE_RD_BITS > 0 then
 			-- Compute Pointer Difference
 			if fulli = '1' then
-				d := (others => '1');              -- true number minus one when full
+				d := (others => '1'); -- true number minus one when full
 			else
-				d := std_logic_vector(IPm - OP0);  -- true number of valid entries
+				d := std_logic_vector(IPm - OP0); -- true number of valid entries
 			end if;
-			fstate_rd <= d(d'left downto d'left-FSTATE_RD_BITS+1);
+			fstate_rd <= d(d'left downto d'left - FSTATE_RD_BITS + 1);
 		else
 			fstate_rd <= (others => 'X');
 		end if;
@@ -259,12 +262,12 @@ begin
 	-- The STATE_REG generic is ignored as two different comparators are
 	-- needed to compare OP with IPm (empty) and IP with OP (full) anyways.
 	-- So the register implementation is always used.
-	blkState: block
+	blkState   : block
 		signal Ful : std_logic := '0';
 		signal Pnd : std_logic := '0';
 		signal Avl : std_logic := '0';
 	begin
-		process(clk)
+		process (clk)
 		begin
 			if rising_edge(clk) then
 				if rst = '1' then
@@ -309,35 +312,37 @@ begin
 	we   <= put and not fulli;
 
 	-- Backing Memory and Read Interface => Output
-	genLarge: if not DATA_REG generate
-		signal do : std_logic_vector(D_BITS-1 downto 0);
+	genLarge : if not DATA_REG generate
+		signal do : std_logic_vector(D_BITS - 1 downto 0);
 	begin
 
 		-- Backing Memory
-		ram: entity work.ocram_sdp
-			generic map (
-				A_BITS => A_BITS,
-				D_BITS => D_BITS
+		ram : entity work.ocram_sdp_optimized
+			generic map(
+				RAM_TYPE => RAM_TYPE,
+				A_BITS   => A_BITS,
+				D_BITS   => D_BITS
 			)
-			port map (
-				wclk   => clk,
-				rclk   => clk,
-				wce    => '1',
+			port map
+			(
+				wclk => clk,
+				rclk => clk,
+				wce  => '1',
 
-				wa     => wa,
-				we     => we,
-				d      => din,
+				wa => wa,
+				we => we,
+				d  => din,
 
-				ra     => ra,
-				rce    => re,
-				q      => do
+				ra  => ra,
+				rce => re,
+				q   => do
 			);
 
 		-- Read Interface => Output
 		genOutputCmb : if not OUTPUT_REG generate
-			signal Vld : std_logic := '0';      -- valid output of RAM module
+			signal Vld : std_logic := '0'; -- valid output of RAM module
 		begin
-			process(clk)
+			process (clk)
 			begin
 				if rising_edge(clk) then
 					if rst = '1' then
@@ -352,14 +357,14 @@ begin
 			valid <= Vld;
 		end generate genOutputCmb;
 
-		genOutputReg: if OUTPUT_REG generate
+		genOutputReg : if OUTPUT_REG generate
 			-- Extra Buffer Register for Output Data
-			signal Buf : std_logic_vector(D_BITS-1 downto 0) := (others => '-');
-			signal Vld : std_logic_vector(0 to 1)            := (others => '0');
+			signal Buf : std_logic_vector(D_BITS - 1 downto 0) := (others => '-');
+			signal Vld : std_logic_vector(0 to 1)              := (others => '0');
 			-- Vld(0)   -- valid output of RAM module
 			-- Vld(1)   -- valid word in Buf
 		begin
-			process(clk)
+			process (clk)
 			begin
 				if rising_edge(clk) then
 					if rst = '1' then
@@ -381,12 +386,12 @@ begin
 
 	end generate genLarge;
 
-	genSmall: if DATA_REG generate
+	genSmall : if DATA_REG generate
 
 		-- Memory modelled as Array
-		type regfile_t is array(0 to 2**A_BITS-1) of std_logic_vector(D_BITS-1 downto 0);
-		signal regfile : regfile_t;
-		attribute ram_style            : string;  -- XST specific
+		type regfile_t is array(0 to 2 ** A_BITS - 1) of std_logic_vector(D_BITS - 1 downto 0);
+		signal regfile                 : regfile_t;
+		attribute ram_style            : string; -- XST specific
 		attribute ram_style of regfile : signal is "distributed";
 
 		-- Altera Quartus II: Allow automatic RAM type selection.
@@ -397,27 +402,27 @@ begin
 	begin
 
 		-- Memory State
-		process(clk)
+		process (clk)
 		begin
 			if rising_edge(clk) then
 				--synthesis translate_off
 				if SIMULATION and (rst = '1') then
 					regfile <= (others => (others => '-'));
 				else
-				--synthesis translate_on
+					--synthesis translate_on
 					if we = '1' then
 						regfile(to_integer(wa)) <= din;
 					end if;
-				--synthesis translate_off
+					--synthesis translate_off
 				end if;
 				--synthesis translate_on
 			end if;
 		end process;
 
 		-- Memory Output
-		re    <= got and not empti;
-		dout  <= (others => 'X') when Is_X(std_logic_vector(ra)) else
-							regfile(to_integer(ra));
+		re   <= got and not empti;
+		dout <= (others => 'X') when Is_X(std_logic_vector(ra)) else
+			regfile(to_integer(ra));
 		valid <= not empti;
 
 	end generate genSmall;

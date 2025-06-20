@@ -54,8 +54,8 @@ entity AXI4Lite_Register_TestController is
 	);
 	port (
 		-- Global Signal Interface
-		Clk    : in std_logic;
-		nReset : in std_logic;
+		Clock : in std_logic;
+		Reset : in std_logic;
 
 		Irq : in std_logic;
 

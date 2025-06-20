@@ -34,7 +34,7 @@ use     IEEE.std_logic_1164.all;
 use     work.axi4lite.all;
 
 
-entity AXI4Lite_Termination_Master is
+entity AXI4Lite_Termination_Manager is
 	generic (
 		VALUE         : std_logic := '0'
 	);
@@ -45,7 +45,7 @@ entity AXI4Lite_Termination_Master is
 end entity;
 
 
-architecture rtl of AXI4Lite_Termination_Master is
+architecture rtl of AXI4Lite_Termination_Manager is
 	constant AddrBits : natural := AXI4Lite_M2S.AWAddr'length;
 	constant DataBits : natural := AXI4Lite_M2S.WData'length;
 begin

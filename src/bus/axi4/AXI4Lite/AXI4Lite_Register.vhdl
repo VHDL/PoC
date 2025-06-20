@@ -8,7 +8,7 @@
 --                          Asif Iqbal
 --                          Max Kraft-Kugler
 --
--- Entity:				 	AXI4Lite_Register
+-- Entity:                  AXI4Lite_Register
 --
 -- Description:
 -- -------------------------------------
@@ -93,7 +93,7 @@ architecture rtl of AXI4Lite_Register is
 		Name         => "Interrupt_Enable_Register",
 		Address      => INTERRUPT_ENABLE_REGISTER_ADDRESS,
 		RegisterMode => ReadWrite,
-		Init_Value   => (others => '1')
+		Init_Value   => (others => '0')
 	);
 
 	constant Interrupt_Match_Reg        : T_AXI4_Register := to_AXI4_Register(
@@ -499,7 +499,7 @@ begin
 	begin
 		if (rising_edge (Clock)) then
 			idx := lssb_idx_with_loop(hit_r);
-			if  (Reset = '0')  then
+			if  (Reset = '1')  then
 				axi_rdata  <= (others => '0');
 			elsif (slv_reg_rden_re = '1') then
 				-- When there is a valid read address (AXI4Lite_m2s.ARValid) with

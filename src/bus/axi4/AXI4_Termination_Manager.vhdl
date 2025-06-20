@@ -36,7 +36,7 @@ use     IEEE.std_logic_1164.all;
 use     work.axi4_full.all;
 
 
-entity AXI4_Termination_Master is
+entity AXI4_Termination_Manager is
 	generic (
 		VALUE     : std_logic := '0'
 	);
@@ -46,7 +46,7 @@ entity AXI4_Termination_Master is
 	);
 end entity;
 
-architecture rtl of AXI4_Termination_Master is
+architecture rtl of AXI4_Termination_Manager is
 	constant AddrBits : natural := AXI4_M2S.AWAddr'length;
 	constant IDBits   : natural := AXI4_M2S.AWID'length;
 	constant UserBits : natural := AXI4_M2S.AWUser'length;

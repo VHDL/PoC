@@ -38,7 +38,7 @@ architecture RandomReadWrite of AXI4Lite_Register_TestController is
 	signal TestDone   : integer_barrier := 1;
 	signal ConfigDone : integer_barrier := 1;
 
-	shared variable IndexValue : integer := 0;
+	signal IndexValue : integer := 0;
 	shared variable SB         : osvvm.ScoreboardPkg_slv.ScoreboardPType;
 
 begin
@@ -51,15 +51,15 @@ begin
 	begin
 		-- Initialization of test
 		SetAlertLogName("TC_RandomReadWrite");
-		SetLogEnable(PASSED, TRUE); -- Enable PASSED logs
-		SetLogEnable(INFO, TRUE);   -- Enable INFO logs
+		SetLogEnable(PASSED, False); -- Enable PASSED logs
+		SetLogEnable(INFO, False);   -- Enable INFO logs
 
 		-- Wait for testbench initialization
 		wait for 0 ns;
 		SetTranscriptMirror(TRUE);
 
 		-- Wait for Design Reset
-		wait until nReset = '1';
+		wait until Reset = '0';
 		ClearAlerts;
 
 		-- Wait for test to finish
@@ -80,15 +80,17 @@ begin
 
 	begin
 		RV.InitSeed(RV'instance_name);
-		wait until nReset = '1';
+		wait until Reset = '0';
+
+		wait for 100 ns;
 
 		for I in 0 to number - 1 loop
-			IndexValue := RV.RandInt(0, 0);
+			IndexValue <= RV.RandInt(0, 0);
 			value      := RV.RandSlv(0, 255, 32);
-			wait until rising_edge (Clk);
+			wait until rising_edge (Clock);
 			SB.Push("IRQ(" & integer'image(IndexValue) & ")", value);
 			WritePort (get_index("IRQ(" & integer'image(IndexValue) & ")", config)) <= value;
-			wait until rising_edge (Clk);
+			wait until rising_edge (Clock);
 			WritePort (get_index("IRQ(" & integer'image(IndexValue) & ")", config)) <= (others => '0');
 		end loop;
 
@@ -105,13 +107,16 @@ begin
 		variable Addr : std_logic_vector(AXI_DATA_WIDTH - 1 downto 0) := (others => '0');
 
 	begin
-		wait until nReset = '1';
+		wait until Reset = '0';
+		wait for 20 ns;
+		
+		Write(AxiMasterTransRec, x"0000_0864", x"FFFF_FFFF");
 
 		wait until Irq = '1';
 
 		--			WaitForBarrier(ConfigDone) ;
 
-		wait until rising_edge (Clk);
+		wait until rising_edge (Clock);
 		Write(AxiMasterTransRec, x"0000_0010", x"FFFF_FFFF");
 
 		Read(AxiMasterTransRec, x"0000_0868", data);

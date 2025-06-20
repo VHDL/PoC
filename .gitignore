@@ -29,10 +29,7 @@ docs/_build/
 .pyIPCMI/Wrapper/Hooks/*
 !.pyIPCMI/Wrapper/Hooks/README.md
 temp/*
-!temp/.*
-!temp/*.*
-temp/precompiled/*
-!temp/precompiled/.*
+!temp/README.md
 
 # ignore private files from pyIPCMI
 .pyIPCMI/config.private.ini
@@ -60,44 +57,6 @@ tb/common/my_project.vhdl
 /prj/QuestaSim/*.*
 /prj/QuestaSim/**/*.*
 !/prj/QuestaSim/PoC.mpf
-
-# ignore Lattice Diamond files
-other/diamond/._Real_._Math_.vhd
-other/diamond/.spread_sheet.ini
-other/diamond/.spreadsheet_view.ini
-/other/diamond/*/**/*
-/other/diamond/*.xml
-/other/diamond/*.html
-!/other/diamond/*/**/*.lpf
-!/other/diamond/*/**/*.ldc
-!/other/diamond/*/**/*.vhdl
-
-# ignore Xilinx ISE files
-/other/ise/**/*.*
-/other/ise/**/ise
-!/other/ise/**/*.xise
-!/other/ise/**/*.xpr
-!/other/ise/**/iseconfig/filter.filter
-!/other/ise/**/*.qpf
-!/other/ise/**/*.qsf
-
-# ignore Quartus files
-/other/quartus/**/*.*
-/other/quartus/**/db/
-/other/quartus/**/incremental_db/
-/other/quartus/**/output_files/
-/other/quartus/**/simulation/
-/other/quartus/**/greybox_tmp/
-!/other/quartus/**/*.qpf
-!/other/quartus/**/*.qsf
-!/other/quartus/**/*.vhdl
-
-#ignore Vivado files
-/other/vivado/**/*.cache
-/other/vivado/**/*.hw
-/other/vivado/**/*.runs
-/other/vivado/**/*.sim
-/other/vivado/**/*.ip_user_files
 
 # general whitelist
 !.git*

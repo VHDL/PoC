@@ -250,7 +250,7 @@ begin
 			Stage : entity work.fifo_stage
 			generic map(
 				D_BITS          => BIT_VEC(i),
-				STAGES          => STAGES +1,
+				STAGES          => TRANSACTIONS +1,
 				LIGHT_WEIGHT    => true
 			)
 			port map(

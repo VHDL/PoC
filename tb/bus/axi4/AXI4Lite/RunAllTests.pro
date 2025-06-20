@@ -1,6 +1,7 @@
 # =============================================================================
 # Authors:
-#	Adrian Weiland
+#	Iqbal Asif (PLC2 Design GmbH)
+#	Patrick Lehmann (PLC2 Design GmbH)
 #
 # License:
 # =============================================================================
@@ -9,6 +10,9 @@
 # Proprietary and confidential
 # =============================================================================
 
-analyze bus_Arbiter.vhdl
-include ./stream/stream.pro
-include ./axi4/axi4.pro
+# TestSuite PoC.bus.axi4.axi4Lite
+# Deactivated to avoid failure on non-existing testcases
+
+library tb_axi4Lite
+
+include ./AXI4Lite_Register/RunAllTests.pro
