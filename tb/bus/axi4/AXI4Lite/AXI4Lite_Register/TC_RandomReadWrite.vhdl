@@ -67,9 +67,7 @@ begin
 		AlertIf(now >= Timeout, "Test finished due to timeout");
 		--    AlertIf(GetAffirmCount < 100, "Test is not Self-Checking");
 
-		print("");
-		ReportAlerts;
-		print("");
+		EndOfTestReports(ReportAll => TRUE);
 		std.env.stop;
 		wait;
 	end process ControlProc;
@@ -109,7 +107,7 @@ begin
 	begin
 		wait until Reset = '0';
 		wait for 20 ns;
-		
+
 		Write(AxiMasterTransRec, x"0000_0864", x"FFFF_FFFF");
 
 		wait until Irq = '1';
