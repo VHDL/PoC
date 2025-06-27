@@ -17,9 +17,6 @@ architecture ReadWrite of AXI4Lite_Register_TestController is
 	constant number : positive := 7;
 	constant TCID      : AlertLogIDType :=  NewID("TestCtrl");
 
-	shared variable IndexValue : integer := 0;
-	shared variable SB  : osvvm.ScoreboardPkg_slv.ScoreboardPType ;
-
 begin
 
   ------------------------------------------------------------
