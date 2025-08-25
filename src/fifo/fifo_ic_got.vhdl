@@ -5,6 +5,7 @@
 -- Authors:         Thomas B. Preusser
 --                  Steffen Koehler
 --                  Martin Zabel
+--                  Stefan Unrein
 --
 -- Entity:          FIFO, independent clocks (ic), first-word-fall-through mode
 --
@@ -49,7 +50,8 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+-- Copyright 2015-2025 The PoC-Library Authors
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,7 +62,7 @@
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- =============================================================================
@@ -109,20 +111,19 @@ architecture rtl of fifo_ic_got is
   constant AN     : positive := A_BITS + 1;
 
   -- Registers, clk_wr domain
-  signal IP1 : std_logic_vector(AN-1 downto 0);                     -- IP + 1
-  signal IP0 : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Write Pointer IP
-  signal IPz : std_logic_vector(AN-1 downto 0) := (others => '0');  -- IP delayed by one clock
-  signal OPs : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Sync stage: OP0 -> OPc
-  signal OPc : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Copy of OP
-  signal Ful : std_logic                       := '0';              -- RAM full
+  signal IP1   : std_logic_vector(AN-1 downto 0);                     -- IP + 1
+  signal IP0   : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Write Pointer IP
+  signal IP0_d : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Write Pointer IP delayed
+  signal OPc   : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Copy of OP
+  signal Ful   : std_logic                       := '0';              -- RAM full
 
   -- Registers, clk_rd domain
-  signal OP1 : std_logic_vector(AN-1 downto 0);                     -- OP + 1
-  signal OP0 : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Read Pointer OP
-  signal IPs : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Sync stage: IPz -> IPc
-  signal IPc : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Copy of IP
-  signal Avl : std_logic                       := '0';              -- RAM Data available
-  signal Vld : std_logic                       := '0';              -- Output Valid
+  signal OP1   : std_logic_vector(AN-1 downto 0);                     -- OP + 1
+  signal OP0   : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Read Pointer OP
+  signal OP0_d : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Read Pointer OP delayed
+  signal IPc   : std_logic_vector(AN-1 downto 0) := (others => '0');  -- Copy of IP
+  signal Avl   : std_logic                       := '0';              -- RAM Data available
+  signal Vld   : std_logic                       := '0';              -- Output Valid
 
   -- Memory Connectivity
   signal wa   : unsigned(A_BITS-1 downto 0);
@@ -162,14 +163,8 @@ begin
     if rising_edge(clk_wr) then
       if rst_wr = '1' then
         IP0 <= (others => '0');
-        IPz <= (others => '0');
-        OPs <= (others => '0');
-        OPc <= (others => '0');
         Ful <= '0';
       else
-        IPz <= IP0;
-        OPs <= OP0;
-        OPc <= OPs;
         if puti = '1' then
           IP0 <= IP1;
           if IP1(A_BITS-1 downto 0) = OPc(A_BITS-1 downto 0) then
@@ -193,6 +188,21 @@ begin
 
   di <= din;
   wa <= unsigned(IP0(A_BITS-1 downto 0));
+
+  -- write pointer needs to be delayed by one CC to asure that data
+  -- is fully stored before giving it free to the other side.
+  -- Problem when clk_rd > 2* clk_wr
+  IP0_d <= IP0 when rising_edge(clk_wr);
+  Read_pointer_sync : entity work.sync_Bits
+  generic map(
+    BITS            => AN,
+    REGISTER_OUTPUT => false
+  )
+  port map(
+    Clock         => clk_rd,
+    Input         => IP0_d,
+    Output        => IPc
+  );
 
   -----------------------------------------------------------------------------
   -- Read clock domain
@@ -218,13 +228,9 @@ begin
     if rising_edge(clk_rd) then
       if rst_rd = '1' then
         OP0 <= (others => '0');
-        IPs <= (others => '0');
-        IPc <= (others => '0');
         Avl <= '0';
         Vld <= '0';
       else
-        IPs <= IPz;
-        IPc <= IPs;
         if geti = '1' then
           OP0 <= OP1;
           if OP1(A_BITS-1 downto 0) = IPc(A_BITS-1 downto 0) then
@@ -250,6 +256,21 @@ begin
   end process;
   geti <= (not Vld or goti) and Avl;
   ra   <= unsigned(OP0(A_BITS-1 downto 0));
+
+  -- read pointer needs to be delayed by one CC to asure that data
+  -- is read out before giving it free to the other side
+  -- Problem when clk_wr > 2* clk_rd
+  OP0_d <= OP0 when rising_edge(clk_rd);
+  Write_pointer_sync : entity work.sync_Bits
+  generic map(
+    BITS            => AN,
+    REGISTER_OUTPUT => false
+  )
+  port map(
+    Clock         => clk_wr,
+    Input         => OP0_d,
+    Output        => OPc
+  );
 
   -----------------------------------------------------------------------------
   -- Add register to data output
@@ -314,7 +335,7 @@ begin
   -- Memory Instantiation
   -----------------------------------------------------------------------------
   gLarge: if not DATA_REG generate
-    ram: entity work.ocram_sdp
+    ram : entity work.ocram_sdp
       generic map (
         A_BITS => A_BITS,
         D_BITS => D_BITS
