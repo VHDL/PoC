@@ -63,7 +63,7 @@ package components is
 	function upcounter_next(   cnt : unsigned;   rst : std_logic := '0'; en : std_logic := '1'; constant INIT : natural := 0)     return unsigned;
 	function upcounter_equal(  cnt : unsigned; value : natural) return std_logic;
 	function downcounter_next( cnt : signed;    init : unsigned;        rst : std_logic := '0';            en : std_logic := '1') return signed;
-	function downcounter_next( cnt : signed;     rst : std_logic := '0'; en : std_logic := '1'; constant INIT : integer := 0)     return signed;
+	function downcounter_next( cnt : signed;     rst : std_logic := '0'; en : std_logic := '1'; constant INIT : natural := 0)     return signed;
 	function downcounter_equal(cnt : signed;   value : integer) return std_logic;
 	function downcounter_neg(  cnt : signed) return std_logic;
 
@@ -208,8 +208,12 @@ package body components is
 		end if;
 	end function;
 
-	function downcounter_next(cnt : signed; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : integer := 0) return signed is
+	function downcounter_next(cnt : signed; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : natural := 0) return signed is
 	begin
+		if INIT > 0 then
+			assert (log2ceil(INIT) +1) <= (cnt'length -1) report "PoC.components.downcounter_next: INIT overflows the counter sizes!" severity failure;
+		end if;
+
 		if (rst = '1') then
 			return to_signed(INIT, cnt'length);
 		elsif (en = '1') then
