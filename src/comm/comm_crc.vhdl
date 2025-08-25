@@ -2,10 +2,12 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Thomas B. Preusser
---									Patrick Lehmann
+-- Authors:         Thomas B. Preusser
+--                  Patrick Lehmann
+--                  Matthias Sund
+--                  Stefan Unrein
 --
--- Entity:					Computes the Cyclic Redundancy Check (CRC)
+-- Entity:          Computes the Cyclic Redundancy Check (CRC)
 --
 -- Description:
 -- -------------------------------------
@@ -17,16 +19,21 @@
 -- message bits per step. The generated CRC is independent from the chosen
 -- processing width.
 --
+-- With Chunk-Enable you can enable chunks for calculation. Usually used as
+-- Byte-Enables if streamed packets are not multiple of CRC-Size or interface
+-- width. Using Chunk-Enables has a significant performance hit, use only if
+-- necessary.
+--
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,7 +42,7 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	IEEE;
+library IEEE;
 use     IEEE.std_logic_1164.all;
 
 use     work.utils.all;
@@ -43,64 +50,82 @@ use     work.utils.all;
 
 entity comm_crc is
 	generic (
-		GEN		: bit_vector;		 															-- Generator Polynomial
-		BITS	: positive;			 															-- Number of Bits to be processed in parallel
+		GEN         : bit_vector;                       -- Generator Polynomial
+		BITS        : positive;                         -- Number of Bits to be processed in parallel
+		CHUNK_BITS  : positive := BITS;                 -- Bus width for 'en' port
 
-		STARTUP_RMD : std_logic_vector	:= "0";
-		OUTPUT_REGS : boolean						:= true
+		STARTUP_RMD : std_logic_vector  := "0";
+		OUTPUT_REGS : boolean            := true
 	);
 	port (
-		clk	: in	std_logic;																-- Clock
+		clk  : in  std_logic;                                -- Clock
 
-		set	: in	std_logic;																-- Parallel Preload of Remainder
-		init : in	std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	--
-		step : in	std_logic;																-- Process Input Data (MSB first)
-		din	: in	std_logic_vector(BITS-1 downto 0);				--
+		set  : in  std_logic;                                -- Parallel Preload of Remainder
+		init : in  std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);  --
+		step : in  std_logic;                                -- Process Input Data (MSB first)
+		cen  : in  std_logic_vector(CHUNK_BITS-1 downto 0) := (CHUNK_BITS-1 downto 0 => '1'); -- Chunck Enable
+		din  : in  std_logic_vector(BITS-1 downto 0);
 
-		rmd	: out std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0);	-- Remainder
-		zero : out std_logic																-- Remainder is Zero
+		rmd  : out std_logic_vector(abs(mssb_idx(GEN)-GEN'right)-1 downto 0); -- Remainder
+		zero : out std_logic                                                  -- Remainder is Zero
 	);
-end entity comm_crc;
+end entity;
 
 
 architecture rtl of comm_crc is
 
 	-----------------------------------------------------------------------------
 	-- Normalizes the generator representation:
-	--	 - into a 'downto 0' index range and
-	--	 - truncating it just below the most significant and so hidden '1'.
+	--   - into a 'downto 0' index range and
+	--   - truncating it just below the most significant and so hidden '1'.
 	function normalize(G : bit_vector) return bit_vector is
 		variable GN : bit_vector(G'length-1 downto 0);
 	begin
 		GN := G;
 		for i in GN'left downto 1 loop
 			if GN(i) = '1' then
-				return	GN(i-1 downto 0);
+				return  GN(i-1 downto 0);
 			end if;
 		end loop;
 		report "Cannot use absolute constant as generator."
 			severity failure;
-		return	GN;
+		return  GN;
 	end normalize;
+
+	function dcr_check(data_bits:positive; chunk_bits:positive) return positive is
+	begin
+		assert data_bits >= chunk_bits
+			report "Generic 'BITS' must be greater or equal to generic 'CHUNK_BITS'."
+			severity failure;
+		assert data_bits mod chunk_bits = 0
+			report "Generic 'BITS' must be an integer multiple of generic 'CHUNK_BITS'."
+			severity failure;
+		return data_bits / chunk_bits;
+	end dcr_check;
 
 	-- Normalized Generator
 	constant GN : std_logic_vector := to_stdlogicvector(normalize(GEN));
 
+	-- data-chunk lengths ratio
+	constant DCR : positive := dcr_check(BITS, CHUNK_BITS);
+
 	-- LFSR Value
 	signal lfsr : std_logic_vector(GN'range) := resize(descend(STARTUP_RMD), GN'length);
-	signal lfsn : std_logic_vector(GN'range);	-- Next Value
-	signal lfso : std_logic_vector(GN'range);	-- Output
+	signal lfsn : std_logic_vector(GN'range);  -- Next Value
+	signal lfso : std_logic_vector(GN'range);  -- Output
 
 begin
 
 	-- Compute next combinational Value
-	process(lfsr, din)
+	process(lfsr, din, cen)
 		variable v : std_logic_vector(lfsr'range);
 	begin
 		v := lfsr;
 		for i in BITS-1 downto 0 loop
-			v := (v(v'left-1 downto 0) & '0') xor
-					 (GN and (GN'range => (din(i) xor v(v'left))));
+			if cen(i/DCR) = '1' then
+				v := (v(v'left-1 downto 0) & '0') xor
+						(GN and (GN'range => (din(i) xor v(v'left))));
+			end if;
 		end loop;
 		lfsn <= v;
 	end process;
@@ -119,7 +144,7 @@ begin
 
 	-- Provide Outputs
 	lfso <= lfsr when OUTPUT_REGS else lfsn;
-	rmd	<= lfso;
+	rmd  <= lfso;
 	zero <= '1' when lfso = (lfso'range => '0') else '0';
 
 end architecture;
