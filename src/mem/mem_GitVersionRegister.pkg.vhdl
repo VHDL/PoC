@@ -96,10 +96,16 @@ package mem_GitVersionRegister is
 		User_ID                : std_logic_vector(95 downto 0);
 	end record;
 
+	constant C_Version_Register_UID_INIT : T_Version_Register_UID := (
+		UID        => (others => '0'),
+		User_eFuse => (others => '0'),
+		User_ID    => (others => '0')
+	);
+
 	constant C_Num_reg_UID_vec : T_NATVEC := (
-		0 => T_Version_Register_UID.UID'length / 32,
-		1 => T_Version_Register_UID.User_eFuse'length / 32,
-		2 => T_Version_Register_UID.User_ID'length / 32
+		0 => C_Version_Register_UID_INIT.UID'length / 32,
+		1 => C_Version_Register_UID_INIT.User_eFuse'length / 32,
+		2 => C_Version_Register_UID_INIT.User_ID'length / 32
 	);
 
 	constant C_Num_Reg_Common : natural := 8;
@@ -127,19 +133,19 @@ package body mem_GitVersionRegister is
 		variable pos  : natural := 0;
 		variable addr : natural := 0;
 	begin
-		temp(pos) := to_AXI4_Register(  Name => "Common.BuildDate",                         Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
+		temp(pos) := to_AXI4_Register(Name => "Common.BuildDate",                         Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
 		addr := addr +4; pos := pos +1;
-		temp(pos) := to_AXI4_Register(  Name => "Common.NumberModule_VersionOfVersionReg",  Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
+		temp(pos) := to_AXI4_Register(Name => "Common.NumberModule_VersionOfVersionReg",  Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
 		addr := addr +4; pos := pos +1;
-		temp(pos) := to_AXI4_Register(  Name => "Common.VivadoVersion",                     Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
+		temp(pos) := to_AXI4_Register(Name => "Common.VivadoVersion",                     Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
 		addr := addr +4; pos := pos +1;
 		for i in 0 to 4 loop
-			temp(pos) := to_AXI4_Register(Name => "Common.ProjektName(" & integer'image(i) & ")" , Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
+			temp(pos) := to_AXI4_Register(Name => "Common.ProjektName(" & integer'image(i) & ")", Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
 			addr := addr +4; pos := pos +1;
 		end loop;
 
 
-		temp(pos) := to_AXI4_Register(Name => "Top.Version",  Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
+		temp(pos) := to_AXI4_Register(Name => "Top.Version", Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
 		addr := addr +4; pos := pos +1;
 		for i in 0 to 4 loop
 			temp(pos) := to_AXI4_Register(Name => "Top.GitHash(" & integer'image(i) & ")" ,   Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
@@ -178,7 +184,8 @@ package body mem_GitVersionRegister is
 	begin
 		for i in descriptor'range loop
 			descriptor(i) := to_AXI4_Register(
-				Address => to_unsigned(i *4,Address_Width),
+				Name         => "Dummy(" & integer'image(i) & ")",
+				Address      => to_unsigned(i *4,Address_Width),
 				RegisterMode => ReadOnly_NotRegistered);
 		end loop;
 		return descriptor;
@@ -241,10 +248,10 @@ package body mem_GitVersionRegister is
 		variable HW_BUILD_VERSION_COMMON : T_Version_Register_Common;
 		variable HW_BUILD_VERSION_TOP    : T_Version_Register_Top;
 
-		file     FileHandle    : TEXT open READ_MODE is FileName;
+		file     FileHandle   : TEXT open READ_MODE is FileName;
 		variable CurrentLine  : LINE;
-		variable TempWord      : string(1 to 3);
-		variable Good          : boolean;
+		variable TempWord     : string(1 to 3);
+		variable Good         : boolean;
 		variable Len          : natural;
 
 		constant Init         : string(1 to 128) := (others => NUL);
