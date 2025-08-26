@@ -10,7 +10,6 @@
 -- Description:
 -- -------------------------------------
 --    This package declares types and components for
---      - Xilinx ChipScope Pro IPCores (ICON, ILA, VIO)
 --      - Xilinx Dynamic Reconfiguration Port (DRP) related types
 --      - SystemMonitor for FPGA core temperature measurement and fan control
 --        (see PoC.io.FanControl)
@@ -117,15 +116,6 @@ package xil is
 	function get_DNABITS return natural;
 
 ------------COMPONENTS---------------------------
-	component xil_ChipScopeICON is
-		generic (
-		  PORTS : positive
-		);
-		port (
-		  ControlBus : inout  T_XIL_CHIPSCOPE_CONTROL_VECTOR(PORTS - 1 downto 0)
-		);
-	end component;
-
 	component xil_SystemMonitor is
 		port (
 			Reset          : in  std_logic;  -- Reset signal for the System Monitor control logic
@@ -151,5 +141,5 @@ package body xil is
 			when others => return 0;
 		end case;
 	end function;
-	
+
 end package body;
