@@ -63,9 +63,9 @@ entity arith_scaler is
 		dsel  : in  std_logic_vector(log2ceil(DIVS'length)-1 downto 0) := (others => '0');
 
 		done  : out std_logic;          -- Completion
-		res    : out std_logic_vector   -- Result
+		res   : out std_logic_vector    -- Result
 	);
-end entity arith_scaler;
+end entity;
 
 architecture rtl of arith_scaler is
 
@@ -75,15 +75,14 @@ architecture rtl of arith_scaler is
 	constant R : positive := log2ceil(imax(DIVS)+1);
 
 	-- Division Properties
-	type tDivProps is
-		record  -- Properties of the operation for a divisor
+	type tDivProps is record  -- Properties of the operation for a divisor
 			steps : T_POSVEC(DIVS'range);  -- Steps to perform
 			align : T_POSVEC(DIVS'range);  -- Left-aligned divisor
-		end record;
+	end record;
 
 	function computeProps return tDivProps is
-		variable  res       : tDivProps;
-		variable  min_steps : positive;
+		variable res       : tDivProps;
+		variable min_steps : positive;
 	begin
 		for i in DIVS'range loop
 			res.steps(i) := N+X - log2ceil(DIVS(i)+1) + 1;
@@ -103,6 +102,7 @@ architecture rtl of arith_scaler is
 
 	subtype tResMask  is std_logic_vector(MAX_DIV_STEPS-1 downto 0);
 	type    tResMasks is array(natural range<>) of tResMask;
+
 	function computeMasks return tResMasks is
 		variable res : tResMasks(DIVS'range);
 	begin
@@ -112,6 +112,7 @@ architecture rtl of arith_scaler is
 		end loop;
 		return res;
 	end computeMasks;
+
 	constant RES_MASKS : tResMasks(DIVS'range) := computeMasks;
 
 	-- Values computed for the selected multiplier/divisor pair.
@@ -134,22 +135,23 @@ begin
 		begin
 			if rising_edge(clk) then
 				if rst = '1' then
-					MS <= (others => '-');
+					MS <= (others => '0');
 				elsif start = '1' then
 					MS <= unsigned(msel);
 				end if;
 			end if;
 		end process;
-		multiplier <= (others => 'X') when Is_X(std_logic_vector(MS)) else
-									to_unsigned(MULS(to_integer(MS)), multiplier'length);
+
+		multiplier <= (others => 'X') when Is_X(std_logic_vector(MS)) else to_unsigned(MULS(to_integer(MS)), multiplier'length);
 	end generate genMultiMul;
+
 	genSingleMul: if MULS'length = 1 generate
 		multiplier <= to_unsigned(MULS(0), multiplier'length);
 	end generate genSingleMul;
 
 	-- Selection of Divisor
 	genMultiDiv: if DIVS'length > 1 generate
-		signal DS : unsigned(dsel'range) := (others => '-');
+		signal DS : unsigned(dsel'range) := (others => '0');
 	begin
 		process(clk)
 		begin
@@ -161,15 +163,13 @@ begin
 				end if;
 			end if;
 		end process;
-		muloffset <= (others => 'X') when Is_X(dsel) else
-								to_unsigned(DIVS(to_integer(unsigned(dsel)))/2, muloffset'length);
-		divisor   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
-								to_unsigned(DIV_PROPS.align(to_integer(DS)), divisor'length);
-		divcini   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
-								to_unsigned(DIV_PROPS.steps(to_integer(DS))-1, divcini'length);
-		divmask   <= (others => 'X') when Is_X(std_logic_vector(DS)) else
-								RES_MASKS(to_integer(DS));
+
+		muloffset <= (others => 'X') when Is_X(dsel)                 else to_unsigned(DIVS(to_integer(unsigned(dsel)))/2, muloffset'length);
+		divisor   <= (others => 'X') when Is_X(std_logic_vector(DS)) else to_unsigned(DIV_PROPS.align(to_integer(DS)), divisor'length);
+		divcini   <= (others => 'X') when Is_X(std_logic_vector(DS)) else to_unsigned(DIV_PROPS.steps(to_integer(DS))-1, divcini'length);
+		divmask   <= (others => 'X') when Is_X(std_logic_vector(DS)) else RES_MASKS(to_integer(DS));
 	end generate genMultiDiv;
+
 	genSingleDiv: if DIVS'length = 1 generate
 		muloffset <= to_unsigned(DIVS(0)/2, muloffset'length);
 		divisor   <= to_unsigned(DIV_PROPS.align(0), divisor'length);
@@ -180,8 +180,8 @@ begin
 	-----------------------------------------------------------------------------
 	-- Implementation of Scaling Operation
 	blkMain : block
-		signal C : unsigned(1+log2ceil(MAX_ANY_STEPS) downto 0) := ('0', others => '-');
-		signal Q : unsigned(X+N                       downto 0) := (others      => '-');
+		signal C : unsigned(1+log2ceil(MAX_ANY_STEPS) downto 0) := (others => '0');
+		signal Q : unsigned(                     X+N  downto 0) := (others => '0');
 	begin
 		process(clk)
 			variable cnxt : unsigned(C'range);
@@ -189,8 +189,8 @@ begin
 		begin
 			if rising_edge(clk) then
 				if rst = '1' then
-					C <= ('0', others => '-');
-					Q <= (others      => '-');
+					C <= (others => '0');
+					Q <= (others => '0');
 				else
 					if start = '1' then
 						C <= "11" & to_unsigned(MAX_MUL_STEPS-1, C'length-2);
@@ -213,6 +213,7 @@ begin
 							-- DIV Phase
 							d := Q(Q'left downto Q'left-R) - divisor;
 							Q <= Q(Q'left-1 downto 0) & not d(d'left);
+
 							if d(d'left) = '0' then
 								Q(Q'left downto Q'left-R+1) <= d(d'left-1 downto 0);
 							end if;
@@ -223,16 +224,17 @@ begin
 				end if;
 			end if;
 		end process;
+
 		done <= not C(C'left);
+
 		process(Q, divmask)
 			variable r : std_logic_vector(res'length-1 downto 0);
 		begin
-			r   := (others => '0');
-			r(imin(r'left, tResMask'left) downto 0) :=
-				std_logic_vector(Q(imin(r'left, tResMask'left) downto 0)) and
-				divmask(imin(r'left, tResMask'left) downto 0);
+			r := (others => '0');
+			r(imin(r'left, tResMask'left) downto 0) := std_logic_vector(Q(imin(r'left, tResMask'left) downto 0)) and divmask(imin(r'left, tResMask'left) downto 0);
 			res <= r;
 		end process;
+
 	end block blkMain;
 
-end rtl;
+end architecture;
