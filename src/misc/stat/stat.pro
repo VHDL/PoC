@@ -1,6 +1,6 @@
 # =============================================================================
 # Authors:
-#	Adrian Weiland, Stefan Unrein
+#   Stefan Unrein
 #
 # License:
 # =============================================================================
@@ -19,7 +19,7 @@
 # limitations under the License.
 # =============================================================================
 
-analyze sort_lru_cache.vhdl
-analyze sort_lru_list.vhdl
-
-include ./sortnet/sortnet.pro
+analyze ./stat_Average.vhdl
+analyze ./stat_Histogram.vhdl
+analyze ./stat_Maximum.vhdl
+analyze ./stat_Minimum.vhdl

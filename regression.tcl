@@ -1,6 +1,6 @@
 # =============================================================================
 # Authors:
-#	Jonas Schreiner
+#   Jonas Schreiner, Stefan Unrein
 #
 # License:
 # =============================================================================
@@ -37,6 +37,11 @@ if {$::osvvm::ToolName eq "GHDL"} {
 if {$::osvvm::ToolName eq "RiveraPRO"} {
     SetExtendedSimulationOptions {-unbounderror}
 }
+
+if {$::osvvm::ToolName eq "NVC"} {
+    SetExtendedAnalyzeOptions {--relaxed}
+}
+
 #set ::osvvm::AnalyzeErrorStopCount 1
 #set ::osvvm::SimulateErrorStopCount 1
 

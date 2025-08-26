@@ -1,6 +1,6 @@
 # =============================================================================
 # Authors:
-#	Adrian Weiland, Stefan Unrein
+#   Adrian Weiland, Jonas Schreiner, Stefan Unrein
 #
 # License:
 # =============================================================================
@@ -19,7 +19,4 @@
 # limitations under the License.
 # =============================================================================
 
-analyze sort_lru_cache.vhdl
-analyze sort_lru_list.vhdl
-
-include ./sortnet/sortnet.pro
+analyze ./sim_VCDParser.vhdl

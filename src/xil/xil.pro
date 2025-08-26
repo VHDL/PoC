@@ -1,6 +1,6 @@
 # =============================================================================
 # Authors:
-#	Adrian Weiland, Stefan Unrein
+#	Adrian Weiland, Jonas Schreiner, Stefan Unrein
 #
 # License:
 # =============================================================================
@@ -19,7 +19,18 @@
 # limitations under the License.
 # =============================================================================
 
-analyze sort_lru_cache.vhdl
-analyze sort_lru_list.vhdl
+analyze ./xil.pkg.vhdl
+if { [info exists ::OMIT_XILINX_FILES] && $::OMIT_XILINX_FILES eq "1"} {
+	puts "Skip xilinx file."
+} else {
+	analyze ./xil_DNAPort.vhdl
+	analyze ./xil_ICAP.vhdl
+	analyze ./reconfig/reconfig_icap_fsm.vhdl
+	analyze ./reconfig/reconfig_icap_wrapper.vhdl
+	analyze ./xil_BSCAN.vhdl
+	analyze ./xil_DNAPort.vhdl
+	analyze ./xil_ICAP.vhdl
+	analyze ./xil_Reconfigurator.vhdl
+	analyze ./xil_SystemMonitor.vhdl
 
-include ./sortnet/sortnet.pro
+}

@@ -1,6 +1,6 @@
 # =============================================================================
 # Authors:
-#	Adrian Weiland, Stefan Unrein
+#   Stefan Unrein
 #
 # License:
 # =============================================================================
@@ -19,7 +19,11 @@
 # limitations under the License.
 # =============================================================================
 
-analyze sort_lru_cache.vhdl
-analyze sort_lru_list.vhdl
-
-include ./sortnet/sortnet.pro
+analyze ./sortnet.pkg.vhdl
+analyze ./sortnet_BitonicSort.vhdl
+analyze ./sortnet_MergeSort_Streamed.vhdl
+analyze ./sortnet_OddEvenMergeSort.vhdl
+analyze ./sortnet_OddEvenSort.vhdl
+analyze ./sortnet_Stream_Adapter.vhdl
+analyze ./sortnet_Stream_Adapter2.vhdl
+analyze ./sortnet_Transform.vhdl
