@@ -54,17 +54,17 @@ use     work.AXI4Lite_Register_pkg.all;
 
 entity AXI4Lite_Register_TestController is
 	generic (
-		CONF : T_AXI4_Register_Vector
+		CONFIG : T_AXI4_Register_Vector
 	);
 	port (
 		-- Global Signal Interface
-		Clk    : in    std_logic ;
-		nReset : out   std_logic ;
+		Clock  : in    std_logic ;
+		Reset  : out   std_logic ;
 
 		Irq : in    std_logic;
 
-		ReadPort  : in   T_SLVV(0 to CONF'Length - 1)(DATA_BITS-1 downto 0);
-		WritePort : out  T_SLVV(0 to CONF'Length - 1)(DATA_BITS-1 downto 0):= (others => (others => '0'));
+		ReadPort  : in   T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
+		WritePort : out  T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0):= (others => (others => '0'));
 
 		-- Transaction Interfaces
 		AxiMasterTransRec         : inout Axi4LiteMasterTransactionRecType

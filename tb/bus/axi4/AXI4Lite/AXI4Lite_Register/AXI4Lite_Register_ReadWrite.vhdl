@@ -38,10 +38,10 @@ architecture ReadWrite of AXI4Lite_Register_TestController is
 
 begin
 
-  ------------------------------------------------------------
-  -- ControlProc
-  --   Set up AlertLog and wait for end of test
-  ------------------------------------------------------------
+	------------------------------------------------------------
+	-- ControlProc
+	--   Set up AlertLog and wait for end of test
+	------------------------------------------------------------
 	ControlProc : process
 		constant ProcID  : AlertLogIDType := NewID("ControlProc", TCID);
 		constant TIMEOUT : time := 10 ms;
@@ -72,12 +72,12 @@ begin
 		) is
 			variable idx : integer;
 		begin
-			idx := get_index(RegName, CONF);
+			idx := get_index(RegName, CONFIG);
 			WriteCheck(AxiMasterTransRec, ReadPort, WritePort, idx, addr, write_val);
 		end procedure;
 
 	begin
-		nReset <= '1';
+		Reset <= '0';
 
 		WaitForClock(AxiMasterTransRec, 2) ;
 
@@ -95,7 +95,7 @@ begin
 		WriteReserved(AxiMasterTransRec, 32x"50");
 
 		WaitForClock(AxiMasterTransRec);
-	    WaitForBarrier(TestDone);
+		WaitForBarrier(TestDone);
 		wait;
 
 	end process;

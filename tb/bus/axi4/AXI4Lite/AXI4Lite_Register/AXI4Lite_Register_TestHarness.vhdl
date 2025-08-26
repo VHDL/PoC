@@ -58,40 +58,40 @@ architecture sim of AXI4Lite_Register_TestHarness is
 	constant tperiod_Clk : time     := 10 ns ;
 	constant tpd         : time     := 2 ns ;
 
-	signal Clk            : std_logic;
-	signal nReset         : std_logic;
+	signal Clock          : std_logic;
+	signal Reset          : std_logic;
 	signal Main_Interrupt : std_logic;
 
 -- Testbench Transaction Interface
 	subtype MasterTransactionRecType is AddressBusTransactionRecType(
-		Address((AXI_ADDR_WIDTH)-1 downto 0),
-		DataToModel((AXI_DATA_WIDTH)-1 downto 0),
-		DataFromModel((AXI_DATA_WIDTH)-1 downto 0)
+		Address((AXI_ADDR_WIDTH) - 1 downto 0),
+		DataToModel((AXI_DATA_WIDTH) - 1 downto 0),
+		DataFromModel((AXI_DATA_WIDTH) - 1 downto 0)
 	);
 
 	signal AxiMasterTransRec : MasterTransactionRecType;
 
 	signal AxiLiteBus : Axi4LiteRecType(
-		WriteAddress( Addr(AXI_ADDR_WIDTH-1 downto 0) ),
-		WriteData( Data(AXI_DATA_WIDTH-1 downto 0),
-		Strb(AXI_STRB_WIDTH-1 downto 0) ),
-		ReadAddress( Addr(AXI_ADDR_WIDTH-1 downto 0) ),
-		ReadData( Data(AXI_DATA_WIDTH-1 downto 0) )
+		WriteAddress(Addr(AXI_ADDR_WIDTH - 1 downto 0)),
+		WriteData(Data(AXI_DATA_WIDTH - 1 downto 0),
+		Strb(AXI_STRB_WIDTH - 1 downto 0)),
+		ReadAddress(Addr(AXI_ADDR_WIDTH - 1 downto 0)),
+		ReadData(Data(AXI_DATA_WIDTH - 1 downto 0))
 	);
 
 	component AXI4Lite_Register_TestController is
 		generic (
-			CONF : T_AXI4_Register_Vector
+			CONFIG : T_AXI4_Register_Vector
 		);
 		port (
 			-- Global Signal Interface
-			Clk    : in    std_logic ;
-			nReset : out   std_logic ;
+			Clock : in    std_logic ;
+			Reset : out   std_logic ;
 
-			Irq : in    std_logic;
+			Irq   : in    std_logic;
 
-			ReadPort  : in   T_SLVV(0 to CONF'Length - 1)(DATA_BITS-1 downto 0);
-			WritePort : out  T_SLVV(0 to CONF'Length - 1)(DATA_BITS-1 downto 0):= (others => (others => '0'));
+			ReadPort  : in   T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
+			WritePort : out  T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0):= (others => (others => '0'));
 
 			-- Transaction Interfaces
 			AxiMasterTransRec         : inout Axi4LiteMasterTransactionRecType
@@ -144,106 +144,106 @@ architecture sim of AXI4Lite_Register_TestHarness is
 		return config(0 to pos - 1);
 	end function;
 
-	constant CONF : T_AXI4_Register_Vector := gen_Config;
+	constant CONFIG : T_AXI4_Register_Vector := gen_Config;
 
-	signal Reg_ReadPort    : T_SLVV(0 to (CONF'length - 1))(AXI_DATA_WIDTH -1 downto 0);
-	signal Reg_WritePort   : T_SLVV(0 to (CONF'length - 1))(AXI_DATA_WIDTH -1 downto 0) := (others => (others => '0'));
+	signal Reg_ReadPort    : T_SLVV(0 to (CONFIG'length - 1))(AXI_DATA_WIDTH -1 downto 0);
+	signal Reg_WritePort   : T_SLVV(0 to (CONFIG'length - 1))(AXI_DATA_WIDTH -1 downto 0) := (others => (others => '0'));
 
-	signal Reg_ReadPort_hit     : std_logic_vector(0 to CONF'Length - 1);
-	signal Reg_WritePort_hit    : std_logic_vector(0 to CONF'Length - 1);
-	signal Reg_WritePort_strobe : std_logic_vector(0 to CONF'Length - 1) := get_strobeVector(CONF);
+	signal Reg_ReadPort_hit     : std_logic_vector(0 to CONFIG'Length - 1);
+	signal Reg_WritePort_hit    : std_logic_vector(0 to CONFIG'Length - 1);
+	signal Reg_WritePort_strobe : std_logic_vector(0 to CONFIG'Length - 1) := get_strobeVector(CONFIG);
 
 begin
 
 	-- create Clock for TB and 100 Mhz
 	Osvvm.ClockResetPkg.CreateClock (
-		Clk        => Clk,
+		Clk        => Clock,
 		Period     => Tperiod_Clk
-	)  ;
+	);
 
-	-- create nReset
+	-- create Reset
 	--Osvvm.ClockResetPkg.CreateReset (
-	--	Reset       => nReset,
+	--	Reset       => Reset,
 	--	ResetActive => '0',
-	--	Clk         => Clk,
+	--	Clock         => Clock,
 	--	Period      => 7 * tperiod_Clk,
 	--	tpd         => 0 ns
 	--);
 
 	Master_Config : entity OSVVM_AXI4.Axi4LiteManager
 	generic map (
-			tperiod_Clk     => tperiod_Clk,
-			tpd_Clk_AWValid => 0 ns ,
-			tpd_Clk_AWProt  => 0 ns ,
-			tpd_Clk_AWAddr  => 0 ns ,
-			tpd_Clk_WValid  => 0 ns ,
-			tpd_Clk_WData   => 0 ns ,
-			tpd_Clk_WStrb   => 0 ns ,
-			tpd_Clk_BReady  => 0 ns ,
-			tpd_Clk_ARValid => 0 ns ,
-			tpd_Clk_ARProt  => 0 ns ,
-			tpd_Clk_ARAddr  => 0 ns ,
-			tpd_Clk_RReady  => 0 ns
-		)
+		tperiod_Clk     => tperiod_Clk,
+		tpd_Clk_AWValid => 0 ns ,
+		tpd_Clk_AWProt  => 0 ns ,
+		tpd_Clk_AWAddr  => 0 ns ,
+		tpd_Clk_WValid  => 0 ns ,
+		tpd_Clk_WData   => 0 ns ,
+		tpd_Clk_WStrb   => 0 ns ,
+		tpd_Clk_BReady  => 0 ns ,
+		tpd_Clk_ARValid => 0 ns ,
+		tpd_Clk_ARProt  => 0 ns ,
+		tpd_Clk_ARAddr  => 0 ns ,
+		tpd_Clk_RReady  => 0 ns
+	)
 	port map (
-		Clk         => Clk,
-		nReset      => nReset,
+		Clk         => Clock,
+		nReset      => not Reset,
 
 		TransRec    => AxiMasterTransRec, -- Testbench Transaction Interface
 		AxiBus      => AxiLiteBus -- AXI Master Functional Interface
 	);
 
 	DUT : entity PoC.AXI4Lite_Register
-		generic map (
-			CONFIG                  => CONF,
-			--VERBOSE                 => False,
-			INTERRUPT_IS_STROBE     => TRUE,
-			INTERRUPT_ENABLE_REGISTER_ADDRESS  => 32x"864",
-			INTERRUPT_MATCH_REGISTER_ADDRESS   => 32x"868"
-		)
-		port map (
-			Clock          => Clk,
-			Reset          => not nReset,
+	generic map (
+		CONFIG                             => CONFIG,
+		-- VERBOSE                            => False,
+		INTERRUPT_IS_STROBE                => TRUE,
+		INTERRUPT_ENABLE_REGISTER_ADDRESS  => 32x"864",
+		INTERRUPT_MATCH_REGISTER_ADDRESS   => 32x"868"
+	)
+	port map (
+		Clock          => Clock,
+		Reset          => Reset,
 
-			AXI4Lite_m2s.AWValid 	=> AxiLiteBus.WriteAddress.Valid,
-			AXI4Lite_m2s.AWAddr    => AxiLiteBus.WriteAddress.Addr,
-			AXI4Lite_m2s.AWCache   => (others => '0'),
-			AXI4Lite_m2s.AWProt    => AxiLiteBus.WriteAddress.Prot,
-			AXI4Lite_m2s.WValid    => AxiLiteBus.WriteData.Valid,
-			AXI4Lite_m2s.WData     => AxiLiteBus.WriteData.Data,
-			AXI4Lite_m2s.WStrb     => AxiLiteBus.WriteData.Strb,
-			AXI4Lite_m2s.BReady    => AxiLiteBus.WriteResponse.Ready,
-			AXI4Lite_m2s.ARValid   => AxiLiteBus.ReadAddress.Valid,
-			AXI4Lite_m2s.ARAddr    => AxiLiteBus.ReadAddress.Addr,
-			AXI4Lite_m2s.ARCache   => (others => '0'),
-			AXI4Lite_m2s.ARProt    => AxiLiteBus.ReadAddress.Prot,
-			AXI4Lite_m2s.RReady    => AxiLiteBus.ReadData.Ready,
+		AXI4Lite_m2s.AWValid   => AxiLiteBus.WriteAddress.Valid,
+		AXI4Lite_m2s.AWAddr    => AxiLiteBus.WriteAddress.Addr,
+		AXI4Lite_m2s.AWCache   => (others => '0'),
+		AXI4Lite_m2s.AWProt    => AxiLiteBus.WriteAddress.Prot,
+		AXI4Lite_m2s.WValid    => AxiLiteBus.WriteData.Valid,
+		AXI4Lite_m2s.WData     => AxiLiteBus.WriteData.Data,
+		AXI4Lite_m2s.WStrb     => AxiLiteBus.WriteData.Strb,
+		AXI4Lite_m2s.BReady    => AxiLiteBus.WriteResponse.Ready,
+		AXI4Lite_m2s.ARValid   => AxiLiteBus.ReadAddress.Valid,
+		AXI4Lite_m2s.ARAddr    => AxiLiteBus.ReadAddress.Addr,
+		AXI4Lite_m2s.ARCache   => (others => '0'),
+		AXI4Lite_m2s.ARProt    => AxiLiteBus.ReadAddress.Prot,
+		AXI4Lite_m2s.RReady    => AxiLiteBus.ReadData.Ready,
 
-			AXI4Lite_s2m.WReady    => AxiLiteBus.WriteData.Ready,
-			AXI4Lite_s2m.BValid    => AxiLiteBus.WriteResponse.Valid,
-			AXI4Lite_s2m.BResp     => AxiLiteBus.WriteResponse.Resp,
-			AXI4Lite_s2m.ARReady   => AxiLiteBus.ReadAddress.Ready,
-			AXI4Lite_s2m.AWReady   => AxiLiteBus.WriteAddress.Ready,
-			AXI4Lite_s2m.RValid    => AxiLiteBus.ReadData.Valid,
-			AXI4Lite_s2m.RData     => AxiLiteBus.ReadData.Data,
-			AXI4Lite_s2m.RResp     => AxiLiteBus.ReadData.Resp,
+		AXI4Lite_s2m.WReady    => AxiLiteBus.WriteData.Ready,
+		AXI4Lite_s2m.BValid    => AxiLiteBus.WriteResponse.Valid,
+		AXI4Lite_s2m.BResp     => AxiLiteBus.WriteResponse.Resp,
+		AXI4Lite_s2m.ARReady   => AxiLiteBus.ReadAddress.Ready,
+		AXI4Lite_s2m.AWReady   => AxiLiteBus.WriteAddress.Ready,
+		AXI4Lite_s2m.RValid    => AxiLiteBus.ReadData.Valid,
+		AXI4Lite_s2m.RData     => AxiLiteBus.ReadData.Data,
+		AXI4Lite_s2m.RResp     => AxiLiteBus.ReadData.Resp,
 
-			AXI4Lite_IRQ           => Main_Interrupt,
+		AXI4Lite_IRQ           => Main_Interrupt,
 
-			RegisterFile_ReadPort         => Reg_ReadPort,
-			RegisterFile_ReadPort_hit     => Reg_ReadPort_hit,
-			RegisterFile_WritePort        => Reg_WritePort,
-			RegisterFile_WritePort_hit    => Reg_WritePort_hit,
-			RegisterFile_WritePort_strobe => Reg_WritePort_strobe
-		);
+		RegisterFile_ReadPort         => Reg_ReadPort,
+		RegisterFile_ReadPort_hit     => Reg_ReadPort_hit,
+		RegisterFile_WritePort        => Reg_WritePort,
+		RegisterFile_WritePort_hit    => Reg_WritePort_hit,
+		RegisterFile_WritePort_strobe => Reg_WritePort_strobe
+	);
 
 	TestCtrl : AXI4Lite_Register_TestController
 	generic map (
-		CONF => CONF
+		CONFIG => CONFIG
 	)
 	port map(
-		Clk    => Clk,
-		nReset => nReset,
+		Clock     => Clock,
+		Reset     => Reset,
 
 		Irq       => Main_Interrupt,
 

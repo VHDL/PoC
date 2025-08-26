@@ -33,15 +33,14 @@ architecture Initial of AXI4Lite_Register_TestController is
 	signal TestDone   : integer_barrier := 1 ;
 	signal ConfigDone : integer_barrier := 1 ;
 
-	constant number : positive := 7;
-	constant TCID      : AlertLogIDType :=  NewID("TestCtrl");
+	constant TCID     : AlertLogIDType :=  NewID("TestCtrl");
 
 begin
 
-  ------------------------------------------------------------
-  -- ControlProc
-  --   Set up AlertLog and wait for end of test
-  ------------------------------------------------------------
+	------------------------------------------------------------
+	-- ControlProc
+	--   Set up AlertLog and wait for end of test
+	------------------------------------------------------------
 	ControlProc : process
 		constant ProcID  : AlertLogIDType := NewID("ControlProc", TCID);
 		constant TIMEOUT : time := 10 ms;
@@ -67,8 +66,6 @@ begin
 
 		constant OFFSET_BITS : positive := 4;
 
-		variable reg_index : integer;
-		
 		procedure ReadInit (
 			RegName  : string;
 			addr     : AXIAddressType;
@@ -76,12 +73,12 @@ begin
 		) is
 			variable idx : integer;
 		begin
-			idx := get_index(RegName, CONF);
+			idx := get_index(RegName, CONFIG);
 			ReadInit(AxiMasterTransRec, ReadPort, idx, addr, init_val);
 		end procedure;
 
 	begin
-		nReset <= '1';
+		Reset <= '0';
 
 		WaitForClock(AxiMasterTransRec, 2) ;
 
@@ -112,9 +109,9 @@ begin
 		ReadReserved(AxiMasterTransRec, 32x"50");
 
 		-- reset and recheck values
-		nReset <= '0';
+		Reset <= '1';
 		WaitForClock(AxiMasterTransRec);
-		nReset <= '1';
+		Reset <= '0';
 
 		-- CHECK INIT VALUES
 		log("Verify all the registers after reset");
@@ -143,7 +140,7 @@ begin
 		ReadReserved(AxiMasterTransRec, 32x"50");
 
 		WaitForClock(AxiMasterTransRec);
-	    WaitForBarrier(TestDone);
+		WaitForBarrier(TestDone);
 		wait;
 
 	end process;
