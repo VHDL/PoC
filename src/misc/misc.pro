@@ -4,6 +4,9 @@
 # =============================================================================
 
 analyze ./misc_Delay.vhdl
+analyze ./misc_StrobeGenerator.vhdl
+analyze ./misc_StrobeLimiter.vhdl
+analyze ./misc_StrobeStretcher.vhdl
 analyze ./misc_FrequencyMeasurement.vhdl
 
 # analyze ./stat/stat.pkg.vhdl
