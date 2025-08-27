@@ -1,7 +1,6 @@
 # =============================================================================
 # Authors:
-#	Iqbal Asif (PLC2 Design GmbH)
-#	Patrick Lehmann (PLC2 Design GmbH)
+#	Adrian Weiland, Jonas Schreiner
 #
 # License:
 # =============================================================================
@@ -11,7 +10,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#		http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,10 +19,14 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite TestBench_AXI4Lite_Register
+TestSuite PoC.bus.axi4.axi4lite.Register
 
+library tb_axi4liteRegister
+
+analyze AXI4Lite_Register_pkg.vhdl
 analyze AXI4Lite_Register_TestController.vhdl
 analyze AXI4Lite_Register_TestHarness.vhdl
-analyze TC_RandomReadWrite.vhdl
 
-simulate TC_RandomReadWrite
+# Test cases
+RunTest AXI4Lite_Register_initial.vhdl
+RunTest AXI4Lite_Register_ReadWrite.vhdl

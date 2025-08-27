@@ -5,6 +5,7 @@
 -- Authors:
 --                  Iqbal Asif (PLC2 Design GmbH)
 --                  Patrick Lehmann (PLC2 Design GmbH)
+--                  Adrian Weiland (PLC2 Design GmbH)
 --
 -- Entity:          AXI4Lite_Register_TestHarness
 --
@@ -30,12 +31,12 @@
 -- =============================================================================
 
 library IEEE;
-use IEEE.STD_LOGIC_1164.all;
-use IEEE.NUMERIC_STD.all;
+use     IEEE.STD_LOGIC_1164.ALL;
+use     IEEE.NUMERIC_STD.ALL;
 
 library PoC;
-use PoC.vectors.all;
-use PoC.axi4lite.all;
+use     PoC.vectors.all;
+use     PoC.axi4lite.all;
 
 library osvvm;
 context osvvm.OsvvmContext;
@@ -46,53 +47,21 @@ context osvvm_common.OsvvmCommonContext;
 library OSVVM_AXI4;
 context OSVVM_AXI4.Axi4LiteContext;
 
+use     work.AXI4Lite_Register_pkg.all;
+
+
 entity AXI4Lite_Register_TestHarness is
-end AXI4Lite_Register_TestHarness;
+end    AXI4Lite_Register_TestHarness;
 
 architecture sim of AXI4Lite_Register_TestHarness is
 
 	constant tperiod_Clk : time     := 10 ns;
-	constant tpd         : time     := 2 ns;
-	constant Num_of_Reg  : positive := 8;
-
-	constant AXI_ADDR_WIDTH : integer := 32;
-	constant AXI_DATA_WIDTH : integer := 32;
-	constant AXI_STRB_WIDTH : integer := AXI_DATA_WIDTH/8;
-
-	function gen_Config return T_AXI4_Register_Vector is
-		variable temp : T_AXI4_Register_Vector(0 to 255);
-		variable addr : natural := 8;
-		variable pos  : natural := 0;
-	begin
-
-		for i in 0 to Num_of_Reg - 1 loop
-			temp(pos) := to_AXI4_Register(Name => "IRQ(" & integer'image(i) & ")", Address => to_unsigned(addr, 32), RegisterMode => LatchValue_ClearOnRead, IsInterruptRegister => true);
-			addr      := addr + 4;
-			pos       := pos + 1;
-			temp(pos) := to_AXI4_Register(Name => "Read(" & integer'image(i) & ")", Address => to_unsigned(addr, 32), RegisterMode => ReadOnly, Init_Value => x"00000001");
-			addr      := addr + 4;
-			pos       := pos + 1;
-			temp(pos) := to_AXI4_Register(Name => "ReadWrite(" & integer'image(i) & ")", Address => to_unsigned(addr, 32), RegisterMode => ReadWrite);
-			addr      := addr + 4;
-			pos       := pos + 1;
-		end loop;
-		return temp(0 to pos - 1);
-	end function;
-
-	constant Reg_Config : T_AXI4_Register_Vector := gen_Config;
-
-	signal Reg_ReadPort  : T_SLVV(0 to (Reg_Config'length - 1))(AXI_DATA_WIDTH - 1 downto 0);
-	signal Reg_WritePort : T_SLVV(0 to (Reg_Config'length - 1))(AXI_DATA_WIDTH - 1 downto 0) := (others => (others => '0'));
-
-	signal Reg_ReadPort_hit     : std_logic_vector(0 to Reg_Config'Length - 1);
-	signal Reg_WritePort_hit    : std_logic_vector(0 to Reg_Config'Length - 1);
-	signal Reg_WritePort_strobe : std_logic_vector(0 to Reg_Config'Length - 1) := get_strobeVector(Reg_Config);
 
 	signal Clock          : std_logic;
 	signal Reset          : std_logic;
 	signal Main_Interrupt : std_logic;
 
-	-- Testbench Transaction Interface
+-- Testbench Transaction Interface
 	subtype MasterTransactionRecType is AddressBusTransactionRecType(
 		Address((AXI_ADDR_WIDTH) - 1 downto 0),
 		DataToModel((AXI_DATA_WIDTH) - 1 downto 0),
@@ -115,96 +84,131 @@ architecture sim of AXI4Lite_Register_TestHarness is
 		);
 		port (
 			-- Global Signal Interface
-			Clock  : in std_logic;
-			Reset  : in std_logic;
+			Clock : in    std_logic;
+			Reset : out   std_logic;
 
-			Irq : in std_logic;
+			Irq   : in    std_logic;
 
-			ReadPort  : in T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
-			WritePort : out T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0) := (others => (others => '0'));
+			ReadPort  : in   T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0);
+			WritePort : out  T_SLVV(0 to CONFIG'Length - 1)(DATA_BITS - 1 downto 0):= (others => (others => '0'));
 
 			-- Transaction Interfaces
-			AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType
-		);
+			AxiMasterTransRec         : inout Axi4LiteMasterTransactionRecType
+			);
 	end component;
+
+	function gen_Config return T_AXI4_Register_Vector is
+		variable config : T_AXI4_Register_Vector(0 to 16);
+		variable addr   : natural := 0;
+		variable pos    : natural := 0;
+	begin
+		config(pos) := to_AXI4_Register(Name => "Reg1", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => ConstantValue, Init_Value => 32x"12");
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "Reg2", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => ReadOnly);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "Reg3", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => ReadWrite,     Init_Value => 32x"FF");
+		pos := pos + 1; addr := addr + 4;
+		addr := addr + 4;  -- reserved
+		config(pos) := to_AXI4_Register(Name => "Reg4_L", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => ReadWrite,   Init_Value => 32x"2");
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "Reg4_H", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => ReadWrite,   Init_Value => 32x"A");
+		pos := pos + 1; addr := addr + 4;
+		addr := addr + 4;  -- reserved
+		addr := addr + 4;  -- reserved
+		config(pos) := to_AXI4_Register(Name => "IRQ_L_lhcor", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchHighBit_ClearOnRead,  IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_H_lhcor", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchHighBit_ClearOnRead,  IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_L_llcor", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchLowBit_ClearOnRead,   IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_H_llcor", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchLowBit_ClearOnRead,   IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_L_lhcow", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchHighBit_ClearOnWrite, IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_H_lhcow", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchHighBit_ClearOnWrite, IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_L_llcow", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchLowBit_ClearOnWrite,  IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_H_llcow", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchLowBit_ClearOnWrite,  IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_L_lvcor", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchValue_ClearOnRead,    IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_H_lvcor", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchValue_ClearOnRead,    IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_L_lvcow", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchValue_ClearOnWrite,   IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+		config(pos) := to_AXI4_Register(Name => "IRQ_H_lvcow", Address => to_unsigned(addr, REG_ADDRESS_BITS), RegisterMode => LatchValue_ClearOnWrite,   IsInterruptRegister => true);
+		pos := pos + 1; addr := addr + 4;
+
+		return config(0 to pos - 1);
+	end function;
+
+	constant CONFIG : T_AXI4_Register_Vector := gen_Config;
+
+	signal Reg_ReadPort    : T_SLVV(0 to (CONFIG'length - 1))(AXI_DATA_WIDTH -1 downto 0);
+	signal Reg_WritePort   : T_SLVV(0 to (CONFIG'length - 1))(AXI_DATA_WIDTH -1 downto 0) := (others => (others => '0'));
+
+	signal Reg_ReadPort_hit     : std_logic_vector(0 to CONFIG'Length - 1);
+	signal Reg_WritePort_hit    : std_logic_vector(0 to CONFIG'Length - 1);
+	signal Reg_WritePort_strobe : std_logic_vector(0 to CONFIG'Length - 1) := get_strobeVector(CONFIG);
 
 begin
 
 	-- create Clock for TB and 100 Mhz
 	Osvvm.ClockResetPkg.CreateClock (
-		Clk    => Clock,
-		Period => Tperiod_Clk
-	);
-
-	-- create nReset
-	Osvvm.ClockResetPkg.CreateReset (
-		Reset       => Reset,
-		ResetActive => '1',
-		Clk         => Clock,
-		Period      => 7 * tperiod_Clk,
-		tpd         => 0 ns
+		Clk        => Clock,
+		Period     => Tperiod_Clk
 	);
 
 	Master_Config : entity OSVVM_AXI4.Axi4LiteManager
-	generic map(
+	generic map (
 		tperiod_Clk     => tperiod_Clk,
-		tpd_Clk_AWValid => 0 ns,
-		tpd_Clk_AWProt  => 0 ns,
-		tpd_Clk_AWAddr  => 0 ns,
-		tpd_Clk_WValid  => 0 ns,
-		tpd_Clk_WData   => 0 ns,
-		tpd_Clk_WStrb   => 0 ns,
-		tpd_Clk_BReady  => 0 ns,
-		tpd_Clk_ARValid => 0 ns,
-		tpd_Clk_ARProt  => 0 ns,
-		tpd_Clk_ARAddr  => 0 ns,
-		tpd_Clk_RReady  => 0 ns
+		DEFAULT_DELAY   => 0 ns
 	)
-	port map
-	(
-		Clk    => Clock,
-		nReset => not Reset,
+	port map (
+		Clk         => Clock,
+		nReset      => not Reset,
 
-		TransRec => AxiMasterTransRec, -- Testbench Transaction Interface
-		AxiBus   => AxiLiteBus         -- AXI Master Functional Interface
+		TransRec    => AxiMasterTransRec, -- Testbench Transaction Interface
+		AxiBus      => AxiLiteBus -- AXI Master Functional Interface
 	);
 
 	DUT : entity PoC.AXI4Lite_Register
-	generic map(
-		CONFIG                            => Reg_Config,
-		INTERRUPT_IS_STROBE               => TRUE,
-		INTERRUPT_ENABLE_REGISTER_ADDRESS => 32x"864",
-		INTERRUPT_MATCH_REGISTER_ADDRESS  => 32x"868"
+	generic map (
+		CONFIG                             => CONFIG,
+		-- VERBOSE                            => False,
+		INTERRUPT_IS_STROBE                => TRUE,
+		INTERRUPT_ENABLE_REGISTER_ADDRESS  => 32x"864",
+		INTERRUPT_MATCH_REGISTER_ADDRESS   => 32x"868"
 	)
-	port map
-	(
-		Clock    => Clock,
-		Reset    => Reset,
+	port map (
+		Clock          => Clock,
+		Reset          => Reset,
 
-		AXI4Lite_m2s.AWValid => AxiLiteBus.WriteAddress.Valid,
-		AXI4Lite_m2s.AWAddr  => AxiLiteBus.WriteAddress.Addr,
-		AXI4Lite_m2s.AWCache => (others => '0'),
-		AXI4Lite_m2s.AWProt  => AxiLiteBus.WriteAddress.Prot,
-		AXI4Lite_m2s.WValid  => AxiLiteBus.WriteData.Valid,
-		AXI4Lite_m2s.WData   => AxiLiteBus.WriteData.Data,
-		AXI4Lite_m2s.WStrb   => AxiLiteBus.WriteData.Strb,
-		AXI4Lite_m2s.BReady  => AxiLiteBus.WriteResponse.Ready,
-		AXI4Lite_m2s.ARValid => AxiLiteBus.ReadAddress.Valid,
-		AXI4Lite_m2s.ARAddr  => AxiLiteBus.ReadAddress.Addr,
-		AXI4Lite_m2s.ARCache => (others => '0'),
-		AXI4Lite_m2s.ARProt  => AxiLiteBus.ReadAddress.Prot,
-		AXI4Lite_m2s.RReady  => AxiLiteBus.ReadData.Ready,
+		AXI4Lite_m2s.AWValid   => AxiLiteBus.WriteAddress.Valid,
+		AXI4Lite_m2s.AWAddr    => AxiLiteBus.WriteAddress.Addr,
+		AXI4Lite_m2s.AWCache   => (others => '0'),
+		AXI4Lite_m2s.AWProt    => AxiLiteBus.WriteAddress.Prot,
+		AXI4Lite_m2s.WValid    => AxiLiteBus.WriteData.Valid,
+		AXI4Lite_m2s.WData     => AxiLiteBus.WriteData.Data,
+		AXI4Lite_m2s.WStrb     => AxiLiteBus.WriteData.Strb,
+		AXI4Lite_m2s.BReady    => AxiLiteBus.WriteResponse.Ready,
+		AXI4Lite_m2s.ARValid   => AxiLiteBus.ReadAddress.Valid,
+		AXI4Lite_m2s.ARAddr    => AxiLiteBus.ReadAddress.Addr,
+		AXI4Lite_m2s.ARCache   => (others => '0'),
+		AXI4Lite_m2s.ARProt    => AxiLiteBus.ReadAddress.Prot,
+		AXI4Lite_m2s.RReady    => AxiLiteBus.ReadData.Ready,
 
-		AXI4Lite_s2m.WReady  => AxiLiteBus.WriteData.Ready,
-		AXI4Lite_s2m.BValid  => AxiLiteBus.WriteResponse.Valid,
-		AXI4Lite_s2m.BResp   => AxiLiteBus.WriteResponse.Resp,
-		AXI4Lite_s2m.ARReady => AxiLiteBus.ReadAddress.Ready,
-		AXI4Lite_s2m.AWReady => AxiLiteBus.WriteAddress.Ready,
-		AXI4Lite_s2m.RValid  => AxiLiteBus.ReadData.Valid,
-		AXI4Lite_s2m.RData   => AxiLiteBus.ReadData.Data,
-		AXI4Lite_s2m.RResp   => AxiLiteBus.ReadData.Resp,
+		AXI4Lite_s2m.WReady    => AxiLiteBus.WriteData.Ready,
+		AXI4Lite_s2m.BValid    => AxiLiteBus.WriteResponse.Valid,
+		AXI4Lite_s2m.BResp     => AxiLiteBus.WriteResponse.Resp,
+		AXI4Lite_s2m.ARReady   => AxiLiteBus.ReadAddress.Ready,
+		AXI4Lite_s2m.AWReady   => AxiLiteBus.WriteAddress.Ready,
+		AXI4Lite_s2m.RValid    => AxiLiteBus.ReadData.Valid,
+		AXI4Lite_s2m.RData     => AxiLiteBus.ReadData.Data,
+		AXI4Lite_s2m.RResp     => AxiLiteBus.ReadData.Resp,
 
-		AXI4Lite_IRQ => Main_Interrupt,
+		AXI4Lite_IRQ           => Main_Interrupt,
 
 		RegisterFile_ReadPort         => Reg_ReadPort,
 		RegisterFile_ReadPort_hit     => Reg_ReadPort_hit,
@@ -214,15 +218,14 @@ begin
 	);
 
 	TestCtrl : AXI4Lite_Register_TestController
-	generic map(
-		CONFIG => Reg_Config
+	generic map (
+		CONFIG => CONFIG
 	)
-	port map
-	(
-		Clock => Clock,
-		Reset => Reset,
+	port map(
+		Clock     => Clock,
+		Reset     => Reset,
 
-		Irq => Main_Interrupt,
+		Irq       => Main_Interrupt,
 
 		ReadPort  => Reg_ReadPort,
 		WritePort => Reg_WritePort,
