@@ -29,18 +29,17 @@ include ./sync/sync.pro
 
 analyze ./bus/axi4/AXI4_Common.pkg.vhdl
 analyze ./bus/axi4/AXI4_Common.pkg.vhdl
-analyze ./bus/axi4/axi4.pkg.vhdl
 analyze ./bus/axi4/AXI4_Full.pkg.vhdl
 analyze ./bus/axi4/AXI4Stream/AXI4Stream.pkg.vhdl
 analyze ./bus/axi4/AXI4Lite/AXI4Lite.pkg.vhdl
+analyze ./bus/axi4/axi4.pkg.vhdl
 
 include ./arith/arith.pro
 include ./mem/mem.pro
 include ./misc/misc.pro
 include ./fifo/fifo.pro
-
+include ./xil/xil.pro
 include ./dstruct/dstruct.pro
-include ./io/io.pro
 include ./bus/bus.pro
 include ./comm/comm.pro
 include ./sort/sort.pro
@@ -48,7 +47,7 @@ include ./cache/cache.pro
 
 analyze ./list/list_expire.vhdl
 
+include ./io/io.pro
 include ./net/net.pro
-include ./xil/xil.pro
 include ./sim/sim.pro
 

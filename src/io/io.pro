@@ -32,19 +32,29 @@ analyze ./io_FanControl.vhdl
 
 analyze ./ddrio/ddrio.pkg.vhdl
 analyze ./ddrio/ddrio_in.vhdl
-analyze ./ddrio/ddrio_in_altera.vhdl
-analyze ./ddrio/ddrio_in_xilinx.vhdl
 analyze ./ddrio/ddrio_inout.vhdl
-analyze ./ddrio/ddrio_inout_altera.vhdl
-analyze ./ddrio/ddrio_inout_xilinx.vhdl
 analyze ./ddrio/ddrio_out.vhdl
-analyze ./ddrio/ddrio_out_altera.vhdl
-analyze ./ddrio/ddrio_out_xilinx.vhdl
+
+if { $::poc::vendor eq "Xilinx" } {
+	analyze ./ddrio/ddrio_in_xilinx.vhdl
+	analyze ./ddrio/ddrio_inout_xilinx.vhdl
+	analyze ./ddrio/ddrio_out_xilinx.vhdl
+
+} elseif { $::poc::vendor eq "Altera" } {
+	analyze ./ddrio/ddrio_in_altera.vhdl
+	analyze ./ddrio/ddrio_inout_altera.vhdl
+	analyze ./ddrio/ddrio_out_altera.vhdl
+
+} elseif { $::poc::vendor ne "GENERIC" } {
+	puts "Unknow vendor '$::poc::vendor' in arith!"
+	exit 1
+}
+
+include ./uart/uart.pro
+include ./iic/iic.pro
 
 analyze ./pmod/pmod.pkg.vhdl
 analyze ./pmod/pmod_KYPD.vhdl
 analyze ./pmod/pmod_SSD.vhdl
 analyze ./pmod/pmod_USBUART.vhdl
 
-include ./uart/uart.pro
-include ./iic/iic.pro

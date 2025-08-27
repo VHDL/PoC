@@ -29,18 +29,37 @@ analyze ./ocram/ocram_sdp_optimized.vhdl
 analyze ./ocram/ocram_sdp_wf.vhdl
 analyze ./ocram/ocram_sp.vhdl
 analyze ./ocram/ocram_tdp_wf.vhdl
-analyze ./ocram/altera/ocram_sp_altera.vhdl
-analyze ./ocram/altera/ocram_tdp_altera.vhdl
+
+if { $::poc::vendor eq "Xilinx" } {
+	puts "No files for Xilinx."
+
+} elseif { $::poc::vendor eq "Altera" } {
+	analyze ./ocram/altera/ocram_sp_altera.vhdl
+	analyze ./ocram/altera/ocram_tdp_altera.vhdl
+
+} elseif { $::poc::vendor ne "GENERIC" } {
+	puts "Unknow vendor '$::poc::vendor' in arith!"
+	exit 1
+}
 
 analyze ./ocrom/ocrom.pkg.vhdl
 analyze ./ocrom/ocrom_dp.vhdl
 analyze ./ocrom/ocrom_sp.vhdl
 
-analyze ./sdram/sdram_ctrl_de0.vhdl
 analyze ./sdram/sdram_ctrl_fsm.vhdl
-analyze ./sdram/sdram_ctrl_phy_de0.vhdl
-analyze ./sdram/sdram_ctrl_phy_s3esk.vhdl
-analyze ./sdram/sdram_ctrl_s3esk.vhdl
+
+if { $::poc::vendor eq "Xilinx" } {
+	analyze ./sdram/sdram_ctrl_phy_s3esk.vhdl
+	analyze ./sdram/sdram_ctrl_s3esk.vhdl
+
+} elseif { $::poc::vendor eq "Altera" } {
+	analyze ./sdram/sdram_ctrl_phy_de0.vhdl
+	analyze ./sdram/sdram_ctrl_de0.vhdl
+
+} elseif { $::poc::vendor ne "GENERIC" } {
+	puts "Unknow vendor '$::poc::vendor' in arith!"
+	exit 1
+}
 
 analyze ./mem_GitVersionRegister.pkg.vhdl
 

@@ -24,6 +24,6 @@ analyze ./sortnet_BitonicSort.vhdl
 analyze ./sortnet_MergeSort_Streamed.vhdl
 analyze ./sortnet_OddEvenMergeSort.vhdl
 analyze ./sortnet_OddEvenSort.vhdl
+analyze ./sortnet_Transform.vhdl
 analyze ./sortnet_Stream_Adapter.vhdl
 analyze ./sortnet_Stream_Adapter2.vhdl
-analyze ./sortnet_Transform.vhdl

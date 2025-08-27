@@ -127,6 +127,18 @@ package xil is
 			VN             : in  std_logic
 		);
 	end component;
+
+	component xil_DNAPort is
+		generic (
+			SIM_DNA_VALUE : bit_vector := resize("0", get_DNABITS)   -- DNA value for simulation
+		);
+		port (
+			Clock   : in  std_logic;
+			Reset   : in  std_logic;
+			Valid   : out std_logic;
+			DataOut : out std_logic_vector(get_DNABITS -1 downto 0)
+		);
+	end component;
 end package;
 
 

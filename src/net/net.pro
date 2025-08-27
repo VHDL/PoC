@@ -49,7 +49,7 @@ analyze ./mac/mac_TX_DestMAC_Prepender.vhdl
 analyze ./mac/mac_TX_SrcMAC_Prepender.vhdl
 analyze ./mac/mac_Wrapper.vhdl
 analyze ./net_FrameChecksum.vhdl
-analyze ./net_FrameLoopback.vhdl
+# analyze ./net_FrameLoopback.vhdl
 analyze ./udp/udp_FrameLoopback.vhdl
 analyze ./udp/udp_RX.vhdl
 analyze ./udp/udp_TX.vhdl

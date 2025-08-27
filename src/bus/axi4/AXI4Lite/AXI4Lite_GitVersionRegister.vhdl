@@ -68,7 +68,7 @@ end entity;
 
 
 architecture rtl of AXI4Lite_GitVersionRegister is
-	constant CONFIG      : T_AXI4_Register_Description_Vector       := get_Version_Descriptor;
+	constant CONFIG      : T_AXI4_Register_Vector       := get_Version_Descriptor;
 	constant VersionData : T_SLVV_32(0 to C_Num_Version_Header - 1) := read_Version_from_mem(PROJECT_DIR & VERSION_FILE_NAME);
 
 	signal   RegisterFile_ReadPort   : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0);
@@ -92,8 +92,8 @@ begin
 		Clock                   => Clock,
 		Reset                   => Reset,
 
-		S_AXI_m2s               => S_AXI_m2s,
-		S_AXI_s2m               => S_AXI_s2m,
+		AXI4Lite_m2s            => S_AXI_m2s,
+		AXI4Lite_s2m            => S_AXI_s2m,
 
 		RegisterFile_ReadPort   => RegisterFile_ReadPort,
 		RegisterFile_WritePort  => RegisterFile_WritePort
@@ -109,7 +109,7 @@ begin
 	dna_gen : if INCLUDE_XIL_DNA generate
 		signal DNA : std_logic_vector(get_DNABITS -1 downto 0);
 	begin
-		DNA_inst : entity work.xil_DNAPort
+		DNA_inst : component xil_DNAPort
 		port map(
 			Clock   => Clock,
 			Reset   => Reset,

@@ -20,17 +20,20 @@
 # =============================================================================
 
 analyze ./xil.pkg.vhdl
-if { [info exists ::OMIT_XILINX_FILES] && $::OMIT_XILINX_FILES eq "1"} {
-	puts "Skip xilinx file."
-} else {
+if { $::poc::vendor eq "Xilinx" } {
 	analyze ./xil_DNAPort.vhdl
 	analyze ./xil_ICAP.vhdl
-	analyze ./reconfig/reconfig_icap_fsm.vhdl
-	analyze ./reconfig/reconfig_icap_wrapper.vhdl
 	analyze ./xil_BSCAN.vhdl
-	analyze ./xil_DNAPort.vhdl
-	analyze ./xil_ICAP.vhdl
 	analyze ./xil_Reconfigurator.vhdl
 	analyze ./xil_SystemMonitor.vhdl
+	analyze ./reconfig/reconfig_icap_fsm.vhdl
+	analyze ./reconfig/reconfig_icap_wrapper.vhdl
 
+} elseif { $::poc::vendor eq "Altera" } {
+	puts "No Altera files in this namespace."
+
+} elseif { $::poc::vendor ne "GENERIC" } {
+	puts "Unknow vendor '$::poc::vendor' in arith!"
+	exit 1
 }
+
