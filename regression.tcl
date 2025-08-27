@@ -26,6 +26,7 @@ namespace eval ::poc {
 }
 
 source ../lib/OSVVM-Scripts/StartUp.tcl
+# source ../lib/OSVVM-Scripts/StartNVC.tcl
 
 build ../lib/OsvvmLibraries.pro
 
