@@ -96,4 +96,4 @@ begin
 
 		SegmentControl  <= io_7SegmentDisplayEncoding(HexDigit, HexDot, WITH_DOT => TRUE);
 	end process;
-end;
+end architecture;

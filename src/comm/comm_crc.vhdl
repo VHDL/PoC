@@ -84,12 +84,12 @@ architecture rtl of comm_crc is
 		GN := G;
 		for i in GN'left downto 1 loop
 			if GN(i) = '1' then
-				return  GN(i-1 downto 0);
+				return GN(i-1 downto 0);
 			end if;
 		end loop;
 		report "Cannot use absolute constant as generator."
 			severity failure;
-		return  GN;
+		return GN;
 	end normalize;
 
 	function dcr_check(data_bits:positive; chunk_bits:positive) return positive is
@@ -101,7 +101,7 @@ architecture rtl of comm_crc is
 			report "Generic 'BITS' must be an integer multiple of generic 'CHUNK_BITS'."
 			severity failure;
 		return data_bits / chunk_bits;
-	end dcr_check;
+	end function;
 
 	-- Normalized Generator
 	constant GN : std_logic_vector := to_stdlogicvector(normalize(GEN));
@@ -117,14 +117,13 @@ architecture rtl of comm_crc is
 begin
 
 	-- Compute next combinational Value
-	process(lfsr, din, cen)
+	process(all)
 		variable v : std_logic_vector(lfsr'range);
 	begin
 		v := lfsr;
 		for i in BITS-1 downto 0 loop
 			if cen(i/DCR) = '1' then
-				v := (v(v'left-1 downto 0) & '0') xor
-						(GN and (GN'range => (din(i) xor v(v'left))));
+				v := (v(v'left-1 downto 0) & '0') xor (GN and (GN'range => (din(i) xor v(v'left))));
 			end if;
 		end loop;
 		lfsn <= v;

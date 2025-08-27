@@ -64,12 +64,12 @@ architecture rtl of comm_scramble is
 		GN := G;
 		for i in GN'left downto 1 loop
 			if GN(i) = '1' then
-				return  GN(i-1 downto 0);
+				return GN(i-1 downto 0);
 			end if;
 		end loop;
 		report "PoC.comm_scramble:: Cannot use absolute constant as generator." severity failure;
 		return "0";
-	end normalize;
+	end function;
 
 	-- Normalized Generator
 	constant GN : bit_vector := normalize(GEN);
@@ -89,8 +89,7 @@ begin
 				v := lfsr;
 				for i in 0 to BITS-1 loop
 					mask(i) <=  v(v'left);
-					v := (v(v'left-1 downto 0) & '0') xor
-							(to_stdlogicvector(GN) and (GN'range => v(v'left)));
+					v := (v(v'left-1 downto 0) & '0') xor (to_stdlogicvector(GN) and (GN'range => v(v'left)));
 				end loop;
 				lfsr <= v;
 			end if;

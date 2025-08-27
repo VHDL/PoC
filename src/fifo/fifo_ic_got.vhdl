@@ -50,8 +50,8 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2015-2025 The PoC-Library Authors
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany
+-- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,7 +62,7 @@
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS of ANY KIND, either express or implied.
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- =============================================================================
