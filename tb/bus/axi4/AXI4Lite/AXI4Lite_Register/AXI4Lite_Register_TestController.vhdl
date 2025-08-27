@@ -30,10 +30,10 @@
 -- limitations under the License.
 -- =============================================================================
 
-library IEEE ;
-use     IEEE.std_logic_1164.all ;
-use     IEEE.numeric_std.all ;
-use     IEEE.numeric_std_unsigned.all ;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
+use     IEEE.numeric_std_unsigned.all;
 
 library PoC;
 use     PoC.utils.all;
@@ -46,7 +46,7 @@ context OSVVM.OsvvmContext;
 library osvvm_common;
 context osvvm_common.OsvvmCommonContext;
 
-library OSVVM_AXI4 ;
+library OSVVM_AXI4;
 context OSVVM_AXI4.Axi4LiteContext;
 
 use     work.AXI4Lite_Register_pkg.all;
@@ -58,8 +58,8 @@ entity AXI4Lite_Register_TestController is
 	);
 	port (
 		-- Global Signal Interface
-		Clock  : in    std_logic ;
-		Reset  : out   std_logic ;
+		Clock  : in    std_logic;
+		Reset  : out   std_logic;
 
 		Irq : in    std_logic;
 
@@ -68,11 +68,11 @@ entity AXI4Lite_Register_TestController is
 
 		-- Transaction Interfaces
 		AxiMasterTransRec         : inout Axi4LiteMasterTransactionRecType
-	) ;
-	constant AXI_ADDR_WIDTH : integer := AxiMasterTransRec.Address'length ;
-	constant AXI_DATA_WIDTH : integer := AxiMasterTransRec.DataToModel'length ;
+	);
+	constant AXI_ADDR_WIDTH : integer := AxiMasterTransRec.Address'length;
+	constant AXI_DATA_WIDTH : integer := AxiMasterTransRec.DataToModel'length;
 
 -- Not currently used in the Axi4Lite model - future use for Axi4Lite Burst Emulation modes
---  alias WriteBurstFifo is <<variable .TbAxi4.Master_1.WriteBurstFifo : osvvm.ScoreboardPkg_slv.ScoreboardPType>> ;
---  alias ReadBurstFifo  is <<variable .TbAxi4.Master_1.ReadBurstFifo  : osvvm.ScoreboardPkg_slv.ScoreboardPType>> ;
+--  alias WriteBurstFifo is <<variable .TbAxi4.Master_1.WriteBurstFifo : osvvm.ScoreboardPkg_slv.ScoreboardPType>>;
+--  alias ReadBurstFifo  is <<variable .TbAxi4.Master_1.ReadBurstFifo  : osvvm.ScoreboardPkg_slv.ScoreboardPType>>;
 end entity;

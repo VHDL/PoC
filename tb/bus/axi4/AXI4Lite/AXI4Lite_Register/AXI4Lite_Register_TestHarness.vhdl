@@ -38,14 +38,14 @@ library PoC;
 use     PoC.vectors.all;
 use     PoC.axi4lite.all;
 
-library osvvm ;
-context osvvm.OsvvmContext ;
+library osvvm;
+context osvvm.OsvvmContext;
 
-library osvvm_common ;
-context osvvm_common.OsvvmCommonContext ;
+library osvvm_common;
+context osvvm_common.OsvvmCommonContext;
 
-library OSVVM_AXI4 ;
-context OSVVM_AXI4.Axi4LiteContext ;
+library OSVVM_AXI4;
+context OSVVM_AXI4.Axi4LiteContext;
 
 use     work.AXI4Lite_Register_pkg.all;
 
@@ -55,8 +55,7 @@ end    AXI4Lite_Register_TestHarness;
 
 architecture sim of AXI4Lite_Register_TestHarness is
 
-	constant tperiod_Clk : time     := 10 ns ;
-	constant tpd         : time     := 2 ns ;
+	constant tperiod_Clk : time     := 10 ns;
 
 	signal Clock          : std_logic;
 	signal Reset          : std_logic;
@@ -85,8 +84,8 @@ architecture sim of AXI4Lite_Register_TestHarness is
 		);
 		port (
 			-- Global Signal Interface
-			Clock : in    std_logic ;
-			Reset : out   std_logic ;
+			Clock : in    std_logic;
+			Reset : out   std_logic;
 
 			Irq   : in    std_logic;
 
@@ -95,7 +94,7 @@ architecture sim of AXI4Lite_Register_TestHarness is
 
 			-- Transaction Interfaces
 			AxiMasterTransRec         : inout Axi4LiteMasterTransactionRecType
-			) ;
+			);
 	end component;
 
 	function gen_Config return T_AXI4_Register_Vector is
@@ -161,29 +160,10 @@ begin
 		Period     => Tperiod_Clk
 	);
 
-	-- create Reset
-	--Osvvm.ClockResetPkg.CreateReset (
-	--	Reset       => Reset,
-	--	ResetActive => '0',
-	--	Clock         => Clock,
-	--	Period      => 7 * tperiod_Clk,
-	--	tpd         => 0 ns
-	--);
-
 	Master_Config : entity OSVVM_AXI4.Axi4LiteManager
 	generic map (
 		tperiod_Clk     => tperiod_Clk,
-		tpd_Clk_AWValid => 0 ns ,
-		tpd_Clk_AWProt  => 0 ns ,
-		tpd_Clk_AWAddr  => 0 ns ,
-		tpd_Clk_WValid  => 0 ns ,
-		tpd_Clk_WData   => 0 ns ,
-		tpd_Clk_WStrb   => 0 ns ,
-		tpd_Clk_BReady  => 0 ns ,
-		tpd_Clk_ARValid => 0 ns ,
-		tpd_Clk_ARProt  => 0 ns ,
-		tpd_Clk_ARAddr  => 0 ns ,
-		tpd_Clk_RReady  => 0 ns
+		DEFAULT_DELAY   => 0 ns
 	)
 	port map (
 		Clk         => Clock,

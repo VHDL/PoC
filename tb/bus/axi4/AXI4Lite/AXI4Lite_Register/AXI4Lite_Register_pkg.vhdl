@@ -38,7 +38,7 @@ context OSVVM.OsvvmContext;
 library osvvm_common;
 context osvvm_common.OsvvmCommonContext;
 
-library OSVVM_AXI4 ;
+library OSVVM_AXI4;
 context OSVVM_AXI4.Axi4LiteContext;
 
 library PoC;
@@ -59,7 +59,7 @@ package AXI4Lite_Register_pkg is
 	subtype AXIDataType    is std_logic_vector(AXI_DATA_WIDTH - 1 downto 0);
 
 	procedure ReadInit (
-		signal AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType; 
+		signal AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType;
 		signal ReadPort          : T_SLVV(open)(DATA_BITS-1 downto 0);
 		constant reg_index       : integer;
 		constant addr            : AXIAddressType;
@@ -67,12 +67,12 @@ package AXI4Lite_Register_pkg is
 	);
 
 	procedure ReadReserved (
-		signal AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType; 
+		signal AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType;
 		constant addr            : AXIAddressType
 	);
 
 	procedure WriteCheck (
-		signal AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType; 
+		signal AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType;
 		signal ReadPort          : in  T_SLVV(open)(DATA_BITS-1 downto 0);
 		signal WritePort         : out T_SLVV(open)(DATA_BITS-1 downto 0);
 		constant reg_index       : integer;
@@ -81,7 +81,7 @@ package AXI4Lite_Register_pkg is
 	);
 
 	procedure WriteReserved (
-		signal AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType; 
+		signal AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType;
 		constant addr            : AXIAddressType
 	);
 
@@ -90,11 +90,11 @@ end package;
 package body AXI4Lite_Register_pkg is
 
 	procedure ReadInit (
-		signal   AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType; 
+		signal   AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType;
 		signal   ReadPort          : T_SLVV(open)(DATA_BITS-1 downto 0);
 		constant reg_index         : integer;
 		constant addr              : AXIAddressType;
-		constant init_val          : AXIDataType 
+		constant init_val          : AXIDataType
 	) is
 	begin
 		-- Read from transaction record
@@ -104,7 +104,7 @@ package body AXI4Lite_Register_pkg is
 	end procedure;
 
 	procedure ReadReserved (
-		signal   AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType; 
+		signal   AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType;
 		constant addr              : AXIAddressType
 	) is
 		variable OptVal   : integer;
@@ -117,12 +117,12 @@ package body AXI4Lite_Register_pkg is
 	end procedure;
 
 	procedure WriteCheck (
-		signal   AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType; 
+		signal   AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType;
 		signal   ReadPort          : in  T_SLVV(open)(DATA_BITS-1 downto 0);
 		signal   WritePort         : out T_SLVV(open)(DATA_BITS-1 downto 0);
 		constant reg_index         : integer;
 		constant addr              : AXIAddressType;
-		constant write_val         : AXIDataType 
+		constant write_val         : AXIDataType
 	) is
 		variable ReadData : AXIDataType;
 	begin
@@ -137,7 +137,7 @@ package body AXI4Lite_Register_pkg is
 	end procedure;
 
 	procedure WriteReserved (
-		signal   AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType; 
+		signal   AxiMasterTransRec : inout Axi4LiteMasterTransactionRecType;
 		constant addr              : AXIAddressType
 	) is
 		variable OptVal   : integer;

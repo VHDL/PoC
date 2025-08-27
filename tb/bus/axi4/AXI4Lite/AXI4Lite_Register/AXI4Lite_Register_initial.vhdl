@@ -30,8 +30,8 @@
 
 architecture Initial of AXI4Lite_Register_TestController is
 
-	signal TestDone   : integer_barrier := 1 ;
-	signal ConfigDone : integer_barrier := 1 ;
+	signal TestDone   : integer_barrier := 1;
+	signal ConfigDone : integer_barrier := 1;
 
 	constant TCID     : AlertLogIDType :=  NewID("TestCtrl");
 
@@ -46,7 +46,7 @@ begin
 		constant TIMEOUT : time := 10 ms;
 	begin
 		-- Initialization of test
-		SetAlertLogName("AXI4Lite_Register_initial") ;
+		SetAlertLogName("AXI4Lite_Register_initial");
 		SetLogEnable(PASSED,                   FALSE);
 		SetLogEnable(INFO,                     FALSE);
 		SetLogEnable(osvvm.AlertLogPkg.DEBUG,  FALSE);
@@ -60,7 +60,7 @@ begin
 		EndOfTestReports(ReportAll => TRUE, Timeout => now >= TIMEOUT);
 		std.env.finish;
 		wait;
-	end process ControlProc ;
+	end process ControlProc;
 
 	ManagerProc : process
 
@@ -80,7 +80,7 @@ begin
 	begin
 		Reset <= '0';
 
-		WaitForClock(AxiMasterTransRec, 2) ;
+		WaitForClock(AxiMasterTransRec, 2);
 
 		-- CHECK INIT VALUES
 		log("Verify all the registers");
@@ -150,7 +150,7 @@ end architecture;
 configuration AXI4Lite_Register_initial of AXI4Lite_Register_TestHarness is
 	for sim
 		for TestCtrl : AXI4Lite_Register_TestController
-			use entity work.AXI4Lite_Register_TestController(Initial) ;
-		end for ;
+			use entity work.AXI4Lite_Register_TestController(Initial);
+		end for;
 	end for;
-end configuration ;
+end configuration;
