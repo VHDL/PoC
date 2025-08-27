@@ -5,6 +5,9 @@ on:
   pull_request:
 
 jobs:
+  Prepare:
+    uses: pyTooling/Actions/.github/workflows/PrepareJob.yml@r5
+
   Build-OSVVM:
     name: Build OSVVM
     strategy:
@@ -274,22 +277,36 @@ jobs:
       doc:      'PoC-HTML'
 #      coverage: 'PoC-Coverage-HTML'
 
+  AutoTag:
+    uses: pyTooling/Actions/.github/workflows/TagReleaseCommit.yml@r5
+    needs:
+      - Prepare
+      - PublishToGitHubPages
+    if: needs.Prepare.outputs.is_release_commit && github.event_name != 'schedule'
+    permissions:
+      contents: write  # required for create tag
+      actions:  write  # required for trigger workflow
+    with:
+      version:  ${{ needs.Prepare.output.version }}
+      auto_tag: ${{ needs.Prepare.outputs.is_release_commit }}
+
   Release:
     uses: pyTooling/Actions/.github/workflows/PublishReleaseNotes.yml@r5
-    if: startsWith(github.ref, 'refs/tags/v')
     needs:
       - PublishToGitHubPages
-    secrets: inherit
+    if: needs.Prepare.outputs.is_release_tag == 'true'
     permissions:
       contents: write
-      actions: write
+      actions:  write
     with:
       prerelease: true
       replacements: |
-        poc=2.0.0
-      tag: "v2.0.0"
+        poc=${{ needs.Prepare.outputs.version }}
+      tag: ${{ needs.Prepare.outputs.version }}
       description: |
         # The PoC-Library %poc%
       inventory-json: "inventory.json"
-      inventory-version: "2.0.0"
+      inventory-version: ${{ needs.Prepare.outputs.version }}
       assets: |
+
+    secrets: inherit
