@@ -264,6 +264,7 @@ jobs:
     uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r5
     needs:
       - Build-PoC
+    if: success() || failure()
     with:
       requirements:          '-r docs/requirements.txt'
       doc_directory:         'docs'
@@ -276,6 +277,7 @@ jobs:
     needs:
       - Documentation
       - Build-PoC
+    if: success() || failure()
     with:
       doc:      'PoC-HTML'
 #      coverage: 'PoC-Coverage-HTML'
