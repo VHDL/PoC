@@ -7,6 +7,13 @@ on:
 jobs:
   Build-OSVVM:
     name: Build OSVVM
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {simulator: 'nvc',  backend: 'llvm',  startScript: 'StartNVC.tcl'}
+          - {simulator: 'ghdl', backend: 'mcode', startScript: 'StartGHDL.tcl'}
+          - {simulator: 'ghdl', backend: 'llvm',  startScript: 'StartGHDL.tcl'}
     runs-on: ubuntu-24.04
     steps:
       - name: ⏬ Checkout repository
@@ -18,34 +25,50 @@ jobs:
       - name: 🔧 Install tcllib
         run: sudo apt-get install -y --no-install-recommends tcllib
 
-      - name: Setup GHDL ${{ inputs.ghdl_backend }}
+      - name: Setup GHDL ${{ matrix.backend }}
         uses: ghdl/setup-ghdl@v1
+        if: matrix.simulator == 'ghdl'
         with:
           version: latest
-          backend: llvm
+          backend: ${{ matrix.backend }}
+
+      - name: Setup NVC
+        uses: nickg/setup-nvc@v1
+        if: matrix.simulator == 'nvc'
+        with:
+          version: latest
 
       - name: Prepare
         run: |
-          mkdir -p temp/ghdl
+          mkdir -p temp/${{ matrix.simulator }}
 
-      - name: 🔨 Pre-compile OSVVM
+      - name: 🔨 Prepare Script
         run: |
-          cd temp/ghdl
+          cd temp/${{ matrix.simulator }}
 
           tee run.tcl <<EOF
-          source ../../lib/OSVVM-Scripts/StartGHDL.tcl
+          source ../../lib/OSVVM-Scripts/${{ matrix.startScript }}
           build ../../lib/OsvvmLibraries.pro OsvvmLibraries
           EOF
-          printf "=================\n"
 
+      - name: Precompile OSVVM ${{ matrix.simulator }}
+        if: matrix.simulator == 'ghdl'
+        run: |
+          cd temp/${{ matrix.simulator }}
           tclsh run.tcl
 
-      - name: 📤 Upload 'GHDL-OSVVM-Report' artifacts
+      - name: Precompile OSVVM ${{ matrix.simulator }}
+        if: matrix.simulator == 'nvc'
+        run: |
+          cd temp/${{ matrix.simulator }}
+          nvc --do run.tcl
+
+      - name: 📤 Upload '${{ matrix.simulator }}-${{ matrix.backend }}-OSVVM-Report' artifacts
         uses: pyTooling/upload-artifact@v4
         continue-on-error: true
         with:
-          name: GHDL-OSVVM-Report
-          working-directory: temp/ghdl
+          name: ${{ matrix.simulator }}-${{ matrix.backend }}-OSVVM-Report
+          working-directory: temp/${{ matrix.simulator }}
           path: |
             logs
             reports
@@ -54,27 +77,33 @@ jobs:
             *.yml
           retention-days: 1
 
-      - name: 📤 Upload 'GHDL-OSVVM' artifacts
+      - name: 📤 Upload '${{ matrix.simulator }}-${{ matrix.backend }}-OSVVM' artifacts
         uses: pyTooling/upload-artifact@v4
         with:
-          name: GHDL-OSVVM
-          working-directory: temp/ghdl
+          name: ${{ matrix.simulator }}-${{ matrix.backend }}-OSVVM
+          working-directory: temp/${{ matrix.simulator }}
           path: |
             VHDL_LIBS
           retention-days: 1
 
-      - name: 📤 Upload 'GHDL-OSVVM-Generated' artifacts
+      - name: 📤 Upload '${{ matrix.simulator }}-${{ matrix.backend }}-OSVVM-Generated' artifacts
         uses: pyTooling/upload-artifact@v4
         continue-on-error: true
         with:
-          name: GHDL-OSVVM-Generated
-#          working-directory: temp/ghdl
+          name: ${{ matrix.simulator }}-${{ matrix.backend }}-OSVVM-Generated
           path: |
             lib/osvvm/*_generated.vhd
           retention-days: 1
 
   Build-PoC:
     name: Build PoC
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {simulator: 'nvc',  backend: 'llvm',  startScript: 'StartNVC.tcl'}
+          - {simulator: 'ghdl', backend: 'mcode', startScript: 'StartGHDL.tcl'}
+          - {simulator: 'ghdl', backend: 'llvm',  startScript: 'StartGHDL.tcl'}
     runs-on: ubuntu-24.04
     needs:
       - Build-OSVVM
@@ -88,38 +117,44 @@ jobs:
       - name: 🔧 Install tcllib
         run: sudo apt-get install -y --no-install-recommends tcllib
 
-      - name: Setup GHDL ${{ inputs.ghdl_backend }}
+      - name: Setup GHDL ${{ matrix.backend }}
         uses: ghdl/setup-ghdl@v1
+        if: matrix.simulator == 'ghdl'
         with:
           version: latest
-          backend: llvm
+          backend: ${{ matrix.backend }}
+
+      - name: Setup NVC
+        uses: nickg/setup-nvc@v1
+        if: matrix.simulator == 'nvc'
+        with:
+          version: latest
 
       - name: Prepare
         run: |
-          mkdir -p temp/ghdl
+          mkdir -p temp/${{ matrix.simulator }}
 
           mv src/common/my_project.vhdl.template tb/common/my_project.vhdl
 
-      - name: 📥 Download artifacts 'GHDL-OSVVM' from 'Build-OSVVM' job
+      - name: 📥 Download artifacts '${{ matrix.simulator }}-${{ matrix.backend }}-OSVVM' from 'Build-OSVVM' job
         uses: pyTooling/download-artifact@v4
         with:
-          name: GHDL-OSVVM
-          path: temp/ghdl
+          name: ${{ matrix.simulator }}-${{ matrix.backend }}-OSVVM
+          path: temp/${{ matrix.simulator }}
 
-      - name: 📥 Download artifacts 'GHDL-OSVVM-Generated' from 'Build-OSVVM' job
+      - name: 📥 Download artifacts '${{ matrix.simulator }}-${{ matrix.backend }}-OSVVM-Generated' from 'Build-OSVVM' job
         uses: pyTooling/download-artifact@v4
         with:
-          name: GHDL-OSVVM-Generated
-#          path: temp/ghdl
+          name: ${{ matrix.simulator }}-${{ matrix.backend }}-OSVVM-Generated
 
-      - name: 🔨 Pre-compile PoC
+      - name: 🔨 Generate run.tcl for pre-compile
         run: |
           ls -lAh lib/osvvm/*_generated.vhd
 
-          cd temp/ghdl
+          cd temp/${{ matrix.simulator }}
 
           tee run.tcl <<EOF
-          source ../../lib/OSVVM-Scripts/StartGHDL.tcl
+          source ../../lib/OSVVM-Scripts/${{ matrix.startScript }}
 
           namespace eval ::poc {
             variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
@@ -127,21 +162,37 @@ jobs:
             variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
           }
 
-          set ::osvvm::AnalyzeErrorStopCount  1
-          SetExtendedAnalyzeOptions  {-frelaxed -Wno-specs}
+          if {$::osvvm::ToolName eq "GHDL"} {
+            SetExtendedAnalyzeOptions {-frelaxed -Wno-specs -Wno-elaboration}
+          }
+
+          if {$::osvvm::ToolName eq "NVC"} {
+            SetExtendedAnalyzeOptions {--relaxed}
+          }
 
           build ../../src/PoC.pro PoC
           EOF
 
-          printf "=================\n"
+      - name: Precompile PoC ${{ matrix.simulator }}
+        if: matrix.simulator == 'ghdl'
+        run: |
+          cd temp/${{ matrix.simulator }}
           tclsh run.tcl
 
-      - name: 📈 Simulate PoC
+      - name: Precompile PoC ${{ matrix.simulator }}
+        if: matrix.simulator == 'nvc'
         run: |
-          cd temp/ghdl
+          cd temp/${{ matrix.simulator }}
+          nvc --do run.tcl
 
-          tee run.tcl <<EOF
-          source ../../lib/OSVVM-Scripts/StartGHDL.tcl
+
+      - name: 📈 Generate run.tcl for simulate
+        if: always()
+        run: |
+          cd temp/${{ matrix.simulator }}
+
+          tee run2.tcl <<EOF
+          source ../../lib/OSVVM-Scripts/${{ matrix.startScript }}
 
           namespace eval ::poc {
             variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
@@ -149,20 +200,34 @@ jobs:
             variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
           }
 
-          SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
+          if {$::osvvm::ToolName eq "GHDL"} {
+            SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
+          }
+
+          if {$::osvvm::ToolName eq "NVC"} {
+          }
 
           build ../../tb/RunAllTests.pro
           EOF
 
-          printf "=================\n"
-          tclsh run.tcl
+      - name: Simulate PoC ${{ matrix.simulator }}
+        if: matrix.simulator == 'ghdl'
+        run: |
+          cd temp/${{ matrix.simulator }}
+          tclsh run2.tcl
 
-      - name: 📤 Upload 'GHDL-PoC-Report' artifacts
+      - name: Simulate PoC ${{ matrix.simulator }}
+        if: always() && matrix.simulator == 'nvc'
+        run: |
+          cd temp/${{ matrix.simulator }}
+          nvc --do run2.tcl
+
+      - name: 📤 Upload '${{ matrix.simulator }}-${{ matrix.backend }}-PoC-Report' artifacts
         uses: pyTooling/upload-artifact@v4
         continue-on-error: true
         with:
-          name: GHDL-PoC-Report
-          working-directory: temp/ghdl
+          name: ${{ matrix.simulator }}-${{ matrix.backend }}-PoC-Report
+          working-directory: temp/${{ matrix.simulator }}
           path: |
             logs
             reports
@@ -170,38 +235,38 @@ jobs:
             *.yml
           retention-days: 1
 
-      - name: 📤 Upload 'GHDL-PoC-Report-XML' artifacts
+      - name: 📤 Upload '${{ matrix.simulator }}-${{ matrix.backend }}-PoC-Report-XML' artifacts
         uses: pyTooling/upload-artifact@v4
         continue-on-error: true
         with:
-          name: GHDL-PoC-Report-XML
-          working-directory: temp/ghdl
+          name: ${{ matrix.simulator }}-${{ matrix.backend }}-PoC-Report-XML
+          working-directory: temp/${{ matrix.simulator }}
           path: |
             *.xml
           retention-days: 1
 
-      - name: 📤 Upload 'GHDL-PoC' artifacts
+      - name: 📤 Upload '${{ matrix.simulator }}-${{ matrix.backend }}-PoC' artifacts
         uses: pyTooling/upload-artifact@v4
         with:
-          name: GHDL-PoC
-          working-directory: temp/ghdl
+          name: ${{ matrix.simulator }}-${{ matrix.backend }}-PoC
+          working-directory: temp/${{ matrix.simulator }}
           path: |
             VHDL_LIBS
           retention-days: 1
 
   Documentation:
-    uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r4
+    uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r5
     needs:
       - Build-PoC
     with:
       requirements:          '-r docs/requirements.txt'
       doc_directory:         'docs'
-      unittest_xml_artifact: 'GHDL-PoC-Report-XML'
+      unittest_xml_artifact: 'ghdl-llvm-PoC-Report-XML'
       html_artifact:         'PoC-HTML'
       latex_artifact:        'PoC-LaTeX'
 
   PublishToGitHubPages:
-    uses: pyTooling/Actions/.github/workflows/PublishToGitHubPages.yml@dev
+    uses: pyTooling/Actions/.github/workflows/PublishToGitHubPages.yml@r5
     needs:
       - Documentation
       - Build-PoC
@@ -210,26 +275,21 @@ jobs:
 #      coverage: 'PoC-Coverage-HTML'
 
   Release:
-    uses: pyTooling/Actions/.github/workflows/NightlyRelease.yml@r4
+    uses: pyTooling/Actions/.github/workflows/PublishReleaseNotes.yml@r5
     if: startsWith(github.ref, 'refs/tags/v')
     needs:
-#      - Ubuntu
-#      - Windows
-#      - PublishCoverageResults
-#      - PublishTestResults
       - PublishToGitHubPages
     secrets: inherit
     permissions:
       contents: write
       actions: write
-      attestations: write
     with:
       prerelease: true
       replacements: |
-        poc=1.3.0
-      nightly_name: "v1.3.0"
-      nightly_description: |
+        poc=2.0.0
+      tag: "v2.0.0"
+      description: |
         # The PoC-Library %poc%
       inventory-json: "inventory.json"
-      inventory-version: "1.3.0"
+      inventory-version: "2.0.0"
       assets: |
