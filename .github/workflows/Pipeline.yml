@@ -54,13 +54,13 @@ jobs:
           build ../../lib/OsvvmLibraries.pro OsvvmLibraries
           EOF
 
-      - name: Precompile OSVVM ${{ matrix.simulator }}
+      - name: Precompile OSVVM GHDL
         if: matrix.simulator == 'ghdl'
         run: |
           cd temp/${{ matrix.simulator }}
           tclsh run.tcl
 
-      - name: Precompile OSVVM ${{ matrix.simulator }}
+      - name: Precompile OSVVM NVC
         if: matrix.simulator == 'nvc'
         run: |
           cd temp/${{ matrix.simulator }}
@@ -176,13 +176,13 @@ jobs:
           build ../../src/PoC.pro PoC
           EOF
 
-      - name: Precompile PoC ${{ matrix.simulator }}
+      - name: Precompile PoC GHDL
         if: matrix.simulator == 'ghdl'
         run: |
           cd temp/${{ matrix.simulator }}
           tclsh run.tcl
 
-      - name: Precompile PoC ${{ matrix.simulator }}
+      - name: Precompile PoC NVC
         if: matrix.simulator == 'nvc'
         run: |
           cd temp/${{ matrix.simulator }}
@@ -213,19 +213,20 @@ jobs:
           build ../../tb/RunAllTests.pro
           EOF
 
-      - name: Simulate PoC ${{ matrix.simulator }}
+      - name: Simulate PoC GHDL
         if: matrix.simulator == 'ghdl'
         run: |
           cd temp/${{ matrix.simulator }}
           tclsh run2.tcl
 
-      - name: Simulate PoC ${{ matrix.simulator }}
+      - name: Simulate PoC NVC
         if: always() && matrix.simulator == 'nvc'
         run: |
           cd temp/${{ matrix.simulator }}
           nvc --do run2.tcl
 
       - name: 📤 Upload '${{ matrix.simulator }}-${{ matrix.backend }}-PoC-Report' artifacts
+        if: always()
         uses: pyTooling/upload-artifact@v4
         continue-on-error: true
         with:
@@ -239,6 +240,7 @@ jobs:
           retention-days: 1
 
       - name: 📤 Upload '${{ matrix.simulator }}-${{ matrix.backend }}-PoC-Report-XML' artifacts
+        if: always()
         uses: pyTooling/upload-artifact@v4
         continue-on-error: true
         with:
@@ -249,6 +251,7 @@ jobs:
           retention-days: 1
 
       - name: 📤 Upload '${{ matrix.simulator }}-${{ matrix.backend }}-PoC' artifacts
+        if: always()
         uses: pyTooling/upload-artifact@v4
         with:
           name: ${{ matrix.simulator }}-${{ matrix.backend }}-PoC
