@@ -6,7 +6,7 @@ on:
 
 jobs:
   Prepare:
-    uses: pyTooling/Actions/.github/workflows/PrepareJob.yml@r5
+    uses: pyTooling/Actions/.github/workflows/PrepareJob.yml@dev
 
   Build-OSVVM:
     name: Build OSVVM
