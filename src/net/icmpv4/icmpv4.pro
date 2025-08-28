@@ -1,6 +1,6 @@
 # =============================================================================
-# Authors:         Adrian Weiland
-#                  Stefan Unrein
+# Authors: Guy Eschemann
+#          Stefan Unrein
 #
 # License:
 # =============================================================================
@@ -10,7 +10,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#		http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,13 +19,6 @@
 # limitations under the License.
 # =============================================================================
 
-analyze utils.vhdl
-analyze config.vhdl
-analyze strings.vhdl
-analyze debug.vhdl
-analyze protected.v08.vhdl
-analyze math.vhdl
-analyze vectors.vhdl
-analyze physical.vhdl
-analyze components.vhdl
-analyze common.vhdl
+analyze ./icmpv4_RX.vhdl
+analyze ./icmpv4_TX.vhdl
+analyze ./icmpv4_Wrapper.vhdl
