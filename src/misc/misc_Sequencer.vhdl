@@ -3,7 +3,7 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- ============================================================================
--- Module:           TODO
+-- Module:           misc_Sequencer
 --
 -- Authors:          Patrick Lehmann
 --
@@ -13,7 +13,8 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2024-2025 The PoC-Library Authors
+-- Copyright 2007-2014 Technische Universitaet Dresden - Germany
+--                     Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -67,11 +68,11 @@ ARCHITECTURE rtl OF misc_Sequencer IS
 	SIGNAL rev_l          : STD_LOGIC                              := '0';
 
 BEGIN
-	genMuxData : FOR I IN 0 TO CHUNKS - 1 GENERATE
+	genMuxData : FOR I IN 0 TO CHUNKS - 1 generate
 		Mux_Data(I)    <= Input(((I + 1) * OUTPUT_BITS) - 1 DOWNTO I * OUTPUT_BITS);
-	END GENERATE;
+	END generate;
 
-	genRegistered0 : IF (REGISTERED = TRUE) GENERATE
+	genRegistered : IF (REGISTERED = TRUE) generate
 		PROCESS(Clock)
 		BEGIN
 			IF rising_edge(Clock) THEN
@@ -82,10 +83,9 @@ BEGIN
 				END IF;
 			END IF;
 		END PROCESS;
-	END GENERATE;
-	genRegistered1 : IF (REGISTERED = FALSE) GENERATE
+	else generate
 		Mux_Data_d    <= Mux_Data;
-	END GENERATE;
+	end generate;
 
 	PROCESS(Clock)
 	BEGIN

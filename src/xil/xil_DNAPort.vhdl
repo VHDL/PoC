@@ -13,7 +13,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2017-2025 The PoC-Library Authors
+-- Copyright 2025-2025 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -58,27 +58,27 @@ end entity;
 
 architecture rtl of xil_DNAPort is
   alias DNA_VALUE : bit_vector(SIM_DNA_VALUE'length - 1 downto 0) is SIM_DNA_VALUE;
-  constant counter_high : natural := DataOut'length +2;
+  constant COUNTER_MAX : natural := DataOut'length +2;
 
   signal DataOut_i     : DataOut'subtype := (others => '0');
   signal Shift         : std_logic;
   signal Read          : std_logic;
   signal DataOut_Shift : std_logic;
 
-  signal counter_us    : unsigned(log2ceilnz(counter_high +1) -1 downto 0) := (others => '0');
+  signal counter_us    : unsigned(log2ceilnz(COUNTER_MAX +1) -1 downto 0) := (others => '0');
   signal is_counter_high   : std_logic;
   signal is_counter_high_1 : std_logic;
 begin
   counter_us <= upcounter_next(cnt => counter_us, rst => Reset, en => not is_counter_high) when rising_edge(Clock);
-  is_counter_high   <= upcounter_equal(counter_us, counter_high);
-  is_counter_high_1 <= upcounter_equal(counter_us, counter_high -1);
+  is_counter_high   <= upcounter_equal(counter_us, COUNTER_MAX);
+  is_counter_high_1 <= upcounter_equal(counter_us, COUNTER_MAX -1);
 
   Read      <= '1' when counter_us = 1 else '0';
   Shift     <= '1' when counter_us > 1 and is_counter_high_1 = '0' else '0';
   Valid     <= is_counter_high;
   DataOut   <= DataOut_i;
 
-  genSeries: if (THIS_DEVICE.DevSeries = DEVICE_SERIES_7_SERIES) generate
+  genSeries: if THIS_DEVICE.DevSeries = DEVICE_SERIES_7_SERIES generate
     DataOut_i <= DataOut_i(DataOut_i'high -1 downto 0) & DataOut_Shift when rising_edge(Clock) and (counter_us > 1 and is_counter_high = '0');
 
     DNA : component DNA_PORT

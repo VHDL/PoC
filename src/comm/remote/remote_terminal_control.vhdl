@@ -124,13 +124,6 @@ architecture rtl of remote_terminal_control is
 	type    tKind is (KIND_NONE,
 										KIND_RESET, KIND_PULSE, KIND_SWITCH,
 										KIND_LIGHT, KIND_DIGIT);
-	--constant KIND_NONE   : natural := 0;
-	--constant KIND_RESET  : natural := 1;
-	--constant KIND_PULSE  : natural := 2;
-	--constant KIND_SWITCH : natural := 3;
-	--constant KIND_LIGHT  : natural := 4;
-	--constant KIND_DIGIT  : natural := 5;
-	--subtype tKind   is natural range KIND_NONE  to KIND_DIGIT;
 	subtype tActual is tKind   range KIND_RESET to KIND_DIGIT;
 	subtype tInput  is tActual range KIND_RESET to KIND_SWITCH;
 	subtype tOutput is tActual range KIND_LIGHT to KIND_DIGIT;
@@ -154,37 +147,26 @@ architecture rtl of remote_terminal_control is
 			end if;
 		end loop;
 		return  res;
-	end max_count;
+	end function;
 
 	constant PAR_BITS : natural := max_count(COUNTS(tInput));
 	constant RES_BITS : natural := max_count(COUNTS(tActual));
 	constant ECO_BITS : natural := 4*((RES_BITS+3)/4);
 
-
-	function log10ceil(x : natural) return positive is
-		variable scale, res : positive;
-	begin
-		scale := 10;
-		res   := 1;
-		while x >= scale loop
-			scale := 10*scale;
-			res   := res+1;
-		end loop;
-		return res;
-	end log10ceil;
 	function makeCntBits return positive is
 	begin
 		if COUNT_DECIMAL then
 			return  4*log10ceil(RES_BITS);
 		end if;
 		return  log2ceil(RES_BITS);
-	end makeCntBits;
+	end function;
 
 	constant CNT_BITS : positive := makeCntBits;
 
 
 	subtype tOutCount  is unsigned(CNT_BITS-1 downto 0);
 	type    tOutCounts is array(tKind range<>) of tOutCount;
+
 	function makeOutCounts return tOutCounts is
 		variable res : tOutCounts(COUNTS'range);
 		variable ele : tOutCount;
@@ -203,7 +185,7 @@ architecture rtl of remote_terminal_control is
 			res(i) := ele;
 		end loop;
 		return  res;
-	end;
+	end function;
 	constant OUT_COUNTS : tOutCounts(COUNTS'range) := makeOutCounts;
 
 	subtype tCode is std_logic_vector(4 downto 0);
@@ -613,4 +595,4 @@ begin
 
 	end block blkWrite;
 
-end rtl;
+end architecture;

@@ -1,6 +1,7 @@
 # =============================================================================
-# Authors:
-#   Adrian Weiland, Jonas Schreiner, Stefan Unrein
+# Authors: Adrian Weiland
+#          Jonas Schreiner
+#          Stefan Unrein
 #
 # License:
 # =============================================================================

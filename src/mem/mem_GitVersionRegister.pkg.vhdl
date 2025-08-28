@@ -16,7 +16,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2024-2025 The PoC-Library Authors
+-- Copyright 2025-2025 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -31,19 +31,17 @@
 -- limitations under the License.
 -- =============================================================================
 
-library STD;
 use     STD.TextIO.all;
 
 library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
-use     IEEE.std_logic_textio.all;
 
 use     work.utils.all;
 use     work.config.all;
 use     work.vectors.all;
-use     work.axi4lite.all;
 use     work.strings.all;
+use     work.axi4lite.all;
 
 
 package mem_GitVersionRegister is
@@ -96,16 +94,16 @@ package mem_GitVersionRegister is
 		User_ID                : std_logic_vector(95 downto 0);
 	end record;
 
-	constant C_Version_Register_UID_INIT : T_Version_Register_UID := (
+	constant C_VERSION_REGISTER_UID_INIT : T_Version_Register_UID := (
 		UID        => (others => '0'),
 		User_eFuse => (others => '0'),
 		User_ID    => (others => '0')
 	);
 
 	constant C_Num_reg_UID_vec : T_NATVEC := (
-		0 => C_Version_Register_UID_INIT.UID'length / 32,
-		1 => C_Version_Register_UID_INIT.User_eFuse'length / 32,
-		2 => C_Version_Register_UID_INIT.User_ID'length / 32
+		0 => C_VERSION_REGISTER_UID_INIT.UID'length / 32,
+		1 => C_VERSION_REGISTER_UID_INIT.User_eFuse'length / 32,
+		2 => C_VERSION_REGISTER_UID_INIT.User_ID'length / 32
 	);
 
 	constant C_Num_Reg_Common : natural := 8;
@@ -190,7 +188,6 @@ package body mem_GitVersionRegister is
 		end loop;
 		return descriptor;
 	end function;
-
 
 
 	function to_SLVV_32_Common(data : T_Version_Register_Common) return T_SLVV_32 is
