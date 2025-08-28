@@ -7,25 +7,25 @@
 --                  Martin Zabel
 --                  Patrick Lehmann
 --
--- Package:					Project specific configuration.
+-- Package:         Project specific configuration.
 --
 -- Description:
 -- ------------------------------------
---		This is a template file.
+--    This is a template file.
 --
---		The global packages common/config and common/board evaluate the settings
---		declared in this file.
+--    The global packages common/config and common/board evaluate the settings
+--    declared in this file.
 --
---		USAGE:
---			1) Copy this file into your project's source directory and rename it to
---				 "my_config.vhdl".
---			2) Add file to library "PoC" in your synthesis tool.
---			3) Change setup appropriately.
+--    USAGE:
+--      1) Copy this file into your project's source directory and rename it to
+--         "my_config.vhdl".
+--      2) Add file to library "PoC" in your synthesis tool.
+--      3) Change setup appropriately.
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
---										 Chair for VLSI-Design, Diagnostics and Architecture
+--                     Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@
 package my_config is
 	-- Change these lines to setup configuration.
 	constant MY_BOARD		: string	:= "CHANGE THIS"; -- e.g. Custom, ML505, KC705, Atlys
-	constant MY_DEVICE	: string	:= "CHANGE THIS"; -- e.g. None, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
+	constant MY_DEVICE	: string	:= "CHANGE THIS"; -- e.g. GENERIC, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
 
 	-- For internal use only
 	constant MY_VERBOSE	: boolean	:= FALSE;					-- activate detailed report statements in functions and procedures

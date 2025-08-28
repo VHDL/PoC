@@ -1,6 +1,6 @@
 # =============================================================================
-# Authors:
-#	Adrian Weiland
+# Authors: Adrian Weiland
+#          Stefan Unrein
 #
 # License:
 # =============================================================================
@@ -22,3 +22,4 @@
 analyze sort_lru_cache.vhdl
 analyze sort_lru_list.vhdl
 
+include ./sortnet/sortnet.pro

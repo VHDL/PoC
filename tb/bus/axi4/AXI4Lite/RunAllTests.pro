@@ -1,7 +1,6 @@
 # =============================================================================
-# Authors:
-#	Iqbal Asif (PLC2 Design GmbH)
-#	Patrick Lehmann (PLC2 Design GmbH)
+# Authors: Iqbal Asif (PLC2 Design GmbH)
+#          Patrick Lehmann (PLC2 Design GmbH)
 #
 # License:
 # =============================================================================
@@ -20,8 +19,7 @@
 # limitations under the License.
 # =============================================================================
 
-# TestSuite PoC.bus.axi4.axi4Lite
-# Deactivated to avoid failure on non-existing testcases
+TestSuite PoC.bus.axi4.axi4Lite
 
 library tb_axi4Lite
 

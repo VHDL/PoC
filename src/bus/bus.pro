@@ -19,6 +19,7 @@
 # limitations under the License.
 # =============================================================================
 
-analyze bus_Arbiter.vhdl
+analyze ./bus_Arbiter.vhdl
+
 include ./stream/stream.pro
 include ./axi4/axi4.pro

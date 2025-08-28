@@ -68,7 +68,7 @@ begin
 
 	-- Assert STRATEGY for known strings
 	-- ==========================================================================================================================================================
-	assert ((STRATEGY = "RR") or (STRATEGY = "LOT"))
+	assert ((STRATEGY = "RR") )--or (STRATEGY = "LOT"))
 		report "Unknown arbiter strategy." severity FAILURE;
 
 	-- Round Robin Arbiter

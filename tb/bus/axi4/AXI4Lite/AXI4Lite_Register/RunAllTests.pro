@@ -19,8 +19,6 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite PoC.bus.axi4.axi4lite.Register
-
 library tb_axi4liteRegister
 
 analyze AXI4Lite_Register_pkg.vhdl

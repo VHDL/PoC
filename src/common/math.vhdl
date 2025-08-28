@@ -14,7 +14,7 @@
 -- License:
 -- =============================================================================
 -- Copyright 2025-2025 The PoC-Library Authors
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
+-- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -123,6 +123,7 @@ package body math is
 	-- calculate fraction of positive float and give out as vector of integers
 	function fract(F : real; maxDenominator : natural := 1000; maxError : real := 1.0E-6) return T_FRACTIONAL is
 		constant fulls        : integer := integer(trunc(F));
+		constant divByOne     : real    := 1.0 / F;
 		constant remainder    : real    := ite(F >= 0.0, F - trunc(F), -F - trunc(-F));
 		variable numerator    : natural := 0;
 		variable denominator  : natural := 1;
@@ -131,14 +132,24 @@ package body math is
 		variable result       : T_FRACTIONAL := (whole => fulls, denominator => 1, numerator => 0);
 		variable bestError    : real    := remainder;
 	begin
+		if fulls = 0 then  -- precalculate values to avoid infinite loop errors
+			numerator   := 1;
+			denominator := integer(divByOne);
+			newFraction := real(numerator) / real(denominator);
+			Error       := REALMAX(remainder, newFraction) - REALMIN(remainder, newFraction);
+			bestError   := Error;
+			result.numerator := numerator;
+			result.denominator := denominator;
+		end if;
+
 		while (Error > maxError) and (denominator < maxDenominator) loop
 			if newFraction > remainder then
-				denominator := denominator +1;
-				numerator   := numerator -1;
+				denominator := denominator + 1;
+				numerator   := numerator - 1;
 			elsif (numerator +1) = denominator then
-				denominator := denominator +1;
+				denominator := denominator + 1;
 			else
-				numerator   := numerator +1;
+			numerator := numerator + 1;
 			end if;
 
 			newFraction := real(numerator) / real(denominator);
@@ -149,24 +160,23 @@ package body math is
 				result.denominator := denominator;
 			end if;
 		end loop;
-		assert (bestError < maxError) report "Didn't find suitable fraction for F=" & real'image(F) & "! Target Error=" & real'image(maxError) & " Actual Error=" & real'image(bestError) & "!" severity failure;
-		if result.numerator = 0 and result.denominator = 1 then
-			result.whole  := fulls -1;
-			result.numerator := 1;
-			result.denominator := 1;
-		end if;
+		assert (bestError < maxError)  report "Didn't find suitable fraction for F=" & real'image(F) & "! Target Error=" & real'image(maxError) & " Actual Error=" & real'image(bestError) & "!" severity failure;
 		return result;
 	end function;
 
 	-- calculate time increments to met fraction
 	function fract2timing(numerator : natural; denominator : natural) return T_NATVEC is
-		constant fractionalInReal: real     := real(numerator) / real(denominator);
+		constant fractionalInReal: real             := real(numerator) / real(denominator);
+		constant zeroes          : T_NATVEC(0 to 0) := (others => 0);
 		variable actualNumerator : natural  := 1;
 		variable tab             : natural  := 0;
 		variable increment       : real  := fractionalInReal;
 		variable remainder       : real  := fractionalInReal;
 		variable result          : T_NATVEC(0 to numerator -1) := (others => 0);
 	begin
+		if numerator = 0 then
+			return zeroes;
+		end if;
 		while actualNumerator <= denominator -1 loop
 			if remainder  >= 1.0 then
 				result(tab) := actualNumerator;
