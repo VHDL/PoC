@@ -1,0 +1,362 @@
+name: Analyze and simulate PoC using OSVVM
+
+on:
+  workflow_call:
+    inputs:
+      ubuntu-version:
+        description: 'Version of the Ubuntu image.'
+        required: false
+        default: 'ubuntu-24.04'
+        type: string
+      simulator:
+        description: 'simualtor name'
+        required: true
+        type: string
+      ghdl-backend:
+        description: 'GHDL backend'
+        required: false
+        default: 'llvm'
+        type: string
+      ghdl-version:
+        description: 'GHDL version'
+        required: false
+        default: 'latest'
+        type: string
+      nvc-version:
+        description: 'NVC version'
+        required: false
+        default: 'latest'
+        type: string
+      osvvm-artifact-prefix:
+        description: 'Prefix of OSVVM artifacts.'
+        required: false
+        default: 'OSVVM'
+        type: string
+      poc-artifact-prefix:
+        description: 'Prefix of PoC artifacts.'
+        required: false
+        default: 'PoC'
+        type: string
+
+jobs:
+  Parameters:
+    name: Simulation parameters
+    runs-on: ${{ inputs.ubuntu-version }}
+    outputs:
+      tempDirectory:   ${{ steps.Variables.outputs.tempDirectory }}
+      startScript:     ${{ steps.Variables.outputs.startScript }}
+      artifactSuffix:  ${{ steps.Variables.outputs.artifactSuffix }}
+      osvvmLibraries:  ${{ steps.ArtifactNames.outputs.osvvmLibraries }}
+      osvvmReportHTML: ${{ steps.ArtifactNames.outputs.osvvmReportHTML }}
+      osvvmReportYAML: ${{ steps.ArtifactNames.outputs.osvvmReportYAML }}
+      osvvmReportXML:  ${{ steps.ArtifactNames.outputs.osvvmReportXML }}
+      osvvmGenerated:  ${{ steps.ArtifactNames.outputs.osvvmGenerated }}
+      pocLibraries:    ${{ steps.ArtifactNames.outputs.pocLibraries }}
+      pocReportHTML:   ${{ steps.ArtifactNames.outputs.pocReportHTML }}
+      pocReportYAML:   ${{ steps.ArtifactNames.outputs.pocReportYAML }}
+      pocReportXML:    ${{ steps.ArtifactNames.outputs.pocReportXML }}
+
+    steps:
+      - name: 🖉 Compute variables
+        id: Variables
+        run: |
+          simulator="${{ inputs.simulator }}"
+          tempDirectory="temp/${simulator}"
+          startScript="StartUp.tcl"
+          artifactSuffix="unknown"
+
+          if [[ "${simulator}" == "ghdl" ]]; then
+            startScript="StartGHDL.tcl"
+            artifactSuffix="${simulator}-${{ inputs.ghdl-backend }}"
+          elif [[ "${simulator}" == "nvc" ]]; then
+            startScript="StartNVC.tcl"
+            artifactSuffix="${simulator}"
+          else
+            printf "::error title=Simulate:Parameters::Unsupported simulator '%s'.\n" "${{ inputs.simulator }}"
+            exit 1
+          fi
+
+          tee --append "${GITHUB_OUTPUT}" <<EOF
+          tempDirectory=${tempDirectory}
+          startScript=${startScript}
+          artifactSuffix=${artifactSuffix}
+          EOF
+
+      - name: 🖉 Artifact names
+        id: ArtifactNames
+        run: |
+          tee --append "${GITHUB_OUTPUT}" <<EOF
+          osvvmLibraries=${{ inputs.osvvm-artifact-prefix }}-Libraries-${{ steps.Variables.outputs.artifactSuffix }}
+          osvvmReportHTML=${{ inputs.osvvm-artifact-prefix }}-Report-HTML-${{ steps.Variables.outputs.artifactSuffix }}
+          osvvmReportXML=${{ inputs.osvvm-artifact-prefix }}-Report-XML-${{ steps.Variables.outputs.artifactSuffix }}
+          osvvmReportYAML=${{ inputs.osvvm-artifact-prefix }}-Report-YAML-${{ steps.Variables.outputs.artifactSuffix }}
+          osvvmGenerated=${{ inputs.osvvm-artifact-prefix }}-Generated-${{ steps.Variables.outputs.artifactSuffix }}
+          pocLibraries=${{ inputs.poc-artifact-prefix }}-Libraries-${{ steps.Variables.outputs.artifactSuffix }}
+          pocReportHTML=${{ inputs.poc-artifact-prefix }}-Report-HTML-${{ steps.Variables.outputs.artifactSuffix }}
+          pocReportXML=${{ inputs.poc-artifact-prefix }}-Report-XML-${{ steps.Variables.outputs.artifactSuffix }}
+          pocReportYAML=${{ inputs.poc-artifact-prefix }}-Report-YAML-${{ steps.Variables.outputs.artifactSuffix }}
+          EOF
+
+  Build-OSVVM:
+    name: Build OSVVM
+    runs-on: ${{ inputs.ubuntu-version }}
+    needs:
+      - Parameters
+    steps:
+      - name: ⏬ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: true
+
+      - name: 🔧 Install tcllib (GHDL)
+        if: inputs.simulator == 'ghdl'
+        run: sudo apt-get install -y --no-install-recommends tcllib
+
+      - name: Setup GHDL - ${{ inputs.ghdl-backend }}
+        uses: ghdl/setup-ghdl@v1
+        if: inputs.simulator == 'ghdl'
+        with:
+          version: ${{ inputs.ghdl-version }}
+          backend: ${{ inputs.ghdl-backend }}
+
+      - name: Setup NVC
+        uses: nickg/setup-nvc@v1
+        if: inputs.simulator == 'nvc'
+        with:
+          version: ${{ inputs.nvc-version }}
+
+      - name: Prepare
+        run: |
+          mkdir -p ${{ needs.Parameters.outputs.tempDirectory }}
+
+      - name: 🔨 Prepare Script
+        run: |
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+
+          tee run.tcl <<EOF
+          source ../../lib/OSVVM-Scripts/${{ needs.Parameters.outputs.startScript }}
+          build ../../lib/OsvvmLibraries.pro OsvvmLibraries
+          EOF
+
+      - name: Precompile OSVVM (GHDL)
+        if: inputs.simulator == 'ghdl'
+        run: |
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+          tclsh run.tcl
+
+      - name: Precompile OSVVM (NVC)
+        if: inputs.simulator == 'nvc'
+        run: |
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+          nvc --do run.tcl
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportHTML }}' artifacts
+        uses: pyTooling/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.osvvmReportHTML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          path: |
+            logs
+            reports
+            *.html
+          retention-days: 1
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportYAML }}' artifacts
+        uses: pyTooling/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.osvvmReportYAML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          path: |
+            *.yml
+          retention-days: 1
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportXML }}' artifacts
+        uses: pyTooling/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.osvvmReportXML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          path: |
+            *.xml
+          retention-days: 1
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmLibraries }}' artifacts
+        uses: pyTooling/upload-artifact@v4
+        with:
+          name: ${{ needs.Parameters.outputs.osvvmLibraries }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          path: |
+            VHDL_LIBS
+          retention-days: 1
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmGenerated }}' artifacts
+        uses: pyTooling/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.osvvmGenerated }}
+          path: |
+            lib/osvvm/*_generated.vhd
+          retention-days: 1
+
+  Build-PoC:
+    name: Build PoC
+    runs-on: ${{ inputs.ubuntu-version }}
+    needs:
+      - Parameters
+      - Build-OSVVM
+    steps:
+      - name: ⏬ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: true
+
+      - name: 🔧 Install tcllib (GHDL)
+        if: inputs.simulator == 'ghdl'
+        run: sudo apt-get install -y --no-install-recommends tcllib
+
+      - name: Setup GHDL - ${{ inputs.ghdl-backend }}
+        uses: ghdl/setup-ghdl@v1
+        if: inputs.simulator == 'ghdl'
+        with:
+          version: ${{ inputs.ghdl-version }}
+          backend: ${{ inputs.ghdl-backend }}
+
+      - name: Setup NVC
+        uses: nickg/setup-nvc@v1
+        if: inputs.simulator == 'nvc'
+        with:
+          version: ${{ inputs.nvc-version }}
+
+      - name: Prepare
+        run: |
+          mkdir -p "${{ needs.Parameters.outputs.tempDirectory }}"
+
+          mv src/common/my_project.vhdl.template tb/common/my_project.vhdl
+
+      - name: 📥 Download artifacts '${{ needs.Parameters.outputs.osvvmLibraries }}' from 'Build-OSVVM' job
+        uses: pyTooling/download-artifact@v4
+        with:
+          name: ${{ needs.Parameters.outputs.osvvmLibraries }}
+          path: "${{ needs.Parameters.outputs.tempDirectory }}"
+
+      - name: 📥 Download artifacts '${{ needs.Parameters.outputs.osvvmGenerated }}' from 'Build-OSVVM' job
+        uses: pyTooling/download-artifact@v4
+        with:
+          name: ${{ needs.Parameters.outputs.osvvmGenerated }}
+
+      - name: 🔨 Generate run.tcl for pre-compile
+        run: |
+          ls -lAh lib/osvvm/*_generated.vhd
+
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+
+          tee run.tcl <<EOF
+          source ../../lib/OSVVM-Scripts/${{ needs.Parameters.outputs.startScript }}
+
+          namespace eval ::poc {
+            variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
+            variable myProjectFile "../tb/common/my_project.vhdl"
+            variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
+          }
+
+          if {$::osvvm::ToolName eq "GHDL"} {
+            SetExtendedAnalyzeOptions {-frelaxed -Wno-specs -Wno-elaboration}
+          }
+          if {$::osvvm::ToolName eq "NVC"} {
+            SetExtendedAnalyzeOptions {--relaxed}
+          }
+
+          build ../../src/PoC.pro PoC
+          EOF
+
+      - name: Precompile PoC (GHDL)
+        if: inputs.simulator == 'ghdl'
+        run: |
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+          tclsh run.tcl
+
+      - name: Precompile PoC (NVC)
+        if: inputs.simulator == 'nvc'
+        run: |
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+          nvc --do run.tcl
+
+      - name: 📈 Generate run.tcl for simulate
+        if: always()
+        run: |
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+
+          tee run2.tcl <<EOF
+          source ../../lib/OSVVM-Scripts/${{ needs.Parameters.outputs.startScript }}
+
+          namespace eval ::poc {
+            variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
+            variable myProjectFile "../tb/common/my_project.vhdl"
+            variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
+          }
+
+          if {$::osvvm::ToolName eq "GHDL"} {
+            SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
+          }
+          if {$::osvvm::ToolName eq "NVC"} {
+          }
+
+          build ../../tb/RunAllTests.pro
+          EOF
+
+      - name: Simulate PoC (GHDL)
+        if: inputs.simulator == 'ghdl'
+        run: |
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+          tclsh run2.tcl
+
+      - name: Simulate PoC (NVC)
+        if: always() && inputs.simulator == 'nvc'
+        run: |
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+          nvc --do run2.tcl
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.pocReportHTML }}' artifacts
+        uses: pyTooling/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.pocReportHTML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          path: |
+            logs
+            reports
+            *.html
+          retention-days: 1
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.pocReportYAML }}' artifacts
+        uses: pyTooling/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.pocReportYAML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          path: |
+            *.yml
+          retention-days: 1
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.pocReportXML }}' artifacts
+        uses: pyTooling/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.pocReportXML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          path: |
+            *.xml
+          retention-days: 1
+
+#      - name: 📤 Upload '${{ needs.Parameters.outputs.pocLibraries }}' artifacts
+#        uses: pyTooling/upload-artifact@v4
+#        with:
+#          name: ${{ needs.Parameters.outputs.pocLibraries }}
+#          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+#          path: |
+#            VHDL_LIBS
+#          retention-days: 1

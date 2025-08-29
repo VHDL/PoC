@@ -225,7 +225,7 @@ extensions = [
 	"sphinx_autodoc_typehints",
 	"autoapi.sphinx",
 	"sphinx_reports",
-	"wavedrom",
+#	"wavedrom",
 # User defined extensions
 # 	'DocumentMember',
 # 	'poc'
@@ -315,7 +315,7 @@ todo_link_only = True
 report_unittest_testsuites = {
 	"src": {
 		"name":        f"{project}",
-		"xml_report":  "../report/unit/tb_RunAllTests.xml",
+		"xml_report":  "../report/unit/unittest.xml",
 	}
 }
 # report_codecov_packages = {
