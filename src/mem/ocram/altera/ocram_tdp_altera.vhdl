@@ -37,8 +37,8 @@ library	IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-library	altera_mf;
-use     altera_mf.all;
+library	Altera_mf;
+use     Altera_mf.Altera_MF_Components.all;
 
 use     work.config.all;
 use     work.utils.all;
@@ -54,10 +54,10 @@ entity ocram_tdp_altera is
 	port (
 		clk1 : in	std_logic;
 		clk2 : in	std_logic;
-		ce1	: in	std_logic;
-		ce2	: in	std_logic;
-		we1	: in	std_logic;
-		we2	: in	std_logic;
+		ce1	 : in	std_logic;
+		ce2	 : in	std_logic;
+		we1	 : in	std_logic;
+		we2	 : in	std_logic;
 		a1	 : in	unsigned(A_BITS-1 downto 0);
 		a2	 : in	unsigned(A_BITS-1 downto 0);
 		d1	 : in	std_logic_vector(D_BITS-1 downto 0);
@@ -69,50 +69,6 @@ end ocram_tdp_altera;
 
 
 architecture rtl of ocram_tdp_altera is
-	component altsyncram
-		generic (
-			address_aclr_a						: string;
-			address_aclr_b						: string;
-			address_reg_b						 : string;
-			indata_aclr_a						 : string;
-			indata_aclr_b						 : string;
-			indata_reg_b							: string;
-			init_file								 : string;
-			intended_device_family		: string;
-			lpm_type									: string;
-			numwords_a								: natural;
-			numwords_b								: natural;
-			operation_mode						: string;
-			outdata_aclr_a						: string;
-			outdata_aclr_b						: string;
-			outdata_reg_a						 : string;
-			outdata_reg_b						 : string;
-			power_up_uninitialized		: string;
-			widthad_a								 : natural;
-			widthad_b								 : natural;
-			width_a									 : natural;
-			width_b									 : natural;
-			width_byteena_a					 : natural;
-			width_byteena_b					 : natural;
-			wrcontrol_aclr_a					: string;
-			wrcontrol_aclr_b					: string;
-			wrcontrol_wraddress_reg_b : string);
-		port (
-			clocken0	: in	std_logic;
-			clocken1	: in	std_logic;
-			wren_a		: in	std_logic;
-			clock0		: in	std_logic;
-			wren_b		: in	std_logic;
-			clock1		: in	std_logic;
-			address_a : in	std_logic_vector (widthad_a-1 downto 0);
-			address_b : in	std_logic_vector (widthad_b-1 downto 0);
-			q_a			 : out std_logic_vector (width_a-1 downto 0);
-			q_b			 : out std_logic_vector (width_b-1 downto 0);
-			data_a		: in	std_logic_vector (width_a-1 downto 0);
-			data_b		: in	std_logic_vector (width_b-1 downto 0)
-		);
-	end component;
-
 	constant DEPTH			: positive	:= 2**A_BITS;
 	constant INIT_FILE	: string		:= ite((str_length(FILENAME) = 0), "UNUSED", FILENAME);
 
@@ -124,7 +80,7 @@ begin
 	a1_sl <= std_logic_vector(a1);
 	a2_sl <= std_logic_vector(a2);
 
-	mem : altsyncram
+	mem : component altsyncram
 		generic map (
 			address_aclr_a						=> "NONE",
 			address_aclr_b						=> "NONE",
@@ -167,4 +123,4 @@ begin
 			q_a												=> q1,
 			q_b												=> q2
 		);
-end rtl;
+end architecture;

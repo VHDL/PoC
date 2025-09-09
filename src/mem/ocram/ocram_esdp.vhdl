@@ -101,9 +101,9 @@ entity ocram_esdp is
 	port (
 		clk1 : in	std_logic;															-- clock for 1st port
 		clk2 : in	std_logic;															-- clock for 2nd port
-		ce1	: in	std_logic;															-- clock-enable for 1st port
-		ce2	: in	std_logic;															-- clock-enable for 2nd port
-		we1	: in	std_logic;															-- write-enable for 1st port
+		ce1  : in	std_logic;															-- clock-enable for 1st port
+		ce2  : in	std_logic;															-- clock-enable for 2nd port
+		we1  : in	std_logic;															-- write-enable for 1st port
 		a1	 : in	unsigned(A_BITS-1 downto 0);						-- address for 1st port
 		a2	 : in	unsigned(A_BITS-1 downto 0);						-- address for 2nd port
 		d1	 : in	std_logic_vector(D_BITS-1 downto 0);		-- write-data for 1st port

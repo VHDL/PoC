@@ -192,7 +192,7 @@ package body mem_GitVersionRegister is
 
 	function to_SLVV_32_Common(data : T_Version_Register_Common) return T_SLVV_32 is
 		variable temp : T_SLVV_32(0 to 7) := (others => (others => '0'));
-		variable name : T_SLVV_32(4 downto 0) := to_slvv_32(data.ProjektName);
+		constant name : T_SLVV_32(4 downto 0) := to_slvv_32(data.ProjektName);
 	begin
 		temp(0) := data.BuildDate_Day & data.BuildDate_Month & data.BuildDate_Year;
 		temp(1) := data.NumberModule & data.VersionOfVersionReg;
@@ -207,9 +207,9 @@ package body mem_GitVersionRegister is
 	function to_SLVV_32_Top(data : T_Version_Register_Top) return T_SLVV_32 is
 		variable temp : T_SLVV_32(0 to 55)     := (others => (others => '0'));
 
-		variable hash : T_SLVV_32(4 downto 0)  := to_slvv_32(data.GitHash);
-		variable name : T_SLVV_32(15 downto 0) := to_slvv_32(data.BranchName_Tag);
-		variable url  : T_SLVV_32(31 downto 0) := to_slvv_32(data.GitURL);
+		constant hash : T_SLVV_32(4 downto 0)  := to_slvv_32(data.GitHash);
+		constant name : T_SLVV_32(15 downto 0) := to_slvv_32(data.BranchName_Tag);
+		constant url  : T_SLVV_32(31 downto 0) := to_slvv_32(data.GitURL);
 
 		variable idx  : natural := 0;
 	begin

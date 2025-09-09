@@ -118,10 +118,13 @@ package arith is
 			SEED    : std_logic_vector := "0"
 		);
 		port (
-			clk    : in  std_logic;
-			rst    : in  std_logic;
-			got    : in  std_logic;
-			val    : out std_logic_vector(BITS-1 downto 0));
+			Clock    : in  std_logic;
+			Reset    : in  std_logic; -- reset value to seed
+
+			InitialValue : in std_logic_vector := SEED; -- Is loaded when Reset = '1'
+			Got          : in std_logic; -- the current value has been got, and a new value should be calculated
+			Value        : out std_logic_vector(BITS - 1 downto 0) -- the pseudo-random number
+		);
 	end component;
 
 	component arith_trng is
@@ -134,18 +137,18 @@ package arith is
 		);
 	end component;
 
-	component arith_muls_wide
-		generic (
-			NA    : integer range 2 to 18;
-			NB    : integer range 19 to 36;
-			SPLIT  : positive
-		);
-		port (
-			a      : in  signed(NA-1 downto 0);
-			b      : in  signed(NB-1 downto 0);
-			p      : out signed(NA+NB-1 downto 0)
-		);
-	end component;
+	-- component arith_muls_wide
+	-- 	generic (
+	-- 		NA    : integer range 2 to 18;
+	-- 		NB    : integer range 19 to 36;
+	-- 		SPLIT  : positive
+	-- 	);
+	-- 	port (
+	-- 		a      : in  signed(NA-1 downto 0);
+	-- 		b      : in  signed(NB-1 downto 0);
+	-- 		p      : out signed(NA+NB-1 downto 0)
+	-- 	);
+	-- end component;
 
 	component arith_sqrt
 		generic (
@@ -202,7 +205,7 @@ package arith is
 		port (
 			X    : in  std_logic_vector(BITS - 1 downto 0);
 			CIn  : in  std_logic                              := '1';
-			Y    : out  std_logic_vector(BITS - 1 downto 0)
+			Y    : out std_logic_vector(BITS - 1 downto 0)
 		);
 	end component;
 

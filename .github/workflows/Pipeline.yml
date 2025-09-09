@@ -87,9 +87,9 @@ jobs:
     if: success() || failure()
     steps:
       - run: |
-          prinntf "Simulate:           '%s'\n" "${{ needs.Simulate.result }}"
-          prinntf "PublishTestResults: '%s'\n" "${{ needs.PublishTestResults.result }}"
-          prinntf "Documentation:      '%s'\n" "${{ needs.Documentation.result }}"
+          printf "Simulate:           '%s'\n" "${{ needs.Simulate.result }}"
+          printf "PublishTestResults: '%s'\n" "${{ needs.PublishTestResults.result }}"
+          printf "Documentation:      '%s'\n" "${{ needs.Documentation.result }}"
 
   PDFDocumentation:
     uses: pyTooling/Actions/.github/workflows/LaTeXDocumentation.yml@r5

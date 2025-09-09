@@ -241,6 +241,4 @@ begin
 		busy => open,
 		changed => open
 	);
-
-
-end Behavioral;
+end architecture;
