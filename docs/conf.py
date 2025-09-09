@@ -225,6 +225,7 @@ extensions = [
 	"sphinx_autodoc_typehints",
 	"autoapi.sphinx",
 	"sphinx_reports",
+	"pyEDAA.OSVVM.Sphinx",
 #	"wavedrom",
 # User defined extensions
 # 	'DocumentMember',
@@ -335,6 +336,12 @@ report_unittest_testsuites = {
 # 	}
 # }
 
+osvvm_build_summaries = {
+	"PoC": {
+		"name":        "The PoC-Library",
+		"yaml_report": "../report/unit/osvvmreport.yml",
+	}
+}
 
 # ==============================================================================
 # Sphinx_Design
