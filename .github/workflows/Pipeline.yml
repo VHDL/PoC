@@ -17,20 +17,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { simulator: 'nvc',  backend: '',      version: 'latest' }
-          - { simulator: 'ghdl', backend: 'mcode', version: 'latest' }
-          - { simulator: 'ghdl', backend: 'llvm',  version: 'latest' }
+          - { simulator: 'nvc',  backend: '',      version: 'latest', can-fail: true  }
+          - { simulator: 'ghdl', backend: 'mcode', version: 'latest', can-fail: false }
+          - { simulator: 'ghdl', backend: 'llvm',  version: 'latest', can-fail: false }
     with:
-      simulator:      ${{ matrix.simulator }}
-      ghdl-version:   ${{ matrix.version }}
-      ghdl-backend:   ${{ matrix.backend }}
-      nvc-version:    ${{ matrix.version }}
+      simulator:    ${{ matrix.simulator }}
+      ghdl-version: ${{ matrix.version }}
+      ghdl-backend: ${{ matrix.backend }}
+      nvc-version:  ${{ matrix.version }}
+      can-fail:     ${{ matrix.can-fail }}
 
   PublishTestResults:
     uses: pyTooling/Actions/.github/workflows/PublishTestResults.yml@r5
     needs:
       - Simulate
-    if: success() || failure()
+#    if: success() || failure()
     with:
       unittest_artifacts_pattern: 'PoC-Report-XML-*'
       testsuite-summary-name:     'The PoC Library'
@@ -48,7 +49,7 @@ jobs:
     needs:
       - Simulate
       - PublishTestResults
-    if: success() || failure()
+#    if: success() || failure()
     steps:
       - name: 🗑️ Delete YAML artifacts from matrix jobs
         uses: geekyeggo/delete-artifact@v5
@@ -70,7 +71,7 @@ jobs:
     uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r5
     needs:
       - PublishTestResults
-    if: success() || failure()
+#    if: success() || failure()
     with:
       requirements:          '-r docs/requirements.txt'
       doc_directory:         'docs'
@@ -84,7 +85,7 @@ jobs:
       - Simulate
       - PublishTestResults
       - Documentation
-    if: success() || failure()
+#    if: success() || failure()
     steps:
       - run: |
           printf "Simulate:           '%s'\n" "${{ needs.Simulate.result }}"
@@ -92,12 +93,12 @@ jobs:
           printf "Documentation:      '%s'\n" "${{ needs.Documentation.result }}"
 
   PDFDocumentation:
-    uses: pyTooling/Actions/.github/workflows/LaTeXDocumentation.yml@r5
+    uses: pyTooling/Actions/.github/workflows/LaTeXDocumentation.yml@dev
     needs:
       - Documentation
-    if: needs.Documentation.result == 'success'
+#    if: (success() || failure()) && needs.Documentation.result == 'success'
     with:
-      document:       'The-PoC-Library'
+      document:       'The PoC-Library'
       latex_artifact: 'PoC-LaTeX'
       pdf_artifact:   'PoC-PDF'
 
@@ -106,7 +107,7 @@ jobs:
     needs:
       - Documentation
       - Simulate
-    if: needs.Documentation.result == 'success'
+#    if: (success() || failure()) && needs.Documentation.result == 'success'
     with:
       doc:      'PoC-HTML'
 #      coverage: 'PoC-Coverage-HTML'
@@ -116,7 +117,7 @@ jobs:
     needs:
       - Prepare
       - PublishToGitHubPages
-    if: needs.Prepare.outputs.is_release_commit && github.event_name != 'schedule'
+    if: needs.Prepare.outputs.is_release_commit == 'true' && github.event_name != 'schedule'
     permissions:
       contents: write  # required for create tag
       actions:  write  # required for trigger workflow

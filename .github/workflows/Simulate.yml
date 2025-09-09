@@ -8,6 +8,11 @@ on:
         required: false
         default: 'ubuntu-24.04'
         type: string
+      can-fail:
+        description: 'Allow a job combination to fail.'
+        required: false
+        default: false
+        type: boolean
       simulator:
         description: 'simualtor name'
         required: true
@@ -102,6 +107,7 @@ jobs:
     runs-on: ${{ inputs.ubuntu-version }}
     needs:
       - Parameters
+    continue-on-error: ${{ inputs.can-fail }}
     steps:
       - name: ⏬ Checkout repository
         uses: actions/checkout@v4
@@ -207,6 +213,7 @@ jobs:
     needs:
       - Parameters
       - Build-OSVVM
+    continue-on-error: ${{ inputs.can-fail }}
     steps:
       - name: ⏬ Checkout repository
         uses: actions/checkout@v4
