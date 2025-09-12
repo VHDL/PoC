@@ -6,7 +6,7 @@ on:
 
 jobs:
   Prepare:
-    uses: pyTooling/Actions/.github/workflows/PrepareJob.yml@r5
+    uses: pyTooling/Actions/.github/workflows/PrepareJob.yml@r6
     with:
       main_branch:    'master'
       release_branch: 'master'
@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { simulator: 'nvc',  backend: '',      version: 'latest', can-fail: true  }
+          - { simulator: 'nvc',  backend: '',      version: 'latest', can-fail: false }
           - { simulator: 'ghdl', backend: 'mcode', version: 'latest', can-fail: false }
           - { simulator: 'ghdl', backend: 'llvm',  version: 'latest', can-fail: false }
     with:
@@ -28,7 +28,7 @@ jobs:
       can-fail:     ${{ matrix.can-fail }}
 
   PublishTestResults:
-    uses: pyTooling/Actions/.github/workflows/PublishTestResults.yml@r5
+    uses: pyTooling/Actions/.github/workflows/PublishTestResults.yml@r6
     needs:
       - Simulate
 #    if: success() || failure()
@@ -68,7 +68,7 @@ jobs:
             PoC-Report-XML-*
 
   Documentation:
-    uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r5
+    uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r6
     needs:
       - PublishTestResults
 #    if: success() || failure()
@@ -96,14 +96,15 @@ jobs:
     uses: pyTooling/Actions/.github/workflows/LaTeXDocumentation.yml@dev
     needs:
       - Documentation
-#    if: (success() || failure()) && needs.Documentation.result == 'success'
+    if: (success() || failure()) && needs.Documentation.result == 'success'
     with:
       document:       'The PoC-Library'
       latex_artifact: 'PoC-LaTeX'
       pdf_artifact:   'PoC-PDF'
+      can-fail:       'true'
 
   PublishToGitHubPages:
-    uses: pyTooling/Actions/.github/workflows/PublishToGitHubPages.yml@r5
+    uses: pyTooling/Actions/.github/workflows/PublishToGitHubPages.yml@r6
     needs:
       - Documentation
       - Simulate
@@ -113,7 +114,7 @@ jobs:
 #      coverage: 'PoC-Coverage-HTML'
 
   AutoTag:
-    uses: pyTooling/Actions/.github/workflows/TagReleaseCommit.yml@r5
+    uses: pyTooling/Actions/.github/workflows/TagReleaseCommit.yml@r6
     needs:
       - Prepare
       - PublishToGitHubPages
@@ -126,7 +127,7 @@ jobs:
       auto_tag: ${{ needs.Prepare.outputs.is_release_commit }}
 
   Release:
-    uses: pyTooling/Actions/.github/workflows/PublishReleaseNotes.yml@r5
+    uses: pyTooling/Actions/.github/workflows/PublishReleaseNotes.yml@r6
     needs:
       - PublishToGitHubPages
     if: needs.Prepare.outputs.is_release_tag == 'true'

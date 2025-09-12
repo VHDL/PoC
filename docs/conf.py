@@ -225,7 +225,7 @@ extensions = [
 	"sphinx_autodoc_typehints",
 	"autoapi.sphinx",
 	"sphinx_reports",
-	"pyEDAA.OSVVM.Sphinx",
+	# "pyEDAA.OSVVM.Sphinx",
 #	"wavedrom",
 # User defined extensions
 # 	'DocumentMember',
