@@ -28,7 +28,6 @@ include ./common/common.pro
 include ./sync/sync.pro
 
 analyze ./bus/axi4/AXI4_Common.pkg.vhdl
-analyze ./bus/axi4/AXI4_Common.pkg.vhdl
 analyze ./bus/axi4/AXI4_Full.pkg.vhdl
 analyze ./bus/axi4/AXI4Stream/AXI4Stream.pkg.vhdl
 analyze ./bus/axi4/AXI4Lite/AXI4Lite.pkg.vhdl
