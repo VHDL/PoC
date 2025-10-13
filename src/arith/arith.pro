@@ -1,6 +1,23 @@
 # =============================================================================
 # Authors:
-#	Adrian Weiland
+#	Adrian Weiland, Stefan Unrein
+#
+# License:
+# =============================================================================
+# Copyright 2025-2025 The PoC-Library Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# =============================================================================
 
 analyze ./arith.pkg.vhdl
 
@@ -22,6 +39,7 @@ if { $::poc::vendor eq "Xilinx" } {
 
 analyze ./arith_addw.vhdl
 analyze ./arith_carrychain_inc.vhdl
+analyze ./arith_cca.vhdl
 analyze ./arith_convert_bin2bcd.vhdl
 analyze ./arith_counter_bcd.vhdl
 analyze ./arith_counter_free.vhdl
@@ -33,5 +51,7 @@ analyze ./arith_prefix_and.vhdl
 analyze ./arith_prefix_or.vhdl
 analyze ./arith_prng.vhdl
 analyze ./arith_same.vhdl
+analyze ./arith_sqrt.vhdl
 analyze ./arith_scaler.vhdl
 analyze ./arith_shifter_barrel.vhdl
+analyze ./arith_trng.vhdl

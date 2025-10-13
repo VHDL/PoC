@@ -1,14 +1,34 @@
 # =============================================================================
-# Authors:
-#	Adrian Weiland
+# Authors: Adrian Weiland
+#          Stefan Unrein
+#
+# License:
+# =============================================================================
+# Copyright 2025-2025 The PoC-Library Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#		http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 # =============================================================================
 
 analyze ./misc_Delay.vhdl
+analyze ./misc_Sequencer.vhdl
+analyze ./misc_StrobeGenerator.vhdl
+analyze ./misc_StrobeLimiter.vhdl
+analyze ./misc_StrobeStretcher.vhdl
 analyze ./misc_FrequencyMeasurement.vhdl
-
-# analyze ./stat/stat.pkg.vhdl
+analyze ./misc_bit_lz.vhdl
 
 include ./filter/filter.pro
+include ./stat/stat.pro
 
 # Included in PoC.pro for cross-dependency
-# include ./gearbox/gearbox.pro
+include ./gearbox/gearbox.pro

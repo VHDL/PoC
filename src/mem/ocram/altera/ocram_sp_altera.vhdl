@@ -37,8 +37,8 @@ library	IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-library	altera_mf;
-use     altera_mf.all;
+library	Altera_mf;
+use     Altera_mf.Altera_MF_Components.all;
 
 use     work.config.all;
 use     work.utils.all;
@@ -63,34 +63,6 @@ end entity;
 
 
 architecture rtl of ocram_sp_altera is
-	component altsyncram
-		generic (
-			address_aclr_a					: string;
-			indata_aclr_a						: string;
-			init_file								: string;
-			intended_device_family	: string;
-			lpm_hint								: string;
-			lpm_type								: string;
-			numwords_a							: natural;
-			operation_mode					: string;
-			outdata_aclr_a					: string;
-			outdata_reg_a						: string;
-			power_up_uninitialized	: string;
-			widthad_a								: natural;
-			width_a									: natural;
-			width_byteena_a					: natural;
-			wrcontrol_aclr_a				: string
-			);
-		port (
-			clocken0	: in	std_logic;
-			wren_a		: in	std_logic;
-			clock0		: in	std_logic;
-			address_a : in	std_logic_vector(widthad_a-1 downto 0);
-			q_a				: out std_logic_vector(width_a-1 downto 0);
-			data_a		: in	std_logic_vector(width_a-1 downto 0)
-			);
-	end component;
-
 	constant DEPTH			: positive	:= 2**A_BITS;
 	constant INIT_FILE	: string		:= ite((str_length(FILENAME) = 0), "UNUSED", FILENAME);
 
@@ -99,7 +71,7 @@ architecture rtl of ocram_sp_altera is
 begin
 	a_sl <= std_logic_vector(a);
 
-	mem : altsyncram
+	mem : component altsyncram
 		generic map (
 			address_aclr_a					=> "NONE",
 			indata_aclr_a						=> "NONE",

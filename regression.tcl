@@ -1,6 +1,6 @@
 # =============================================================================
 # Authors:
-#	Jonas Schreiner
+#   Jonas Schreiner, Stefan Unrein
 #
 # License:
 # =============================================================================
@@ -26,17 +26,23 @@ namespace eval ::poc {
 }
 
 source ../lib/OSVVM-Scripts/StartUp.tcl
+# source ../lib/OSVVM-Scripts/StartNVC.tcl
 
 build ../lib/OsvvmLibraries.pro
 
 if {$::osvvm::ToolName eq "GHDL"} {
-    SetExtendedAnalyzeOptions {-frelaxed -Wno-specs}
+    SetExtendedAnalyzeOptions {-frelaxed -Wno-specs -Wno-elaboration}
     SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
 }
 
 if {$::osvvm::ToolName eq "RiveraPRO"} {
     SetExtendedSimulationOptions {-unbounderror}
 }
+
+if {$::osvvm::ToolName eq "NVC"} {
+    SetExtendedAnalyzeOptions {--relaxed}
+}
+
 #set ::osvvm::AnalyzeErrorStopCount 1
 #set ::osvvm::SimulateErrorStopCount 1
 

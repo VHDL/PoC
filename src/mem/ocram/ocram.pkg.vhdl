@@ -36,6 +36,8 @@ library	IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
+use     work.mem.all;
+
 
 package ocram is
 	-- Single-Port
@@ -56,22 +58,24 @@ package ocram is
 
 	-- Simple-Dual-Port
   component ocram_sdp
-    generic (
-      A_BITS		: positive;
-      D_BITS		: positive;
-			FILENAME	: string		:= ""
-		);
-    port (
-      rclk : in  std_logic;
-      rce  : in  std_logic;
-      wclk : in  std_logic;
-      wce  : in  std_logic;
-      we   : in  std_logic;
-      ra   : in  unsigned(A_BITS-1 downto 0);
-      wa   : in  unsigned(A_BITS-1 downto 0);
-      d    : in  std_logic_vector(D_BITS-1 downto 0);
-      q    : out std_logic_vector(D_BITS-1 downto 0));
-  end component;
+  	generic(
+  		A_BITS   : positive;
+  		D_BITS   : positive;
+  		RAM_TYPE : T_RAM_TYPE := RAM_TYPE_AUTO;
+  		FILENAME : string     := ""
+  	);
+  	port(
+  		rclk : in  std_logic;
+  		rce  : in  std_logic;
+  		wclk : in  std_logic;
+  		wce  : in  std_logic;
+  		we   : in  std_logic;
+  		ra   : in  unsigned(A_BITS-1 downto 0);
+  		wa   : in  unsigned(A_BITS-1 downto 0);
+  		d    : in  std_logic_vector(D_BITS-1 downto 0);
+  		q    : out std_logic_vector(D_BITS-1 downto 0)
+  	);
+  end component ocram_sdp;
 
 	-- Enhanced-Simple-Dual-Port
   component ocram_esdp

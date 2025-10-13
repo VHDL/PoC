@@ -225,7 +225,8 @@ extensions = [
 	"sphinx_autodoc_typehints",
 	"autoapi.sphinx",
 	"sphinx_reports",
-	"wavedrom",
+	# "pyEDAA.OSVVM.Sphinx",
+#	"wavedrom",
 # User defined extensions
 # 	'DocumentMember',
 # 	'poc'
@@ -315,7 +316,7 @@ todo_link_only = True
 report_unittest_testsuites = {
 	"src": {
 		"name":        f"{project}",
-		"xml_report":  "../report/unit/tb_RunAllTests.xml",
+		"xml_report":  "../report/unit/unittest.xml",
 	}
 }
 # report_codecov_packages = {
@@ -335,6 +336,12 @@ report_unittest_testsuites = {
 # 	}
 # }
 
+osvvm_build_summaries = {
+	"PoC": {
+		"name":        "The PoC-Library",
+		"yaml_report": "../report/unit/osvvmreport.yml",
+	}
+}
 
 # ==============================================================================
 # Sphinx_Design
