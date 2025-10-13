@@ -117,10 +117,6 @@ configured in PoC:
 .. |r-quartus| replace:: :ref:`PoC.py quartus <CMDREF:PoC.py-quartus>`
 .. |l-lse| replace:: :ref:`Lattice (Diamond) Synthesis Engine (LSE) <USING:Synth:Lattice-Diamond>`
 .. |r-lse| replace:: :ref:`PoC.py lse <CMDREF:PoC.py-lse>`
-.. |l-xst| replace:: :ref:`Xilinx ISE Systhesis Tool (XST) <USING:Synth:Xilinx-ISE>`
-.. |r-xst| replace:: :ref:`PoC.py xst <CMDREF:PoC.py-xst>`
-.. |l-coregen| replace:: :ref:`Xilinx ISE Core Generator (CoreGen) <USING:Synth:Xilinx-CoreGen>`
-.. |r-coregen| replace:: :ref:`PoC.py coregen <CMDREF:PoC.py-coregen>`
 .. |l-vivado| replace:: :ref:`Xilinx Vivado Synthesis <USING:Synth:Xilinx-Vivado>`
 .. |r-vivado| replace:: :ref:`PoC.py vivado <CMDREF:PoC.py-vivado>`
 
@@ -130,10 +126,6 @@ configured in PoC:
 | |l-quartus|                     | |r-quartus|                                |
 +---------------------------------+--------------------------------------------+
 | |l-lse|                         | |r-lse|                                    |
-+---------------------------------+--------------------------------------------+
-| |l-xst|                         | |r-xst|                                    |
-+---------------------------------+--------------------------------------------+
-| |l-coregen|                     | |r-coregen|                                |
 +---------------------------------+--------------------------------------------+
 | |l-vivado|                      | |r-vivado|                                 |
 +---------------------------------+--------------------------------------------+

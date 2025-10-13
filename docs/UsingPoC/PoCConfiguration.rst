@@ -270,16 +270,6 @@ Configure the installation directory for all Xilinx tools.
      Are Xilinx products installed on your system? [Y/n/p]: Y
      Xilinx installation directory [C:\Xilinx]:
 
-ISE
----
-If an Xilinx ISE environment is available and shall be configured in PoC, then
-answer the following questions:
-
-.. code-block:: none
-
-   Configuring Xilinx ISE
-     Is Xilinx ISE installed on your system? [Y/n/p]: Y
-     Xilinx ISE installation directory [C:\Xilinx\14.7\ISE_DS]:
 
 Vivado
 ------

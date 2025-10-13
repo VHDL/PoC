@@ -16,11 +16,6 @@ Adding IP Cores to Lattice Diamond
 
 .. TODO:: No documentation available.
 
-Adding IP Cores to Xilinx ISE
-=============================
-
-.. TODO:: No documentation available.
-
 Adding IP Cores to Xilinx Vivado
 ================================
 

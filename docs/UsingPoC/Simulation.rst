@@ -177,8 +177,6 @@ configured in PoC:
 +-----------+---------------------------------------------+
 | ghdl      | GHDL Simulator                              |
 +-----------+---------------------------------------------+
-| isim      | Xilinx ISE Simulator                        |
-+-----------+---------------------------------------------+
 | vsim      | QuestaSim Simulator or ModelSim             |
 +-----------+---------------------------------------------+
 | xsim      | Xilinx Vivado Simulator                     |
@@ -321,34 +319,7 @@ IP core's run script, which may default to ``run -all``.
 +--------------------------+---------------------------------------------------------+
 
 
-.. _USING:Sim:Xilinx-iSim:
-
-Xilinx ISE Simulator
-====================
-
-The command to invoke a simulation using ISE Simulator (isim) is ``isim``
-followed by a list of PoC entities. The following options are supported for
-ISE Simulator:
-
-+--------------------------+---------------------------------------------------------+
-| Simulator Option         | Description                                             |
-+====+=====================+=========================================================+
-|    | --board=<BOARD>     | Specify a target board.                                 |
-+----+---------------------+---------------------------------------------------------+
-|    | --device=<DEVICE>   | Specify a target device.                                |
-+----+---------------------+---------------------------------------------------------+
-| -g | --gui               | Start the simulation in the ISE Simulator GUI (iSim).   |
-+----+---------------------+---------------------------------------------------------+
-
-.. rubric:: Example:
-
-.. code-block:: PowerShell
-
-   cd PoCRoot
-   .\poc.ps1 isim PoC.arith.prng --board=Atlys -g
-
-
-.. _USING:Sim:Xilinx-xSim:
+.. _USING/Sim:Xilinx-xSim:
 
 Xilinx Vivado Simulator
 =======================
