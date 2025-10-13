@@ -26,4 +26,5 @@ Namespaces for Entities:
    misc <misc/index>
    net <net/index>
    sort <sort/index>
+   sync <sync/index>
    xil <xil/index>

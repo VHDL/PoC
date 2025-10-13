@@ -9,7 +9,6 @@ The namespace ``PoC.misc`` offers different yet uncathegorized entities.
 
  * :ref:`NS/filter` contains 1-bit filter algorithms.
  * :ref:`NS/stat` contains statistic modules.
- * :ref:`NS/sync` offers clock-domain-crossing (CDC) modules.
 
 **Package**
 
@@ -31,7 +30,6 @@ The package :ref:`PoC.misc <PKG/misc>` holds all component declarations for this
    filter <filter/index>
    gearbox <gearbox/index>
    stat <stat/index>
-   sync <sync/index>
 
 .. toctree::
    :hidden:

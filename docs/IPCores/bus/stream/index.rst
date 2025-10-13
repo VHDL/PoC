@@ -13,7 +13,7 @@ PoC.Stream modules ...
 .. toctree::
    :hidden:
 
-   stream_Buffer <stream_Buffer>
+   stream_FIFO <stream_FIFO>
    stream_DeMux <stream_DeMux>
    stream_Mux <stream_Mux>
    stream_Mirror <stream_Mirror>

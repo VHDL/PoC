@@ -1,31 +1,30 @@
-.. _IP/sync_Command:
+.. _IP/sync_Vector:
 
-PoC.misc.sync.Command
-#####################
+PoC.sync.Vector
+###############
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/sync/sync_Command.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/sync/sync_Vector.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/misc/sync/sync_Command_tb.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/sync/sync_Vector_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <misc/sync/sync_Command.vhdl>`
-      * |gh-tb| :poctb:`Testbench <misc/sync/sync_Command_tb.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <sync/sync_Vector.vhdl>`
+      * |gh-tb| :poctb:`Testbench <sync/sync_Vector_tb.vhdl>`
 
 This module synchronizes a vector of bits from clock-domain ``Clock1`` to
 clock-domain ``Clock2``. The clock-domain boundary crossing is done by a
 change comparator, a T-FF, two synchronizer D-FFs and a reconstructive
 XOR indicating a value change on the input. This changed signal is used
 to capture the input for the new output. A busy flag is additionally
-calculated for the input clock-domain. The output has strobe character
-and is reset to it's ``INIT`` value after one clock cycle.
+calculated for the input clock domain.
 
 Constraints:
   This module uses sub modules which need to be constrained. Please
@@ -35,14 +34,14 @@ Constraints:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/misc/sync/sync_Command.vhdl
+.. literalinclude:: ../../../../src/sync/sync_Vector.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
-   :lines: 51-65
+   :lines: 50-65
 
 
 
 .. only:: latex
 
-   Source file: :pocsrc:`misc/sync/sync_Command.vhdl <misc/sync/sync_Command.vhdl>`
+   Source file: :pocsrc:`sync/sync_Vector.vhdl <sync/sync_Vector.vhdl>`

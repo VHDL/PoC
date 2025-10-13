@@ -1,23 +1,23 @@
 .. _IP/sync_Bits:
 
-PoC.misc.sync.Bits
-##################
+PoC.sync.Bits
+#############
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/sync/sync_Bits.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/sync/sync_Bits.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/misc/sync/sync_Bits_tb.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/sync/sync_Bits_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <misc/sync/sync_Bits.vhdl>`
-      * |gh-tb| :poctb:`Testbench <misc/sync/sync_Bits_tb.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <sync/sync_Bits.vhdl>`
+      * |gh-tb| :poctb:`Testbench <sync/sync_Bits_tb.vhdl>`
 
 This module synchronizes multiple flag bits into clock-domain ``Clock``.
 The clock-domain boundary crossing is done by two synchronizer D-FFs. All
@@ -43,7 +43,7 @@ Constraints:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/misc/sync/sync_Bits.vhdl
+.. literalinclude:: ../../../../src/sync/sync_Bits.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -51,17 +51,17 @@ Constraints:
 
 .. seealso::
 
-   :doc:`PoC.misc.sync.Reset </IPCores/misc/sync/sync_Reset>`
+   :doc:`PoC.sync.Reset </IPCores/sync/sync_Reset>`
      For a special 2 D-FF synchronizer for *reset*-signals.
-   :doc:`PoC.misc.sync.Pulse </IPCores/misc/sync/sync_Pulse>`
+   :doc:`PoC.sync.Pulse </IPCores/sync/sync_Pulse>`
      For a special 1+2 D-FF synchronizer for *pulse*-signals.
-   :doc:`PoC.misc.sync.Strobe </IPCores/misc/sync/sync_Strobe>`
+   :doc:`PoC.sync.Strobe </IPCores/sync/sync_Strobe>`
      For a synchronizer for *strobe*-signals.
-   :doc:`PoC.misc.sync.Vector </IPCores/misc/sync/sync_Vector>`
+   :doc:`PoC.sync.Vector </IPCores/sync/sync_Vector>`
      For a multiple bits capable synchronizer.
 
 
 
 .. only:: latex
 
-   Source file: :pocsrc:`misc/sync/sync_Bits.vhdl <misc/sync/sync_Bits.vhdl>`
+   Source file: :pocsrc:`sync/sync_Bits.vhdl <sync/sync_Bits.vhdl>`

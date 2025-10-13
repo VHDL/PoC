@@ -1,23 +1,23 @@
 .. _IP/sync_Reset:
 
-PoC.misc.sync.Reset
-###################
+PoC.sync.Reset
+##############
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/sync/sync_Reset.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/sync/sync_Reset.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/misc/sync/sync_Reset_tb.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/sync/sync_Reset_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <misc/sync/sync_Reset.vhdl>`
-      * |gh-tb| :poctb:`Testbench <misc/sync/sync_Reset_tb.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <sync/sync_Reset.vhdl>`
+      * |gh-tb| :poctb:`Testbench <sync/sync_Reset_tb.vhdl>`
 
 This module synchronizes an asynchronous reset signal to the clock
 ``Clock``. The ``Input`` can be asserted and de-asserted at any time.
@@ -45,7 +45,7 @@ Constraints:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/misc/sync/sync_Reset.vhdl
+.. literalinclude:: ../../../../src/sync/sync_Reset.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -55,4 +55,4 @@ Constraints:
 
 .. only:: latex
 
-   Source file: :pocsrc:`misc/sync/sync_Reset.vhdl <misc/sync/sync_Reset.vhdl>`
+   Source file: :pocsrc:`sync/sync_Reset.vhdl <sync/sync_Reset.vhdl>`

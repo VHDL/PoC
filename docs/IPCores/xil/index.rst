@@ -7,7 +7,6 @@ This namespace is for Xilinx specific modules.
 
 **Sub-Namespaces**
 
- * :ref:`NS/mig`
  * :ref:`NS/reconfig`
 
 **Entities**

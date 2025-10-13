@@ -1,4 +1,4 @@
-.. _IP/FrameLoopback:
+.. _IP/net_FrameLoopback:
 
 PoC.net.FrameLoopback
 #####################
