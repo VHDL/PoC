@@ -33,10 +33,10 @@ project = "PoC"
 # release =   versionInformation.Version
 project = 'The PoC-Library'
 copyright = '2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture'
-author = 'Patrick Lehmann, Thomas B. Preusser, Martin Zabel'
+author = 'The PoC-Library Authors'
 
-version = "1.1"     # The short X.Y version.
-release = "1.1.1"   # The full version, including alpha/beta/rc tags.
+version = "2.1"     # The short X.Y version.
+release = "2.1.0"   # The full version, including alpha/beta/rc tags.
 
 from subprocess import check_output
 
@@ -268,8 +268,8 @@ extlinks = {
 	"ghsrc":    (f"https://GitHub.com/{githubNamespace}/{project}/blob/master/%s", None),
 	"wiki":     (f"https://en.wikipedia.org/wiki/%s", None),
 
-	"pocissue": (f"https://github.com/{githubNamespace}/{project}/issues/%s", 'issue #'),           # => replace by ghissue
-	"pocpull":  (f"https://github.com/{githubNamespace}/{project}/pull/%s", 'pull request #'),      # => replace by ghpull
+	"pocissue": (f"https://github.com/{githubNamespace}/{project}/issues/%s", 'issue #%s'),           # => replace by ghissue
+	"pocpull":  (f"https://github.com/{githubNamespace}/{project}/pull/%s", 'pull request #%s'),      # => replace by ghpull
 	"pocsrc":   (f"https://github.com/{githubNamespace}/{project}/blob/master/src/%s?ts=2", None),  # => replace by ghsrc
 	"poctb":    (f"https://github.com/{githubNamespace}/{project}/blob/master/tb/%s?ts=2", None)
 }

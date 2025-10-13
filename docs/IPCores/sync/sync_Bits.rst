@@ -43,7 +43,7 @@ Constraints:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/sync/sync_Bits.vhdl
+.. literalinclude:: ../../../src/sync/sync_Bits.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:

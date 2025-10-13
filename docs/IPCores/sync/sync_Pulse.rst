@@ -43,7 +43,7 @@ Constraints:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/sync/sync_Pulse.vhdl
+.. literalinclude:: ../../../src/sync/sync_Pulse.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:

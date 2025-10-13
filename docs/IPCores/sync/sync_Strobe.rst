@@ -40,7 +40,7 @@ Constraints:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/sync/sync_Strobe.vhdl
+.. literalinclude:: ../../../src/sync/sync_Strobe.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:

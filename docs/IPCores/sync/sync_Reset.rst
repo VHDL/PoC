@@ -45,7 +45,7 @@ Constraints:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/sync/sync_Reset.vhdl
+.. literalinclude:: ../../../src/sync/sync_Reset.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
