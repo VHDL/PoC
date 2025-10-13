@@ -1,4 +1,4 @@
-.. _IP:uart_ft245:
+.. _IP/uart_ft245:
 
 PoC.io.uart.ft245
 #################

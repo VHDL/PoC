@@ -1,4 +1,4 @@
-.. _NS:ddr3:
+.. _NS/ddr3:
 
 PoC.mem.ddr3
 ============
@@ -12,7 +12,7 @@ provide the same simple memory interface to the user application.
 
 **Entities**
 
- * :ref:`IP:ddr3_mem2mig_adapter_Series7` - Adapter for the Xilinx MIG core
+ * :ref:`IP/ddr3_mem2mig_adapter_Series7` - Adapter for the Xilinx MIG core
    for 7-Series FPGAs
 
 

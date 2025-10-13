@@ -1,4 +1,4 @@
-.. _IP:arith_div:
+.. _IP/arith_div:
 
 PoC.arith.div
 #############

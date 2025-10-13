@@ -1,4 +1,4 @@
-.. _IP:ocram_sdp_wf:
+.. _IP/ocram_sdp_wf:
 
 PoC.mem.ocram.sdp_wf
 ####################

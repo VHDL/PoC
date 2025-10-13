@@ -1,4 +1,4 @@
-.. _IP:sync_Bits:
+.. _IP/sync_Bits:
 
 PoC.misc.sync.Bits
 ##################

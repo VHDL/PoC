@@ -1,4 +1,4 @@
-.. _NS:misc:
+.. _NS/misc:
 
 PoC.misc
 ========
@@ -7,23 +7,23 @@ The namespace ``PoC.misc`` offers different yet uncathegorized entities.
 
 **Sub-Namespaces**
 
- * :ref:`NS:filter` contains 1-bit filter algorithms.
- * :ref:`NS:stat` contains statistic modules.
- * :ref:`NS:sync` offers clock-domain-crossing (CDC) modules.
+ * :ref:`NS/filter` contains 1-bit filter algorithms.
+ * :ref:`NS/stat` contains statistic modules.
+ * :ref:`NS/sync` offers clock-domain-crossing (CDC) modules.
 
 **Package**
 
-The package :ref:`PoC.misc <PKG:misc>` holds all component declarations for this namespace.
+The package :ref:`PoC.misc <PKG/misc>` holds all component declarations for this namespace.
 
 **Entities**
 
- * :ref:`IP:misc_Delay`
- * :ref:`IP:misc_FrequencyMeasurement`
- * :ref:`IP:misc_PulseTrain`
- * :ref:`IP:misc_Sequencer`
- * :ref:`IP:misc_StrobeGenerator`
- * :ref:`IP:misc_StrobeLimiter`
- * :ref:`IP:misc_WordAligner`
+ * :ref:`IP/misc_Delay`
+ * :ref:`IP/misc_FrequencyMeasurement`
+ * :ref:`IP/misc_PulseTrain`
+ * :ref:`IP/misc_Sequencer`
+ * :ref:`IP/misc_StrobeGenerator`
+ * :ref:`IP/misc_StrobeLimiter`
+ * :ref:`IP/misc_WordAligner`
 
 .. toctree::
    :hidden:

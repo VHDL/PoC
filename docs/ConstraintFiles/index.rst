@@ -7,21 +7,18 @@ IP Core Constraint Files
 ************************
 
 * fifo
-* misc
-
-  * sync
-
 * net
 
   * eth
 
+* sync
 
 .. toctree::
    :hidden:
 
    fifo <fifo/index>
-   misc <misc/index>
    net <net/index>
+   sync <sync/index>
 
 
 Board Constraint Files

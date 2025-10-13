@@ -1,4 +1,4 @@
-.. _IP:ddr2_mem2mig_adapter_Spartan6:
+.. _IP/ddr2_mem2mig_adapter_Spartan6:
 
 PoC.mem.ddr2.mem2mig_adapter_Spartan6
 #####################################

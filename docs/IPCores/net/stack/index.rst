@@ -1,4 +1,4 @@
-.. _NS:stack:
+.. _NS/stack:
 
 PoC.net.stack
 =============

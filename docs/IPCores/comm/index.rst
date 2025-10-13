@@ -1,4 +1,4 @@
-.. _NS:comm:
+.. _NS/comm:
 
 PoC.comm
 ========

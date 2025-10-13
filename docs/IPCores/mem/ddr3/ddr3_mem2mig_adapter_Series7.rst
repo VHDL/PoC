@@ -1,4 +1,4 @@
-.. _IP:ddr3_mem2mig_adapter_Series7:
+.. _IP/ddr3_mem2mig_adapter_Series7:
 
 PoC.mem.ddr3.mem2mig_adapter_Series7
 ####################################

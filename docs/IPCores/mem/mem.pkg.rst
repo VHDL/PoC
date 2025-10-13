@@ -9,13 +9,13 @@
 
       |gh-src| :pocsrc:`Sourcecode <mem/mem.pkg.vhdl>`
 
-.. _PKG:mem:
+.. _PKG/mem:
 
 PoC.mem Package
 ===============
 
 This package holds all component declarations, types and functions of the
-:ref:`PoC.mem <NS:mem>` namespace.
+:ref:`PoC.mem <NS/mem>` namespace.
 
 It provides the following enumerations:
 

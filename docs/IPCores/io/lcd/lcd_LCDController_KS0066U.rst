@@ -1,4 +1,4 @@
-.. _IP:lcd_LCDController_KS0066U:
+.. _IP/lcd_LCDController_KS0066U:
 
 PoC.io.lcd.LCDController_KS0066U
 ################################

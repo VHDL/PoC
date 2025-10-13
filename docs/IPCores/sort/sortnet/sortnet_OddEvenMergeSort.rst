@@ -1,4 +1,4 @@
-.. _IP:sortnet_OddEvenMergeSort:
+.. _IP/sortnet_OddEvenMergeSort:
 
 PoC.sort.sortnet.OddEvenMergeSort
 #################################

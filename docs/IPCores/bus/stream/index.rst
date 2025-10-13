@@ -1,4 +1,4 @@
-.. _NS:stream:
+.. _NS/stream:
 
 PoC.bus.stream
 ==============

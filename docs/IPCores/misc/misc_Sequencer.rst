@@ -1,4 +1,4 @@
-.. _IP:misc_Sequencer:
+.. _IP/misc_Sequencer:
 
 PoC.misc.Sequencer
 ##################

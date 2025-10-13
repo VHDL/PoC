@@ -1,4 +1,4 @@
-.. _IP:arith_prng:
+.. _IP/arith_prng:
 
 PoC.arith.prng
 ##############

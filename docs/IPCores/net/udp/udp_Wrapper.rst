@@ -1,4 +1,4 @@
-.. _IP:udp_Wrapper:
+.. _IP/udp_Wrapper:
 
 PoC.net.udp.Wrapper
 ###################

@@ -1,4 +1,4 @@
-.. _IP:sync_Command:
+.. _IP/sync_Command:
 
 PoC.misc.sync.Command
 #####################

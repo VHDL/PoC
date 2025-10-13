@@ -1,4 +1,4 @@
-.. _IP:pmod_SSD:
+.. _IP/pmod_SSD:
 
 PoC.io.pmod.SSD
 ###############

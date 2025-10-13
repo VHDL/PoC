@@ -1,4 +1,4 @@
-.. _IP:sortnet_BitonicSort:
+.. _IP/sortnet_BitonicSort:
 
 PoC.sort.sortnet.BitonicSort
 ############################

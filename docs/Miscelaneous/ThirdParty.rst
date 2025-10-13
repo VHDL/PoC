@@ -16,7 +16,7 @@ libraries, their websites and licenses.
 .. index::
    pair: Third-Party Libraries; OSVVM
 
-.. _THIRD:OSVVM:
+.. _THIRD/OSVVM:
 
 OSVVM
 *****

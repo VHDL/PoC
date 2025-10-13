@@ -4,13 +4,13 @@ Known Issues
 ############
 
 
-.. _ISSUE:General:
+.. _ISSUE/General:
 
 General
 *******
 
 
-.. _ISSUE:General:tristate:
+.. _ISSUE/General/tristate:
 
 Synthesis of tri-state signals
 ==============================
@@ -38,7 +38,7 @@ IP core description must instantiate the appropiate I/O block
 primitive of the target architecture like it is done by the Xilinx MIG.
 
 
-.. _ISSUE:General:inout_records:
+.. _ISSUE/General/inout_records:
 
 Synthesis of bidirectional records
 ==================================
@@ -82,7 +82,7 @@ Use separate records for the input and output data flow instead.
 
 --------------------------------------------------------------------------------
 
-.. _ISSUE:Aldec:ActiveHDL:
+.. _ISSUE/Aldec/ActiveHDL:
 
 Aldec Active-HDL
 ****************
@@ -90,8 +90,8 @@ Aldec Active-HDL
 * Aliases to functions and protected type methods
 
 
-.. _ISSUE:Altera:Quartus:
-.. _ISSUE:Intel:Quartus:
+.. _ISSUE/Altera/Quartus:
+.. _ISSUE/Intel/Quartus:
 
 Altera Quartus-II / Intel Quartus Prime
 ***************************************
@@ -99,7 +99,7 @@ Altera Quartus-II / Intel Quartus Prime
 * Generic types of type strings filled with NUL
 
 
-.. _ISSUE:GHDL:
+.. _ISSUE/GHDL:
 
 GHDL
 ****
@@ -107,7 +107,7 @@ GHDL
 * Aliases to protected type methods
 
 
-.. _ISSUE:Xilinx:ISE:
+.. _ISSUE/Xilinx/ISE:
 
 Xilinx ISE
 **********
@@ -115,7 +115,7 @@ Xilinx ISE
 * Shared Variables in Simulation (VHDL-93)
 
 
-.. _ISSUE:Xilinx:Vivado:
+.. _ISSUE/Xilinx/Vivado:
 
 Xilinx Vivado
 *************

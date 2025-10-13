@@ -1,4 +1,4 @@
-.. _IP:misc_FrequencyMeasurement:
+.. _IP/misc_FrequencyMeasurement:
 
 PoC.misc.FrequencyMeasurement
 #############################

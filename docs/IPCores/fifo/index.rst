@@ -1,4 +1,4 @@
-.. _NS:fifo:
+.. _NS/fifo:
 
 PoC.fifo
 ========
@@ -7,7 +7,7 @@ The namespace `PoC.fifo` offers different :abbr:`FIFO (first-in, first-out)` imp
 
 **Package**
 
-The package :ref:`NS:fifo` holds all component declarations for this namespace.
+The package :ref:`NS/fifo` holds all component declarations for this namespace.
 
 **Entities**
 
@@ -22,19 +22,19 @@ the current fill-state.
 The prefixes `cc_` (common clock), `dc_` (dependent clock) and `ic_` (independent
 clock) refer to the write- and read-side clock relationship.
 
- * :ref:`IP:fifo_cc_got` implements a regular FIFO (one common clock,
+ * :ref:`IP/fifo_cc_got` implements a regular FIFO (one common clock,
    got-interface)
- * :ref:`IP:fifo_cc_got_tempgot` implements a regular FIFO (one common clock,
+ * :ref:`IP/fifo_cc_got_tempgot` implements a regular FIFO (one common clock,
    got-interface), extended by a transactional `tempgot`-interface (read-side).
- * :ref:`IP:fifo_cc_got_tempput` implements a regular FIFO (one common clock,
+ * :ref:`IP/fifo_cc_got_tempput` implements a regular FIFO (one common clock,
    got-interface), extended by a transactional `tempput`-interface (write-side).
- * :ref:`IP:fifo_dc_got` implements a cross-clock FIFO (two related clocks,
+ * :ref:`IP/fifo_dc_got` implements a cross-clock FIFO (two related clocks,
    got-interface)
- * :ref:`IP:fifo_ic_got` implements a cross-clock FIFO (two independent clocks,
+ * :ref:`IP/fifo_ic_got` implements a cross-clock FIFO (two independent clocks,
    got-interface)
- * :ref:`IP:fifo_glue` implements a two-stage FIFO (one common clock,
+ * :ref:`IP/fifo_glue` implements a two-stage FIFO (one common clock,
    got-interface)
- * :ref:`IP:fifo_shift` implements a regular FIFO (one common clock,
+ * :ref:`IP/fifo_shift` implements a regular FIFO (one common clock,
    got-interface, optimized for FPGAs with shifter primitives)
 
 .. toctree::

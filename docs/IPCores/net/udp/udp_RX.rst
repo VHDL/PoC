@@ -1,4 +1,4 @@
-.. _IP:udp_RX:
+.. _IP/udp_RX:
 
 PoC.net.udp.RX
 ##############

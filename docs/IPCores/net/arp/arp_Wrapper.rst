@@ -1,4 +1,4 @@
-.. _IP:arp_Wrapper:
+.. _IP/arp_Wrapper:
 
 PoC.net.arp.Wrapper
 ###################

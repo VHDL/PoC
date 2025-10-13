@@ -1,4 +1,4 @@
-.. _NS:ipv6:
+.. _NS/ipv6:
 
 PoC.net.ipv6
 ============

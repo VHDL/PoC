@@ -1,4 +1,4 @@
-.. _IP:filter_and:
+.. _IP/filter_and:
 
 PoC.misc.filter.and
 ###################

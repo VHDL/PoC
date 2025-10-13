@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <sort/sortnet/sortnet.pkg.vhdl>`
 
-.. _PKG:sortnet:
+.. _PKG/sortnet:
 
 PoC.sort.sortnet Package
 ========================
@@ -25,13 +25,13 @@ PoC.sort.sortnet Package
 .. c:type:: T_SORTNET_IMPL
 
    SORT_SORTNET_IMPL_ODDEVEN_SORT
-     Instantiate a :ref:`IP:sortnet_OddEvenSort` sorting network.
+     Instantiate a :ref:`IP/sortnet_OddEvenSort` sorting network.
 
    SORT_SORTNET_IMPL_ODDEVEN_MERGESORT
-     Instantiate a :ref:`IP:sortnet_OddEvenMergeSort` sorting network.
+     Instantiate a :ref:`IP/sortnet_OddEvenMergeSort` sorting network.
 
    SORT_SORTNET_IMPL_BITONIC_SORT
-     Instantiate a :ref:`IP:sortnet_BitonicSort` sorting network.
+     Instantiate a :ref:`IP/sortnet_BitonicSort` sorting network.
 
 
 .. only:: latex

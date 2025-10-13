@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <mem/ocrom/ocrom.pkg.vhdl>`
 
-.. _PKG:ocrom:
+.. _PKG/ocrom:
 
 PoC.mem.ocrom Package
 =====================

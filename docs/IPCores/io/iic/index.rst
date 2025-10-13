@@ -1,4 +1,4 @@
-.. _NS:iic:
+.. _NS/iic:
 
 PoC.io.iic
 ==========

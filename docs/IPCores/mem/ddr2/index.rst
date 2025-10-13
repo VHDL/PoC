@@ -1,4 +1,4 @@
-.. _NS:ddr2:
+.. _NS/ddr2:
 
 PoC.mem.ddr2
 ============
@@ -12,7 +12,7 @@ provide the same simple memory interface to the user application.
 
 **Entities**
 
- * :ref:`IP:ddr2_mem2mig_adapter_Spartan6` - Adapter for the Xilinx MIG core
+ * :ref:`IP/ddr2_mem2mig_adapter_Spartan6` - Adapter for the Xilinx MIG core
    for Spartan-6 FPGAs
 
 

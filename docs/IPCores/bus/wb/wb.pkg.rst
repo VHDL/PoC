@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <bus/wb/wb.pkg.vhdl>`
 
-.. _PKG:wb:
+.. _PKG/wb:
 
 PoC.bus.wb Package
 ======================

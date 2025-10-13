@@ -1,4 +1,4 @@
-.. _IP:stream_Mux:
+.. _IP/stream_Mux:
 
 PoC.bus.stream.Mux
 ##################

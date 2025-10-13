@@ -1,4 +1,4 @@
-.. _IP:arp_UniCast_Receiver:
+.. _IP/arp_UniCast_Receiver:
 
 PoC.net.arp.UniCast_Receiver
 ############################

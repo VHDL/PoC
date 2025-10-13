@@ -1,4 +1,4 @@
-.. _NS:udp:
+.. _NS/udp:
 
 PoC.net.udp
 ===========

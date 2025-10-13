@@ -1,4 +1,4 @@
-.. _NS:arp:
+.. _NS/arp:
 
 PoC.net.arp
 ===========

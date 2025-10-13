@@ -1,4 +1,4 @@
-.. _IP:pio_fifo_in:
+.. _IP/pio_fifo_in:
 
 PoC.io.pio.fifo_in
 ##################

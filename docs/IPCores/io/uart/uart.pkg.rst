@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <io/uart/uart.pkg.vhdl>`
 
-.. _PKG:uart:
+.. _PKG/uart:
 
 PoC.io.uart Package
 ===================

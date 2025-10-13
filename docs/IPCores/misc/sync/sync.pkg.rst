@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <misc/sync/sync.pkg.vhdl>`
 
-.. _PKG:sync:
+.. _PKG/sync:
 
 PoC.misc.sync Package
 =====================

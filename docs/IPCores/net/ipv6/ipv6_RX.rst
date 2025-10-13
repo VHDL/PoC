@@ -1,4 +1,4 @@
-.. _IP:ipv6_RX:
+.. _IP/ipv6_RX:
 
 PoC.net.ipv6.RX
 ###############

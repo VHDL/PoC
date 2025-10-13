@@ -1,4 +1,4 @@
-.. _IP:arith_addw:
+.. _IP/arith_addw:
 
 PoC.arith.addw
 ##############

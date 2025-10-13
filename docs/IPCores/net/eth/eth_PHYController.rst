@@ -1,4 +1,4 @@
-.. _IP:Eth_PHYController:
+.. _IP/Eth_PHYController:
 
 PoC.net.eth.PHYController
 #########################

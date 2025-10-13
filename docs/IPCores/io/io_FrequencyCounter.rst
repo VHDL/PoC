@@ -1,4 +1,4 @@
-.. _IP:io_FrequencyCounter:
+.. _IP/io_FrequencyCounter:
 
 PoC.io.FrequencyCounter
 #######################

@@ -1,4 +1,4 @@
-.. _USING:Download:
+.. _USING/Download:
 
 Downloading PoC
 ###############
@@ -7,7 +7,7 @@ Downloading PoC
    :local:
 
 
-.. _USING:Zip:
+.. _USING/Zip:
 
 Downloading from GitHub
 ***********************
@@ -33,7 +33,7 @@ table, to choose your desired git branch.
 +----------+------------------------+
 
 
-.. _USING:GitClone:
+.. _USING/GitClone:
 
 Downloading via ``git clone``
 *****************************
@@ -93,7 +93,7 @@ On Windows
    All Windows command line instructions are intended for :program:`Windows PowerShell`,
    if not marked otherwise. So executing the following instructions in Windows
    Command Prompt (:program:`cmd.exe`) won't function or result in errors! See
-   the :ref:`Requirements section <USING:Require>` on where to
+   the :ref:`Requirements section <USING/Require>` on where to
    download or update PowerShell.
 
 Command line instructions to clone the PoC-Library onto a Windows machine with
@@ -124,7 +124,7 @@ SSH protocol:
    needed anymore.
 
 
-.. _USING:GitSubmodule:
+.. _USING/GitSubmodule:
 
 Downloading via ``git submodule add``
 *************************************
@@ -182,7 +182,7 @@ On Windows
    All Windows command line instructions are intended for :program:`Windows PowerShell`,
    if not marked otherwise. So executing the following instructions in Windows
    Command Prompt (:program:`cmd.exe`) won't function or result in errors! See
-   the :ref:`Requirements section <USING:Require>` on where to
+   the :ref:`Requirements section <USING/Require>` on where to
    download or update PowerShell.
 
 Command line instructions to clone the PoC-Library onto a Windows machine with

@@ -1,4 +1,4 @@
-.. _IP:sortnet_MergeSort_Streamed:
+.. _IP/sortnet_MergeSort_Streamed:
 
 PoC.sort.sortnet.MergeSort_Streamed
 ###################################

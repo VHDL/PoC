@@ -1,4 +1,4 @@
-.. _NS:ocrom:
+.. _NS/ocrom:
 
 PoC.mem.ocrom
 =============
@@ -17,8 +17,8 @@ The package PoC.mem.ocrom holds all component declarations for this namespace.
 
 **Entities**
 
- - :ref:`ocrom_sp <IP:ocrom_sp>` is a on-chip RAM with a single port interface.
- - :ref:`ocrom_dp <IP:ocrom_dp>` is a on-chip RAM with a dual port interface.
+ - :ref:`ocrom_sp <IP/ocrom_sp>` is a on-chip RAM with a single port interface.
+ - :ref:`ocrom_dp <IP/ocrom_dp>` is a on-chip RAM with a dual port interface.
 
 
 .. toctree::

@@ -1,4 +1,4 @@
-.. _IP:arith_sqrt:
+.. _IP/arith_sqrt:
 
 PoC.arith.sqrt
 ##############

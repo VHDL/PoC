@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <fifo/fifo.pkg.vhdl>`
 
-.. _PKG:fifo:
+.. _PKG/fifo:
 
 PoC.fifo Package
 ================

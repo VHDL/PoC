@@ -1,4 +1,4 @@
-.. _IP:fifo_glue:
+.. _IP/fifo_glue:
 
 PoC.fifo.glue
 #############

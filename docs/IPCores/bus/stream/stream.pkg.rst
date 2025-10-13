@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <bus/stream/stream.pkg.vhdl>`
 
-.. _PKG:stream:
+.. _PKG/stream:
 
 PoC.bus.stream Package
 ======================

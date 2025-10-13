@@ -1,4 +1,4 @@
-.. _IP:uart_fifo:
+.. _IP/uart_fifo:
 
 PoC.io.uart.fifo
 ################

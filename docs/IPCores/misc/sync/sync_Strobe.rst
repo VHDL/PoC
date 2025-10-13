@@ -1,4 +1,4 @@
-.. _IP:sync_Strobe:
+.. _IP/sync_Strobe:
 
 PoC.misc.sync.Strobe
 ####################

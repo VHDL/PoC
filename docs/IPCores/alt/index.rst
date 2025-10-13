@@ -1,4 +1,4 @@
-.. _NS:alt:
+.. _NS/alt:
 
 PoC.alt
 ========

@@ -1,4 +1,4 @@
-.. _NS:reconfig:
+.. _NS/reconfig:
 
 PoC.xil.reconfig
 ================
@@ -7,8 +7,8 @@ These are reconfig entities....
 
 **Entities**
 
- * :ref:`IP:reconfig_icap_fsm`
- * :ref:`IP:reconfig_icap_wrapper`
+ * :ref:`IP/reconfig_icap_fsm`
+ * :ref:`IP/reconfig_icap_wrapper`
 
 .. toctree::
    :hidden:

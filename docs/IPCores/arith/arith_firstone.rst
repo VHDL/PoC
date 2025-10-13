@@ -1,4 +1,4 @@
-.. _IP:arith_firstone:
+.. _IP/arith_firstone:
 
 PoC.arith.firstone
 ##################

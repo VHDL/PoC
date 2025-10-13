@@ -1,4 +1,4 @@
-.. _IP:arp_IPPool:
+.. _IP/arp_IPPool:
 
 PoC.net.arp.IPPool
 ##################

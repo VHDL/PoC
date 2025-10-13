@@ -1,4 +1,4 @@
-.. _IP:arith_scaler:
+.. _IP/arith_scaler:
 
 PoC.arith.scaler
 ################

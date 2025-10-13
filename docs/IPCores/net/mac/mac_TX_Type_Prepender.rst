@@ -1,4 +1,4 @@
-.. _IP:mac_TX_Type_Prepender:
+.. _IP/mac_TX_Type_Prepender:
 
 PoC.net.mac.TX_Type_Prepender
 #############################

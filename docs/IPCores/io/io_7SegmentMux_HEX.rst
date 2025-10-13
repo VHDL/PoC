@@ -1,4 +1,4 @@
-.. _IP:io_7SegmentMux_HEX:
+.. _IP/io_7SegmentMux_HEX:
 
 PoC.io.7SegmentMux_HEX
 ######################

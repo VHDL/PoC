@@ -1,4 +1,4 @@
-.. _USING:Integration:
+.. _USING/Integration:
 
 Integrating PoC into Projects
 #############################
@@ -8,7 +8,7 @@ Integrating PoC into Projects
    :depth: 2
 
 
-.. _USING:Integration:GitSubmodule:
+.. _USING/Integration/GitSubmodule:
 
 As a Git submodule
 ******************

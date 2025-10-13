@@ -1,4 +1,4 @@
-.. _IP:iic_BusController:
+.. _IP/iic_BusController:
 
 PoC.io.iic.BusController
 ########################

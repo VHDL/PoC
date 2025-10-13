@@ -1,4 +1,4 @@
-.. _IP:dstruct_deque:
+.. _IP/dstruct_deque:
 
 PoC.dstruct.deque
 #################

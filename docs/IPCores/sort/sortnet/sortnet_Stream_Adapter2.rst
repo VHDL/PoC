@@ -1,4 +1,4 @@
-.. _IP:sortnet_Stream_Adapter2:
+.. _IP/sortnet_Stream_Adapter2:
 
 PoC.sort.sortnet.Stream_Adapter2
 ################################

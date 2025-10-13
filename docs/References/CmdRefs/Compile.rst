@@ -1,4 +1,4 @@
-.. _CmdRef:PreCompile:
+.. _CmdRef/PreCompile:
 
 Pre-compile Scripts
 ###################
@@ -14,7 +14,7 @@ Per simulator, one :file:`<simulator>/` sub-directory is created. Each simulator
 directory in turn contains library directories, which may be grouped by the
 library vendor's name: :file:`[<vendor>/]<library>/`.
 
-So for example: :ref:`THIRD:OSVVM` pre-compiled with GHDL is stored in
+So for example: :ref:`THIRD/OSVVM` pre-compiled with GHDL is stored in
 :file:`/temp/precompiled/ghdl/osvvm/`. Note OSVVM is a single library and thus
 no vendor directory is used to group the generated files. GHDL will also create
 VHDL language revision sub-directories like :file:`v93/` or :file:`v08/`.

@@ -1,4 +1,4 @@
-.. _IP:icmpv4_RX:
+.. _IP/icmpv4_RX:
 
 PoC.net.icmpv4.RX
 #################

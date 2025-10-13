@@ -1,4 +1,4 @@
-.. _IP:stat_Histogram:
+.. _IP/stat_Histogram:
 
 PoC.misc.stat.Histogram
 #######################

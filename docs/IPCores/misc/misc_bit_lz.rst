@@ -1,4 +1,4 @@
-.. _IP:misc_bit_lz:
+.. _IP/misc_bit_lz:
 
 PoC.misc.bit_lz
 ###############

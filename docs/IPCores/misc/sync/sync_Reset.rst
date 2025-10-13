@@ -1,4 +1,4 @@
-.. _IP:sync_Reset:
+.. _IP/sync_Reset:
 
 PoC.misc.sync.Reset
 ###################

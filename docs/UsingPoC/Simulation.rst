@@ -1,4 +1,4 @@
-.. _USING:Sim:
+.. _USING/Sim:
 
 Simulation
 ##########
@@ -7,7 +7,7 @@ Simulation
    :local:
 
 
-.. _USING:Sim:Over:
+.. _USING/Sim/Over:
 
 Overview
 ********
@@ -37,7 +37,7 @@ frontend script:
      See the Intruction page for a list of supported simulators.
 
 
-.. _USING:Sim:Quick:
+.. _USING/Sim/Quick:
 
 Quick Example
 *************
@@ -91,7 +91,7 @@ The opened waveform viewer and displayed waveform should look like this:
 	 :alt: GTKWave waveform view of PoC.arith.prng.
 
 
-.. _USING:Sim:Vendor:
+.. _USING/Sim/Vendor:
 
 Vendor Specific Testbenches
 ***************************
@@ -136,7 +136,7 @@ A vendor specific testbench can be launched by passing either ``--board=xxx`` or
    :doc:`Pre-Compiling Vendor Libraries </UsingPoC/PrecompilingVendorLibraries>`.
 
 
-.. _USING:Sim:Single:
+.. _USING/Sim/Single:
 
 Running a Single Testbench
 **************************
@@ -190,7 +190,7 @@ PoC runs multiple testbenches at once, all finished testbenches are reported wit
 there testbench result. The aborted testbench will be listed as errored.
 
 
-.. _USING:Sim:Aldec-ActiveHDL:
+.. _USING/Sim:Aldec-ActiveHDL:
 
 Aldec Active-HDL
 ================
@@ -219,7 +219,7 @@ PoC entities. The following options are supported for Active-HDL:
    .\poc.ps1 asim PoC.arith.prng --std=93
 
 
-.. _USING:Sim:Cocotb:
+.. _USING/Sim/Cocotb:
 
 Cocotb with QuestaSim backend
 =============================
@@ -249,7 +249,7 @@ by a list of PoC entities. The following options are supported for Cocotb:
    .\poc.ps1 cocotb PoC.cache.par
 
 
-.. _USING:Sim:GHDL:
+.. _USING/Sim/GHDL:
 
 GHDL (plus GTKwave)
 ===================
@@ -277,7 +277,7 @@ PoC entities. The following options are supported for GHDL:
    .\poc.ps1 ghdl PoC.arith.prng --board=Atlys -g
 
 
-.. _USING:Sim:Mentor-QuestaSim:
+.. _USING/Sim:Mentor-QuestaSim:
 
 Mentor Graphics QuestaSim
 =========================
@@ -377,7 +377,7 @@ Vivado Simulator:
    .\poc.ps1 xsim PoC.arith.prng --board=Atlys -g
 
 
-.. _USING:Sim:Group:
+.. _USING/Sim/Group:
 
 Running a Group of Testbenches
 ******************************
@@ -417,7 +417,7 @@ current namespace and all sub-namespaces.
 	 :alt: Report after running multiple testbenches in Active-HDL.
 
 
-.. _USING:Sim:CI:
+.. _USING/Sim/CI:
 
 Continuous Integration (CI)
 ***************************

@@ -1,4 +1,4 @@
-.. _IP:mdio_Controller:
+.. _IP/mdio_Controller:
 
 PoC.io.mdio.Controller
 ######################

@@ -1,4 +1,4 @@
-.. _IP:fifo_dc_got_sm:
+.. _IP/fifo_dc_got_sm:
 
 PoC.fifo.dc_got_sm
 ##################

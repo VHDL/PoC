@@ -1,4 +1,4 @@
-.. _IP:ddrio_out:
+.. _IP/ddrio_out:
 
 PoC.io.ddrio.out
 ################

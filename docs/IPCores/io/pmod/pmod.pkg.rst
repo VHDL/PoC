@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <io/pmod/pmod.pkg.vhdl>`
 
-.. _PKG:pmod:
+.. _PKG/pmod:
 
 PoC.io.pmod Package
 ===================

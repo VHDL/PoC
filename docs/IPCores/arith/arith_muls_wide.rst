@@ -1,4 +1,4 @@
-.. _IP:arith_muls_wide:
+.. _IP/arith_muls_wide:
 
 PoC.arith.muls_wide
 ###################

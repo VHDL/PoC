@@ -107,7 +107,7 @@ organisation's account. In the following the forked repository is referenced as
 2. Clone the new Fork
 =====================
 
-Clone this new fork to your machine. See :ref:`Downloading via Git clone <USING:Download>`
+Clone this new fork to your machine. See :ref:`Downloading via Git clone <USING/Download>`
 for more details on how to clone PoC. If you have already cloned PoC, then you
 can setup the new fork as an additional *remote*. You should set ``VLSI-EDA/PoC``
 as fetch target and the new fork ``<username>/PoC`` as push target.
@@ -147,7 +147,7 @@ Checkout the ``master`` or ``release`` branch and maybe stash outstanding change
 
 4. Setup PoC for Developers
 ===========================
-Run PoC's :ref:`configuration routines <USING:PoCConfig>` and setup the
+Run PoC's :ref:`configuration routines <USING/PoCConfig>` and setup the
 developer tools.
 
 .. code-block:: PowerShell

@@ -1,4 +1,4 @@
-.. _IP:sort_lru_cache:
+.. _IP/sort_lru_cache:
 
 PoC.sort.lru_cache
 ##################

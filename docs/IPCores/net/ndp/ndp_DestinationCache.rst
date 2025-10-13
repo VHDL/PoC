@@ -1,4 +1,4 @@
-.. _IP:ndp_DestinationCache:
+.. _IP/ndp_DestinationCache:
 
 PoC.net.ndp.DestinationCache
 ############################

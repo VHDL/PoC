@@ -1,4 +1,4 @@
-.. _IP:arith_same:
+.. _IP/arith_same:
 
 PoC.arith.same
 ##############

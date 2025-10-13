@@ -1,4 +1,4 @@
-.. _IP:ddrio_in:
+.. _IP/ddrio_in:
 
 PoC.io.ddrio.in
 ###############

@@ -1,4 +1,4 @@
-.. _IP:stream_Buffer:
+.. _IP/stream_Buffer:
 
 PoC.bus.stream.Buffer
 #####################

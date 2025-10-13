@@ -1,4 +1,4 @@
-.. _IP:comm_scramble:
+.. _IP/comm_scramble:
 
 PoC.comm.scramble
 #################

@@ -1,4 +1,4 @@
-.. _USING:PreCompile:
+.. _USING/PreCompile:
 
 Pre-Compiling Vendor Libraries
 ##############################
@@ -12,7 +12,7 @@ Pre-Compiling Vendor Libraries
 .. index::
    single: Pre-compilation
 
-.. _USING:PreCompile:Over:
+.. _USING/PreCompile/Over:
 
 Overview
 ********
@@ -33,7 +33,7 @@ are located in ``\tools\precompile\`` and the output is stored in
 .. index::
    pair: Pre-compilation; Supported Simulators
 
-.. _USING:PreCompile:Simulators:
+.. _USING/PreCompile/Simulators:
 
 Supported Simulators
 ********************
@@ -48,7 +48,7 @@ The current set of pre-compile scripts support these simulators:
 +------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
 | Aldec |br|       | Active-HDL (or Stududent Ed.) |br|   | planned |br| | planned |br| | planned |br|    | planned |br|         |
 | |br|             | Active-HDL Lattice Ed. |br|          | planned |br| | shipped |br| | planned |br|    | planned |br|         |
-|                  | Reviera-PRO                          | planned      | planned      | planned         | planned              |
+|                  | Riviera-PRO                          | planned      | planned      | planned         | planned              |
 +------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
 | Mentor |br|      | ModelSim PE (or Stududent Ed.) |br|  | yes |br|     | yes |br|     | yes |br|        | yes |br|             |
 | |br|             | ModelSim SE |br|                     | yes |br|     | yes |br|     | yes |br|        | yes |br|             |
@@ -63,7 +63,7 @@ The current set of pre-compile scripts support these simulators:
 .. index::
    pair: Pre-compilation; Vendor Primitives
 
-.. _USING:PreCompile:Primitives:
+.. _USING/PreCompile/Primitives:
 
 FPGA Vendor's Primitive Libraries
 ****************************************************************************************************************************************************************
@@ -72,14 +72,14 @@ FPGA Vendor's Primitive Libraries
 .. index::
    pair: Pre-compilation; Altera
 
-.. _USING:PreCompile:Primitives:Altera:
+.. _USING/PreCompile/Primitives/Altera:
 
 Altera
 ======
 
 .. note::
    The Altera Quartus tool chain needs to be configured in PoC. |br|
-   See :ref:`Configuring PoC's Infrastruture <USING:PoCConfig>` for further details.
+   See :ref:`Configuring PoC's Infrastruture <USING/PoCConfig>` for further details.
 
 On Linux
 --------
@@ -168,14 +168,14 @@ On Windows
 .. index::
    pair: Pre-compilation; Lattice
 
-.. _USING:PreCompile:Primitives:Lattice:
+.. _USING/PreCompile/Primitives/Lattice:
 
 Lattice
 ========
 
 .. note::
    The Lattice Diamond tool chain needs to be configured in PoC. |br|
-   See :ref:`Configuring PoC's Infrastruture <USING:PoCConfig>` for further details.
+   See :ref:`Configuring PoC's Infrastruture <USING/PoCConfig>` for further details.
 
 On Linux
 --------
@@ -360,14 +360,14 @@ On Windows
 .. index::
    pair: Pre-compilation; Xilinx Vivado
 
-.. _USING:PreCompile:Primitives:XilinxVivado
+.. _USING/PreCompile/Primitives:XilinxVivado
 
 Xilinx Vivado
 =============
 
 .. note::
    The Xilinx Vivado tool chain needs to be configured in PoC. |br|
-   See :ref:`Configuring PoC's Infrastruture <USING:PoCConfig>` for further details.
+   See :ref:`Configuring PoC's Infrastruture <USING/PoCConfig>` for further details.
 
 On Linux
 --------
@@ -456,7 +456,7 @@ On Windows
 .. index::
    pair: Pre-compilation; Third-Party Libraries
 
-.. _USING:PreCompile:ThirdParty:
+.. _USING/PreCompile/ThirdParty:
 
 Third-Party Libraries
 ****************************************************************************************************************************************************************
@@ -465,7 +465,7 @@ Third-Party Libraries
 .. index::
    pair: Pre-compilation; OSVVM
 
-.. _USING:PreCompile:ThirdParty:OSVVM:
+.. _USING/PreCompile/ThirdParty/OSVVM:
 
 OSVVM
 =====
@@ -545,7 +545,7 @@ On Windows
 .. index::
    pair: Pre-compilation; UVVM
 
-.. _USING:PreCompile:ThirdParty:UVVM:
+.. _USING/PreCompile/ThirdParty/UVVM:
 
 UVVM
 ====
@@ -625,7 +625,7 @@ On Windows
    .. index::
       pair: Pre-compilation; VUnit
 
-   .. _USING:PreCompile:ThirdParty:VUnit:
+   .. _USING/PreCompile/ThirdParty/VUnit:
 
    VUnit
    =====
@@ -705,7 +705,7 @@ On Windows
 .. index::
    pair: Pre-compilation; Simulator Adapters
 
-.. _USING:PreCompile:Adapter:
+.. _USING/PreCompile/Adapter:
 
 Simulator Adapters
 ****************************************************************************************************************************************************************
@@ -713,7 +713,7 @@ Simulator Adapters
 .. index::
    pair: Pre-compilation; Cocotb
 
-.. _USING:PreCompile:Adapter:Cocotb:
+.. _USING/PreCompile/Adapter/Cocotb:
 
 Cocotb
 ======

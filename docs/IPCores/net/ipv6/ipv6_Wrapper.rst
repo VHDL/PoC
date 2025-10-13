@@ -1,4 +1,4 @@
-.. _IP:ipv6_Wrapper:
+.. _IP/ipv6_Wrapper:
 
 PoC.net.ipv6.Wrapper
 ####################

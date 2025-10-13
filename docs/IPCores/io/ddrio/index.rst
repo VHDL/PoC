@@ -1,4 +1,4 @@
-.. _NS:ddrio:
+.. _NS/ddrio:
 
 PoC.io.ddrio
 ============
@@ -7,9 +7,9 @@ These are :abbr:`DDR-I/O (Double Data Rate - Input/Output)` entities....
 
 **Entities**
 
- * :ref:`IP:ddrio_in`
- * :ref:`IP:ddrio_inout`
- * :ref:`IP:ddrio_out`
+ * :ref:`IP/ddrio_in`
+ * :ref:`IP/ddrio_inout`
+ * :ref:`IP/ddrio_out`
 
 
 .. toctree::

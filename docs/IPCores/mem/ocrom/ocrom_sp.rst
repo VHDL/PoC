@@ -1,4 +1,4 @@
-.. _IP:ocrom_sp:
+.. _IP/ocrom_sp:
 
 PoC.mem.ocrom.sp
 ################

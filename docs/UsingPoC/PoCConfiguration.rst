@@ -1,4 +1,4 @@
-.. _USING:PoCConfig:
+.. _USING/PoCConfig:
 
 .. raw:: html
 
@@ -49,7 +49,7 @@ at any time, for example to register new tools or to update tool versions.
    :depth: 2
 
 
-.. _USING:PoCConf:Over:
+.. _USING/PoCConf/Over:
 
 Overview
 ========
@@ -113,7 +113,7 @@ Please see the Linux instructions.
      Installation directory: D:\git\PoC (found in environment variable)
 
 
-.. _USING:PoCConf:PoC:
+.. _USING/PoCConf/PoC:
 
 The PoC-Library
 ===============
@@ -129,7 +129,7 @@ by ``PoC.ps1`` or ``poc.sh``.
      Installation directory: D:\git\PoC (found in environment variable)
 
 
-.. _USING:PoCConf:Git:
+.. _USING/PoCConf/Git:
 
 Git
 ===
@@ -149,7 +149,7 @@ Git
      Setting 'pre-commit' hook for PoC...
 
 
-.. _USING:PoCConf:Aldec:
+.. _USING/PoCConf/Aldec:
 
 Aldec
 =====
@@ -171,7 +171,7 @@ Active-HDL
      Aldec Active-HDL installation directory [C:\Aldec\Active-HDL]: C:\Aldec\Active-HDL-Student-Edition
 
 
-.. _USING:PoCConf:Altera:
+.. _USING/PoCConf/Altera:
 
 Altera
 ======
@@ -201,7 +201,7 @@ ModelSim Altera Edition
      ModelSim Altera Edition installation directory [C:\Altera\15.0\modelsim_ae]: C:\Altera\16.0\modelsim_ase
 
 
-.. _USING:PoCConf:Lattice:
+.. _USING/PoCConf/Lattice:
 
 Lattice
 ========
@@ -232,7 +232,7 @@ Active-HDL Lattice Edition
      Active-HDL Lattice Edition installation directory [D:\Lattice\Diamond\3.7_x64\active-hdl]:
 
 
-.. _USING:PoCConf:Mentor:
+.. _USING/PoCConf/Mentor:
 
 Mentor Graphics
 ===============
@@ -254,7 +254,7 @@ QuestaSim
      Mentor QuestaSim installation directory [C:\Mentor\QuestaSim\10.4c]: C:\Mentor\QuestaSim64\10.4c
 
 
-.. _USING:PoCConf:Xilinx:
+.. _USING/PoCConf/Xilinx:
 
 Xilinx
 ======
@@ -283,7 +283,7 @@ answer the following questions:
 
 Vivado
 ------
-If an Xilinx ISE environment is available and shall be configured in PoC, then
+If an Xilinx Vivado environment is available and shall be configured in PoC, then
 answer the following questions:
 
 .. code-block:: none
@@ -294,7 +294,7 @@ answer the following questions:
      Xilinx Vivado installation directory [C:\Xilinx\Vivado\2016.2]:
 
 
-.. _USING:PoCConf:GHDL:
+.. _USING/PoCConf/GHDL:
 
 GHDL
 ====
@@ -305,7 +305,7 @@ GHDL
      GHDL installation directory [C:\Tools\GHDL\0.34dev]:
 
 
-.. _USING:PoCConf:GTKWave:
+.. _USING/PoCConf/GTKWave:
 
 GTKWave
 ========
@@ -316,7 +316,7 @@ GTKWave
      GTKWave installation directory [C:\Tools\GTKWave\3.3.71]:
 
 
-.. _USING:PoCConf:HookFiles:
+.. _USING/PoCConf/HookFiles:
 
 Hook Files
 ==========

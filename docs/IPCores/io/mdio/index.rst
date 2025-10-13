@@ -1,4 +1,4 @@
-.. _NS:mdio:
+.. _NS/mdio:
 
 PoC.io.mdio
 ===========

@@ -1,4 +1,4 @@
-.. _IP:stat_Minimum:
+.. _IP/stat_Minimum:
 
 PoC.misc.stat.Minimum
 #####################

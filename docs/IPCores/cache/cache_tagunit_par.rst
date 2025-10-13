@@ -1,4 +1,4 @@
-.. _IP:cache_tagunit_par:
+.. _IP/cache_tagunit_par:
 
 PoC.cache.tagunit_par
 #####################

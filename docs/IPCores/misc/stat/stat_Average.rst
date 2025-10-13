@@ -1,4 +1,4 @@
-.. _IP:stat_Average:
+.. _IP/stat_Average:
 
 PoC.misc.stat.Average
 #####################

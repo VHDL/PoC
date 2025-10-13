@@ -1,4 +1,4 @@
-.. _IP:ocram_wb:
+.. _IP/ocram_wb:
 
 PoC.bus.wb.ocram
 ################

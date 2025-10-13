@@ -1,4 +1,4 @@
-.. _IP:icmpv6_Wrapper:
+.. _IP/icmpv6_Wrapper:
 
 PoC.net.icmpv6.Wrapper
 ######################

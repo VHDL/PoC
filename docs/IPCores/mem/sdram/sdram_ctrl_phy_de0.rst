@@ -1,4 +1,4 @@
-.. _IP:sdram_ctrl_phy_de0:
+.. _IP/sdram_ctrl_phy_de0:
 
 PoC.mem.sdram.ctrl_phy_de0
 ##########################
@@ -19,7 +19,7 @@ PoC.mem.sdram.ctrl_phy_de0
       * |gh-src| :pocsrc:`Sourcecode <mem/sdram/sdram_ctrl_phy_de0.vhdl>`
       * |gh-tb| :poctb:`Testbench <mem/sdram/sdram_ctrl_phy_de0_tb.vhdl>`
 
-Physical layer used by module :ref:`sdram_ctrl_de0 <IP:sdram_ctrl_de0>`.
+Physical layer used by module :ref:`sdram_ctrl_de0 <IP/sdram_ctrl_de0>`.
 
 Instantiates input and output buffer components and adjusts the timing for
 the Altera DE0 board.

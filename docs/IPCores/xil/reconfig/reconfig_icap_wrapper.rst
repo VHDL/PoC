@@ -1,4 +1,4 @@
-.. _IP:reconfig_icap_wrapper:
+.. _IP/reconfig_icap_wrapper:
 
 PoC.xil.reconfig.icap_wrapper
 #############################

@@ -1,4 +1,4 @@
-.. _IP:sdram_ctrl_phy_s3esk:
+.. _IP/sdram_ctrl_phy_s3esk:
 
 PoC.mem.sdram.ctrl_phy_s3esk
 ############################
@@ -19,7 +19,7 @@ PoC.mem.sdram.ctrl_phy_s3esk
       * |gh-src| :pocsrc:`Sourcecode <mem/sdram/sdram_ctrl_phy_s3esk.vhdl>`
       * |gh-tb| :poctb:`Testbench <mem/sdram/sdram_ctrl_phy_s3esk_tb.vhdl>`
 
-Physical layer used by module :ref:`sdram_ctrl_s3esk <IP:sdram_ctrl_s3esk>`.
+Physical layer used by module :ref:`sdram_ctrl_s3esk <IP/sdram_ctrl_s3esk>`.
 
 Instantiates input and output buffer components and adjusts the timing for
 the Spartan-3E Starter Kit Board.

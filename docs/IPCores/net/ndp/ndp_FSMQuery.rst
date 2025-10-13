@@ -1,4 +1,4 @@
-.. _IP:ndp_FSMQuery:
+.. _IP/ndp_FSMQuery:
 
 PoC.net.ndp.FSMQuery
 ####################

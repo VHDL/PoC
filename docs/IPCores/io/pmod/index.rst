@@ -1,4 +1,4 @@
-.. _NS:pmod:
+.. _NS/pmod:
 
 PoC.io.pmod
 ===========
@@ -7,9 +7,9 @@ These are Pmod entities....
 
 **Entities**
 
- * :ref:`IP:pmod_KYPD`
- * :ref:`IP:pmod_SSD`
- * :ref:`IP:pmod_USBUART`
+ * :ref:`IP/pmod_KYPD`
+ * :ref:`IP/pmod_SSD`
+ * :ref:`IP/pmod_USBUART`
 
 
 .. toctree::

@@ -1,4 +1,4 @@
-.. _NS:bus:
+.. _NS/bus:
 
 PoC.bus
 ========
@@ -7,12 +7,12 @@ These are bus entities....
 
 **Sub-namespaces**
 
- * :ref:`NS:stream`
- * :ref:`NS:wb`
+ * :ref:`NS/stream`
+ * :ref:`NS/wb`
 
 **Entities**
 
- * :ref:`IP:bus_Arbiter`
+ * :ref:`IP/bus_Arbiter`
 
 .. toctree::
    :hidden:

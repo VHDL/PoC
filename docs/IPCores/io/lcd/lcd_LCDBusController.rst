@@ -1,4 +1,4 @@
-.. _IP:lcd_LCDBusController:
+.. _IP/lcd_LCDBusController:
 
 PoC.io.lcd.LCDBusController
 ###########################

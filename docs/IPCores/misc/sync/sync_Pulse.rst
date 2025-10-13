@@ -1,4 +1,4 @@
-.. _IP:sync_Pulse:
+.. _IP/sync_Pulse:
 
 PoC.misc.sync.Pulse
 ###################

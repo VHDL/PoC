@@ -1,4 +1,4 @@
-.. _NS:vga:
+.. _NS/vga:
 
 PoC.io.vga
 ==========

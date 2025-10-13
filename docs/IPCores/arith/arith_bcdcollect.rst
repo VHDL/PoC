@@ -1,4 +1,4 @@
-.. _IP:arith_bcdcollect:
+.. _IP/arith_bcdcollect:
 
 PoC.arith.bcdcollect
 ####################

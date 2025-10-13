@@ -1,4 +1,4 @@
-.. _IP:NDP_Wrapper:
+.. _IP/NDP_Wrapper:
 
 PoC.net.ndp.Wrapper
 ###################

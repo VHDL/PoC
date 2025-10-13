@@ -1,4 +1,4 @@
-.. _IP:stream_FrameGenerator:
+.. _IP/stream_FrameGenerator:
 
 PoC.bus.stream.FrameGenerator
 #############################

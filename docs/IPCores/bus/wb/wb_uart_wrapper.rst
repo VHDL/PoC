@@ -1,4 +1,4 @@
-.. _IP:uart_wb:
+.. _IP/uart_wb:
 
 PoC.bus.wb.uart_wrapper
 #######################

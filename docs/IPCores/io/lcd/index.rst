@@ -1,4 +1,4 @@
-.. _NS:lcd:
+.. _NS/lcd:
 
 PoC.io.lcd
 ==========

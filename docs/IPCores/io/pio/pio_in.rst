@@ -1,4 +1,4 @@
-.. _IP:pio_in:
+.. _IP/pio_in:
 
 PoC.io.pio.in
 #############

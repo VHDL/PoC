@@ -1,4 +1,4 @@
-.. _IP:fifo_cc_got_tempgot:
+.. _IP/fifo_cc_got_tempgot:
 
 PoC.fifo.cc_got_tempgot
 #######################

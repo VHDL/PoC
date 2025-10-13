@@ -30,8 +30,8 @@ provided by ExtendedConfigParser_. The database consists of 5 *.ini files:
     Nodes in this file describe PoC's namespace tree and which IP cores are
     assigned to which namespace.
 
-Additionally, the database refers to :ref:`*.files <FileFormat:files>`
-and :ref:`*.rules <FileFormat:rules>` files. The first file type describes, in
+Additionally, the database refers to :ref:`*.files <FileFormat/files>`
+and :ref:`*.rules <FileFormat/rules>` files. The first file type describes, in
 an imperative language, which files are needed to compile a simulation or to
 run a synthesis. The latter file type contains patch instructions per IP core.
 See :ref:`Files Formats <FileFormats>` for more details.
@@ -39,12 +39,12 @@ See :ref:`Files Formats <FileFormats>` for more details.
 .. _ExtendedConfigParser: https://github.com/Paebbels/ExtendedConfigParser
 
 
-.. _IPDB:Structure:
+.. _IPDB/Structure:
 
 Database Structure
 ******************
 
-The database is stored in multiple :ref:`INI files <FileFormat:ini>`,
+The database is stored in multiple :ref:`INI files <FileFormat/ini>`,
 which are merged in memory to a single configuration database. Each INI file
 defines an associative array of *sections* and option lines. The content itself
 is an associative array of *options* and values. Section names are inclosed in
@@ -127,7 +127,7 @@ context.
    uart_wrapper =  Entity
 
 
-.. _IPDB:Nodes:
+.. _IPDB/Nodes:
 
 Nodes
 =====
@@ -206,7 +206,7 @@ hierarchical database. The parent node is ``PoC.bus`` and its grandparent is
 above.)
 
 
-.. _IPDB:Refs:
+.. _IPDB/Refs:
 
 References
 ==========
@@ -216,31 +216,31 @@ References
 :Whatever: this is handy to create new field
 
 
-.. _IPDB:Options:
+.. _IPDB/Options:
 
 Options
 ========
 
 
-.. _IPDB:Values:
+.. _IPDB/Values:
 
 Values
 ======
 
 
-.. _IPDB:ValueInterpol:
+.. _IPDB/ValueInterpol:
 
 Value Interpolation
 ===================
 
 
-.. _IPDB:NodeInterpol:
+.. _IPDB/NodeInterpol:
 
 Node Interpolation
 ==================
 
 
-.. _IPDB:Roots:
+.. _IPDB/Roots:
 
 Root Nodes
 ==========
@@ -254,40 +254,40 @@ Supported Options
    predefined variables, which can be used as a shortcut.
 
 
-.. _IPDB:Files:
+.. _IPDB/Files:
 
 Files in detail
 ***************
 
 
 
-.. _IPDB:File:Structure:
+.. _IPDB/File/Structure:
 
 config.structure.ini
 ====================
 
 
 
-.. _IPDB:File:Entity:
+.. _IPDB/File/Entity:
 
 config.entity.ini
 =================
 
 
 
-.. _IPDB:File:Boards:
+.. _IPDB/File/Boards:
 
 config.boards.ini
 =================
 
 
 
-.. _IPDB:File:Private:
+.. _IPDB/File/Private:
 
 config.private.ini
 ==================
 
-.. _IPDB:UserDefVar:
+.. _IPDB/UserDefVar:
 
 User Defined Variables
 **********************

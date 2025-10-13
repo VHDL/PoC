@@ -1,4 +1,4 @@
-.. _NS:eth:
+.. _NS/eth:
 
 PoC.net.eth
 ===========

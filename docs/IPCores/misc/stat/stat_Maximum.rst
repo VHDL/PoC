@@ -1,4 +1,4 @@
-.. _IP:stat_Maximum:
+.. _IP/stat_Maximum:
 
 PoC.misc.stat.Maximum
 #####################

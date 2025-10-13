@@ -1,4 +1,4 @@
-.. _IP:ocram_tdp_sim:
+.. _IP/ocram_tdp_sim:
 
 PoC.mem.ocram.tdp_sim
 #####################

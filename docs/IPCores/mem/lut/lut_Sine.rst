@@ -1,4 +1,4 @@
-.. _IP:lut_Sine:
+.. _IP/lut_Sine:
 
 PoC.mem.lut.Sine
 ################

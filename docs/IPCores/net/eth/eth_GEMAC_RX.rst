@@ -1,4 +1,4 @@
-.. _IP:Eth_GEMAC_RX:
+.. _IP/Eth_GEMAC_RX:
 
 PoC.net.eth.GEMAC_RX
 ####################

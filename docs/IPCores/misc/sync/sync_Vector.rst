@@ -1,4 +1,4 @@
-.. _IP:sync_Vector:
+.. _IP/sync_Vector:
 
 PoC.misc.sync.Vector
 ####################

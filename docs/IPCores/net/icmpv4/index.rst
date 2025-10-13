@@ -1,4 +1,4 @@
-.. _NS:icmpv4:
+.. _NS/icmpv4:
 
 PoC.net.icmpv4
 ==============

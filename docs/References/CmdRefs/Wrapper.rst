@@ -1,4 +1,4 @@
-.. _CmdRef:Wrapper:
+.. _CmdRef/Wrapper:
 
 PoC Wrapper Scripts
 ###################

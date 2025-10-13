@@ -1,4 +1,4 @@
-.. _IP:arith_counter_bcd:
+.. _IP/arith_counter_bcd:
 
 PoC.arith.counter_bcd
 #####################

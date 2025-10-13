@@ -1,4 +1,4 @@
-.. _IP:io_7SegmentMux_BCD:
+.. _IP/io_7SegmentMux_BCD:
 
 PoC.io.7SegmentMux_BCD
 ######################
