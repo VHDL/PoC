@@ -1,3 +1,5 @@
+.. _IP/axi4lite_GitVersionRegister:
+
 axi4lite_GitVersionRegister
 ###########################
 

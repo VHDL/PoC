@@ -1,4 +1,4 @@
-
+.. _IP/axi4lite_Register:
 
 axi4lite_Register
 #################
@@ -17,34 +17,197 @@ The interface of the PL-side is named from the PL point-of-view, the configurati
 Generics
 ========
 
-| Name | Type | Default | Description |
-|------|-------|---------|-------------|
-| MARK_DEBUG_SIGNALS | boolean | false | If set to true, the module sets specific internal signals as mark-debug. These signals are the hit-vectors, decoded addresses, and interrupt signals. |
-| VERBOSE | boolean | false | If set to true, the module will print the configuration and settings into the synthesis-log with `assert`. |
-| IGNORE_HIGH_ADDRESS | boolean | true | The module will calculate based on the configuration how many bits are needed to address every specified register. If this generic is set, it will ignore every bit which is coming after the needed address-bits. These bits are considered as base address. By setting this value, you can pass the full 40/32bit from Zynq, and it will filter out the base address for it. |
-| DISABLE_ADDRESS_CHECK | boolean | false | The module is internally calculating if any registers have overlapping addresses and will create an error if so. This check takes a bit of synthesis time that depends on the size of `Config`. This check can be disabled. **This is not recommended!** |
-| INIT_ON_RESET | boolean | true | The Init-value of the registers, that is set by the `Config`, is set by default with the Reset. This can be disabled here. This helps with reducing control-sets and therefore helps by CLB utilization. |
-| INTERRUPT_IS_STROBE | boolean | true | With this generic, it can be selected if the Interrupt-pin should through an interrupt as `Strobe` or `Value`. With selecting `Strobe`, the module will block a new interrupt until the `INTERRUPT_MATCH_REGISTER`is read out. |
-| INTERRUPT_ENABLE_REGISTER_ADDRESS | unsigned | 0x0 | If Interrupts are used, this generic selects the address of the internal `INTERRUPT_ENABLE_REGISTER`. |
-| INTERRUPT_MATCH_REGISTER_ADDRESS | unsigned | 0x4 | If Interrupts are used, this generic selects the address of the internal `INTERRUPT_MATCH_REGISTER`. |
-| RESPONSE_ON_ERROR | AXI4Lite.pkg:<br>T_AXI4_Response | C_AXI4_RESPONSE_<br>DECODE_ERROR | With this generic can be selected which response code should be sent out if an address is accessed that is not handled by `Config`. Possible Values are: `C_AXI4_RESPONSE_OKAY`, `C_AXI4_RESPONSE_EX_OKAY`, `C_AXI4_RESPONSE_SLAVE_ERROR` or `C_AXI4_RESPONSE_DECODE_ERROR`. |
-| CONFIG | AXI4Lite.pkg:<br>T_AXI4_Register_<br>Description_Vector | - | This generic holds the Register-Configuration. It is explained later in more detail. |
+``CONFIG``
+-----------
+
+:Name:          ``CONFIG``
+:Type:          ``AXI4Lite:T_AXI4_Register_Description_Vector``
+:Default Value: — — — —
+:Description:   This generic holds the Register-Configuration. |br|
+                See :ref:`todo`
+
+``INTERRUPT_IS_STROBE``
+-----------
+
+:Name:          ``INTERRUPT_IS_STROBE``
+:Type:          ``boolean``
+:Default Value: ``true``
+:Description:   With this generic, it can be selected if the Interrupt-pin should through an interrupt as ``Strobe`` or
+                ``Value``. By selecting ``Strobe``, the module will block a new interrupt until the
+                ``INTERRUPT_MATCH_REGISTER``is read out.
+
+``INTERRUPT_ENABLE_REGISTER_ADDRESS``
+-----------
+
+:Name:          ``INTERRUPT_ENABLE_REGISTER_ADDRESS``
+:Type:          ``unsigned``
+:Default Value: ``x"00"``
+:Description:   If Interrupts are used, this generic selects the address of the internal ``INTERRUPT_ENABLE_REGISTER``.
+
+``INTERRUPT_MATCH_REGISTER_ADDRESS``
+-----------
+
+:Name:          ``INTERRUPT_MATCH_REGISTER_ADDRESS``
+:Type:          ``unsigned``
+:Default Value: ``x"04"``
+:Description:   If Interrupts are used, this generic selects the address of the internal ``INTERRUPT_MATCH_REGISTER``.
+
+``INIT_ON_RESET``
+-----------
+
+:Name:          ``INIT_ON_RESET``
+:Type:          ``boolean``
+:Default Value: ``true``
+:Description:   The Init-value of the registers, that is set by the ``Config``, is set by default with the Reset. This
+                can be disabled here. This helps with reducing control-sets and therefore helps by CLB utilization.
+
+``IGNORE_HIGH_ADDRESS``
+-----------
+
+:Name:          ``IGNORE_HIGH_ADDRESS``
+:Type:          ``boolean``
+:Default Value: ``true``
+:Description:   The module will calculate based on the configuration how many bits are needed to address every specified
+                register. If this generic is set, it will ignore every bit which is coming after the needed address-bits.
+                These bits are considered as base address. By setting this value, you can pass the full 40/32bit from
+                Zynq, and it will filter out the base address for it.
+
+``RESPONSE_ON_ERROR``
+-----------
+
+:Name:          ``RESPONSE_ON_ERROR``
+:Type:          ``AXI4Lite:T_AXI4_Response``
+:Default Value: ``C_AXI4_RESPONSE_DECODE_ERROR``
+:Possible Values: ``C_AXI4_RESPONSE_OKAY``, ``C_AXI4_RESPONSE_EX_OKAY``, ``C_AXI4_RESPONSE_SLAVE_ERROR`` or ``C_AXI4_RESPONSE_DECODE_ERROR``
+:Description:   With this generic can be selected which response code should be sent out if an address is accessed that
+                is not handled by ``Config``.
+
+``DISABLE_ADDRESS_CHECK``
+-----------
+
+:Name:          ``DISABLE_ADDRESS_CHECK``
+:Type:          ``boolean``
+:Default Value: ``false``
+:Description:   The module is internally calculating if any registers have overlapping addresses and will create an
+                error if so. This check takes a bit of synthesis time that depends on the size of ``Config``. This check
+                can be disabled.
+
+                .. attention:: This is not recommended!
+
+``VERBOSE``
+-----------
+
+:Name:          ``VERBOSE``
+:Type:          ``boolean``
+:Default Value: ``false``
+:Description:   If set to true, the module will print the configuration and settings into the synthesis-log with
+                ``assert``.
+
+:Description:   If set to true, the module sets specific internal signals as mark-debug. These signals are the
+                hit-vectors, decoded addresses, and interrupt signals.
+
 
 Ports
 =====
 
-| Name | Dir | Type | Description |
-|------|-----|------|--------------|
-| S_AXI_ACLK    | in  | std_logic          | Module Clock |
-| S_AXI_ARESETN | in  | std_logic          | synchronous Reset |
-| S_AXI_m2s     | in  | T_AXI4Lite_BUS_M2S | AXI4Lite master-to-slave record. From AXI4Lite.pkg. |
-| S_AXI_s2m     | out | T_AXI4Lite_BUS_S2M | Axi4-Lite slave-to-master record. From AXI4Lite.pkg. |
-| S_AXI_IRQ     | out | std_logic          | Module Interrupt Pin. Functionality depends on `Generics`. |
-| RegisterFile_ReadPort | out | T_SLVV(0 to CONFIG'Length - 1)(31 downto 0)     | Read-Port to PL of the Register Values. Two-dimensional-array. |
-| RegisterFile_ReadPort_hit | out | std_logic_vector(0 to CONFIG'Length - 1) | Hit-Vector to PL. A one is generated if the Software has written a specific register and therefore changed the value in RegisterFile_ReadPort. |
-| RegisterFile_WritePort    | in  | T_SLVV(0 to CONFIG'Length - 1)(31 downto 0) | Write-Port from PL. This Port is used to write into the internal registers from PL. |
-| RegisterFile_WritePort_hit | out | std_logic_vector(0 to CONFIG'Length - 1) | Hit-Vector to PL. A one is generated if the Software has read out a specific register and therefore got the value from the register. |
-| RegisterFile_WritePort_strobe | in | std_logic_vector(0 to CONFIG'Length - 1) | By setting a bit to one, the corresponding value at `RegisterFile_WritePort` is written into its register. The default value is set by the function `get_strobeVector(CONFIG)` and can be let like this. Overwrite is mostly needed if `rw_config` is set to `readWriteable`. |
+``Clock``
+---------
+
+:Name:          ``Clock``
+:Type:          ``std_logic``
+:Mode:          in
+:Default Value: — — — —
+:Description:   Clock
+
+``Reset``
+---------
+
+:Name:          ``Reset``
+:Type:          ``std_logic``
+:Mode:          in
+:Default Value: — — — —
+:Description:   synchronous high-active reset
+
+``AXI4Lite_m2s``
+----------------
+
+:Name:          ``AXI4Lite_m2s``
+:Type:          ``axi4lite.T_AXI4Lite_BUS_M2S``
+:Mode:          in
+:Default Value: — — — —
+:Description:   AXI4-Lite manager to subordinate signals.
+
+``AXI4Lite_s2m``
+----------------
+
+:Name:          ``AXI4Lite_s2m``
+:Type:          ``axi4lite.T_AXI4Lite_BUS_S2M``
+:Mode:          out
+:Default Value: — — — —
+:Description:   AXI4-Lite subordinate to manager signals.
+
+``AXI4Lite_irq``
+----------------
+
+:Name:          ``AXI4Lite_irq``
+:Type:          ``std_logic``
+:Mode:          out
+:Default Value: — — — —
+:Description:   AXI4-Lite interrupt request. |br|
+                Functionality depends on configured generics.
+
+``RegisterFile_ReadPort``
+-------------------------
+
+:Name:          ``RegisterFile_ReadPort``
+:Type:          ``T_SLVV(0 to CONFIG'length - 1)(31 downto 0)``
+:Mode:          out
+:Default Value: — — — —
+:Description:   Read-Port for register values (to fabric). |br|
+                An array of 32-bit words; one 32-bit word per register.
+
+``RegisterFile_ReadPort_hit``
+-----------------------------
+
+:Name:          ``RegisterFile_ReadPort_hit``
+:Type:          ``std_logic_vector(0 to CONFIG'length - 1)``
+:Mode:          out
+:Default Value: — — — —
+:Description:   Hit-vector to fabric. A bit is asserted if the a AXI4-Lite manager has written a specific register and
+                therefore changed the value in the corresponding register.
+
+``RegisterFile_WritePort``
+--------------------------
+
+:Name:          ``RegisterFile_WritePort``
+:Type:          ``T_SLVV(0 to CONFIG'length - 1)(31 downto 0)``
+:Mode:          in
+:Default Value: — — — —
+:Description:   Write-Port for register values (from fabric). |br|
+                An array of 32-bit words; one 32-bit word per register.
+
+``RegisterFile_WritePort_hit``
+------------------------------
+
+:Name:          ``RegisterFile_WritePort_hit``
+:Type:          ``std_logic_vector(0 to CONFIG'length - 1)``
+:Mode:          out
+:Default Value: — — — —
+:Description:   Hit-vector to fabric. A bit is asserted if the a AXI4-Lite manager has read a specific register and
+                therefore fetched the value in the corresponding register.
+
+``RegisterFile_WritePort_strobe``
+---------------------------------
+
+:Name:          ``RegisterFile_WritePort_strobe``
+:Type:          ``std_logic_vector(0 to CONFIG'length - 1)``
+:Mode:          in
+:Default Value: — — — —
+:Description:   By asserting a bit to ``'1'``, the corresponding value at ``RegisterFile_WritePort`` is captured into
+                the corresponding register. |br|
+                The default value is set by the function ``get_strobeVector(CONFIG)``.
+
+                .. todo:: Overwrite is mostly needed if `rw_config` is set to `readWriteable`.
 
 Configuration
 *************
