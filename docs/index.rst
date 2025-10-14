@@ -62,6 +62,10 @@ shipped with a Python based infrastructure to offer a command line based fronten
 
    .. rubric:: News
 
+.. hint::
+
+   New :ref:`IP/axi4lite_Register`.
+
 .. attention::
 
    In **Feb. 2025**, The PoC-Library was forked to the VHDL namespace at GitHub, which is operated by the Open-Source
@@ -113,19 +117,58 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
 
 .. raw:: latex
 
-   \part{Main Documentation}
+   \part{General}
 
 .. toctree::
-   :caption: Main Documentation
+   :caption: General
    :hidden:
 
    UsingPoC/index
    Interfaces/index
-   IPCores/index
    Miscelaneous/ThirdParty
    ConstraintFiles/index
    ToolChains/index
    Examples/index
+
+.. raw:: latex
+
+   \part{IP Cores}
+
+.. toctree::
+   :caption: IP Cores
+   :hidden:
+
+   PoC.alt.* <IPCores/alt/index>
+   PoC.arith.* <IPCores/arith/index>
+   PoC.bus.* <IPCores/bus/index>
+   PoC.cache.* <IPCores/cache/index>
+   PoC.comm.* <IPCores/comm/index>
+   PoC.dstruct.* <IPCores/dstruct/index>
+   PoC.fifo.* <IPCores/fifo/index>
+   PoC.io.* <IPCores/io/index>
+   PoC.mem.* <IPCores/mem/index>
+   PoC.misc.* <IPCores/misc/index>
+   PoC.net.* <IPCores/net/index>
+   PoC.sort.* <IPCores/sort/index>
+   PoC.sync.* <IPCores/sync/index>
+   PoC.xil.* <IPCores/xil/index>
+
+.. raw:: latex
+
+   \part{Packages}
+
+.. toctree::
+   :caption: Packages
+   :hidden:
+
+   PoC.components <IPCores/common/components>
+   PoC.context <IPCores/common/context>
+   PoC.config <IPCores/common/config>
+   PoC.fileio <IPCores/common/fileio>
+   PoC.math <IPCores/common/math>
+   PoC.strings <IPCores/common/strings>
+   PoC.utils <IPCores/common/utils>
+   PoC.vectors <IPCores/common/vectors>
 
 .. raw:: latex
 
