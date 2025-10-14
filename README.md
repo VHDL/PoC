@@ -5,8 +5,8 @@
 [![Sourcecode License](https://img.shields.io/badge/code-Apache%202.0-97CA00?longCache=true&style=flat-square&longCache=true&logo=Apache)](LICENSE.md)
 [![Documentation](https://img.shields.io/website?longCache=true&style=flat-square&label=VHDL.github.io%2FPoC&logo=GitHub&logoColor=fff&up_color=blueviolet&up_message=Read%20now%20%E2%9E%9A&url=https%3A%2F%2FVHDL.github.io%2FPoC%2Findex.html)](https://VHDL.github.io/PoC/)
 [![Documentation License](https://img.shields.io/badge/doc-CC--BY%204.0-green?longCache=true&style=flat-square&logo=CreativeCommons&logoColor=fff)](docs/Doc-License.rst)    
-![Latest tag](https://img.shields.io/github/tag/VLSI-EDA/PoC.svg?style=flat)
-[![Latest release](https://img.shields.io/github/release/VLSI-EDA/PoC.svg?style=flat)](https://github.com/VLSI-EDA/PoC/releases)
+![Latest tag](https://img.shields.io/github/tag/VHDL/PoC.svg?style=flat)
+[![Latest release](https://img.shields.io/github/release/VHDL/PoC.svg?style=flat)](https://github.com/VHDL/PoC/releases)
 
 <!--
 This library is published and maintained by **Chair for VLSI Design, Diagnostics and Architecture** - 
@@ -106,7 +106,7 @@ Protocol | Git Clone Command
 HTTPS    | `git clone --recursive https://github.com/VHDL/PoC.git PoC`
 SSH      | `git clone --recursive ssh://git@github.com:VHDL/PoC.git PoC`
 
-[221]: https://github.com/VLSI-EDA/PoC/archive/Vivado.zip
+[221]: https://github.com/VHDL/PoC/archive/master.zip
 [222]: http://VHDL.github.io/PoC/UsingPoC/Download.html
 
 ### 2.3 Configuring PoC on a Local System
