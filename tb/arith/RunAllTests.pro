@@ -23,3 +23,4 @@ TestSuite PoC.arith
 library tb_arith
 
 include ./prng/RunAllTests.pro
+include ./prefix_and/RunAllTests.pro
