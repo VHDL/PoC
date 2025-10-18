@@ -103,7 +103,7 @@ begin
     wait until Reset = '0';
     WaitForClock(Clock);
     
-    x <= (others => '0');
+    x(x'range) <= (others => '0');
     WaitForClock(Clock);
 
     -- Test Case 1: All zeros
@@ -219,7 +219,7 @@ begin
       );
     end if;
 
-    x <= (others => '0');
+    x(x'range) <= (others => '0');
     WaitForClock(Clock);
 
     WaitForBarrier(TestDone);
