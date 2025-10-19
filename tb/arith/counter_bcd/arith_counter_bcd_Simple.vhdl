@@ -2,7 +2,7 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					G. Martin
+-- Authors:					
 --
 -- Entity:					arith_counter_bcd_Simple
 --
@@ -38,10 +38,6 @@ library PoC;
 use     PoC.utils.all;
 use     PoC.strings.all;
 use     PoC.physical.all;
--- simulation only packages
---use     PoC.sim_types.all;
---use     PoC.simulation.all;
---use			PoC.waveform.all;
 
 architecture Simple of arith_counter_bcd_TestController is
   constant TCID : AlertLogIDType := NewID("CntBCDTest");
@@ -49,52 +45,6 @@ architecture Simple of arith_counter_bcd_TestController is
   
   signal Expected : T_BCD_VECTOR(DIGITS - 1 downto 0);
 begin
-
-  -- Stimulus generation
-  StimulusProc: process
-  begin
-    Reset_aux		<= '0';
-    wait until Reset = '0';
-    Reset_aux <= '0';
-    inc			  <= '0';
-
-    wait until falling_edge(Clock);
-    Reset_aux <= '1';
-    inc       <= '0';
-
-    wait until falling_edge(Clock);
-    Reset_aux <= '1';
-    inc       <= '1';
-
-    wait until falling_edge(Clock);
-    Reset_aux <= '0';
-    inc       <= '0';
-    
-    for i in 0 to 10**DIGITS - 1 loop
-      wait until falling_edge(Clock);
-      inc <= '1';
-      
-      wait until falling_edge(Clock);
-      inc <= '0';
-    end loop;
-    
-    wait until falling_edge(Clock);
-    inc <= '1';
-    
-    -- Wait 4 more falling edges
-    for j in 1 to 4 loop
-      wait until falling_edge(Clock);
-    end loop;
-    Reset_aux <= '1';
-    inc       <= '0';
-
-    wait until falling_edge(Clock);
-    Reset_aux <= '0';
-    inc       <= '0';
-    
-    -- Finalize
-    WaitForBarrier(TestDone);
-  end process;
 
   ControlProc: process
     constant ProcID : AlertLogIDType := NewID("ControlProc", TCID);
@@ -125,30 +75,55 @@ begin
     constant ProcID : AlertLogIDType := NewID("CheckerProc", TCID);
     variable Expected : T_BCD_VECTOR(DIGITS - 1 downto 0);
   begin
-    WaitForClock(Clock);
+    Reset_aux <= '0';
+    inc       <= '0';
+    wait until Reset = '0';
+
     WaitForClock(Clock);
     Expected := to_BCD_Vector(0, DIGITS);
     AffirmIf(ProcID, (Value = Expected), "Wrong initial state. Value=" & to_string(Value));
 
+    Reset_aux <= '1';
+    inc       <= '0';
     WaitForClock(Clock);
     AffirmIf(ProcID, (Value = Expected), "Wrong initial state. Value=" & to_string(Value));
+
+    Reset_aux <= '1';
+    inc       <= '1';
+    WaitForClock(Clock);
+    AffirmIf(ProcID, (Value = Expected), "Wrong initial state. Value=" & to_string(Value));
+    Reset_aux <= '0';
+    inc       <= '0';
 
     WaitForClock(Clock);
     for i in 1 to 10**DIGITS - 1 loop
       Expected := to_BCD_Vector(i, DIGITS);
+      wait until falling_edge(Clock);
+      inc      <= '1';
       WaitForClock(Clock);
-      AffirmIf(ProcID, (Value = Expected), "Must be incremented to state " & to_string(Expected) & "  Value=" & to_string(Value));
+      wait until falling_edge(Clock);
+      inc      <= '0';
       WaitForClock(Clock);
-      AffirmIf(ProcID, (Value = Expected), "Must keep the state " & to_string(Expected) & "  Value=" & to_string(Value));
+      AffirmIf(ProcID, (Value = Expected), "Should be incremented to state " & to_string(Expected) & "  Value=" & to_string(Value));
+      wait until falling_edge(Clock);
+      inc      <= '0';
+      WaitForClock(Clock);
+      AffirmIf(ProcID, (Value = Expected), "Should keep the state " & to_string(Expected) & "  Value=" & to_string(Value));
     end loop;
-
+    wait until falling_edge(Clock);
+    inc      <= '1';
     WaitForClock(Clock);
-    AffirmIf(ProcID, Value = (DIGITS - 1 downto 0 => x"0"), "Should be wrapped to 0000.");
+    WaitForClock(Clock);
+    AffirmIf(ProcID, Value = (DIGITS - 1 downto 0 => x"0"), "Should be wrapped to 0000." & "  Value=" & to_string(Value));
 
+    inc <= '1';
     for j in 1 to 5 loop
       WaitForClock(Clock);
     end loop;
 
+    Reset_aux <= '1';
+    inc <= '0';
+    WaitForClock(Clock);
     WaitForClock(Clock);
     AffirmIf(ProcID, Value = (DIGITS - 1 downto 0 => x"0"), "Should be resetted again.");
 
