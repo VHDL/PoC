@@ -50,14 +50,25 @@ begin
 
   ControlProc: process
     constant ProcID : AlertLogIDType := NewID("ControlProc", TCID);
+    constant TIMEOUT : time := 10 ms;
   begin
     SetTestName("arith_addw_Simple");
-    SetLogEnable(INFO, FALSE);
+
+    SetLogEnable(PASSED, FALSE);
+    SetLogEnable(INFO,   FALSE);
+    SetLogEnable(DEBUG,  FALSE);
+    wait for 0 ns; wait for 0 ns;
+
     TranscriptOpen;
     SetTranscriptMirror(TRUE);
+
     wait until Reset = '0';
     ClearAlerts;
-    WaitForBarrier(TestDone);
+
+    WaitForBarrier(TestDone, TIMEOUT);
+    AlertIf(ProcID, now >= TIMEOUT,     "Test finished due to timeout");
+    AlertIf(ProcID, GetAffirmCount < 1, "Test is not Self-Checking");
+
     EndOfTestReports(ReportAll => TRUE);
     std.env.stop;
   end process;

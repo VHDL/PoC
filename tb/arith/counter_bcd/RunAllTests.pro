@@ -1,5 +1,5 @@
 # =============================================================================
-# Authors: Jonas Schreiner
+# Authors: G. Martin
 #
 # License:
 # =============================================================================
@@ -18,12 +18,7 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite PoC.arith
+analyze arith_counter_bcd_TestController.vhdl
+analyze arith_counter_bcd_TestHarness.vhdl
 
-library tb_arith
-
-include ./prng/RunAllTests.pro
-include ./prefix_and/RunAllTests.pro
-include ./prefix_or/RunAllTests.pro
-include ./addw/RunAllTests.pro
-include ./counter_bcd/RunAllTests.pro
+RunTest arith_counter_bcd_Simple.vhdl
