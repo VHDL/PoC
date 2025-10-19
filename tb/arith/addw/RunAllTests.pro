@@ -1,0 +1,5 @@
+analyze arith_addw_TestController_pkg.vhdl
+analyze arith_addw_TestController.vhdl
+analyze arith_addw_TestHarness.vhdl
+
+RunTest arith_addw_Simple.vhdl

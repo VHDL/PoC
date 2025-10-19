@@ -25,3 +25,4 @@ library tb_arith
 include ./prng/RunAllTests.pro
 include ./prefix_and/RunAllTests.pro
 include ./prefix_or/RunAllTests.pro
+include ./addw/RunAllTests.pro
