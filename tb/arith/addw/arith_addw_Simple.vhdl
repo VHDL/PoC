@@ -4,11 +4,11 @@
 -- =============================================================================
 -- Authors:					G. Martin
 --
--- Entity:					arith_addw_TestController
+-- Entity:					arith_addw_Simple
 --
 -- Description:
 -- -------------------------------------
--- Test controller for arith_addw
+-- Simple OSVVM test for arith_addw
 --
 -- License:
 -- =============================================================================

@@ -4,11 +4,11 @@
 -- =============================================================================
 -- Authors:					G. Martin
 --
--- Entity:					arith_addw_TestController
+-- Entity:					arith_addw_TestController_pkg
 --
 -- Description:
 -- -------------------------------------
--- Test controller for arith_addw
+-- Test controller package for arith_addw
 --
 -- License:
 -- =============================================================================
