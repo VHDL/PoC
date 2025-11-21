@@ -36,7 +36,7 @@ copyright = '2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-
 author = 'The PoC-Library Authors'
 
 version = "2.1"     # The short X.Y version.
-release = "2.1.0"   # The full version, including alpha/beta/rc tags.
+release = "2.1.1"   # The full version, including alpha/beta/rc tags.
 
 from subprocess import check_output
 
@@ -319,6 +319,7 @@ report_unittest_testsuites = {
 		"xml_report":  "../report/unit/unittest.xml",
 	}
 }
+
 # report_codecov_packages = {
 # 	"src": {
 # 		"name":        f"{project}",
