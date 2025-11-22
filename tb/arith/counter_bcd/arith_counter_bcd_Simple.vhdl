@@ -2,7 +2,9 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					
+-- Authors:					Martin Zabel
+--                  Thomas B. Preusser
+--                  Gustavo Martin
 --
 -- Entity:					arith_counter_bcd_Simple
 --
@@ -112,19 +114,15 @@ begin
     end loop;
     wait until falling_edge(Clock);
     inc      <= '1';
-    WaitForClock(Clock);
-    WaitForClock(Clock);
+    WaitForClock(Clock, 2);
     AffirmIf(ProcID, Value = (DIGITS - 1 downto 0 => x"0"), "Should be wrapped to 0000." & "  Value=" & to_string(Value));
 
     inc <= '1';
-    for j in 1 to 5 loop
-      WaitForClock(Clock);
-    end loop;
+    WaitForClock(Clock, 5);
 
     Reset_aux <= '1';
     inc <= '0';
-    WaitForClock(Clock);
-    WaitForClock(Clock);
+    WaitForClock(Clock, 2);
     AffirmIf(ProcID, Value = (DIGITS - 1 downto 0 => x"0"), "Should be resetted again.");
 
     -- Finalize

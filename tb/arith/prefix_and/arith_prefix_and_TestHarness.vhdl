@@ -2,7 +2,9 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					
+-- Authors:					Thomas B. Preusser
+--									Patrick Lehmann
+--                  Gustavo Martin
 --
 -- Entity:					arith_prefix_and_TestHarness
 --
