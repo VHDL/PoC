@@ -59,9 +59,9 @@ package mem_GitVersionRegister is
 		NumberModule           : std_logic_vector(23 downto 0);
 		VersionOfVersionReg    : std_logic_vector(7 downto 0);
 
-		VivadoVersion_Year     : std_logic_vector(15 downto 0);
-		VivadoVersion_Release  : std_logic_vector(7 downto 0);
-		VivadoVersion_SubRelease   : std_logic_vector(7 downto 0);
+		ToolVersion_Year       : std_logic_vector(15 downto 0);
+		ToolVersion_Release    : std_logic_vector(7 downto 0);
+		ToolVersion_SubRelease : std_logic_vector(7 downto 0);
 
 		ProjektName            : std_logic_vector(159 downto 0);
 	end record;
@@ -70,7 +70,9 @@ package mem_GitVersionRegister is
 		Version_Major          : std_logic_vector(7 downto 0);
 		Version_Minor          : std_logic_vector(7 downto 0);
 		Version_Release        : std_logic_vector(7 downto 0);
-		Version_Flags          : std_logic_vector(7 downto 0);
+		Version_CommitsToTag   : std_logic_vector(5 downto 0);
+		Version_DirtyUntracked : std_logic;
+		Version_DirtyModified  : std_logic;
 
 		GitHash                : std_logic_vector(159 downto 0);
 
@@ -92,6 +94,12 @@ package mem_GitVersionRegister is
 		UID                    : std_logic_vector(127 downto 0);
 		User_eFuse             : std_logic_vector(31 downto 0);
 		User_ID                : std_logic_vector(95 downto 0);
+	end record;
+
+	type T_Version_Register is record
+		Common : T_Version_Register_Common;
+		Top    : T_Version_Register_Top;
+		UID    : T_Version_Register_UID;
 	end record;
 
 	constant C_VERSION_REGISTER_UID_INIT : T_Version_Register_UID := (
@@ -116,6 +124,7 @@ package mem_GitVersionRegister is
 
 	function to_SLVV_32_Common       (data : T_Version_Register_Common)        return T_SLVV_32;
 	function to_SLVV_32_Top          (data : T_Version_Register_Top)           return T_SLVV_32;
+	function to_Version_Register     (register_vector : T_SLVV)                return T_Version_Register;
 	function get_Dummy_Descriptor(len : natural) return T_AXI4_Register_Vector;
 
 	function get_Version_Descriptor return T_AXI4_Register_Vector;
@@ -135,7 +144,7 @@ package body mem_GitVersionRegister is
 		addr := addr +4; pos := pos +1;
 		temp(pos) := to_AXI4_Register(Name => "Common.NumberModule_VersionOfVersionReg",  Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
 		addr := addr +4; pos := pos +1;
-		temp(pos) := to_AXI4_Register(Name => "Common.VivadoVersion",                     Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
+		temp(pos) := to_AXI4_Register(Name => "Common.ToolVersion",                       Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
 		addr := addr +4; pos := pos +1;
 		for i in 0 to 4 loop
 			temp(pos) := to_AXI4_Register(Name => "Common.ProjektName(" & integer'image(i) & ")", Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
@@ -176,6 +185,55 @@ package body mem_GitVersionRegister is
 		return temp(0 to pos -1);
 	end function;
 
+	function to_Version_Register (reg_vec : T_SLVV) return T_Version_Register is
+		variable temp : T_Version_Register;
+	begin
+		temp.Common.BuildDate_Day          := reg_vec(0)(31 downto 24);
+		temp.Common.BuildDate_Month        := reg_vec(0)(23 downto 16);
+		temp.Common.BuildDate_Year         := reg_vec(0)(15 downto  0);
+		temp.Common.NumberModule           := reg_vec(1)(31 downto  8);
+		temp.Common.VersionOfVersionReg    := reg_vec(1)( 7 downto  0);
+		temp.Common.ToolVersion_Year       := reg_vec(2)(31 downto 16);
+		temp.Common.ToolVersion_Release    := reg_vec(2)(15 downto  8);
+		temp.Common.ToolVersion_SubRelease := reg_vec(2)( 7 downto  0);
+		for i in 0 to 4 loop
+			temp.Common.ProjektName(32 * i +31 downto 32 * i) := reg_vec(i + 3);
+		end loop;
+
+		temp.Top.Version_Major          := reg_vec(8)(31 downto 24);
+		temp.Top.Version_Minor          := reg_vec(8)(23 downto 16);
+		temp.Top.Version_Release        := reg_vec(8)(15 downto  8);
+		temp.Top.Version_CommitsToTag   := reg_vec(8)( 7 downto  2);
+		temp.Top.Version_DirtyUntracked := reg_vec(8)(1);
+		temp.Top.Version_DirtyModified  := reg_vec(8)(0);
+		for i in 0 to 4 loop
+			temp.Top.GitHash(32 * i +31 downto 32 * i) := reg_vec(i + 9);
+		end loop;
+		temp.Top.GitDate_Day            := reg_vec(14)(31 downto 24);
+		temp.Top.GitDate_Month          := reg_vec(14)(23 downto 16);
+		temp.Top.GitDate_Year           := reg_vec(14)(15 downto  0);
+		temp.Top.GitTime_Hour           := reg_vec(15)(31 downto 24);
+		temp.Top.GitTime_Min            := reg_vec(15)(23 downto 16);
+		temp.Top.GitTime_Sec            := reg_vec(15)(15 downto  8);
+		temp.Top.GitTime_Zone           := reg_vec(15)( 7 downto  0);
+		for i in 0 to 15 loop
+			temp.Top.BranchName_Tag(32 * i +31 downto 32 * i) := reg_vec(i + 16);
+		end loop;
+		for i in 0 to 31 loop
+			temp.Top.GitURL(32 * i +31 downto 32 * i)         := reg_vec(i + 32);
+		end loop;
+
+		for i in 0 to 3 loop
+			temp.UID.UID(32 * i +31 downto 32 * i)     := reg_vec(i + 64);
+		end loop;
+		temp.UID.User_eFuse                            := reg_vec(68);
+		for i in 0 to 2 loop
+			temp.UID.User_ID(32 * i +31 downto 32 * i) := reg_vec(i + 69);
+		end loop;
+
+		return temp;
+	end function;
+
 
 	function get_Dummy_Descriptor(len : natural) return T_AXI4_Register_Vector is
 		variable descriptor : T_AXI4_Register_Vector(0 to len -1);
@@ -196,7 +254,7 @@ package body mem_GitVersionRegister is
 	begin
 		temp(0) := data.BuildDate_Day & data.BuildDate_Month & data.BuildDate_Year;
 		temp(1) := data.NumberModule & data.VersionOfVersionReg;
-		temp(2) := data.VivadoVersion_Year & data.VivadoVersion_Release & data.VivadoVersion_SubRelease;
+		temp(2) := data.ToolVersion_Year & data.ToolVersion_Release & data.ToolVersion_SubRelease;
 		for i in name'reverse_range loop
 			temp(i +3) := name(i);
 		end loop;
@@ -213,7 +271,7 @@ package body mem_GitVersionRegister is
 
 		variable idx  : natural := 0;
 	begin
-		temp(0) := data.Version_Major & data.Version_Minor & data.Version_Release & data.Version_Flags;
+		temp(0) := data.Version_Major & data.Version_Minor & data.Version_Release & data.Version_CommitsToTag & data.Version_DirtyUntracked & data.Version_DirtyModified;
 		idx := idx +1;
 
 		for i in hash'reverse_range loop
@@ -289,17 +347,17 @@ package body mem_GitVersionRegister is
 		Len := CurrentLine'length;
 		read(CurrentLine, result_s(1 to Len), Good);
 		assert not Verbose report "get_slv_d(): " & result_s(1 to Len) severity Note;
-		HW_BUILD_VERSION_COMMON.VivadoVersion_Year       := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 16));
+		HW_BUILD_VERSION_COMMON.ToolVersion_Year         := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 16));
 		readline(FileHandle, CurrentLine);
 		Len := CurrentLine'length;
 		read(CurrentLine, result_s(1 to Len), Good);
 		assert not Verbose report "get_slv_d(): " & result_s(1 to Len) severity Note;
-		HW_BUILD_VERSION_COMMON.VivadoVersion_Release    := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 8));
+		HW_BUILD_VERSION_COMMON.ToolVersion_Release      := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 8));
 		readline(FileHandle, CurrentLine);
 		Len := CurrentLine'length;
 		read(CurrentLine, result_s(1 to Len), Good);
 		assert not Verbose report "get_slv_d(): " & result_s(1 to Len) severity Note;
-		HW_BUILD_VERSION_COMMON.VivadoVersion_SubRelease := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 8));
+		HW_BUILD_VERSION_COMMON.ToolVersion_SubRelease   := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 8));
 
 		readline(FileHandle, CurrentLine);
 		Len := CurrentLine'length;
@@ -327,17 +385,19 @@ package body mem_GitVersionRegister is
 		Len := CurrentLine'length;
 		read(CurrentLine, result_s(1 to Len), Good);
 		assert not Verbose report "get_slv_d(): " & result_s(1 to Len) severity Note;
-		HW_BUILD_VERSION_TOP.Version_Flags(7 downto 2)   := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 6));
+		HW_BUILD_VERSION_TOP.Version_CommitsToTag        := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 6));
 		readline(FileHandle, CurrentLine);
 		Len := CurrentLine'length;
 		read(CurrentLine, result_s(1 to Len), Good);
 		assert not Verbose report "get_slv_d(): " & result_s(1 to Len) severity Note;
-		HW_BUILD_VERSION_TOP.Version_Flags(1 downto 1)   := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 1));
+		result_h(0 downto 0) := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 1)); -- result_h is unused until here
+		HW_BUILD_VERSION_TOP.Version_DirtyUntracked := result_h(0);
 		readline(FileHandle, CurrentLine);
 		Len := CurrentLine'length;
 		read(CurrentLine, result_s(1 to Len), Good);
 		assert not Verbose report "get_slv_d(): " & result_s(1 to Len) severity Note;
-		HW_BUILD_VERSION_TOP.Version_Flags(0 downto 0)   := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 1));
+		result_h(0 downto 0) := std_logic_vector(to_unsigned(to_natural_dec(result_s(1 to Len)), 1)); -- result_h is unused until here
+		HW_BUILD_VERSION_TOP.Version_DirtyModified  := result_h(0);
 
 		readline(FileHandle, CurrentLine);
 		Len := CurrentLine'length;

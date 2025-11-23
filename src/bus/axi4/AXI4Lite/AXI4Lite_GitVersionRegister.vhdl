@@ -10,6 +10,9 @@
 -- -------------------------------------
 -- This version register can be auto filled with constants from Git. Software
 -- can read from what revision a firmware (bitstream, PL code) was build.
+-- 
+-- The Version-out-Port is used to make all values accessible to the PL. This
+-- can be used by another interface than AXI4L, if necessary.
 --
 -- Use the pre-synthesis script from
 --     PoC/tools/git/preSynth_GitVersionRegister_Vivado.tcl
@@ -62,7 +65,9 @@ entity AXI4Lite_GitVersionRegister is
 		Reset        : in  std_logic;
 
 		AXI4Lite_m2s : in  T_AXI4Lite_BUS_M2S;
-		AXI4Lite_s2m : out T_AXI4Lite_BUS_S2M
+		AXI4Lite_s2m : out T_AXI4Lite_BUS_S2M;
+
+		Version      : out T_Version_Register
 	);
 end entity;
 
@@ -100,6 +105,7 @@ begin
 	);
 	RegisterFile_WritePort(0 to C_Num_Version_Header -1) <= VersionData;
 	RegisterFile_WritePort(C_Num_Version_Header to C_Num_Version_Register -1) <= UID_vec;
+	Version <= to_Version_Register(RegisterFile_ReadPort);
 
 	---------------------------------
 	-- Generate data for UID-vector
