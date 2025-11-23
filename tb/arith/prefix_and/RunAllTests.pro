@@ -1,8 +1,8 @@
 # =============================================================================
-# Authors: Jonas Schreiner
-#          Gustavo Martin
-#
-# License:
+# Authors:
+#	Thomas B. Preusser
+#	Patrick Lehmann
+#   Gustavo Martin
 # =============================================================================
 # Copyright 2025-2025 The PoC-Library Authors
 #
@@ -19,12 +19,8 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite PoC.arith
+analyze arith_prefix_and_TestController.vhdl
+analyze arith_prefix_and_TestHarness.vhdl
 
-library tb_arith
-
-include ./prng/RunAllTests.pro
-include ./prefix_and/RunAllTests.pro
-include ./prefix_or/RunAllTests.pro
-include ./addw/RunAllTests.pro
-include ./counter_bcd/RunAllTests.pro
+RunTest arith_prefix_and_Simple.vhdl
+RunTest arith_prefix_and_Exhaustive.vhdl
