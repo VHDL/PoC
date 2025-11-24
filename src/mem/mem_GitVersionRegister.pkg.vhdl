@@ -124,7 +124,7 @@ package mem_GitVersionRegister is
 
 	function to_SLVV_32_Common       (data : T_Version_Register_Common)        return T_SLVV_32;
 	function to_SLVV_32_Top          (data : T_Version_Register_Top)           return T_SLVV_32;
-	function to_Version_Register     (register_vector : T_SLVV)                return T_Version_Register;
+	function to_Version_Register     (reg_vec : T_SLVV)                        return T_Version_Register;
 	function get_Dummy_Descriptor(len : natural) return T_AXI4_Register_Vector;
 
 	function get_Version_Descriptor return T_AXI4_Register_Vector;
