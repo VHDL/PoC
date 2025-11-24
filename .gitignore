@@ -39,6 +39,9 @@ tb/common/my_project.vhdl
 
 
 # ignore external tool files: ActiveHDL, QuestaSim
+/.sigasi/**/
+!/.sigasi/project.sigasi
+
 /prj/ActiveHDL/*
 /prj/ActiveHDL/*.*
 /prj/ActiveHDL/**/*.*
