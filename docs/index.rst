@@ -193,6 +193,7 @@ following `biblatex <https://www.ctan.org/pkg/biblatex>`_ entry to cite us:
    :hidden:
 
    ChangeLog/index
+   Glossary
    genindex
 
 .. ifconfig:: visibility in ('PoCInternal')
