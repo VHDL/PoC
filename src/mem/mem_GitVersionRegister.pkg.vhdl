@@ -130,13 +130,14 @@ package mem_GitVersionRegister is
 	function get_Version_Descriptor return T_AXI4_Register_Vector;
 
 	impure function read_Version_from_mem(FileName : string) return T_SLVV_32;
+	impure function to_Version_Register  (FileName : string) return T_Version_Register;
 end package;
 
 
 package body mem_GitVersionRegister is
 
 	function get_Version_Descriptor return T_AXI4_Register_Vector is
-		variable temp : T_AXI4_Register_Vector(0 to 127);
+		variable temp : T_AXI4_Register_Vector(0 to C_Num_Version_Register -1);
 		variable pos  : natural := 0;
 		variable addr : natural := 0;
 	begin
@@ -468,4 +469,14 @@ package body mem_GitVersionRegister is
 
 		return temp;
 	end function;
+	
+	impure function to_Version_Register  (FileName : string) return T_Version_Register is
+		variable VersionData : T_SLVV_32(0 to C_Num_Version_Register - 1);
+	
+	begin
+		VersionData(0 to C_Num_Version_Header - 1) := read_Version_from_mem(FileName);
+		VersionData(C_Num_Version_Header to C_Num_Version_Register - 1) := (others => (others => '0'));
+		return to_Version_Register(VersionData);
+	end function;
+	
 end package body;
