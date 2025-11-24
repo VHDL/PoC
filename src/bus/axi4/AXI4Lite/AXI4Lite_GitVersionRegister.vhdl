@@ -10,9 +10,12 @@
 -- -------------------------------------
 -- This version register can be auto filled with constants from Git. Software
 -- can read from what revision a firmware (bitstream, PL code) was build.
--- 
+--
 -- The Version-out-Port is used to make all values accessible to the PL. This
 -- can be used by another interface than AXI4L, if necessary.
+-- If you dont need the UID field, use this to directly create a constant out of
+-- the mem-file:
+-- constant My_Version : T_Version_Register := to_Version_Register(MEM_PATH);
 --
 -- Use the pre-synthesis script from
 --     PoC/tools/git/preSynth_GitVersionRegister_Vivado.tcl
