@@ -48,7 +48,17 @@
    :class: portname
 .. role:: pack
    :class: packagename
+.. role:: type
+   :class: typename
+.. role:: subprog
+   :class: subprogramname
+.. role:: value
+   :class: value
 
 .. role:: pycode(code)
    :language: python
+   :class: highlight
+
+.. role:: vhdlcode(code)
+   :language: vhdl
    :class: highlight
