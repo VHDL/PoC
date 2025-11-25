@@ -1,4 +1,6 @@
 .. _NS/axi4lite:
+.. index::
+   see: axi4lite; AXI4-Lite
 
 PoC.bus.axi4lite
 ================

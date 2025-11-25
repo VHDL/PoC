@@ -1,7 +1,6 @@
 .. _IP/axi4lite_Register:
 .. index::
-   single: axi4lite, axi4lite_Register
-
+   single: AXI4-Lite; axi4lite_Register
 
 axi4lite_Register
 #################
@@ -727,3 +726,9 @@ Afterwards, the wiring needs to be created in the pl like this:
    1. AXI4L Read
 
    Currently it is not selectable if Lut-RAM or BRAM should be used. If this is needed, ask @sunrein for this feature.
+
+
+Use in
+******
+
+* :ref:`IP/axi4lite_GitVersionRegister`

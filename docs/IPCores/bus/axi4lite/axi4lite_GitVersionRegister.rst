@@ -1,4 +1,6 @@
 .. _IP/axi4lite_GitVersionRegister:
+.. index::
+   single: AXI4-Lite; axi4lite_GitVersionRegister
 
 axi4lite_GitVersionRegister
 ###########################
@@ -6,21 +8,75 @@ axi4lite_GitVersionRegister
 
 Current version of this version Reg is `1`. Use this tcl script for Vivado synth-pre-tcl: [set_BuildVersion.tcl](/uploads/9fdf1898a1797857e11889134c5179d0/set_BuildVersion.tcl)
 
-Generics
-********
+Interface
+*********
 
-| Name | Description |
-|-------|----------|
-| VERSION_FILE_NAME | Path to the Version-mem-file created by `set_BuildVersion.tcl`. Relative to ``constant MY_PROJECT_DIR`` in ``src/PoC/my_project.vhdl`` |
-| HEADER_FILE_NAME  | If csv-file with all register spaces is needed, put here the name/path of csv-file. Relative to ``constant MY_PROJECT_DIR`` in ``src/PoC/my_project.vhdl`` |
-| INCLUDE_XIL_DNA | Includes Xilinx-DNA-Port. Working for 7-Series and US/US+ Devices. Note: 7-Series has 32 times this "unique" ID. |
-| INCLUDE_XIL_USR_EFUSE | Includes Usr-EFuse. {-Currently not Implemented-} |
-| USER_ID               | 96bit ID, which can be set through PL in synthesis. |
+Generics
+========
+
+:generic:`VERSION_FILE_NAME`
+----------------------------
+
+:Name:          ``xx``
+:Type:          ``xxx``
+:Default Value: — — — —
+:Description:   Path to the Version-mem-file created by `set_BuildVersion.tcl`. Relative to ``constant MY_PROJECT_DIR``
+                in ``src/PoC/my_project.vhdl``
+
+
+:generic:`HEADER_FILE_NAME`
+---------------------------
+
+:Name:          ``xx``
+:Type:          ``xxx``
+:Default Value: — — — —
+:Description:   If csv-file with all register spaces is needed, put here the name/path of csv-file. Relative to
+                ``constant MY_PROJECT_DIR`` in ``src/PoC/my_project.vhdl``
+
+
+:generic:`INCLUDE_XIL_DNA`
+--------------------------
+
+:Name:          ``xx``
+:Type:          ``xxx``
+:Default Value: — — — —
+:Description:   Includes Xilinx-DNA-Port. Working for 7-Series and US/US+ Devices. Note: 7-Series has 32 times this
+                "unique" ID.
+
+
+:generic:`INCLUDE_XIL_USR_EFUSE`
+--------------------------------
+
+:Name:          ``xx``
+:Type:          ``xxx``
+:Default Value: — — — —
+:Description:   Includes Usr-EFuse. {-Currently not Implemented-}
+
+
+:generic:`USER_ID`
+------------------
+
+:Name:          ``xx``
+:Type:          ``xxx``
+:Default Value: — — — —
+:Description:   96bit ID, which can be set through PL in synthesis.
+
+
+Ports
+=====
+
+.. todo:: Describe AXI4-Lite ports.
+
 
 Register Map
 ************
 
-All Registers are Read-only. Version Register should always start with offset ``0x80000000`` (First PL Address).
+All registers are read-only. Version Register should always start with offset ``0x80000000`` (First PL Address).
+
+.. tip::
+
+   The version register should be the first address in the address space (e.g., ``0x8000_0000``), thus a software can
+   check what PL firmware is active and if this firmware is compatible to the currently running software version.
 
 | Offset | Name | Description |
 |---------|-------|----------|
