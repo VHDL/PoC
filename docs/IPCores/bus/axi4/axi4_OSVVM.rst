@@ -1,12 +1,12 @@
-.. _PKG/axi4lite_OSVVM:
+.. _PKG/axi4_OSVVM:
 .. index::
-   single: AXI4-Lite; axi4lite_OSVVM Package
+   single: AXI4; axi4_OSVVM Package
 
-axi4lite_OSVVM Package
-######################
+axi4_OSVVM Package
+##################
 
 Subprograms
 ***********
 
-* :subprog:`to_PoC_AXI4Lite_Bus_Master`
-* :subprog:`to_PoC_AXI4Lite_Bus_Slave`
+* :subprog:`to_PoC_AXI4_Bus_Master`
+* :subprog:`to_PoC_AXI4_Bus_Slave`

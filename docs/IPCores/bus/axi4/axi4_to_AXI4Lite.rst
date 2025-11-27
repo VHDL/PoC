@@ -1,29 +1,27 @@
-.. _IP/axi4_FIFO:
+.. _IP/axi4_to_AXI4Lite:
 .. index::
-   single: AXI4; axi4_FIFO
+   single: AXI4; axi4_to_AXI4Lite
 
-axi4_FIFO
-#########
-
-
-Based on :ref:`IP/fifo_cc_got`
+axi4_to_AXI4Lite
+################
 
 
-.. _IP/axi4_FIFO/goals:
+
+.. _IP/axi4_to_AXI4Lite/goals:
 
 .. topic:: Design Goals
 
    * tbd
 
 
-.. _IP/axi4_FIFO/features:
+.. _IP/axi4_to_AXI4Lite/features:
 
 .. topic:: Features
 
    * tbd
 
 
-.. _IP/axi4_FIFO/instantiation:
+.. _IP/axi4_to_AXI4Lite/instantiation:
 
 Instantiation
 *************
@@ -40,10 +38,7 @@ Instantiation
 
       .. code-block:: vhdl
 
-         FIFO : entity PoC.axi4_FIFO
-         generic map (
-           FRAMES => 16
-         )
+         FIFO : entity PoC.axi4_to_AXI4Lite
          port map (
            Clock   => Clock,
            Reset   => Reset,
@@ -51,38 +46,38 @@ Instantiation
            In_m2s  => Source_m2s,
            In_s2m  => Source_s2m
 
-           Out_m2s => FIFO_m2s,
-           Out_s2m => FIFO_s2m
+           Out_m2s => Config_m2s,
+           Out_s2m => Config_s2m
          );
 
 
-.. _IP/axi4_FIFO/interface:
+.. _IP/axi4_to_AXI4Lite/interface:
 
 Interface
 *********
 
-.. _IP/axi4_FIFO/generics:
+.. _IP/axi4_to_AXI4Lite/generics:
 
 Generics
 ========
 
-.. _IP/axi4_FIFO/gen/FRAMES:
+.. _IP/axi4_FIFO_cdc/gen/RESPONSE_FIFO_DEPTH:
 
-:generic:`FRAMES`
------------------
+:generic:`RESPONSE_FIFO_DEPTH`
+------------------------------
 
-:Name:          :generic:`FRAMES`
+:Name:          :generic:`RESPONSE_FIFO_DEPTH`
 :Type:          :type:`positive`
-:Default Value: ``2``
+:Default Value: ``16``
 :Description:   tbd
 
 
-.. _IP/axi4_FIFO/ports:
+.. _IP/axi4_to_AXI4Lite/ports:
 
 Ports
 =====
 
-.. _IP/axi4_FIFO/port/Clock:
+.. _IP/axi4_to_AXI4Lite/port/Clock:
 
 :port:`Clock`
 -------------
@@ -94,7 +89,7 @@ Ports
 :Description:   Clock
 
 
-.. _IP/axi4_FIFO/port/Reset:
+.. _IP/axi4_to_AXI4Lite/port/Reset:
 
 :port:`Reset`
 -------------
@@ -106,55 +101,55 @@ Ports
 :Description:   synchronous high-active reset
 
 
-.. _IP/axi4_FIFO/port/In_m2s:
+.. _IP/axi4_to_AXI4Lite/port/In_m2s:
 
 :port:`In_m2s`
 --------------
 
 :Name:          ``In_m2s``
-:Type:          ``axi4lite.T_axi4_BUS_M2S``
+:Type:          ``axi4.T_AXI4_Bus_m2s``
 :Mode:          in
 :Default Value: — — — —
-:Description:   AXI4-Lite manager to subordinate signals.
+:Description:   AXI4 manager to subordinate signals.
 
 
-.. _IP/axi4_FIFO/port/In_s2m:
+.. _IP/axi4_to_AXI4Lite/port/In_s2m:
 
 :port:`In_s2m`
 --------------
 
 :Name:          ``In_s2m``
-:Type:          ``axi4lite.T_axi4_BUS_S2M``
+:Type:          ``axi4.T_AXI4_Bus_s2m``
 :Mode:          out
 :Default Value: — — — —
-:Description:   AXI4-Lite subordinate to manager signals.
+:Description:   AXI4 subordinate to manager signals.
 
 
-.. _IP/axi4_FIFO/port/Out_m2s:
+.. _IP/axi4_to_AXI4Lite/port/Out_m2s:
 
 :port:`Out_m2s`
 ---------------
 
 :Name:          ``Out_m2s``
-:Type:          ``axi4lite.T_axi4_BUS_M2S``
+:Type:          ``axi4lite.T_AXI4Lite_Bus_m2s``
 :Mode:          out
 :Default Value: — — — —
 :Description:   AXI4-Lite manager to subordinate signals.
 
 
-.. _IP/axi4_FIFO/port/Out_s2m:
+.. _IP/axi4_to_AXI4Lite/port/Out_s2m:
 
 :port:`Out_s2m`
 ---------------
 
 :Name:          ``Out_s2m``
-:Type:          ``axi4lite.T_axi4_BUS_S2M``
+:Type:          ``axi4lite.T_AXI4Lite_Bus_s2m``
 :Mode:          in
 :Default Value: — — — —
 :Description:   AXI4-Lite subordinate to manager signals.
 
 
-.. _IP/axi4_FIFO/configuration:
+.. _IP/axi4_to_AXI4Lite/configuration:
 
 Configuration
 *************
@@ -162,7 +157,7 @@ Configuration
 .. todo:: tbd
 
 
-.. _IP/axi4_FIFO/UsedIn:
+.. _IP/axi4_to_AXI4Lite/UsedIn:
 
 Use in
 ******
