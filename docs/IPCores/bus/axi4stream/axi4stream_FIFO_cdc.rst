@@ -1,29 +1,29 @@
-.. _IP/axi4lite_FIFO_cdc:
+.. _IP/axi4stream_FIFO_cdc:
 .. index::
-   single: AXI4-Lite; axi4lite_FIFO_cdc
+   single: AXI4-Stream; axi4stream_FIFO_cdc
 
-axi4lite_FIFO_cdc
-#################
+axi4stream_FIFO_cdc
+###################
 
 
 Based on :ref:`IP/fifo_ic_got`
 
 
-.. _IP/axi4lite_FIFO_cdc/goals:
+.. _IP/axi4stream_FIFO_cdc/goals:
 
 .. topic:: Design Goals
 
    * tbd
 
 
-.. _IP/axi4lite_FIFO_cdc/features:
+.. _IP/axi4stream_FIFO_cdc/features:
 
 .. topic:: Features
 
    * tbd
 
 
-.. _IP/axi4lite_FIFO_cdc/instantiation:
+.. _IP/axi4stream_FIFO_cdc/instantiation:
 
 Instantiation
 *************
@@ -40,7 +40,7 @@ Instantiation
 
       .. code-block:: vhdl
 
-         FIFO : entity PoC.axi4lite_FIFO_cdc
+         FIFO : entity PoC.axi4stream_FIFO_cdc
          generic map (
            TRANSACTIONS => 64
          )
@@ -57,17 +57,17 @@ Instantiation
          );
 
 
-.. _IP/axi4lite_FIFO_cdc/interface:
+.. _IP/axi4stream_FIFO_cdc/interface:
 
 Interface
 *********
 
-.. _IP/axi4lite_FIFO_cdc/generics:
+.. _IP/axi4stream_FIFO_cdc/generics:
 
 Generics
 ========
 
-.. _IP/axi4lite_FIFO_cdc/gen/TRANSACTIONS:
+.. _IP/axi4stream_FIFO_cdc/gen/TRANSACTIONS:
 
 :generic:`TRANSACTIONS`
 -----------------------
@@ -78,7 +78,7 @@ Generics
 :Description:   tbd
 
 
-.. _IP/axi4lite_FIFO_cdc/gen/DATA_REG:
+.. _IP/axi4stream_FIFO_cdc/gen/DATA_REG:
 
 :generic:`DATA_REG`
 -----------------------
@@ -89,7 +89,7 @@ Generics
 :Description:   tbd
 
 
-.. _IP/axi4lite_FIFO_cdc/gen/OUTPUT_REG:
+.. _IP/axi4stream_FIFO_cdc/gen/OUTPUT_REG:
 
 :generic:`OUTPUT_REG`
 -----------------------
@@ -100,12 +100,12 @@ Generics
 :Description:   tbd
 
 
-.. _IP/axi4lite_FIFO_cdc/ports:
+.. _IP/axi4stream_FIFO_cdc/ports:
 
 Ports
 =====
 
-.. _IP/axi4lite_FIFO_cdc/port/In_Clock:
+.. _IP/axi4stream_FIFO_cdc/port/In_Clock:
 
 :port:`In_Clock`
 ----------------
@@ -117,7 +117,7 @@ Ports
 :Description:   Clock
 
 
-.. _IP/axi4lite_FIFO_cdc/port/In_Reset:
+.. _IP/axi4stream_FIFO_cdc/port/In_Reset:
 
 :port:`In_Reset`
 ----------------
@@ -129,31 +129,31 @@ Ports
 :Description:   synchronous high-active reset
 
 
-.. _IP/axi4lite_FIFO_cdc/port/In_m2s:
+.. _IP/axi4stream_FIFO_cdc/port/In_m2s:
 
 :port:`In_m2s`
 --------------
 
 :Name:          ``In_m2s``
-:Type:          ``axi4lite.T_AXI4Lite_Bus_m2s``
+:Type:          ``axi4stream.T_AXI4stream_Bus_m2s``
 :Mode:          in
 :Default Value: — — — —
-:Description:   AXI4-Lite manager to subordinate signals.
+:Description:   AXI4-stream manager to subordinate signals.
 
 
-.. _IP/axi4lite_FIFO_cdc/port/In_s2m:
+.. _IP/axi4stream_FIFO_cdc/port/In_s2m:
 
 :port:`In_s2m`
 --------------
 
 :Name:          ``In_s2m``
-:Type:          ``axi4lite.T_AXI4Lite_Bus_s2m``
+:Type:          ``axi4stream.T_AXI4stream_Bus_s2m``
 :Mode:          out
 :Default Value: — — — —
-:Description:   AXI4-Lite subordinate to manager signals.
+:Description:   AXI4-stream subordinate to manager signals.
 
 
-.. _IP/axi4lite_FIFO_cdc/port/Out_Clock:
+.. _IP/axi4stream_FIFO_cdc/port/Out_Clock:
 
 :port:`Out_Clock`
 -----------------
@@ -165,7 +165,7 @@ Ports
 :Description:   Clock
 
 
-.. _IP/axi4lite_FIFO_cdc/port/Out_Reset:
+.. _IP/axi4stream_FIFO_cdc/port/Out_Reset:
 
 :port:`Out_Reset`
 -----------------
@@ -177,31 +177,31 @@ Ports
 :Description:   synchronous high-active reset
 
 
-.. _IP/axi4lite_FIFO_cdc/port/Out_m2s:
+.. _IP/axi4stream_FIFO_cdc/port/Out_m2s:
 
 :port:`Out_m2s`
 ---------------
 
 :Name:          ``Out_m2s``
-:Type:          ``axi4lite.T_AXI4Lite_Bus_m2s``
+:Type:          ``axi4stream.T_AXI4stream_Bus_m2s``
 :Mode:          out
 :Default Value: — — — —
-:Description:   AXI4-Lite manager to subordinate signals.
+:Description:   AXI4-stream manager to subordinate signals.
 
 
-.. _IP/axi4lite_FIFO_cdc/port/Out_s2m:
+.. _IP/axi4stream_FIFO_cdc/port/Out_s2m:
 
 :port:`Out_s2m`
 ---------------
 
 :Name:          ``Out_s2m``
-:Type:          ``axi4lite.T_AXI4Lite_Bus_s2m``
+:Type:          ``axi4stream.T_AXI4stream_Bus_s2m``
 :Mode:          in
 :Default Value: — — — —
-:Description:   AXI4-Lite subordinate to manager signals.
+:Description:   AXI4-stream subordinate to manager signals.
 
 
-.. _IP/axi4lite_FIFO_cdc/configuration:
+.. _IP/axi4stream_FIFO_cdc/configuration:
 
 Configuration
 *************
@@ -209,7 +209,7 @@ Configuration
 .. todo:: tbd
 
 
-.. _IP/axi4lite_FIFO_cdc/UsedIn:
+.. _IP/axi4stream_FIFO_cdc/UsedIn:
 
 Use in
 ******
