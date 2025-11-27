@@ -217,7 +217,7 @@ Ports
 --------------------
 
 :Name:          ``AXI4Lite_m2s``
-:Type:          ``axi4lite.T_AXI4Lite_BUS_M2S``
+:Type:          ``axi4lite.T_AXI4Lite_Bus_m2s``
 :Mode:          in
 :Default Value: — — — —
 :Description:   AXI4-Lite manager to subordinate signals.
@@ -229,7 +229,7 @@ Ports
 --------------------
 
 :Name:          ``AXI4Lite_s2m``
-:Type:          ``axi4lite.T_AXI4Lite_BUS_S2M``
+:Type:          ``axi4lite.T_AXI4Lite_Bus_s2m``
 :Mode:          out
 :Default Value: — — — —
 :Description:   AXI4-Lite subordinate to manager signals.

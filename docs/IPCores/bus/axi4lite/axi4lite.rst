@@ -29,10 +29,10 @@ Types
 
 .. topic:: AXI4-Lite Bus
 
-   * ``T_AXI4LITE_BUS_M2S``
-   * ``T_AXI4LITE_BUS_S2M``
-   * ``T_AXI4LITE_BUS_M2S_VECTOR``
-   * ``T_AXI4LITE_BUS_S2M_VECTOR``
+   * ``T_AXI4Lite_Bus_m2s``
+   * ``T_AXI4Lite_Bus_s2m``
+   * ``T_AXI4Lite_Bus_m2s_VECTOR``
+   * ``T_AXI4Lite_Bus_s2m_VECTOR``
 
 .. topic:: AXI4-Lite Register Descriptions
 

@@ -5,20 +5,24 @@
 PoC.bus.axi4lite
 ================
 
-These are bus entities....
-
 .. topic:: Packages
 
    * :ref:`PKG/axi4lite`
+   * :ref:`PKG/axi4lite_OSVVM`
 
 .. topic:: Entities
 
+   * :ref:`IP/axi4lite_FIFO`
+   * :ref:`IP/axi4lite_FIFO_cdc`
    * :ref:`IP/axi4lite_Register`
    * :ref:`IP/axi4lite_GitVersionRegister`
 
 .. toctree::
    :hidden:
 
-   Package <axi4lite>
+   axi4lite Package <axi4lite>
+   axi4lite_OSVVM Package <axi4lite_OSVVM>
+   FIFO <axi4lite_FIFO>
+   FIFO_cdc <axi4lite_FIFO_cdc>
    Register <axi4lite_Register>
    GitVersionRegister <axi4lite_GitVersionRegister>
