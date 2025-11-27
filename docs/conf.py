@@ -35,8 +35,8 @@ project = 'The PoC-Library'
 copyright = '2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture'
 author = 'The PoC-Library Authors'
 
-version = "2.1"     # The short X.Y version.
-release = "2.1.1"   # The full version, including alpha/beta/rc tags.
+version = "2.2"     # The short X.Y version.
+release = "2.2.0"   # The full version, including alpha/beta/rc tags.
 
 from subprocess import check_output
 

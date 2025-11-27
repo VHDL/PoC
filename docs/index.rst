@@ -62,9 +62,22 @@ shipped with a Python based infrastructure to offer a command line based fronten
 
    .. rubric:: News
 
-.. hint::
+.. admonition:: v2.2.0
 
-   New :ref:`IP/axi4lite_Register`.
+   * Documentation updates
+   * More OSVVM-based testcases
+
+.. admonition:: v2.1.0
+
+   * :ref:`IP/axi4lite_GitVersionRegister`
+
+.. admonition:: v2.0.0
+
+   * :ref:`IP/axi4lite_Register`
+   * :ref:`NS/axi4` namespace: 2 packages, 5 entities
+   * :ref:`NS/axi4lite` namespace: 2 packages, 3 entities
+   * :ref:`NS/axi4stream` namespace: 1 package, 7 entities
+
 
 .. attention::
 
