@@ -6,11 +6,9 @@ axi4lite_Register
 #################
 
 The :comp:`axi4lite_Register` is a generic implementation of :term:`memory-mapped-registers (MMR) <MMR>` providing an
-:term:`AXI4-Lite` communication interface. The register layout is describe by a generic constant call
-:ref:`IP/axi4lite_Register/gen/CONFIG`. This constant is constructed by various helper functions as described in the
-following sections.
-
-The :comp:`axi4lite_Register`
+:term:`AXI4-Lite` communication interface. The register layout is describe by a generic constant called
+:ref:`IP/axi4lite_Register/gen/CONFIG`. This constant is :ref:`constructed <IP/axi4lite_Register/configuration>` by
+various helper functions as described in the following sections.
 
 
 .. _IP/axi4lite_Register/goals:
@@ -159,8 +157,9 @@ Register Description from Generator Function
       aggregate expression (see :ref:`IP/axi4lite_Register/inst/Simple`), by calling a user-defined helper function or
       by concatenating results from multiple user-defined helper functions.
 
-      The example code on the right side demonstrates how local signals can be sized based on the :vhdlcode:`CONFIG`
-      constant.
+      The example code on the right side demonstrates how local signals can be sized based on a :vhdlcode:`CONFIG`
+      constant.The constant itself is computed by a user-defined function. See section
+      :ref:`IP/axi4lite_Register/configuration` for details.
 
       When a register is access from AXI4-Lite side, a hit event (:term:`strobe`) is generated. In case an AXI4-Lite
       read operation was executed and a matching register offset was decoded, a corresponding bit is active for one
@@ -223,9 +222,13 @@ Register Description from Generator Function
 Interface
 *********
 
-The interface of the PL-side is named from the PL point-of-view, the configuration is named from the software
-point-of-view!
+The IP core offers a system interface (clock, reset), the AXI4-Lite interface and access to the internal registers from
+fabric.
 
+.. attention::
+
+   The naming of fabric ports is from fabric point-of-view. However, the naming of register modes like ``ReadOnly`` is
+   from AXI4-Lite manger (CPU, software) point-of-view.
 
 .. _IP/axi4lite_Register/generics:
 
