@@ -46,6 +46,17 @@ param(
 # Resolve script directory
 $ScriptDir = $PSScriptRoot
 
+# Convert a Windows path to a Tcl-safe path (use forward slashes)
+function To-TclPath {
+	param([string]$Path)
+	try {
+		$resolved = Resolve-Path $Path -ErrorAction Stop
+		return $resolved.Path -replace '\\','/'
+	} catch {
+		return $Path -replace '\\','/'
+	}
+}
+
 # Function to display help
 function Show-Help {
 	Write-Host "PoC OSVVM-based Build and Simulation Script" -ForegroundColor Cyan
@@ -134,14 +145,35 @@ $TempSubDirPath = Join-Path $ScriptDir $TempSubDir
 New-Item -ItemType Directory -Force -Path $TempSubDirPath | Out-Null
 Push-Location $TempSubDirPath
 
+# On Windows, create a small `which.bat` helper so Tcl scripts that call
+# `exec which ...` can locate tools via the native `where` command.
+if ($env:OS -eq 'Windows_NT') {
+		$WhichFile = Join-Path (Get-Location) 'which.bat'
+		$WhichContent = @'
+@echo off
+rem Return the first `where` result that is NOT this wrapper itself
+for /f "delims=" %%A in ('where %1 2^>nul') do (
+	if /I not "%%~fA"=="%~f0" (
+		echo %%~fA
+		goto :eof
+	)
+)
+exit /b 1
+'@
+		Set-Content -Path $WhichFile -Value $WhichContent -Encoding Ascii
+
+		# Prepend the temp working directory to PATH so `which` is found by tclsh
+		$env:PATH = "$(Get-Location).Path;$env:PATH"
+}
+
 # Build OSVVM
 if ($Command -eq "build-osvvm") {
 	Write-Host "========================================" -ForegroundColor Cyan
 	Write-Host "Building OSVVM libraries with $Simulator" -ForegroundColor Cyan
 	Write-Host "========================================" -ForegroundColor Cyan
 	
-	# Get absolute paths
-	$LibDir = Resolve-Path (Join-Path $ScriptDir "lib")
+	# Get absolute paths (Tcl-safe)
+	$LibDir = To-TclPath (Join-Path $ScriptDir 'lib')
 	
 	# Create TCL script
 	$TclScript = @"
@@ -191,10 +223,10 @@ if ($Command -eq "build-poc") {
 		}
 	}
 	
-	# Get absolute paths
-	$LibDir = Resolve-Path (Join-Path $ScriptDir "lib")
-	$SrcDir = Resolve-Path (Join-Path $ScriptDir "src")
-	$TbDir = Resolve-Path (Join-Path $ScriptDir "tb")
+	# Get absolute paths (Tcl-safe)
+	$LibDir = To-TclPath (Join-Path $ScriptDir 'lib')
+	$SrcDir = To-TclPath (Join-Path $ScriptDir 'src')
+	$TbDir  = To-TclPath (Join-Path $ScriptDir 'tb')
 	
 	# Create TCL script
 	$TclScript = @"
@@ -257,9 +289,9 @@ if ($Command -eq "simulate") {
 		}
 	}
 	
-	# Get absolute paths
-	$LibDir = Resolve-Path (Join-Path $ScriptDir "lib")
-	$TbDir = Resolve-Path (Join-Path $ScriptDir "tb")
+	# Get absolute paths (Tcl-safe)
+	$LibDir = To-TclPath (Join-Path $ScriptDir 'lib')
+	$TbDir  = To-TclPath (Join-Path $ScriptDir 'tb')
 	
 	# Create TCL script
 	$TclScript = @"
