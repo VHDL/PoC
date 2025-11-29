@@ -59,9 +59,9 @@ begin
   begin
     -- Initialization of AlertLog
     SetTestName("arith_div_Simple");
-    SetLogEnable(PASSED, TRUE);
-    SetLogEnable(INFO,   TRUE);
-    SetLogEnable(DEBUG,  TRUE);
+    SetLogEnable(PASSED, FALSE);
+    SetLogEnable(INFO,   FALSE);
+    SetLogEnable(DEBUG,  FALSE);
 
     TranscriptOpen;
     SetTranscriptMirror(TRUE);
