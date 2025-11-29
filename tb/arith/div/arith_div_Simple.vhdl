@@ -45,6 +45,8 @@ use     tb_arith.arith_div_TestController_pkg.all;
 
 architecture Simple of arith_div_TestController is
   signal TestDone : integer_barrier := 1;
+  constant TCID : AlertLogIDType := NewID("AddWTest");
+  constant TPERIOD_CLOCK : time := 10 ns;
 begin
 
   ------------------------------------------------------------
@@ -52,21 +54,27 @@ begin
   --   Set up AlertLog and wait for end of test
   ------------------------------------------------------------
   ControlProc : process
+    constant ProcID : AlertLogIDType := NewID("ControlProc", TCID);
+    constant TIMEOUT : time := 10 ms;
   begin
     -- Initialization of AlertLog
     SetTestName("arith_div_Simple");
     SetLogEnable(PASSED, TRUE);
-
-    -- Wait for test to finish
-    WaitForBarrier(TestDone, 35 ms);
-    AlertIf(now >= 35 ms, "Test finished due to timeout");
-    AlertIf(GetAffirmCount < 1, "Test is not Self-Checking");
+    SetLogEnable(INFO,   TRUE);
+    SetLogEnable(DEBUG,  TRUE);
 
     TranscriptOpen;
-    ReportAlerts;
-    TranscriptClose;
+    SetTranscriptMirror(TRUE);
+
+    wait until Reset = '0';
+    ClearAlerts;
+
+    WaitForBarrier(TestDone, TIMEOUT);
+    AlertIf(ProcID, now >= TIMEOUT,     "Test finished due to timeout");
+    AlertIf(ProcID, GetAffirmCount < 1, "Test is not Self-Checking");
+
+    EndOfTestReports(ReportAll => TRUE);
     std.env.stop;
-    wait;
   end process;
 
   ------------------------------------------------------------
@@ -91,7 +99,7 @@ begin
       A     <= std_logic_vector(to_unsigned(aval, A'length));
       D     <= std_logic_vector(to_unsigned(dval, D'length));
       WaitForClock(Clock);
-
+      wait for 1 ns;
       Start <= '0';
       A     <= (others => '-');
       D     <= (others => '-');
@@ -112,6 +120,7 @@ begin
         end loop;
         exit when all_done;
         WaitForClock(Clock);
+        wait for 1 ns;
       end loop;
 
       for i in done'range loop
@@ -127,6 +136,10 @@ begin
     end procedure;
 
   begin
+    Start <= '0';
+    A     <= (others => '-');
+    D     <= (others => '-');
+
     -- Initialize Random
     Random.InitSeed(Random'instance_name);
 

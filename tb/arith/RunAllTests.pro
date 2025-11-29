@@ -19,7 +19,7 @@
 # limitations under the License.
 # =============================================================================
 
-SetSaveWaves true
+#SetSaveWaves true
 #set ::osvvm::AnalyzeErrorStopCount 1
 #set ::osvvm::SimulateErrorStopCount 1
 
