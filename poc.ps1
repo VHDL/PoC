@@ -113,7 +113,8 @@ if ($Simulator -eq "ghdl") {
 
 # Check if tclsh is installed
 if (-not (Get-Command tclsh -ErrorAction SilentlyContinue)) {
-	Write-Host "Error: tclsh not found. Please install tcl (tcllib package)." -ForegroundColor Red
+	Write-Host "Error: tclsh not found. Please install TCL for Windows." -ForegroundColor Red
+	Write-Host "Download from: https://www.magicsplat.com/tcl-installer/ or use 'choco install tcl'" -ForegroundColor Yellow
 	exit 1
 }
 
