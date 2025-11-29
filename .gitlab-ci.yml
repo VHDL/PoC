@@ -4,7 +4,7 @@ stages:
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
-pyIPCMI-Selftest:
+PoC-Selftest:
   stage: Selftest
   before_script:
     - pip3 install -r tools/GitLab-CI/requirements.txt

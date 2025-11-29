@@ -26,13 +26,8 @@ netlist/
 
 # ignore folders
 docs/_build/
-.pyIPCMI/Wrapper/Hooks/*
-!.pyIPCMI/Wrapper/Hooks/README.md
 temp/*
 !temp/README.md
-
-# ignore private files from pyIPCMI
-.pyIPCMI/config.private.ini
 
 # ignore private files from PoC
 tb/common/my_project.vhdl
