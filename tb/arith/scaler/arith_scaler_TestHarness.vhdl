@@ -61,9 +61,9 @@ architecture TestHarness of arith_scaler_TestHarness is
 
   component arith_scaler_TestController is
     generic (
-      MULS : T_POSVEC := (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
-      DIVS : T_POSVEC := (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
-      ARG_WIDTH : positive := 8
+      MULS      : T_POSVEC;
+      DIVS      : T_POSVEC;
+      ARG_WIDTH : positive
     );
     port (
       Clock : in std_logic;
