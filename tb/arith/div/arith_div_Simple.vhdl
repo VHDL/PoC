@@ -75,12 +75,6 @@ begin
   ------------------------------------------------------------
   TestProc : process
     variable Random : RandomPType;
-    
-    procedure cycle is
-    begin
-      wait until rising_edge(Clock);
-      wait for 1 ns;
-    end procedure;
 
     procedure test(aval, dval : in integer) is
       variable QQ : tA_vector(1 to 2*MAX_POW);
@@ -92,10 +86,11 @@ begin
       variable all_done : boolean;
     begin
       -- Start
+      WaitForClock(Clock, 5);
       Start <= '1';
       A     <= std_logic_vector(to_unsigned(aval, A'length));
       D     <= std_logic_vector(to_unsigned(dval, D'length));
-      cycle;
+      WaitForClock(Clock);
 
       Start <= '0';
       A     <= (others => '-');
@@ -116,7 +111,7 @@ begin
           end if;
         end loop;
         exit when all_done;
-        cycle;
+        WaitForClock(Clock);
       end loop;
 
       for i in done'range loop
@@ -136,8 +131,7 @@ begin
     Random.InitSeed(Random'instance_name);
 
     -- Reset
-    wait until rising_edge(Clock);
-    wait for 1 ns;
+    wait until Reset = '0';
     
     -- Boundary Conditions
     test(0, 0);

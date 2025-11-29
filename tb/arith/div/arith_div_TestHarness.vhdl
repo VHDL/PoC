@@ -48,7 +48,7 @@ entity arith_div_TestHarness is
 end entity;
 
 architecture tb of arith_div_TestHarness is
-  constant CLOCK_FREQ : FREQ := 100 MHz;
+  constant CLOCK_PERIOD : time := 10 ns;
 
   signal Clock : std_logic;
   signal Reset : std_logic;
@@ -80,7 +80,7 @@ begin
   -- Clock Generation
   Osvvm.ClockResetPkg.CreateClock(
     Clk        => Clock,
-    Period     => 10 ns
+    Period     => CLOCK_PERIOD
   );
 
   -- Reset Generation
@@ -88,7 +88,7 @@ begin
     Reset       => Reset,
     ResetActive => '1',
     Clk         => Clock,
-    Period      => 10 ns,
+    Period      => 10 * CLOCK_PERIOD,
     tpd         => 0 ns
   );
 
