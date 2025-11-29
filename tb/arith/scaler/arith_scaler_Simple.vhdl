@@ -104,9 +104,7 @@ begin
           WaitForClock(Clock);
           
           -- Wait for completion
-          while done /= '1' loop
-            WaitForClock(Clock);
-          end loop;
+          wait until rising_edge(Clock) and done = '1';
           
           
           -- Calculate expected result: (arg * mul + div/2) / div, modulo 2^width
