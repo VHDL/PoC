@@ -28,3 +28,12 @@ include ./prefix_and/RunAllTests.pro
 include ./prefix_or/RunAllTests.pro
 include ./addw/RunAllTests.pro
 include ./counter_bcd/RunAllTests.pro
+include ./same/RunAllTests.pro
+include ./counter_ring/RunAllTests.pro
+include ./counter_gray/RunAllTests.pro
+include ./counter_free/RunAllTests.pro
+include ./carrychain_inc/RunAllTests.pro
+include ./cca/RunAllTests.pro
+include ./shifter_barrel/RunAllTests.pro
+include ./sqrt/RunAllTests.pro
+include ./trng/RunAllTests.pro
