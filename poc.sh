@@ -191,6 +191,10 @@ if [ "$ACTION" = "build-osvvm" ]; then
 source $LIB_DIR/OSVVM-Scripts/$START_SCRIPT
 set CurrentWorkingDirectory $LIB_DIR
 build $LIB_DIR/OsvvmLibraries.pro OsvvmLibraries
+
+if {\$::osvvm::AnalyzeErrorCount > 0 || \$::osvvm::BuildStatus eq "FAILED"} {
+  exit 1
+}
 EOF
 	
 	# Run the build
@@ -249,6 +253,10 @@ if {\$::osvvm::ToolName eq "NVC"} {
 }
 
 build $SRC_DIR/PoC.pro PoC
+
+if {\$::osvvm::AnalyzeErrorCount > 0 || \$::osvvm::BuildStatus eq "FAILED"} {
+  exit 1
+}
 EOF
 	
 	# Run the build
@@ -305,6 +313,10 @@ if {\$::osvvm::ToolName eq "NVC"} {
 }
 
 build $TB_DIR/RunAllTests.pro
+
+if {\$::osvvm::AnalyzeErrorCount > 0 || \$::osvvm::SimulateErrorCount > 0 || \$::osvvm::BuildStatus eq "FAILED"} {
+  exit 1
+}
 EOF
 	
 	# Run the simulation

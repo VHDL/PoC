@@ -180,6 +180,10 @@ if ($Command -eq "build-osvvm") {
 source $LibDir/OSVVM-Scripts/$StartScript
 set CurrentWorkingDirectory $LibDir
 build $LibDir/OsvvmLibraries.pro OsvvmLibraries
+
+if {`$::osvvm::AnalyzeErrorCount > 0 || `$::osvvm::SimulateErrorCount > 0 || `$::osvvm::BuildStatus eq "FAILED"} {
+  exit 1
+}
 "@
 	$TclScript | Out-File -FilePath "run_osvvm.tcl" -Encoding ASCII
 	
@@ -246,6 +250,10 @@ if {`$::osvvm::ToolName eq "NVC"} {
 }
 
 build $SrcDir/PoC.pro PoC
+
+if {`$::osvvm::AnalyzeErrorCount > 0 || `$::osvvm::SimulateErrorCount > 0 || `$::osvvm::BuildStatus eq "FAILED"} {
+  exit 1
+}
 "@
 	$TclScript | Out-File -FilePath "run_poc.tcl" -Encoding ASCII
 	
@@ -310,6 +318,10 @@ if {`$::osvvm::ToolName eq "NVC"} {
 }
 
 build $TbDir/RunAllTests.pro
+
+if {`$::osvvm::AnalyzeErrorCount > 0 || `$::osvvm::SimulateErrorCount > 0 || `$::osvvm::BuildStatus eq "FAILED"} {
+  exit 1
+}
 "@
 	$TclScript | Out-File -FilePath "run_simulate.tcl" -Encoding ASCII
 	
