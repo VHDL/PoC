@@ -3,15 +3,15 @@
 # kate: tab-width 2; replace-tabs off; indent-width 2;
 #
 # ==============================================================================
-#	Authors:						Patrick Lehmann
+#	Authors:				 	Patrick Lehmann
+#                   Gustavo Martin
 #
-#	PowerShell Script:	Wrapper Script to execute <PoC-Root>/lib/pyIPCMI/pyIPCMI.py
+#	PowerShell Script:	OSVVM-based simulation script for PoC
 #
 # Description:
 # ------------------------------------
-#	This is a bash wrapper script (executable) which:
-#		- saves the current working directory as an environment variable
-#		- delegates the call to <PoC-Root>/lib/pyIPCMI/Wrapper/wrapper.sh
+#	This script builds and simulates PoC using OSVVM build system.
+#	It supports GHDL and NVC simulators.
 #
 # License:
 # ==============================================================================
@@ -31,82 +31,319 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-#
-# Change this, if pyIPCMI solutions and pyIPCMI projects are used
-$Library_RelPath =      "."   # relative path to PoC root directory
-$Library =              "PoC" # library name
-$Solution =             ""    # solution name
-$Project =              ""    # project name
 
-# Configure pyIPCMI environment here
-$pyIPCMI_Dir =          "lib\pyIPCMI"
-$pyIPCMI_PSModule =     "pyIPCMI"
-
-
-# save parameters and current working directory
-$Wrapper_WorkingDirectory = Get-Location
-$Library_RootDirectory =    Convert-Path (Resolve-Path ($PSScriptRoot + "\" + $Library_RelPath))
-
-# load pyIPCMI module
-Import-Module "$Library_RootDirectory\$pyIPCMI_Dir\$pyIPCMI_PSModule.psm1" -ArgumentList @(
-	$Library_RootDirectory,
-	$Library,
-	$pyIPCMI_Dir,
-	$pyIPCMI_PSModule,
-	$Solution
+[CmdletBinding()]
+param(
+	[string]$Simulator = "ghdl",
+	[string]$Backend = "llvm",
+	[string]$Vendor = "GENERIC",
+	[string]$Temp = "temp",
+	[Parameter(Position=0)]
+	[ValidateSet("build-osvvm", "build-poc", "simulate", "regression", "clean", "help")]
+	[string]$Command = "help"
 )
 
-# scan script parameters and mark environment to be loaded
-$Debug, $PyWrapper_LoadEnv = Get-PyIPCMIEnvironmentArray $args
-# execute vendor and tool pre-hook files if present
-Invoke-OpenEnvironment $PyWrapper_LoadEnv | Out-Null
+# Resolve script directory
+$ScriptDir = $PSScriptRoot
 
-# print debug messages
-if ($Debug -eq $true ) {
-	Write-Host "This is the PoC-Library script wrapper operating in debug mode." -ForegroundColor Yellow
+# Function to display help
+function Show-Help {
+	Write-Host "PoC OSVVM-based Build and Simulation Script" -ForegroundColor Cyan
 	Write-Host ""
-	Write-Host "Directories:" -ForegroundColor Yellow
-	Write-Host "  Library Root    $Library_RootDirectory" -ForegroundColor Yellow
-	Write-Host "  pyIPCMI Root    $pyIPCMI_RootDirectory" -ForegroundColor Yellow
-	Write-Host "  Working         $Wrapper_WorkingDirectory" -ForegroundColor Yellow
-	Write-Host "Script:" -ForegroundColor Yellow
-	Write-Host "  Filename        $pyIPCMI_FrontEndPy" -ForegroundColor Yellow
-	Write-Host "  Library         $Library" -ForegroundColor Yellow
-	Write-Host "  Solution        $Solution" -ForegroundColor Yellow
-	Write-Host "  Project         $Project" -ForegroundColor Yellow
-	Write-Host "  Parameters      $args" -ForegroundColor Yellow
-	Write-Host "Load Environment:" -ForegroundColor Yellow
-	Write-Host "  Lattice Diamond $($PyWrapper_LoadEnv['Lattice']['Tools']['Diamond']['Load'])"	-ForegroundColor Yellow
-	Write-Host "  Xilinx ISE      $($PyWrapper_LoadEnv['Xilinx']['Tools']['ISE']['Load'])"			-ForegroundColor Yellow
-	Write-Host "  Xilinx Vivado   $($PyWrapper_LoadEnv['Xilinx']['Tools']['Vivado']['Load'])"		-ForegroundColor Yellow
+	Write-Host "Usage: .\poc.ps1 [OPTIONS] COMMAND"
+	Write-Host ""
+	Write-Host "Commands:"
+	Write-Host "  build-osvvm       Build OSVVM libraries"
+	Write-Host "  build-poc         Build PoC libraries"
+	Write-Host "  simulate          Run all testbenches"
+	Write-Host "  regression        Run complete regression (build-osvvm + build-poc + simulate)"
+	Write-Host "  clean             Remove temporary directory"
+	Write-Host "  help              Show this help message"
+	Write-Host ""
+	Write-Host "Options:"
+	Write-Host "  -Simulator <sim>  Specify simulator: ghdl (default) or nvc"
+	Write-Host "  -Backend <be>     GHDL backend: llvm (default), gcc, or mcode"
+	Write-Host "  -Vendor <v>       Target vendor: GENERIC (default), Xilinx, Altera, etc."
+	Write-Host "  -Temp <dir>       Temporary directory (default: temp)"
+	Write-Host ""
+	Write-Host "Examples:"
+	Write-Host "  .\poc.ps1 build-osvvm                     # Build OSVVM with GHDL"
+	Write-Host "  .\poc.ps1 build-poc                       # Build PoC libraries"
+	Write-Host "  .\poc.ps1 simulate                        # Run all tests"
+	Write-Host "  .\poc.ps1 regression                      # Run complete regression"
+	Write-Host "  .\poc.ps1 -Simulator nvc build-osvvm      # Build OSVVM with NVC"
+	Write-Host "  .\poc.ps1 clean                           # Clean temporary files"
 	Write-Host ""
 }
 
-# execute script with appropriate Python interpreter and all given parameters
-if ($Solution -eq "")
-{	$Command = "$Python_Interpreter $Python_Parameters $pyIPCMI_FrontEndPy $args"													}
-else
-{	$Command = "$Python_Interpreter $Python_Parameters $pyIPCMI_FrontEndPy --sln=$Solution $args"			}
+# Show help if requested
+if ($Command -eq "help") {
+	Show-Help
+	exit 0
+}
 
-# execute script with appropriate Python interpreter and all given parameters
-if ($Debug -eq $true)	{	Write-Host "launching: '$Command'" -ForegroundColor Yellow	}
-Invoke-Expression $Command
-$PyWrapper_ExitCode = $LastExitCode
+# Validate simulator
+if ($Simulator -ne "ghdl" -and $Simulator -ne "nvc") {
+	Write-Host "Error: Unsupported simulator '$Simulator'" -ForegroundColor Red
+	Write-Host "Supported simulators: ghdl, nvc"
+	exit 1
+}
 
+# Set up simulator-specific variables
+if ($Simulator -eq "ghdl") {
+	$StartScript = "StartGHDL.tcl"
+	$TempSubDir = Join-Path $Temp "$Simulator-$Backend"
+} elseif ($Simulator -eq "nvc") {
+	$StartScript = "StartNVC.tcl"
+	$TempSubDir = Join-Path $Temp $Simulator
+}
 
-Invoke-CloseEnvironment $PyWrapper_LoadEnv | Out-Null
+# Check if simulator is installed
+if ($Simulator -eq "ghdl") {
+	if (-not (Get-Command ghdl -ErrorAction SilentlyContinue)) {
+		Write-Host "Error: GHDL not found. Please install GHDL." -ForegroundColor Red
+		exit 1
+	}
+} elseif ($Simulator -eq "nvc") {
+	if (-not (Get-Command nvc -ErrorAction SilentlyContinue)) {
+		Write-Host "Error: NVC not found. Please install NVC." -ForegroundColor Red
+		exit 1
+	}
+}
 
-# unload PowerShell module
-Remove-Module $pyIPCMI_PSModule
-# clean up environment variables
-$env:LibraryRootDirectory =   $null
-$env:Library =                $null
-$env:pyIPCMIRootDirectory =   $null
-$env:pyIPCMIConfigDirectory = $null
-$env:pyIPCMIFrontEnd =        $null
+# Check if tclsh is installed
+if (-not (Get-Command tclsh -ErrorAction SilentlyContinue)) {
+	Write-Host "Error: tclsh not found. Please install tcl (tcllib package)." -ForegroundColor Red
+	exit 1
+}
 
-# restore working directory if changed
-Set-Location $Wrapper_WorkingDirectory
+# Clean command
+if ($Command -eq "clean") {
+	Write-Host "Cleaning temporary directory: $Temp" -ForegroundColor Yellow
+	$TempPath = Join-Path $ScriptDir $Temp
+	if (Test-Path $TempPath) {
+		Remove-Item -Path $TempPath -Recurse -Force
+	}
+	Write-Host "Done!" -ForegroundColor Green
+	exit 0
+}
 
-# return exit status
-exit $PyWrapper_ExitCode
+# Create temporary directory
+$TempSubDirPath = Join-Path $ScriptDir $TempSubDir
+New-Item -ItemType Directory -Force -Path $TempSubDirPath | Out-Null
+Push-Location $TempSubDirPath
+
+# Build OSVVM
+if ($Command -eq "build-osvvm") {
+	Write-Host "========================================" -ForegroundColor Cyan
+	Write-Host "Building OSVVM libraries with $Simulator" -ForegroundColor Cyan
+	Write-Host "========================================" -ForegroundColor Cyan
+	
+	# Get absolute paths
+	$LibDir = Resolve-Path (Join-Path $ScriptDir "lib")
+	
+	# Create TCL script
+	$TclScript = @"
+source $LibDir/OSVVM-Scripts/$StartScript
+set CurrentWorkingDirectory $LibDir
+build $LibDir/OsvvmLibraries.pro OsvvmLibraries
+"@
+	$TclScript | Out-File -FilePath "run_osvvm.tcl" -Encoding ASCII
+	
+	# Run the build
+	if ($Simulator -eq "ghdl") {
+		& tclsh run_osvvm.tcl
+	} else {
+		& nvc --do run_osvvm.tcl
+	}
+	
+	$ExitCode = $LASTEXITCODE
+	Pop-Location
+	
+	if ($ExitCode -eq 0) {
+		Write-Host "OSVVM build completed successfully!" -ForegroundColor Green
+	} else {
+		Write-Host "OSVVM build failed with exit code $ExitCode" -ForegroundColor Red
+		exit $ExitCode
+	}
+	exit 0
+}
+
+# Build PoC
+if ($Command -eq "build-poc") {
+	Write-Host "========================================" -ForegroundColor Cyan
+	Write-Host "Building PoC libraries with $Simulator" -ForegroundColor Cyan
+	Write-Host "========================================" -ForegroundColor Cyan
+	
+	# Ensure my_project.vhdl exists
+	$MyProjectFile = Join-Path $ScriptDir "tb\common\my_project.vhdl"
+	$TemplateFile = Join-Path $ScriptDir "src\common\my_project.vhdl.template"
+	
+	if (-not (Test-Path $MyProjectFile)) {
+		if (Test-Path $TemplateFile) {
+			Write-Host "Creating my_project.vhdl from template..." -ForegroundColor Yellow
+			Copy-Item $TemplateFile $MyProjectFile
+		} else {
+			Write-Host "Error: my_project.vhdl not found and template missing" -ForegroundColor Red
+			Pop-Location
+			exit 1
+		}
+	}
+	
+	# Get absolute paths
+	$LibDir = Resolve-Path (Join-Path $ScriptDir "lib")
+	$SrcDir = Resolve-Path (Join-Path $ScriptDir "src")
+	$TbDir = Resolve-Path (Join-Path $ScriptDir "tb")
+	
+	# Create TCL script
+	$TclScript = @"
+source $LibDir/OSVVM-Scripts/$StartScript
+
+namespace eval ::poc {
+  variable myConfigFile  "$TbDir/common/my_config_$Vendor.vhdl"
+  variable myProjectFile "$TbDir/common/my_project.vhdl"
+  variable vendor        "$Vendor"
+}
+
+if {`$::osvvm::ToolName eq "GHDL"} {
+  SetExtendedAnalyzeOptions {-frelaxed -Wno-specs -Wno-elaboration}
+}
+if {`$::osvvm::ToolName eq "NVC"} {
+  SetExtendedAnalyzeOptions {--relaxed}
+}
+
+build $SrcDir/PoC.pro PoC
+"@
+	$TclScript | Out-File -FilePath "run_poc.tcl" -Encoding ASCII
+	
+	# Run the build
+	if ($Simulator -eq "ghdl") {
+		& tclsh run_poc.tcl
+	} else {
+		& nvc --do run_poc.tcl
+	}
+	
+	$ExitCode = $LASTEXITCODE
+	Pop-Location
+	
+	if ($ExitCode -eq 0) {
+		Write-Host "PoC build completed successfully!" -ForegroundColor Green
+	} else {
+		Write-Host "PoC build failed with exit code $ExitCode" -ForegroundColor Red
+		exit $ExitCode
+	}
+	exit 0
+}
+
+# Simulate
+if ($Command -eq "simulate") {
+	Write-Host "========================================" -ForegroundColor Cyan
+	Write-Host "Running PoC simulations with $Simulator" -ForegroundColor Cyan
+	Write-Host "========================================" -ForegroundColor Cyan
+	
+	# Ensure my_project.vhdl exists
+	$MyProjectFile = Join-Path $ScriptDir "tb\common\my_project.vhdl"
+	$TemplateFile = Join-Path $ScriptDir "src\common\my_project.vhdl.template"
+	
+	if (-not (Test-Path $MyProjectFile)) {
+		if (Test-Path $TemplateFile) {
+			Write-Host "Creating my_project.vhdl from template..." -ForegroundColor Yellow
+			Copy-Item $TemplateFile $MyProjectFile
+		} else {
+			Write-Host "Error: my_project.vhdl not found and template missing" -ForegroundColor Red
+			Pop-Location
+			exit 1
+		}
+	}
+	
+	# Get absolute paths
+	$LibDir = Resolve-Path (Join-Path $ScriptDir "lib")
+	$TbDir = Resolve-Path (Join-Path $ScriptDir "tb")
+	
+	# Create TCL script
+	$TclScript = @"
+source $LibDir/OSVVM-Scripts/$StartScript
+
+namespace eval ::poc {
+  variable myConfigFile  "$TbDir/common/my_config_$Vendor.vhdl"
+  variable myProjectFile "$TbDir/common/my_project.vhdl"
+  variable vendor        "$Vendor"
+}
+
+if {`$::osvvm::ToolName eq "GHDL"} {
+  SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
+}
+if {`$::osvvm::ToolName eq "NVC"} {
+}
+
+build $TbDir/RunAllTests.pro
+"@
+	$TclScript | Out-File -FilePath "run_simulate.tcl" -Encoding ASCII
+	
+	# Run the simulation
+	if ($Simulator -eq "ghdl") {
+		& tclsh run_simulate.tcl
+	} else {
+		& nvc --do run_simulate.tcl
+	}
+	
+	$ExitCode = $LASTEXITCODE
+	Pop-Location
+	
+	if ($ExitCode -eq 0) {
+		Write-Host "Simulations completed successfully!" -ForegroundColor Green
+		Write-Host "Reports are available in: $TempSubDir\reports" -ForegroundColor Cyan
+	} else {
+		Write-Host "Simulations failed with exit code $ExitCode" -ForegroundColor Red
+		exit $ExitCode
+	}
+	exit 0
+}
+
+# Regression - run complete workflow
+if ($Command -eq "regression") {
+	Pop-Location  # Exit temp directory first
+	
+	Write-Host "========================================" -ForegroundColor Cyan
+	Write-Host "Running complete regression workflow" -ForegroundColor Cyan
+	Write-Host "========================================" -ForegroundColor Cyan
+	Write-Host ""
+	
+	# Get script path
+	$ScriptPath = Join-Path $ScriptDir "poc.ps1"
+	
+	# Step 1: Build OSVVM
+	Write-Host "Step 1/3: Building OSVVM libraries..." -ForegroundColor Yellow
+	& powershell -File $ScriptPath -Simulator $Simulator -Backend $Backend -Vendor $Vendor -Temp $Temp build-osvvm
+	if ($LASTEXITCODE -ne 0) {
+		Write-Host "Regression failed at build-osvvm step" -ForegroundColor Red
+		exit 1
+	}
+	Write-Host ""
+	
+	# Step 2: Build PoC
+	Write-Host "Step 2/3: Building PoC libraries..." -ForegroundColor Yellow
+	& powershell -File $ScriptPath -Simulator $Simulator -Backend $Backend -Vendor $Vendor -Temp $Temp build-poc
+	if ($LASTEXITCODE -ne 0) {
+		Write-Host "Regression failed at build-poc step" -ForegroundColor Red
+		exit 1
+	}
+	Write-Host ""
+	
+	# Step 3: Run simulations
+	Write-Host "Step 3/3: Running simulations..." -ForegroundColor Yellow
+	& powershell -File $ScriptPath -Simulator $Simulator -Backend $Backend -Vendor $Vendor -Temp $Temp simulate
+	if ($LASTEXITCODE -ne 0) {
+		Write-Host "Regression failed at simulate step" -ForegroundColor Red
+		exit 1
+	}
+	Write-Host ""
+	
+	Write-Host "========================================" -ForegroundColor Green
+	Write-Host "Regression completed successfully!" -ForegroundColor Green
+	Write-Host "========================================" -ForegroundColor Green
+	exit 0
+}
+
+Pop-Location
+exit 0
