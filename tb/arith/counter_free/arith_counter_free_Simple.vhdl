@@ -72,11 +72,16 @@ begin
 		constant ProcID : AlertLogIDType := NewID("CheckerProc", TCID);
 		constant DIVIDER : positive := 5;
 	begin
+		-- Initialize control signal
+		inc <= '0';
+		
 		wait until Reset = '0';
 		WaitForClock(Clock);
 
 		-- Test with continuous increment
+		WaitForClock(Clock);
 		inc <= '1';
+		WaitForClock(Clock);
 		
 		-- Should not assert strobe for first DIVIDER-1 cycles
 		for i in 1 to DIVIDER-1 loop
@@ -100,6 +105,7 @@ begin
 		WaitForClock(Clock);
 		AffirmIf(ProcID, stb = '1', "Strobe should be high again after another " & integer'image(DIVIDER) & " cycles");
 
+		wait until falling_edge(Clock);
 		inc <= '0';
 		WaitForClock(Clock);
 

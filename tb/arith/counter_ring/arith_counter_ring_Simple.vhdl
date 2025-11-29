@@ -72,6 +72,10 @@ begin
 		constant ProcID : AlertLogIDType := NewID("CheckerProc", TCID);
 		variable expected : std_logic_vector(value'range);
 	begin
+		-- Initialize control signals
+		inc <= '0';
+		dec <= '0';
+		
 		wait until Reset = '0';
 		WaitForClock(Clock);
 
@@ -80,46 +84,86 @@ begin
 		AffirmIf(ProcID, value = expected, "Initial value should be seed");
 
 		-- Test increment (ring counter shift left)
+		-- Use same pattern as BCD counter test: pulse inc for each increment
+		
+		-- First increment
+		wait until falling_edge(Clock);
 		inc <= '1';
-		expected := "00000010";
 		WaitForClock(Clock);
+		wait until falling_edge(Clock);
+		inc <= '0';
+		WaitForClock(Clock);
+		expected := "00000010";
 		AffirmIf(ProcID, value = expected, "Increment: 00000001 -> 00000010");
 
-		expected := "00000100";
+		-- Second increment
+		wait until falling_edge(Clock);
+		inc <= '1';
 		WaitForClock(Clock);
+		wait until falling_edge(Clock);
+		inc <= '0';
+		WaitForClock(Clock);
+		expected := "00000100";
 		AffirmIf(ProcID, value = expected, "Increment: 00000010 -> 00000100");
 
-		expected := "00001000";
+		-- Third increment
+		wait until falling_edge(Clock);
+		inc <= '1';
 		WaitForClock(Clock);
+		wait until falling_edge(Clock);
+		inc <= '0';
+		WaitForClock(Clock);
+		expected := "00001000";
 		AffirmIf(ProcID, value = expected, "Increment: 00000100 -> 00001000");
 
 		-- Continue incrementing to wrap around
 		for i in 4 to 7 loop
-			expected := std_logic_vector(shift_left(to_unsigned(1, value'length), i));
+			wait until falling_edge(Clock);
+			inc <= '1';
 			WaitForClock(Clock);
+			wait until falling_edge(Clock);
+			inc <= '0';
+			WaitForClock(Clock);
+			expected := std_logic_vector(shift_left(to_unsigned(1, value'length), i));
 			AffirmIf(ProcID, value = expected, "Increment step " & integer'image(i));
 		end loop;
 
 		-- Should wrap around to initial value
-		expected := "00000001";
+		wait until falling_edge(Clock);
+		inc <= '1';
 		WaitForClock(Clock);
-		AffirmIf(ProcID, value = expected, "Increment wraps around to 00000001");
-
+		wait until falling_edge(Clock);
 		inc <= '0';
 		WaitForClock(Clock);
+		expected := "00000001";
+		AffirmIf(ProcID, value = expected, "Increment wraps around to 00000001");
 
 		-- Test decrement (ring counter shift right)
+		wait until falling_edge(Clock);
 		dec <= '1';
-		expected := "10000000";
 		WaitForClock(Clock);
+		wait until falling_edge(Clock);
+		dec <= '0';
+		WaitForClock(Clock);
+		expected := "10000000";
 		AffirmIf(ProcID, value = expected, "Decrement: 00000001 -> 10000000");
 
-		expected := "01000000";
+		wait until falling_edge(Clock);
+		dec <= '1';
 		WaitForClock(Clock);
+		wait until falling_edge(Clock);
+		dec <= '0';
+		WaitForClock(Clock);
+		expected := "01000000";
 		AffirmIf(ProcID, value = expected, "Decrement: 10000000 -> 01000000");
 
-		expected := "00100000";
+		wait until falling_edge(Clock);
+		dec <= '1';
 		WaitForClock(Clock);
+		wait until falling_edge(Clock);
+		dec <= '0';
+		WaitForClock(Clock);
+		expected := "00100000";
 		AffirmIf(ProcID, value = expected, "Decrement: 01000000 -> 00100000");
 
 		dec <= '0';
