@@ -28,6 +28,10 @@ include ./prefix_and/RunAllTests.pro
 include ./prefix_or/RunAllTests.pro
 include ./addw/RunAllTests.pro
 include ./counter_bcd/RunAllTests.pro
+include ./convert_bin2bcd/RunAllTests.pro
+include ./div/RunAllTests.pro
+include ./firstone/RunAllTests.pro
+include ./scaler/RunAllTests.pro
 include ./same/RunAllTests.pro
 include ./counter_ring/RunAllTests.pro
 include ./counter_gray/RunAllTests.pro

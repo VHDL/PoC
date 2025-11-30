@@ -2,14 +2,13 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Thomas B. Preusser
---                  Gustavo Martin
+-- Authors:         Gustavo Martin
 --
--- Entity:					arith_addw_TestController_pkg
+-- Entity:					arith_scaler_TestController
 --
 -- Description:
 -- -------------------------------------
--- Test controller package for arith_addw
+-- Test controller for arith_scaler
 --
 -- License:
 -- =============================================================================
@@ -30,23 +29,30 @@
 
 library IEEE;
 use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 library osvvm;
 context osvvm.OsvvmContext;
 
 library PoC;
-use     PoC.arith.all;
+use PoC.utils.all;
 
-package arith_addw_TestController_pkg is
-
-  constant N : positive := 9;
-  constant K : positive := 2;
-
-  subtype tArch_test is tArch;
-  subtype tSkip_test is tSkipping;
-
-  subtype word is std_logic_vector(N-1 downto 0);
-  type word_vector is array(tArch_test, tSkip_test, boolean) of word;
-  type carry_vector is array(tArch_test, tSkip_test, boolean) of std_logic;
-
-end package;
+entity arith_scaler_TestController is
+  generic (
+    MULS      : T_POSVEC;
+    DIVS      : T_POSVEC;
+    ARG_WIDTH : positive
+  );
+  port (
+    Clock : in  std_logic;
+    Reset : in  std_logic;
+    
+    -- DUT signals arith_scaler
+    start : out std_logic;
+    arg   : out std_logic_vector(ARG_WIDTH-1 downto 0);
+    msel  : out std_logic_vector(log2ceil(MULS'length)-1 downto 0);
+    dsel  : out std_logic_vector(log2ceil(DIVS'length)-1 downto 0);
+    done  : in  std_logic;
+    res   : in  std_logic_vector(ARG_WIDTH-1 downto 0)
+  );
+end entity;

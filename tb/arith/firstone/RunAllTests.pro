@@ -1,7 +1,6 @@
 # =============================================================================
 # Authors: 
-#  Gustavo Martin
-#
+#   Gustavo Martin
 # License:
 # =============================================================================
 # Copyright 2025-2025 The PoC-Library Authors
@@ -19,7 +18,7 @@
 # limitations under the License.
 # =============================================================================
 
-analyze arith_sqrt_TestController.vhdl
-analyze arith_sqrt_TestHarness.vhdl
+analyze arith_firstone_TestController.vhdl
+analyze arith_firstone_TestHarness.vhdl
 
-RunTest arith_sqrt_Simple.vhdl
+RunTest arith_firstone_Simple.vhdl

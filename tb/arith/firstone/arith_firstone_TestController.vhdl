@@ -2,14 +2,13 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:					Thomas B. Preusser
---                  Gustavo Martin
+-- Authors:         Gustavo Martin
 --
--- Entity:					arith_addw_TestController_pkg
+-- Entity:					arith_firstone_TestController
 --
 -- Description:
 -- -------------------------------------
--- Test controller package for arith_addw
+-- Test controller for arith_firstone
 --
 -- License:
 -- =============================================================================
@@ -30,23 +29,27 @@
 
 library IEEE;
 use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 library osvvm;
 context osvvm.OsvvmContext;
 
 library PoC;
-use     PoC.arith.all;
+use PoC.utils.all;
 
-package arith_addw_TestController_pkg is
-
-  constant N : positive := 9;
-  constant K : positive := 2;
-
-  subtype tArch_test is tArch;
-  subtype tSkip_test is tSkipping;
-
-  subtype word is std_logic_vector(N-1 downto 0);
-  type word_vector is array(tArch_test, tSkip_test, boolean) of word;
-  type carry_vector is array(tArch_test, tSkip_test, boolean) of std_logic;
-
-end package;
+entity arith_firstone_TestController is
+  generic (
+    N : positive := 8
+  );
+  port (
+    Clock : in  std_logic;
+    Reset : in  std_logic;
+    
+    -- DUT signals arith_firstone
+    tin  : out std_logic;
+    rqst : out std_logic_vector(N-1 downto 0);
+    grnt : in  std_logic_vector(N-1 downto 0);
+    tout : in  std_logic;
+    bin  : in  std_logic_vector(log2ceil(N)-1 downto 0)
+  );
+end entity;
