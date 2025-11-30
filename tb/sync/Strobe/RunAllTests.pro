@@ -1,6 +1,6 @@
 # =============================================================================
 # Authors:
-#	Adrian Weiland, Jonas Schreiner
+#	Gustavo Martin
 #
 # License:
 # =============================================================================
@@ -10,7 +10,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#		http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,15 +19,7 @@
 # limitations under the License.
 # =============================================================================
 
-include ./arith/RunAllTests.pro
-include ./bus/RunAllTests.pro
-include ./sync/RunAllTests.pro
-#include ./cache/RunAllTests.pro
-#include ./common/RunAllTests.pro
-#include ./dstruct/RunAllTests.pro
-#include ./fifo/RunAllTests.pro
-#include ./io/RunAllTests.pro
-#include ./mem/RunAllTests.pro
-#include ./misc/RunAllTests.pro
-#include ./sim/RunAllTests.pro
-#include ./sort/RunAllTests.pro
+analyze sync_Strobe_TestController.vhdl
+analyze sync_Strobe_TestHarness.vhdl
+
+RunTest sync_Strobe_Simple.vhdl
