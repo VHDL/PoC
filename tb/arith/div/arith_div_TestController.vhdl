@@ -42,8 +42,6 @@ use     PoC.strings.all;
 library osvvm;
 context osvvm.OsvvmContext;
 
-library tb_arith;
-use     tb_arith.arith_div_TestController_pkg.all;
 
 entity arith_div_TestController is
   port (
@@ -51,11 +49,11 @@ entity arith_div_TestController is
     Reset : in std_logic;
 
     Start : out std_logic;
-    Ready : in  std_logic_vector(1 to 2*MAX_POW);
-    A     : out std_logic_vector(A_BITS-1 downto 0);
-    D     : out std_logic_vector(D_BITS-1 downto 0);
-    Q     : in  T_SLVV(1 to 2*MAX_POW)(A_BITS-1 downto 0);
-    R     : in  T_SLVV(1 to 2*MAX_POW)(D_BITS-1 downto 0);
-    Z     : in  std_logic_vector(1 to 2*MAX_POW)
+    Ready : in  std_logic_vector;
+    A     : out std_logic_vector;
+    D     : out std_logic_vector;
+    Q     : in  T_SLVV;
+    R     : in  T_SLVV;
+    Z     : in  std_logic_vector
   );
 end entity;

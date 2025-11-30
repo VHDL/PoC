@@ -1,5 +1,5 @@
 # =============================================================================
-# Authors: 
+# Authors:
 #   Gustavo Martin
 # License:
 # =============================================================================
@@ -18,7 +18,6 @@
 # limitations under the License.
 # =============================================================================
 
-analyze arith_div_TestController_pkg.vhdl
 analyze arith_div_TestController.vhdl
 analyze arith_div_TestHarness.vhdl
 

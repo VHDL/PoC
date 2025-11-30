@@ -43,14 +43,15 @@ use     PoC.physical.all;
 library osvvm;
 context osvvm.OsvvmContext;
 
-library tb_arith;
-use     tb_arith.arith_div_TestController_pkg.all;
-
 entity arith_div_TestHarness is
 end entity;
 
 architecture tb of arith_div_TestHarness is
   constant CLOCK_PERIOD : time := 10 ns;
+
+  constant A_BITS  : positive := 13;
+  constant D_BITS  : positive := 4;
+  constant MAX_POW : positive := 3;
 
   signal Clock : std_logic;
   signal Reset : std_logic;
@@ -68,12 +69,12 @@ architecture tb of arith_div_TestHarness is
       Clock : in std_logic;
       Reset : in std_logic;
       Start : out std_logic;
-      Ready : in  std_logic_vector(1 to 2*MAX_POW);
-      A     : out std_logic_vector(A_BITS-1 downto 0);
-      D     : out std_logic_vector(D_BITS-1 downto 0);
-      Q     : in  T_SLVV(1 to 2*MAX_POW)(A_BITS-1 downto 0);
-      R     : in  T_SLVV(1 to 2*MAX_POW)(D_BITS-1 downto 0);
-      Z     : in  std_logic_vector(1 to 2*MAX_POW)
+      Ready : in  std_logic_vector;
+      A     : out std_logic_vector;
+      D     : out std_logic_vector;
+      Q     : in  T_SLVV;
+      R     : in  T_SLVV;
+      Z     : in  std_logic_vector
     );
   end component;
 

@@ -42,9 +42,6 @@ use     PoC.strings.all;
 library osvvm;
 context osvvm.OsvvmContext;
 
-library tb_arith;
-use     tb_arith.arith_div_TestController_pkg.all;
-
 architecture Simple of arith_div_TestController is
   signal TestDone : integer_barrier := 1;
   constant TCID : AlertLogIDType := NewID("AddWTest");
@@ -87,12 +84,12 @@ begin
     variable Random : RandomPType;
 
     procedure test(aval, dval : in integer) is
-      variable QQ : T_SLVV(1 to 2*MAX_POW)(A_BITS-1 downto 0);
-      variable RR : T_SLVV(1 to 2*MAX_POW)(D_BITS-1 downto 0);
-      variable ZZ : std_logic_vector(1 to 2*MAX_POW);
+      variable QQ : T_SLVV(Z'range)(A'range);
+      variable RR : T_SLVV(Z'range)(D'range);
+      variable ZZ : std_logic_vector(Z'range);
 
       type boolean_vector is array(positive range<>) of boolean;
-      variable done : boolean_vector(1 to 2*MAX_POW);
+      variable done : boolean_vector(Ready'range);
       variable all_done : boolean;
     begin
       -- Start
@@ -103,10 +100,10 @@ begin
       WaitForClock(Clock);
       wait for 1 ns;
       Start <= '0';
-      A     <= (others => '-');
-      D     <= (others => '-');
+      A     <= (A'range => '-');  -- (others => '-');  WORKAROUND: NVC 1.18.2 Linux
+      D     <= (D'range => '-');  -- (others => '-');
       done  := (others => false);
-      
+
       loop
         all_done := true;
         for i in done'range loop
@@ -131,7 +128,7 @@ begin
         else
           AffirmIf(ZZ(i) = '0', "INST=" & integer'image(i) & " Zero flag check failed: " & integer'image(aval) & "/" & integer'image(dval));
           AffirmIf(to_integer(unsigned(QQ(i)))*dval + to_integer(unsigned(RR(i))) = aval,
-                   "INST=" & integer'image(i) & " Result check failed: " & integer'image(aval) & "/" & integer'image(dval) & 
+                   "INST=" & integer'image(i) & " Result check failed: " & integer'image(aval) & "/" & integer'image(dval) &
                    " /= " & integer'image(to_integer(unsigned(QQ(i)))) & " R " & integer'image(to_integer(unsigned(RR(i)))));
         end if;
       end loop;
@@ -139,27 +136,27 @@ begin
 
   begin
     Start <= '0';
-    A     <= (others => '-');
-    D     <= (others => '-');
+		A     <= (A'range => '-');  -- (others => '-');  WORKAROUND: NVC 1.18.2 Linux
+		D     <= (D'range => '-');  -- (others => '-');
 
     -- Initialize Random
     Random.InitSeed(Random'instance_name);
 
     -- Reset
     wait until Reset = '0';
-    
+
     -- Boundary Conditions
     test(0, 0);
-    test(0, 2**D_BITS-1);
+    test(0, 2**D'length - 1);
     test(0, 1);
     test(1, 0);
     test(2, 0);
-    test(2**A_BITS-1, 0);
-    test(2**A_BITS-1, 2**D_BITS-1);
+    test(2**A'length - 1, 0);
+    test(2**A'length - 1, 2**D'length - 1);
 
     -- Run Random Tests
     for i in 0 to 1023 loop
-      test(Random.Uniform(0, 2**A_BITS-1), Random.Uniform(0, 2**D_BITS-1));
+      test(Random.Uniform(0, 2**A'length - 1), Random.Uniform(0, 2**D'length - 1));
     end loop;
 
     -- End of Test
