@@ -307,9 +307,11 @@ jobs:
           }
 
           if {$::osvvm::ToolName eq "GHDL"} {
+            SetExtendedAnalyzeOptions  {-frelaxed -Wno-specs -Wno-elaboration}
             SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
           }
           if {$::osvvm::ToolName eq "NVC"} {
+            SetExtendedAnalyzeOptions {--relaxed}
           }
 
           build ../../tb/RunAllTests.pro

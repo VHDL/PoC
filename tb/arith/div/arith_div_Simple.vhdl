@@ -100,8 +100,8 @@ begin
       WaitForClock(Clock);
       wait for 1 ns;
       Start <= '0';
-      A     <= (A'range => '-');  -- (others => '-');  WORKAROUND: NVC 1.18.2 Linux
-      D     <= (D'range => '-');  -- (others => '-');
+      A     <= (others => '-');
+      D     <= (others => '-');
       done  := (others => false);
 
       loop
@@ -136,8 +136,8 @@ begin
 
   begin
     Start <= '0';
-		A     <= (A'range => '-');  -- (others => '-');  WORKAROUND: NVC 1.18.2 Linux
-		D     <= (D'range => '-');  -- (others => '-');
+		A     <= (others => '-');
+		D     <= (others => '-');
 
     -- Initialize Random
     Random.InitSeed(Random'instance_name);

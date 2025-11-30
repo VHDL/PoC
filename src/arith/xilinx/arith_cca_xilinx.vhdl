@@ -84,7 +84,7 @@ architecture rtl of arith_cca is
       if core <= 0 then
         for j in 0 to i loop
           report integer'image(j)&": ("&integer'image(res(j).base)&", "&integer'image(res(j).core)&", "&integer'image(res(j).done)&")" severity note;
-        end loop;  -- j
+        end loop;
         return  res(0 to i);
       end if;
       base := base + 2*core;

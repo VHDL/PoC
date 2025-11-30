@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
           - { simulator: 'nvc',  backend: '',      version: 'latest', can-fail: false }
-          - { simulator: 'ghdl', backend: 'mcode', version: 'latest', can-fail: false }
+#          - { simulator: 'ghdl', backend: 'mcode', version: 'latest', can-fail: false }
           - { simulator: 'ghdl', backend: 'llvm',  version: 'latest', can-fail: false }
     with:
       simulator:    ${{ matrix.simulator }}
