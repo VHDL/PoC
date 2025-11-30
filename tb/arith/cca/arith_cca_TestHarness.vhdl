@@ -47,8 +47,8 @@ architecture TestHarness of arith_cca_TestHarness is
 	constant N : positive := 8;
 	constant L : natural  := 20;
 
-	signal Clock_100 : std_logic := '1';
-	signal Reset_100 : std_logic := '1';
+	signal Clock : std_logic := '1';
+	signal Reset : std_logic := '1';
 
 	signal a : std_logic_vector(N - 1 downto 0);
 	signal b : std_logic_vector(N - 1 downto 0);
@@ -69,14 +69,14 @@ architecture TestHarness of arith_cca_TestHarness is
 
 begin
 	Osvvm.ClockResetPkg.CreateClock(
-		Clk    => Clock_100,
+		Clk    => Clock,
 		Period => TPERIOD_CLOCK
 	);
 
 	Osvvm.ClockResetPkg.CreateReset(
-		Reset       => Reset_100,
+		Reset       => Reset,
 		ResetActive => '1',
-		Clk         => Clock_100,
+		Clk         => Clock,
 		Period      => 5 * TPERIOD_CLOCK,
 		tpd         => 0 ns
 	);
@@ -96,8 +96,8 @@ begin
 
 	TestCtrl: component arith_cca_TestController
 		port map (
-			Clock => Clock_100,
-			Reset => Reset_100,
+			Clock => Clock,
+			Reset => Reset,
 			a     => a,
 			b     => b,
 			c     => c,

@@ -47,8 +47,8 @@ architecture TestHarness of arith_counter_ring_TestHarness is
 	constant BITS : positive := 8;
 	constant SEED : std_logic_vector(BITS - 1 downto 0) := "00000001";
 
-	signal Clock_100 : std_logic := '1';
-	signal Reset_100 : std_logic := '1';
+	signal Clock : std_logic := '1';
+	signal Reset : std_logic := '1';
 
 	signal inc   : std_logic;
 	signal dec   : std_logic;
@@ -67,14 +67,14 @@ architecture TestHarness of arith_counter_ring_TestHarness is
 
 begin
 	Osvvm.ClockResetPkg.CreateClock(
-		Clk    => Clock_100,
+		Clk    => Clock,
 		Period => TPERIOD_CLOCK
 	);
 
 	Osvvm.ClockResetPkg.CreateReset(
-		Reset       => Reset_100,
+		Reset       => Reset,
 		ResetActive => '1',
-		Clk         => Clock_100,
+		Clk         => Clock,
 		Period      => 5 * TPERIOD_CLOCK,
 		tpd         => 0 ns
 	);
@@ -85,8 +85,8 @@ begin
 			INVERT_FEEDBACK => FALSE
 		)
 		port map (
-			Clock => Clock_100,
-			Reset => Reset_100,
+			Clock => Clock,
+			Reset => Reset,
 			seed  => SEED,
 			inc   => inc,
 			dec   => dec,
@@ -95,8 +95,8 @@ begin
 
 	TestCtrl: component arith_counter_ring_TestController
 		port map (
-			Clock => Clock_100,
-			Reset => Reset_100,
+			Clock => Clock,
+			Reset => Reset,
 			inc   => inc,
 			dec   => dec,
 			value => value
