@@ -1,7 +1,6 @@
 # =============================================================================
-# Authors: Jonas Schreiner
-#          Gustavo Martin
-#
+# Authors: 
+#   Gustavo Martin
 # License:
 # =============================================================================
 # Copyright 2025-2025 The PoC-Library Authors
@@ -19,16 +18,7 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite PoC.arith
+analyze arith_scaler_TestController.vhdl
+analyze arith_scaler_TestHarness.vhdl
 
-library tb_arith
-
-include ./prng/RunAllTests.pro
-include ./prefix_and/RunAllTests.pro
-include ./prefix_or/RunAllTests.pro
-include ./addw/RunAllTests.pro
-include ./counter_bcd/RunAllTests.pro
-include ./convert_bin2bcd/RunAllTests.pro
-include ./div/RunAllTests.pro
-include ./firstone/RunAllTests.pro
-include ./scaler/RunAllTests.pro
+RunTest arith_scaler_Simple.vhdl
