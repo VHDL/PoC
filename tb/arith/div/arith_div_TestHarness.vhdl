@@ -2,7 +2,8 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:         Gustavo Martin
+-- Authors:         Thomas B. Preusser
+--                  Gustavo Martin
 --
 -- Entity:					arith_div_TestHarness
 --
@@ -13,6 +14,8 @@
 -- License:
 -- =============================================================================
 -- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
+--										 Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -54,10 +57,10 @@ architecture tb of arith_div_TestHarness is
 
   signal Start : std_logic;
   signal Ready : std_logic_vector(1 to 2*MAX_POW);
-  signal A     : tA;
-  signal D     : tD;
-  signal Q     : tA_vector(1 to 2*MAX_POW);
-  signal R     : tD_vector(1 to 2*MAX_POW);
+  signal A     : std_logic_vector(A_BITS-1 downto 0);
+  signal D     : std_logic_vector(D_BITS-1 downto 0);
+  signal Q     : T_SLVV(1 to 2*MAX_POW)(A_BITS-1 downto 0);
+  signal R     : T_SLVV(1 to 2*MAX_POW)(D_BITS-1 downto 0);
   signal Z     : std_logic_vector(1 to 2*MAX_POW);
 
   component arith_div_TestController is
@@ -66,10 +69,10 @@ architecture tb of arith_div_TestHarness is
       Reset : in std_logic;
       Start : out std_logic;
       Ready : in  std_logic_vector(1 to 2*MAX_POW);
-      A     : out tA;
-      D     : out tD;
-      Q     : in  tA_vector(1 to 2*MAX_POW);
-      R     : in  tD_vector(1 to 2*MAX_POW);
+      A     : out std_logic_vector(A_BITS-1 downto 0);
+      D     : out std_logic_vector(D_BITS-1 downto 0);
+      Q     : in  T_SLVV(1 to 2*MAX_POW)(A_BITS-1 downto 0);
+      R     : in  T_SLVV(1 to 2*MAX_POW)(D_BITS-1 downto 0);
       Z     : in  std_logic_vector(1 to 2*MAX_POW)
     );
   end component;
@@ -109,43 +112,39 @@ begin
   genDUTs : for i in 1 to MAX_POW generate
     DUT_SEQU : entity PoC.arith_div
       generic map (
-        A_BITS             => A_BITS,
-        D_BITS             => D_BITS,
-        RAPOW              => i
+        A_BITS => A_BITS,
+        D_BITS => D_BITS,
+        RAPOW  => i
       )
       port map (
-        clk => Clock,
-        rst => Reset,
-
+        clk   => Clock,
+        rst   => Reset,
         start => Start,
         ready => Ready(i),
-
-        A => A,
-        D => D,
-        Q => Q(i),
-        R => R(i),
-        Z => Z(i)
+        A     => A,
+        D     => D,
+        Q     => Q(i),
+        R     => R(i),
+        Z     => Z(i)
       );
 
     DUT_PIPE : entity PoC.arith_div
       generic map (
-        A_BITS             => A_BITS,
-        D_BITS             => D_BITS,
-        RAPOW              => i,
-        PIPELINED          => true
+        A_BITS    => A_BITS,
+        D_BITS    => D_BITS,
+        RAPOW     => i,
+        PIPELINED => true
       )
       port map (
-        clk => Clock,
-        rst => Reset,
-
+        clk   => Clock,
+        rst   => Reset,
         start => Start,
         ready => Ready(MAX_POW+i),
-
-        A => A,
-        D => D,
-        Q => Q(MAX_POW+i),
-        R => R(MAX_POW+i),
-        Z => Z(MAX_POW+i)
+        A     => A,
+        D     => D,
+        Q     => Q(MAX_POW+i),
+        R     => R(MAX_POW+i),
+        Z     => Z(MAX_POW+i)
       );
   end generate;
 

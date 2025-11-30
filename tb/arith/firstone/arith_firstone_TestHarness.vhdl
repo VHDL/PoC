@@ -43,8 +43,7 @@ end entity;
 
 architecture TestHarness of arith_firstone_TestHarness is
   constant TPERIOD_CLOCK : time := 10 ns;
-  constant CLOCK_FREQ : FREQ := 100 MHz;
-  constant N : positive := 8;
+  constant N             : positive := 8;
 
   signal Clock : std_logic := '1';
   signal Reset : std_logic := '1';

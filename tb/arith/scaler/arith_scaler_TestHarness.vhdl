@@ -14,6 +14,8 @@
 -- License:
 -- =============================================================================
 -- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2007-2016 Technische Universität Dresden - Germany
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -44,7 +46,6 @@ end entity;
 
 architecture TestHarness of arith_scaler_TestHarness is
   constant TPERIOD_CLOCK : time := 10 ns;
-  constant CLOCK_FREQ : FREQ := 100 MHz;
   constant MULS : T_POSVEC := (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
   constant DIVS : T_POSVEC := (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
   constant ARG_WIDTH : positive := 8;
@@ -110,8 +111,8 @@ begin
     
   TestCtrl: component arith_scaler_TestController
     generic map (
-      MULS => MULS,
-      DIVS => DIVS,
+      MULS      => MULS,
+      DIVS      => DIVS,
       ARG_WIDTH => ARG_WIDTH
     )
     port map (

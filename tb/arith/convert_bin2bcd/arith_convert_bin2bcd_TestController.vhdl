@@ -2,7 +2,8 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:         Gustavo Martin
+-- Authors:         Patrick Lehmann
+--                  Gustavo Martin
 --
 -- Entity:					arith_convert_bin2bcd_TestController
 --
@@ -12,6 +13,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2025-2025 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --										 Chair of VLSI-Design, Diagnostics and Architecture
 --

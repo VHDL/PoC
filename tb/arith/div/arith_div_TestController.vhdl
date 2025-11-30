@@ -2,7 +2,8 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:         Gustavo Martin
+-- Authors:         Thomas B. Preusser
+--                  Gustavo Martin
 --
 -- Entity:					arith_div_TestController
 --
@@ -13,6 +14,8 @@
 -- License:
 -- =============================================================================
 -- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
+--										 Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -49,10 +52,10 @@ entity arith_div_TestController is
 
     Start : out std_logic;
     Ready : in  std_logic_vector(1 to 2*MAX_POW);
-    A     : out tA;
-    D     : out tD;
-    Q     : in  tA_vector(1 to 2*MAX_POW);
-    R     : in  tD_vector(1 to 2*MAX_POW);
+    A     : out std_logic_vector(A_BITS-1 downto 0);
+    D     : out std_logic_vector(D_BITS-1 downto 0);
+    Q     : in  T_SLVV(1 to 2*MAX_POW)(A_BITS-1 downto 0);
+    R     : in  T_SLVV(1 to 2*MAX_POW)(D_BITS-1 downto 0);
     Z     : in  std_logic_vector(1 to 2*MAX_POW)
   );
 end entity;

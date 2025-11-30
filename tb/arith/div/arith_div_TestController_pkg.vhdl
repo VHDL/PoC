@@ -14,6 +14,8 @@
 -- License:
 -- =============================================================================
 -- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
+--										 Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -33,11 +35,6 @@ use     IEEE.std_logic_1164.all;
 
 package arith_div_TestController_pkg is
   constant A_BITS  : positive := 13;
-  constant D_BITS  : positive :=  4;
+  constant D_BITS  : positive := 4;
   constant MAX_POW : positive := 3;
-
-  subtype tA is std_logic_vector(A_BITS-1 downto 0);
-  type tA_vector is array(positive range<>) of tA;
-  subtype tD is std_logic_vector(D_BITS-1 downto 0);
-  type tD_vector is array(positive range<>) of tD;
 end package;

@@ -46,7 +46,6 @@ entity arith_convert_bin2bcd_TestHarness is
 end entity;
 
 architecture TestHarness of arith_convert_bin2bcd_TestHarness is
-  constant CLOCK_FREQ   : FREQ     := 100 MHz;
   constant TPERIOD_CLOCK : time := 10 ns; -- 100 MHz
 
   constant CONV1_BITS   : positive := 30;
