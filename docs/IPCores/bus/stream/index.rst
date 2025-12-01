@@ -3,7 +3,12 @@
 PoC.bus.stream
 ==============
 
-PoC.Stream modules ...
+.. attention::
+
+   .. deprecated:: v2.2.0
+
+      This will be replaced by :ref:`AXI4-Stream <NS/axi4stream>`
+
 
 .. toctree::
    :hidden:

@@ -42,6 +42,7 @@ section > p,
 .rst-content .topic-title {
 	font-size: larger;
 	font-weight: 700;
+	text-decoration: underline;
 	margin-top: 18px;
 	margin-bottom: 6px;
 }
@@ -112,4 +113,67 @@ section > p,
 .sd-container-fluid {
 	padding-left: 0;
 	padding-right: 0;
+}
+
+.sd-container-fluid > .sd-row > .sd-col > p.rubric {
+	margin-bottom: 6px;
+}
+
+.sd-container-fluid > .sd-row > .sd-col > ul.simple {
+	margin-bottom: 0px;
+}
+
+html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.citation):not(.glossary):not(.simple) .property {
+	display: inline;  /* inline-block; */
+}
+
+span.bolditalic {
+	font-weight: bold;
+	font-style: italic;
+}
+
+span.underline {
+	text-decoration: underline;
+}
+
+span.strike {
+	text-decoration: line-through;
+}
+
+span.xlarge {
+	font-size: x-large;
+}
+
+span.colorred {
+	color: #CC0000;
+}
+
+span.colorgreen {
+	color: #009933;
+}
+
+span.colorblue {
+	color: #0066FF;
+}
+
+span.colorpurple {
+	color: #9900CC;
+}
+
+span.componentname {
+	font-family: SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,Courier,monospace;
+	color: var(--sd-color-info-highlight);
+}
+span.genericname {
+	font-family: SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,Courier,monospace;
+	color: var(--sd-color-info-highlight);
+}
+span.portname {
+	font-family: SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,Courier,monospace;
+	color: var(--sd-color-info-highlight);
+}
+
+span.packagename {
+	font-family: SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,Courier,monospace;
+	color: var(--sd-color-info);
 }
