@@ -62,17 +62,17 @@ package body fifo_cc_got_TestController_pkg is
 
   function GetDataReg(idx : tConfigIndex) return boolean is
   begin
-    return (idx mod 2) > 0;
+    return (integer(idx) mod 2) > 0;
   end function;
 
   function GetStateReg(idx : tConfigIndex) return boolean is
   begin
-    return (idx mod 4) > 1;
+    return (integer(idx) mod 4) > 1;
   end function;
 
   function GetOutputReg(idx : tConfigIndex) return boolean is
   begin
-    return (idx mod 8) > 3;
+    return (integer(idx) mod 8) > 3;
   end function;
 
   function ConfigToString(idx : tConfigIndex) return string is
