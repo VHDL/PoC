@@ -1,10 +1,12 @@
 # =============================================================================
 # Authors:
-#   Jonas Schreiner, Stefan Unrein
+#   Jonas Schreiner
+#   Stefan Unrein
+#   Patrick Lehmann
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,9 +22,20 @@
 # =============================================================================
 
 namespace eval ::poc {
-	variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
+    proc getEnv {var {default ""}} {
+      if {[info exists ::env($var)]} {
+          return $::env($var)
+      }
+      return $default
+  }
+
+  variable vendorName [getEnv VENDOR "GENERIC"]
+  variable boardName  [getEnv BOARD  "GENERIC"]
+
+	variable myConfigFile  "../tb/common/my_config_$boardName.vhdl"
 	variable myProjectFile "../tb/common/my_project.vhdl"
-	variable vendor "GENERIC"; # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
+
+	variable vendor $vendorName; # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
 }
 
 source ../lib/OSVVM-Scripts/StartUp.tcl
