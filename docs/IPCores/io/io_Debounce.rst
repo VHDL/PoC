@@ -1,4 +1,4 @@
-.. _IP:io_Debounce:
+.. _IP/io_Debounce:
 
 PoC.io.Debounce
 ###############

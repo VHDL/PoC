@@ -1,4 +1,4 @@
-.. _IP:misc_BitwidthConverter:
+.. _IP/misc_BitwidthConverter:
 
 PoC.misc.BitwidthConverter
 ##########################

@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <io/lcd/lcd.pkg.vhdl>`
 
-.. _PKG:lcd:
+.. _PKG/lcd:
 
 PoC.io.lcd Package
 ==================

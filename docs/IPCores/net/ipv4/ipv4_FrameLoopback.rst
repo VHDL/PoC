@@ -1,4 +1,4 @@
-.. _IP:ipv4_FrameLoopback:
+.. _IP/ipv4_FrameLoopback:
 
 PoC.net.ipv4.FrameLoopback
 ##########################

@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <comm/comm.pkg.vhdl>`
 
-.. _PKG:comm:
+.. _PKG/comm:
 
 PoC.comm Package
 ================

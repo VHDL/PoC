@@ -1,4 +1,4 @@
-.. _IP:vga_timing:
+.. _IP/vga_timing:
 
 PoC.io.vga.timing
 #################

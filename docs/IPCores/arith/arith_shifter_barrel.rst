@@ -1,4 +1,4 @@
-.. _IP:arith_shifter_barrel:
+.. _IP/arith_shifter_barrel:
 
 PoC.arith.shifter_barrel
 ########################

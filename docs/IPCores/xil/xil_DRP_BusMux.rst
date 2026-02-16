@@ -1,4 +1,4 @@
-.. _IP:xil_DRP_BusMux:
+.. _IP/xil_DRP_BusMux:
 
 PoC.xil.DRP_BusMux
 ##################

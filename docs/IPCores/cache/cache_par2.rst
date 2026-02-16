@@ -1,4 +1,4 @@
-.. _IP:cache_par2:
+.. _IP/cache_par2:
 
 PoC.cache.par2
 ##############
@@ -20,7 +20,7 @@ PoC.cache.par2
       * |gh-tb| :poctb:`Testbench <cache/cache_par2_tb.vhdl>`
 
 Cache with parallel tag-unit and data memory. For the data memory,
-:ref:`IP:ocram_sp` is used.
+:ref:`IP/ocram_sp` is used.
 
 Configuration
 *************

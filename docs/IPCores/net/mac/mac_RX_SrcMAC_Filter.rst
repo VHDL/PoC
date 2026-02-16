@@ -1,4 +1,4 @@
-.. _IP:mac_RX_SrcMAC_Filter:
+.. _IP/mac_RX_SrcMAC_Filter:
 
 PoC.net.mac.RX_SrcMAC_Filter
 ############################

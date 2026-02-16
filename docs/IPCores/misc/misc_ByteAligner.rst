@@ -1,4 +1,4 @@
-.. _IP:misc_ByteAligner:
+.. _IP/misc_ByteAligner:
 
 PoC.misc.ByteAligner
 ####################

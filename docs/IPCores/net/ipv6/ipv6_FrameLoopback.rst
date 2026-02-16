@@ -1,4 +1,4 @@
-.. _IP:ipv6_FrameLoopback:
+.. _IP/ipv6_FrameLoopback:
 
 PoC.net.ipv6.FrameLoopback
 ##########################

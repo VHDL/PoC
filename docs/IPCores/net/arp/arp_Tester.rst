@@ -1,4 +1,4 @@
-.. _IP:arp_Tester:
+.. _IP/arp_Tester:
 
 PoC.net.arp.Tester
 ##################

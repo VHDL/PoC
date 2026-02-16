@@ -48,7 +48,7 @@ details and examples.
    :local:
 
 
-.. _QUICK:Requirements:
+.. _QUICK/Requirements:
 
 Requirements and Dependencies
 *****************************
@@ -57,13 +57,13 @@ The PoC-Library comes with some scripts to ease most of the common tasks, like
 running testbenches or generating IP cores. PoC uses Python 3 as a platform
 independent scripting environment. All Python scripts are wrapped in Bash or
 PowerShell scripts, to hide some platform specifics of Darwin, Linux or Windows.
-See :ref:`USING:Require` for further details.
+See :ref:`USING/Require` for further details.
 
 
 .. rubric:: PoC requires:
 
-* A :ref:`supported synthesis tool chain <INTRO:ToolChains>`, if you want to synthezise IP cores.
-* A :ref:`supported simulator too chain <INTRO:ToolChains>`, if you want to simulate IP cores.
+* A :ref:`supported synthesis tool chain <INTRO/ToolChains>`, if you want to synthezise IP cores.
+* A :ref:`supported simulator too chain <INTRO/ToolChains>`, if you want to simulate IP cores.
 * The **Python 3** programming language and runtime, if you want to use PoC's infrastructure.
 * A shell to execute shell scripts:
 
@@ -84,7 +84,7 @@ See :ref:`USING:Require` for further details.
               :target: https://github.com/JimLewis/OSVVM
               :alt: Source Code on GitHub
 
-* :ref:`THIRD:OSVVM` |gh-osvvm| |br|
+* :ref:`THIRD/OSVVM` |gh-osvvm| |br|
   Open Source VHDL Verification Methodology.
 
 All dependencies are available as GitHub repositories and are linked to
@@ -93,7 +93,7 @@ directory. See :ref:`Third Party Libraries <THIRD>` for more details on these
 libraries.
 
 
-.. _QUICK:Download:
+.. _QUICK/Download:
 
 Download
 ********
@@ -101,7 +101,7 @@ Download
 The PoC-Library can be downloaded as a `zip-file <https://github.com/VHDL/PoC/archive/master.zip>`_
 (latest 'master' branch), cloned with ``git clone`` or embedded with
 ``git submodule add`` from GitHub. GitHub offers HTTPS and SSH as transfer
-protocols. See the :ref:`Download <USING:Download>` page for further
+protocols. See the :ref:`Download <USING/Download>` page for further
 details. The installation directory is referred to as ``PoCRoot``.
 
 +----------+---------------------------------------------------------------------+
@@ -113,7 +113,7 @@ details. The installation directory is referred to as ``PoCRoot``.
 +----------+---------------------------------------------------------------------+
 
 
-.. _QUICK:Configuration:
+.. _QUICK/Configuration:
 
 Configuring PoC on a Local System
 *********************************
@@ -122,7 +122,7 @@ To explore PoC's full potential, it's required to configure some paths and
 synthesis or simulation tool chains. The following commands start a guided
 configuration process. Please follow the instructions on screen. It's possible
 to relaunch the process at any time, for example to register new tools or to
-update tool versions. See :ref:`Configuration <USING:PoCConfig>` for
+update tool versions. See :ref:`Configuration <USING/PoCConfig>` for
 more details. Run the following command line instructions to configure PoC on
 your local system:
 
@@ -137,7 +137,7 @@ skip/pass a step and |kbd-Return| to accept a default value displayed in
 brackets.
 
 
-.. _QUICK:Integration:
+.. _QUICK/Integration:
 
 Integration
 ***********
@@ -236,7 +236,7 @@ and if needed patch these IP cores. See :doc:`Synthesis </UsingPoC/Synthesis>`
 for more details.
 
 
-.. _QUICK:RunSimulation:
+.. _QUICK/RunSimulation:
 
 Run a Simulation
 ****************
@@ -274,7 +274,7 @@ status (``... ERROR``, ``FAILED``, ``NO ASSERTS`` or ``PASSED``). See
 :doc:`Simulation </UsingPoC/Simulation>` for more details.
 
 
-.. _QUICK:RunSynthesis:
+.. _QUICK/RunSynthesis:
 
 Run a Synthesis
 ***************
@@ -303,7 +303,7 @@ synthesized to a netlist.
 	 :alt: PowerShell console output after running PoC.arith.prng with XST.
 
 
-.. _QUICK:Updating:
+.. _QUICK/Updating:
 
 Updating
 ********

@@ -1,4 +1,4 @@
-.. _IP:stack_UDPv4:
+.. _IP/stack_UDPv4:
 
 PoC.net.stack.UDPv4
 ###################

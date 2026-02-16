@@ -21,6 +21,7 @@
 
 include ./arith/RunAllTests.pro
 include ./bus/RunAllTests.pro
+include ./sync/RunAllTests.pro
 #include ./cache/RunAllTests.pro
 #include ./common/RunAllTests.pro
 #include ./dstruct/RunAllTests.pro

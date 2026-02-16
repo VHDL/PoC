@@ -1,4 +1,4 @@
-.. _IP:sort_LeastFrequentlyUsed:
+.. _IP/sort_LeastFrequentlyUsed:
 
 PoC.sort.LeastFrequentlyUsed
 ############################

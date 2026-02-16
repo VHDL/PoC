@@ -1,4 +1,4 @@
-.. _IP:sdram_ctrl_fsm:
+.. _IP/sdram_ctrl_fsm:
 
 PoC.mem.sdram.ctrl_fsm
 ######################

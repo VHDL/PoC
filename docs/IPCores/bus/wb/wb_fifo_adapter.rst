@@ -1,4 +1,4 @@
-.. _IP:wb_fifo_adapter:
+.. _IP/wb_fifo_adapter:
 
 PoC.bus.wb.fifo_adapter
 #######################

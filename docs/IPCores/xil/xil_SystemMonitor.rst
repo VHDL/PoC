@@ -1,4 +1,4 @@
-.. _IP:xil_SystemMonitor:
+.. _IP/xil_SystemMonitor:
 
 PoC.xil.SystemMonitor
 #####################

@@ -1,4 +1,4 @@
-.. _IP:iic_Controller:
+.. _IP/iic_Controller:
 
 PoC.io.iic.Controller
 #####################

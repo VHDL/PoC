@@ -1,4 +1,4 @@
-.. _IP:misc_WordAligner:
+.. _IP/misc_WordAligner:
 
 WordAligner
 ###########

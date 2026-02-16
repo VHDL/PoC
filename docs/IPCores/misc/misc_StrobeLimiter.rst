@@ -1,4 +1,4 @@
-.. _IP:misc_StrobeLimiter:
+.. _IP/misc_StrobeLimiter:
 
 PoC.misc.StrobeLimiter
 ######################

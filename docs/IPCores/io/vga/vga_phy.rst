@@ -1,4 +1,4 @@
-.. _IP:vga_phy:
+.. _IP/vga_phy:
 
 PoC.io.vga.phy
 ##############

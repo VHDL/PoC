@@ -1,4 +1,4 @@
-.. _NS:filter:
+.. _NS/filter:
 
 PoC.misc.filter
 ===============
@@ -7,9 +7,9 @@ These are filter entities....
 
 **Entities**
 
- * :ref:`IP:filter_and`
- * :ref:`IP:filter_mean`
- * :ref:`IP:filter_or`
+ * :ref:`IP/filter_and`
+ * :ref:`IP/filter_mean`
+ * :ref:`IP/filter_or`
 
 .. toctree::
    :hidden:

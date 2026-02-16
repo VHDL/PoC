@@ -1,4 +1,4 @@
-.. _IP:iic_Switch_PCA9548A:
+.. _IP/iic_Switch_PCA9548A:
 
 PoC.io.iic.Switch_PCA9548A
 ##########################

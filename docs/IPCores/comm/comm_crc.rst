@@ -1,4 +1,4 @@
-.. _IP:comm_crc:
+.. _IP/comm_crc:
 
 PoC.comm.crc
 ############

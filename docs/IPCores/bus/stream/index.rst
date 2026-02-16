@@ -1,9 +1,14 @@
-.. _NS:stream:
+.. _NS/stream:
 
 PoC.bus.stream
 ==============
 
-PoC.Stream modules ...
+.. attention::
+
+   .. deprecated:: v2.2.0
+
+      This will be replaced by :ref:`AXI4-Stream <NS/axi4stream>`
+
 
 .. toctree::
    :hidden:
@@ -13,7 +18,7 @@ PoC.Stream modules ...
 .. toctree::
    :hidden:
 
-   stream_Buffer <stream_Buffer>
+   stream_FIFO <stream_FIFO>
    stream_DeMux <stream_DeMux>
    stream_Mux <stream_Mux>
    stream_Mirror <stream_Mirror>

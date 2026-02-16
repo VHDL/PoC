@@ -1,4 +1,4 @@
-.. _IP:cache_mem:
+.. _IP/cache_mem:
 
 PoC.cache.mem
 #############
@@ -19,7 +19,7 @@ PoC.cache.mem
       * |gh-src| :pocsrc:`Sourcecode <cache/cache_mem.vhdl>`
       * |gh-tb| :poctb:`Testbench <cache/cache_mem_tb.vhdl>`
 
-This unit provides a cache (:ref:`IP:cache_par2`) together
+This unit provides a cache (:ref:`IP/cache_par2`) together
 with a cache controller which reads / writes cache lines from / to memory.
 It has two :ref:`INT:PoC.Mem` interfaces:
 
@@ -28,7 +28,7 @@ It has two :ref:`INT:PoC.Mem` interfaces:
 
 Thus, this unit can be placed into an already available memory path between
 the CPU and the memory (controller). If you want to plugin a cache into a
-CPU pipeline, see :ref:`IP:cache_cpu`.
+CPU pipeline, see :ref:`IP/cache_cpu`.
 
 
 Configuration
@@ -77,10 +77,10 @@ If ``OUTSTANDING_REQ`` is:
   critical path (clock-to-output delay) for ``cpu_rdy``, the throughput is
   degraded to one request per 2 clock cycles at maximum.
 
-* 2: then 2 requests are buffered by :ref:`IP:fifo_glue`. This setting has
+* 2: then 2 requests are buffered by :ref:`IP/fifo_glue`. This setting has
   the lowest area requirements without degrading the performance.
 
-* >2: then the requests are buffered by :ref:`IP:fifo_cc_got`. The number of
+* >2: then the requests are buffered by :ref:`IP/fifo_cc_got`. The number of
   outstanding requests is rounded up to the next suitable value. This setting
   is useful in applications with out-of-order execution (of other
   operations). The CPU requests to the cache are always processed in-order.
@@ -127,7 +127,7 @@ The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
 
 .. seealso::
 
-     :ref:`IP:cache_cpu`
+     :ref:`IP/cache_cpu`
 
 
 

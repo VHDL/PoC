@@ -1,4 +1,4 @@
-.. _NS:ndp:
+.. _NS/ndp:
 
 PoC.net.ndp
 ===========

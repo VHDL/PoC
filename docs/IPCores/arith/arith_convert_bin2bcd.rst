@@ -1,4 +1,4 @@
-.. _IP:arith_convert_bin2bcd:
+.. _IP/arith_convert_bin2bcd:
 
 PoC.arith.convert_bin2bcd
 #########################

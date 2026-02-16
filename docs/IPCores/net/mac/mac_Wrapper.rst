@@ -1,4 +1,4 @@
-.. _IP:mac_Wrapper:
+.. _IP/mac_Wrapper:
 
 PoC.net.mac.Wrapper
 ###################

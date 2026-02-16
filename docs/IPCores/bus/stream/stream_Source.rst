@@ -1,4 +1,4 @@
-.. _IP:stream_Source:
+.. _IP/stream_Source:
 
 PoC.bus.stream.Source
 #####################

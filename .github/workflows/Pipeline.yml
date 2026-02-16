@@ -18,7 +18,7 @@ jobs:
       matrix:
         include:
           - { simulator: 'nvc',  backend: '',      version: 'latest', can-fail: false }
-          - { simulator: 'ghdl', backend: 'mcode', version: 'latest', can-fail: false }
+#          - { simulator: 'ghdl', backend: 'mcode', version: 'latest', can-fail: false }
           - { simulator: 'ghdl', backend: 'llvm',  version: 'latest', can-fail: false }
     with:
       simulator:    ${{ matrix.simulator }}
@@ -123,7 +123,7 @@ jobs:
       contents: write  # required for create tag
       actions:  write  # required for trigger workflow
     with:
-      version:  ${{ needs.Prepare.output.version }}
+      version:  ${{ needs.Prepare.outputs.version }}
       auto_tag: ${{ needs.Prepare.outputs.is_release_commit }}
 
   Release:

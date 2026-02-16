@@ -1,4 +1,4 @@
-.. _NS:comm:remote:
+.. _NS/comm/remote:
 
 PoC.comm.remote
 ===============

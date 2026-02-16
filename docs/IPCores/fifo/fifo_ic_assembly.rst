@@ -1,4 +1,4 @@
-.. _IP:fifo_ic_assembly:
+.. _IP/fifo_ic_assembly:
 
 PoC.fifo.ic_assembly
 ####################

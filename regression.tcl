@@ -31,7 +31,7 @@ source ../lib/OSVVM-Scripts/StartUp.tcl
 build ../lib/OsvvmLibraries.pro
 
 if {$::osvvm::ToolName eq "GHDL"} {
-    SetExtendedAnalyzeOptions {-frelaxed -Wno-specs -Wno-elaboration}
+    SetExtendedAnalyzeOptions  {-frelaxed -Wno-specs -Wno-elaboration}
     SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
 }
 

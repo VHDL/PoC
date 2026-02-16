@@ -63,23 +63,14 @@ begin
 
 	AXI4_S2M.BValid  <= fifo_aw_valid and fifo_w_valid;
 	AXI4_S2M.BResp   <= RESPONSE_CODE;
-	-- WORKAROUND:
-	--  Tool: NVC 1.15.x
-	--  NVC doesn't support inference of others through unconstrained port of type record.
-	AXI4_S2M.BUser(AXI4_S2M.BUser'range)   <= (others => '0');
+	AXI4_S2M.BUser   <= (others => '0');
 
 	AXI4_S2M.ARReady <= not ARFull_i;
 
-	-- WORKAROUND:
-	--  Tool: NVC 1.15.x
-	--  NVC doesn't support inference of others through unconstrained port of type record.
-	AXI4_S2M.RData(AXI4_S2M.RData'range)   <= (others => '0');
+	AXI4_S2M.RData   <= (others => '0');
 	AXI4_S2M.RResp   <= RESPONSE_CODE;
 	AXI4_S2M.RLast   <= '1';
-	-- WORKAROUND:
-	--  Tool: NVC 1.15.x
-	--  NVC doesn't support inference of others through unconstrained port of type record.
-	AXI4_S2M.RUser(AXI4_S2M.RUser'range)   <= (others => '0');
+	AXI4_S2M.RUser   <= (others => '0');
 
 	fifo_aw: fifo_cc_got
 	generic map(

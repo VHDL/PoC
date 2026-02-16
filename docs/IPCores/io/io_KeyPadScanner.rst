@@ -1,4 +1,4 @@
-.. _IP:io_KeyPadScanner:
+.. _IP/io_KeyPadScanner:
 
 PoC.io.KeyPadScanner
 ####################

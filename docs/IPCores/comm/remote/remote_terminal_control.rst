@@ -1,4 +1,4 @@
-.. _IP:remote_terminal_control:
+.. _IP/remote_terminal_control:
 
 PoC.comm.remote.terminal_control
 ################################

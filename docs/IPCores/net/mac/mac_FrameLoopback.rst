@@ -1,4 +1,4 @@
-.. _IP:mac_FrameLoopback:
+.. _IP/mac_FrameLoopback:
 
 PoC.net.mac.FrameLoopback
 #########################

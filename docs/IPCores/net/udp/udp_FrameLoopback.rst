@@ -1,4 +1,4 @@
-.. _IP:udp_FrameLoopback:
+.. _IP/udp_FrameLoopback:
 
 PoC.net.udp.FrameLoopback
 #########################

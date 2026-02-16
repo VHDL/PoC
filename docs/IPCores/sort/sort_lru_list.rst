@@ -1,4 +1,4 @@
-.. _IP:sort_lru_list:
+.. _IP/sort_lru_list:
 
 PoC.sort.lru_list
 #################

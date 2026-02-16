@@ -1,4 +1,4 @@
-.. _IP:arith_counter_ring:
+.. _IP/arith_counter_ring:
 
 PoC.arith.counter_ring
 ######################

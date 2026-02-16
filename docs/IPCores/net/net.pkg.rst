@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <net/net.pkg.vhdl>`
 
-.. _PKG:net:
+.. _PKG/net:
 
 PoC.net Package
 ===============

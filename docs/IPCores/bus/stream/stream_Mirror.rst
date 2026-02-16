@@ -1,4 +1,4 @@
-.. _IP:stream_Mirror:
+.. _IP/stream_Mirror:
 
 PoC.bus.stream.Mirror
 #####################

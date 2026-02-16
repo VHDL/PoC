@@ -1,4 +1,4 @@
-.. _IP:ocram_esdp:
+.. _IP/ocram_esdp:
 
 PoC.mem.ocram.esdp
 ##################
@@ -26,7 +26,7 @@ Inferring / instantiating enhanced simple dual-port memory, with:
 
 .. deprecated:: 1.1
 
-   **Please use** :ref:`IP:ocram_tdp` **for new designs.
+   **Please use** :ref:`IP/ocram_tdp` **for new designs.
    This component has been provided because older FPGA compilers where not
    able to infer true dual-port memory from an RTL description.**
 
@@ -68,7 +68,7 @@ Mixed-Port Read-During-Write
   rising-edge of the write clock (``clk1``) and (in the worst case) extends
   until the next rising-edge of the write clock.
 
-For simulation, always our dedicated simulation model :ref:`IP:ocram_tdp_sim`
+For simulation, always our dedicated simulation model :ref:`IP/ocram_tdp_sim`
 is used.
 
 

@@ -1,4 +1,4 @@
-.. _IP:stream_Sink:
+.. _IP/stream_Sink:
 
 PoC.bus.stream.Sink
 ###################

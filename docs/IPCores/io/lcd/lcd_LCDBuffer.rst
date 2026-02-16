@@ -1,4 +1,4 @@
-.. _IP:lcd_LCDBuffer:
+.. _IP/lcd_LCDBuffer:
 
 PoC.io.lcd.LCDBuffer
 ####################

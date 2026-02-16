@@ -1,4 +1,4 @@
-.. _IP:fifo_shift:
+.. _IP/fifo_shift:
 
 PoC.fifo.shift
 ##############

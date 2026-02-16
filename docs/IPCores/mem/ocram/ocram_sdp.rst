@@ -1,4 +1,4 @@
-.. _IP:ocram_sdp:
+.. _IP/ocram_sdp:
 
 PoC.mem.ocram.sdp
 #################
@@ -38,7 +38,7 @@ Mixed-Port Read-During-Write
   rising-edge of the write clock and (in the worst case) extends until the
   next rising-edge of the write clock.
 
-For simulation, always our dedicated simulation model :ref:`IP:ocram_tdp_sim`
+For simulation, always our dedicated simulation model :ref:`IP/ocram_tdp_sim`
 is used.
 
 

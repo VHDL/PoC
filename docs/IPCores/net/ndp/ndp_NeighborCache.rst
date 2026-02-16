@@ -1,4 +1,4 @@
-.. _IP:ndp_NeighborCache:
+.. _IP/ndp_NeighborCache:
 
 PoC.net.ndp.NeighborCache
 #########################

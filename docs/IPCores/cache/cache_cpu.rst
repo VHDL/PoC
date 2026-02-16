@@ -1,4 +1,4 @@
-.. _IP:cache_cpu:
+.. _IP/cache_cpu:
 
 PoC.cache.cpu
 #############
@@ -19,7 +19,7 @@ PoC.cache.cpu
       * |gh-src| :pocsrc:`Sourcecode <cache/cache_cpu.vhdl>`
       * |gh-tb| :poctb:`Testbench <cache/cache_cpu_tb.vhdl>`
 
-This unit provides a cache (:ref:`IP:cache_par2`) together
+This unit provides a cache (:ref:`IP/cache_par2`) together
 with a cache controller which reads / writes cache lines from / to memory.
 The memory is accessed using a :ref:`INT:PoC.Mem` interfaces, the related
 ports and parameters are prefixed with ``mem_``.
@@ -53,7 +53,7 @@ directly fed by the address caculator. But be aware of the high setup time
 of this unit and high propate time for ``cpu_got``.
 
 This unit supports only one outstanding CPU request. More outstanding
-requests are provided by :ref:`IP:cache_mem`.
+requests are provided by :ref:`IP/cache_mem`.
 
 
 Configuration
@@ -167,7 +167,7 @@ cycles and acknowledged when the data has been issued to the memory.
 
 .. seealso::
 
-     :ref:`IP:cache_mem`
+     :ref:`IP/cache_mem`
 
 
 

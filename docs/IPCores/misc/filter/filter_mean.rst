@@ -1,4 +1,4 @@
-.. _IP:filter_mean:
+.. _IP/filter_mean:
 
 PoC.misc.filter.mean
 ####################

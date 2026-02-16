@@ -1,4 +1,4 @@
-.. _IP:ocram_tdp_wf:
+.. _IP/ocram_tdp_wf:
 
 PoC.mem.ocram.tdp_wf
 ####################
@@ -56,7 +56,7 @@ Mixed-Port Read-During-Write
 If a write is issued on both ports to the same address, then the output of
 this unit and the content of the addressed memory cell are undefined.
 
-For simulation, always our dedicated simulation model :ref:`IP:ocram_tdp_sim`
+For simulation, always our dedicated simulation model :ref:`IP/ocram_tdp_sim`
 is used.
 
 

@@ -1,4 +1,4 @@
-.. _IP:arith_counter_gray:
+.. _IP/arith_counter_gray:
 
 PoC.arith.counter_gray
 ######################

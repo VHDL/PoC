@@ -1,4 +1,4 @@
-.. _USING:Require:
+.. _USING/Require:
 
 Requirements
 ############
@@ -12,7 +12,7 @@ platform independent scripting environment. All Python scripts are wrapped in
 Bash or PowerShell scripts, to hide some platform specifics of Darwin, Linux or
 Windows.
 
-.. _USING:Require:Common:
+.. _USING/Require/Common:
 
 Common requirements:
 ********************
@@ -26,11 +26,9 @@ Programming Languages and Runtime Environments:
     All Python requirements are listed in `requirements.txt <https://github.com/VLSI-EDA/PoC/blob/master/requirements.txt>`_ and can be installed via: |br|
     ``sudo python3.5 -m pip install -r requirements.txt``
 Synthesis tool chains:
-  * Altera Quartus II |geq| 13.0 or
   * Altera Quartus Prime |geq| 15.1 or
   * Intel Quartus Prime |geq| 16.1 or
   * Lattice Diamond |geq| 3.6 or
-  * Xilinx ISE 14.7 [#f1]_ or
   * Xilinx Vivado |geq| 2016.3 [#f2]_
 Simulation tool chains
   * Aldec Active-HDL (or Student Edition) or
@@ -39,12 +37,11 @@ Simulation tool chains
   * Mentor Graphics ModelSim SE or
   * Mentor Graphics ModelSim Altera Edition or
   * Mentor Graphics QuestaSim or
-  * Xilinx ISE Simulator 14.7 or
   * Xilinx Vivado Simulator |geq| 2016.3 [#f3]_ or
-  * `GHDL <https://github.com/tgingold/ghdl>`_ |geq| 0.34dev and `GTKWave <http://gtkwave.sourceforge.net/>`_ |geq| 3.3.70
+  * `GHDL <https://github.com/tgingold/ghdl>`_ |geq| 5.1.1 and `GTKWave <http://gtkwave.sourceforge.net/>`_ |geq| 3.3.70
 
 
-.. _USING:Require:Linux:
+.. _USING/Require/Linux:
 
 Linux specific requirements:
 ****************************
@@ -67,7 +64,7 @@ SmartGit
   The latest *.deb installation packages can be downloaded `here <http://kassiopeia.juls.savba.sk/~garabik/software/grc/>`_.
 
 
-.. _USING:Require:MacOS:
+.. _USING/Require/MacOS:
 
 Mac OS specific requirements:
 *****************************
@@ -94,7 +91,7 @@ SmartGit or SourceTree
   ``brew install Grc``
 
 
-.. _USING:Require:Windows:
+.. _USING/Require/Windows:
 
 Windows specific requirements:
 ******************************

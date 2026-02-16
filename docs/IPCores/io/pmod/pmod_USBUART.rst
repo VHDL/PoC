@@ -1,4 +1,4 @@
-.. _IP:pmod_USBUART:
+.. _IP/pmod_USBUART:
 
 PoC.io.pmod.USBUART
 ###################

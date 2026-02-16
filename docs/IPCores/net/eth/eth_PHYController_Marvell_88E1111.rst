@@ -1,4 +1,4 @@
-.. _IP:Eth_PHYController_Marvell_88E1111:
+.. _IP/Eth_PHYController_Marvell_88E1111:
 
 PoC.net.eth.PHYController_Marvell_88E1111
 #########################################

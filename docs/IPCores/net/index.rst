@@ -1,4 +1,4 @@
-.. _NS:net:
+.. _NS/net:
 
 PoC.net
 ========
@@ -7,21 +7,21 @@ These are bus entities....
 
 **Sub-Namespaces**
 
- * :ref:`NS:arp`
- * :ref:`NS:eth`
- * :ref:`NS:icmpv4`
- * :ref:`NS:icmpv6`
- * :ref:`NS:ipv4`
- * :ref:`NS:ipv6`
- * :ref:`NS:mac`
- * :ref:`NS:ndp`
- * :ref:`NS:stack`
- * :ref:`NS:udp`
+ * :ref:`NS/arp`
+ * :ref:`NS/eth`
+ * :ref:`NS/icmpv4`
+ * :ref:`NS/icmpv6`
+ * :ref:`NS/ipv4`
+ * :ref:`NS/ipv6`
+ * :ref:`NS/mac`
+ * :ref:`NS/ndp`
+ * :ref:`NS/stack`
+ * :ref:`NS/udp`
 
 **Entities**
 
- * :ref:`IP:net_FrameChecksum`
- * :ref:`IP:net_FrameLoopback`
+ * :ref:`IP/net_FrameChecksum`
+ * :ref:`IP/net_FrameLoopback`
 
 .. toctree::
    :hidden:

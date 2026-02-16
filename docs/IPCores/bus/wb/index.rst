@@ -1,4 +1,4 @@
-.. _NS:wb:
+.. _NS/wb:
 
 PoC.bus.wb
 ==========

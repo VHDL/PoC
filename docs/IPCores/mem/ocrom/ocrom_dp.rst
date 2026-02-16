@@ -1,4 +1,4 @@
-.. _IP:ocrom_dp:
+.. _IP/ocrom_dp:
 
 PoC.mem.ocrom.dp
 ################

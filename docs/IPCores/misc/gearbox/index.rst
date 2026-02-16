@@ -1,4 +1,4 @@
-.. _NS:gearbox:
+.. _NS/gearbox:
 
 PoC.misc.gearbox
 ================
@@ -7,10 +7,10 @@ These are gearbox entities....
 
 **Entities**
 
- * :ref:`IP:gearbox_down_cc`
- * :ref:`IP:gearbox_down_dc`
- * :ref:`IP:gearbox_up_cc`
- * :ref:`IP:gearbox_up_dc`
+ * :ref:`IP/gearbox_down_cc`
+ * :ref:`IP/gearbox_down_dc`
+ * :ref:`IP/gearbox_up_cc`
+ * :ref:`IP/gearbox_up_dc`
 
 .. toctree::
    :hidden:

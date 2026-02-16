@@ -1,4 +1,4 @@
-.. _IP:fifo_ic_got:
+.. _IP/fifo_ic_got:
 
 PoC.fifo.ic_got
 ###############

@@ -1,4 +1,4 @@
-.. _IP:mdio_IIC_Adapter:
+.. _IP/mdio_IIC_Adapter:
 
 PoC.io.mdio.IIC_Adapter
 #######################

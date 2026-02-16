@@ -1,4 +1,4 @@
-.. _IP:vga_phy_ch7301c:
+.. _IP/vga_phy_ch7301c:
 
 PoC.io.vga.phy_ch7301c
 ######################

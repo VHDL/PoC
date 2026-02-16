@@ -1,4 +1,4 @@
-.. _IP:cache_tagunit_seq:
+.. _IP/cache_tagunit_seq:
 
 PoC.cache.tagunit_seq
 #####################

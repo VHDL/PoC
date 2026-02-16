@@ -1,4 +1,4 @@
-.. _IP:sortnet_OddEvenSort:
+.. _IP/sortnet_OddEvenSort:
 
 PoC.sort.sortnet.OddEvenSort
 ############################

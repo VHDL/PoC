@@ -1,4 +1,4 @@
-.. _IP:cache_par:
+.. _IP/cache_par:
 
 PoC.cache.par
 #############

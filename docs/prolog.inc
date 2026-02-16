@@ -14,20 +14,6 @@
 
    <hr />
 
-.. # define additional CSS based styles and ReST roles for HTML
-.. raw:: html
-
-   <style type="text/css">
-     span.bolditalic {font-weight: bold; font-style: italic; }
-     span.underline {text-decoration: underline; }
-     span.strike {text-decoration: line-through; }
-     span.xlarge {font-size: x-large; }
-     span.colorred {color: #CC0000; }
-     span.colorgreen {color: #009933; }
-     span.colorblue {color: #0066FF; }
-     span.colorpurple {color: #9900CC; }
-   </style>
-
 .. role:: bolditalic
    :class: bolditalic
 
@@ -54,6 +40,25 @@
 .. role:: addition
    :class: colorgreen
 
+.. role:: comp
+   :class: componentname
+.. role:: generic
+   :class: genericname
+.. role:: port
+   :class: portname
+.. role:: pack
+   :class: packagename
+.. role:: type
+   :class: typename
+.. role:: subprog
+   :class: subprogramname
+.. role:: value
+   :class: value
+
 .. role:: pycode(code)
    :language: python
+   :class: highlight
+
+.. role:: vhdlcode(code)
+   :language: vhdl
    :class: highlight

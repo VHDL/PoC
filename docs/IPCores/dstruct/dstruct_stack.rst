@@ -1,4 +1,4 @@
-.. _IP:dstruct_stack:
+.. _IP/dstruct_stack:
 
 PoC.dstruct.stack
 #################

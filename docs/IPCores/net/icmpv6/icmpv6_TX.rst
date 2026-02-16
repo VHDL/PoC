@@ -1,4 +1,4 @@
-.. _IP:icmpv6_TX:
+.. _IP/icmpv6_TX:
 
 PoC.net.icmpv6.TX
 #################

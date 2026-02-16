@@ -1,4 +1,4 @@
-.. _IP:uart_tx:
+.. _IP/uart_tx:
 
 PoC.io.uart.tx
 ##############

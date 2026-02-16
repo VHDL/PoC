@@ -1,4 +1,4 @@
-.. _IP:misc_StrobeGenerator:
+.. _IP/misc_StrobeGenerator:
 
 PoC.misc.StrobeGenerator
 ########################

@@ -1,4 +1,4 @@
-.. _USING:PreCompile:
+.. _USING/PreCompile:
 
 Pre-Compiling Vendor Libraries
 ##############################
@@ -12,7 +12,7 @@ Pre-Compiling Vendor Libraries
 .. index::
    single: Pre-compilation
 
-.. _USING:PreCompile:Over:
+.. _USING/PreCompile/Over:
 
 Overview
 ********
@@ -33,7 +33,7 @@ are located in ``\tools\precompile\`` and the output is stored in
 .. index::
    pair: Pre-compilation; Supported Simulators
 
-.. _USING:PreCompile:Simulators:
+.. _USING/PreCompile/Simulators:
 
 Supported Simulators
 ********************
@@ -48,22 +48,21 @@ The current set of pre-compile scripts support these simulators:
 +------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
 | Aldec |br|       | Active-HDL (or Stududent Ed.) |br|   | planned |br| | planned |br| | planned |br|    | planned |br|         |
 | |br|             | Active-HDL Lattice Ed. |br|          | planned |br| | shipped |br| | planned |br|    | planned |br|         |
-|                  | Reviera-PRO                          | planned      | planned      | planned         | planned              |
+|                  | Riviera-PRO                          | planned      | planned      | planned         | planned              |
 +------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
 | Mentor |br|      | ModelSim PE (or Stududent Ed.) |br|  | yes |br|     | yes |br|     | yes |br|        | yes |br|             |
 | |br|             | ModelSim SE |br|                     | yes |br|     | yes |br|     | yes |br|        | yes |br|             |
 | |br|             | ModelSim Altera Ed. |br|             | shipped |br| | yes |br|     | yes |br|        | yes |br|             |
 |                  | QuestaSim                            | yes          | yes          | yes             | yes                  |
 +------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
-| Xilinx |br|      | ISE Simulator |br|                   |              |              | shipped |br|    | not supported |br|   |
-|                  | Vivado Simulator                     |              |              | not supported   | shipped              |
+| Xilinx |br|      | Vivado Simulator                     |              |              | not supported   | shipped              |
 +------------------+--------------------------------------+--------------+--------------+-----------------+----------------------+
 
 
 .. index::
    pair: Pre-compilation; Vendor Primitives
 
-.. _USING:PreCompile:Primitives:
+.. _USING/PreCompile/Primitives:
 
 FPGA Vendor's Primitive Libraries
 ****************************************************************************************************************************************************************
@@ -72,14 +71,14 @@ FPGA Vendor's Primitive Libraries
 .. index::
    pair: Pre-compilation; Altera
 
-.. _USING:PreCompile:Primitives:Altera:
+.. _USING/PreCompile/Primitives/Altera:
 
 Altera
 ======
 
 .. note::
    The Altera Quartus tool chain needs to be configured in PoC. |br|
-   See :ref:`Configuring PoC's Infrastruture <USING:PoCConfig>` for further details.
+   See :ref:`Configuring PoC's Infrastruture <USING/PoCConfig>` for further details.
 
 On Linux
 --------
@@ -168,14 +167,14 @@ On Windows
 .. index::
    pair: Pre-compilation; Lattice
 
-.. _USING:PreCompile:Primitives:Lattice:
+.. _USING/PreCompile/Primitives/Lattice:
 
 Lattice
 ========
 
 .. note::
    The Lattice Diamond tool chain needs to be configured in PoC. |br|
-   See :ref:`Configuring PoC's Infrastruture <USING:PoCConfig>` for further details.
+   See :ref:`Configuring PoC's Infrastruture <USING/PoCConfig>` for further details.
 
 On Linux
 --------
@@ -260,114 +259,19 @@ On Windows
 |                   | |c-lattice-ps-vhdl08|  | GHDL only: Compile only for VHDL-2008.                                  |
 +-------------------+------------------------+-------------------------------------------------------------------------+
 
-.. # ===========================================================================================================================================================
-.. index::
-   pair: Pre-compilation; Xilinx ISE
-
-.. _USING:PreCompile:Primitives:XilinxISE:
-
-Xilinx ISE
-==========
-
-.. note::
-   The Xilinx ISE tool chain needs to be configured in PoC. |br|
-   See :ref:`Configuring PoC's Infrastruture <USING:PoCConfig>` for further details.
-
-On Linux
---------
-
-.. code-block:: Bash
-
-   # Example 1 - Compile for all Simulators
-   ./tools/precompile/compile-xilinx-ise.sh --all
-   # Example 2 - Compile only for GHDL and VHDL-2008
-   ./tools/precompile/compile-xilinx-ise.sh --ghdl --vhdl2008
-
-**List of command line arguments:**
-
-.. |c-ise-sh-h| replace:: :option:`-h <compile-xilinx-ise.sh -h>`
-.. |c-ise-sh-c| replace:: :option:`-c <compile-xilinx-ise.sh -c>`
-.. |c-ise-sh-a| replace:: :option:`-a <compile-xilinx-ise.sh -a>`
-.. |c-ise-sh-help| replace:: :option:`--help <compile-xilinx-ise.sh --help>`
-.. |c-ise-sh-clean| replace:: :option:`--clean <compile-xilinx-ise.sh --clean>`
-.. |c-ise-sh-all| replace:: :option:`--all <compile-xilinx-ise.sh --all>`
-.. |c-ise-sh-ghdl| replace:: :option:`--ghdl <compile-xilinx-ise.sh --ghdl>`
-.. |c-ise-sh-questa| replace:: :option:`--questa <compile-xilinx-ise.sh --questa>`
-.. |c-ise-sh-vhdl93| replace:: :option:`--vhdl93 <compile-xilinx-ise.sh --vhdl93>`
-.. |c-ise-sh-vhdl08| replace:: :option:`--vhdl2008 <compile-xilinx-ise.sh --vhdl2008>`
-
-+------------------------------------+---------------------------------------------------------------------------------+
-| Common Option                      | Parameter Description                                                           |
-+===============+====================+=================================================================================+
-| |c-ise-sh-h|  | |c-ise-sh-help|    | Print embedded help page(s).                                                    |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-| |c-ise-sh-c|  | |c-ise-sh-clean|   | Clean-up directories.                                                           |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-| |c-ise-sh-a|  | |c-ise-sh-all|     | Compile for all simulators.                                                     |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-|               | |c-ise-sh-ghdl|    | Compile for GHDL.                                                               |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-|               | |c-ise-sh-questa|  | Compile for QuestaSim.                                                          |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-|               | |c-ise-sh-vhdl93|  | GHDL only: Compile only for VHDL-93.                                            |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-|               | |c-ise-sh-vhdl08|  | GHDL only: Compile only for VHDL-2008.                                          |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-
-
-On Windows
-----------
-
-.. code-block:: PowerShell
-
-   # Example 1 - Compile for all Simulators
-   .\tools\precompile\compile-xilinx-ise.ps1 -All
-   # Example 2 - Compile only for GHDL and VHDL-2008
-   .\tools\precompile\compile-xilinx-ise.ps1 -GHDL -VHDL2008
-
-**List of command line arguments:**
-
-.. |c-ise-ps-h| replace:: ``-h``
-.. |c-ise-ps-c| replace:: ``-c``
-.. |c-ise-ps-a| replace:: ``-a``
-.. |c-ise-ps-help| replace:: :option:`-Help <compile-xilinx-ise.ps1 -Help>`
-.. |c-ise-ps-clean| replace:: :option:`-Clean <compile-xilinx-ise.ps1 -Clean>`
-.. |c-ise-ps-all| replace:: :option:`-All <compile-xilinx-ise.ps1 -All>`
-.. |c-ise-ps-ghdl| replace:: :option:`-GHDL <compile-xilinx-ise.ps1 -GHDL>`
-.. |c-ise-ps-questa| replace:: :option:`-Questa <compile-xilinx-ise.ps1 -Questa>`
-.. |c-ise-ps-vhdl93| replace:: :option:`-VHDL93 <compile-xilinx-ise.ps1 -VHDL93>`
-.. |c-ise-ps-vhdl08| replace:: :option:`-VHDL2008 <compile-xilinx-ise.ps1 -VHDL2008>`
-
-+------------------------------------+---------------------------------------------------------------------------------+
-| Common Option                      | Parameter Description                                                           |
-+===============+====================+=================================================================================+
-| |c-ise-ps-h|  | |c-ise-ps-help|    | Print embedded help page(s).                                                    |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-| |c-ise-ps-c|  | |c-ise-ps-clean|   | Clean-up directories.                                                           |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-| |c-ise-ps-a|  | |c-ise-ps-all|     | Compile for all simulators.                                                     |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-|               | |c-ise-ps-ghdl|    | Compile for GHDL.                                                               |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-|               | |c-ise-ps-questa|  | Compile for QuestaSim.                                                          |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-|               | |c-ise-ps-vhdl93|  | GHDL only: Compile only for VHDL-93.                                            |
-+---------------+--------------------+---------------------------------------------------------------------------------+
-|               | |c-ise-ps-vhdl08|  | GHDL only: Compile only for VHDL-2008.                                          |
-+---------------+--------------------+---------------------------------------------------------------------------------+
 
 .. # ===========================================================================================================================================================
 .. index::
    pair: Pre-compilation; Xilinx Vivado
 
-.. _USING:PreCompile:Primitives:XilinxVivado
+.. _USING/PreCompile/Primitives:XilinxVivado
 
 Xilinx Vivado
 =============
 
 .. note::
    The Xilinx Vivado tool chain needs to be configured in PoC. |br|
-   See :ref:`Configuring PoC's Infrastruture <USING:PoCConfig>` for further details.
+   See :ref:`Configuring PoC's Infrastruture <USING/PoCConfig>` for further details.
 
 On Linux
 --------
@@ -456,7 +360,7 @@ On Windows
 .. index::
    pair: Pre-compilation; Third-Party Libraries
 
-.. _USING:PreCompile:ThirdParty:
+.. _USING/PreCompile/ThirdParty:
 
 Third-Party Libraries
 ****************************************************************************************************************************************************************
@@ -465,7 +369,7 @@ Third-Party Libraries
 .. index::
    pair: Pre-compilation; OSVVM
 
-.. _USING:PreCompile:ThirdParty:OSVVM:
+.. _USING/PreCompile/ThirdParty/OSVVM:
 
 OSVVM
 =====
@@ -545,7 +449,7 @@ On Windows
 .. index::
    pair: Pre-compilation; UVVM
 
-.. _USING:PreCompile:ThirdParty:UVVM:
+.. _USING/PreCompile/ThirdParty/UVVM:
 
 UVVM
 ====
@@ -625,7 +529,7 @@ On Windows
    .. index::
       pair: Pre-compilation; VUnit
 
-   .. _USING:PreCompile:ThirdParty:VUnit:
+   .. _USING/PreCompile/ThirdParty/VUnit:
 
    VUnit
    =====
@@ -705,7 +609,7 @@ On Windows
 .. index::
    pair: Pre-compilation; Simulator Adapters
 
-.. _USING:PreCompile:Adapter:
+.. _USING/PreCompile/Adapter:
 
 Simulator Adapters
 ****************************************************************************************************************************************************************
@@ -713,7 +617,7 @@ Simulator Adapters
 .. index::
    pair: Pre-compilation; Cocotb
 
-.. _USING:PreCompile:Adapter:Cocotb:
+.. _USING/PreCompile/Adapter/Cocotb:
 
 Cocotb
 ======

@@ -1,4 +1,4 @@
-.. _IP:mac_TX_DestMAC_Prepender:
+.. _IP/mac_TX_DestMAC_Prepender:
 
 PoC.net.mac.TX_DestMAC_Prepender
 ################################

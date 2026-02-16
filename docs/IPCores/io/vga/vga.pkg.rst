@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <io/vga/vga.pkg.vhdl>`
 
-.. _PKG:vga:
+.. _PKG/vga:
 
 PoC.io.vga Package
 ==================

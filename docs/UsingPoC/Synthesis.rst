@@ -1,4 +1,4 @@
-.. _USING:Synth:
+.. _USING/Synth:
 
 Synthesis
 #########
@@ -7,7 +7,7 @@ Synthesis
    :local:
 
 
-.. _USING:Synth:Over:
+.. _USING/Synth/Over:
 
 Overview
 ********
@@ -28,10 +28,10 @@ one of PoC's frontend script:
 
 .. seealso::
 
-   :ref:`PoC Configuration <USING:PoCConfig>`
+   :ref:`PoC Configuration <USING/PoCConfig>`
      See the Configuration page on how to configure PoC and your installed
      synthesis tool chains. This is required to invoke the compilers.
-   :ref:`Supported Compiler <INTRO:ToolChains>`
+   :ref:`Supported Compiler <INTRO/ToolChains>`
      See the Intruction page for a list of supported compilers.
 
 
@@ -42,7 +42,7 @@ one of PoC's frontend script:
      See this list to find a supported and well known development board.
 
 
-.. _USING:Synth:Quick:
+.. _USING/Synth/Quick:
 
 Quick Example
 *************
@@ -71,12 +71,12 @@ synthesized to a netlist.
 	 :alt: PowerShell console output after running PoC.arith.prng with XST.
 
 
-.. _USING:Synth:Single:
+.. _USING/Synth/Single:
 
 Running a single Synthesis
 **************************
 
-A synthesis run is supervised by PoC's :ref:`PoCRoot\\py\\PoC.py <CMDREF:PoC>`
+A synthesis run is supervised by PoC's :ref:`PoCRoot\\py\\PoC.py <CMDREF/PoC>`
 service tool, which offers a consistent interface to all synthesizers.
 Unfortunately, every platform has it's specialties, so a wrapper script is
 needed as abstraction from the host's operating system. Depending on the choosen
@@ -117,10 +117,6 @@ configured in PoC:
 .. |r-quartus| replace:: :ref:`PoC.py quartus <CMDREF:PoC.py-quartus>`
 .. |l-lse| replace:: :ref:`Lattice (Diamond) Synthesis Engine (LSE) <USING:Synth:Lattice-Diamond>`
 .. |r-lse| replace:: :ref:`PoC.py lse <CMDREF:PoC.py-lse>`
-.. |l-xst| replace:: :ref:`Xilinx ISE Systhesis Tool (XST) <USING:Synth:Xilinx-ISE>`
-.. |r-xst| replace:: :ref:`PoC.py xst <CMDREF:PoC.py-xst>`
-.. |l-coregen| replace:: :ref:`Xilinx ISE Core Generator (CoreGen) <USING:Synth:Xilinx-CoreGen>`
-.. |r-coregen| replace:: :ref:`PoC.py coregen <CMDREF:PoC.py-coregen>`
 .. |l-vivado| replace:: :ref:`Xilinx Vivado Synthesis <USING:Synth:Xilinx-Vivado>`
 .. |r-vivado| replace:: :ref:`PoC.py vivado <CMDREF:PoC.py-vivado>`
 
@@ -131,15 +127,11 @@ configured in PoC:
 +---------------------------------+--------------------------------------------+
 | |l-lse|                         | |r-lse|                                    |
 +---------------------------------+--------------------------------------------+
-| |l-xst|                         | |r-xst|                                    |
-+---------------------------------+--------------------------------------------+
-| |l-coregen|                     | |r-coregen|                                |
-+---------------------------------+--------------------------------------------+
 | |l-vivado|                      | |r-vivado|                                 |
 +---------------------------------+--------------------------------------------+
 
 
-.. _USING:Synth:Altera-Quartus:
+.. _USING/Synth:Altera-Quartus:
 
 Altera / Intel Quartus
 ======================
@@ -167,7 +159,7 @@ supported for Quartus:
    .\poc.ps1 quartus PoC.arith.prng --board=DE4
 
 
-.. _USING:Synth:Lattice-Diamond:
+.. _USING/Synth:Lattice-Diamond:
 
 Lattice Diamond
 ===============
@@ -195,7 +187,7 @@ Synthesis Engine (LSE):
    .\poc.ps1 lse PoC.arith.prng --board=ECP5Versa
 
 
-.. _USING:Synth:Xilinx-ISE:
+.. _USING/Synth:Xilinx-ISE:
 
 Xilinx ISE Synthesis Tool (XST)
 ===============================
@@ -223,7 +215,7 @@ Synthesis Tool (XST):
    .\poc.ps1 xst PoC.arith.prng --board=KC705
 
 
-.. _USING:Synth:Xilinx-CoreGen:
+.. _USING/Synth:Xilinx-CoreGen:
 
 Xilinx ISE Core Generator
 =========================
@@ -251,7 +243,7 @@ supported for Core Generator (CG):
    .\poc.ps1 coregen PoC.xil.mig.Atlys_1x128 --board=Atlys
 
 
-.. _USING:Synth:Xilinx-Vivado:
+.. _USING/Synth:Xilinx-Vivado:
 
 Xilinx Vivado Synthesis
 =======================

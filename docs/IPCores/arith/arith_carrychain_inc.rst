@@ -1,4 +1,4 @@
-.. _IP:arith_carrychain_inc:
+.. _IP/arith_carrychain_inc:
 
 PoC.arith.carrychain_inc
 ########################

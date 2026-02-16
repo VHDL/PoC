@@ -1,4 +1,4 @@
-.. _IP:stream_DeMux:
+.. _IP/stream_DeMux:
 
 PoC.bus.stream.DeMux
 ####################

@@ -1,4 +1,4 @@
-.. _IP:fifo_cc_got:
+.. _IP/fifo_cc_got:
 
 PoC.fifo.cc_got
 ###############
@@ -79,11 +79,11 @@ comparator (subtractor) in their path.
 
 .. seealso::
 
-   :ref:`IP:fifo_dc_got`
+   :ref:`IP/fifo_dc_got`
      For a FIFO with dependent clocks.
-   :ref:`IP:fifo_ic_got`
+   :ref:`IP/fifo_ic_got`
      For a FIFO with independent clocks (cross-clock FIFO).
-   :ref:`IP:fifo_glue`
+   :ref:`IP/fifo_glue`
      For a minimal FIFO / pipeline decoupling.
 
 

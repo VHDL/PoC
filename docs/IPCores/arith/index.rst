@@ -1,4 +1,4 @@
-.. _NS:arith:
+.. _NS/arith:
 
 PoC.arith
 =========
@@ -7,27 +7,27 @@ These are arithmetic entities....
 
 **Package**
 
-:ref:`PKG:arith`
+:ref:`PKG/arith`
 
 **Entities**
 
- * :ref:`IP:arith_addw`
- * :ref:`IP:arith_carrychain_inc`
- * :ref:`IP:arith_convert_bin2bcd`
- * :ref:`IP:arith_counter_bcd`
- * :ref:`IP:arith_counter_free`
- * :ref:`IP:arith_counter_gray`
- * :ref:`IP:arith_counter_ring`
- * :ref:`IP:arith_div`
- * :ref:`IP:arith_firstone`
- * :ref:`IP:arith_muls_wide`
- * :ref:`IP:arith_prefix_and`
- * :ref:`IP:arith_prefix_or`
- * :ref:`IP:arith_prng`
- * :ref:`IP:arith_same`
- * :ref:`IP:arith_scaler`
- * :ref:`IP:arith_shifter_barrel`
- * :ref:`IP:arith_sqrt`
+ * :ref:`IP/arith_addw`
+ * :ref:`IP/arith_carrychain_inc`
+ * :ref:`IP/arith_convert_bin2bcd`
+ * :ref:`IP/arith_counter_bcd`
+ * :ref:`IP/arith_counter_free`
+ * :ref:`IP/arith_counter_gray`
+ * :ref:`IP/arith_counter_ring`
+ * :ref:`IP/arith_div`
+ * :ref:`IP/arith_firstone`
+ * :ref:`IP/arith_muls_wide`
+ * :ref:`IP/arith_prefix_and`
+ * :ref:`IP/arith_prefix_or`
+ * :ref:`IP/arith_prng`
+ * :ref:`IP/arith_same`
+ * :ref:`IP/arith_scaler`
+ * :ref:`IP/arith_shifter_barrel`
+ * :ref:`IP/arith_sqrt`
 
 
 .. toctree::

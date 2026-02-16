@@ -1,4 +1,4 @@
-.. _IP:net_FrameChecksum:
+.. _IP/net_FrameChecksum:
 
 PoC.net.FrameChecksum
 #####################

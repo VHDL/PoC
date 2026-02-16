@@ -1,4 +1,4 @@
-.. _IP:reconfig_icap_fsm:
+.. _IP/reconfig_icap_fsm:
 
 PoC.xil.reconfig.icap_fsm
 #########################

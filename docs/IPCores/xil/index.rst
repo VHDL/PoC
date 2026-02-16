@@ -1,4 +1,4 @@
-.. _NS:xil:
+.. _NS/xil:
 
 PoC.xil
 ========
@@ -7,19 +7,17 @@ This namespace is for Xilinx specific modules.
 
 **Sub-Namespaces**
 
- * :ref:`NS:mig`
- * :ref:`NS:reconfig`
+ * :ref:`NS/reconfig`
 
 **Entities**
 
- * :ref:`IP:xil_BSCAN`
- * :ref:`IP:xil_ChipScopeICON`
- * :ref:`IP:xil_DRP_BusMux`
- * :ref:`IP:xil_DRP_BusSync`
- * :ref:`IP:xil_ICAP`
- * :ref:`IP:xil_Reconfigurator`
- * :ref:`IP:xil_SystemMonitor`
- * :ref:`IP:xil_SystemMonitor`
+ * :ref:`IP/xil_BSCAN`
+ * :ref:`IP/xil_DRP_BusMux`
+ * :ref:`IP/xil_DRP_BusSync`
+ * :ref:`IP/xil_ICAP`
+ * :ref:`IP/xil_Reconfigurator`
+ * :ref:`IP/xil_SystemMonitor`
+ * :ref:`IP/xil_SystemMonitor`
 
 
 .. toctree::
@@ -37,7 +35,6 @@ This namespace is for Xilinx specific modules.
    :hidden:
 
    xil_BSCAN <xil_BSCAN>
-   xil_ChipScopeICON <xil_ChipScopeICON>
    xil_DRP_BusMux <xil_DRP_BusMux>
    xil_DRP_BusSync <xil_DRP_BusSync>
    xil_ICAP <xil_ICAP>

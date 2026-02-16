@@ -1,4 +1,4 @@
-.. _NS:stat:
+.. _NS/stat:
 
 PoC.misc.stat
 =============
@@ -7,10 +7,10 @@ These are stat entities....
 
 **Entities**
 
- * :ref:`IP:stat_Average`
- * :ref:`IP:stat_Histogram`
- * :ref:`IP:stat_Maximum`
- * :ref:`IP:stat_Minimum`
+ * :ref:`IP/stat_Average`
+ * :ref:`IP/stat_Histogram`
+ * :ref:`IP/stat_Maximum`
+ * :ref:`IP/stat_Minimum`
 
 
 .. toctree::

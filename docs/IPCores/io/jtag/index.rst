@@ -1,4 +1,4 @@
-.. _NS:jtag:
+.. _NS/jtag:
 
 PoC.io.jtag
 ===========

@@ -1,4 +1,4 @@
-.. _IP:xil_Reconfigurator:
+.. _IP/xil_Reconfigurator:
 
 PoC.xil.Reconfigurator
 ######################

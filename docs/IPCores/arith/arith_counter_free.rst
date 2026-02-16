@@ -1,4 +1,4 @@
-.. _IP:arith_counter_free:
+.. _IP/arith_counter_free:
 
 PoC.arith.counter_free
 ######################

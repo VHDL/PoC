@@ -1,4 +1,4 @@
-.. _IP:ipv4_RX:
+.. _IP/ipv4_RX:
 
 PoC.net.ipv4.RX
 ###############

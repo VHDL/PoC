@@ -1,4 +1,4 @@
-.. _IP:bus_Arbiter:
+.. _IP/bus_Arbiter:
 
 PoC.bus.Arbiter
 ###############

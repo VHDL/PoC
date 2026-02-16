@@ -1,4 +1,4 @@
-.. _IP:icmpv4_TX:
+.. _IP/icmpv4_TX:
 
 PoC.net.icmpv4.TX
 #################

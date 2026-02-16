@@ -1,4 +1,4 @@
-.. _IP:sdram_ctrl_s3esk:
+.. _IP/sdram_ctrl_s3esk:
 
 PoC.mem.sdram.ctrl_s3esk
 ########################

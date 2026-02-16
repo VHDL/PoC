@@ -74,7 +74,6 @@ begin
 	Out_M2S.ARProt      <= In_M2S.ARProt ;
 	Out_M2S.RReady      <= In_M2S.RReady ;
 
-
 	In_S2M.AWReady     <= Out_S2M.AWReady and not Response_B_fifo_ful;
 	In_S2M.WReady      <= Out_S2M.WReady ;
 	In_S2M.BValid      <= Out_S2M.BValid ;
@@ -84,11 +83,9 @@ begin
 	In_S2M.RData       <= Out_S2M.RData;
 	In_S2M.RResp       <= Out_S2M.RResp  ;
 	In_S2M.RLast       <= '1';
-	-- WORKAROUND:
-	--  Tool: NVC 1.15.x
-	--  NVC doesn't support inference of others through unconstrained port of type record.
-	In_S2M.BUser(In_S2M.BUser'range) <= (others => '0');
-	In_S2M.RUser(In_S2M.RUser'range) <= (others => '0');
+
+	In_S2M.BUser       <= (others => '0');
+	In_S2M.RUser       <= (others => '0');
 
 	Response_R_fifo : entity work.fifo_shift
 	generic map(

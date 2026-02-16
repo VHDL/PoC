@@ -1,4 +1,4 @@
-.. _IP:mac_RX_DestMAC_Switch:
+.. _IP/mac_RX_DestMAC_Switch:
 
 PoC.net.mac.RX_DestMAC_Switch
 #############################

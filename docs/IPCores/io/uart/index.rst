@@ -1,4 +1,4 @@
-.. _NS:uart:
+.. _NS/uart:
 
 PoC.io.uart
 ===========
@@ -7,10 +7,10 @@ These are :abbr:`UART (Universal Asynchronous Receiver Transmitter)` entities...
 
 **Entities**
 
- * :ref:`IP:uart_bclk`
- * :ref:`IP:uart_rx`
- * :ref:`IP:uart_tx`
- * :ref:`IP:uart_fifo`
+ * :ref:`IP/uart_bclk`
+ * :ref:`IP/uart_rx`
+ * :ref:`IP/uart_tx`
+ * :ref:`IP/uart_fifo`
 
 
 .. toctree::

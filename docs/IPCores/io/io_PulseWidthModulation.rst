@@ -1,4 +1,4 @@
-.. _IP:io_PulseWidthModulation:
+.. _IP/io_PulseWidthModulation:
 
 PoC.io.PulseWidthModulation
 ###########################

@@ -1,4 +1,4 @@
-.. _IP:LocalLink_PerformanceCounter:
+.. _IP/LocalLink_PerformanceCounter:
 
 PoC.net.FramePerformanceCounter
 ###############################

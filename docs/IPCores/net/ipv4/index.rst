@@ -1,4 +1,4 @@
-.. _NS:ipv4:
+.. _NS/ipv4:
 
 PoC.net.ipv4
 ============

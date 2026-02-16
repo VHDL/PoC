@@ -1,4 +1,4 @@
-.. _IP:lcd_dotmatrix:
+.. _IP/lcd_dotmatrix:
 
 PoC.io.lcd.dotmatrix
 ####################

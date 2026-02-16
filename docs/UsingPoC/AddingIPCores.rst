@@ -1,4 +1,4 @@
-.. _USING:AddIP:
+.. _USING/AddIP:
 
 Adding IP Cores to a Project
 ############################
@@ -13,11 +13,6 @@ Adding IP Cores to Altera Quartus
 
 Adding IP Cores to Lattice Diamond
 ==================================
-
-.. TODO:: No documentation available.
-
-Adding IP Cores to Xilinx ISE
-=============================
 
 .. TODO:: No documentation available.
 

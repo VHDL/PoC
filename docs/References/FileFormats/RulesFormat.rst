@@ -1,4 +1,4 @@
-.. _FileFormat:rules:
+.. _FileFormat/rules:
 
 *.rules Format
 ##############

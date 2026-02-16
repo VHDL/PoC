@@ -1,4 +1,4 @@
-.. _IP:udp_TX:
+.. _IP/udp_TX:
 
 PoC.net.udp.TX
 ##############

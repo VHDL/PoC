@@ -1,4 +1,4 @@
-.. _IP:IICController_SFF8431:
+.. _IP/IICController_SFF8431:
 
 PoC.io.iic.Controller_SFF8431
 #############################

@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <xil/xil.pkg.vhdl>`
 
-.. _PKG:xil:
+.. _PKG/xil:
 
 PoC.xil Package
 ================

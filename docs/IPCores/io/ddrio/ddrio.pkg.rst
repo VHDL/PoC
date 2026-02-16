@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <io/ddrio/ddrio.pkg.vhdl>`
 
-.. _PKG:ddrio:
+.. _PKG/ddrio:
 
 PoC.io.ddrio Package
 ====================

@@ -1,4 +1,4 @@
-.. _IP:sortnet_Transform:
+.. _IP/sortnet_Transform:
 
 PoC.sort.sortnet.Transform
 ##########################

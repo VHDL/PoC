@@ -1,4 +1,4 @@
-.. _IP:arp_BroadCast_Receiver:
+.. _IP/arp_BroadCast_Receiver:
 
 PoC.net.arp.BroadCast_Receiver
 ##############################

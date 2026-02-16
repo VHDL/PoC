@@ -1,4 +1,4 @@
-.. _IP:pmod_KYPD:
+.. _IP/pmod_KYPD:
 
 PoC.io.pmod.KYPD
 ################

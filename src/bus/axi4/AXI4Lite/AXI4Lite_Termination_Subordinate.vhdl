@@ -64,10 +64,7 @@ begin
 
 	AXI4Lite_S2M.ARReady <= not ARFull_i;
 
-	-- WORKAROUND:
-	--  Tool: NVC 1.15.x
-	--  NVC doesn't support inference of others through unconstrained port of type record.
-	AXI4Lite_S2M.RData(AXI4Lite_S2M.RData'range)   <= (others => '0');
+	AXI4Lite_S2M.RData   <= (others => '0');
 	AXI4Lite_S2M.RResp   <= RESPONSE_CODE;
 
 	fifo_aw: fifo_cc_got

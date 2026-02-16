@@ -1,4 +1,4 @@
-.. _NS:pio:
+.. _NS/pio:
 
 PoC.io.pio
 ==========

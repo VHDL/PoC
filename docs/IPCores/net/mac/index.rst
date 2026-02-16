@@ -1,4 +1,4 @@
-.. _NS:mac:
+.. _NS/mac:
 
 PoC.net.mac
 ===========

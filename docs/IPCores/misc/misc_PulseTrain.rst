@@ -1,4 +1,4 @@
-.. _IP:misc_PulseTrain:
+.. _IP/misc_PulseTrain:
 
 PoC.misc.PulseTrain
 ###################

@@ -1,4 +1,4 @@
-.. _IP:xil_BSCAN:
+.. _IP/xil_BSCAN:
 
 PoC.xil.BSCAN
 #############

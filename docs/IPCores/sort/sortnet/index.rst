@@ -1,4 +1,4 @@
-.. _NS:sortnet:
+.. _NS/sortnet:
 
 PoC.sort.sortnet
 ================
@@ -7,13 +7,13 @@ This sub-namespace contains sorting network implementations.
 
 **Entities**
 
- * :ref:`IP:sortnet_BitonicSort`
- * :ref:`IP:sortnet_MergeSort_Streamed`
- * :ref:`IP:sortnet_OddEvenMergeSort`
- * :ref:`IP:sortnet_OddEvenSort`
- * :ref:`IP:sortnet_Stream_Adapter`
- * :ref:`IP:sortnet_Stream_Adapter2`
- * :ref:`IP:sortnet_Transform`
+ * :ref:`IP/sortnet_BitonicSort`
+ * :ref:`IP/sortnet_MergeSort_Streamed`
+ * :ref:`IP/sortnet_OddEvenMergeSort`
+ * :ref:`IP/sortnet_OddEvenSort`
+ * :ref:`IP/sortnet_Stream_Adapter`
+ * :ref:`IP/sortnet_Stream_Adapter2`
+ * :ref:`IP/sortnet_Transform`
 
 
 .. toctree::

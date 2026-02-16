@@ -1,4 +1,4 @@
-.. _IP:misc_Delay:
+.. _IP/misc_Delay:
 
 PoC.misc.Delay
 ##############

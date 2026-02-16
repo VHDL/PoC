@@ -1,4 +1,4 @@
-.. _IP:ipv4_Wrapper:
+.. _IP/ipv4_Wrapper:
 
 PoC.net.ipv4.Wrapper
 ####################

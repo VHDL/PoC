@@ -1,4 +1,4 @@
-.. _IP:xil_ICAP:
+.. _IP/xil_ICAP:
 
 PoC.xil.ICAP
 ############

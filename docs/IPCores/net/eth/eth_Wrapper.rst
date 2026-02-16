@@ -1,4 +1,4 @@
-.. _IP:Eth_Wrapper:
+.. _IP/Eth_Wrapper:
 
 PoC.net.eth.Wrapper
 ###################

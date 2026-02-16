@@ -1,4 +1,4 @@
-.. _IP:sdram_ctrl_de0:
+.. _IP/sdram_ctrl_de0:
 
 PoC.mem.sdram.ctrl_de0
 ######################
@@ -47,7 +47,7 @@ Command, address and write data is sampled with ``clk``.
 Read data is also aligned with ``clk``.
 
 For description on ``clkout`` see
-:ref:`sdram_ctrl_phy_de0 <IP:sdram_ctrl_phy_de0>`.
+:ref:`sdram_ctrl_phy_de0 <IP/sdram_ctrl_phy_de0>`.
 
 Synchronous resets are used.
 

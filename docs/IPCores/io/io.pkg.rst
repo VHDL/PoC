@@ -9,7 +9,7 @@
 
       |gh-src| :pocsrc:`Sourcecode <io/io.pkg.vhdl>`
 
-.. _PKG:io:
+.. _PKG/io:
 
 PoC.io Package
 ==============

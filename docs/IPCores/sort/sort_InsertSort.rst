@@ -1,4 +1,4 @@
-.. _IP:sort_insertsort:
+.. _IP/sort_insertsort:
 
 PoC.sort.InsertSort
 ###################

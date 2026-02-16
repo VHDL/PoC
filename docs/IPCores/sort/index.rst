@@ -1,4 +1,4 @@
-.. _NS:sort:
+.. _NS/sort:
 
 PoC.sort
 ========
@@ -7,15 +7,15 @@ These are sorting entities....
 
 **Sub-Namespaces**
 
- * :ref:`NS:sortnet`
+ * :ref:`NS/sortnet`
 
 **Entities**
 
- * :ref:`IP:sort_ExpireList`
- * :ref:`IP:sort_InsertSort`
- * :ref:`IP:sort_LeastFrequentlyUsed`
- * :ref:`IP:sort_lru_cache`
- * :ref:`IP:sort_lru_list`
+ * :ref:`IP/sort_ExpireList`
+ * :ref:`IP/sort_InsertSort`
+ * :ref:`IP/sort_LeastFrequentlyUsed`
+ * :ref:`IP/sort_lru_cache`
+ * :ref:`IP/sort_lru_list`
 
 .. toctree::
    :hidden:

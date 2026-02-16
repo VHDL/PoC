@@ -1,4 +1,4 @@
-.. _IP:io_TimingCounter:
+.. _IP/io_TimingCounter:
 
 PoC.io.TimingCounter
 ####################

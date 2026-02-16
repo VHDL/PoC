@@ -1,4 +1,4 @@
-.. _USING:VHDLConf:
+.. _USING/VHDLConf:
 
 Creating my_config/my_project.vhdl
 ##################################
@@ -9,7 +9,7 @@ platform information. These files are also used to select appropiate work
 arounds.
 
 
-.. _USING:VHDLConf:myconfig:
+.. _USING/VHDLConf/myconfig:
 
 Create my_config.vhdl
 *********************
@@ -50,7 +50,7 @@ If the requested board is not known to PoC or it's custom made, then set
    constant MY_DEVICE : string := "XC6SLX45-3CSG324";
 
 
-.. _USING:VHDLConf:myproject:
+.. _USING/VHDLConf/myproject:
 
 Create my_project.vhdl
 **********************

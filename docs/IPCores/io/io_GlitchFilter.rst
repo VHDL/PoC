@@ -1,4 +1,4 @@
-.. _IP:io_GlitchFilter:
+.. _IP/io_GlitchFilter:
 
 PoC.io.GlitchFilter
 ###################

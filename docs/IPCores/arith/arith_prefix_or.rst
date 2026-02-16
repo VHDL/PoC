@@ -1,4 +1,4 @@
-.. _IP:arith_prefix_or:
+.. _IP/arith_prefix_or:
 
 PoC.arith.prefix_or
 ###################

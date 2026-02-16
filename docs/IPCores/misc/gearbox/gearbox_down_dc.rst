@@ -1,4 +1,4 @@
-.. _IP:gearbox_down_dc:
+.. _IP/gearbox_down_dc:
 
 PoC.misc.gearbox.down_dc
 ########################

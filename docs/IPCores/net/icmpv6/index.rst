@@ -1,4 +1,4 @@
-.. _NS:icmpv6:
+.. _NS/icmpv6:
 
 PoC.net.icmpv6
 ==============

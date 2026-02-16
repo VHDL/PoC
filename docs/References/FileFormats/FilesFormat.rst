@@ -1,4 +1,4 @@
-.. _FileFormat:files:
+.. _FileFormat/files:
 
 *.files Format
 ##############

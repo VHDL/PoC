@@ -1,4 +1,4 @@
-.. _IP:mac_RX_Type_Switch:
+.. _IP/mac_RX_Type_Switch:
 
 PoC.net.mac.RX_Type_Switch
 ##########################

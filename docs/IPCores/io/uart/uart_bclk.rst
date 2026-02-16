@@ -1,4 +1,4 @@
-.. _IP:uart_bclk:
+.. _IP/uart_bclk:
 
 PoC.io.uart.bclk
 ################

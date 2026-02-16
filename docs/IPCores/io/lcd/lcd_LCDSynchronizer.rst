@@ -1,4 +1,4 @@
-.. _IP:lcd_LCDSynchronizer:
+.. _IP/lcd_LCDSynchronizer:
 
 PoC.io.lcd.LCDSynchronizer
 ##########################

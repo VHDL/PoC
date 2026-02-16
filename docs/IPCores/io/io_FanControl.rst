@@ -1,4 +1,4 @@
-.. _IP:io_FanControl:
+.. _IP/io_FanControl:
 
 PoC.io.FanControl
 #################

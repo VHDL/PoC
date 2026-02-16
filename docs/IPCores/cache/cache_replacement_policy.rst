@@ -1,4 +1,4 @@
-.. _IP:cache_replacement_policy:
+.. _IP/cache_replacement_policy:
 
 PoC.cache.replacement_policy
 ############################
