@@ -1,7 +1,7 @@
 name: PileOfCores
 project_disk_path: ''
 project_type: genericProject
-toplevel: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Register.vhdl
+toplevel: ../../src/bus/axi4/AXI4Lite/AXI4Lite_GitVersionRegister.vhdl
 files:
   - name: ../../src/common/common.vhdl
     file_type: vhdlSource
@@ -1902,6 +1902,22 @@ files:
     is_manual: true
     source_type: none
   - name: ../../src/mem/ocram/ocram_sdp_optimized.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_GitVersionRegister.vhdl
+    file_type: vhdlSource
+    file_version: '2008'
+    is_include_file: false
+    include_path: ''
+    logical_name: PoC
+    is_manual: true
+    source_type: none
+  - name: ../../src/mem/mem_GitVersionRegister.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
