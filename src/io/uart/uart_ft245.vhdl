@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:     Peter Reichel
 --              Jan Schirok
@@ -64,9 +61,9 @@ end entity;
 
 
 library IEEE;
-use IEEE.numeric_std.all;
+use     IEEE.numeric_std.all;
 
-use  work.utils.all;
+use     work.utils.all;
 
 architecture rtl of uart_ft245 is
 

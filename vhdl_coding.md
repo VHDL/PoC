@@ -16,6 +16,16 @@ this license.
    package, to which `_tb` is appended. Its implementing architecture is
    named `tb`.
 
+## Conventions for OSVVM Testbenches
+
+1. An OSVVM testbench generally consists of three parts: the Test Harness,
+Test Controller and one or more Test Cases.
+2. All three parts shall be in one subdirectory which shall be named after the DUT.
+For example, the testbench files for the `arith_addw` shall be in the directory `tb/arith/addw`.
+3. The Test Controller's and Test Harness' names shall be prefixed with the DUT's name, e.g.
+`addw_TestController.vhdl` and `addw_TestHarness.vhdl`.
+4. All testcases shall have the prefix `TC_` followed by a meaningfull name.
+
 ## Formatting
 
 ### Header
@@ -49,7 +59,7 @@ this license.
 -- limitations under the License.
 -- ===========================================================================
 ```
-  
+
 ### Whitespace
 * Indent with one tab character per indentation level.
 * Assume a tab width of two spaces.

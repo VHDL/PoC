@@ -1,0 +1,59 @@
+{
+	"name": "PoC",
+	"targets": {
+		"Generic": {
+			"environment": {
+				"BOARD": "GENERIC",
+				"VENDOR": "GENERIC",
+				"OSVVM_TOOL": "Sigasi"
+			},
+			"command": "cd temp && vsim -do ../regression.tcl",
+			"ignore": [
+				"temp",
+				"docs/_build"
+			]
+		},
+		"Altera": {
+			"environment": {
+				"BOARD": "S2GXAV",
+				"VENDOR": "Altera",
+				"OSVVM_TOOL": "Sigasi"
+			},
+			"command": "cd temp && vsim -do ../regression.tcl",
+			"ignore": [
+				"temp",
+				"docs/_build"
+			],
+			"dependencies": [
+				{
+					"Quartus": [
+						"altera_mf"
+					]
+				}
+			]
+		},
+		"Xilinx": {
+			"environment": {
+				"BOARD": "KC705",
+				"VENDOR": "Xilinx",
+				"OSVVM_TOOL": "Sigasi"
+			},
+			"command": "cd temp && vsim -do ../regression.tcl",
+			"ignore": [
+				"temp",
+				"docs/_build"
+			],
+			"dependencies": [
+				{
+					"Vivado": {
+						"version": "Vivado2025.2",
+						"targets": [
+							"unisim",
+							"unimacro"
+						]
+					}
+				}
+			]
+		}
+	}
+}

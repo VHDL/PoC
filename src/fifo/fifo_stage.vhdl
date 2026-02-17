@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:         Thomas B. Preusser
 --                  Stefan Unrein
@@ -15,7 +12,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2025-2026 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -33,7 +30,7 @@
 -- =============================================================================
 
 library IEEE;
-use IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
 entity fifo_Stage is
 	generic (
@@ -43,35 +40,36 @@ entity fifo_Stage is
 	);
 	port (
 		-- Control
-		clk : in std_logic; -- Clock
-		rst : in std_logic; -- Synchronous Reset
+		clk : in  std_logic; -- Clock
+		rst : in  std_logic; -- Synchronous Reset
 
 		-- Input
-		put : in std_logic;                             -- Put Value
-		di  : in std_logic_vector(D_BITS - 1 downto 0); -- Data Input
-		ful : out std_logic;                            -- Full
+		put : in  std_logic;                             -- Put Value
+		di  : in  std_logic_vector(D_BITS - 1 downto 0); -- Data Input
+		ful : out std_logic;                             -- Full
 
 		-- Output
 		vld : out std_logic;                             -- Data Available
 		do  : out std_logic_vector(D_BITS - 1 downto 0); -- Data Output
-		got : in std_logic                               -- Data Consumed
+		got : in  std_logic                              -- Data Consumed
 	);
 end entity fifo_Stage;
+
 architecture rtl of fifo_Stage is
 begin
-
+	
 	passthroughGen : if STAGES > 0 generate
 		subtype T_slv_d is std_logic_vector(D_BITS - 1 downto 0);
 		type T_slvv_d is array(natural range <>) of T_slv_d;
-
+		
 		signal di_v : T_slvv_d(0 to STAGES - 1);-- := (others => (others => '0'));
 		signal do_v : T_slvv_d(0 to STAGES - 1);-- := (others => (others => '0'));
-
+		
 		signal Avail_v : std_logic_vector(0 to STAGES - 1);
 		signal Full_v  : std_logic_vector(0 to STAGES - 1);
-
-		signal put_v : std_logic_vector(0 to STAGES - 1);
-		signal got_v : std_logic_vector(0 to STAGES - 1);
+		
+		signal put_v   : std_logic_vector(0 to STAGES - 1);
+		signal got_v   : std_logic_vector(0 to STAGES - 1);
 	begin
 		ful               <= Full_v(0);
 		vld               <= Avail_v(Avail_v'high);
@@ -126,40 +124,40 @@ begin
 				do_v(i)    <= B;
 			end generate;
 		else generate
-				genStage : for i in 0 to STAGES - 1 generate
-					signal A : T_slv_d := (others => '0');
-					signal B : T_slv_d := (others => '0');
-
-					signal Avail : std_logic := '0';
-					signal Full  : std_logic := '0';
+			genStage : for i in 0 to STAGES - 1 generate
+				signal A : T_slv_d := (others => '0');
+				signal B : T_slv_d := (others => '0');
+			
+				signal Avail : std_logic := '0';
+				signal Full  : std_logic := '0';
+			begin
+			
+				process(clk)
 				begin
-
-					process (clk)
-					begin
-						if rising_edge(clk) then
-							if rst = '1' then
-								Avail <= '0';
+					if rising_edge(clk) then
+						if rst = '1' then
+							Avail <= '0';
+						else
+							if Avail = '1' then
+								Avail <= not got_v(i);
 							else
-								if Avail = '1' then
-									Avail <= not got_v(i);
-								else
-									Avail <= put_v(i);
-								end if;
+								Avail <= put_v(i);
 							end if;
 						end if;
-					end process;
-
-					B <= di_v(i) when rising_edge(clk) and Avail = '0';
-
-					Full_v(i)  <= Avail;
-					Avail_v(i) <= Avail;
-					do_v(i)    <= B;
-				end generate;
+					end if;
+				end process;
+				
+				B <= di_v(i) when rising_edge(clk) and Avail = '0';
+			
+				Full_v(i) <= Avail;
+				Avail_v(i) <= Avail;
+				do_v(i)  <= B;
 			end generate;
-		else generate
-				ful <= not got;
-				vld <= put;
-				do  <= di;
-			end generate;
+		end generate;
+	else generate
+		ful <= not got;
+		vld <= put;
+		do  <= di;
+	end generate;
 
-		end architecture;
+end architecture;

@@ -4,5 +4,6 @@
 # =============================================================================
 
 analyze dstruct.pkg.vhdl
-analyze dstruct_deque.vhdl
+disabled dstruct_deque.vhdl
+disabled dstruct_OutOfOrder_buffer.vhdl
 analyze dstruct_stack.vhdl

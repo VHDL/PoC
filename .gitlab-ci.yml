@@ -1,15 +1,484 @@
 stages:
-  - Selftest
+  - prepare
+  - build_osvvm
+  - build_poc
+  - test
+  - pages
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  SIMULATOR_PAGES: "GHDL"  # simulator from which the results should be published on GitLab pages (GHDL, Riviera-PRO)
 
-pyIPCMI-Selftest:
-  stage: Selftest
-  before_script:
-    - pip3 install -r tools/GitLab-CI/requirements.txt
-#    - ./tools/GitLab-CI/ghdl.setup.sh
-    - ./tools/GitLab-CI/poc.setup.sh
+#pyIPCMI-Selftest:
+#  stage: Selftest
+#  image: ${CI_REGISTRY}/docker-images/base-image:latest
+#  before_script:
+#    - pip3 install -r tools/GitLab-CI/requirements.txt
+##    - ./tools/GitLab-CI/ghdl.setup.sh
+#    - ./tools/GitLab-CI/poc.setup.sh
+#  script:
+##    - ./tools/GitLab-CI/poc.dryrun.sh
+#    - ./tools/GitLab-CI/poc.run.sh "PoC.*"
+
+Scripts:
+  stage: prepare
+  image: ${CI_REGISTRY}/docker-images/base-image:alpine
   script:
-#    - ./tools/GitLab-CI/poc.dryrun.sh
-    - ./tools/GitLab-CI/poc.run.sh "PoC.*"
+    - cp src/common/my_project.vhdl.template tb/common/my_project.vhdl  # use CopyFile when its supporting renaming
+    - sed -i 's#\(constant\sMY_PROJECT_DIR\s*:\s*string\s*:=\s*\)".*";#\1"'"$(pwd)"'";#' tb/common/my_project.vhdl
+    - sed -i 's#\(constant\sMY_OPERATING_SYSTEM\s*:\s*string\s*:=\s*\)".*";#\1"LINUX";#' tb/common/my_project.vhdl
+
+    - CreateAndChangeDirectory "temp" "Simulation working directory"
+    - |
+      tee poc_namespace.tcl << EOF
+      namespace eval ::poc {
+        variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
+        variable myProjectFile "../tb/common/my_project.vhdl"
+        variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
+      }
+      EOF
+
+      tee select_simulator.tcl << EOF
+      if {[info exists nvc_dataDir]} {
+        source ../../lib/OSVVM-Scripts/StartNVC.tcl
+      } else {
+        source ../../lib/OSVVM-Scripts/StartUp.tcl
+      }
+      EOF
+
+      tee setup_simulator.tcl << EOF
+      source ../select_simulator.tcl
+
+      if {$::osvvm::ToolName eq "GHDL"} {
+        SetExtendedAnalyzeOptions {-frelaxed -Wno-specs -Wno-elaboration}
+        SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
+
+       } elseif {$::osvvm::ToolName eq "RivieraPRO"} {
+        set RivieraSimOptions {-unbounderror}
+
+      } elseif {$::osvvm::ToolName eq "NVC"} {
+        SetExtendedAnalyzeOptions {--relaxed}
+
+      } elseif {$::osvvm::ToolName eq "Sigasi"} {
+
+      } else {
+        error [format {
+      ======================================
+      Unknown simulator selected: %s
+
+      Supported simulators:
+        - GHDL
+        - RivieraPRO
+        - NVC
+      Other tools:
+        - Sigasi in VSCode
+      ======================================
+      } $::osvvm::ToolName]
+      }
+
+      proc disabled {file} {
+        puts "Diabled from analysis: $file"
+      }
+      proc duplicate {file} {
+        puts "Duplicate file: $file"
+      }
+      EOF
+
+      tee osvvm_compile.tcl <<EOF
+      source ../select_simulator.tcl
+      build ../../lib/OsvvmLibraries.pro
+      EOF
+
+      tee poc_compile.tcl <<EOF
+      variable OMIT_XILINX_FILES 1
+      source ../setup_simulator.tcl
+
+      library PoC
+      analyze ../../tb/common/my_project.vhdl
+      analyze ../../tb/common/my_config_GENERIC.vhdl
+      build ../../src/PoC.pro
+      EOF
+
+      tee osvvm_sim.tcl <<EOF
+      source ../setup_simulator.tcl
+      build ../../lib/RunAllTests.pro
+      EOF
+
+      tee poc_sim.tcl <<EOF
+      source ../setup_simulator.tcl
+      build ../../tb/RunAllTests.pro
+      EOF
+
+      # Prepend namespace to all tcl files
+      for tcl_file in poc_*.tcl; do
+        tmp_file=$(mktemp)
+        cat poc_namespace.tcl "$tcl_file" > "$tmp_file"
+        mv "$tmp_file" "$tcl_file"
+      done
+
+  artifacts:
+    paths:
+      - tb/common/my_project.vhdl
+      - temp/osvvm_compile.tcl
+      - temp/select_simulator.tcl
+      - temp/setup_simulator.tcl
+      - temp/poc_compile.tcl
+      - temp/osvvm_sim.tcl
+      - temp/poc_sim.tcl
+    expire_in: 1 hour
+
+
+# --------------------
+# ---- Templates -----
+# --------------------
+.collect_com:
+  artifacts:
+    paths:
+      - temp/$SIMULATOR
+      - lib/osvvm/*_generated.vhd
+    expire_in: 1 week
+    when: always
+
+.collect_sim:
+  artifacts:
+    paths:
+      - temp/$SIMULATOR
+    reports:
+      junit: "temp/$SIMULATOR/$RESULT_NAME/*.xml"
+    expire_in: 1 week
+    when: always
+
+.compile:
+  extends:
+    - .collect_com
+  script: exec-$SIMULATOR.sh -n --tcl-file=temp/${TCL_FILE}
+
+.compileNVC:  # intermediate solution until exec-NVC exists
+  extends:
+    - .collect_com
+  script:
+    - CreateAndChangeDirectory "temp/NVC" "Simulation working directory"
+    - nvc --do ../${TCL_FILE}
+
+.simulate:
+  extends:
+    - .collect_sim
+  script:
+    - exec-$SIMULATOR.sh -n --tcl-file=temp/${TCL_FILE}
+    - |
+      if grep "temp/$SIMULATOR/$RESULT_NAME/logs/$RESULT_NAME.log" -e "^#\?\s*Build: $RESULT_NAME PASSED"; then
+        echo "Build passed!"
+      else
+        echo "Error: Simulation for $RESULT_NAME did not pass!" && exit 1
+      fi
+
+  allow_failure: true  # if case the Riviera license is in use
+
+.simulateNVC:  # intermediate solution until exec-NVC exists
+  extends:
+    - .collect_sim
+  script:
+    - CreateAndChangeDirectory "temp/NVC" "Simulation working directory"
+    - nvc --do ../${TCL_FILE}
+    - |
+      if grep "$RESULT_NAME/logs/$RESULT_NAME.log" -e "^#\?\s*Build: $RESULT_NAME PASSED"; then
+        echo "Build passed!"
+      else
+        echo "Error: Simulation for $RESULT_NAME did not pass!" && exit 1
+      fi
+
+
+# ---------------
+# ---- GHDL -----
+# ---------------
+.GHDL:
+  parallel:
+    matrix:
+      - GHDL_BACKEND: "llvm"
+      - GHDL_BACKEND: "mcode"
+  image: ${CI_REGISTRY}/docker-images/ghdl:${GHDL_BACKEND}
+  variables:
+    SIMULATOR: "GHDL"
+
+GHDL_OSVVM_compile:
+  stage: build_osvvm
+  extends:
+    - .GHDL
+    - .compile
+  needs:
+    job: Scripts
+    artifacts: true
+  variables:
+    TCL_FILE: "osvvm_compile.tcl"
+
+GHDL_PoC_compile:
+  stage: build_poc
+  extends:
+    - .GHDL
+    - .compile
+  needs:
+    - job: Scripts
+      artifacts: true
+    - job: GHDL_OSVVM_compile
+      artifacts: true
+  variables:
+    TCL_FILE: "poc_compile.tcl"
+
+GHDL_OSVVM_sim:
+  stage: test
+  extends:
+    - .GHDL
+    - .simulate
+  needs:
+    - job: Scripts
+      artifacts: true
+    - job: GHDL_OSVVM_compile
+      artifacts: true
+  only:
+    - main
+    - master
+    - dev
+  variables:
+    TCL_FILE: "osvvm_sim.tcl"
+    RESULT_NAME: "lib_RunAllTests"
+
+GHDL_PoC_sim:
+  stage: test
+  extends:
+    - .GHDL
+    - .simulate
+  needs:
+    - job: Scripts
+      artifacts: true
+    - job: GHDL_PoC_compile
+      artifacts: true
+  variables:
+    TCL_FILE: "poc_sim.tcl"
+    RESULT_NAME: "tb_RunAllTests"
+
+# ------------------
+# ---- Riviera -----
+# ------------------
+.RIVIERA-PRO:
+  image: ${CI_REGISTRY}/docker-images/rivierapro:latest
+  variables:
+    SIMULATOR: "Riviera-PRO"
+    LM_LICENSE_FILE: "1717@flexlm.plc2.de:1718@flexlm.plc2.de:1719@flexlm.plc2.de"
+
+RIVIERA_OSVVM_compile:
+  stage: build_osvvm
+  extends:
+    - .RIVIERA-PRO
+    - .compile
+  needs:
+    job: Scripts
+    artifacts: true
+  variables:
+    TCL_FILE: "osvvm_compile.tcl"
+
+RIVIERA_PoC_compile:
+  stage: build_poc
+  extends:
+    - .RIVIERA-PRO
+    - .compile
+  needs:
+    - job: Scripts
+      artifacts: true
+    - job: RIVIERA_OSVVM_compile
+      artifacts: true
+  variables:
+    TCL_FILE: "poc_compile.tcl"
+
+RIVIERA_OSVVM_sim:
+  stage: test
+  extends:
+    - .RIVIERA-PRO
+    - .simulate
+  needs:
+    - job: Scripts
+      artifacts: true
+    - job: RIVIERA_OSVVM_compile
+      artifacts: true
+    - job: RIVIERA_PoC_compile  # avoid license blocking
+      artifacts: true
+  only:
+    - main
+    - master
+    - dev
+  allow_failure: true
+  variables:
+    TCL_FILE: "osvvm_sim.tcl"
+    RESULT_NAME: "lib_RunAllTests"
+
+RIVIERA_PoC_sim:
+  stage: test
+  extends:
+    - .RIVIERA-PRO
+    - .simulate
+  needs:
+    - job: Scripts
+      artifacts: true
+    - job: RIVIERA_PoC_compile
+      artifacts: true
+    - job: RIVIERA_OSVVM_sim  # avoid license blocking
+      optional: true
+      artifacts: false
+  variables:
+    TCL_FILE: "poc_sim.tcl"
+    RESULT_NAME: "tb_RunAllTests"
+
+
+# --------------
+# ---- NVC -----
+# --------------
+.NVC:
+  image: ${CI_REGISTRY}/docker-images/nvc:latest
+  variables:
+    SIMULATOR: "NVC"
+
+NVC_OSVVM_compile:
+  stage: build_osvvm
+  extends:
+    - .NVC
+    - .compileNVC
+  needs:
+    job: Scripts
+    artifacts: true
+  variables:
+    TCL_FILE: "osvvm_compile.tcl"
+
+NVC_PoC_compile:
+  stage: build_poc
+  extends:
+    - .NVC
+    - .compileNVC
+  needs:
+    - job: Scripts
+      artifacts: true
+    - job: NVC_OSVVM_compile
+      artifacts: true
+  variables:
+    TCL_FILE: "poc_compile.tcl"
+NVC_OSVVM_sim:
+  stage: test
+  extends:
+    - .NVC
+    - .simulateNVC
+  needs:
+    - job: Scripts
+      artifacts:
+    - job: NVC_OSVVM_compile
+      artifacts: true
+  only:
+    - main
+    - master
+    - dev
+  variables:
+    TCL_FILE: "osvvm_sim.tcl"
+    RESULT_NAME: "lib_RunAllTests"
+
+NVC_PoC_sim:
+  stage: test
+  extends:
+    - .NVC
+    - .simulateNVC
+  needs:
+    - job: Scripts
+      artifacts: true
+    - job: NVC_PoC_compile
+      artifacts: true
+  variables:
+    TCL_FILE: "poc_sim.tcl"
+    RESULT_NAME: "tb_RunAllTests"
+
+# ------------------
+# ----- Pages ------
+# ------------------
+.pages:
+  stage: pages
+  image: ${CI_REGISTRY}/docker-images/base-image:alpine
+  variables:
+    GIT_SUBMODULE_STRATEGY: normal
+  before_script:
+    - apk add rsync
+  script:
+    - mkdir -p public/static
+    - rsync -av --progress temp/$SIMULATOR_PAGES/ ./public --include="*/" --include="*.html" --include="*.log" --include="*.png" --include="*.css" --exclude="*"
+    - cp temp/$SIMULATOR_PAGES/reports/OsvvmLogo.png public/static/
+    - |
+      echo "Chosen simulator: $SIMULATOR_PAGES"
+      echo "Write an 'index.html' ..."
+      tee public/index.html <<EOF
+      <html>
+        <head>
+          <title>PoC Simulation Results</title>
+        </head>
+        <body>
+          <center><img src="static/OsvvmLogo.png" /></center>
+          <h1>PoC Simulation Results</h1>
+
+          <h2>OSVVM Analysis Reports</h2>
+          <a href="lib_OsvvmLibraries.html">OSVVM-Libaries</a><br />
+
+          <h2>OSVVM Simulation Reports</h2>
+          <a href="lib_RunAllTests.html">OSVVM-Libaries-tests</a><br />
+
+          <h2>PoC Analysis Reports</h2>
+          <a href="src_PoC.html">PoC-analysis</a><br />
+
+          <h2>Simulation Reports</h2>
+          <a href="tb_RunAllTests.html">PoC-tests</a><br />
+        </body>
+      </html>
+      EOF
+    - tree public
+  after_script:
+    - echo "Pages accessible at ${CI_PAGES_URL}"
+  artifacts:
+    paths:
+      - public
+
+pagesGHDL:
+  rules:
+    - if: >
+        $SIMULATOR_PAGES == "GHDL" &&
+        $CI_PIPELINE_SOURCE == "push" &&
+        $CI_COMMIT_BRANCH =~ /^(main|master|dev)$/
+  needs:
+    - job: GHDL_OSVVM_sim  # main only
+      artifacts: true
+      optional: true
+    - job: GHDL_PoC_sim
+      artifacts: true
+      optional: true
+  extends:
+    - .pages
+
+pagesRiviera:
+  rules:
+    - if: >
+        $SIMULATOR_PAGES == "Riviera-PRO" &&
+        $CI_PIPELINE_SOURCE == "push" &&
+        $CI_COMMIT_BRANCH =~ /^(main|master|dev)$/
+  needs:
+    - job: RIVIERA_PoC_sim  # inherits artifacts from previous jobs
+      artifacts: true
+      optional: true
+  extends:
+    - .pages
+
+pagesNVC:
+  rules:
+    - if: >
+        $SIMULATOR_PAGES == "NVC" &&
+        $CI_PIPELINE_SOURCE == "push" &&
+        $CI_COMMIT_BRANCH =~ /^(main|master|dev)$/
+  needs:
+    - job: NVC_OSVVM_sim  # main only
+      artifacts: true
+      optional: true
+    - job: NVC_PoC_sim
+      artifacts: true
+      optional: true
+  extends:
+    - .pages

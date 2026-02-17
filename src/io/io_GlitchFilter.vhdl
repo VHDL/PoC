@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
@@ -124,7 +121,7 @@ begin
 		end case;
 	end process;
 
-	TC: entity work.io_TimingCounter
+	TC : entity work.io_TimingCounter
 		generic map (
 			TIMING_TABLE				=> TIMING_TABLE										-- timing table
 		)

@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:           Patrick Lehmann
 --
@@ -18,7 +15,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2025-2026 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -41,7 +38,6 @@ use     IEEE.NUMERIC_STD.all;
 
 use     work.utils.all;
 
-
 package components is
 	-- implement an optional register stage
 	function registered(signal Clock : std_logic; constant IsRegistered : boolean) return boolean;
@@ -52,12 +48,12 @@ package components is
 	function ffrs(q : std_logic;  rst : std_logic := '0'; set : std_logic := '0') return std_logic;        -- RS-FlipFlop with dominant rst
 	function ffsr(q : std_logic;  rst : std_logic := '0'; set : std_logic := '0') return std_logic;        -- RS-FlipFlop with dominant set
 	-- D-FlipFlops (Delay)
-	function ffdre(q : std_logic;          d : std_logic;        rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic := '0')                        return std_logic;          -- D-FlipFlop with reset and enable
+	function ffdre(q : std_logic;          d : std_logic;        rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic := '0')                     return std_logic;         -- D-FlipFlop with reset and enable
 	function ffdre(q : std_logic_vector;   d : std_logic_vector; rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic_vector := (0 to 0 => '0'))  return std_logic_vector;  -- D-FlipFlop with reset and enable
-	function ffdse(q : std_logic;          d : std_logic;        set : std_logic := '0'; en : std_logic := '1')                                                          return std_logic;          -- D-FlipFlop with set and enable
+	function ffdse(q : std_logic;          d : std_logic;        set : std_logic := '0'; en : std_logic := '1')                                                       return std_logic;         -- D-FlipFlop with set and enable
 	-- T-FlipFlops (Toggle)
-	function fftre(q : std_logic;          t : std_logic;        rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic := '0')                        return std_logic;          -- T-FlipFlop with reset and enable
-	function fftse(q : std_logic;          t : std_logic;        set : std_logic := '0'; en : std_logic := '1')                                                          return std_logic;          -- T-FlipFlop with set and enable
+	function fftre(q : std_logic;          t : std_logic;        rst : std_logic := '0'; en : std_logic := '1'; constant INIT : std_logic := '0')                     return std_logic;         -- T-FlipFlop with reset and enable
+	function fftse(q : std_logic;          t : std_logic;        set : std_logic := '0'; en : std_logic := '1')                                                       return std_logic;         -- T-FlipFlop with set and enable
 
 	-- counter
 	function upcounter_next(   cnt : unsigned;   rst : std_logic := '0'; en : std_logic := '1'; constant INIT : natural := 0)     return unsigned;

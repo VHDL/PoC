@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,5 +21,17 @@
 
 analyze ./bus_Arbiter.vhdl
 
-include ./stream/stream.pro
+analyze ./stream/stream.pkg.vhdl
+analyze ./stream/stream_DeMux.vhdl
+analyze ./stream/stream_Mux.vhdl
+disabled ./stream/stream_To_AXI4Stream.vhdl
+disabled ./stream/stream_Delay.vhdl
+
 include ./axi4/axi4.pro
+include ./stream/stream.pro
+
+duplicate ./axi4/AXI4Stream/AXI4Stream_To_Stream.vhdl
+
+# analyze ./drp/drp.generic.vhdl                   # Currently not working
+analyze ./drp/drp.pkg.vhdl
+# analyze ./drp/DRP_To_AXI4Lite_Bridge.vhdl        # Currently not working

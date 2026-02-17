@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,8 +19,14 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite PoC.bus.axi4.axi4Lite
+# TestSuite PoC.bus.axi4.axi4Lite
+# Deactivated to avoid failure on non-existing testcases
 
 library tb_axi4Lite
 
+disabled ./AXI4Lite_Demux/RunAllTests.pro
 include ./AXI4Lite_Register/RunAllTests.pro
+include ./AXI4Lite_Ocram_Adapter/RunAllTests.pro
+# include ./AXI4Lite_InterruptController/RunAllTests.pro      # Currently not working
+include ./AXI4Lite_Uart/RunAllTests.pro
+# include ./AXI4Lite_HighResolutionClock/RunAllTests.pro      # Currently not working
