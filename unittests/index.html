@@ -1,0 +1,560 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unittest Summary Report &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Command Reference" href="../References/CommandReference.html" />
+    <link rel="prev" title="vectors" href="../IPCores/common/vectors.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../UsingPoC/index.html">Using PoC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/bus/index.html">PoC.bus.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Unittest Summary Report</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/unittests/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="unittest-summary-report">
+<h1>Unittest Summary Report<a class="headerlink" href="#unittest-summary-report" title="Link to this heading"></a></h1>
+<div class="docutils container">
+<table class="report-unittest-table report-unittest-src docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2">Testsuite / Testcase</th>
+<th class="head" rowspan="2">Testcases</th>
+<th class="head" rowspan="2">Skipped</th>
+<th class="head" rowspan="2">Errored</th>
+<th class="head" rowspan="2">Failed</th>
+<th class="head" rowspan="2">Passed</th>
+<th class="head" rowspan="2">Assertions</th>
+<th class="head" rowspan="2">Runtime (HH:MM:SS.sss)</th>
+</tr>
+<tr class="row-even"></tr>
+</thead>
+<tbody>
+<tr class="report-testsuitesummary testsuitesummary-passed row-odd"><td>✅TestsuiteSummary</td>
+<td>27</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>27</td>
+<td></td>
+<td>00:00:56.845</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-even"><td>  ✅PoC.arith</td>
+<td>20</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>20</td>
+<td></td>
+<td>00:01:01.932</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-odd"><td>    ✅PoC</td>
+<td>20</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>20</td>
+<td></td>
+<td>00:00:53.987</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-even"><td>      ✅arith</td>
+<td>20</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>20</td>
+<td></td>
+<td>00:00:53.987</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅arith_addw_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>16777216</td>
+<td>00:00:46.296</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅arith_carrychain_inc_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>8</td>
+<td>00:00:00.345</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅arith_cca_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>9</td>
+<td>00:00:00.343</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅arith_convert_bin2bcd_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>6</td>
+<td>00:00:00.380</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅arith_counter_bcd_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>2003</td>
+<td>00:00:00.360</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅arith_counter_free_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>20</td>
+<td>00:00:00.331</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅arith_counter_gray_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>19</td>
+<td>00:00:00.335</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅arith_counter_ring_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>12</td>
+<td>00:00:00.331</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅arith_div_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>11964</td>
+<td>00:00:01.068</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅arith_firstone_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>2815</td>
+<td>00:00:00.366</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅arith_prefix_and_Exhaustive</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>2048</td>
+<td>00:00:00.362</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅arith_prefix_and_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>24</td>
+<td>00:00:00.360</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅arith_prefix_or_Exhaustive</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>2048</td>
+<td>00:00:00.363</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅arith_prefix_or_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>24</td>
+<td>00:00:00.359</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅arith_prng_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>256</td>
+<td>00:00:00.374</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅arith_same_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>8</td>
+<td>00:00:00.349</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅arith_scaler_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>5120</td>
+<td>00:00:00.639</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅arith_shifter_barrel_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>10</td>
+<td>00:00:00.337</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅arith_sqrt_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>17</td>
+<td>00:00:00.334</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅arith_trng_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>1</td>
+<td>00:00:00.355</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-odd"><td>  ✅PoC.bus.axi4.axi4Lite</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td></td>
+<td>00:00:02.159</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-even"><td>    ✅PoC</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td></td>
+<td>00:00:01.108</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-odd"><td>      ✅bus</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td></td>
+<td>00:00:01.108</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-even"><td>        ✅axi4</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td></td>
+<td>00:00:01.108</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-odd"><td>          ✅axi4Lite</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td></td>
+<td>00:00:01.108</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>            ✅AXI4Lite_Register_ReadWrite</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>13</td>
+<td>00:00:00.549</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>            ✅AXI4Lite_Register_initial</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>104</td>
+<td>00:00:00.559</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-even"><td>  ✅PoC.sync</td>
+<td>5</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>5</td>
+<td></td>
+<td>00:00:03.664</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-odd"><td>    ✅PoC</td>
+<td>5</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>5</td>
+<td></td>
+<td>00:00:01.750</td>
+</tr>
+<tr class="report-testsuite testsuite-passed row-even"><td>      ✅sync</td>
+<td>5</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>5</td>
+<td></td>
+<td>00:00:01.750</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅sync_Bits_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>2</td>
+<td>00:00:00.346</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅sync_Command_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>1</td>
+<td>00:00:00.351</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅sync_Reset_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>1</td>
+<td>00:00:00.346</td>
+</tr>
+<tr class="report-testcase testcase-passed row-even"><td>        ✅sync_Strobe_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>1</td>
+<td>00:00:00.353</td>
+</tr>
+<tr class="report-testcase testcase-passed row-odd"><td>        ✅sync_Vector_Simple</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>1</td>
+<td>00:00:00.354</td>
+</tr>
+<tr class="report-summary testsuitesummary-passed row-even"><td>✅ PASSED</td>
+<td>27</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>27</td>
+<td></td>
+<td>00:00:56.845</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="osvvm-libraries-build-report">
+<h1>OSVVM Libraries Build Report<a class="headerlink" href="#osvvm-libraries-build-report" title="Link to this heading"></a></h1>
+<p>Test report generated with <a class="reference external" href="https://github.com/OSVVM">OSVVM</a> and
+<a class="reference external" href="https://github.com/pyg/sphinx-reports">pyEDAA.OSVVM</a>.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../IPCores/common/vectors.html" class="btn btn-neutral float-left" title="vectors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../References/CommandReference.html" class="btn btn-neutral float-right" title="Command Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1244 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Index &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="_static/The-PoC-Library-FavIcon.png"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=b21de401"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/design-tabs.js?v=f930bc37"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs"></script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.0/dist/mermaid-layout-elk.esm.min.mjs"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.0/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+      <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+const defaultStyle = document.createElement('style');
+defaultStyle.textContent = `pre.mermaid {
+    /* Same as .mermaid-container > pre */
+    display: block;
+    width: 100%;
+}
+
+pre.mermaid > svg {
+    /* Same as .mermaid-container > pre > svg */
+    height: 500px;
+    width: 100%;
+    max-width: 100% !important;
+}
+`;
+document.head.appendChild(defaultStyle);
+
+const fullscreenStyle = document.createElement('style');
+fullscreenStyle.textContent = `.mermaid-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.mermaid-container > pre {
+    display: block;
+    width: 100%;
+}
+
+.mermaid-container > pre > svg {
+    height: 500px;
+    width: 100%;
+    max-width: 100% !important;
+}
+
+.mermaid-fullscreen-btn {
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    color: #333;
+}
+
+.mermaid-fullscreen-btn:hover {
+    opacity: 100% !important;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    transform: scale(1.1);
+}
+
+.mermaid-fullscreen-btn.dark-theme {
+    background: rgba(50, 50, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #e0e0e0;
+}
+
+.mermaid-fullscreen-btn.dark-theme:hover {
+    background: rgba(60, 60, 60, 1);
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);
+}
+
+.mermaid-fullscreen-modal {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 95vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.98);
+    z-index: 9999;
+    padding: 20px;
+    overflow: auto;
+}
+
+.mermaid-fullscreen-modal.dark-theme {
+    background: rgba(0, 0, 0, 0.98);
+}
+
+.mermaid-fullscreen-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-container-fullscreen {
+    position: relative;
+    width: 95vw;
+    height: 90vh;
+    max-width: 95vw;
+    max-height: 90vh;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-container-fullscreen.dark-theme {
+    background: #1a1a1a;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+}
+
+.mermaid-container-fullscreen pre.mermaid {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-container-fullscreen .mermaid svg {
+    height: 100% !important;
+    width: 100% !important;
+    cursor: grab;
+}
+
+.mermaid-fullscreen-close {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    font-size: 24px;
+    line-height: 1;
+    color: #333;
+}
+
+.mermaid-fullscreen-close:hover {
+    background: white;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    transform: scale(1.1);
+}
+
+.mermaid-fullscreen-close.dark-theme {
+    background: rgba(50, 50, 50, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e0e0e0;
+}
+
+.mermaid-fullscreen-close.dark-theme:hover {
+    background: rgba(60, 60, 60, 1);
+    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
+}
+
+.mermaid-fullscreen-modal .mermaid-fullscreen-btn {
+    display: none !important;
+}`;
+document.head.appendChild(fullscreenStyle);
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness < 128;
+    }
+    return false;
+};
+
+const load = async () => {
+    await mermaid.run();
+
+    const all_mermaids = document.querySelectorAll(".mermaid");
+    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+
+    if ("False" === "True") {
+        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("");
+            if(all_mermaids.length !== mermaids_processed.length) {
+                setTimeout(load, 200);
+                return;
+            } else if(svgs.size() !== mermaids_to_add_zoom) {
+                setTimeout(load, 200);
+                return;
+            } else {
+                svgs.each(function() {
+                    var svg = d3.select(this);
+                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                    var inner = svg.select("g");
+                    var zoom = d3.zoom().on("zoom", function(event) {
+                        inner.attr("transform", event.transform);
+                    });
+                    svg.call(zoom);
+                });
+            }
+        }
+    } else if(all_mermaids.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(load, 200);
+        return;
+    }
+
+    const darkTheme = isDarkTheme();
+
+    // Stop here if not adding fullscreen capability
+    if ("True" !== "True") return;
+
+    const modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    const modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    let previousScrollOffset = [window.scrollX, window.scrollY];
+
+    const closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+
+    const allButtons = [];
+
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.style.opacity = '50%';
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scroll, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.sdisplay = 'block';
+
+                if ("False" === "True") {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        container.appendChild(fullscreenBtn);
+        allButtons.push(fullscreenBtn);
+    });
+
+    // Update theme classes when theme changes
+    const updateTheme = () => {
+        const dark = isDarkTheme();
+        allButtons.forEach(btn => {
+            if (dark) {
+                btn.classList.add('dark-theme');
+            } else {
+                btn.classList.remove('dark-theme');
+            }
+        });
+        if (dark) {
+            modal.classList.add('dark-theme');
+            modalContent.classList.add('dark-theme');
+            closeBtn.classList.add('dark-theme');
+        } else {
+            modal.classList.remove('dark-theme');
+            modalContent.classList.remove('dark-theme');
+            closeBtn.classList.remove('dark-theme');
+        }
+    };
+
+    // Watch for theme changes
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style']
+    });
+};
+
+window.addEventListener("load", load);
+</script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="References/Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="References/Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="UsingPoC/index.html">Using PoC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/bus/index.html">PoC.bus.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="IPCores/common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="References/CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="References/Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="References/more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Glossary.html">Glossary</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Index</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#Symbols"><strong>Symbols</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#X"><strong>X</strong></a>
+ 
+</div>
+<h2 id="Symbols">Symbols</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    --all
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-all">compile-altera.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-all">compile-lattice.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-all">compile-osvvm.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-all">compile-xilinx-vivado.sh command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --clean
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-clean">compile-altera.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-clean">compile-lattice.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-clean">compile-osvvm.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-clean">compile-xilinx-vivado.sh command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --ghdl
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-ghdl">compile-altera.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-ghdl">compile-lattice.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-ghdl">compile-osvvm.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-ghdl">compile-xilinx-vivado.sh command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --help
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-help">compile-altera.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-help">compile-lattice.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-help">compile-osvvm.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-help">compile-xilinx-vivado.sh command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --questa
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-questa">compile-altera.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-questa">compile-lattice.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-questa">compile-osvvm.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-questa">compile-xilinx-vivado.sh command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --vhdl2008
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-vhdl2008">compile-altera.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-vhdl2008">compile-lattice.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-vhdl2008">compile-osvvm.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-vhdl2008">compile-xilinx-vivado.sh command line option</a>
+</li>
+      </ul></li>
+      <li>
+    --vhdl93
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-vhdl93">compile-altera.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-vhdl93">compile-lattice.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-vhdl93">compile-osvvm.sh command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-vhdl93">compile-xilinx-vivado.sh command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -All
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-All">compile-altera.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-All">compile-lattice.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-All">compile-osvvm.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-All">compile-xilinx-vivado.ps1 command line option</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    -Clean
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-Clean">compile-altera.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-Clean">compile-lattice.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-Clean">compile-osvvm.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-Clean">compile-xilinx-vivado.ps1 command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -D
+
+      <ul>
+        <li><a href="References/CmdRefs/Wrapper.html#cmdoption-poc.ps1-D">poc.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Wrapper.html#cmdoption-poc.sh-D">poc.sh command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -GHDL
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-GHDL">compile-altera.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-GHDL">compile-lattice.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-GHDL">compile-osvvm.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-GHDL">compile-xilinx-vivado.ps1 command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -Help
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-Help">compile-altera.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-Help">compile-lattice.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-Help">compile-osvvm.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-Help">compile-xilinx-vivado.ps1 command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -Questa
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-Questa">compile-altera.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-Questa">compile-lattice.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-Questa">compile-osvvm.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-Questa">compile-xilinx-vivado.ps1 command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -ReLink
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-ReLink">compile-xilinx-vivado.ps1 command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -VHDL2008
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-VHDL2008">compile-altera.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-VHDL2008">compile-lattice.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-VHDL2008">compile-osvvm.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-VHDL2008">compile-xilinx-vivado.ps1 command line option</a>
+</li>
+      </ul></li>
+      <li>
+    -VHDL93
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-VHDL93">compile-altera.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-VHDL93">compile-lattice.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-VHDL93">compile-osvvm.ps1 command line option</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-VHDL93">compile-xilinx-vivado.ps1 command line option</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    Altera
+
+      <ul>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-3">Pre-compilation</a>
+</li>
+      </ul></li>
+      <li><a href="Glossary.html#term-AMBA"><strong>AMBA</strong></a>
+</li>
+      <li><a href="Glossary.html#term-AXI4"><strong>AXI4</strong></a>
+
+      <ul>
+        <li><a href="IPCores/bus/axi4/axi4_FIFO.html#index-0">axi4_FIFO</a>
+</li>
+        <li><a href="IPCores/bus/axi4/axi4_FIFO_cdc.html#index-0">axi4_FIFO_cdc</a>
+</li>
+        <li><a href="IPCores/bus/axi4/axi4_OSVVM.html#index-0">axi4_OSVVM Package</a>
+</li>
+        <li><a href="IPCores/bus/axi4/axi4_to_AXI4Lite.html#index-0">axi4_to_AXI4Lite</a>
+</li>
+      </ul></li>
+      <li><a href="Glossary.html#term-AXI4-Lite"><strong>AXI4-Lite</strong></a>
+
+      <ul>
+        <li><a href="IPCores/bus/axi4lite/axi4lite.html#index-0">axi4lite Package</a>
+</li>
+        <li><a href="IPCores/bus/axi4lite/axi4lite_FIFO.html#index-0">axi4lite_FIFO</a>
+</li>
+        <li><a href="IPCores/bus/axi4lite/axi4lite_FIFO_cdc.html#index-0">axi4lite_FIFO_cdc</a>
+</li>
+        <li><a href="IPCores/bus/axi4lite/axi4lite_GitVersionRegister.html#index-0">axi4lite_GitVersionRegister</a>
+</li>
+        <li><a href="IPCores/bus/axi4lite/axi4lite_OSVVM.html#index-0">axi4lite_OSVVM Package</a>
+</li>
+        <li><a href="IPCores/bus/axi4lite/axi4lite_Register.html#index-0">axi4lite_Register</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-AXI4-Stream"><strong>AXI4-Stream</strong></a>
+
+      <ul>
+        <li><a href="IPCores/bus/axi4stream/axi4stream_FIFO.html#index-0">axi4stream_FIFO</a>
+</li>
+        <li><a href="IPCores/bus/axi4stream/axi4stream_FIFO_cdc.html#index-0">axi4stream_FIFO_cdc</a>
+</li>
+      </ul></li>
+      <li>
+    axi4lite
+
+      <ul>
+        <li>
+    see AXI4-Lite
+</li>
+      </ul></li>
+      <li>
+    axi4stream
+
+      <ul>
+        <li>
+    see AXI4-Stream
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    Cocotb
+
+      <ul>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-10">Pre-compilation</a>
+</li>
+      </ul></li>
+      <li>
+    compile-altera.ps1 command line option
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-All">-All</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-Clean">-Clean</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-GHDL">-GHDL</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-Help">-Help</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-Questa">-Questa</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-VHDL2008">-VHDL2008</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-ps1.html#cmdoption-compile-altera.ps1-VHDL93">-VHDL93</a>
+</li>
+      </ul></li>
+      <li>
+    compile-altera.sh command line option
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-all">--all</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-clean">--clean</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-ghdl">--ghdl</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-help">--help</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-questa">--questa</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-vhdl2008">--vhdl2008</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Altera-sh.html#cmdoption-compile-altera.sh-vhdl93">--vhdl93</a>
+</li>
+      </ul></li>
+      <li>
+    compile-lattice.ps1 command line option
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-All">-All</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-Clean">-Clean</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-GHDL">-GHDL</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-Help">-Help</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-Questa">-Questa</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-VHDL2008">-VHDL2008</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-ps1.html#cmdoption-compile-lattice.ps1-VHDL93">-VHDL93</a>
+</li>
+      </ul></li>
+      <li>
+    compile-lattice.sh command line option
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-all">--all</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-clean">--clean</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-ghdl">--ghdl</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-help">--help</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-questa">--questa</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-vhdl2008">--vhdl2008</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Lattice-sh.html#cmdoption-compile-lattice.sh-vhdl93">--vhdl93</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    compile-osvvm.ps1 command line option
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-All">-All</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-Clean">-Clean</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-GHDL">-GHDL</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-Help">-Help</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-Questa">-Questa</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-VHDL2008">-VHDL2008</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-ps1.html#cmdoption-compile-osvvm.ps1-VHDL93">-VHDL93</a>
+</li>
+      </ul></li>
+      <li>
+    compile-osvvm.sh command line option
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-all">--all</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-clean">--clean</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-ghdl">--ghdl</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-help">--help</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-questa">--questa</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-vhdl2008">--vhdl2008</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-OSVVM-sh.html#cmdoption-compile-osvvm.sh-vhdl93">--vhdl93</a>
+</li>
+      </ul></li>
+      <li>
+    compile-xilinx-vivado.ps1 command line option
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-All">-All</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-Clean">-Clean</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-GHDL">-GHDL</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-Help">-Help</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-Questa">-Questa</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-ReLink">-ReLink</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-VHDL2008">-VHDL2008</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-ps1.html#cmdoption-compile-xilinx-vivado.ps1-VHDL93">-VHDL93</a>
+</li>
+      </ul></li>
+      <li>
+    compile-xilinx-vivado.sh command line option
+
+      <ul>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-all">--all</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-clean">--clean</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-ghdl">--ghdl</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-help">--help</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-questa">--questa</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-vhdl2008">--vhdl2008</a>
+</li>
+        <li><a href="References/CmdRefs/Compile-Xilinx-Vivado-sh.html#cmdoption-compile-xilinx-vivado.sh-vhdl93">--vhdl93</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-Edge-interrupt"><strong>Edge interrupt</strong></a>
+</li>
+      <li><a href="Glossary.html#term-Elaboration-time"><strong>Elaboration time</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    environment variable
+
+      <ul>
+        <li><a href="References/CmdRefs/Wrapper.html#index-0">LM_LICENSE_FILE</a>
+</li>
+        <li><a href="References/CmdRefs/PoC.html#index-0">PoCRootDirectory</a>, <a href="References/CmdRefs/Wrapper.html#envvar-PoCRootDirectory">[1]</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-FIFO"><strong>FIFO</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-Flag"><strong>Flag</strong></a>
+</li>
+      <li><a href="Glossary.html#term-FPGA"><strong>FPGA</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-Interrupt"><strong>Interrupt</strong></a>
+</li>
+      <li><a href="Glossary.html#term-IRQ"><strong>IRQ</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-ISR"><strong>ISR</strong></a>
+</li>
+      <li><a href="Glossary.html#term-I2C"><strong>I²C</strong></a>
+</li>
+      <li><a href="Glossary.html#term-I2S"><strong>I²S</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    Lattice
+
+      <ul>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-4">Pre-compilation</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-Level-interrupt"><strong>Level interrupt</strong></a>
+</li>
+      <li><a href="Glossary.html#term-LIFO"><strong>LIFO</strong></a>
+</li>
+      <li><a href="References/CmdRefs/Wrapper.html#index-0">LM_LICENSE_FILE</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-Memory-mapped-register"><strong>Memory-mapped-register</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-MMR"><strong>MMR</strong></a>
+</li>
+      <li><a href="Glossary.html#term-MPSoC"><strong>MPSoC</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    OSVVM
+
+      <ul>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-7">Pre-compilation</a>
+</li>
+        <li><a href="Miscelaneous/ThirdParty.html#index-1">Third-Party Libraries</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    poc.ps1 command line option
+
+      <ul>
+        <li><a href="References/CmdRefs/Wrapper.html#cmdoption-poc.ps1-D">-D</a>
+</li>
+      </ul></li>
+      <li>
+    poc.sh command line option
+
+      <ul>
+        <li><a href="References/CmdRefs/Wrapper.html#cmdoption-poc.sh-D">-D</a>
+</li>
+      </ul></li>
+      <li><a href="References/CmdRefs/PoC.html#index-0">PoCRootDirectory</a>
+</li>
+      <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-0">Pre-compilation</a>
+
+      <ul>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-3">Altera</a>
+</li>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-10">Cocotb</a>
+</li>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-4">Lattice</a>
+</li>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-7">OSVVM</a>
+</li>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-9">Simulator Adapters</a>
+</li>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-1">Supported Simulators</a>
+</li>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-6">Third-Party Libraries</a>
+</li>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-8">UVVM</a>
+</li>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-2">Vendor Primitives</a>
+</li>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-5">Xilinx Vivado</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-RS-232"><strong>RS-232</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    Simulator Adapters
+
+      <ul>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-9">Pre-compilation</a>
+</li>
+      </ul></li>
+      <li><a href="Glossary.html#term-SoC"><strong>SoC</strong></a>
+</li>
+      <li><a href="Glossary.html#term-SPI"><strong>SPI</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-Stack"><strong>Stack</strong></a>
+</li>
+      <li><a href="Glossary.html#term-Strobe"><strong>Strobe</strong></a>
+</li>
+      <li>
+    Supported Simulators
+
+      <ul>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-1">Pre-compilation</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="IPCores/sort/sortnet/sortnet.pkg.html#c.T_SORTNET_IMPL">T_SORTNET_IMPL (C type)</a>
+</li>
+      <li><a href="Miscelaneous/ThirdParty.html#index-0">Third-Party Libraries</a>
+
+      <ul>
+        <li><a href="Miscelaneous/ThirdParty.html#index-1">OSVVM</a>
+</li>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-6">Pre-compilation</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Glossary.html#term-UART"><strong>UART</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    UVVM
+
+      <ul>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-8">Pre-compilation</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    Vendor Primitives
+
+      <ul>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-2">Pre-compilation</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    Xilinx Vivado
+
+      <ul>
+        <li><a href="UsingPoC/PrecompilingVendorLibraries.html#index-5">Pre-compilation</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

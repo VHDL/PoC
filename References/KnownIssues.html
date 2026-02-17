@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Known Issues &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Local License Copies" href="Licenses/index.html" />
+    <link rel="prev" title="Naming Conventions" href="NamingConventions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../UsingPoC/index.html">Using PoC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/bus/index.html">PoC.bus.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="more.html">More ...</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ListOfDevices.html">List of Supported FPGA Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ListOfBoards.html">List of Supported Boards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WrapperScriptHookFiles.html">Wrapper Script Hook Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FileFormats/index.html">File Formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NamingConventions.html">Naming Conventions</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Known Issues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#general">General</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#synthesis-of-tri-state-signals">Synthesis of tri-state signals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#synthesis-of-bidirectional-records">Synthesis of bidirectional records</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#aldec-active-hdl">Aldec Active-HDL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#altera-quartus-ii-intel-quartus-prime">Altera Quartus-II / Intel Quartus Prime</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ghdl">GHDL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#xilinx-ise">Xilinx ISE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#xilinx-vivado">Xilinx Vivado</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Licenses/index.html">Local License Copies</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="more.html">More References</a></li>
+      <li class="breadcrumb-item active">Known Issues</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/References/KnownIssues.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="known-issues">
+<span id="issue"></span><h1>Known Issues<a class="headerlink" href="#known-issues" title="Link to this heading"></a></h1>
+<section id="general">
+<span id="issue-general"></span><h2>General<a class="headerlink" href="#general" title="Link to this heading"></a></h2>
+<section id="synthesis-of-tri-state-signals">
+<span id="issue-general-tristate"></span><h3>Synthesis of tri-state signals<a class="headerlink" href="#synthesis-of-tri-state-signals" title="Link to this heading"></a></h3>
+<p>Tri-state signals should be only used when they are connected
+(through the hierarchy) to top-level bidirectional or output pins.</p>
+<p>Descriptions which infer a tri-state driver like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pin</span> <span class="o">&lt;=</span> <span class="n">data</span> <span class="n">when</span> <span class="n">tri</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span> <span class="k">else</span> <span class="s1">&#39;Z&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>should not be included in any IP core description because these hinder
+or even inhibit block-based design flows. If a netlist is generated
+from such an IP core, the netlist may contain only a simple internal
+(on-chip) tri-state buffer instead of the correct tri-state I/O block
+primitive because I/O buffers are not automatically added for netlist
+generation. If the netlist is then used in another design, the
+mapper, e.g. Xilinx ISE Map, may fail to merge the
+internal tri-state buffer of the IP core netlist with the I/O buffer
+automatically created for the top-level netlist. This failing behavior
+is not considered as a tool bug.</p>
+<p>Thus, if tri-state drivers should be included in an IP core, then the
+IP core description must instantiate the appropiate I/O block
+primitive of the target architecture like it is done by the Xilinx MIG.</p>
+</section>
+<section id="synthesis-of-bidirectional-records">
+<span id="issue-general-inout-records"></span><h3>Synthesis of bidirectional records<a class="headerlink" href="#synthesis-of-bidirectional-records" title="Link to this heading"></a></h3>
+<p>Records are useful to group several signals of an IP core
+interface. But the corresponding port of this record type should not
+be of mode <code class="docutils literal notranslate"><span class="pre">inout</span></code> to pass data in both direction. This restriction
+holds even if a record member will be driven only by one source in the
+real hardware and even if all the drivers (one for each record member)
+are visible to the current synthesis run. The following
+observations have been made:</p>
+<ul>
+<li><p>An IP core (entity or procedure) must drive all record members with
+value ‘Z’ which are only used as an input in the IP core. If this is
+missed, then the respective record member will be driven by ‘U’ and
+the effective value after resolution will be ‘U’ as well, see IEEE
+Std. 1076-2008 para. 12.6.1. Thus simulation will fail.</p>
+<p>But these ‘Z’ drivers will flood the RTL / Netlist view of Altera
+Quartus-II, Intel Quartus Prime and Lattice Diamond with always
+tri-stated drivers and make this view unusable.</p>
+<p>Note: Simulation with ModelSim shows correct output even when the
+‘Z’ driver is missing, but a warning is reported that the behavior
+is not VHDL Standard compliant.</p>
+</li>
+<li><p>Altera Quartus-II and Intel Quartus Prime report warnings about this
+meaningless ‘Z’ drivers. Synthesis result is as expected if each
+record member is only driven by one source in real hardware.</p></li>
+<li><p>The synthesis result of the Lattice Synthesis Engine (3.7.0 / 3.8.0)
+is not optimal. It seems that the synthesizer tries to implement the
+internal (on-chip) tristate bus using AND-OR logic but failed to
+optimize it away because there was only one real source. Test case
+was a simple SRAM controller which used the record type
+<code class="docutils literal notranslate"><span class="pre">T_IO_TRISTATE</span></code> to bring-out the data-bus so that the tri-state
+driver could be instantiated on the top-level.</p></li>
+</ul>
+<p>Use separate records for the input and output data flow instead.</p>
+<hr class="docutils" />
+</section>
+</section>
+<section id="aldec-active-hdl">
+<span id="issue-aldec-activehdl"></span><h2>Aldec Active-HDL<a class="headerlink" href="#aldec-active-hdl" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Aliases to functions and protected type methods</p></li>
+</ul>
+</section>
+<section id="altera-quartus-ii-intel-quartus-prime">
+<span id="issue-intel-quartus"></span><span id="issue-altera-quartus"></span><h2>Altera Quartus-II / Intel Quartus Prime<a class="headerlink" href="#altera-quartus-ii-intel-quartus-prime" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Generic types of type strings filled with NUL</p></li>
+</ul>
+</section>
+<section id="ghdl">
+<span id="issue-ghdl"></span><h2>GHDL<a class="headerlink" href="#ghdl" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Aliases to protected type methods</p></li>
+</ul>
+</section>
+<section id="xilinx-ise">
+<span id="issue-xilinx-ise"></span><h2>Xilinx ISE<a class="headerlink" href="#xilinx-ise" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Shared Variables in Simulation (VHDL-93)</p></li>
+</ul>
+</section>
+<section id="xilinx-vivado">
+<span id="issue-xilinx-vivado"></span><h2>Xilinx Vivado<a class="headerlink" href="#xilinx-vivado" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Physical types in synthesis</p></li>
+<li><p>VHDL-2008 mode in simulation</p></li>
+<li><p>Shared variables in simulation (VHDL-93 and VHDL-2008))</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="NamingConventions.html" class="btn btn-neutral float-left" title="Naming Conventions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Licenses/index.html" class="btn btn-neutral float-right" title="Local License Copies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

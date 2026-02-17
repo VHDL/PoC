@@ -1,0 +1,489 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuring PoC’s Infrastructure &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Creating my_config/my_project.vhdl" href="VHDLConfiguration.html" />
+    <link rel="prev" title="Integrating PoC into Projects" href="Integration.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Using PoC</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Download.html">Downloading PoC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Integration.html">Integrating PoC into Projects</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Configuring PoC’s Infrastructure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-poc-library">The PoC-Library</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#git">Git</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aldec">Aldec</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#active-hdl">Active-HDL</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#altera">Altera</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#quartus">Quartus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#modelsim-altera-edition">ModelSim Altera Edition</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#lattice">Lattice</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#diamond">Diamond</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#active-hdl-lattice-edition">Active-HDL Lattice Edition</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#mentor-graphics">Mentor Graphics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#questasim">QuestaSim</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#xilinx">Xilinx</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#vivado">Vivado</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ghdl">GHDL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gtkwave">GTKWave</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hook-files">Hook Files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="VHDLConfiguration.html">Creating my_config/my_project.vhdl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AddingIPCores.html">Adding IP Cores to a Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Simulation.html">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Synthesis.html">Synthesis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ProjectManagement.html">Project Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PrecompilingVendorLibraries.html">Pre-Compiling Vendor Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Miscellaneous.html">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/bus/index.html">PoC.bus.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Using PoC</a></li>
+      <li class="breadcrumb-item active">Configuring PoC’s Infrastructure</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/UsingPoC/PoCConfiguration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>kbd
+{ -moz-border-radius:3px;
+  -moz-box-shadow:0 1px 0 rgba(0,0,0,0.2),0 0 0 2px #fff inset;
+  -webkit-border-radius:3px;
+  -webkit-box-shadow:0 1px 0 rgba(0,0,0,0.2),0 0 0 2px #fff inset;
+  background-color:#f7f7f7;
+  border:1px solid #ccc;
+  border-radius:3px;
+  box-shadow:0 1px 0 rgba(0,0,0,0.2),0 0 0 2px #fff inset;
+  color:#333;
+  display:inline-block;
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:11px;
+  line-height:1.4;
+  margin:0 .1em;
+  padding:.1em .6em;
+  text-shadow:0 1px 0 #fff;
+}</style><section id="configuring-poc-s-infrastructure">
+<h1>Configuring PoC’s Infrastructure<a class="headerlink" href="#configuring-poc-s-infrastructure" title="Link to this heading"></a></h1>
+<p>To explore PoC’s full potential, it’s required to configure some paths and
+synthesis or simulation tool chains. It’s possible to relaunch the process
+at any time, for example to register new tools or to update tool versions.</p>
+<nav class="contents local" id="contents-of-this-page">
+<p class="topic-title">Contents of this page</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview" id="id1">Overview</a></p></li>
+<li><p><a class="reference internal" href="#the-poc-library" id="id2">The PoC-Library</a></p></li>
+<li><p><a class="reference internal" href="#git" id="id3">Git</a></p></li>
+<li><p><a class="reference internal" href="#aldec" id="id4">Aldec</a></p>
+<ul>
+<li><p><a class="reference internal" href="#active-hdl" id="id5">Active-HDL</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#altera" id="id6">Altera</a></p>
+<ul>
+<li><p><a class="reference internal" href="#quartus" id="id7">Quartus</a></p></li>
+<li><p><a class="reference internal" href="#modelsim-altera-edition" id="id8">ModelSim Altera Edition</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#lattice" id="id9">Lattice</a></p>
+<ul>
+<li><p><a class="reference internal" href="#diamond" id="id10">Diamond</a></p></li>
+<li><p><a class="reference internal" href="#active-hdl-lattice-edition" id="id11">Active-HDL Lattice Edition</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#mentor-graphics" id="id12">Mentor Graphics</a></p>
+<ul>
+<li><p><a class="reference internal" href="#questasim" id="id13">QuestaSim</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#xilinx" id="id14">Xilinx</a></p>
+<ul>
+<li><p><a class="reference internal" href="#vivado" id="id15">Vivado</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#ghdl" id="id16">GHDL</a></p></li>
+<li><p><a class="reference internal" href="#gtkwave" id="id17">GTKWave</a></p></li>
+<li><p><a class="reference internal" href="#hook-files" id="id18">Hook Files</a></p></li>
+</ul>
+</nav>
+<section id="overview">
+<span id="using-pocconf-over"></span><h2><a class="toc-backref" href="#id1" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The setup process is started by invoking PoC’s frontend script with the command
+<code class="docutils literal notranslate"><span class="pre">configure</span></code>. Please follow the instructions on screen. Use the keyboard
+buttons: <kbd>Y</kbd> to accept, <kbd>N</kbd> to decline, <kbd>P</kbd> to skip/pass a step and
+<kbd>Return</kbd> to accept a default value displayed in brackets.</p>
+<p>Optionally, a vendor or tool chain name can be passed to the configuration
+process to launch only its configuration routines.</p>
+<p><strong>On Linux:</strong></p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>ProjectRoot
+./lib/PoC/poc.sh<span class="w"> </span>configure
+<span class="c1"># with tool chain name</span>
+./lib/PoC/poc.sh<span class="w"> </span>configure<span class="w"> </span>Xilinx.Vivado
+</pre></div>
+</div>
+<p><strong>On OS X</strong></p>
+<p>Please see the Linux instructions.</p>
+<p><strong>On Windows</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All Windows command line instructions are intended for <strong class="program">Windows PowerShell</strong>,
+if not marked otherwise. So executing the following instructions in Windows
+Command Prompt (<strong class="program">cmd.exe</strong>) won’t function or result in errors! See
+the <a class="reference internal" href="Requirements.html"><span class="doc">Requirements section</span></a> on where to
+download or update PowerShell.</p>
+</div>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">ProjectRoot</span>
+<span class="p">.\</span><span class="n">lib</span><span class="p">\</span><span class="n">PoC</span><span class="p">\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">configure</span>
+<span class="c"># with tool chain name</span>
+<span class="p">.\</span><span class="n">lib</span><span class="p">\</span><span class="n">PoC</span><span class="p">\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">configure</span> <span class="n">Xilinx</span><span class="p">.</span><span class="n">Vivado</span>
+</pre></div>
+</div>
+<p><strong>Introduction screen:</strong></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>PS D:\git\PoC&gt; .\poc.ps1 configure
+================================================================================
+                         The PoC-Library - Service Tool
+================================================================================
+Explanation of abbreviations:
+  Y - yes      P        - pass (jump to next question)
+  N - no       Ctrl + C - abort (no changes are saved)
+Upper case or value in &#39;[...]&#39; means default value
+--------------------------------------------------------------------------------
+
+Configuring PoC
+  PoC version: v1.0.1 (found in git)
+  Installation directory: D:\git\PoC (found in environment variable)
+</pre></div>
+</div>
+</section>
+<section id="the-poc-library">
+<span id="using-pocconf-poc"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">The PoC-Library</a><a class="headerlink" href="#the-poc-library" title="Link to this heading"></a></h2>
+<p>PoC itself has a fully automated configuration routine. It detects if PoC is
+under Git control. If so, it extracts the current version number from the latest
+Git tag. The installation directory is infered from <code class="docutils literal notranslate"><span class="pre">$PoCRootDirectory</span></code> setup
+by <code class="docutils literal notranslate"><span class="pre">PoC.ps1</span></code> or <code class="docutils literal notranslate"><span class="pre">poc.sh</span></code>.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring PoC
+  PoC version: v1.0.1 (found in git)
+  Installation directory: D:\git\PoC (found in environment variable)
+</pre></div>
+</div>
+</section>
+<section id="git">
+<span id="using-pocconf-git"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Git</a><a class="headerlink" href="#git" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Setting up Git and Git developer settings, is an advanced feature recommended
+for all developers interrested in providing Git pull requests or patches.</p>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Git
+  Git installation directory [C:\Program Files\Git]:
+  Install Git mechanisms for PoC developers? [y/N/p]: y
+  Install Git filters? [Y/n/p]:
+  Installing Git filters...
+  Install Git hooks? [Y/n/p]:
+  Installing Git hooks...
+  Setting &#39;pre-commit&#39; hook for PoC...
+</pre></div>
+</div>
+</section>
+<section id="aldec">
+<span id="using-pocconf-aldec"></span><h2><a class="toc-backref" href="#id4" role="doc-backlink">Aldec</a><a class="headerlink" href="#aldec" title="Link to this heading"></a></h2>
+<p>Configure the installation directory for all Aldec tools.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Aldec
+  Are Aldec products installed on your system? [Y/n/p]: Y
+  Aldec installation directory [C:\Aldec]:
+</pre></div>
+</div>
+<section id="active-hdl">
+<h3><a class="toc-backref" href="#id5" role="doc-backlink">Active-HDL</a><a class="headerlink" href="#active-hdl" title="Link to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Aldec Active-HDL
+  Is Aldec Active-HDL installed on your system? [Y/n/p]: Y
+  Aldec Active-HDL version [10.3]:
+  Aldec Active-HDL installation directory [C:\Aldec\Active-HDL]: C:\Aldec\Active-HDL-Student-Edition
+</pre></div>
+</div>
+</section>
+</section>
+<section id="altera">
+<span id="using-pocconf-altera"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">Altera</a><a class="headerlink" href="#altera" title="Link to this heading"></a></h2>
+<p>Configure the installation directory for all Altera tools.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    Configuring Altera
+Are Altera products installed on your system? [Y/n/p]: Y
+Altera installation directory [C:\Altera]:
+</pre></div>
+</div>
+<section id="quartus">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Quartus</a><a class="headerlink" href="#quartus" title="Link to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Altera Quartus
+  Is Altera Quartus-II or Quartus Prime installed on your system? [Y/n/p]: Y
+  Altera Quartus version [15.1]: 16.0
+  Altera Quartus installation directory [C:\Altera\16.0\quartus]:
+</pre></div>
+</div>
+</section>
+<section id="modelsim-altera-edition">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">ModelSim Altera Edition</a><a class="headerlink" href="#modelsim-altera-edition" title="Link to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring ModelSim Altera Edition
+  Is ModelSim Altera Edition installed on your system? [Y/n/p]: Y
+  ModelSim Altera Edition installation directory [C:\Altera\15.0\modelsim_ae]: C:\Altera\16.0\modelsim_ase
+</pre></div>
+</div>
+</section>
+</section>
+<section id="lattice">
+<span id="using-pocconf-lattice"></span><h2><a class="toc-backref" href="#id9" role="doc-backlink">Lattice</a><a class="headerlink" href="#lattice" title="Link to this heading"></a></h2>
+<p>Configure the installation directory for all Lattice Semiconductor tools.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Lattice
+  Are Lattice products installed on your system? [Y/n/p]: Y
+  Lattice installation directory [D:\Lattice]:
+</pre></div>
+</div>
+<section id="diamond">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Diamond</a><a class="headerlink" href="#diamond" title="Link to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Lattice Diamond
+  Is Lattice Diamond installed on your system? [Y/n/p]: &gt;
+  Lattice Diamond version [3.7]:
+  Lattice Diamond installation directory [D:\Lattice\Diamond\3.7_x64]:
+</pre></div>
+</div>
+</section>
+<section id="active-hdl-lattice-edition">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Active-HDL Lattice Edition</a><a class="headerlink" href="#active-hdl-lattice-edition" title="Link to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Active-HDL Lattice Edition
+  Is Aldec Active-HDL installed on your system? [Y/n/p]: Y
+  Active-HDL Lattice Edition version [10.2]:
+  Active-HDL Lattice Edition installation directory [D:\Lattice\Diamond\3.7_x64\active-hdl]:
+</pre></div>
+</div>
+</section>
+</section>
+<section id="mentor-graphics">
+<span id="using-pocconf-mentor"></span><h2><a class="toc-backref" href="#id12" role="doc-backlink">Mentor Graphics</a><a class="headerlink" href="#mentor-graphics" title="Link to this heading"></a></h2>
+<p>Configure the installation directory for all mentor Graphics tools.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Mentor
+  Are Mentor products installed on your system? [Y/n/p]: Y
+  Mentor installation directory [C:\Mentor]:
+</pre></div>
+</div>
+<section id="questasim">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">QuestaSim</a><a class="headerlink" href="#questasim" title="Link to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Mentor QuestaSim
+  Is Mentor QuestaSim installed on your system? [Y/n/p]: Y
+  Mentor QuestaSim version [10.4d]: 10.4c
+  Mentor QuestaSim installation directory [C:\Mentor\QuestaSim\10.4c]: C:\Mentor\QuestaSim64\10.4c
+</pre></div>
+</div>
+</section>
+</section>
+<section id="xilinx">
+<span id="using-pocconf-xilinx"></span><h2><a class="toc-backref" href="#id14" role="doc-backlink">Xilinx</a><a class="headerlink" href="#xilinx" title="Link to this heading"></a></h2>
+<p>Configure the installation directory for all Xilinx tools.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Xilinx
+  Are Xilinx products installed on your system? [Y/n/p]: Y
+  Xilinx installation directory [C:\Xilinx]:
+</pre></div>
+</div>
+<section id="vivado">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Vivado</a><a class="headerlink" href="#vivado" title="Link to this heading"></a></h3>
+<p>If an Xilinx Vivado environment is available and shall be configured in PoC, then
+answer the following questions:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring Xilinx Vivado
+  Is Xilinx Vivado installed on your system? [Y/n/p]: Y
+  Xilinx Vivado version [2016.2]:
+  Xilinx Vivado installation directory [C:\Xilinx\Vivado\2016.2]:
+</pre></div>
+</div>
+</section>
+</section>
+<section id="ghdl">
+<span id="using-pocconf-ghdl"></span><h2><a class="toc-backref" href="#id16" role="doc-backlink">GHDL</a><a class="headerlink" href="#ghdl" title="Link to this heading"></a></h2>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring GHDL
+  Is GHDL installed on your system? [Y/n/p]: Y
+  GHDL installation directory [C:\Tools\GHDL\0.34dev]:
+</pre></div>
+</div>
+</section>
+<section id="gtkwave">
+<span id="using-pocconf-gtkwave"></span><h2><a class="toc-backref" href="#id17" role="doc-backlink">GTKWave</a><a class="headerlink" href="#gtkwave" title="Link to this heading"></a></h2>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Configuring GTKWave
+  Is GTKWave installed on your system? [Y/n/p]: Y
+  GTKWave installation directory [C:\Tools\GTKWave\3.3.71]:
+</pre></div>
+</div>
+</section>
+<section id="hook-files">
+<span id="using-pocconf-hookfiles"></span><h2><a class="toc-backref" href="#id18" role="doc-backlink">Hook Files</a><a class="headerlink" href="#hook-files" title="Link to this heading"></a></h2>
+<p>PoC’s wrapper scripts can be customized through pre- and post-hook file. See
+<a class="reference internal" href="../References/WrapperScriptHookFiles.html"><span class="doc">Wrapper Script Hook Files</span></a> for
+more details.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Integration.html" class="btn btn-neutral float-left" title="Integrating PoC into Projects" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="VHDLConfiguration.html" class="btn btn-neutral float-right" title="Creating my_config/my_project.vhdl" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

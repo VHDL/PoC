@@ -1,0 +1,495 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IP Core Database &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Python Infrastructure" href="../PyInfrastructure/index.html" />
+    <link rel="prev" title="compile-xilinx-vivado.ps1" href="CmdRefs/Compile-Xilinx-Vivado-ps1.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../UsingPoC/index.html">Using PoC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/bus/index.html">PoC.bus.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">IP Core Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#database-structure">Database Structure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#nodes">Nodes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#options">Options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#values">Values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#value-interpolation">Value Interpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#node-interpolation">Node Interpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#root-nodes">Root Nodes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-options">Supported Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#files-in-detail">Files in detail</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#config-structure-ini">config.structure.ini</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#config-entity-ini">config.entity.ini</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#config-boards-ini">config.boards.ini</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#config-private-ini">config.private.ini</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#user-defined-variables">User Defined Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">IP Core Database</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/References/Database.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ip-core-database">
+<span id="ipdb"></span><h1>IP Core Database<a class="headerlink" href="#ip-core-database" title="Link to this heading"></a></h1>
+<nav class="contents local" id="contents-of-this-page">
+<p class="topic-title">Contents of this Page</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview" id="id5">Overview</a></p></li>
+<li><p><a class="reference internal" href="#database-structure" id="id6">Database Structure</a></p>
+<ul>
+<li><p><a class="reference internal" href="#nodes" id="id7">Nodes</a></p></li>
+<li><p><a class="reference internal" href="#references" id="id8">References</a></p></li>
+<li><p><a class="reference internal" href="#options" id="id9">Options</a></p></li>
+<li><p><a class="reference internal" href="#values" id="id10">Values</a></p></li>
+<li><p><a class="reference internal" href="#value-interpolation" id="id11">Value Interpolation</a></p></li>
+<li><p><a class="reference internal" href="#node-interpolation" id="id12">Node Interpolation</a></p></li>
+<li><p><a class="reference internal" href="#root-nodes" id="id13">Root Nodes</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#supported-options" id="id14">Supported Options</a></p></li>
+<li><p><a class="reference internal" href="#files-in-detail" id="id15">Files in detail</a></p>
+<ul>
+<li><p><a class="reference internal" href="#config-structure-ini" id="id16">config.structure.ini</a></p></li>
+<li><p><a class="reference internal" href="#config-entity-ini" id="id17">config.entity.ini</a></p></li>
+<li><p><a class="reference internal" href="#config-boards-ini" id="id18">config.boards.ini</a></p></li>
+<li><p><a class="reference internal" href="#config-private-ini" id="id19">config.private.ini</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#user-defined-variables" id="id20">User Defined Variables</a></p></li>
+</ul>
+</nav>
+<section id="overview">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>PoC internal IP core database uses INI files and advanced interpolation rules
+provided by <a class="reference external" href="https://github.com/Paebbels/ExtendedConfigParser">ExtendedConfigParser</a>. The database consists of 5 <a href="#id1"><span class="problematic" id="id2">*</span></a>.ini files:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="file docutils literal notranslate"><span class="pre">pyconfig.boards.ini</span></code></dt><dd><p>This files contains all known <a class="reference internal" href="ListOfBoards.html"><span class="doc">FPGA boards</span></a> and
+<a class="reference internal" href="ListOfDevices.html"><span class="doc">FPGA devices</span></a>.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="file docutils literal notranslate"><span class="pre">pyconfig.defaults.ini</span></code></dt><dd><p>This files contains all default options and values for all supported node
+types.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="file docutils literal notranslate"><span class="pre">pyconfig.entity.ini</span></code></dt><dd><p>This file contains all IP cores (entities) and theirs corresponding testbench
+or netlist settings.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="file docutils literal notranslate"><span class="pre">pyconfig.private.ini</span></code></dt><dd><p>This files is created by <code class="docutils literal notranslate"><span class="pre">.\poc.ps1</span> <span class="pre">configure</span></code> and contains settings for the
+local PoC installation. This files must not be shared with other PoC instances.
+See <a class="reference internal" href="../UsingPoC/PoCConfiguration.html"><span class="doc">Configuring PoC’s Infrastructure</span></a> on how
+to configure PoC on a local system.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="file docutils literal notranslate"><span class="pre">pyconfig.structure.ini</span></code></dt><dd><p>Nodes in this file describe PoC’s namespace tree and which IP cores are
+assigned to which namespace.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Additionally, the database refers to <a class="reference internal" href="FileFormats/FilesFormat.html#fileformat-files"><span class="std std-ref">*.files</span></a>
+and <a class="reference internal" href="FileFormats/RulesFormat.html#fileformat-rules"><span class="std std-ref">*.rules</span></a> files. The first file type describes, in
+an imperative language, which files are needed to compile a simulation or to
+run a synthesis. The latter file type contains patch instructions per IP core.
+See <a class="reference internal" href="FileFormats/index.html#fileformats"><span class="std std-ref">Files Formats</span></a> for more details.</p>
+</section>
+<section id="database-structure">
+<span id="ipdb-structure"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">Database Structure</a><a class="headerlink" href="#database-structure" title="Link to this heading"></a></h2>
+<p>The database is stored in multiple <a class="reference internal" href="FileFormats/IniFormat.html#fileformat-ini"><span class="std std-ref">INI files</span></a>,
+which are merged in memory to a single configuration database. Each INI file
+defines an associative array of <em>sections</em> and option lines. The content itself
+is an associative array of <em>options</em> and values. Section names are inclosed in
+square brackets <code class="docutils literal notranslate"><span class="pre">[...]</span></code> and allow simple case-sensitive strings as names. A
+section name is followed by its section content, which consists of option lines.</p>
+<p>One option is stored per option line and consists of an option name and a value
+separated by an equal sign <code class="docutils literal notranslate"><span class="pre">=</span></code>. The option name is also a case-sensitive
+simple string. The value is string, starts after the first non-whitespace
+character and end before the newline character at the end of the line. The
+content can be of any string, except for the newline characters. Support for
+escape sequences depends on the option usage.</p>
+<p>Values containing <code class="docutils literal notranslate"><span class="pre">${...}</span></code> and <code class="docutils literal notranslate"><span class="pre">%{...}</span></code> are raw values, which need to be
+interpolated by the ExtendedConfigParser. See <a class="reference internal" href="#value-interpolation">Value Interpolation</a> and
+<a class="reference internal" href="#node-interpolation">Node Interpolation</a> for more details.</p>
+<p>Sections can have a default section called <code class="docutils literal notranslate"><span class="pre">DEFAULT</span></code>. Options not found in a
+normal section are looked up in the default section. If found, the value of the
+matching option name is the lookup result.</p>
+<p class="rubric">Example</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[section1]</span>
+<span class="na">option1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">value1</span>
+<span class="na">opt2</span><span class="w"> </span><span class="o">=</span><span class="w">    </span><span class="s">val ue $2</span>
+
+<span class="k">[section2]</span>
+<span class="na">option1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">${section1:option1}</span>
+<span class="na">opt2</span><span class="w"> </span><span class="o">=</span><span class="w">    </span><span class="s">${option1}</span>
+</pre></div>
+</div>
+<p>Option lines can be of three kinds: An option, a reference, or a user defined
+variable. While the syntax is always the same, the meaning is infered from the
+context.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Option Line Kind</p></th>
+<th class="head"><p>Distinguishing Characteristic</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Reference</strong></p></td>
+<td><p>The option name is called a (node) reference, if the valueof an option is a predefined keyword for the current nodeclass. Because the option’s value is a keyword, it can notbe an interpolated value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Option</strong></p></td>
+<td><p>The option uses a defined option name valid for the currentnode class. The value can be a fixed or interpolated string.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>User Defined Variable</strong></p></td>
+<td><p>Otherwise an option line is a user defined variable. It canhave fixed or interpolated string values.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[PoC]</span>
+<span class="na">Name</span><span class="w"> </span><span class="o">=</span>
+<span class="na">Prefix</span><span class="w"> </span><span class="o">=</span>
+<span class="na">arith</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="s">Namespace</span>
+<span class="na">bus</span><span class="w"> </span><span class="o">=</span><span class="w">           </span><span class="s">Namespace</span>
+
+<span class="k">[PoC.arith]</span>
+<span class="na">addw</span><span class="w"> </span><span class="o">=</span><span class="w">          </span><span class="s">Entity</span>
+<span class="na">prng</span><span class="w"> </span><span class="o">=</span><span class="w">          </span><span class="s">Entity</span>
+
+<span class="k">[PoC.bus]</span>
+<span class="na">stream</span><span class="w"> </span><span class="o">=</span><span class="w">        </span><span class="s">Namespace</span>
+<span class="na">wb</span><span class="w"> </span><span class="o">=</span><span class="w">            </span><span class="s">Namespace</span>
+<span class="na">Arbiter</span><span class="w"> </span><span class="o">=</span><span class="w">       </span><span class="s">Entity</span>
+
+<span class="k">[PoC.bus.stream]</span>
+<span class="na">Buffer</span><span class="w"> </span><span class="o">=</span><span class="w">        </span><span class="s">Entity</span>
+<span class="na">DeMux</span><span class="w"> </span><span class="o">=</span><span class="w">         </span><span class="s">Entity</span>
+<span class="na">Mirror</span><span class="w"> </span><span class="o">=</span><span class="w">        </span><span class="s">Entity</span>
+<span class="na">Mux</span><span class="w"> </span><span class="o">=</span><span class="w">           </span><span class="s">Entity</span>
+
+<span class="k">[PoC.bus.wb]</span>
+<span class="na">fifo_adapter</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="s">Entity</span>
+<span class="na">ocram_adapter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">Entity</span>
+<span class="na">uart_wrapper</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="s">Entity</span>
+</pre></div>
+</div>
+<section id="nodes">
+<span id="ipdb-nodes"></span><h3><a class="toc-backref" href="#id7" role="doc-backlink">Nodes</a><a class="headerlink" href="#nodes" title="Link to this heading"></a></h3>
+<p>The database is build of nested associative arrays and generated in-memory from
+5 <a href="#id3"><span class="problematic" id="id4">*</span></a>.ini files. This implies that all section names are required to be unique.
+(Section merging is not allowed.) A fully qualified section name has a prefix
+and a section name delimited by a dot character. The section name itself can
+consist of parts also delimited by dot characters. All nodes with the same
+prefix shape a node class.</p>
+<p class="rubric">The following table lists all used prefixes:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Prefix</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INSTALL</span></code></p></td>
+<td><p>A installed tool (chain) or program.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SOLUTION</span></code></p></td>
+<td><p>Registered external solutions / projects.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CONFIG</span></code></p></td>
+<td><p>Configurable PoC settings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">BOARD</span></code></p></td>
+<td><p>A node to describe a known board.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CONST</span></code></p></td>
+<td><p>A node to describe constraint file set for a known board.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PoC</span></code></p></td>
+<td><p>Nodes to describe PoC’s namespace structure.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">IP</span></code></p></td>
+<td><p>A node describing an IP core.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TB</span></code></p></td>
+<td><p>A node describing testbenches.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">COCOTB</span></code></p></td>
+<td><p>A node describing Cocotb testbenches.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CG</span></code></p></td>
+<td><p>A node storing Core Generator settings.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">LSE</span></code></p></td>
+<td><p>A node storing settings for LSE based netlist generation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">QMAP</span></code></p></td>
+<td><p>A node storing settings for Quartus based netlist generation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">XST</span></code></p></td>
+<td><p>A node storing settings for XST based netlist generation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">VIVADO</span></code></p></td>
+<td><p>A node storing settings for Vivado based netlist generation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">XCI</span></code></p></td>
+<td><p>A node storing settings for IP Catalog based netlist generation.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">The database has 3 special sections without prefixes:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Section Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">PoC</span></code></p></td>
+<td><p>Root node for PoC’s namespace hierarchy.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">BOARDS</span></code></p></td>
+<td><p>Lists all known boards.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SPECIAL</span></code></p></td>
+<td><p>Section with dummy values. This is needed by synthesis and overwritten at runtime.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example section names</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[PoC]</span>
+<span class="k">[PoC.arith]</span>
+<span class="k">[PoC.bus]</span>
+<span class="k">[PoC.bus.stream]</span>
+<span class="k">[PoC.bus.wb]</span>
+</pre></div>
+</div>
+<p>The fully qualified section name <code class="docutils literal notranslate"><span class="pre">PoC.bus.stream</span></code>     has the prefix <code class="docutils literal notranslate"><span class="pre">PoC</span></code> and
+the section name <code class="docutils literal notranslate"><span class="pre">bus.stream</span></code>. The section name has two parts: <code class="docutils literal notranslate"><span class="pre">bus</span></code> and
+<code class="docutils literal notranslate"><span class="pre">stream</span></code>. The dot delimited section name can be considered a path in a
+hierarchical database. The parent node is <code class="docutils literal notranslate"><span class="pre">PoC.bus</span></code> and its grandparent is
+<code class="docutils literal notranslate"><span class="pre">PoC</span></code>. (Note this is a special section. See the special sections table from
+above.)</p>
+</section>
+<section id="references">
+<span id="ipdb-refs"></span><h3><a class="toc-backref" href="#id8" role="doc-backlink">References</a><a class="headerlink" href="#references" title="Link to this heading"></a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">Whatever<span class="colon">:</span></dt>
+<dd class="field-odd"><p>this is handy to create new field</p>
+</dd>
+</dl>
+</section>
+<section id="options">
+<span id="ipdb-options"></span><h3><a class="toc-backref" href="#id9" role="doc-backlink">Options</a><a class="headerlink" href="#options" title="Link to this heading"></a></h3>
+</section>
+<section id="values">
+<span id="ipdb-values"></span><h3><a class="toc-backref" href="#id10" role="doc-backlink">Values</a><a class="headerlink" href="#values" title="Link to this heading"></a></h3>
+</section>
+<section id="value-interpolation">
+<span id="ipdb-valueinterpol"></span><h3><a class="toc-backref" href="#id11" role="doc-backlink">Value Interpolation</a><a class="headerlink" href="#value-interpolation" title="Link to this heading"></a></h3>
+</section>
+<section id="node-interpolation">
+<span id="ipdb-nodeinterpol"></span><h3><a class="toc-backref" href="#id12" role="doc-backlink">Node Interpolation</a><a class="headerlink" href="#node-interpolation" title="Link to this heading"></a></h3>
+</section>
+<section id="root-nodes">
+<span id="ipdb-roots"></span><h3><a class="toc-backref" href="#id13" role="doc-backlink">Root Nodes</a><a class="headerlink" href="#root-nodes" title="Link to this heading"></a></h3>
+</section>
+</section>
+<section id="supported-options">
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Supported Options</a><a class="headerlink" href="#supported-options" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">py\config.defaults.ini</span></code> for predefined default values (options) and
+predefined variables, which can be used as a shortcut.</p>
+</div>
+</section>
+<section id="files-in-detail">
+<span id="ipdb-files"></span><h2><a class="toc-backref" href="#id15" role="doc-backlink">Files in detail</a><a class="headerlink" href="#files-in-detail" title="Link to this heading"></a></h2>
+<section id="config-structure-ini">
+<span id="ipdb-file-structure"></span><h3><a class="toc-backref" href="#id16" role="doc-backlink">config.structure.ini</a><a class="headerlink" href="#config-structure-ini" title="Link to this heading"></a></h3>
+</section>
+<section id="config-entity-ini">
+<span id="ipdb-file-entity"></span><h3><a class="toc-backref" href="#id17" role="doc-backlink">config.entity.ini</a><a class="headerlink" href="#config-entity-ini" title="Link to this heading"></a></h3>
+</section>
+<section id="config-boards-ini">
+<span id="ipdb-file-boards"></span><h3><a class="toc-backref" href="#id18" role="doc-backlink">config.boards.ini</a><a class="headerlink" href="#config-boards-ini" title="Link to this heading"></a></h3>
+</section>
+<section id="config-private-ini">
+<span id="ipdb-file-private"></span><h3><a class="toc-backref" href="#id19" role="doc-backlink">config.private.ini</a><a class="headerlink" href="#config-private-ini" title="Link to this heading"></a></h3>
+</section>
+</section>
+<section id="user-defined-variables">
+<span id="ipdb-userdefvar"></span><h2><a class="toc-backref" href="#id20" role="doc-backlink">User Defined Variables</a><a class="headerlink" href="#user-defined-variables" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="CmdRefs/Compile-Xilinx-Vivado-ps1.html" class="btn btn-neutral float-left" title="compile-xilinx-vivado.ps1" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../PyInfrastructure/index.html" class="btn btn-neutral float-right" title="Python Infrastructure" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

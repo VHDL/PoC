@@ -1,0 +1,234 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PoC.misc.bit_lz &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html">
+            
+              <img src="../../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../References/Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../References/Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../UsingPoC/index.html">Using PoC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../bus/index.html">PoC.bus.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../References/CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../References/Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../References/more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">PoC.misc.bit_lz</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/IPCores/misc/misc_bit_lz.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="poc-misc-bit-lz">
+<span id="ip-misc-bit-lz"></span><h1>PoC.misc.bit_lz<a class="headerlink" href="#poc-misc-bit-lz" title="Link to this heading"></a></h1>
+<blockquote>
+<div></div></blockquote>
+<p>An LZ77-based bit stream compressor.</p>
+<p>Output Format</p>
+<dl>
+<dt>1 | Literal</dt><dd><p>A literal bit string of length COUNT_BITS+OFFSET_BITS.</p>
+</dd>
+<dt>0 | &lt;Count:COUNT_BITS&gt; | &lt;Offset:OFFSET_BITS&gt;</dt><dd><p>Repetition starting at &lt;Offset&gt; in history buffer of length
+&lt;Count&gt;+COUNT_BITS+OFFSET_BITS where &lt;Count&gt; &lt; 2^COUNT_BITS-1.
+Unless &lt;Count&gt; = 2^COUNT_BITS-2, this repetition is
+followed by a trailing non-matching, i.e. inverted, bit.
+The most recent bit just preceding the repetition is considered to be at
+offset zero(0). Older bits are at higher offsets accordingly. The
+reported length of the repetition may actually be greater than the
+offset. In this case, the repetition is reoccuring in itself. The
+reconstruction must then be performed in several steps.</p>
+</dd>
+<dt>0 | &lt;1:COUNT_BITS&gt; | &lt;Offset:OFFSET_BITS&gt;</dt><dd><p>This marks the end of the message. The &lt;Offset&gt; field alters the
+semantics of the immediately preceding message:</p>
+<dl class="simple">
+<dt>a)If the preceding message was a repetition, &lt;Offset&gt; specifies the value</dt><dd><p>of the trailing bit explicitly in its rightmost bit. The implicit
+trailing non-matching bit is overridden.</p>
+</dd>
+<dt>b)If the preceding message was a literal, &lt;Offset&gt; is a non-positive</dt><dd><p>number d given in its one’s complement representation. The value
+~d specifies the number of bits,  which this literal repeated of the
+preceding output. These bits must be deleted from the reconstructed
+stream.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>Parameter Constraints</p>
+<blockquote>
+<div><p>COUNT_BITS &lt;= OFFSET_BITS &lt; 2**COUNT_BITS - COUNT_BITS</p>
+</div></blockquote>
+<hr class="docutils" />
+<p class="rubric">Entity Declaration:</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">entity</span><span class="w"> </span><span class="nc">misc_bit_lz</span><span class="w"> </span><span class="k">is</span>
+<span class="linenos"> 2</span><span class="w">  </span><span class="k">generic</span><span class="p">(</span>
+<span class="linenos"> 3</span><span class="w">    </span><span class="n">COUNT_BITS</span><span class="w">     </span><span class="o">:</span><span class="w"> </span><span class="kt">positive</span><span class="p">;</span>
+<span class="linenos"> 4</span><span class="w">    </span><span class="n">OFFSET_BITS</span><span class="w">    </span><span class="o">:</span><span class="w"> </span><span class="kt">positive</span><span class="p">;</span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="n">OUTPUT_REGS</span><span class="w">    </span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">true</span><span class="p">;</span><span class="w">   </span><span class="c1">-- Register all outputs</span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">OPTIMIZE_SPEED</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">true</span><span class="w">    </span><span class="c1">-- Favor achievable clock over size</span>
+<span class="linenos"> 7</span><span class="w">  </span><span class="p">);</span>
+<span class="linenos"> 8</span><span class="w">  </span><span class="k">port</span><span class="p">(</span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="c1">-- Global Control</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">clk</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">std_logic</span><span class="p">;</span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">rst</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">std_logic</span><span class="p">;</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="w">    </span><span class="c1">-- Data Input</span>
+<span class="linenos">14</span><span class="w">    </span><span class="n">din</span><span class="w">   </span><span class="o">:</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">std_logic</span><span class="p">;</span>
+<span class="linenos">15</span><span class="w">    </span><span class="n">put</span><span class="w">   </span><span class="o">:</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">std_logic</span><span class="p">;</span>
+<span class="linenos">16</span><span class="w">    </span><span class="n">flush</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kt">std_logic</span><span class="p">;</span><span class="w">  </span><span class="c1">-- end of message,</span>
+<span class="linenos">17</span><span class="w">                           </span><span class="c1">-- to be asserted after last associated put</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span><span class="w">    </span><span class="c1">-- Data Output</span>
+<span class="linenos">20</span><span class="w">    </span><span class="n">odat</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="n">COUNT_BITS</span><span class="o">+</span><span class="n">OFFSET_BITS</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="linenos">21</span><span class="w">    </span><span class="n">ostb</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">out</span><span class="w"> </span><span class="kt">std_logic</span>
+<span class="linenos">22</span><span class="w">  </span><span class="p">);</span>
+<span class="linenos">23</span><span class="k">end</span><span class="w"> </span><span class="nc">misc_bit_lz</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

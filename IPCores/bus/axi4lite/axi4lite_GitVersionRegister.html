@@ -1,0 +1,619 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>axi4lite_GitVersionRegister &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="PoC.bus.axi4stream" href="../axi4stream/index.html" />
+    <link rel="prev" title="axi4lite_Register" href="axi4lite_Register.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../References/Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../References/Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../UsingPoC/index.html">Using PoC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">PoC.bus.*</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../axi4/index.html">axi4</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">axi4lite</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="axi4lite.html">axi4lite Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="axi4lite_OSVVM.html">axi4lite_OSVVM Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="axi4lite_FIFO.html">FIFO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="axi4lite_FIFO_cdc.html">FIFO_cdc</a></li>
+<li class="toctree-l3"><a class="reference internal" href="axi4lite_Register.html">Register</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">GitVersionRegister</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#instantiation">Instantiation</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#simple-register">Simple Register</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#amd-xilinx-extensions">AMD/Xilinx Extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#interface">Interface</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#generics">Generics</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ports">Ports</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#user-defined-word">User defined Word</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#register-map">Register Map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#driver">Driver</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#bare-metal">Bare Metal</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#linux-kernel-driver">Linux Kernel Driver</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#related-files">Related Files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../axi4stream/index.html">axi4stream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stream/index.html">stream (deprecated)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wb/index.html">wb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bus_Arbiter.html">bus_Arbiter</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../References/CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../References/Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../References/more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">PoC.bus</a></li>
+          <li class="breadcrumb-item"><a href="index.html">PoC.bus.axi4lite</a></li>
+      <li class="breadcrumb-item active">axi4lite_GitVersionRegister</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/IPCores/bus/axi4lite/axi4lite_GitVersionRegister.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="axi4lite-gitversionregister">
+<span id="index-0"></span><span id="ip-axi4lite-gitversionregister"></span><h1>axi4lite_GitVersionRegister<a class="headerlink" href="#axi4lite-gitversionregister" title="Link to this heading"></a></h1>
+<p>Current version of this version Reg is <cite>1</cite>. Use this tcl script for Vivado synth-pre-tcl: [set_BuildVersion.tcl](/uploads/9fdf1898a1797857e11889134c5179d0/set_BuildVersion.tcl)</p>
+<p>Based on <a class="reference internal" href="axi4lite_Register.html#ip-axi4lite-register"><span class="std std-ref">axi4lite_Register</span></a></p>
+<aside class="topic" id="ip-axi4lite-gitversionregister-goals">
+<p class="topic-title">Design Goals</p>
+<ul class="simple">
+<li><p>Provide all information as read-only data.</p></li>
+<li><p>Gather tool external information (Git information, data/time, …) via pre-TCL script.</p></li>
+<li><p>Integrate vendor and device specific information.</p></li>
+</ul>
+</aside>
+<aside class="topic" id="ip-axi4lite-gitversionregister-features">
+<p class="topic-title">Features</p>
+<ul class="simple">
+<li><p>Provide all data read-only via AXI4-Lite interface.</p></li>
+<li><p>Provide project information.</p>
+<ul>
+<li><p>Project name.</p></li>
+<li><p>Version</p></li>
+</ul>
+</li>
+<li><p>Provide build information.</p>
+<ul>
+<li><p>Build data and time.</p></li>
+<li><p>Build tool chain</p></li>
+</ul>
+</li>
+<li><p>Provide Git environment information.</p>
+<ul>
+<li><p>Commit data and time.</p></li>
+<li><p>Commit hash</p></li>
+<li><p>Reference (branch or tag)</p></li>
+<li><p>Repository URL</p></li>
+</ul>
+</li>
+<li><p>Provide device unique information</p>
+<ul>
+<li><p>AMD/Xilinx: E-Fuse bits (32 bits)</p></li>
+<li><p>AMD/Xilinx: DNA bits (64 or 96 bits)</p></li>
+<li><p>AMD/Xilinx: User bitstream bits (32 bits)</p></li>
+</ul>
+</li>
+<li><p>Provide user defined read-only word</p>
+<ul>
+<li><p>User-defined 32-bits</p></li>
+</ul>
+</li>
+</ul>
+</aside>
+<section id="instantiation">
+<span id="ip-axi4lite-gitversionregister-instantiation"></span><h2>Instantiation<a class="headerlink" href="#instantiation" title="Link to this heading"></a></h2>
+<section id="simple-register">
+<span id="ip-axi4lite-gitversionregister-inst-simple"></span><h3>Simple Register<a class="headerlink" href="#simple-register" title="Link to this heading"></a></h3>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-column sd-col-5 sd-col-xs-5 sd-col-sm-5 sd-col-md-5 sd-col-lg-5 docutils">
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>needs documentation</p>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-col-7 sd-col-xs-7 sd-col-sm-7 sd-col-md-7 sd-col-lg-7 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">Version</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">entity</span><span class="w"> </span><span class="nc">PoC</span><span class="p">.</span><span class="n">axi4lite_GitVersionRegister</span>
+<span class="k">port</span><span class="w"> </span><span class="k">map</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">Clock</span><span class="w">        </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Clock</span><span class="p">,</span>
+<span class="w">  </span><span class="n">Reset</span><span class="w">        </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Reset</span><span class="p">,</span>
+
+<span class="w">  </span><span class="n">AXI4Lite_m2s</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">VersionRegister_m2s</span><span class="p">,</span>
+<span class="w">  </span><span class="n">AXI4Lite_s2m</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">VersionRegister_s2m</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="amd-xilinx-extensions">
+<span id="ip-axi4lite-gitversionregister-inst-xilinx"></span><h3>AMD/Xilinx Extensions<a class="headerlink" href="#amd-xilinx-extensions" title="Link to this heading"></a></h3>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-column sd-col-5 sd-col-xs-5 sd-col-sm-5 sd-col-md-5 sd-col-lg-5 docutils">
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>needs documentation</p>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-col-7 sd-col-xs-7 sd-col-sm-7 sd-col-md-7 sd-col-lg-7 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">Version</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">entity</span><span class="w"> </span><span class="nc">PoC</span><span class="p">.</span><span class="n">axi4lite_GitVersionRegister</span>
+<span class="k">generic</span><span class="w"> </span><span class="k">map</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">INCLUDE_XIL_DNA</span><span class="w">       </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">true</span><span class="p">,</span>
+<span class="w">  </span><span class="n">INCLUDE_XIL_USR_EFUSE</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">true</span>
+<span class="p">)</span>
+<span class="k">port</span><span class="w"> </span><span class="k">map</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="n">Clock</span><span class="w">        </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Clock</span><span class="p">,</span>
+<span class="w">  </span><span class="n">Reset</span><span class="w">        </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Reset</span><span class="p">,</span>
+
+<span class="w">  </span><span class="n">AXI4Lite_m2s</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">VersionRegister_m2s</span><span class="p">,</span>
+<span class="w">  </span><span class="n">AXI4Lite_s2m</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">VersionRegister_s2m</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="interface">
+<span id="ip-axi4lite-gitversionregister-interface"></span><h2>Interface<a class="headerlink" href="#interface" title="Link to this heading"></a></h2>
+<section id="generics">
+<span id="ip-axi4lite-gitversionregister-generics"></span><h3>Generics<a class="headerlink" href="#generics" title="Link to this heading"></a></h3>
+<section id="version-file-name">
+<span id="ip-axi4lite-gitversionregister-gen-version-file-name"></span><h4><span class="genericname">VERSION_FILE_NAME</span><a class="headerlink" href="#version-file-name" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">VERSION_FILE_NAME</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">string</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p>— — — —</p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to the Version-mem-file created by <cite>set_BuildVersion.tcl</cite>. Relative to <code class="docutils literal notranslate"><span class="pre">constant</span> <span class="pre">MY_PROJECT_DIR</span></code>
+in <code class="docutils literal notranslate"><span class="pre">src/PoC/my_project.vhdl</span></code></p>
+</dd>
+</dl>
+</section>
+<section id="header-file-name">
+<span id="ip-axi4lite-gitversionregister-gen-header-file-name"></span><h4><span class="genericname">HEADER_FILE_NAME</span><a class="headerlink" href="#header-file-name" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">HEADER_FILE_NAME</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">string</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p>— — — —</p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>If csv-file with all register spaces is needed, put here the name/path of csv-file. Relative to
+<code class="docutils literal notranslate"><span class="pre">constant</span> <span class="pre">MY_PROJECT_DIR</span></code> in <code class="docutils literal notranslate"><span class="pre">src/PoC/my_project.vhdl</span></code></p>
+</dd>
+</dl>
+</section>
+<section id="include-xil-dna">
+<span id="ip-axi4lite-gitversionregister-gen-include-xil-dna"></span><h4><span class="genericname">INCLUDE_XIL_DNA</span><a class="headerlink" href="#include-xil-dna" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">INCLUDE_XIL_DNA</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">boolean</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p>— — — —</p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>Includes Xilinx-DNA-Port. Working for 7-Series and US/US+ Devices. Note: 7-Series has 32 times this
+“unique” ID.</p>
+</dd>
+</dl>
+</section>
+<section id="include-xil-usr-efuse">
+<span id="ip-axi4lite-gitversionregister-gen-include-xil-usr-efuse"></span><h4><span class="genericname">INCLUDE_XIL_USR_EFUSE</span><a class="headerlink" href="#include-xil-usr-efuse" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">INCLUDE_XIL_USR_EFUSE</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">boolean</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p>— — — —</p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>Includes Usr-EFuse. <span class="colorred">Currently not Implemented</span></p>
+</dd>
+</dl>
+</section>
+<section id="user-id">
+<span id="ip-axi4lite-gitversionregister-gen-user-id"></span><h4><span class="genericname">USER_ID</span><a class="headerlink" href="#user-id" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">USER_ID</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">std_logic_vector(31</span> <span class="pre">downto</span> <span class="pre">0)</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p>— — — —</p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>96bit ID, which can be set through PL in synthesis.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="ports">
+<span id="ip-axi4lite-gitversionregister-ports"></span><h3>Ports<a class="headerlink" href="#ports" title="Link to this heading"></a></h3>
+<section id="clock">
+<span id="ip-axi4lite-gitversionregister-port-clock"></span><h4><span class="portname">Clock</span><a class="headerlink" href="#clock" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">Clock</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">std_logic</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>in</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Clock</p>
+</dd>
+</dl>
+</section>
+<section id="reset">
+<span id="ip-axi4lite-gitversionregister-port-reset"></span><h4><span class="portname">Reset</span><a class="headerlink" href="#reset" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">Reset</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">std_logic</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>in</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>synchronous high-active reset</p>
+</dd>
+</dl>
+</section>
+<section id="axi4lite-m2s">
+<span id="ip-axi4lite-gitversionregister-port-axi4lite-m2s"></span><h4><span class="portname">AXI4Lite_m2s</span><a class="headerlink" href="#axi4lite-m2s" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">AXI4Lite_m2s</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">axi4lite.T_AXI4Lite_Bus_m2s</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>in</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>AXI4-Lite manager to subordinate signals.</p>
+</dd>
+</dl>
+</section>
+<section id="axi4lite-s2m">
+<span id="ip-axi4lite-gitversionregister-port-axi4lite-s2m"></span><h4><span class="portname">AXI4Lite_s2m</span><a class="headerlink" href="#axi4lite-s2m" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">AXI4Lite_s2m</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">axi4lite.T_AXI4Lite_Bus_s2m</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>out</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>AXI4-Lite subordinate to manager signals.</p>
+</dd>
+</dl>
+</section>
+</section>
+</section>
+<section id="configuration">
+<span id="ip-axi4lite-gitversionregister-configuration"></span><h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
+<section id="user-defined-word">
+<span id="ip-axi4lite-gitversionregister-config-user"></span><h3>User defined Word<a class="headerlink" href="#user-defined-word" title="Link to this heading"></a></h3>
+<div class="admonition-todo admonition" id="id3">
+<p class="admonition-title">Todo</p>
+<p>tbd</p>
+</div>
+</section>
+</section>
+<section id="register-map">
+<span id="ip-axi4lite-gitversionregister-registermap"></span><h2>Register Map<a class="headerlink" href="#register-map" title="Link to this heading"></a></h2>
+<p>All registers are read-only. Version Register should always start with offset <code class="docutils literal notranslate"><span class="pre">0x80000000</span></code> (First PL Address).</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The version register should be the first address in the address space (e.g., <code class="docutils literal notranslate"><span class="pre">0x8000_0000</span></code>), thus a software can
+check what PL firmware is active and if this firmware is compatible to the currently running software version.</p>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Offset</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0x000</p></td>
+<td><p>Common.BuildDate</p></td>
+<td><p>31:24 Day <br /> 23:16 Month <br /> 15:0 Year</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x004</p></td>
+<td><p>Common.NumberModule_VersionOfVersionReg</p></td>
+<td><p>31:8 Reserved <br /> 7:0 Version-of-Version-Reg (<code class="docutils literal notranslate"><span class="pre">1</span></code>)</p></td>
+</tr>
+<tr class="row-even"><td><p>0x008</p></td>
+<td><p>Common.VivadoVersion</p></td>
+<td><p>31:16 Major <br /> 15:8 Minor <br /> 7:0 Patch</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x00C</p></td>
+<td><p>Common.ProjektName</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">String</span></code> Project-Name (20 bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>0x020</p></td>
+<td><p>Top.Version</p></td>
+<td><p>31:24 Major <br /> 23:16 Minor <br /> 15:8 Patch <br />
+7:2 Commits-to-Tag(dev-build) <br /> 1 Dirty_untracked <br />
+0 Dirty_modified</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x024</p></td>
+<td><p>Top.GitHash</p></td>
+<td><p>Git-Hash 20Bytes. Endianess is reversed in the registers. The
+order of the registers is reversed as well.</p></td>
+</tr>
+<tr class="row-even"><td><p>0x038</p></td>
+<td><p>Top.GitDate</p></td>
+<td><p>Commit-Date: 31:24 Day <br /> 23:16 Month <br /> 15:0 Year</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x03C</p></td>
+<td><p>Top.GitTime</p></td>
+<td><p>Commit-Time: 31:24 Hour <br /> 23:16 Min <br /> 15:8 Sec <br />
+7:0 Time-Zone as signed</p></td>
+</tr>
+<tr class="row-even"><td><p>0x040</p></td>
+<td><p>Top.BranchName_Tag</p></td>
+<td><p>Branch-Name 64Byte</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x080</p></td>
+<td><p>Top.GitURL</p></td>
+<td><p>Git-URL starting after <code class="docutils literal notranslate"><span class="pre">gitlab.plc2.de/</span></code> (128Byte)</p></td>
+</tr>
+<tr class="row-even"><td><p>0x100</p></td>
+<td><p>UID.UID</p></td>
+<td><p>Only present if <code class="docutils literal notranslate"><span class="pre">INCLUDE_XIL_DNA</span></code> is enabled (16Byte) <br />
+For US/US+ lower 96 bit valid, for Series-7 64 bit valid</p></td>
+</tr>
+<tr class="row-odd"><td><p>0x110</p></td>
+<td><p>UID.User_eFuse</p></td>
+<td><p>Only present if <code class="docutils literal notranslate"><span class="pre">INCLUDE_XIL_USR_EFUSE</span></code> is enabled</p></td>
+</tr>
+<tr class="row-even"><td><p>0x114</p></td>
+<td><p>UID.User_ID</p></td>
+<td><p>96-bit User_ID set by PL</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="driver">
+<span id="ip-axi4lite-gitversionregister-driver"></span><h2>Driver<a class="headerlink" href="#driver" title="Link to this heading"></a></h2>
+<section id="bare-metal">
+<h3>Bare Metal<a class="headerlink" href="#bare-metal" title="Link to this heading"></a></h3>
+<div class="admonition-todo admonition" id="id4">
+<p class="admonition-title">Todo</p>
+<p>needs to be documented</p>
+</div>
+</section>
+<section id="linux-kernel-driver">
+<h3>Linux Kernel Driver<a class="headerlink" href="#linux-kernel-driver" title="Link to this heading"></a></h3>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>under development</p>
+</div>
+</section>
+</section>
+<section id="related-files">
+<span id="ip-axi4lite-gitversionregister-relatedfiles"></span><h2>Related Files<a class="headerlink" href="#related-files" title="Link to this heading"></a></h2>
+<p>Current implementations gives these <a href="#id5"><span class="problematic" id="id6">*</span></a>.csv and converted <a href="#id7"><span class="problematic" id="id8">*</span></a>.h files:</p>
+<ul class="simple">
+<li><p>Version_Register.csv</p></li>
+<li><p>Version_Register.h</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="axi4lite_Register.html" class="btn btn-neutral float-left" title="axi4lite_Register" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../axi4stream/index.html" class="btn btn-neutral float-right" title="PoC.bus.axi4stream" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

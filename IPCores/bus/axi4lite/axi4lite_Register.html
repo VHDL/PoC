@@ -1,0 +1,1336 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>axi4lite_Register &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="axi4lite_GitVersionRegister" href="axi4lite_GitVersionRegister.html" />
+    <link rel="prev" title="axi4lite_FIFO_cdc" href="axi4lite_FIFO_cdc.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../References/Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../References/Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../UsingPoC/index.html">Using PoC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">PoC.bus.*</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../axi4/index.html">axi4</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">axi4lite</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="axi4lite.html">axi4lite Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="axi4lite_OSVVM.html">axi4lite_OSVVM Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="axi4lite_FIFO.html">FIFO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="axi4lite_FIFO_cdc.html">FIFO_cdc</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Register</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#instantiation">Instantiation</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#simple-register">Simple Register</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#register-description-from-generator-function">Register Description from Generator Function</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#interface">Interface</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#generics">Generics</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ports">Ports</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#register-description">Register Description</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#register-modes">Register Modes</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#helper-functions">Helper Functions</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#bit-registers">64-bit Registers</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#interrupts">Interrupts</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#atomic-register">Atomic Register</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#usage">Usage</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#command-status-error-interface">Command-Status-Error Interface</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#i-o-register">I/O Register</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#export-configuration">Export Configuration</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="#naming-convention-of-registers">Naming Convention of Registers</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#export-as-yaml">Export as YAML</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#write-register-csv-file-deprecated">Write Register CSV File (deprecated)</a></li>
+<li class="toctree-l5"><a class="reference internal" href="#create-c-header-file-from-csv">Create C-Header File from CSV</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="#use-in">Use in</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="axi4lite_GitVersionRegister.html">GitVersionRegister</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../axi4stream/index.html">axi4stream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../stream/index.html">stream (deprecated)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wb/index.html">wb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../bus_Arbiter.html">bus_Arbiter</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../References/CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../References/Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../References/more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">PoC.bus</a></li>
+          <li class="breadcrumb-item"><a href="index.html">PoC.bus.axi4lite</a></li>
+      <li class="breadcrumb-item active">axi4lite_Register</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/IPCores/bus/axi4lite/axi4lite_Register.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="axi4lite-register">
+<span id="index-0"></span><span id="ip-axi4lite-register"></span><h1>axi4lite_Register<a class="headerlink" href="#axi4lite-register" title="Link to this heading"></a></h1>
+<p>The <span class="componentname">axi4lite_Register</span> is a generic implementation of <a class="reference internal" href="../../../Glossary.html#term-MMR"><span class="xref std std-term">memory-mapped-registers (MMR)</span></a> providing an
+<a class="reference internal" href="../../../Glossary.html#term-AXI4-Lite"><span class="xref std std-term">AXI4-Lite</span></a> communication interface. The register layout is describe by a generic constant called
+<a class="reference internal" href="#ip-axi4lite-register-gen-config"><span class="std std-ref">CONFIG</span></a>. This constant is <a class="reference internal" href="#ip-axi4lite-register-configuration"><span class="std std-ref">constructed</span></a> by
+various helper functions as described in the following sections.</p>
+<aside class="topic" id="ip-axi4lite-register-goals">
+<p class="topic-title">Design Goals</p>
+<ul class="simple">
+<li><p>The register is described completely within VHDL.</p>
+<ul>
+<li><p>Pure VHDL code offers the single-source of truth.</p></li>
+<li><p>VHDL language constructs (function, loop, if-then-else, …) can be utilized to describe register layouts.</p></li>
+<li><p>A register description in YAML format is exported at <a class="reference internal" href="../../../Glossary.html#term-Elaboration-time"><span class="xref std std-term">elaboration time</span></a> (synthesis or simulation).</p></li>
+</ul>
+</li>
+<li><p>The register supports 32/64-bit AXI4-Lite buses.</p></li>
+<li><p>Support optimized registers within the same register structure:</p>
+<ul>
+<li><p>Support constant read-only registers for fixed values like generic parameters.</p></li>
+<li><p>Support fall-through registers to provide access e.g. to transmit and receive <a class="reference internal" href="../../../Glossary.html#term-FIFO"><span class="xref std std-term">FIFOs</span></a>.</p></li>
+</ul>
+</li>
+<li><p>The register can generate interrupts</p></li>
+</ul>
+</aside>
+<aside class="topic" id="ip-axi4lite-register-features">
+<p class="topic-title">Features</p>
+<ul class="simple">
+<li><p>Supports 32-bit (4-byte aligned) and 64-bit registers (8-byte aligned).</p></li>
+<li><p>Supports 32-bit and 64-bit AXI4-Lite interface.</p></li>
+<li><p>Indicate register access from AXI4-Lite as a <em>hit</em> signal.</p></li>
+<li><p>Sparse register address support (address range can have unaccessible addresses).</p></li>
+<li><p>Generate interrupt requests depending on register configurations.</p>
+<ul>
+<li><p>Configurable IRQ pattern: <a class="reference internal" href="../../../Glossary.html#term-Strobe"><span class="xref std std-term">strobe</span></a> vs. <a class="reference internal" href="../../../Glossary.html#term-Flag"><span class="xref std std-term">flag</span></a>.</p></li>
+<li><p>Provide interrupt reason and interrupt enable registers if interrupt causing registers are configured.</p></li>
+<li><p>Configurable interrupt reason register address.</p></li>
+<li><p>Configurable interrupt enable register address.</p></li>
+</ul>
+</li>
+<li><p>AXI4 error handling and response codes:</p>
+<ul>
+<li><p>Generate negative AXI4 response on permission errors (e.g. writing on a readonly register)</p></li>
+<li><p>Generate negative AXI4 response on addressing errors (e.g. access to non-existing address)</p></li>
+<li><p>Configurable AXI4 response code in case of access errors.</p></li>
+</ul>
+</li>
+<li><p>Configurable reset behavior:</p>
+<ul>
+<li><p>Reload initial register values on reset.</p></li>
+</ul>
+</li>
+<li><p>If in debug mode, mark important signals as <code class="docutils literal notranslate"><span class="pre">debug</span></code> and write register configuration and internal calculations
+into synthesis log.</p></li>
+</ul>
+</aside>
+<section id="instantiation">
+<span id="ip-axi4lite-register-instantiation"></span><h2>Instantiation<a class="headerlink" href="#instantiation" title="Link to this heading"></a></h2>
+<p>Depending on the complexity of the register (number of registers, register modes, repeated groups), various VHDL coding
+styles (also with vary complexity) can be used to configure the axi4lite_Register completely in VHDL. No external
+scripting or code generation is needed to describe and use the AXI4-Lite register.</p>
+<section id="simple-register">
+<span id="ip-axi4lite-register-inst-simple"></span><h3>Simple Register<a class="headerlink" href="#simple-register" title="Link to this heading"></a></h3>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-column sd-col-5 sd-col-xs-5 sd-col-sm-5 sd-col-md-5 sd-col-lg-5 docutils">
+<p>The example code on the right side demonstrates a simple 32-bit AXI4-Lite register offering two registers at
+addresses <code class="code highlight vhdl docutils literal highlight-vhdl"><span class="mi">0</span><span class="n">x00</span></code> and <code class="code highlight vhdl docutils literal highlight-vhdl"><span class="mi">0</span><span class="n">x04</span></code>. The first register is configured in read-write mode, the second
+one is in read-only mode. The register description array is provided directly in the <em>generic map</em> to the
+<a class="reference internal" href="#ip-axi4lite-register-gen-config"><span class="std std-ref">CONFIG</span></a> parameter within the register instantiation.</p>
+<p>The <em>port map</em> connect the system signals <a class="reference internal" href="#ip-axi4lite-register-port-clock"><span class="std std-ref">Clock</span></a> and
+<a class="reference internal" href="#ip-axi4lite-register-port-reset"><span class="std std-ref">Reset</span></a> as well as the AXI4-Lite interface consisting of
+<a class="reference internal" href="#ip-axi4lite-register-port-axi4lite-m2s"><span class="std std-ref">AXI4Lite_m2s</span></a>, <a class="reference internal" href="#ip-axi4lite-register-port-axi4lite-s2m"><span class="std std-ref">AXI4Lite_s2m</span></a> and
+<a class="reference internal" href="#ip-axi4lite-register-port-axi4lite-irq"><span class="std std-ref">AXI4Lite_irq</span></a> to the AXI4-Lite infrastructure.</p>
+<p>For this simple read and write use-model, only ports <a class="reference internal" href="#ip-axi4lite-register-port-registerfile-readport"><span class="std std-ref">RegisterFile_ReadPort</span></a> and
+<a class="reference internal" href="#ip-axi4lite-register-port-registerfile-writeport"><span class="std std-ref">RegisterFile_WritePort</span></a> are required.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The naming is chosen from <strong>fabric view</strong>, thus writing is from fabric to register and reading is from register
+to fabric.</p>
+</div>
+<p>The following code accesses a single register by it’s configuration index according to the configuration generic
+(this is not the register offset).</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">signal</span><span class="w"> </span><span class="n">my_Value32Bit</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+
+<span class="n">my_Value32Bit</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">ReadPort</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span><span class="w">      </span><span class="c1">-- register &#39;Value&#39;</span>
+</pre></div>
+</div>
+<p>A register value can be provided from VHDL code as follows:</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">signal</span><span class="w"> </span><span class="n">my_Status32Bit</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+
+<span class="n">WritePort</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">my_Status32Bit</span><span class="p">;</span><span class="w">    </span><span class="c1">-- register &#39;Status&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row sd-col-7 sd-col-xs-7 sd-col-sm-7 sd-col-md-7 sd-col-lg-7 docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">myReg_blk</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">block</span>
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">ReadPort</span><span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="n">T_SLVV</span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">1</span><span class="p">)(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">WritePort</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">T_SLVV</span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">1</span><span class="p">)(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="k">begin</span>
+<span class="w">  </span><span class="n">Reg</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">entity</span><span class="w"> </span><span class="nc">PoC</span><span class="p">.</span><span class="n">axi4lite_Register</span>
+<span class="w">  </span><span class="k">generic</span><span class="w"> </span><span class="k">map</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">CONFIG</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">(</span>
+<span class="w">      </span><span class="mi">0</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_AXI4_Register</span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;Value&quot;</span><span class="p">,</span><span class="w">  </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">32</span><span class="mh">x&quot;0&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ReadWrite</span><span class="p">),</span>
+<span class="w">      </span><span class="mi">1</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_AXI4_Register</span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;Status&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">32</span><span class="mh">x&quot;4&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ReadOnly</span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="w">  </span><span class="p">)</span>
+<span class="w">  </span><span class="k">port</span><span class="w"> </span><span class="k">map</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">Clock</span><span class="w">                         </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Clock</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Reset</span><span class="w">                         </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Reset</span><span class="p">,</span>
+
+<span class="w">    </span><span class="n">AXI4Lite_m2s</span><span class="w">                  </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ConfigRegister_m2s</span><span class="p">,</span>
+<span class="w">    </span><span class="n">AXI4Lite_s2m</span><span class="w">                  </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ConfigRegister_s2m</span><span class="p">,</span>
+<span class="w">    </span><span class="n">AXI4Lite_irq</span><span class="w">                  </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">open</span><span class="p">,</span>
+
+<span class="w">    </span><span class="n">RegisterFile_ReadPort</span><span class="w">         </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ReadPort</span><span class="p">,</span><span class="w">  </span><span class="c1">-- read from fabric</span>
+<span class="w">    </span><span class="n">RegisterFile_WritePort</span><span class="w">        </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">WritePort</span><span class="w">  </span><span class="c1">-- write from fabric</span>
+<span class="w">  </span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="register-description-from-generator-function">
+<span id="ip-axi4lite-register-inst-genconfig"></span><h3>Register Description from Generator Function<a class="headerlink" href="#register-description-from-generator-function" title="Link to this heading"></a></h3>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 docutils">
+<div class="sd-col sd-d-flex-column sd-col-5 sd-col-xs-5 sd-col-sm-5 sd-col-md-5 sd-col-lg-5 docutils">
+<p>A register description is an array of type <code class="xref py py-type docutils literal notranslate"><span class="pre">T_AXI4_Register_Vector</span></code>. Such an array can be constructed by an
+aggregate expression (see <a class="reference internal" href="#ip-axi4lite-register-inst-simple"><span class="std std-ref">Simple Register</span></a>), by calling a user-defined helper function or
+by concatenating results from multiple user-defined helper functions.</p>
+<p>The example code on the right side demonstrates how local signals can be sized based on a <code class="code highlight vhdl docutils literal highlight-vhdl"><span class="n">CONFIG</span></code>
+constant.The constant itself is computed by a user-defined function. See section
+<a class="reference internal" href="#ip-axi4lite-register-configuration"><span class="std std-ref">Configuration</span></a> for details.</p>
+<p>When a register is access from AXI4-Lite side, a hit event (<a class="reference internal" href="../../../Glossary.html#term-Strobe"><span class="xref std std-term">strobe</span></a>) is generated. In case an AXI4-Lite
+read operation was executed and a matching register offset was decoded, a corresponding bit is active for one
+clock cycle in <a class="reference internal" href="#ip-axi4lite-register-port-registerfile-writeport-hit"><span class="std std-ref">RegisterFile_WritePort_hit</span></a>. Similarly, in case an AXI4-Lite write
+operation was executed and a matching register offset was decoded, a corresponding bit within
+<a class="reference internal" href="#ip-axi4lite-register-port-registerfile-readport-hit"><span class="std std-ref">RegisterFile_ReadPort_hit</span></a> is asserted for one clock cycle.</p>
+<div class="admonition-advantages-of-a-generator-function admonition">
+<p class="admonition-title">Advantages of a generator function</p>
+<p>Employing a user-defined helper function offer multiple advantages:</p>
+<ul class="simple">
+<li><p>Encapsulate register description generation in a local or global VHDL function.</p></li>
+<li><p>Use VHDL language constructs like concatenation, loops, if-then-else or other subprogram to construct a
+description.</p></li>
+<li><p>Automate register names and register offset incrementation.</p></li>
+<li><p>Generate registers based on function parameters (e.g. from generics).</p></li>
+<li><p>Store the register description in a constant.</p></li>
+<li><p>Lookup register indices by name.</p></li>
+</ul>
+</div>
+</div>
+<div class="sd-col sd-d-flex-column sd-col-7 sd-col-xs-7 sd-col-sm-7 sd-col-md-7 sd-col-lg-7 docutils">
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">myReg_blk</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">block</span>
+<span class="w">  </span><span class="k">constant</span><span class="w"> </span><span class="n">CONFIG</span><span class="w">         </span><span class="o">:</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="w">                   </span><span class="o">:=</span><span class="w"> </span><span class="n">genConfig</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">ReadPort</span><span class="w">         </span><span class="o">:</span><span class="w"> </span><span class="n">T_SLVV</span><span class="p">(</span><span class="w">          </span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">CONFIG</span><span class="na">&#39;length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">ReadPort_hit</span><span class="w">     </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">CONFIG</span><span class="na">&#39;length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">WritePort</span><span class="w">        </span><span class="o">:</span><span class="w"> </span><span class="n">T_SLVV</span><span class="p">(</span><span class="w">          </span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">CONFIG</span><span class="na">&#39;length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">WritePort_hit</span><span class="w">    </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">CONFIG</span><span class="na">&#39;length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">WritePort_strobe</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">CONFIG</span><span class="na">&#39;length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">get_StrobeVector</span><span class="p">(</span><span class="n">CONFIG</span><span class="p">);</span>
+<span class="k">begin</span>
+<span class="w">  </span><span class="n">Reg</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">entity</span><span class="w"> </span><span class="nc">PoC</span><span class="p">.</span><span class="n">axi4lite_Register</span>
+<span class="w">  </span><span class="k">generic</span><span class="w"> </span><span class="k">map</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">CONFIG</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">CONFIG</span>
+<span class="w">  </span><span class="p">)</span>
+<span class="w">  </span><span class="k">port</span><span class="w"> </span><span class="k">map</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">Clock</span><span class="w">                         </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Clock</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Reset</span><span class="w">                         </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Reset</span><span class="p">,</span>
+
+<span class="w">    </span><span class="n">AXI4Lite_m2s</span><span class="w">                  </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ConfigRegister_m2s</span><span class="p">,</span>
+<span class="w">    </span><span class="n">AXI4Lite_s2m</span><span class="w">                  </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ConfigRegister_s2m</span><span class="p">,</span>
+<span class="w">    </span><span class="n">AXI4Lite_irq</span><span class="w">                  </span><span class="o">=&gt;</span><span class="w"> </span><span class="k">open</span><span class="p">,</span>
+
+<span class="w">    </span><span class="n">RegisterFile_ReadPort</span><span class="w">         </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ReadPort</span><span class="p">,</span>
+<span class="w">    </span><span class="n">RegisterFile_ReadPort_hit</span><span class="w">     </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">ReadPort_hit</span><span class="p">,</span>
+<span class="w">    </span><span class="n">RegisterFile_WritePort</span><span class="w">        </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">WritePort</span>
+<span class="w">    </span><span class="n">RegisterFile_WritePort_hit</span><span class="w">    </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">WritePort_hit</span><span class="p">,</span>
+<span class="w">    </span><span class="n">RegisterFile_WritePort_strobe</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">WritePort_strobe</span>
+<span class="w">  </span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="interface">
+<span id="ip-axi4lite-register-interface"></span><h2>Interface<a class="headerlink" href="#interface" title="Link to this heading"></a></h2>
+<p>The IP core offers a system interface (clock, reset), the AXI4-Lite interface and access to the internal registers from
+fabric.</p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>The naming of fabric ports is from fabric point-of-view. However, the naming of register modes like <code class="docutils literal notranslate"><span class="pre">ReadOnly</span></code> is
+from AXI4-Lite manger (CPU, software) point-of-view.</p>
+</div>
+<section id="generics">
+<span id="ip-axi4lite-register-generics"></span><h3>Generics<a class="headerlink" href="#generics" title="Link to this heading"></a></h3>
+<section id="config">
+<span id="ip-axi4lite-register-gen-config"></span><h4><span class="genericname">CONFIG</span><a class="headerlink" href="#config" title="Link to this heading"></a></h4>
+<dl class="field-list">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">CONFIG</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">AXI4Lite:T_AXI4_Register_Vector</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p>— — — —</p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>Register description as an array of <code class="xref py py-type docutils literal notranslate"><span class="pre">AXI4Lite:T_AXI4_Register</span></code> values. Usually, these array
+elements are constructed by the helper function <span class="subprogramname">to_AXI4_Register</span>.</p>
+<p>See <a class="reference internal" href="#ip-axi4lite-register-configuration"><span class="std std-ref">Configuration</span></a></p>
+</dd>
+</dl>
+</section>
+<section id="interrupt-is-strobe">
+<span id="ip-axi4lite-register-gen-interrupt-is-strobe"></span><h4><span class="genericname">INTERRUPT_IS_STROBE</span><a class="headerlink" href="#interrupt-is-strobe" title="Link to this heading"></a></h4>
+<dl class="field-list">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">INTERRUPT_IS_STROBE</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">boolean</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>Define the behavior of the interrupt request port <a class="reference internal" href="#ip-axi4lite-register-port-axi4lite-irq"><span class="std std-ref">AXI4Lite_irq</span></a>.</p>
+<p>If this generic is <code class="docutils literal notranslate"><span class="pre">true</span></code>, a <a class="reference internal" href="../../../Glossary.html#term-Strobe"><span class="xref std std-term">edge (strobe)</span></a> interrupt is generated, otherwise a
+<a class="reference internal" href="../../../Glossary.html#term-Flag"><span class="xref std std-term">level (flag)</span></a> interrupt.</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>With this generic, it can be selected if the Interrupt-pin should through an interrupt as <code class="docutils literal notranslate"><span class="pre">Strobe</span></code>
+or <code class="docutils literal notranslate"><span class="pre">Value</span></code>. By selecting <code class="docutils literal notranslate"><span class="pre">Strobe</span></code>, the module will block a new interrupt until the
+<code class="docutils literal notranslate"><span class="pre">INTERRUPT_MATCH_REGISTER</span></code> is read out.</p>
+</div>
+</dd>
+</dl>
+</section>
+<section id="interrupt-enable-register-address">
+<span id="ip-axi4lite-register-gen-interrupt-enable-register-address"></span><h4><span class="genericname">INTERRUPT_ENABLE_REGISTER_ADDRESS</span><a class="headerlink" href="#interrupt-enable-register-address" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">INTERRUPT_ENABLE_REGISTER_ADDRESS</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">unsigned</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">x&quot;00&quot;</span></code></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>If Interrupts are used, this generic selects the address of the internal <code class="docutils literal notranslate"><span class="pre">INTERRUPT_ENABLE_REGISTER</span></code>.</p>
+</dd>
+</dl>
+</section>
+<section id="interrupt-match-register-address">
+<span id="ip-axi4lite-register-gen-interrupt-match-register-address"></span><h4><span class="genericname">INTERRUPT_MATCH_REGISTER_ADDRESS</span><a class="headerlink" href="#interrupt-match-register-address" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">INTERRUPT_MATCH_REGISTER_ADDRESS</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">unsigned</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">x&quot;04&quot;</span></code></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>If Interrupts are used, this generic selects the address of the internal <code class="docutils literal notranslate"><span class="pre">INTERRUPT_MATCH_REGISTER</span></code>.</p>
+</dd>
+</dl>
+</section>
+<section id="init-on-reset">
+<span id="ip-axi4lite-register-gen-init-on-reset"></span><h4><span class="genericname">INIT_ON_RESET</span><a class="headerlink" href="#init-on-reset" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">INIT_ON_RESET</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">boolean</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Init-value of the registers, that is set by the <code class="docutils literal notranslate"><span class="pre">Config</span></code>, is set by default with the Reset. This
+can be disabled here. This helps with reducing control-sets and therefore helps by CLB utilization.</p>
+</dd>
+</dl>
+</section>
+<section id="ignore-high-address">
+<span id="ip-axi4lite-register-gen-ignore-high-address"></span><h4><span class="genericname">IGNORE_HIGH_ADDRESS</span><a class="headerlink" href="#ignore-high-address" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">IGNORE_HIGH_ADDRESS</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">boolean</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>The module will calculate based on the configuration how many bits are needed to address every specified
+register. If this generic is set, it will ignore every bit which is coming after the needed address-bits.
+These bits are considered as base address. By setting this value, you can pass the full 40/32bit from
+Zynq, and it will filter out the base address for it.</p>
+</dd>
+</dl>
+</section>
+<section id="response-on-error">
+<span id="ip-axi4lite-register-gen-response-on-error"></span><h4><span class="genericname">RESPONSE_ON_ERROR</span><a class="headerlink" href="#response-on-error" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">RESPONSE_ON_ERROR</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">AXI4Lite:T_AXI4_Response</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">C_AXI4_RESPONSE_DECODE_ERROR</span></code></p>
+</dd>
+<dt class="field-even">Possible Values<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">C_AXI4_RESPONSE_OKAY</span></code>, <code class="docutils literal notranslate"><span class="pre">C_AXI4_RESPONSE_EX_OKAY</span></code>, <code class="docutils literal notranslate"><span class="pre">C_AXI4_RESPONSE_SLAVE_ERROR</span></code> or <code class="docutils literal notranslate"><span class="pre">C_AXI4_RESPONSE_DECODE_ERROR</span></code></p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>With this generic can be selected which response code should be sent out if an address is accessed that
+is not handled by <code class="docutils literal notranslate"><span class="pre">Config</span></code>.</p>
+</dd>
+</dl>
+</section>
+<section id="disable-address-check">
+<span id="ip-axi4lite-register-gen-disable-address-check"></span><h4><span class="genericname">DISABLE_ADDRESS_CHECK</span><a class="headerlink" href="#disable-address-check" title="Link to this heading"></a></h4>
+<dl class="field-list">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">DISABLE_ADDRESS_CHECK</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">boolean</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>The module is internally calculating if any registers have overlapping addresses and will create an
+error if so. This check takes a bit of synthesis time that depends on the size of <code class="docutils literal notranslate"><span class="pre">Config</span></code>. This check
+can be disabled.</p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>This is not recommended!</p>
+</div>
+</dd>
+</dl>
+</section>
+<section id="debug">
+<span id="ip-axi4lite-register-gen-debug"></span><h4><span class="genericname">DEBUG</span><a class="headerlink" href="#debug" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="genericname">DEBUG</span></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-type docutils literal notranslate"><span class="pre">boolean</span></code></p>
+</dd>
+<dt class="field-odd">Default Value<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>If set to true, the module will print the configuration and settings into the synthesis-log with
+<code class="docutils literal notranslate"><span class="pre">assert</span></code>.</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If set to true, the module sets specific internal signals as mark-debug. These signals are the
+hit-vectors, decoded addresses, and interrupt signals.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="ports">
+<span id="ip-axi4lite-register-ports"></span><h3>Ports<a class="headerlink" href="#ports" title="Link to this heading"></a></h3>
+<section id="clock">
+<span id="ip-axi4lite-register-port-clock"></span><h4><span class="portname">Clock</span><a class="headerlink" href="#clock" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">Clock</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">std_logic</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>in</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Clock</p>
+</dd>
+</dl>
+</section>
+<section id="reset">
+<span id="ip-axi4lite-register-port-reset"></span><h4><span class="portname">Reset</span><a class="headerlink" href="#reset" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">Reset</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">std_logic</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>in</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>synchronous high-active reset</p>
+</dd>
+</dl>
+</section>
+<section id="axi4lite-m2s">
+<span id="ip-axi4lite-register-port-axi4lite-m2s"></span><h4><span class="portname">AXI4Lite_m2s</span><a class="headerlink" href="#axi4lite-m2s" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">AXI4Lite_m2s</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">axi4lite.T_AXI4Lite_Bus_m2s</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>in</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>AXI4-Lite manager to subordinate signals.</p>
+</dd>
+</dl>
+</section>
+<section id="axi4lite-s2m">
+<span id="ip-axi4lite-register-port-axi4lite-s2m"></span><h4><span class="portname">AXI4Lite_s2m</span><a class="headerlink" href="#axi4lite-s2m" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">AXI4Lite_s2m</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">axi4lite.T_AXI4Lite_Bus_s2m</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>out</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>AXI4-Lite subordinate to manager signals.</p>
+</dd>
+</dl>
+</section>
+<section id="axi4lite-irq">
+<span id="ip-axi4lite-register-port-axi4lite-irq"></span><h4><span class="portname">AXI4Lite_irq</span><a class="headerlink" href="#axi4lite-irq" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">AXI4Lite_irq</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">std_logic</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>out</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>AXI4-Lite interrupt request. <br />
+Functionality depends on configured generics.</p>
+</dd>
+</dl>
+</section>
+<section id="registerfile-readport">
+<span id="ip-axi4lite-register-port-registerfile-readport"></span><h4><span class="portname">RegisterFile_ReadPort</span><a class="headerlink" href="#registerfile-readport" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">RegisterFile_ReadPort</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">T_SLVV(0</span> <span class="pre">to</span> <span class="pre">CONFIG'length</span> <span class="pre">-</span> <span class="pre">1)(31</span> <span class="pre">downto</span> <span class="pre">0)</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>out</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Read-Port for register values (to fabric). <br />
+An array of 32-bit words; one 32-bit word per register.</p>
+</dd>
+</dl>
+</section>
+<section id="registerfile-readport-hit">
+<span id="ip-axi4lite-register-port-registerfile-readport-hit"></span><h4><span class="portname">RegisterFile_ReadPort_hit</span><a class="headerlink" href="#registerfile-readport-hit" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">RegisterFile_ReadPort_hit</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">std_logic_vector(0</span> <span class="pre">to</span> <span class="pre">CONFIG'length</span> <span class="pre">-</span> <span class="pre">1)</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>out</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Hit-vector to fabric. A bit is asserted if the a AXI4-Lite manager has written a specific register and
+therefore changed the value in the corresponding register.</p>
+</dd>
+</dl>
+</section>
+<section id="registerfile-writeport">
+<span id="ip-axi4lite-register-port-registerfile-writeport"></span><h4><span class="portname">RegisterFile_WritePort</span><a class="headerlink" href="#registerfile-writeport" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">RegisterFile_WritePort</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">T_SLVV(0</span> <span class="pre">to</span> <span class="pre">CONFIG'length</span> <span class="pre">-</span> <span class="pre">1)(31</span> <span class="pre">downto</span> <span class="pre">0)</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>in</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Write-Port for register values (from fabric). <br />
+An array of 32-bit words; one 32-bit word per register.</p>
+</dd>
+</dl>
+</section>
+<section id="registerfile-writeport-hit">
+<span id="ip-axi4lite-register-port-registerfile-writeport-hit"></span><h4><span class="portname">RegisterFile_WritePort_hit</span><a class="headerlink" href="#registerfile-writeport-hit" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">RegisterFile_WritePort_hit</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">std_logic_vector(0</span> <span class="pre">to</span> <span class="pre">CONFIG'length</span> <span class="pre">-</span> <span class="pre">1)</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>out</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Hit-vector to fabric. A bit is asserted if the a AXI4-Lite manager has read a specific register and
+therefore fetched the value in the corresponding register.</p>
+</dd>
+</dl>
+</section>
+<section id="registerfile-writeport-strobe">
+<span id="ip-axi4lite-register-port-registerfile-writeport-strobe"></span><h4><span class="portname">RegisterFile_WritePort_strobe</span><a class="headerlink" href="#registerfile-writeport-strobe" title="Link to this heading"></a></h4>
+<dl class="field-list">
+<dt class="field-odd">Name<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">RegisterFile_WritePort_strobe</span></code></p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">std_logic_vector(0</span> <span class="pre">to</span> <span class="pre">CONFIG'length</span> <span class="pre">-</span> <span class="pre">1)</span></code></p>
+</dd>
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p>in</p>
+</dd>
+<dt class="field-even">Default Value<span class="colon">:</span></dt>
+<dd class="field-even"><p>— — — —</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>By asserting a bit to <code class="docutils literal notranslate"><span class="pre">'1'</span></code>, the corresponding value at <code class="docutils literal notranslate"><span class="pre">RegisterFile_WritePort</span></code> is captured into
+the corresponding register. <br />
+The default value is set by the function <code class="docutils literal notranslate"><span class="pre">get_strobeVector(CONFIG)</span></code>.</p>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>Overwrite is mostly needed if <code class="docutils literal notranslate"><span class="pre">rw_config</span></code> is set to <cite>readWriteable</cite>.</p>
+</div>
+</dd>
+</dl>
+</section>
+</section>
+</section>
+<section id="configuration">
+<span id="ip-axi4lite-register-configuration"></span><h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
+<section id="register-description">
+<span id="ip-axi4lite-register-config-registers"></span><h3>Register Description<a class="headerlink" href="#register-description" title="Link to this heading"></a></h3>
+<p>The configuration can be created in many different ways. If the register is small, it can be done like above by directly
+setting the register in the generic. This approach has the disadvantage that the index of the read and write port is
+changing if an register is added later. This can easily create errors inside the design, if not each and every index is
+checked and updated if needed. This is why this approach <strong>is not commanded</strong>.</p>
+<p>The next step is to save the Config inside a constant. If done like this, the register can also use the <cite>Name</cite>-field.
+If all register are named, the index of the register can be calculated by helper-functions with its specific name (See
+next section <cite>Helper Functions</cite>). This helps to prevent from errors and allows easily to extend the register because the
+index is calculated new and updated appropriate. This approach is only suitable for mid-complex registers.</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">function</span><span class="w"> </span><span class="n">genConfig</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="w"> </span><span class="k">is</span>
+<span class="w">  </span><span class="k">variable</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">511</span><span class="p">);</span>
+<span class="w">  </span><span class="k">variable</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">natural</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">variable</span><span class="w"> </span><span class="n">pos</span><span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="kt">natural</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="k">begin</span>
+<span class="w">  </span><span class="n">temp</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">to_AXI4_Register</span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;System.Version&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_unsigned</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">),</span><span class="w"> </span><span class="n">Init_Value</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="n">to_unsigned</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">)),</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">constant_fromInit</span><span class="p">);</span>
+<span class="w">  </span><span class="n">addr</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">+</span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="n">pos</span><span class="w">  </span><span class="o">:=</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+<span class="w">  </span><span class="n">temp</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">to_AXI4_Register</span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;System.Status&quot;</span><span class="p">,</span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_unsigned</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">),</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readable</span><span class="p">);</span>
+<span class="w">  </span><span class="n">addr</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">+</span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="n">pos</span><span class="w">  </span><span class="o">:=</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+
+<span class="w">  </span><span class="n">addr</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">256</span><span class="p">;</span>
+<span class="w">  </span><span class="n">temp</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">to_AXI4_Register</span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;System.Command&quot;</span><span class="p">,</span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_unsigned</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">),</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readWriteable</span><span class="p">,</span><span class="w"> </span><span class="n">Auto_Clear_Mask</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mh">x&quot;FFFFFFFF&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="n">addr</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">+</span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="n">pos</span><span class="w">  </span><span class="o">:=</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">temp</span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">end</span><span class="w"> </span><span class="k">function</span><span class="p">;</span>
+
+<span class="k">constant</span><span class="w"> </span><span class="n">CONFIG</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">gen_config</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>This example configuration creates a total of three registers. After one register is created the index/position is
+incremented by one and the address by 4. The addresses are adapting automatically. As can be seen, the third register is
+shifted to address 0x100 by overwriting the addr variable. This creates an empty space between 0x4 and 0x100, which is
+creating a <code class="docutils literal notranslate"><span class="pre">RESPONSE_ON_ERROR</span></code> code while read or write access.</p>
+<p>In this function registers can be created also as a loop:</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">Num_RTT</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="k">loop</span>
+<span class="w">  </span><span class="n">temp</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">to_AXI4_Register</span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;Data_Value(&quot;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="kt">integer</span><span class="na">&#39;image</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="s">&quot;)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_unsigned</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">),</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readable</span><span class="p">);</span>
+<span class="w">       </span><span class="n">pos</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">+</span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">+</span><span class="mi">4</span><span class="p">;</span>
+<span class="w">     </span><span class="k">end</span><span class="w"> </span><span class="k">loop</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>By giving each loop-register a different name dependent on the constant <cite>i</cite>, it can be referenced separately.</p>
+<section id="record-data-structure">
+<h4>Record Data Structure<a class="headerlink" href="#record-data-structure" title="Link to this heading"></a></h4>
+<p>The configuration specified via <a class="reference internal" href="#ip-axi4lite-register-gen-config"><span class="std std-ref">CONFIG</span></a> generic determines the functionality of the
+register. It’s an array of the <code class="docutils literal notranslate"><span class="pre">AXI4Lite.pkg:T_AXI4_Register_Description</span></code>. This record has the following elements:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Name</p></td>
+<td><p>string(1 to 64)</p></td>
+<td><p>A Name as string can be selected for this register.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Address</p></td>
+<td><p>unsigned(31 downto 0)</p></td>
+<td><p>The Address of this register.</p></td>
+</tr>
+<tr class="row-even"><td><p>rw_config</p></td>
+<td><p>T_ReadWrite_Config</p></td>
+<td><p>See chapter <code class="docutils literal notranslate"><span class="pre">Register</span> <span class="pre">Mode</span> <span class="pre">(ReadWrite-Config)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Init_Value</p></td>
+<td><p>std_logic_vector(31 downto 0)</p></td>
+<td><p>The initial value after reset or boot-up of the register.</p></td>
+</tr>
+<tr class="row-even"><td><p>Auto_Clear_Mask</p></td>
+<td><p>std_logic_vector(31 downto 0)</p></td>
+<td><p>Auto-clear-mask if rw_config is <cite>readWriteable</cite>. Bits set in
+this maks are given out only as a strobe and cleared with the
+next clock-cycle.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Is_Interrupt_Register</p></td>
+<td><p>boolean</p></td>
+<td><p>Selects if this register can create and interrupt or not.
+See section <cite>Interrupt</cite>.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="register-modes">
+<span id="ip-axi4lite-register-config-modes"></span><h3>Register Modes<a class="headerlink" href="#register-modes" title="Link to this heading"></a></h3>
+<p>For each register, a mode can be selected with the field <cite>rw_config</cite>. This mode depends on the functionality that should
+be achieved. Possible modes are:</p>
+<section id="constantvalue">
+<h4><span class="value">ConstantValue</span><a class="headerlink" href="#constantvalue" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">ConstantValue</span></p>
+</dd>
+<dt class="field-even">Behavior<span class="colon">:</span></dt>
+<dd class="field-even"><p>constant value</p>
+</dd>
+<dt class="field-odd">Description<span class="colon">:</span></dt>
+<dd class="field-odd"><p>This Mode connects the <code class="docutils literal notranslate"><span class="pre">Init_Value</span></code> directly to the read-mux. No Flip-Flop is created and the Read and
+Write Port is unconnected.</p>
+</dd>
+</dl>
+</section>
+<section id="readonly">
+<h4><span class="value">ReadOnly</span><a class="headerlink" href="#readonly" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">ReadOnly</span></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>This Mode is used to provide a Status register.</p>
+</dd>
+</dl>
+</section>
+<section id="readonly-notregistered">
+<h4><span class="value">ReadOnly_NotRegistered</span><a class="headerlink" href="#readonly-notregistered" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">ReadOnly_NotRegistered</span></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>As <code class="docutils literal notranslate"><span class="pre">readable</span></code> but does not create flip-flops internally. The WritePort is directly connected to the
+read-mux. Can be used if data is already driven by registers or if path is not time-critical.</p>
+</dd>
+</dl>
+</section>
+<section id="readwrite">
+<h4><span class="value">ReadWrite</span><a class="headerlink" href="#readwrite" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">ReadWrite</span></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>This Mode can be used to configure or control the PL form SW. Software can write into this register, and
+it will be visible through <cite>RegisterFile_ReadPort</cite>. The PL can also overwrite the Value by setting the
+corresponding bit in port <cite>RegisterFile_WritePort_strobe</cite>. In this mode, the field <code class="docutils literal notranslate"><span class="pre">Auto_Clear_Mask</span></code> is
+active. It can be used to control FSM’s with a command, that is set only for one CC.</p>
+</dd>
+</dl>
+</section>
+<section id="readwrite-notregistered">
+<h4><span class="value">ReadWrite_NotRegistered</span><a class="headerlink" href="#readwrite-notregistered" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">ReadWrite_NotRegistered</span></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p>This mode is used only for special use-cases. It provides the internal read- and write-mux connections
+directly to the ports, so any external functionality can be implemented. <strong>Data on the
+``RegisterFile_ReadPort`` is only valid if ``RegisterFile_WritePort_strobe`` is set!</strong> See also chapter
+<cite>Special Functionality</cite>.</p>
+</dd>
+</dl>
+</section>
+<section id="latchvalue-clearonread">
+<h4><span class="value">LatchValue_ClearOnRead</span><a class="headerlink" href="#latchvalue-clearonread" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">LatchValue_ClearOnRead</span></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Interrupt</span> <span class="pre">Capable</span></code> After Reset or boot-up, this latch is cleared and can accept new data. If Stobe is
+then set, the data from <code class="docutils literal notranslate"><span class="pre">RegisterFile_WritePort</span></code> is saved. If this value is unequal to <cite>Init_Value</cite>, the
+value can not be overwritten until the SW reads it out. If latching condition is met and register is set
+as <cite>Is_Interrupt_Register</cite>, and interrupt is thrown.</p>
+</dd>
+</dl>
+</section>
+<section id="latchvalue-clearonwrite">
+<h4><span class="value">LatchValue_ClearOnWrite</span><a class="headerlink" href="#latchvalue-clearonwrite" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">LatchValue_ClearOnWrite</span></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Interrupt</span> <span class="pre">Capable</span></code> Same as <cite>latchValue_clearOnRead</cite>, but it is only cleared by actively writing into
+this register. The written value is ignored.</p>
+</dd>
+</dl>
+</section>
+<section id="latchhighbit-clearonread">
+<h4><span class="value">LatchHighBit_ClearOnRead</span><a class="headerlink" href="#latchhighbit-clearonread" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">LatchHighBit_ClearOnRead</span></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Interrupt</span> <span class="pre">Capable</span></code> By setting <cite>Strobe</cite>, the value of <code class="docutils literal notranslate"><span class="pre">RegisterFile_WritePort</span></code> is logically or-red
+together with the current register content. So a one-bit is always added to the value. By reading this
+register out, the software gets the value and clears it as well.</p>
+</dd>
+</dl>
+</section>
+<section id="latchhighbit-clearonwrite">
+<h4><span class="value">LatchHighBit_ClearOnWrite</span><a class="headerlink" href="#latchhighbit-clearonwrite" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">LatchHighBit_ClearOnWrite</span></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Interrupt</span> <span class="pre">Capable</span></code> Same as <a href="#id3"><span class="problematic" id="id4">`</span></a>latchHighBit_clearOnRead <a href="#id5"><span class="problematic" id="id6">`</span></a>, but it is only cleared  by actively writing
+into this register. The written value is ignored.</p>
+</dd>
+</dl>
+</section>
+<section id="latchlowbit-clearonread">
+<h4><span class="value">LatchLowBit_ClearOnRead</span><a class="headerlink" href="#latchlowbit-clearonread" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">LatchLowBit_ClearOnRead</span></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Interrupt</span> <span class="pre">Capable</span></code> For low-active signals. By setting <cite>Strobe</cite>, the value of <code class="docutils literal notranslate"><span class="pre">RegisterFile_WritePort</span></code>
+is logically and-ed together with the current register content. So a zero-bit is always added to the
+value. By reading this register out, the software gets the value and sets all bits as well.</p>
+</dd>
+</dl>
+</section>
+<section id="latchlowbit-clearonwrite">
+<h4><span class="value">LatchLowBit_ClearOnWrite</span><a class="headerlink" href="#latchlowbit-clearonwrite" title="Link to this heading"></a></h4>
+<dl class="field-list simple">
+<dt class="field-odd">Mode<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="value">LatchLowBit_ClearOnWrite</span></p>
+</dd>
+<dt class="field-even">Description<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Interrupt</span> <span class="pre">Capable</span></code> Same as <a href="#id7"><span class="problematic" id="id8">`</span></a>latchLowBit_clearOnRead <a href="#id9"><span class="problematic" id="id10">`</span></a>, but it is only cleared  by actively writing into
+this register. The written value is ignored.</p>
+</dd>
+</dl>
+</section>
+<section id="reserved">
+<h4><span class="value">Reserved</span><a class="headerlink" href="#reserved" title="Link to this heading"></a></h4>
+</section>
+</section>
+<section id="helper-functions">
+<h3>Helper Functions<a class="headerlink" href="#helper-functions" title="Link to this heading"></a></h3>
+<p>For ease of use, functions are created to help for basic modifications of the configuration.</p>
+<section id="filter-register-vector">
+<h4>filter_Register_Vector<a class="headerlink" href="#filter-register-vector" title="Link to this heading"></a></h4>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">function</span><span class="w"> </span><span class="n">filter_Register_Vector</span><span class="p">(</span><span class="n">str</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="n">description_vector</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Removes all elements of <code class="docutils literal notranslate"><span class="pre">description_vector</span></code> where <cite>description_vector(i).name(str’range) /= str</cite>.</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">function</span><span class="w"> </span><span class="n">filter_Register_Vector</span><span class="p">(</span><span class="n">char</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">character</span><span class="p">;</span><span class="w"> </span><span class="n">description_vector</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span>
+</pre></div>
+</div>
+<p>Removes all elements of <code class="docutils literal notranslate"><span class="pre">description_vector</span></code> where <cite>description_vector(i).name(1) /= char</cite>.</p>
+</section>
+<section id="add-prefix">
+<h4>add_Prefix<a class="headerlink" href="#add-prefix" title="Link to this heading"></a></h4>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">function</span><span class="w"> </span><span class="n">add_Prefix</span><span class="p">(</span><span class="n">prefix</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="n">Config</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="p">;</span><span class="w"> </span><span class="n">offset</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">unsigned</span><span class="p">(</span><span class="n">Address_Width</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">(</span><span class="k">others</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Adds the string prefix <code class="docutils literal notranslate"><span class="pre">prefix</span></code> to each Config(x).Name and adds the <code class="docutils literal notranslate"><span class="pre">offset</span></code> value to the Config(x).Address. This
+function can be used if multiple standardized (as constant) register need to be put with a prefix into the big register.
+Here is an example:</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">constant</span><span class="w"> </span><span class="n">Config_Packetizer</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">(</span>
+<span class="w">  </span><span class="mi">0</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_AXI4_Register</span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;CMD&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_unsigned</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">),</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readWriteable</span><span class="p">)</span>
+<span class="w">  </span><span class="mi">1</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_AXI4_Register</span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;CMD2&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_unsigned</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">),</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readWriteable</span><span class="p">)</span>
+<span class="w">  </span><span class="mi">2</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_AXI4_Register</span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;STATUS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">to_unsigned</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">),</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readable</span><span class="p">));</span>
+
+<span class="k">function</span><span class="w"> </span><span class="n">gen_config</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="w"> </span><span class="k">is</span>
+<span class="w">  </span><span class="k">variable</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">T_AXI4_Register_Vector</span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">511</span><span class="p">);</span>
+<span class="w">  </span><span class="k">variable</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">natural</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">variable</span><span class="w"> </span><span class="n">pos</span><span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="kt">natural</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="k">begin</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">loop</span>
+<span class="w">    </span><span class="n">temp</span><span class="p">(</span><span class="n">pos</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Config_Packetizer</span><span class="na">&#39;length</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">add_prefix</span><span class="p">(</span><span class="s">&quot;Packetizer(&quot;</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="kt">integer</span><span class="na">&#39;image</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="s">&quot;).&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Config_Packetizer</span><span class="p">,</span><span class="w"> </span><span class="n">to_unsigned</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">));</span>
+<span class="w">    </span><span class="n">pos</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">pos</span><span class="w">   </span><span class="o">+</span><span class="w"> </span><span class="n">Config_Packetizer</span><span class="na">&#39;length</span><span class="p">;</span>
+<span class="w">    </span><span class="n">addr</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Config_Packetizer</span><span class="na">&#39;length</span><span class="w"> </span><span class="o">*</span><span class="mi">4</span><span class="p">;</span>
+<span class="w">  </span><span class="k">end</span><span class="w"> </span><span class="k">loop</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">temp</span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">end</span><span class="w"> </span><span class="k">function</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>This will result in a config that looks like this:</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;Packetizer(0).CMD&quot;</span><span class="p">,</span><span class="w">    </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">32</span><span class="mh">x&quot;0&quot;</span><span class="p">,</span><span class="w">  </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readWriteable</span><span class="p">),</span>
+<span class="mi">1</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;Packetizer(0).CMD2&quot;</span><span class="p">,</span><span class="w">   </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">32</span><span class="mh">x&quot;4&quot;</span><span class="p">,</span><span class="w">  </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readWriteable</span><span class="p">),</span>
+<span class="mi">2</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;Packetizer(0).STATUS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">32</span><span class="mh">x&quot;8&quot;</span><span class="p">,</span><span class="w">  </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readable</span><span class="p">),</span>
+<span class="mi">3</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;Packetizer(1).CMD&quot;</span><span class="p">,</span><span class="w">    </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">32</span><span class="mh">x&quot;C&quot;</span><span class="p">,</span><span class="w">  </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readWriteable</span><span class="p">),</span>
+<span class="mi">4</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;Packetizer(1).CMD2&quot;</span><span class="p">,</span><span class="w">   </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">32</span><span class="mh">x&quot;10&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readWriteable</span><span class="p">),</span>
+<span class="mi">5</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">Name</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s">&quot;Packetizer(1).STATUS&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Address</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">32</span><span class="mh">x&quot;14&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rw_config</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">readable</span><span class="p">),</span>
+</pre></div>
+</div>
+</section>
+<section id="to-axi4-register">
+<h4>to_AXI4_Register<a class="headerlink" href="#to-axi4-register" title="Link to this heading"></a></h4>
+<p>{-TODO-}</p>
+</section>
+<section id="get-addresses">
+<h4>get_addresses<a class="headerlink" href="#get-addresses" title="Link to this heading"></a></h4>
+<p>{-TODO-}</p>
+</section>
+<section id="get-initvalue">
+<h4>get_InitValue<a class="headerlink" href="#get-initvalue" title="Link to this heading"></a></h4>
+<p>{-TODO-}</p>
+</section>
+<section id="get-autoclearmask">
+<h4>get_AutoClearMask<a class="headerlink" href="#get-autoclearmask" title="Link to this heading"></a></h4>
+<p>{-TODO-}</p>
+</section>
+<section id="get-index">
+<h4>get_index<a class="headerlink" href="#get-index" title="Link to this heading"></a></h4>
+<p>{-TODO-}</p>
+</section>
+<section id="get-numberofindexes">
+<h4>get_NumberOfIndexes<a class="headerlink" href="#get-numberofindexes" title="Link to this heading"></a></h4>
+<p>{-TODO-}</p>
+</section>
+<section id="get-indexrange">
+<h4>get_indexRange<a class="headerlink" href="#get-indexrange" title="Link to this heading"></a></h4>
+<p>{-TODO-}</p>
+</section>
+<section id="get-address">
+<h4>get_Address<a class="headerlink" href="#get-address" title="Link to this heading"></a></h4>
+<p>{-TODO-}</p>
+</section>
+<section id="get-name">
+<h4>get_Name<a class="headerlink" href="#get-name" title="Link to this heading"></a></h4>
+<p>{-TODO-}</p>
+</section>
+<section id="get-strobevector">
+<h4>get_strobeVector<a class="headerlink" href="#get-strobevector" title="Link to this heading"></a></h4>
+<p>{-TODO-}</p>
+</section>
+</section>
+<section id="bit-registers">
+<span id="ip-axi4lite-register-config-64bitregister"></span><h3>64-bit Registers<a class="headerlink" href="#bit-registers" title="Link to this heading"></a></h3>
+<p>The register has a 64-bit register mode. If the Data-Size of the AXI4Lite record is 64-bit wide, the AXI4Lite-Register
+will automatically put into 64-bit mode. The SW can then write 64-bit aligned into two 32-bit register at once.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The definition in the config is still done with 32-bit registers. Two 32-bit register are combined to one 64-bit
+register. The read and write is done in the same CC and is consistent. Note that two Hits will be set for both 32-bit
+register. If the software is making a read_32 it is not possible to know from PL which of these two registers was
+actually read out (or written to).</p>
+</div>
+</section>
+<section id="interrupts">
+<span id="ip-axi4lite-register-config-interrupts"></span><h3>Interrupts<a class="headerlink" href="#interrupts" title="Link to this heading"></a></h3>
+<p>The <span class="componentname">axi4lite_Register</span> is capable of creating interrupts. The <code class="docutils literal notranslate"><span class="pre">rw_config</span></code> needs to be a latch type to be interrupt
+capable (See section Register Mode (ReadWrite-Config)). In total, 32 registers can be set as interrupt register. This
+limitation is due to the <code class="docutils literal notranslate"><span class="pre">interrupt</span> <span class="pre">match</span> <span class="pre">register</span></code> width of 32 bits. If an interrupt register is latched, the
+interrupt is thrown. If the software registers an interrupt, it needs to read out the <code class="docutils literal notranslate"><span class="pre">interrupt</span> <span class="pre">match</span> <span class="pre">register</span></code> to
+figure out which interrupt occurred. The order of the  bits here is equal to the order of the interrupt registers in the
+config.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Config</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">;</span> <span class="n">Name</span> <span class="p">;</span> <span class="n">Address</span> <span class="p">;</span> <span class="n">Init_Value</span> <span class="p">;</span> <span class="n">Auto_Clear_Mask</span> <span class="p">;</span> <span class="n">rw_config</span> <span class="p">;</span> <span class="n">Is_Interrupt_Register</span>
+<span class="mi">0</span> <span class="p">;</span> <span class="n">System</span><span class="o">.</span><span class="n">Version</span> <span class="p">;</span> <span class="mh">0x00000000</span> <span class="p">;</span> <span class="mh">0x00000003</span> <span class="p">;</span> <span class="mh">0x00000000</span> <span class="p">;</span> <span class="n">constant_fromInit</span> <span class="p">;</span> <span class="n">false</span>
+<span class="mi">1</span> <span class="p">;</span> <span class="n">System</span><span class="o">.</span><span class="n">Test</span><span class="p">;</span> <span class="mh">0x00000004</span> <span class="p">;</span> <span class="mh">0x00000000</span> <span class="p">;</span> <span class="mh">0x00000000</span> <span class="p">;</span> <span class="n">latchLowBit_clearOnRead</span> <span class="p">;</span> <span class="n">true</span>
+<span class="mi">2</span> <span class="p">;</span> <span class="n">System</span><span class="o">.</span><span class="n">Command</span> <span class="p">;</span> <span class="mh">0x00000028</span> <span class="p">;</span> <span class="mh">0x00000000</span> <span class="p">;</span> <span class="mh">0xFFFFFFFF</span> <span class="p">;</span> <span class="n">readWriteable</span> <span class="p">;</span> <span class="n">false</span>
+<span class="mi">3</span> <span class="p">;</span> <span class="n">System</span><span class="o">.</span><span class="n">Status</span> <span class="p">;</span> <span class="mh">0x0000002C</span> <span class="p">;</span> <span class="mh">0x00000000</span> <span class="p">;</span> <span class="mh">0x00000000</span> <span class="p">;</span> <span class="n">latchLowBit_clearOnRead</span> <span class="p">;</span> <span class="n">true</span>
+</pre></div>
+</div>
+<p>This configuration will create in total four registers of which two are interrupt registers. The
+<code class="docutils literal notranslate"><span class="pre">interrupt</span> <span class="pre">match</span> <span class="pre">register</span></code> bit zero is mapped to <cite>System.Test</cite>, bit one is mapped to <cite>System.Status</cite>. If one of these
+bits is set, the SW needs to look into the correct address for the value. This means, if after an interrupt bit zero is
+set from in the <cite>interrupt match register</cite>, the SW needs to read address <code class="docutils literal notranslate"><span class="pre">0x00000004</span></code> afterwards to get the
+interrupt-causing-value and clear the interrupt reason.</p>
+<p>Beside the <cite>interrupt match register</cite>, there is also the <cite>Interrupt enable register</cite>. With this, you can switch on and
+off one specific register to through interrupts. The bit will still be set inside <cite>interrupt match register</cite>, but it
+will not create an interrupt.</p>
+<p>The addresses of both registers are set through generics. See section Interface.Generics.</p>
+<p>By using this feature, the internal configuration will add both registers in this configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Config</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">;</span> <span class="n">Name</span> <span class="p">;</span> <span class="n">Address</span> <span class="p">;</span> <span class="n">Init_Value</span> <span class="p">;</span> <span class="n">Auto_Clear_Mask</span> <span class="p">;</span> <span class="n">rw_config</span> <span class="p">;</span> <span class="n">Is_Interrupt_Register</span>
+<span class="n">N</span> <span class="p">;</span> <span class="n">Interrupt_Enable_Register</span> <span class="p">;</span> <span class="n">INTERRUPT_ENABLE_REGISTER_ADDRESS</span> <span class="p">;</span> <span class="mh">0xFFFFFFFF</span> <span class="p">;</span> <span class="mh">0x00000000</span> <span class="p">;</span> <span class="n">readWriteable</span><span class="p">;</span> <span class="n">false</span>
+<span class="n">N</span><span class="o">+</span><span class="mi">1</span> <span class="p">;</span> <span class="n">Interrupt_Match_Register</span><span class="p">;</span> <span class="n">INTERRUPT_MATCH_REGISTER_ADDRESS</span> <span class="p">;</span> <span class="mh">0x00000000</span> <span class="p">;</span> <span class="mh">0x00000000</span> <span class="p">;</span> <span class="n">latchHighBit_clearOnRead</span><span class="p">;</span> <span class="n">true</span>
+</pre></div>
+</div>
+</section>
+<section id="atomic-register">
+<span id="ip-axi4lite-register-config-atomic"></span><h3>Atomic Register<a class="headerlink" href="#atomic-register" title="Link to this heading"></a></h3>
+<p>An <code class="docutils literal notranslate"><span class="pre">Atomic</span> <span class="pre">Register</span></code> is an external wiring. This is used to avoid read-modify-write operations from software by
+introducing a <cite>clear-bit-register</cite>, <code class="docutils literal notranslate"><span class="pre">set-bit-register</span></code> and <cite>toggle-bit-register</cite>. A constant is prepared for this
+register inside <code class="docutils literal notranslate"><span class="pre">AXI4Lite.pkg.vhdl</span></code> called <cite>Atomic_RegisterDescription_Vector</cite>. It can be mapped/created inside of the
+<code class="docutils literal notranslate"><span class="pre">gen_config</span></code> function like this:</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">temp</span><span class="p">(</span><span class="n">pos</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Atomic_RegisterDescription_Vector</span><span class="na">&#39;length</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">add_prefix</span><span class="p">(</span><span class="s">&quot;My_Atomic_reg.&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Atomic_RegisterDescription_Vector</span><span class="p">,</span><span class="w"> </span><span class="n">to_unsigned</span><span class="p">(</span><span class="n">addr</span><span class="w"> </span><span class="o">*</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">));</span>
+<span class="w">  </span><span class="n">pos</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">pos</span><span class="w">   </span><span class="o">+</span><span class="w"> </span><span class="n">Atomic_RegisterDescription_Vector</span><span class="na">&#39;length</span><span class="p">;</span>
+<span class="w">  </span><span class="n">addr</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Atomic_RegisterDescription_Vector</span><span class="na">&#39;length</span><span class="p">;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The Atomic Register should be at least 64bit aligned. If this is true, the set- and clear- mask can be written at
+the same time.</p>
+</div>
+<p>Afterwards, the wiring needs to be created in the pl like this:</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">atomic_blk</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">block</span>
+<span class="w">  </span><span class="k">constant</span><span class="w"> </span><span class="n">low</span><span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="kt">natural</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">get_index</span><span class="p">(</span><span class="s">&quot;My_Atomic_reg.ATOMIC_Value&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span>
+<span class="w">  </span><span class="k">constant</span><span class="w"> </span><span class="n">high</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">natural</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">get_index</span><span class="p">(</span><span class="s">&quot;My_Atomic_reg.ATOMIC_BitClr&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">Atomic_Value</span><span class="w">     </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">(</span><span class="k">others</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="p">);</span>
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">nextAtomic_Value</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="k">begin</span>
+<span class="w">  </span><span class="k">procedure</span><span class="w"> </span><span class="n">Make_AtomicRegister</span><span class="p">(</span>
+<span class="w">    </span><span class="n">Reset</span><span class="w">                     </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Reset</span><span class="p">,</span>
+<span class="w">    </span><span class="n">RegisterFile_ReadPort</span><span class="w">     </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">RegisterFile_ReadPort</span><span class="p">(</span><span class="n">low</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">high</span><span class="p">),</span>
+<span class="w">    </span><span class="n">RegisterFile_WritePort</span><span class="w">    </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">RegisterFile_WritePort</span><span class="p">(</span><span class="n">low</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">high</span><span class="p">),</span>
+<span class="w">    </span><span class="n">RegisterFile_ReadPort_hit</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">RegisterFile_ReadPort_hit</span><span class="p">(</span><span class="n">low</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">high</span><span class="p">),</span>
+<span class="w">    </span><span class="n">PL_WriteValue</span><span class="w">             </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Overwrite_from_PL_slv</span><span class="p">,</span>
+<span class="w">    </span><span class="n">PL_WriteStrobe</span><span class="w">            </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Overwrite_from_PL_strb</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Value_reg</span><span class="w">                 </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Atomic_Value</span><span class="p">,</span>
+<span class="w">    </span><span class="n">nextValue_reg</span><span class="w">             </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">nextAtomic_Value</span>
+<span class="w">  </span><span class="p">);</span>
+
+<span class="w">  </span><span class="n">Atomic_Value</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">nextAtomic_Value</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="n">rising_edge</span><span class="p">(</span><span class="n">Clock</span><span class="p">);</span>
+<span class="k">end</span><span class="w"> </span><span class="k">block</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="usage">
+<span id="ip-axi4lite-register-usage"></span><h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
+<section id="command-status-error-interface">
+<span id="ip-axi4lite-register-use-cse"></span><h3>Command-Status-Error Interface<a class="headerlink" href="#command-status-error-interface" title="Link to this heading"></a></h3>
+</section>
+<section id="i-o-register">
+<span id="ip-axi4lite-register-use-io"></span><h3>I/O Register<a class="headerlink" href="#i-o-register" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">IO</span> <span class="pre">Register</span></code> is used to connect a tri-state buffer directly to the register. It consists of two
+<cite>atomic registers</cite>. The first one for <code class="docutils literal notranslate"><span class="pre">IO</span></code> (Input/Output) and the second one for <code class="docutils literal notranslate"><span class="pre">T</span></code> (Tristate).</p>
+<p>To add it into config:</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">temp</span><span class="p">(</span><span class="n">pos</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">IO_RegisterDescription_Vector</span><span class="na">&#39;length</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">add_prefix</span><span class="p">(</span><span class="s">&quot;My_IO_reg.&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">IO_RegisterDescription_Vector</span><span class="p">,</span><span class="w"> </span><span class="n">to_unsigned</span><span class="p">(</span><span class="n">addr</span><span class="w"> </span><span class="o">*</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">));</span>
+<span class="w">  </span><span class="n">pos</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">pos</span><span class="w">   </span><span class="o">+</span><span class="w"> </span><span class="n">IO_RegisterDescription_Vector</span><span class="na">&#39;length</span><span class="p">;</span>
+<span class="w">  </span><span class="n">addr</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">addr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">IO_RegisterDescription_Vector</span><span class="na">&#39;length</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Afterwards, the wiring needs to be created in the pl like this:</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="n">io_reg_blk</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">block</span>
+<span class="w">  </span><span class="k">constant</span><span class="w"> </span><span class="n">low</span><span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="kt">natural</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">get_index</span><span class="p">(</span><span class="s">&quot;My_IO_reg.IO.ATOMIC_Value&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span>
+<span class="w">  </span><span class="k">constant</span><span class="w"> </span><span class="n">high</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">natural</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">get_index</span><span class="p">(</span><span class="s">&quot;My_IO_reg.T.ATOMIC_BitClr&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">IO_Value</span><span class="w">     </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">(</span><span class="k">others</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="p">);</span>
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">nextIO_Value</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">T_Value</span><span class="w">      </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">(</span><span class="k">others</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="sc">&#39;0&#39;</span><span class="p">);</span>
+<span class="w">  </span><span class="k">signal</span><span class="w"> </span><span class="n">nextT_Value</span><span class="w">  </span><span class="o">:</span><span class="w"> </span><span class="kt">std_logic_vector</span><span class="p">(</span><span class="mi">31</span><span class="w"> </span><span class="k">downto</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="k">begin</span>
+<span class="w">  </span><span class="k">procedure</span><span class="w"> </span><span class="n">Make_IORegister</span><span class="p">(</span>
+<span class="w">    </span><span class="n">Reset</span><span class="w">                     </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Reset</span><span class="p">,</span>
+<span class="w">    </span><span class="n">RegisterFile_ReadPort</span><span class="w">     </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">RegisterFile_ReadPort</span><span class="p">(</span><span class="n">low</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">high</span><span class="p">),</span>
+<span class="w">    </span><span class="n">RegisterFile_WritePort</span><span class="w">    </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">RegisterFile_WritePort</span><span class="p">(</span><span class="n">low</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">high</span><span class="p">),</span>
+<span class="w">    </span><span class="n">RegisterFile_ReadPort_hit</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">RegisterFile_ReadPort_hit</span><span class="p">(</span><span class="n">low</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">high</span><span class="p">),</span>
+<span class="w">    </span><span class="n">Input</span><span class="w">                     </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Buffe_I_slv</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Output</span><span class="w">                    </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Buffe_O_slv</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Tristate</span><span class="w">                  </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Buffe_T_slv</span><span class="p">,</span>
+<span class="w">    </span><span class="n">IO_reg</span><span class="w">                    </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">IO_Value</span><span class="p">,</span>
+<span class="w">    </span><span class="n">nextIO_reg</span><span class="w">                </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">nextIO_Value</span><span class="p">,</span>
+<span class="w">    </span><span class="n">T_reg</span><span class="w">                     </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">T_Value</span><span class="p">,</span>
+<span class="w">    </span><span class="n">nextT_reg</span><span class="w">                 </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">nextT_Value</span><span class="p">,</span>
+<span class="w">  </span><span class="p">);</span>
+
+<span class="w">  </span><span class="n">IO_Value</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">nextIO_Value</span><span class="w"> </span><span class="k">when</span><span class="w"> </span><span class="n">rising_edge</span><span class="p">(</span><span class="n">Clock</span><span class="p">);</span>
+<span class="w">  </span><span class="n">T_Value</span><span class="w">  </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">nextT_Value</span><span class="w">  </span><span class="k">when</span><span class="w"> </span><span class="n">rising_edge</span><span class="p">(</span><span class="n">Clock</span><span class="p">);</span>
+<span class="k">end</span><span class="w"> </span><span class="k">block</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="export-configuration">
+<span id="ip-axi4lite-register-export"></span><h2>Export Configuration<a class="headerlink" href="#export-configuration" title="Link to this heading"></a></h2>
+<section id="naming-convention-of-registers">
+<span id="ip-axi4lite-register-export-naming"></span><h3>Naming Convention of Registers<a class="headerlink" href="#naming-convention-of-registers" title="Link to this heading"></a></h3>
+<p>The Name field of the configuration is limited to 64-characters. This needs to be a constant and was defined like this.
+The conversion to the C-Header file needs some properties to work. These properties are therefore defined globally.</p>
+<ol class="arabic simple">
+<li><p>Each register needs to be named.</p></li>
+<li><p>Each register needs to have a unique name.</p></li>
+<li><p>The Addresses should monotonically increasing (Only for C-Header File).</p></li>
+<li><p>Multiple Registers can be grouped together with a prefix. The prefix is separated by a dot.</p></li>
+<li><p><span class="strike">Multiple Prefixes can be made</span> <span class="colorred">This is currently not possible with the script.</span></p></li>
+<li><p>A array of registers can be defined with parenthesis <cite>(i)</cite>. This will create and array in C-Header file.</p></li>
+<li><p><span class="strike">An array can be done as well on prefixes</span> <span class="colorred">This is currently not possible with the script.</span></p></li>
+</ol>
+</section>
+<section id="export-as-yaml">
+<span id="ip-axi4lite-register-export-yaml"></span><h3>Export as YAML<a class="headerlink" href="#export-as-yaml" title="Link to this heading"></a></h3>
+</section>
+<section id="write-register-csv-file-deprecated">
+<span id="ip-axi4lite-register-export-csv"></span><h3>Write Register CSV File (deprecated)<a class="headerlink" href="#write-register-csv-file-deprecated" title="Link to this heading"></a></h3>
+<p>A csv file can be written out of the configuration with the function <cite>write_csv_file</cite>. It is commanded to use it with an
+enabled <code class="docutils literal notranslate"><span class="pre">assert</span></code> statement or writing it into a constant. With assert, you can also see in the synthesis log if
+everything was successfully. <code class="docutils literal notranslate"><span class="pre">PROJECT_DIR</span></code> is a constant inside <code class="docutils literal notranslate"><span class="pre">my_project.vhdl</span></code> normally located at <cite>src/PoC/</cite>.</p>
+<div class="highlight-vhdl notranslate"><div class="highlight"><pre><span></span><span class="k">constant</span><span class="w"> </span><span class="n">success</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">write_csv_file</span><span class="p">(</span><span class="n">PROJECT_DIR</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="s">&quot;gen/Sampling_Register.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">);</span>
+<span class="c1">--or--</span>
+<span class="k">assert</span><span class="w"> </span><span class="n">write_csv_file</span><span class="p">(</span><span class="n">PROJECT_DIR</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="s">&quot;gen/Sampling_Register.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">config</span><span class="p">)</span><span class="w"> </span><span class="n">report</span><span class="w"> </span><span class="s">&quot;Error in writing csv-File!&quot;</span><span class="w"> </span><span class="k">severity</span><span class="w"> </span><span class="n">warning</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+<section id="create-c-header-file-from-csv">
+<span id="ip-axi4lite-register-export-convert"></span><h3>Create C-Header File from CSV<a class="headerlink" href="#create-c-header-file-from-csv" title="Link to this heading"></a></h3>
+<p>A big advantage of this register is the automatic register handover to the Software. This is done by converting the
+freshly generated csv file and converting it into a C-Header file. The registers specified in the config are combined
+into struct’s. The final struct can than be layed over the AXI4Lite-Register Address.</p>
+<p>The conversion is done by a python-script from <strong>*********************</strong>. This python script works but has currently a
+lot of limitations.
+<strong>It is planed to extend this script and make it accessible to the CI-Runners for automatic conversions.</strong></p>
+</section>
+</section>
+<section id="use-in">
+<span id="ip-axi4lite-register-usedin"></span><h2>Use in<a class="headerlink" href="#use-in" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="axi4lite_GitVersionRegister.html#ip-axi4lite-gitversionregister"><span class="std std-ref">axi4lite_GitVersionRegister</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="axi4lite_FIFO_cdc.html" class="btn btn-neutral float-left" title="axi4lite_FIFO_cdc" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="axi4lite_GitVersionRegister.html" class="btn btn-neutral float-right" title="axi4lite_GitVersionRegister" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,401 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Downloading PoC &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Integrating PoC into Projects" href="Integration.html" />
+    <link rel="prev" title="Requirements" href="Requirements.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Using PoC</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Downloading PoC</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#downloading-from-github">Downloading from GitHub</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#downloading-via-git-clone">Downloading via <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#on-linux">On Linux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#on-os-x">On OS X</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#on-windows">On Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#downloading-via-git-submodule-add">Downloading via <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">add</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id5">On Linux</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6">On OS X</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7">On Windows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Integration.html">Integrating PoC into Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PoCConfiguration.html">Configuring PoC’s Infrastructure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VHDLConfiguration.html">Creating my_config/my_project.vhdl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AddingIPCores.html">Adding IP Cores to a Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Simulation.html">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Synthesis.html">Synthesis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ProjectManagement.html">Project Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PrecompilingVendorLibraries.html">Pre-Compiling Vendor Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Miscellaneous.html">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/bus/index.html">PoC.bus.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Using PoC</a></li>
+      <li class="breadcrumb-item active">Downloading PoC</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/UsingPoC/Download.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="downloading-poc">
+<span id="using-download"></span><h1>Downloading PoC<a class="headerlink" href="#downloading-poc" title="Link to this heading"></a></h1>
+<nav class="contents local" id="contents-of-this-page">
+<p class="topic-title">Contents of this Page</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#downloading-from-github" id="id8">Downloading from GitHub</a></p></li>
+<li><p><a class="reference internal" href="#downloading-via-git-clone" id="id9">Downloading via <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span></code></a></p>
+<ul>
+<li><p><a class="reference internal" href="#on-linux" id="id10">On Linux</a></p></li>
+<li><p><a class="reference internal" href="#on-os-x" id="id11">On OS X</a></p></li>
+<li><p><a class="reference internal" href="#on-windows" id="id12">On Windows</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#downloading-via-git-submodule-add" id="id13">Downloading via <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">add</span></code></a></p>
+<ul>
+<li><p><a class="reference internal" href="#id5" id="id14">On Linux</a></p></li>
+<li><p><a class="reference internal" href="#id6" id="id15">On OS X</a></p></li>
+<li><p><a class="reference internal" href="#id7" id="id16">On Windows</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="downloading-from-github">
+<span id="using-zip"></span><h2><a class="toc-backref" href="#id8" role="doc-backlink">Downloading from GitHub</a><a class="headerlink" href="#downloading-from-github" title="Link to this heading"></a></h2>
+<p>The PoC-Library can be downloaded as a zip-file from GitHub. See the following
+table, to choose your desired git branch.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Branch</p></th>
+<th class="head"><p>Download Link</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>master</p></td>
+<td><p>zip-file <a class="reference external" href="https://github.com/VLSI-EDA/PoC/archive/master.zip"><img alt="Source Code from GitHub - 'master' branch." src="../_images/ZIP.png" style="width: 19.200000000000003px; height: 19.200000000000003px;" /></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>release</p></td>
+<td><p>zip-file <a class="reference external" href="https://github.com/VLSI-EDA/PoC/archive/release.zip"><img alt="Source Code from GitHub - 'release' branch." src="../_images/ZIP.png" style="width: 19.200000000000003px; height: 19.200000000000003px;" /></a></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="downloading-via-git-clone">
+<span id="using-gitclone"></span><h2><a class="toc-backref" href="#id9" role="doc-backlink">Downloading via <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span></code></a><a class="headerlink" href="#downloading-via-git-clone" title="Link to this heading"></a></h2>
+<p>The PoC-Library can be downloaded (cloned) with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span></code> from GitHub.
+GitHub offers the transfer protocols HTTPS and SSH. You should use SSH if you
+have a GitHub account and have already uploaded an OpenSSH public key to GitHub,
+otherwise use HTTPS if you have no account or you want to use login credentials.</p>
+<p>The created folder <code class="file docutils literal notranslate"><span class="pre">&lt;GitRoot&gt;\PoC</span></code> is used as <code class="file docutils literal notranslate"><span class="pre">&lt;PoCRoot&gt;</span></code> in later
+instructions or on other pages in this documentation.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Protocol</p></th>
+<th class="head"><p>GitHub Repository URL</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>HTTPS</p></td>
+<td><p><a class="reference external" href="https://github.com/VLSI-EDA/PoC.git">https://github.com/VLSI-EDA/PoC.git</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>SSH</p></td>
+<td><p><a class="reference external" href="ssh://git&#64;github.com:VLSI-EDA/PoC.git">ssh://git&#64;github.com:VLSI-EDA/PoC.git</a></p></td>
+</tr>
+</tbody>
+</table>
+<section id="on-linux">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">On Linux</a><a class="headerlink" href="#on-linux" title="Link to this heading"></a></h3>
+<p>Command line instructions to clone the PoC-Library onto a Linux machine with
+HTTPS protocol:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>GitRoot
+git<span class="w"> </span>clone<span class="w"> </span>--recursive<span class="w"> </span><span class="s2">&quot;https://github.com/VLSI-EDA/PoC.git&quot;</span><span class="w"> </span>PoC
+<span class="nb">cd</span><span class="w"> </span>PoC
+git<span class="w"> </span>remote<span class="w"> </span>rename<span class="w"> </span>origin<span class="w"> </span>github
+</pre></div>
+</div>
+<p>Command line instructions to clone the PoC-Library onto a Linux machine machine
+with SSH protocol:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>GitRoot
+git<span class="w"> </span>clone<span class="w"> </span>--recursive<span class="w"> </span><span class="s2">&quot;ssh://git@github.com:VLSI-EDA/PoC.git&quot;</span><span class="w"> </span>PoC
+<span class="nb">cd</span><span class="w"> </span>PoC
+git<span class="w"> </span>remote<span class="w"> </span>rename<span class="w"> </span>origin<span class="w"> </span>github
+</pre></div>
+</div>
+</section>
+<section id="on-os-x">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">On OS X</a><a class="headerlink" href="#on-os-x" title="Link to this heading"></a></h3>
+<p>Please see the Linux instructions.</p>
+</section>
+<section id="on-windows">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">On Windows</a><a class="headerlink" href="#on-windows" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All Windows command line instructions are intended for <strong class="program">Windows PowerShell</strong>,
+if not marked otherwise. So executing the following instructions in Windows
+Command Prompt (<strong class="program">cmd.exe</strong>) won’t function or result in errors! See
+the <a class="reference internal" href="Requirements.html#using-require"><span class="std std-ref">Requirements section</span></a> on where to
+download or update PowerShell.</p>
+</div>
+<p>Command line instructions to clone the PoC-Library onto a Windows machine with
+HTTPS protocol:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">GitRoot</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="p">-</span><span class="n">-recursive</span> <span class="s2">&quot;https://github.com/VLSI-EDA/PoC.git&quot;</span> <span class="n">PoC</span>
+<span class="nb">cd </span><span class="n">PoC</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="n">rename</span> <span class="n">origin</span> <span class="n">github</span>
+</pre></div>
+</div>
+<p>Command line instructions to clone the PoC-Library onto a Windows machine with
+SSH protocol:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">GitRoot</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="p">-</span><span class="n">-recursive</span> <span class="s2">&quot;ssh://git@github.com:VLSI-EDA/PoC.git&quot;</span> <span class="n">PoC</span>
+<span class="nb">cd </span><span class="n">PoC</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="n">rename</span> <span class="n">origin</span> <span class="n">github</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The option <code class="docutils literal notranslate"><span class="pre">--recursive</span></code> performs a recursive clone operation for all
+linked <a class="reference external" href="http://git-scm.com/book/en/v2/Git-Tools-Submodules">git submodules</a>.
+An additional <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">init</span></code> and <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">update</span></code> call is not
+needed anymore.</p>
+</div>
+</section>
+</section>
+<section id="downloading-via-git-submodule-add">
+<span id="using-gitsubmodule"></span><h2><a class="toc-backref" href="#id13" role="doc-backlink">Downloading via <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">add</span></code></a><a class="headerlink" href="#downloading-via-git-submodule-add" title="Link to this heading"></a></h2>
+<p>The PoC-Library is meant to be integrated into other HDL projects (preferably
+Git versioned projects). Therefore it’s recommended to create a library folder
+and add the PoC-Library as a <a class="reference external" href="http://git-scm.com/book/en/v2/Git-Tools-Submodules">git submodule</a>.</p>
+<p>The following command line instructions will create a library folder :file:<a href="#id1"><span class="problematic" id="id2">`</span></a>lib`
+and clone PoC as a git submodule into the subfolder :file:<a href="#id3"><span class="problematic" id="id4">`</span></a>&lt;ProjectRoot&gt;libPoC`.</p>
+<section id="id5">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">On Linux</a><a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<p>Command line instructions to clone the PoC-Library onto a Linux machine with
+HTTPS protocol:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>ProjectRoot
+mkdir<span class="w"> </span>lib
+git<span class="w"> </span>submodule<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;https://github.com/VLSI-EDA/PoC.git&quot;</span><span class="w"> </span>lib/PoC
+<span class="nb">cd</span><span class="w"> </span>lib/PoC
+git<span class="w"> </span>remote<span class="w"> </span>rename<span class="w"> </span>origin<span class="w"> </span>github
+<span class="nb">cd</span><span class="w"> </span>../..
+git<span class="w"> </span>add<span class="w"> </span>.gitmodules<span class="w"> </span>lib/PoC
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Added new git submodule PoC in &#39;lib/PoC&#39; (PoC-Library).&quot;</span>
+</pre></div>
+</div>
+<p>Command line instructions to clone the PoC-Library onto a Linux machine machine
+with SSH protocol:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>ProjectRoot
+mkdir<span class="w"> </span>lib
+git<span class="w"> </span>submodule<span class="w"> </span>add<span class="w"> </span><span class="s2">&quot;ssh://git@github.com:VLSI-EDA/PoC.git&quot;</span><span class="w"> </span>lib/PoC
+<span class="nb">cd</span><span class="w"> </span>lib/PoC
+git<span class="w"> </span>remote<span class="w"> </span>rename<span class="w"> </span>origin<span class="w"> </span>github
+<span class="nb">cd</span><span class="w"> </span>../..
+git<span class="w"> </span>add<span class="w"> </span>.gitmodules<span class="w"> </span>lib/PoC
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Added new git submodule PoC in &#39;lib/PoC&#39; (PoC-Library).&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">On OS X</a><a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<p>Please see the Linux instructions.</p>
+</section>
+<section id="id7">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">On Windows</a><a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All Windows command line instructions are intended for <strong class="program">Windows PowerShell</strong>,
+if not marked otherwise. So executing the following instructions in Windows
+Command Prompt (<strong class="program">cmd.exe</strong>) won’t function or result in errors! See
+the <a class="reference internal" href="Requirements.html#using-require"><span class="std std-ref">Requirements section</span></a> on where to
+download or update PowerShell.</p>
+</div>
+<p>Command line instructions to clone the PoC-Library onto a Windows machine with
+HTTPS protocol:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="p">&lt;</span><span class="n">ProjectRoot</span><span class="p">&gt;</span>
+<span class="n">mkdir</span> <span class="n">lib</span> <span class="p">|</span> <span class="nb">cd</span>
+<span class="n">git</span> <span class="n">submodule</span> <span class="n">add</span> <span class="s2">&quot;https://github.com/VLSI-EDA/PoC.git&quot;</span> <span class="n">PoC</span>
+<span class="nb">cd </span><span class="n">PoC</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="n">rename</span> <span class="n">origin</span> <span class="n">github</span>
+<span class="nb">cd </span><span class="p">..\..</span>
+<span class="n">git</span> <span class="n">add</span> <span class="p">.</span><span class="n">gitmodules</span> <span class="n">lib</span><span class="p">\</span><span class="n">PoC</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="n">-m</span> <span class="s2">&quot;Added new git submodule PoC in &#39;lib\PoC&#39; (PoC-Library).&quot;</span>
+</pre></div>
+</div>
+<p>Command line instructions to clone the PoC-Library onto a Windows machine with
+SSH protocol:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="p">&lt;</span><span class="n">ProjectRoot</span><span class="p">&gt;</span>
+<span class="n">mkdir</span> <span class="n">lib</span> <span class="p">|</span> <span class="nb">cd</span>
+<span class="n">git</span> <span class="n">submodule</span> <span class="n">add</span> <span class="s2">&quot;ssh://git@github.com:VLSI-EDA/PoC.git&quot;</span> <span class="n">PoC</span>
+<span class="nb">cd </span><span class="n">PoC</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="n">rename</span> <span class="n">origin</span> <span class="n">github</span>
+<span class="nb">cd </span><span class="p">..\..</span>
+<span class="n">git</span> <span class="n">add</span> <span class="p">.</span><span class="n">gitmodules</span> <span class="n">lib</span><span class="p">\</span><span class="n">PoC</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="n">-m</span> <span class="s2">&quot;Added new git submodule PoC in &#39;lib\PoC&#39; (PoC-Library).&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Requirements.html" class="btn btn-neutral float-left" title="Requirements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Integration.html" class="btn btn-neutral float-right" title="Integrating PoC into Projects" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

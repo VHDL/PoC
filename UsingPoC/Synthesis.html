@@ -1,0 +1,475 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synthesis &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Project Management" href="ProjectManagement.html" />
+    <link rel="prev" title="Simulation" href="Simulation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Using PoC</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Download.html">Downloading PoC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Integration.html">Integrating PoC into Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PoCConfiguration.html">Configuring PoC’s Infrastructure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VHDLConfiguration.html">Creating my_config/my_project.vhdl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AddingIPCores.html">Adding IP Cores to a Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Simulation.html">Simulation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Synthesis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quick-example">Quick Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-a-single-synthesis">Running a single Synthesis</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#altera-intel-quartus">Altera / Intel Quartus</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#lattice-diamond">Lattice Diamond</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#xilinx-ise-synthesis-tool-xst">Xilinx ISE Synthesis Tool (XST)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#xilinx-ise-core-generator">Xilinx ISE Core Generator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#xilinx-vivado-synthesis">Xilinx Vivado Synthesis</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ProjectManagement.html">Project Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PrecompilingVendorLibraries.html">Pre-Compiling Vendor Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Miscellaneous.html">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/bus/index.html">PoC.bus.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Using PoC</a></li>
+      <li class="breadcrumb-item active">Synthesis</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/UsingPoC/Synthesis.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="synthesis">
+<span id="using-synth"></span><h1>Synthesis<a class="headerlink" href="#synthesis" title="Link to this heading"></a></h1>
+<nav class="contents local" id="contents-of-this-page">
+<p class="topic-title">Contents of this Page</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview" id="id1">Overview</a></p></li>
+<li><p><a class="reference internal" href="#quick-example" id="id2">Quick Example</a></p></li>
+<li><p><a class="reference internal" href="#running-a-single-synthesis" id="id3">Running a single Synthesis</a></p>
+<ul>
+<li><p><a class="reference internal" href="#altera-intel-quartus" id="id4">Altera / Intel Quartus</a></p></li>
+<li><p><a class="reference internal" href="#lattice-diamond" id="id5">Lattice Diamond</a></p></li>
+<li><p><a class="reference internal" href="#xilinx-ise-synthesis-tool-xst" id="id6">Xilinx ISE Synthesis Tool (XST)</a></p></li>
+<li><p><a class="reference internal" href="#xilinx-ise-core-generator" id="id7">Xilinx ISE Core Generator</a></p></li>
+<li><p><a class="reference internal" href="#xilinx-vivado-synthesis" id="id8">Xilinx Vivado Synthesis</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="overview">
+<span id="using-synth-over"></span><h2><a class="toc-backref" href="#id1" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The Python infrastructure shipped with the PoC-Library can launch manual,
+half-automated and fully automated synthesis runs. This can be done by invoking
+one of PoC’s frontend script:</p>
+<ul>
+<li><p><strong>poc.sh:</strong> <code class="docutils literal notranslate"><span class="pre">poc.sh</span> <span class="pre">&lt;common</span> <span class="pre">options&gt;</span> <span class="pre">&lt;compiler&gt;</span> <span class="pre">&lt;module&gt;</span> <span class="pre">&lt;compiler</span> <span class="pre">options&gt;</span></code> <br />
+Use this fronend script on Darwin, Linux and Unix platforms.</p></li>
+<li><p><strong>poc.ps1:</strong> <code class="docutils literal notranslate"><span class="pre">poc.ps1</span> <span class="pre">&lt;common</span> <span class="pre">options&gt;</span> <span class="pre">&lt;compiler&gt;</span> <span class="pre">&lt;module&gt;</span> <span class="pre">&lt;compiler</span> <span class="pre">options&gt;</span></code> <br />
+Use this frontend script Windows platforms. <br /></p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>All Windows command line instructions are intended for Windows
+PowerShell, if not marked otherwise. So executing the following instructions
+in Windows Command Prompt (<code class="docutils literal notranslate"><span class="pre">cmd.exe</span></code>) won’t function or result in errors!</p>
+</div>
+</li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="PoCConfiguration.html#using-pocconfig"><span class="std std-ref">PoC Configuration</span></a></dt><dd><p>See the Configuration page on how to configure PoC and your installed
+synthesis tool chains. This is required to invoke the compilers.</p>
+</dd>
+<dt><a class="reference internal" href="../WhatIsPoC/SupportedToolChains.html#intro-toolchains"><span class="std std-ref">Supported Compiler</span></a></dt><dd><p>See the Intruction page for a list of supported compilers.</p>
+</dd>
+</dl>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="../References/ListOfDevices.html"><span class="doc">List of Supported FPGA Devices</span></a></dt><dd><p>See this list to find a supported and well known target device.</p>
+</dd>
+<dt><a class="reference internal" href="../References/ListOfBoards.html"><span class="doc">List of Supported Development Boards</span></a></dt><dd><p>See this list to find a supported and well known development board.</p>
+</dd>
+</dl>
+</div>
+</section>
+<section id="quick-example">
+<span id="using-synth-quick"></span><h2><a class="toc-backref" href="#id2" role="doc-backlink">Quick Example</a><a class="headerlink" href="#quick-example" title="Link to this heading"></a></h2>
+<p>The following quick example uses the Xilinx Systesis Tool (XST) to synthesize a
+netlist for IP core <code class="docutils literal notranslate"><span class="pre">arith_prng</span></code> (Pseudo Random Number Generator - PRNG). The
+VHDL file <code class="docutils literal notranslate"><span class="pre">arith_prng.vhdl</span></code> is located at <code class="docutils literal notranslate"><span class="pre">PoCRoot\src\arith</span></code> and
+virtually a member in the <cite>PoC.arith</cite> namespace. So the module can be identified
+by an unique name: <code class="docutils literal notranslate"><span class="pre">PoC.arith.prng</span></code>, which is passed to the frontend script.</p>
+<p class="rubric">Example 1:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">xst</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">KC705</span>
+</pre></div>
+</div>
+<p>The CLI command <code class="docutils literal notranslate"><span class="pre">xst</span></code> chooses <em>Xilinx Synthesis Tool</em> as the synthesizer and
+passes the fully qualified PoC entity name <code class="docutils literal notranslate"><span class="pre">PoC.arith.prng</span></code> as a parameter
+to the tool. Additionally, the development board name is required to load the
+correct <code class="docutils literal notranslate"><span class="pre">my_config.vhdl</span></code> file. All required source file are gathered and
+synthesized to a netlist.</p>
+<a class="reference external image-reference" href="/_static/images/xst/arith_prng.posh.png:alt:PowerShellconsoleoutputafterrunningPoC.arith.prngwithXST."><img alt="../_images/arith_prng.posh.png" src="../_images/arith_prng.posh.png" />
+</a>
+</section>
+<section id="running-a-single-synthesis">
+<span id="using-synth-single"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Running a single Synthesis</a><a class="headerlink" href="#running-a-single-synthesis" title="Link to this heading"></a></h2>
+<p>A synthesis run is supervised by PoC’s <a class="reference internal" href="../References/CmdRefs/PoC.html#cmdref-poc"><span class="std std-ref">PoCRoot\py\PoC.py</span></a>
+service tool, which offers a consistent interface to all synthesizers.
+Unfortunately, every platform has it’s specialties, so a wrapper script is
+needed as abstraction from the host’s operating system. Depending on the choosen
+tool chain, the wrapper script will source or invoke the vendor tool’s
+environment scripts to pre-load the needed environment variables, paths or
+license file settings.</p>
+<p>The order of options to the frontend script is as following:
+<code class="docutils literal notranslate"><span class="pre">&lt;common</span> <span class="pre">options&gt;</span> <span class="pre">&lt;synthesizer&gt;</span> <span class="pre">&lt;module&gt;</span> <span class="pre">[&lt;module&gt;]</span> <span class="pre">&lt;synthesizer</span> <span class="pre">options&gt;</span></code></p>
+<p>The frontend offers several common options:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Common Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">-q</span></code></p></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--quiet</span></code></p></td>
+<td><p>Quiet-mode (print nothing)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">-v</span></code></p></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--verbose</span></code></p></td>
+<td><p>Print more messages</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">-d</span></code></p></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--debug</span></code></p></td>
+<td><p>Debug mode (print everything)</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--dryrun</span></code></p></td>
+<td><p>Run in dry-run mode</p></td>
+</tr>
+</tbody>
+</table>
+<p>One of the following supported synthesizers can be choosen, if installed and
+configured in PoC:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Synthesizer</p></th>
+<th class="head"><p>Command Reference</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="xref std std-ref">Altera Quartus II or Intel Quartus Prime</span></p></td>
+<td><p><span class="xref std std-ref">PoC.py quartus</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="xref std std-ref">Lattice (Diamond) Synthesis Engine (LSE)</span></p></td>
+<td><p><span class="xref std std-ref">PoC.py lse</span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="xref std std-ref">Xilinx Vivado Synthesis</span></p></td>
+<td><p><span class="xref std std-ref">PoC.py vivado</span></p></td>
+</tr>
+</tbody>
+</table>
+<section id="altera-intel-quartus">
+<span id="using-synth-altera-quartus"></span><h3><a class="toc-backref" href="#id4" role="doc-backlink">Altera / Intel Quartus</a><a class="headerlink" href="#altera-intel-quartus" title="Link to this heading"></a></h3>
+<p>The command to invoke a synthesis using Altera Quartus II or Intel Quartus Prime is
+<span class="xref std std-ref">quartus</span> followed by a list of PoC entities. The following options are
+supported for Quartus:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Simulator Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--board=&lt;Board&gt;</span></code></p></td>
+<td><p>Specify a target board.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--device=&lt;Device&gt;</span></code></p></td>
+<td><p>Specify a target device.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">quartus</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">DE4</span>
+</pre></div>
+</div>
+</section>
+<section id="lattice-diamond">
+<span id="using-synth-lattice-diamond"></span><h3><a class="toc-backref" href="#id5" role="doc-backlink">Lattice Diamond</a><a class="headerlink" href="#lattice-diamond" title="Link to this heading"></a></h3>
+<p>The command to invoke a synthesis using Lattice Diamond is <span class="xref std std-ref">lse</span> followed by
+a list of PoC entities. The following options are supported for the Lattice
+Synthesis Engine (LSE):</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Simulator Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--board=&lt;Board&gt;</span></code></p></td>
+<td><p>Specify a target board.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--device=&lt;Device&gt;</span></code></p></td>
+<td><p>Specify a target device.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">lse</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">ECP5Versa</span>
+</pre></div>
+</div>
+</section>
+<section id="xilinx-ise-synthesis-tool-xst">
+<span id="using-synth-xilinx-ise"></span><h3><a class="toc-backref" href="#id6" role="doc-backlink">Xilinx ISE Synthesis Tool (XST)</a><a class="headerlink" href="#xilinx-ise-synthesis-tool-xst" title="Link to this heading"></a></h3>
+<p>The command to invoke a synthesis using Xilinx ISE Synthesis is <span class="xref std std-ref">xst</span> followed
+by a list of PoC entities. The following options are supported for the Xilinx
+Synthesis Tool (XST):</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Simulator Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--board=&lt;Board&gt;</span></code></p></td>
+<td><p>Specify a target board.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--device=&lt;Device&gt;</span></code></p></td>
+<td><p>Specify a target device.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">xst</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">KC705</span>
+</pre></div>
+</div>
+</section>
+<section id="xilinx-ise-core-generator">
+<span id="using-synth-xilinx-coregen"></span><h3><a class="toc-backref" href="#id7" role="doc-backlink">Xilinx ISE Core Generator</a><a class="headerlink" href="#xilinx-ise-core-generator" title="Link to this heading"></a></h3>
+<p>The command to invoke an IP core generation using Xilinx Core Generator is
+<span class="xref std std-ref">coregen</span> followed by a list of PoC entities. The following options are
+supported for Core Generator (CG):</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Simulator Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--board=&lt;Board&gt;</span></code></p></td>
+<td><p>Specify a target board.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--device=&lt;Device&gt;</span></code></p></td>
+<td><p>Specify a target device.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">coregen</span> <span class="n">PoC</span><span class="p">.</span><span class="n">xil</span><span class="p">.</span><span class="n">mig</span><span class="p">.</span><span class="n">Atlys_1x128</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">Atlys</span>
+</pre></div>
+</div>
+</section>
+<section id="xilinx-vivado-synthesis">
+<span id="using-synth-xilinx-vivado"></span><h3><a class="toc-backref" href="#id8" role="doc-backlink">Xilinx Vivado Synthesis</a><a class="headerlink" href="#xilinx-vivado-synthesis" title="Link to this heading"></a></h3>
+<p>The command to invoke a synthesis using Xilinx Vivado Synthesis is <span class="xref std std-ref">vivado</span>
+followed by a list of PoC entities. The following options are supported for
+Vivado Synthesis (Synth):</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Simulator Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--board=&lt;Board&gt;</span></code></p></td>
+<td><p>Specify a target board.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p><code class="xref std std-option docutils literal notranslate"><span class="pre">--device=&lt;Device&gt;</span></code></p></td>
+<td><p>Specify a target device.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">vivado</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">KC705</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Simulation.html" class="btn btn-neutral float-left" title="Simulation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ProjectManagement.html" class="btn btn-neutral float-right" title="Project Management" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

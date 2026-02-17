@@ -1,0 +1,375 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Requirements &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Downloading PoC" href="Download.html" />
+    <link rel="prev" title="Using PoC" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Using PoC</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#common-requirements">Common requirements:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux-specific-requirements">Linux specific requirements:</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optional-tools-on-linux">Optional Tools on Linux:</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#mac-os-specific-requirements">Mac OS specific requirements:</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optional-tools-on-mac-os">Optional Tools on Mac OS:</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#windows-specific-requirements">Windows specific requirements:</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#optional-tools-on-windows">Optional Tools on Windows:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Download.html">Downloading PoC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Integration.html">Integrating PoC into Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PoCConfiguration.html">Configuring PoC’s Infrastructure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VHDLConfiguration.html">Creating my_config/my_project.vhdl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AddingIPCores.html">Adding IP Cores to a Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Simulation.html">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Synthesis.html">Synthesis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ProjectManagement.html">Project Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PrecompilingVendorLibraries.html">Pre-Compiling Vendor Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Miscellaneous.html">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/bus/index.html">PoC.bus.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Using PoC</a></li>
+      <li class="breadcrumb-item active">Requirements</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/UsingPoC/Requirements.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="requirements">
+<span id="using-require"></span><h1>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h1>
+<nav class="contents local" id="contents-of-this-page">
+<p class="topic-title">Contents of this Page</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#common-requirements" id="id8">Common requirements:</a></p></li>
+<li><p><a class="reference internal" href="#linux-specific-requirements" id="id9">Linux specific requirements:</a></p>
+<ul>
+<li><p><a class="reference internal" href="#optional-tools-on-linux" id="id10">Optional Tools on Linux:</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#mac-os-specific-requirements" id="id11">Mac OS specific requirements:</a></p>
+<ul>
+<li><p><a class="reference internal" href="#optional-tools-on-mac-os" id="id12">Optional Tools on Mac OS:</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#windows-specific-requirements" id="id13">Windows specific requirements:</a></p>
+<ul>
+<li><p><a class="reference internal" href="#optional-tools-on-windows" id="id14">Optional Tools on Windows:</a></p></li>
+</ul>
+</li>
+</ul>
+</nav>
+<p>The PoC-Library comes with some scripts to ease most of the common tasks, like
+running testbenches or generating IP cores. We choose to use Python 3 as a
+platform independent scripting environment. All Python scripts are wrapped in
+Bash or PowerShell scripts, to hide some platform specifics of Darwin, Linux or
+Windows.</p>
+<section id="common-requirements">
+<span id="using-require-common"></span><h2><a class="toc-backref" href="#id8" role="doc-backlink">Common requirements:</a><a class="headerlink" href="#common-requirements" title="Link to this heading"></a></h2>
+<dl>
+<dt>Programming Languages and Runtime Environments:</dt><dd><ul>
+<li><p><a class="reference external" href="https://www.python.org/downloads/">Python 3</a> (≥ 3.5):</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pypi.python.org/pypi/colorama">colorama</a></p></li>
+<li><p><a class="reference external" href="https://pypi.python.org/pypi/py-flags">py-flags</a></p></li>
+</ul>
+<p>All Python requirements are listed in <a class="reference external" href="https://github.com/VLSI-EDA/PoC/blob/master/requirements.txt">requirements.txt</a> and can be installed via: <br />
+<code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">python3.5</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code></p>
+</li>
+</ul>
+</dd>
+<dt>Synthesis tool chains:</dt><dd><ul class="simple">
+<li><p>Altera Quartus Prime ≥ 15.1 or</p></li>
+<li><p>Intel Quartus Prime ≥ 16.1 or</p></li>
+<li><p>Lattice Diamond ≥ 3.6 or</p></li>
+<li><p>Xilinx Vivado ≥ 2016.3 <a class="footnote-reference brackets" href="#f2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p></li>
+</ul>
+</dd>
+<dt>Simulation tool chains</dt><dd><ul class="simple">
+<li><p>Aldec Active-HDL (or Student Edition) or</p></li>
+<li><p>Aldec Active-HDL Lattice Edition or</p></li>
+<li><p>Mentor Graphics ModelSim PE (or Student Edition) or</p></li>
+<li><p>Mentor Graphics ModelSim SE or</p></li>
+<li><p>Mentor Graphics ModelSim Altera Edition or</p></li>
+<li><p>Mentor Graphics QuestaSim or</p></li>
+<li><p>Xilinx Vivado Simulator ≥ 2016.3 <a class="footnote-reference brackets" href="#f3" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> or</p></li>
+<li><p><a class="reference external" href="https://github.com/tgingold/ghdl">GHDL</a> ≥ 5.1.1 and <a class="reference external" href="http://gtkwave.sourceforge.net/">GTKWave</a> ≥ 3.3.70</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="linux-specific-requirements">
+<span id="using-require-linux"></span><h2><a class="toc-backref" href="#id9" role="doc-backlink">Linux specific requirements:</a><a class="headerlink" href="#linux-specific-requirements" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>Debian and Ubuntu specific:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">bash</span></code> is configured as <code class="file docutils literal notranslate"><span class="pre">/bin/sh</span></code> (<a class="reference external" href="https://wiki.debian.org/DashAsBinSh">read more</a>) <br />
+<code class="docutils literal notranslate"><span class="pre">dpkg-reconfigure</span> <span class="pre">dash</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<section id="optional-tools-on-linux">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Optional Tools on Linux:</a><a class="headerlink" href="#optional-tools-on-linux" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Git</dt><dd><p>The command line tools to manage Git repositories. It’s possible to extend
+the shell prompt with Git information.</p>
+</dd>
+<dt>SmartGit</dt><dd><p>A Git client to handle complex Git flows in a GUI.</p>
+</dd>
+<dt><a class="reference external" href="http://kassiopeia.juls.savba.sk/~garabik/software/grc.html">Generic Colouriser</a> (grc) ≥ 1.9</dt><dd><p>Colorizes outputs of foreign scripts and programs. GRC is hosted on <a class="reference external" href="https://github.com/garabik/grc">GitHub</a>
+The latest <a href="#id3"><span class="problematic" id="id4">*</span></a>.deb installation packages can be downloaded <a class="reference external" href="http://kassiopeia.juls.savba.sk/~garabik/software/grc/">here</a>.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="mac-os-specific-requirements">
+<span id="using-require-macos"></span><h2><a class="toc-backref" href="#id11" role="doc-backlink">Mac OS specific requirements:</a><a class="headerlink" href="#mac-os-specific-requirements" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>Bash ≥ 4.3</dt><dd><p>Mac OS is shipped with Bash 3.2. Use Homebrew to install an up-to-date Bash <br />
+<code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">bash</span></code></p>
+</dd>
+<dt>coreutils</dt><dd><p>Mac OS’ <code class="docutils literal notranslate"><span class="pre">readlink</span></code> program has a different behavior than the Linux version.
+The <code class="docutils literal notranslate"><span class="pre">coreutils</span></code> package installs a GNU readlink clone called <code class="docutils literal notranslate"><span class="pre">greadlink</span></code>. <br />
+<code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">coreutils</span></code></p>
+</dd>
+</dl>
+<section id="optional-tools-on-mac-os">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">Optional Tools on Mac OS:</a><a class="headerlink" href="#optional-tools-on-mac-os" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>Git</dt><dd><p>The command line tools to manage Git repositories. It’s possible to extend
+the shell prompt with Git information.</p>
+</dd>
+<dt>SmartGit or SourceTree</dt><dd><p>A Git client to handle complex Git flows in a GUI.</p>
+</dd>
+<dt><a class="reference external" href="http://kassiopeia.juls.savba.sk/~garabik/software/grc.html">Generic Colouriser</a> (grc) ≥ 1.9</dt><dd><p>Colorizes outputs of foreign scripts and programs. GRC is hosted on <a class="reference external" href="https://github.com/garabik/grc">GitHub</a> <br />
+<code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">Grc</span></code></p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="windows-specific-requirements">
+<span id="using-require-windows"></span><h2><a class="toc-backref" href="#id13" role="doc-backlink">Windows specific requirements:</a><a class="headerlink" href="#windows-specific-requirements" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>PowerShell</dt><dd><ul class="simple">
+<li><p><strong>Allow local script execution</strong> (<a class="reference external" href="https://technet.microsoft.com/en-us/library/hh849812.aspx">read more</a>) <br />
+<code class="docutils literal notranslate"><span class="pre">PS&gt;</span> <span class="pre">Set-ExecutionPolicy</span> <span class="pre">RemoteSigned</span></code></p></li>
+<li><p><strong>PowerShell</strong> ≥ <strong>5.0 (recommended)</strong> <br />
+PowerShell 5.0 is shipped since Windows 10. It is a part if the <a class="reference external" href="https://www.microsoft.com/en-US/download/details.aspx?id=50395">Windows Management Framework 5.0</a>
+(WMF). Windows 7 and 8/8.1 can be updated to WMF 5.0. The package does not
+include <strong>PSReadLine</strong>, which is included in the Windows 10
+PowerShell environment. Install PSReadLine manually: <br />
+<code class="docutils literal notranslate"><span class="pre">PS&gt;</span> <span class="pre">Install-Module</span> <span class="pre">PSReadline</span></code>.</p></li>
+<li><p><strong>PowerShell 4.0</strong> <br />
+PowerShell is shipped with Windows since Vista. If the required version
+not already included in Windows, it can be downloaded from Microsoft.com:
+<a class="reference external" href="http://www.microsoft.com/en-US/download/details.aspx?id=40855">WMF 4.0</a></p></li>
+</ul>
+</dd>
+</dl>
+<section id="optional-tools-on-windows">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Optional Tools on Windows:</a><a class="headerlink" href="#optional-tools-on-windows" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>PowerShell ≥ 4.0</dt><dd><ul class="simple">
+<li><p><strong>PSReadLine</strong> replaces the command line editing experience in PowerShell for versions 3 and up.</p></li>
+<li><p><strong>PowerShell Community Extensions (PSCX)</strong> ≥ <strong>3.2</strong> <br />
+The latest PSCX can be downloaded from <a class="reference external" href="https://www.powershellgallery.com/packages/Pscx/">PowerShellGallery</a> <br />
+<code class="docutils literal notranslate"><span class="pre">PS&gt;</span> <span class="pre">Install-Module</span> <span class="pre">Pscx</span></code> <br />
+Note: PSCX ≥ 3.2.1 is required for PowerShell ≥ 5.0.</p></li>
+</ul>
+</dd>
+<dt>Git (MSys-Git)</dt><dd><p>The command line tools to manage Git repositories.</p>
+</dd>
+<dt>SmartGit or SourceTree</dt><dd><p>A Git client to handle complex Git flows in a GUI.</p>
+</dd>
+<dt><a class="reference external" href="https://github.com/dahlbyk/posh-git">posh-git</a></dt><dd><p>PowerShell integration for Git <br />
+<code class="docutils literal notranslate"><span class="pre">PS&gt;</span> <span class="pre">Install-Module</span> <span class="pre">posh-git</span></code></p>
+</dd>
+</dl>
+<hr class="docutils" />
+<p class="rubric">Footnotes</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f1" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Xilinx discontinued ISE since Oct. 2013. The last release was 14.7.</p>
+</aside>
+<aside class="footnote brackets" id="f2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">2</a><span class="fn-bracket">]</span></span>
+<p>Due to numerous bugs in the Xilinx Vivado Synthesis (incl. 2016.1), PoC
+can offer only a restricted Vivado support. See PoC’s <code class="docutils literal notranslate"><span class="pre">Vivado</span></code> branch for a
+set of workarounds. The list of issues is documented on the
+<a class="reference internal" href="../References/KnownIssues.html"><span class="doc">Known Issues</span></a> page.</p>
+</aside>
+<aside class="footnote brackets" id="f3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">3</a><span class="fn-bracket">]</span></span>
+<p>Due to numerous bugs in the Xilinx Simulator (incl. 2016.1), PoC can
+offer only a restricted Vivado support. The list of issues is documented on
+the <a class="reference internal" href="../References/KnownIssues.html"><span class="doc">Known Issues</span></a> page.</p>
+</aside>
+</aside>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Using PoC" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Download.html" class="btn btn-neutral float-right" title="Downloading PoC" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

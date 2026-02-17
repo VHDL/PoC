@@ -1,0 +1,684 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulation &mdash; The PoC-Library 2.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=55b73dce" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-reports.089ed2e62f89368aa21ac7591d90c12a.css?v=83177741" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/override.css?v=909d6fac" />
+
+  
+    <link rel="shortcut icon" href="../_static/The-PoC-Library-FavIcon.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=b21de401"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Synthesis" href="Synthesis.html" />
+    <link rel="prev" title="Adding IP Cores to a Project" href="AddingIPCores.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/The-PoC-Library-Icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../WhatIsPoC/index.html">What is PoC?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../QuickStart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../GetInvolved/index.html">Get Involved</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/License.html">Apache License 2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Licenses/Doc-License.html">Creative Commons Attribution 4.0 International</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Using PoC</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Download.html">Downloading PoC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Integration.html">Integrating PoC into Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PoCConfiguration.html">Configuring PoC’s Infrastructure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="VHDLConfiguration.html">Creating my_config/my_project.vhdl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AddingIPCores.html">Adding IP Cores to a Project</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quick-example">Quick Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#vendor-specific-testbenches">Vendor Specific Testbenches</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-a-single-testbench">Running a Single Testbench</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#aldec-active-hdl">Aldec Active-HDL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cocotb-with-questasim-backend">Cocotb with QuestaSim backend</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ghdl-plus-gtkwave">GHDL (plus GTKwave)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mentor-graphics-questasim">Mentor Graphics QuestaSim</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#xilinx-vivado-simulator">Xilinx Vivado Simulator</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#running-a-group-of-testbenches">Running a Group of Testbenches</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#continuous-integration-ci">Continuous Integration (CI)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Synthesis.html">Synthesis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ProjectManagement.html">Project Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PrecompilingVendorLibraries.html">Pre-Compiling Vendor Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Miscellaneous.html">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Interfaces/index.html">IP Core Interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Miscelaneous/ThirdParty.html">Third Party Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ConstraintFiles/index.html">Constraint Files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ToolChains/index.html">Tool Chain Specifics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">IP Cores</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/alt/index.html">PoC.alt.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/arith/index.html">PoC.arith.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/bus/index.html">PoC.bus.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/cache/index.html">PoC.cache.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/comm/index.html">PoC.comm.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/dstruct/index.html">PoC.dstruct.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/fifo/index.html">PoC.fifo.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/io/index.html">PoC.io.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/mem/index.html">PoC.mem.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/misc/index.html">PoC.misc.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/net/index.html">PoC.net.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sort/index.html">PoC.sort.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/sync/index.html">PoC.sync.*</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/xil/index.html">PoC.xil.*</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Packages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/components.html">PoC.components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/context.html">PoC.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/config.html">PoC.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/fileio.html">PoC.fileio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/math.html">PoC.math</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/strings.html">PoC.strings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/utils.html">PoC.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../IPCores/common/vectors.html">PoC.vectors</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References and Reports</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html">Unittest Summary Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../unittests/index.html#osvvm-libraries-build-report">OSVVM Libraries Build Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/CommandReference.html">Command Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/Database.html">IP Core Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PyInfrastructure/index.html">Python Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../References/more.html">More ...</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Appendix</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../ChangeLog/index.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">The PoC-Library</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Using PoC</a></li>
+      <li class="breadcrumb-item active">Simulation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/UsingPoC/Simulation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="simulation">
+<span id="using-sim"></span><h1>Simulation<a class="headerlink" href="#simulation" title="Link to this heading"></a></h1>
+<nav class="contents local" id="contents-of-this-page">
+<p class="topic-title">Contents of this Page</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview" id="id3">Overview</a></p></li>
+<li><p><a class="reference internal" href="#quick-example" id="id4">Quick Example</a></p></li>
+<li><p><a class="reference internal" href="#vendor-specific-testbenches" id="id5">Vendor Specific Testbenches</a></p></li>
+<li><p><a class="reference internal" href="#running-a-single-testbench" id="id6">Running a Single Testbench</a></p>
+<ul>
+<li><p><a class="reference internal" href="#aldec-active-hdl" id="id7">Aldec Active-HDL</a></p></li>
+<li><p><a class="reference internal" href="#cocotb-with-questasim-backend" id="id8">Cocotb with QuestaSim backend</a></p></li>
+<li><p><a class="reference internal" href="#ghdl-plus-gtkwave" id="id9">GHDL (plus GTKwave)</a></p></li>
+<li><p><a class="reference internal" href="#mentor-graphics-questasim" id="id10">Mentor Graphics QuestaSim</a></p></li>
+<li><p><a class="reference internal" href="#xilinx-vivado-simulator" id="id11">Xilinx Vivado Simulator</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#running-a-group-of-testbenches" id="id12">Running a Group of Testbenches</a></p></li>
+<li><p><a class="reference internal" href="#continuous-integration-ci" id="id13">Continuous Integration (CI)</a></p></li>
+</ul>
+</nav>
+<section id="overview">
+<span id="using-sim-over"></span><h2><a class="toc-backref" href="#id3" role="doc-backlink">Overview</a><a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>The Python Infrastructure shipped with the PoC-Library can launch manual,
+half-automated and fully automated testbenches. The testbench can be run in
+command line or GUI mode. If available, the used simulator is launched with
+pre-configured waveform files. This can be done by invoking one of PoC’s
+frontend script:</p>
+<ul>
+<li><p><strong>poc.sh:</strong> <code class="docutils literal notranslate"><span class="pre">poc.sh</span> <span class="pre">&lt;common</span> <span class="pre">options&gt;</span> <span class="pre">&lt;simulator&gt;</span> <span class="pre">&lt;module&gt;</span> <span class="pre">&lt;simulator</span> <span class="pre">options&gt;</span></code> <br />
+Use this fronend script on Darwin, Linux and Unix platforms.</p></li>
+<li><p><strong>poc.ps1:</strong> <code class="docutils literal notranslate"><span class="pre">poc.ps1</span> <span class="pre">&lt;common</span> <span class="pre">options&gt;</span> <span class="pre">&lt;simulator&gt;</span> <span class="pre">&lt;module&gt;</span> <span class="pre">&lt;simulator</span> <span class="pre">options&gt;</span></code> <br />
+Use this frontend script Windows platforms. <br /></p>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>All Windows command line instructions are intended for Windows
+PowerShell, if not marked otherwise. So executing the following instructions
+in Windows Command Prompt (<code class="docutils literal notranslate"><span class="pre">cmd.exe</span></code>) won’t function or result in errors!</p>
+</div>
+</li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="PoCConfiguration.html"><span class="doc">PoC Configuration</span></a></dt><dd><p>See the Configuration page on how to configure PoC and your installed
+simulator tool chains. This is required to invoke the simulators.</p>
+</dd>
+<dt><a class="reference internal" href="../WhatIsPoC/SupportedToolChains.html"><span class="doc">Supported Simulators</span></a></dt><dd><p>See the Intruction page for a list of supported simulators.</p>
+</dd>
+</dl>
+</div>
+</section>
+<section id="quick-example">
+<span id="using-sim-quick"></span><h2><a class="toc-backref" href="#id4" role="doc-backlink">Quick Example</a><a class="headerlink" href="#quick-example" title="Link to this heading"></a></h2>
+<p>The following quick example uses the GHDL Simulator to analyze, elaborate and
+simulate a testbench for the module <code class="docutils literal notranslate"><span class="pre">arith_prng</span></code> (Pseudo Random Number
+Generator - PRNG). The VHDL file <code class="docutils literal notranslate"><span class="pre">arith_prng.vhdl</span></code> is located at
+<code class="docutils literal notranslate"><span class="pre">PoCRoot\src\arith</span></code> and virtually a member in the <cite>PoC.arith</cite> namespace.
+So the module can be identified by an unique name: <code class="docutils literal notranslate"><span class="pre">PoC.arith.prng</span></code>, which is
+passed to the frontend script.</p>
+<p class="rubric">Example 1:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">ghdl</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span>
+</pre></div>
+</div>
+<p>The CLI command <code class="docutils literal notranslate"><span class="pre">ghdl</span></code> chooses <em>GHDL Simulator</em> as the simulator and
+passes the fully qualified PoC entity name <code class="docutils literal notranslate"><span class="pre">PoC.arith.prng</span></code> as a parameter
+to the tool. All required source file are gathered and compiled to an
+executable. Afterwards this executable is launched in CLI mode and it’s outputs
+are displayed in console:</p>
+<a class="reference external image-reference" href="/_static/images/ghdl/arith_prng_tb.posh.png:alt:PowerShellconsoleoutputafterrunningPoC.arith.prngwithGHDL."><img alt="../_images/arith_prng_tb.posh.png" src="../_images/arith_prng_tb.posh.png" />
+</a>
+<p>Each testbench uses PoC’s simulation helper packages to count asserts and to
+track active stimuli and checker processes. After a completed simulation run,
+an report is written to STDOUT or the simulator’s console. Note the line
+<code class="docutils literal notranslate"><span class="pre">SIMULATION</span> <span class="pre">RESULT</span> <span class="pre">=</span> <span class="pre">PASSED</span></code>. For each simulated PoC entity, a line in the
+overall report is created. It lists the runtime per testbench and the simulation
+status (<code class="docutils literal notranslate"><span class="pre">...</span> <span class="pre">ERROR</span></code>, <code class="docutils literal notranslate"><span class="pre">FAILED</span></code>, <code class="docutils literal notranslate"><span class="pre">NO</span> <span class="pre">ASSERTS</span></code> or <code class="docutils literal notranslate"><span class="pre">PASSED</span></code>).</p>
+<p class="rubric">Example 2:</p>
+<p>Passing an additional option <code class="docutils literal notranslate"><span class="pre">--gui</span></code> to the service tool, opens the testbench
+in GUI-mode. If a waveform configuration file is present (e.g. a <code class="docutils literal notranslate"><span class="pre">*.gtkw</span></code>
+file for GTKWave), then it is preloaded into the simulator’s waveform viewer.</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">ghdl</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-gui</span>
+</pre></div>
+</div>
+<p>The opened waveform viewer and displayed waveform should look like this:</p>
+<a class="reference external image-reference" href="/_static/images/gtkwave/arith_prng_tb.png:alt:GTKWavewaveformviewofPoC.arith.prng."><img alt="../_images/arith_prng_tb.png" src="../_images/arith_prng_tb.png" />
+</a>
+</section>
+<section id="vendor-specific-testbenches">
+<span id="using-sim-vendor"></span><h2><a class="toc-backref" href="#id5" role="doc-backlink">Vendor Specific Testbenches</a><a class="headerlink" href="#vendor-specific-testbenches" title="Link to this heading"></a></h2>
+<p>PoC is shipped with a set of well known FPGA development boards. This set is
+extended by a list of generic boards, named after each supported FPGA vendor.
+These generic boards can be used in simulations to select a representative
+FPGA of a supported device vendor. If no board or device name is passed to a
+testbench run, the <code class="docutils literal notranslate"><span class="pre">GENERIC</span></code> board is chosen.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Board Name</p></th>
+<th class="head"><p>Target Board</p></th>
+<th class="head"><p>Target Device</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GENERIC</p></td>
+<td><p>GENERIC</p></td>
+<td><p>GENERIC</p></td>
+</tr>
+<tr class="row-odd"><td><p>Altera</p></td>
+<td><p>DE4</p></td>
+<td><p>Stratix-IV 230</p></td>
+</tr>
+<tr class="row-even"><td><p>Lattice</p></td>
+<td><p>ECP5Versa</p></td>
+<td><p>ECP5-45UM</p></td>
+</tr>
+<tr class="row-odd"><td><p>Xilinx</p></td>
+<td><p>KC705</p></td>
+<td><p>Kintex-7 325T</p></td>
+</tr>
+</tbody>
+</table>
+<p>A vendor specific testbench can be launched by passing either <code class="docutils literal notranslate"><span class="pre">--board=xxx</span></code> or
+<code class="docutils literal notranslate"><span class="pre">--device=yyy</span></code> as an additional parameter to the PoC scripts.</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="c"># Example 1 - A Lattice board</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">ghdl</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">Lattice</span>
+<span class="c"># Example 2 - A Altera Stratix IV board</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">ghdl</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">DE4</span>
+<span class="c"># Example 3 - A Xilinx Kintex-7 325T device</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">ghdl</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-device</span><span class="p">=</span><span class="n">XC7K325T</span><span class="p">-</span><span class="n">2FFG900</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Running vendor specific testbenches may require pre-compiled vendor libraries.
+Some simulators are shipped with diverse pre-compiled libraries, others include
+scripts or user guides to pre-compile them on the target system.</p>
+<p>PoC is shipped with a set of pre-compile scripts to offer a unified interface
+and common storage for all supported vendor’s pre-compile procedures. See
+<a class="reference internal" href="PrecompilingVendorLibraries.html"><span class="doc">Pre-Compiling Vendor Libraries</span></a>.</p>
+</div>
+</section>
+<section id="running-a-single-testbench">
+<span id="using-sim-single"></span><h2><a class="toc-backref" href="#id6" role="doc-backlink">Running a Single Testbench</a><a class="headerlink" href="#running-a-single-testbench" title="Link to this heading"></a></h2>
+<p>A testbench run is supervised by PoC’s <code class="docutils literal notranslate"><span class="pre">PoCRoot\py\PoC.py</span></code> service tool,
+which offers a consistent interface to all simulators. Unfortunately, every
+platform has it’s specialties, so a wrapper script is needed as abstraction from
+the host’s operating system. Depending on the choosen tool chain, the wrapper
+script will source or invoke the vendor tool’s environment scripts to pre-load
+the needed environment variables, paths or license file settings.</p>
+<p>The order of options to the frontend script is as following:
+<code class="docutils literal notranslate"><span class="pre">&lt;common</span> <span class="pre">options&gt;</span> <span class="pre">&lt;simulator&gt;</span> <span class="pre">&lt;module&gt;</span> <span class="pre">&lt;simulator</span> <span class="pre">options&gt;</span></code></p>
+<p>The frontend offers several common options:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Common Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>-q</p></td>
+<td><p>–quiet</p></td>
+<td><p>Quiet-mode (print nothing)</p></td>
+</tr>
+<tr class="row-odd"><td><p>-v</p></td>
+<td><p>–verbose</p></td>
+<td><p>Print more messages</p></td>
+</tr>
+<tr class="row-even"><td><p>-d</p></td>
+<td><p>–debug</p></td>
+<td><p>Debug mode (print everything)</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>–dryrun</p></td>
+<td><p>Run in dry-run mode</p></td>
+</tr>
+</tbody>
+</table>
+<p>One of the following supported simulators can be choosen, if installed and
+configured in PoC:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Simulator</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>asim</p></td>
+<td><p>Active-HDL Simulator</p></td>
+</tr>
+<tr class="row-odd"><td><p>cocotb</p></td>
+<td><p>Cocotb simulation using QuestaSim Simulator</p></td>
+</tr>
+<tr class="row-even"><td><p>ghdl</p></td>
+<td><p>GHDL Simulator</p></td>
+</tr>
+<tr class="row-odd"><td><p>vsim</p></td>
+<td><p>QuestaSim Simulator or ModelSim</p></td>
+</tr>
+<tr class="row-even"><td><p>xsim</p></td>
+<td><p>Xilinx Vivado Simulator</p></td>
+</tr>
+</tbody>
+</table>
+<p>A testbench run can be interrupted by sending a keyboard interrupt to Python.
+On most operating systems this is done by pressing <kbd class="kbd docutils literal notranslate">Ctrl</kbd> + <kbd class="kbd docutils literal notranslate">C</kbd>. If
+PoC runs multiple testbenches at once, all finished testbenches are reported with
+there testbench result. The aborted testbench will be listed as errored.</p>
+<section id="aldec-active-hdl">
+<span id="using-sim-aldec-activehdl"></span><h3><a class="toc-backref" href="#id7" role="doc-backlink">Aldec Active-HDL</a><a class="headerlink" href="#aldec-active-hdl" title="Link to this heading"></a></h3>
+<p>The command to invoke a simulation using Active-HDL is <code class="docutils literal notranslate"><span class="pre">asim</span></code> followed by a list of
+PoC entities. The following options are supported for Active-HDL:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Simulator Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p>–board=&lt;BOARD&gt;</p></td>
+<td><p>Specify a target board.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>–device=&lt;DEVICE&gt;</p></td>
+<td><p>Specify a target device.</p></td>
+</tr>
+<tr class="row-even"><td></td>
+<td><p>–std=[87|93|02|08]</p></td>
+<td><p>Select a VHDL standard. Default: 08</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>GUI mode for Active-HDL is not yet supported.</p>
+</div>
+<p class="rubric">Example:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">asim</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-std</span><span class="p">=</span><span class="n">93</span>
+</pre></div>
+</div>
+</section>
+<section id="cocotb-with-questasim-backend">
+<span id="using-sim-cocotb"></span><h3><a class="toc-backref" href="#id8" role="doc-backlink">Cocotb with QuestaSim backend</a><a class="headerlink" href="#cocotb-with-questasim-backend" title="Link to this heading"></a></h3>
+<p>The command to invoke a Cocotb simulation using QuestaSim is <code class="docutils literal notranslate"><span class="pre">cocotb</span></code> followed
+by a list of PoC entities. The following options are supported for Cocotb:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Simulator Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p>–board=&lt;BOARD&gt;</p></td>
+<td><p>Specify a target board.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>–device=&lt;DEVICE&gt;</p></td>
+<td><p>Specify a target device.</p></td>
+</tr>
+<tr class="row-even"><td><p>-g</p></td>
+<td><p>–gui</p></td>
+<td><p>Start the simulation in the QuestaSim GUI.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Cocotb is currently only on Linux with QuestaSim supported. We are working to
+support the Windows platform and the GHDL backend.</p>
+</div>
+<p class="rubric">Example:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>PoCRoot
+.<span class="se">\p</span>oc.ps1<span class="w"> </span>cocotb<span class="w"> </span>PoC.cache.par
+</pre></div>
+</div>
+</section>
+<section id="ghdl-plus-gtkwave">
+<span id="using-sim-ghdl"></span><h3><a class="toc-backref" href="#id9" role="doc-backlink">GHDL (plus GTKwave)</a><a class="headerlink" href="#ghdl-plus-gtkwave" title="Link to this heading"></a></h3>
+<p>The command to invoke a simulation using GHDL is <code class="docutils literal notranslate"><span class="pre">ghdl</span></code> followed by a list of
+PoC entities. The following options are supported for GHDL:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Simulator Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p>–board=&lt;BOARD&gt;</p></td>
+<td><p>Specify a target board.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>–device=&lt;DEVICE&gt;</p></td>
+<td><p>Specify a target device.</p></td>
+</tr>
+<tr class="row-even"><td><p>-g</p></td>
+<td><p>–gui</p></td>
+<td><p>Start GTKwave, if installed. Open <a href="#id1"><span class="problematic" id="id2">*</span></a>.gtkw, if available.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>–std=[87|93|02|08]</p></td>
+<td><p>Select a VHDL standard. Default: 08</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">ghdl</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">Atlys</span> <span class="n">-g</span>
+</pre></div>
+</div>
+</section>
+<section id="mentor-graphics-questasim">
+<span id="using-sim-mentor-questasim"></span><h3><a class="toc-backref" href="#id10" role="doc-backlink">Mentor Graphics QuestaSim</a><a class="headerlink" href="#mentor-graphics-questasim" title="Link to this heading"></a></h3>
+<p>The command to invoke a simulation using QuestaSim or ModelSim is <code class="docutils literal notranslate"><span class="pre">vsim</span></code>
+followed by a list of PoC entities. The following options are supported for
+QuestaSim:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Simulator Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p>–board=&lt;BOARD&gt;</p></td>
+<td><p>Specify a target board.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>–device=&lt;DEVICE&gt;</p></td>
+<td><p>Specify a target device.</p></td>
+</tr>
+<tr class="row-even"><td><p>-g</p></td>
+<td><p>–gui</p></td>
+<td><p>Start the simulation in the QuestaSim GUI.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>–std=[87|93|02|08]</p></td>
+<td><p>Select a VHDL standard. Default: 08</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">vsim</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">DE4</span> <span class="p">-</span><span class="n">-gui</span>
+</pre></div>
+</div>
+<p>If QuestaSim is started in GUI mode (<code class="xref std std-option docutils literal notranslate"><span class="pre">--gui</span></code>), PoC will provide several
+Tcl files (<code class="file docutils literal notranslate"><span class="pre">*.do</span></code>) in the simulator’s working directory to recompile,
+restart or rerun the current simulation. The rerun command is based on the saved
+IP core’s run script, which may default to <code class="docutils literal notranslate"><span class="pre">run</span> <span class="pre">-all</span></code>.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tcl Script</p></th>
+<th class="head"><p>Performed Tasks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="file docutils literal notranslate"><span class="pre">recompile.do</span></code></p></td>
+<td><p>recompile and restart</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="file docutils literal notranslate"><span class="pre">relaunch.do</span></code></p></td>
+<td><p>recompile, restart and rerun</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="file docutils literal notranslate"><span class="pre">saveWaveform.do</span></code></p></td>
+<td><p>save the current waveform viewer settings</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="xilinx-vivado-simulator">
+<span id="using-sim-xilinx-xsim"></span><h3><a class="toc-backref" href="#id11" role="doc-backlink">Xilinx Vivado Simulator</a><a class="headerlink" href="#xilinx-vivado-simulator" title="Link to this heading"></a></h3>
+<p>The command to invoke a simulation using Vivado Simulator (isim) is <code class="docutils literal notranslate"><span class="pre">xsim</span></code>
+followed by a list of PoC entities. The following options are supported for
+Vivado Simulator:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" colspan="2"><p>Simulator Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td></td>
+<td><p>–board=&lt;BOARD&gt;</p></td>
+<td><p>Specify a target board.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>–device=&lt;DEVICE&gt;</p></td>
+<td><p>Specify a target device.</p></td>
+</tr>
+<tr class="row-even"><td><p>-g</p></td>
+<td><p>–gui</p></td>
+<td><p>Start Vivado in simulation mode.</p></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p>–std=[93|08]</p></td>
+<td><p>Select a VHDL standard. Default: 93</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Example:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">xsim</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">Atlys</span> <span class="n">-g</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="running-a-group-of-testbenches">
+<span id="using-sim-group"></span><h2><a class="toc-backref" href="#id12" role="doc-backlink">Running a Group of Testbenches</a><a class="headerlink" href="#running-a-group-of-testbenches" title="Link to this heading"></a></h2>
+<p>Each simulator can be invoked with a space seperated list of PoC entiries or a
+wildcard at the end of the fully qualified entity name.</p>
+<p>Supported wildcard patterns are <code class="docutils literal notranslate"><span class="pre">*</span></code> and <code class="docutils literal notranslate"><span class="pre">?</span></code>. Question mark refers to all
+entities in a PoC (sub-)namespace. Asterisk refers to all PoC entiries in the
+current namespace and all sub-namespaces.</p>
+<p><strong>Examples for testbenches groups:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>PoC entity list</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PoC.arith.prng</p></td>
+<td><p>A single PoC entity: <code class="docutils literal notranslate"><span class="pre">arith_prng</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>PoC.*</p></td>
+<td><p>All entities in the whole library</p></td>
+</tr>
+<tr class="row-even"><td><p>PoC.io.ddrio.?</p></td>
+<td><p>All entities in <code class="docutils literal notranslate"><span class="pre">PoC.io.ddrio</span></code>: <code class="docutils literal notranslate"><span class="pre">ddrio_in</span></code>, <code class="docutils literal notranslate"><span class="pre">ddrio_inout</span></code>, <code class="docutils literal notranslate"><span class="pre">ddrio_out</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>PoC.fifo.* PoC.cache.* PoC.dstruct.*</p></td>
+<td><p>All FIFO, cache and data-structure testbenches.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-q</span> <span class="n">asim</span> <span class="n">PoC</span><span class="p">.</span><span class="n">arith</span><span class="p">.</span><span class="n">prng</span> <span class="n">PoC</span><span class="p">.</span><span class="n">io</span><span class="p">.</span><span class="n">ddrio</span><span class="p">.*</span> <span class="n">PoC</span><span class="p">.</span><span class="n">sort</span><span class="p">.</span><span class="n">lru_cache</span>
+</pre></div>
+</div>
+<p><strong>Resulting output:</strong></p>
+<a class="reference external image-reference" href="/_static/images/active-hdl/multiple.png:alt:ReportafterrunningmultipletestbenchesinActive-HDL."><img alt="../_images/multiple.png" src="../_images/multiple.png" />
+</a>
+</section>
+<section id="continuous-integration-ci">
+<span id="using-sim-ci"></span><h2><a class="toc-backref" href="#id13" role="doc-backlink">Continuous Integration (CI)</a><a class="headerlink" href="#continuous-integration-ci" title="Link to this heading"></a></h2>
+<p>All PoC testbenches are executed on every GitHub upload (push) via Travis-CI.
+The testsuite runs all testbenches for the virtual board <code class="docutils literal notranslate"><span class="pre">GENERIC</span></code> with an
+FPGA device called <code class="docutils literal notranslate"><span class="pre">GENERIC</span></code>. We can’t run vendor dependent testbenches,
+because we can’t upload the vendor simulation libraries to Travis-CI.</p>
+<p>To reproduce the Travis-CI results on a local machine, run the following command.
+The <code class="docutils literal notranslate"><span class="pre">-q</span></code> option, launches the frontend in quiet mode to reduce the command line
+messages:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-q</span> <span class="n">ghdl</span> <span class="n">PoC</span><span class="p">.*</span>
+</pre></div>
+</div>
+<a class="reference external image-reference" href="/_static/images/ghdl/PoC_all.png"><img alt="Overall testbench report after running all PoC testbenches in GHDL." src="../_images/PoC_all.png" />
+</a>
+<p>If the vendor libraries are available and pre-compiled, then it’s also possible
+to run a CI flow for a specific vendor. This is an Altera example for the
+Terrasic DE4 board:</p>
+<div class="highlight-PowerShell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd </span><span class="n">PoCRoot</span>
+<span class="p">.\</span><span class="n">poc</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-q</span> <span class="n">vsim</span> <span class="n">PoC</span><span class="p">.*</span> <span class="p">-</span><span class="n">-board</span><span class="p">=</span><span class="n">DE4</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="PoCConfiguration.html"><span class="doc">PoC Configuration</span></a></dt><dd><p>See the Configuration page on how to configure PoC and your installed
+simulator tool chains. This is required to invoke the simulators.</p>
+</dd>
+<dt><a class="reference external" href="https://travis-ci.org/VLSI-EDA/PoC/branches">Latest Travis-CI Report</a></dt><dd><p>Browse the list of branches at Travis-CI.org.</p>
+</dd>
+</dl>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="AddingIPCores.html" class="btn btn-neutral float-left" title="Adding IP Cores to a Project" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Synthesis.html" class="btn btn-neutral float-right" title="Synthesis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture.
+      <span class="lastupdated">Last updated on 17.02.2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
