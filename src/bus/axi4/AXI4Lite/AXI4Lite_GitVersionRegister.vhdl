@@ -11,6 +11,12 @@
 -- This version register can be auto filled with constants from Git. Software
 -- can read from what revision a firmware (bitstream, PL code) was build.
 --
+-- The Version-out-Port is used to make all values accessible to the PL. This
+-- can be used by another interface than AXI4L, if necessary.
+-- If you dont need the UID field, use this to directly create a constant out of
+-- the mem-file:
+-- constant My_Version : T_VersionRegister := to_VersionRegister(MEM_PATH);
+--
 -- Use the pre-synthesis script from
 --     PoC/tools/git/preSynth_GitVersionRegister_Vivado.tcl
 -- to create a memory file with all necessary information. Add this file name to
@@ -62,14 +68,16 @@ entity AXI4Lite_GitVersionRegister is
 		Reset        : in  std_logic;
 
 		AXI4Lite_m2s : in  T_AXI4Lite_BUS_M2S;
-		AXI4Lite_s2m : out T_AXI4Lite_BUS_S2M
+		AXI4Lite_s2m : out T_AXI4Lite_BUS_S2M;
+
+		Version      : out T_VersionRegister
 	);
 end entity;
 
 
 architecture rtl of AXI4Lite_GitVersionRegister is
 	constant CONFIG      : T_AXI4_Register_Vector       := get_Version_Descriptor;
-	constant VersionData : T_SLVV_32(0 to C_Num_Version_Header - 1) := read_Version_from_mem(PROJECT_DIR & VERSION_FILE_NAME);
+	constant VersionData : T_SLVV_32(0 to C_Num_VersionHeader - 1) := read_Version_from_mem(PROJECT_DIR & VERSION_FILE_NAME);
 
 	signal   RegisterFile_ReadPort   : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0);
 	signal   RegisterFile_WritePort  : T_SLVV(0 to CONFIG'Length -1)(DATA_BITS - 1 downto 0);
@@ -98,8 +106,9 @@ begin
 		RegisterFile_ReadPort   => RegisterFile_ReadPort,
 		RegisterFile_WritePort  => RegisterFile_WritePort
 	);
-	RegisterFile_WritePort(0 to C_Num_Version_Header -1) <= VersionData;
-	RegisterFile_WritePort(C_Num_Version_Header to C_Num_Version_Register -1) <= UID_vec;
+	RegisterFile_WritePort(0 to C_Num_VersionHeader -1) <= VersionData;
+	RegisterFile_WritePort(C_Num_VersionHeader to C_Num_VersionRegister -1) <= UID_vec;
+	Version <= to_VersionRegister(RegisterFile_ReadPort);
 
 	---------------------------------
 	-- Generate data for UID-vector
