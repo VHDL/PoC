@@ -100,8 +100,8 @@ begin
       WaitForClock(Clock);
       wait for 1 ns;
       Start <= '0';
-      A     <= (others => '-');
-      D     <= (others => '-');
+      A     <= (A'range => 'U');
+      D     <= (D'range => 'U');
       done  := (others => false);
 
       loop
@@ -136,8 +136,8 @@ begin
 
   begin
     Start <= '0';
-		A     <= (others => '-');
-		D     <= (others => '-');
+		A     <= (A'range => 'U');
+		D     <= (D'range => 'U');
 
     -- Initialize Random
     Random.InitSeed(Random'instance_name);
