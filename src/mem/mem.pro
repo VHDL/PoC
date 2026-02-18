@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ if { $::poc::vendor eq "Xilinx" } {
 	analyze ./ocram/altera/ocram_tdp_altera.vhdl
 
 } elseif { $::poc::vendor ne "GENERIC" } {
-	puts "Unknow vendor '$::poc::vendor' in arith!"
+	puts "Unknown vendor '$::poc::vendor'!"
 	exit 1
 }
 
@@ -48,6 +48,7 @@ analyze ./ocrom/ocrom_sp.vhdl
 
 analyze ./sdram/sdram_ctrl_fsm.vhdl
 
+# TODO: Remove Spartan 3 and Cyclone 3 files
 if { $::poc::vendor eq "Xilinx" } {
 	analyze ./sdram/sdram_ctrl_phy_s3esk.vhdl
 	analyze ./sdram/sdram_ctrl_s3esk.vhdl
@@ -57,7 +58,7 @@ if { $::poc::vendor eq "Xilinx" } {
 	analyze ./sdram/sdram_ctrl_de0.vhdl
 
 } elseif { $::poc::vendor ne "GENERIC" } {
-	puts "Unknow vendor '$::poc::vendor' in arith!"
+	puts "Unknown vendor '$::poc::vendor'!"
 	exit 1
 }
 

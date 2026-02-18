@@ -16,6 +16,9 @@ PoC.bus.axi4lite
    * :ref:`IP/axi4lite_FIFO_cdc`
    * :ref:`IP/axi4lite_Register`
    * :ref:`IP/axi4lite_GitVersionRegister`
+   * :ref:`IP/axi4lite_HighResolutionClock`
+   * :ref:`IP/axi4lite_Ocram_Adapter`
+   * :ref:`IP/axi4lite_UART`
 
 .. toctree::
    :hidden:
@@ -26,3 +29,6 @@ PoC.bus.axi4lite
    FIFO_cdc <axi4lite_FIFO_cdc>
    Register <axi4lite_Register>
    GitVersionRegister <axi4lite_GitVersionRegister>
+   HighResolutionClock <axi4lite_HighResolutionClock>
+   Ocram_Adapter <axi4lite_Ocram_Adapter>
+   UART <axi4lite_UART>

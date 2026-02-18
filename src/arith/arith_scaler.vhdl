@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:         Thomas B. Preusser
 --
@@ -129,7 +126,7 @@ begin
 
 	-- Selection of Multiplier
 	genMultiMul: if MULS'length > 1 generate
-		signal MS : unsigned(msel'range) := (others => '-');
+		signal MS : unsigned(msel'range) := (others => '0');
 	begin
 		process(clk)
 		begin
@@ -157,7 +154,7 @@ begin
 		begin
 			if rising_edge(clk) then
 				if rst = '1' then
-					DS <= (others => '-');
+					DS <= (others => '0');
 				elsif start = '1' then
 					DS <= unsigned(dsel);
 				end if;

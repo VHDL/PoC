@@ -21,15 +21,15 @@ The namespace `PoC` offers common packages.
 **Usage:**
 
 ```VHDL
-library PoC;
-use     PoC.config.all;
-use     PoC.debug.all;
-use     PoC.fileio.all;       -- If supported by the vendor tool
-use     PoC.math.all;
-use     PoC.physical.all;
-use     PoC.strings.all;
-use     PoC.utils.all;
-use     PoC.vectors.all;
+
+use work.config.all;
+use work.debug.all;
+use work.fileio.all;       -- If supported by the vendor tool
+use work.math.all;
+use work.physical.all;
+use work.strings.all;
+use work.utils.all;
+use work.vectors.all;
 ```
 
 

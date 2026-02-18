@@ -3,6 +3,7 @@
 #   Jonas Schreiner
 #   Stefan Unrein
 #   Patrick Lehmann
+#   Adrian Weiland
 #
 # License:
 # =============================================================================
@@ -38,8 +39,11 @@ namespace eval ::poc {
 	variable vendor $vendorName; # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
 }
 
-source ../lib/OSVVM-Scripts/StartUp.tcl
-# source ../lib/OSVVM-Scripts/StartNVC.tcl
+if {[info exists nvc_dataDir]} {
+	source ../lib/OSVVM-Scripts/StartNVC.tcl
+} else {
+	source ../lib/OSVVM-Scripts/StartUp.tcl
+}
 
 build ../lib/OsvvmLibraries.pro
 
@@ -51,7 +55,7 @@ if {$::osvvm::ToolName eq "GHDL"} {
 	set RivieraSimOptions {-unbounderror}
 
 } elseif {$::osvvm::ToolName eq "NVC"} {
-	ExtendedAnalyzeOptions {--relaxed}
+	SetExtendedAnalyzeOptions {--relaxed}
 
 } elseif {$::osvvm::ToolName eq "Sigasi"} {
 
@@ -70,11 +74,20 @@ Other tools:
 } $::osvvm::ToolName]
 }
 
-#set ::osvvm::AnalyzeErrorStopCount 1
-#set ::osvvm::SimulateErrorStopCount 1
+set ::osvvm::AnalyzeErrorStopCount  1
+set ::osvvm::SimulateErrorStopCount 1
+set ::osvvm::TclDebug 1
+set ::osvvm::FailOnBuildErrors 1
+
+proc disabled {args} {
+	puts "Disabled from analysis: $args"
+}
+proc duplicate {args} {
+	puts "Duplicate file: $args"
+}
 
 build ../src/PoC.pro
 
-#SetSaveWaves
+# SetSaveWaves
 
 build ../tb/RunAllTests.pro

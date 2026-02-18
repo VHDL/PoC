@@ -1,10 +1,11 @@
 # =============================================================================
 # Authors:
-#	Adrian Weiland, Stefan Unrein
+#   Adrian Weiland
+#   Stefan Unrein
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,10 +34,11 @@ if { $::poc::vendor eq "Xilinx" } {
 	puts "No Altera files for arith."
 
 } elseif { $::poc::vendor ne "GENERIC" } {
-	puts "Unknow vendor '$::poc::vendor' in arith!"
+	puts "Unknown vendor '$::poc::vendor'!"
 	exit 1
 }
 
+disabled ./arith_accumulator.vhdl
 analyze ./arith_addw.vhdl
 analyze ./arith_carrychain_inc.vhdl
 analyze ./arith_cca.vhdl

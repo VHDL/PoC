@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@
 # limitations under the License.
 # =============================================================================
 
-library tb_axi4liteRegister
+TestSuite PoC.bus.axi4.axi4Lite.Register
+library tb_axi4lite_Register
 
 analyze AXI4Lite_Register_pkg.vhdl
 analyze AXI4Lite_Register_TestController.vhdl
 analyze AXI4Lite_Register_TestHarness.vhdl
 
 # Test cases
-RunTest AXI4Lite_Register_initial.vhdl
+RunTest AXI4Lite_Register_Initial.vhdl
 RunTest AXI4Lite_Register_ReadWrite.vhdl

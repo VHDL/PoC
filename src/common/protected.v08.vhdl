@@ -31,11 +31,6 @@
 library IEEE;
 use     IEEE.math_real.all;
 
-library	PoC;
--- use     work.my_project.all;
--- use     work.utils.all;
-
-
 package ProtectedTypes is
 	-- protected BOOLEAN implementation
 	-- ===========================================================================

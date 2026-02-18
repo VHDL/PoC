@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:					Thomas B. Preusser
 --
@@ -43,7 +40,9 @@
 -- =============================================================================
 
 library IEEE;
-use	IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
+
+use     work.utils.all;
 
 entity arith_trng is
   generic (
@@ -54,10 +53,6 @@ entity arith_trng is
     rnd : out std_logic_vector(BITS-1 downto 0)  -- Random Oscillator Samples
 	);
 end entity;
-
-
-use  work.utils.all;
-use  work.sync.sync_Bits;
 
 architecture rtl of arith_trng is
   signal osc : std_logic_vector(BITS-1 downto 0) := (others => '-');  -- Oscillators
@@ -70,7 +65,7 @@ begin
 	  osc(i) <= ite(i<3, '1', '0') xor osc((i-1)mod BITS) xor osc(i) xor osc((i+1)mod BITS);
   end generate;
 
-	sync_i : sync_Bits
+	sync_i : entity work.sync_Bits
 		generic map (
 			BITS => BITS
 		)

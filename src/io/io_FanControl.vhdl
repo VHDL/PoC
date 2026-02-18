@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:          Patrick Lehmann
 --
@@ -49,6 +46,7 @@
 
 library IEEE;
 use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.config.all;
 use     work.utils.all;
@@ -87,7 +85,7 @@ architecture rtl of io_FanControl is
 
 	constant TACHO_RESOLUTION  : positive                                          := 8;
 
-	signal PWM_PWMIn           : std_logic_vector(PWM_RESOLUTION - 1 downto 0);
+	signal PWM_PWMIn           : unsigned(PWM_RESOLUTION - 1 downto 0);
 	signal PWM_PWMOut          : std_logic                                         := '0';
 
 begin
@@ -147,10 +145,10 @@ begin
 
 		process(StartUp, UserTemperature_sync, OverTemperature_sync)
 		begin
-			if    (StartUp = '1') then                PWM_PWMIn <= to_slv(2**PWM_RESOLUTION - 1, PWM_RESOLUTION);      -- 100%; start up
-			elsif (OverTemperature_sync = '1') then   PWM_PWMIn <= to_slv(2**PWM_RESOLUTION - 1, PWM_RESOLUTION);      -- 100%
-			elsif (UserTemperature_sync = '1') then   PWM_PWMIn <= to_slv(2**(PWM_RESOLUTION - 1), PWM_RESOLUTION);    -- 50%
-			else                                      PWM_PWMIn <= to_slv(4, PWM_RESOLUTION);                          -- 13%
+			if    (StartUp = '1') then                PWM_PWMIn <= to_unsigned(2**PWM_RESOLUTION - 1, PWM_RESOLUTION);      -- 100%; start up
+			elsif (OverTemperature_sync = '1') then   PWM_PWMIn <= to_unsigned(2**PWM_RESOLUTION - 1, PWM_RESOLUTION);      -- 100%
+			elsif (UserTemperature_sync = '1') then   PWM_PWMIn <= to_unsigned(2**(PWM_RESOLUTION - 1), PWM_RESOLUTION);    -- 50%
+			else                                      PWM_PWMIn <= to_unsigned(4, PWM_RESOLUTION);                          -- 13%
 			end if;
 		end process;
 	end generate;
@@ -188,10 +186,10 @@ begin
 
 		process(StartUp, UserTemperature_sync, OverTemperature_sync)
 		begin
-			if    (StartUp = '1') then                PWM_PWMIn <= to_slv(2**PWM_RESOLUTION - 1, PWM_RESOLUTION);      -- 100%; start up
-			elsif (OverTemperature_sync = '1') then   PWM_PWMIn <= to_slv(2**PWM_RESOLUTION - 1, PWM_RESOLUTION);      -- 100%
-			elsif (UserTemperature_sync = '1') then   PWM_PWMIn <= to_slv(2**(PWM_RESOLUTION - 1), PWM_RESOLUTION);    -- 50%
-			else                                      PWM_PWMIn <= to_slv(4, PWM_RESOLUTION);                          -- 13%
+			if    (StartUp = '1') then                PWM_PWMIn <= to_unsigned(2**PWM_RESOLUTION - 1, PWM_RESOLUTION);      -- 100%; start up
+			elsif (OverTemperature_sync = '1') then   PWM_PWMIn <= to_unsigned(2**PWM_RESOLUTION - 1, PWM_RESOLUTION);      -- 100%
+			elsif (UserTemperature_sync = '1') then   PWM_PWMIn <= to_unsigned(2**(PWM_RESOLUTION - 1), PWM_RESOLUTION);    -- 50%
+			else                                      PWM_PWMIn <= to_unsigned(4, PWM_RESOLUTION);                          -- 13%
 			end if;
 		end process;
 	end generate;
