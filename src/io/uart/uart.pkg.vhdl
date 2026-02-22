@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:        Martin Zabel
 --                 Thomas B. Preusser
@@ -10,7 +7,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2025-2026 The PoC-Library Authors
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -27,8 +24,8 @@
 -- limitations under the License.
 -- =============================================================================
 
-library  IEEE;
-use      IEEE.std_logic_1164.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
 
 use     work.utils.all;
 use     work.physical.all;
@@ -41,7 +38,16 @@ package uart is
 		UART_FLOWCONTROL_RTS_CTS,
 		UART_FLOWCONTROL_RTR_CTS
 	);
-
+	type T_UART_PARITY_MODE is (
+		PARITY_NONE,
+		PARITY_EVEN,		
+		PARITY_ODD
+	);
+	type T_UART_PARITY_ERROR_HANDLING is (
+		REPLACE_ERROR_BYTE, 
+		PASSTHROUGH_ERROR_BYTE,   
+		DROP_ERROR_BYTE		
+	);
 	constant C_IO_UART_TYPICAL_BAUDRATES : T_BAUDVEC := (
 		 0 =>    300 Bd,   1 =>    600 Bd,   2 =>   1200 Bd,   3 =>   1800 Bd,   4 =>   2400 Bd,
 		 5 =>   4000 Bd,   6 =>   4800 Bd,   7 =>   7200 Bd,   8 =>   9600 Bd,   9 =>  14400 Bd,

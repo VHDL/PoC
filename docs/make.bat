@@ -5,11 +5,9 @@ pushd %~dp0
 REM Command file for Sphinx documentation
 
 if "%SPHINXBUILD%" == "" (
-	set SPHINXBUILD=py -3.13 -m sphinx.cmd.build
+	set SPHINXBUILD=py -3.14 -m sphinx.cmd.build
 )
-set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXOPTS=-v
 
 if "%1" == "" goto help
 
@@ -26,7 +24,8 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
-%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+REM --fresh-env --write-all
+%SPHINXBUILD% --verbose --builder %1 -d %BUILDDIR%/doctrees --jobs 4 -w %BUILDDIR%/%1.log . %BUILDDIR%/%1
 goto end
 
 :help

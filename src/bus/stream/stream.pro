@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,13 +19,28 @@
 # limitations under the License.
 # =============================================================================
 
-library PoC
-
-analyze stream.pkg.vhdl
+# analyze stream.pkg.vhdl
 analyze stream_FIFO.vhdl
-analyze stream_DeMux.vhdl
+disabled stream_FIFO_tempput.vhdl
+# analyze stream_Delay.vhdl                    ;  # already analyzed
+# analyze stream_DeMux.vhdl                    ;  # already analyzed
+disabled stream_fast_cutter.vhdl
+disabled stream_fast_to_stream_adapter.vhd
 analyze stream_FrameGenerator.vhdl
+disabled stream_Frame_checker.vhdl
+disabled stream_Stage.vhdl
+disabled stream_Stage_vector.vhdl
 analyze stream_Mirror.vhdl
-analyze stream_Mux.vhdl
+# analyze stream_Mux.vhdl                        ;  # already analyzed
+disabled stream_PacketGenerator.vhdl
+disabled stream_Padder.vhdl
 analyze stream_Source.vhdl
+disabled stream_Statistics.vhdl
+disabled stream_to_stream_fast_adapter.vhd
 
+disabled stream_utils.pkg.vhdl
+disabled stream_Presplitter.vhdl
+disabled stream_Prepender.vhdl
+disabled generic_fast_appender.vhdl
+disabled generic_fast_post_splitter.vhdl
+disabled generic_fast_pre_splitter.vhdl

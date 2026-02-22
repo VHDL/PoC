@@ -3,6 +3,7 @@
 #   Jonas Schreiner
 #   Stefan Unrein
 #   Patrick Lehmann
+#   Adrian Weiland
 #
 # License:
 # =============================================================================
@@ -21,60 +22,46 @@
 # limitations under the License.
 # =============================================================================
 
-namespace eval ::poc {
-	proc getEnv {var {default ""}} {
-		if {[info exists ::env($var)]} {
-			return $::env($var)
-		}
-		return $default
-	}
-
-	variable vendorName [getEnv VENDOR "GENERIC"]
-	variable boardName  [getEnv BOARD  "GENERIC"]
-
-	variable myConfigFile  "../tb/common/my_config_$boardName.vhdl"
-	variable myProjectFile "../tb/common/my_project.vhdl"
-
-	variable vendor $vendorName; # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
-}
-
 source ../lib/OSVVM-Scripts/StartUp.tcl
-# source ../lib/OSVVM-Scripts/StartNVC.tcl
+source ../tools/OSVVM/poc.tcl
 
-build ../lib/OsvvmLibraries.pro
+namespace import ::poc::*
 
-if {$::osvvm::ToolName eq "GHDL"} {
-	SetExtendedAnalyzeOptions  {-frelaxed -Wno-specs -Wno-elaboration}
-	SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
-
-} elseif {$::osvvm::ToolName eq "RivieraPRO"} {
-	set RivieraSimOptions {-unbounderror}
-
-} elseif {$::osvvm::ToolName eq "NVC"} {
-	ExtendedAnalyzeOptions {--relaxed}
-
-} elseif {$::osvvm::ToolName eq "Sigasi"} {
-
+# Skip report generation if executed within Sigasi/VS Code
+if {[info exists ::env(OSVVM_TOOL)] && $::env(OSVVM_TOOL) eq "Sigasi"} {
+	set ::osvvm::GenerateOsvvmReports "false"
+}
+if {[info exists ::env(GITLAB_CI)]} {
+	set buildNamePrefix ""
 } else {
-	error [format {
-======================================
-Unknown simulator selected: %s
-
-Supported simulators:
-  - GHDL
-  - RivieraPRO
-  - NVC
-Other tools:
-  - Sigasi in VSCode
-======================================
-} $::osvvm::ToolName]
+	set buildNamePrefix "${::osvvm::ToolNameVersion}-"
 }
 
-#set ::osvvm::AnalyzeErrorStopCount 1
-#set ::osvvm::SimulateErrorStopCount 1
+namespace eval ::poc {
+	variable myConfigFile  "../tb/common/my_config_${boardName}.vhdl"
+	variable myProjectFile "../tb/common/my_project.vhdl"
+}
 
-build ../src/PoC.pro
+build ../lib/OsvvmLibraries.pro [BuildName "${buildNamePrefix}OsvvmLibraries"]
+if {$::osvvm::AnalyzeErrorCount > 0} {
+	puts "ERROR: While building OSVVM"
+	scriptExit
+}
 
-#SetSaveWaves
+# -s -stop <i>    set the stop counts to <i>
+# -d -debug       enable debugging
+# -w -waves       save waveforms
+configureOSVVM -stop 1 ;# -debug
 
-build ../tb/RunAllTests.pro
+build ../src/PoC.pro [BuildName "${buildNamePrefix}PoC"]
+if {$::osvvm::AnalyzeErrorCount > 0} {
+	puts "ERROR: While building PoC Library"
+
+	puts $::errorInfo
+	puts "====================================="
+	puts $::osvvm::BuildErrorInfo
+
+	scriptExit
+}
+
+build ../tb/RunAllTests.pro  [BuildName "${buildNamePrefix}RunAllTests"]

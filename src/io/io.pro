@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,26 +35,29 @@ analyze ./ddrio/ddrio_in.vhdl
 analyze ./ddrio/ddrio_inout.vhdl
 analyze ./ddrio/ddrio_out.vhdl
 
-if { $::poc::vendor eq "Xilinx" } {
+if { $::poc::vendorName eq "Xilinx" } {
 	analyze ./ddrio/ddrio_in_xilinx.vhdl
 	analyze ./ddrio/ddrio_inout_xilinx.vhdl
 	analyze ./ddrio/ddrio_out_xilinx.vhdl
 
-} elseif { $::poc::vendor eq "Altera" } {
+} elseif { $::poc::vendorName eq "Altera" } {
 	analyze ./ddrio/ddrio_in_altera.vhdl
 	analyze ./ddrio/ddrio_inout_altera.vhdl
 	analyze ./ddrio/ddrio_out_altera.vhdl
 
-} elseif { $::poc::vendor ne "GENERIC" } {
-	puts "Unknow vendor '$::poc::vendor' in arith!"
+} elseif { $::poc::vendorName ne "GENERIC" } {
+	puts "Unknown vendor '$::poc::vendorName' in io!"
 	exit 1
 }
 
+disabled ./spi/spi.pro
 include ./uart/uart.pro
-include ./iic/iic.pro
+disabled ./iic/iic.pro
+disabled ./fan/fan.pro
 
 analyze ./pmod/pmod.pkg.vhdl
 analyze ./pmod/pmod_KYPD.vhdl
 analyze ./pmod/pmod_SSD.vhdl
-analyze ./pmod/pmod_USBUART.vhdl
-
+disabled ./pmod/pmod_USBUART.vhdl
+disabled ./jtag/jtag.pkg.vhdl
+disabled ./led/led.pkg.vhdl

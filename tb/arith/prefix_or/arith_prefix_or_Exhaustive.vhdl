@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:			Thomas B. Preusser
 --                  Gustavo Martin
@@ -14,7 +11,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2025-2026 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.

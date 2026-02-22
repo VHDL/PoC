@@ -31,7 +31,7 @@ project = "PoC"
 # copyright = versionInformation.Copyright
 # version =   ".".join(versionInformation.Version.split(".")[:2])  # e.g. 2.3    The short X.Y version.
 # release =   versionInformation.Version
-project = 'The PoC-Library'
+# project = 'The PoC-Library'
 copyright = '2007-2016 Technische Universitaet Dresden - Germany, Chair of VLSI-Design, Diagnostics and Architecture'
 author = 'The PoC-Library Authors'
 

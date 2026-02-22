@@ -49,15 +49,15 @@ library IEEE;
 use			IEEE.STD_LOGIC_1164.all;
 use			IEEE.NUMERIC_STD.all;
 
-library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.strings.all;
-use			PoC.physical.all;
+
+use work.utils.all;
+use work.vectors.all;
+use work.strings.all;
+use work.physical.all;
 -- simulation only packages
-use			PoC.sim_global.all;
-use			PoC.sim_types.all;
-use			PoC.simulation.all;
+use work.sim_global.all;
+use work.sim_types.all;
+use work.simulation.all;
 
 entity my_frist_tb is
 end entity;
@@ -86,7 +86,7 @@ begin
   end process;
   
   -- Unit under test
-  UUT : entity PoC.my_first
+  UUT : entity work.my_first
     generic map (
       BITS    => BITS
       -- <more generics>

@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --
@@ -80,7 +77,7 @@ begin
 
 		constant LUT	: T_LUT := generateLUT;
 	begin
-		assert (OFFSET_DEG = 0.0) report "Offset > 0.0° is only supported in 4 quadrant mode." severity FAILURE;
+		assert (OFFSET_DEG = 0.0) report "Offset > 0.0ï¿½ is only supported in 4 quadrant mode." severity FAILURE;
 
 		Output_nxt		<= std_logic_vector(to_unsigned(LUT(to_index(Input, LUT'length)), Output_nxt'length));
 	end generate;
@@ -107,7 +104,7 @@ begin
 
 		constant LUT	: T_LUT := generateLUT;
 	begin
-		assert (OFFSET_DEG = 0.0) report "Offset > 0.0° is only supported in 4 quadrant mode." severity FAILURE;
+		assert (OFFSET_DEG = 0.0) report "Offset > 0.0ï¿½ is only supported in 4 quadrant mode." severity FAILURE;
 
 		Output_nxt		<= std_logic_vector(to_unsigned(LUT(to_index(Input, LUT'length)), Output_nxt'length));
 	end generate;

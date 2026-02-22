@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:                 Patrick Lehmann
 --
@@ -13,7 +10,8 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
+-- Copyright 2025-2026 The PoC-Library Authors
+-- Copyright 2007-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -123,31 +121,31 @@ package io is
 	type T_IO_7SEGMENT_CHAR_ENCODING is array(T_IO_7SEGMENT_CHAR) of std_logic_vector(6 downto 0);
 
 	--constant C_IO_7SEGMENT_CHAR_ENCODING      : T_IO_7SEGMENT_CHAR_ENCODING := (
-	--IO_7SEGMENT_CHAR_0
-	--IO_7SEGMENT_CHAR_1
-	--IO_7SEGMENT_CHAR_2
-	--IO_7SEGMENT_CHAR_3
-	--IO_7SEGMENT_CHAR_4
-	--IO_7SEGMENT_CHAR_5
-	--IO_7SEGMENT_CHAR_6
-	--IO_7SEGMENT_CHAR_7
-	--IO_7SEGMENT_CHAR_8
-	--IO_7SEGMENT_CHAR_9
-	--IO_7SEGMENT_CHAR_A
-	--IO_7SEGMENT_CHAR_B
-	--IO_7SEGMENT_CHAR_C
-	--IO_7SEGMENT_CHAR_D
-	--IO_7SEGMENT_CHAR_E
-	--IO_7SEGMENT_CHAR_F
-	--IO_7SEGMENT_CHAR_H
-	--IO_7SEGMENT_CHAR_O
-	--IO_7SEGMENT_CHAR_U
-	--IO_7SEGMENT_CHAR_MINUS
+		--IO_7SEGMENT_CHAR_0
+		--IO_7SEGMENT_CHAR_1
+		--IO_7SEGMENT_CHAR_2
+		--IO_7SEGMENT_CHAR_3
+		--IO_7SEGMENT_CHAR_4
+		--IO_7SEGMENT_CHAR_5
+		--IO_7SEGMENT_CHAR_6
+		--IO_7SEGMENT_CHAR_7
+		--IO_7SEGMENT_CHAR_8
+		--IO_7SEGMENT_CHAR_9
+		--IO_7SEGMENT_CHAR_A
+		--IO_7SEGMENT_CHAR_B
+		--IO_7SEGMENT_CHAR_C
+		--IO_7SEGMENT_CHAR_D
+		--IO_7SEGMENT_CHAR_E
+		--IO_7SEGMENT_CHAR_F
+		--IO_7SEGMENT_CHAR_H
+		--IO_7SEGMENT_CHAR_O
+		--IO_7SEGMENT_CHAR_U
+		--IO_7SEGMENT_CHAR_MINUS
 	--);
 
 	function io_7SegmentDisplayEncoding(hex : std_logic_vector(3 downto 0); dot : std_logic := '0'; WITH_DOT : boolean := FALSE) return std_logic_vector;
 	function io_7SegmentDisplayEncoding(digit : T_BCD; dot : std_logic := '0'; WITH_DOT : boolean := FALSE) return std_logic_vector;
-	
+
 	---------------------------------------------------------------------
 	-- MDIOController
 	---------------------------------------------------------------------
@@ -226,10 +224,11 @@ package io is
 	end component;
 
 end package;
+
 package body io is
 
 	function get_i_vector(vec : T_IO_TRISTATE_VECTOR) return std_logic_vector is
-		variable temp             : std_logic_vector(vec'range);
+		variable temp : std_logic_vector(vec'range);
 	begin
 		for i in vec'range loop
 			temp(i) := vec(i).i;
@@ -237,8 +236,8 @@ package body io is
 		return temp;
 	end function;
 
-	function get_i_vector(vec : T_IO_TRISTATE_IN_VECTOR) return std_logic_vector is
-		variable temp             : std_logic_vector(vec'range);
+	function get_i_vector(vec : T_IO_TRISTATE_IN_VECTOR)  return std_logic_vector is
+		variable temp : std_logic_vector(vec'range);
 	begin
 		for i in vec'range loop
 			temp(i) := vec(i).i;
@@ -246,8 +245,8 @@ package body io is
 		return temp;
 	end function;
 
-	function get_o_vector(vec : T_IO_TRISTATE_VECTOR) return std_logic_vector is
-		variable temp             : std_logic_vector(vec'range);
+	function get_o_vector(vec : T_IO_TRISTATE_VECTOR)     return std_logic_vector is
+		variable temp : std_logic_vector(vec'range);
 	begin
 		for i in vec'range loop
 			temp(i) := vec(i).o;
@@ -256,7 +255,7 @@ package body io is
 	end function;
 
 	function get_o_vector(vec : T_IO_TRISTATE_OUT_VECTOR) return std_logic_vector is
-		variable temp             : std_logic_vector(vec'range);
+		variable temp : std_logic_vector(vec'range);
 	begin
 		for i in vec'range loop
 			temp(i) := vec(i).o;
@@ -264,8 +263,8 @@ package body io is
 		return temp;
 	end function;
 
-	function get_t_vector(vec : T_IO_TRISTATE_VECTOR) return std_logic_vector is
-		variable temp             : std_logic_vector(vec'range);
+	function get_t_vector(vec : T_IO_TRISTATE_VECTOR)     return std_logic_vector is
+		variable temp : std_logic_vector(vec'range);
 	begin
 		for i in vec'range loop
 			temp(i) := vec(i).t;
@@ -274,7 +273,7 @@ package body io is
 	end function;
 
 	function get_t_vector(vec : T_IO_TRISTATE_OUT_VECTOR) return std_logic_vector is
-		variable temp             : std_logic_vector(vec'range);
+		variable temp : std_logic_vector(vec'range);
 	begin
 		for i in vec'range loop
 			temp(i) := vec(i).t;
@@ -283,7 +282,7 @@ package body io is
 	end function;
 
 	function to_IO_TRISTATE_IN_VECTOR(i : std_logic_vector) return T_IO_TRISTATE_IN_VECTOR is
-		variable temp                       : T_IO_TRISTATE_IN_VECTOR(i'range);
+		variable temp : T_IO_TRISTATE_IN_VECTOR(i'range);
 	begin
 		for k in i'range loop
 			temp(k).i := i(k);
@@ -301,8 +300,9 @@ package body io is
 		end loop;
 		return temp;
 	end function;
+
 	function get_p_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector is
-		variable temp             : std_logic_vector(vec'range);
+		variable temp : std_logic_vector(vec'range);
 	begin
 		for i in vec'range loop
 			temp(i) := vec(i).p;
@@ -311,7 +311,7 @@ package body io is
 	end function;
 
 	function get_n_vector(vec : T_IO_LVDS_VECTOR) return std_logic_vector is
-		variable temp             : std_logic_vector(vec'range);
+		variable temp : std_logic_vector(vec'range);
 	begin
 		for i in vec'range loop
 			temp(i) := vec(i).n;

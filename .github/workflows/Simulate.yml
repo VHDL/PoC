@@ -14,7 +14,7 @@ on:
         default: false
         type: boolean
       simulator:
-        description: 'simualtor name'
+        description: 'simulator name'
         required: true
         type: string
       ghdl-backend:

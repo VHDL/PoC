@@ -1,19 +1,12 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:
---                  Adrian Weiland (PLC2 Design GmbH)
+--   Adrian Weiland (PLC2 Design GmbH)
 --
--- Entity:          AXI4Lite_Register_pkg
---
--- Description:
--- -------------------------------------
--- AXI4Lite Register package of OSVVM Testbench
+-- Package: AXI4Lite Register package of OSVVM Testbench
 --
 -- License:
 -- =============================================================================
--- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2025-2026 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.

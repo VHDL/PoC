@@ -38,11 +38,28 @@
 #  limitations under the License.
 #
 include ./osvvm/osvvm.pro
-include ./OSVVM-Common/Common.pro
+include ./OSVVM-Common
 
 if {[DirectoryExists OSVVM-UART]} {
-  include ./OSVVM-UART/UART.pro
+  include ./OSVVM-UART
 }
 if {[DirectoryExists OSVVM-AXI4]} {
-  include ./OSVVM-AXI4/AXI4.pro
+  include ./OSVVM-AXI4
+}
+if {[DirectoryExists DpRam]} {
+  include ./DpRam/DpRam.pro
+}
+if {[DirectoryExists Ethernet]} {
+  include ./Ethernet/Ethernet.pro
+}
+if {[DirectoryExists VideoBus_LouisAdriaens]} {
+  include ./VideoBus_LouisAdriaens/VideoBus.pro
+}
+if {[DirectoryExists SPI_GuyEschemann]} {
+  include ./SPI_GuyEschemann/spi.pro
+}
+if {($::osvvm::ToolNameVersion ne "XSIM-2023.2") && ($::osvvm::ToolVendor ne "Cadence")} {
+  if {[DirectoryExists CoSim]} {
+    include ./CoSim/CoSim.pro
+  }
 }

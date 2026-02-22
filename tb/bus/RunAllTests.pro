@@ -5,7 +5,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,4 +26,4 @@
 library tb_bus
 
 include ./axi4/RunAllTests.pro
-# include ./stream/RunAllTests.pro
+disabled ./stream/RunAllTests.pro

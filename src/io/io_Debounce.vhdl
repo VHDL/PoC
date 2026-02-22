@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:				 	Patrick Lehmann
 --									Thomas B. Preusser
@@ -49,20 +46,20 @@ use     work.physical.all;
 
 
 entity io_Debounce is
-  generic (
-    CLOCK_FREQ 							: FREQ;
-    BOUNCE_TIME							: t_time;
-    BITS                    : positive := 1;
-		INIT										: std_logic_vector		:= x"00000000";	-- initial state of Output
-    ADD_INPUT_SYNCHRONIZERS : boolean  := true;
-    COMMON_LOCK             : boolean  := false
-  );
-  port (
-    Clock		: in	std_logic;
-		Reset		: in	std_logic							:= '0';
-    Input		: in	std_logic_vector(BITS-1 downto 0);
-    Output	: out	std_logic_vector(BITS-1 downto 0) := resize(descend(INIT), BITS)
-  );
+	generic (
+		CLOCK_FREQ              : FREQ;
+		BOUNCE_TIME             : t_time;
+		BITS                    : positive         := 1;
+		INIT                    : std_logic_vector := x"00000000";  -- initial state of Output
+		ADD_INPUT_SYNCHRONIZERS : boolean          := true;
+		COMMON_LOCK             : boolean          := false
+	);
+	port (
+		Clock     : in  std_logic;
+		Reset     : in  std_logic                           := '0';
+		Input     : in  std_logic_vector(BITS - 1 downto 0);
+		Output    : out std_logic_vector(BITS - 1 downto 0) := resize(descend(INIT), BITS)
+	);
 end entity;
 
 
@@ -71,28 +68,28 @@ architecture rtl of io_Debounce is
 	constant LOCK_COUNT_X : integer := TimingToCycles(BOUNCE_TIME, CLOCK_FREQ) - 1;
 
 	-- Input Refinements
-  signal sync		: std_logic_vector(Input'range);										-- Synchronized
-  signal prev		: std_logic_vector(Input'range) := (others => '0');	-- Delayed
-	signal active	: std_logic_vector(Input'range);										-- Allow Output Updates
+	signal sync   : std_logic_vector(Input'range);                     -- Synchronized
+	signal prev   : std_logic_vector(Input'range) := (others => '0');  -- Delayed
+	signal active : std_logic_vector(Input'range);                     -- Allow Output Updates
 
 begin
   -----------------------------------------------------------------------------
-  -- Input Synchronization
-  genNoSync: if not ADD_INPUT_SYNCHRONIZERS generate
-    sync <= Input;
-  end generate;
-  genSync: if ADD_INPUT_SYNCHRONIZERS generate
-    sync_i: entity work.sync_Bits
-      generic map (
-        BITS => BITS,
-				INIT => INIT
-      )
-      port map (
-        Clock  => Clock,  	-- Clock to be synchronized to
-        Input  => Input,  	-- Data to be synchronized
-        Output => sync  		-- synchronised data
-      );
-  end generate;
+	-- Input Synchronization
+	genNoSync: if not ADD_INPUT_SYNCHRONIZERS generate
+		sync <= Input;
+	end generate;
+	genSync: if ADD_INPUT_SYNCHRONIZERS generate
+		sync_i : entity work.sync_Bits
+		generic map (
+			BITS => BITS,
+			INIT => INIT
+		)
+		port map (
+			Clock  => Clock,  -- Clock to be synchronized to
+			Input  => Input,  -- Data to be synchronized
+			Output => sync    -- synchronised data
+		);
+	end generate;
 
 	-----------------------------------------------------------------------------
 	-- Bounce Filter
@@ -116,23 +113,23 @@ begin
 		active <= (others => '1');
 	end generate genNoLock;
 	genLock: if LOCK_COUNT_X > 0 generate
-		constant LOCKS	: positive := ite(COMMON_LOCK, 1, BITS);
+		constant LOCKS : positive := ite(COMMON_LOCK, 1, BITS);
 
-		signal toggle		: std_logic_vector(LOCKS-1 downto 0);
-		signal locked		: std_logic_vector(LOCKS-1 downto 0);
+		signal toggle : std_logic_vector(LOCKS-1 downto 0);
+		signal locked : std_logic_vector(LOCKS-1 downto 0);
 	begin
 
-    genOneLock: if COMMON_LOCK generate
-      toggle(0) <= '1' when prev /= sync else '0';
-      active    <= (others => not locked(0));
-    end generate genOneLock;
-    genManyLocks: if not COMMON_LOCK generate
-      toggle <= prev xor sync;
-      active <= not locked;
-    end generate genManyLocks;
+	genOneLock: if COMMON_LOCK generate
+		toggle(0) <= '1' when prev /= sync else '0';
+		active    <= (others => not locked(0));
+	end generate genOneLock;
+	genManyLocks: if not COMMON_LOCK generate
+		toggle <= prev xor sync;
+		active <= not locked;
+	end generate genManyLocks;
 
-		genLocks: for i in 0 to LOCKS-1 generate
-			signal Lock : signed(log2ceil(LOCK_COUNT_X+1) downto 0) := (others => '0');
+		genLocks: for i in 0 to LOCKS - 1 generate
+			signal Lock : signed(log2ceil(LOCK_COUNT_X + 1) downto 0) := (others => '0');
 		begin
 			process(Clock)
 			begin
@@ -152,4 +149,4 @@ begin
 		end generate genLocks;
 	end generate genLock;
 
-end;
+end architecture;
