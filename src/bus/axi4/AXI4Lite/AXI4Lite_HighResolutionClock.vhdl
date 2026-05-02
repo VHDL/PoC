@@ -46,10 +46,10 @@ entity AXI4Lite_HighResolutionClock is
 		Clock   : in std_logic;
 		Reset   : in std_logic;
 
-		AXI_clock    : in  std_logic;
-		AXI_reset    : in  std_logic;
-		AXI4Lite_m2s : in  T_AXI4Lite_BUS_M2S;
-		AXI4Lite_s2m : out T_AXI4Lite_BUS_S2M;
+		AXI4Lite_Clock : in  std_logic;
+		AXI4Lite_Reset : in  std_logic;
+		AXI4Lite_m2s   : in  T_AXI4Lite_BUS_M2S;
+		AXI4Lite_s2m   : out T_AXI4Lite_BUS_S2M;
 
 		Nanoseconds  : out unsigned(63 downto 0);
 		Datetime     : out T_CLOCK_DATETIME
@@ -142,8 +142,8 @@ begin
 		FIFO_CDC: entity work.AXI4Lite_FIFO_CDC
 			port map (
 				-- IN Port
-				In_Clock   => AXI_clock,
-				In_Reset   => AXI_reset,
+				In_Clock   => AXI4Lite_Clock,
+				In_Reset   => AXI4Lite_Reset,
 				In_M2S     => AXI4Lite_m2s,
 				In_S2M     => AXI4Lite_s2m,
 				-- OUT Port

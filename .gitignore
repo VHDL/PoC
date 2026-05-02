@@ -42,24 +42,9 @@ tb/common/my_project.vhdl
 /.sigasi/**/
 !/.sigasi/project.sigasi
 
-/prj/ActiveHDL/*
-/prj/ActiveHDL/*.*
-/prj/ActiveHDL/**/*.*
-!/prj/ActiveHDL/PoC.adf
-!/prj/ActiveHDL/PoC.wsp
-
-/prj/Diamond/*.*
-/prj/Diamond/*/*
-/prj/Diamond/**/*.*
-!/prj/Diamond/**/*.lpf
-!/prj/Diamond/*.ldf
-!/prj/Diamond/*.sty
-!/prj/Diamond/*.vhdl
-
-/prj/QuestaSim/*
-/prj/QuestaSim/*.*
-/prj/QuestaSim/**/*.*
-!/prj/QuestaSim/PoC.mpf
+prj/*/**/*.*
+!prj/*/**/*.vhdl
+!prj/vivado/*/*.xpr
 
 # general whitelist
 !.git*
