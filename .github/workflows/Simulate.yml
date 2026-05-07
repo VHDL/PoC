@@ -142,7 +142,7 @@ jobs:
 
           tee run.tcl <<EOF
           source ../../lib/OSVVM-Scripts/${{ needs.Parameters.outputs.startScript }}
-          build ../../lib/OsvvmLibraries.pro OsvvmLibraries
+          build ../../lib/OsvvmLibraries.pro [BuildName "OsvvmLibraries"]
           EOF
 
       - name: Precompile OSVVM (GHDL)
@@ -277,7 +277,7 @@ jobs:
             SetExtendedAnalyzeOptions {--relaxed}
           }
 
-          build ../../src/PoC.pro PoC
+          build ../../src/PoC.pro [BuildName "PoC"]
           EOF
 
       - name: Precompile PoC (GHDL)
@@ -314,7 +314,7 @@ jobs:
             SetExtendedAnalyzeOptions {--relaxed}
           }
 
-          build ../../tb/RunAllTests.pro
+          build ../../tb/RunAllTests.pro [BuildName "RunAllTests"]
           EOF
 
       - name: Simulate PoC (GHDL)
@@ -336,8 +336,15 @@ jobs:
           name: ${{ needs.Parameters.outputs.pocReportHTML }}
           working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
           path: |
-            logs
-            reports
+            OsvvmLibraries/logs
+            OsvvmLibraries/reports
+            OsvvmLibraries/*.html
+            PoC/logs
+            PoC/reports
+            PoC/*.html
+            RunAllTests/logs
+            RunAllTests/reports
+            RunAllTests/*.html
             *.html
           retention-days: 1
 
@@ -346,7 +353,7 @@ jobs:
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.pocReportYAML }}
-          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}/RunAllTests'
           path: |
             *.yml
           retention-days: 1
@@ -356,7 +363,7 @@ jobs:
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.pocReportXML }}
-          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}/RunAllTests'
           path: |
             *.xml
           retention-days: 1
