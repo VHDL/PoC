@@ -35,7 +35,7 @@ package axi4lite_HighResolutionClock_tb_pkg is
 	constant AXI_ADDR_WIDTH : integer := 32;
 	constant AXI_DATA_WIDTH : integer := 32;
 	constant AXI_STRB_WIDTH : integer := AXI_DATA_WIDTH / 8;
-	
+
 	subtype AXIAddressType is std_logic_vector(AXI_ADDR_WIDTH - 1 downto 0);
 	subtype AXIDataType    is std_logic_vector(AXI_DATA_WIDTH - 1 downto 0);
 
@@ -53,6 +53,3 @@ package axi4lite_HighResolutionClock_tb_pkg is
 	constant Reg_Datetime_to_load_Ymd      : AXIAddressType := 32x"2C";
 
 end package;
-
-package body axi4lite_HighResolutionClock_tb_pkg is
-end package body;

@@ -33,42 +33,36 @@ use     PoC.vectors.all;
 use     PoC.physical.all;
 use     PoC.net.all;
 
-library OSVVM ; 
+library OSVVM ;
 context OSVVM.OsvvmContext ;
 
--- use     OSVVM.ScoreBoardPkg_slv.all;
-
-library osvvm_uart ; 
-context osvvm_uart.UartContext ; 
+library osvvm_uart ;
+context osvvm_uart.UartContext ;
 
 library osvvm_Axi4 ;
-context osvvm_Axi4.Axi4LiteContext ; 
-
--- use work.OsvvmTestCommonPkg.all ;
--- use work.AlertLogPkg.all;
--- use work.UartTbPkg.all ;
+context osvvm_Axi4.Axi4LiteContext ;
 
 
 entity axi4lite_UART_tc is
 	port (
 		--Global signal Interface
-        -- Clock : in std_logic;		
+		-- Clock : in std_logic;
 		Reset               : in std_logic;
-		
-		-- axi transaction record
+
+		-- AXI transaction record
 		AXI_Manager         : inout AddressBusRecType ;
-		
-		-- tx transaction record
+
+		-- TX transaction record
 		UartTxRec           : inout UartRecType ;
-		
-		-- rx  transaction record
-        UartRxRec           : inout UartRecType 
+
+		-- RX  transaction record
+		UartRxRec           : inout UartRecType
 	);
-	
-	 constant AXI_ADDR_WIDTH : integer := AXi_Manager.Address'length ; 
-     constant AXI_DATA_WIDTH : integer := AXi_Manager.DataToModel'length ;
-	 
-	 subtype AXIAddressType is std_logic_vector(AXI_ADDR_WIDTH - 1 downto 0);
- 	 subtype AXIDataType    is std_logic_vector(AXI_DATA_WIDTH - 1 downto 0);
+
+	constant AXI_ADDR_WIDTH : integer := AXi_Manager.Address'length ;
+	constant AXI_DATA_WIDTH : integer := AXi_Manager.DataToModel'length ;
+
+	subtype AXIAddressType is std_logic_vector(AXI_ADDR_WIDTH - 1 downto 0);
+	subtype AXIDataType    is std_logic_vector(AXI_DATA_WIDTH - 1 downto 0);
 
 end entity;

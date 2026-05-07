@@ -37,8 +37,8 @@ library osvvm_Axi4;
 entity AXI4Lite_Ocram_Adapter_TestController is
   port (
     -- Global Signal Interface
-    Clk    : in std_logic ;
-    nReset : in std_logic ;
+    Clock : in std_logic ;
+    Reset : in std_logic ;
     -- Transaction Interfaces
     MasterRec  : inout AddressBusRecType
   ) ;

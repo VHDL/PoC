@@ -33,13 +33,12 @@ library osvvm;
 context osvvm.OsvvmContext ;
 
 library OSVVM_AXI4;
---context OSVVM_AXI4.Axi4Context ;
 context OSVVM_AXI4.Axi4LiteContext ;
 
-entity AXI4Lite_Ocram_Adapter_TestHarness is
-end AXI4Lite_Ocram_Adapter_TestHarness;
+entity AXI4Lite_OCRAM_Adapter_TestHarness is
+end entity;
 
-architecture sim of AXI4Lite_Ocram_Adapter_TestHarness is
+architecture sim of AXI4Lite_OCRAM_Adapter_TestHarness is
 
 	constant AXI_ADDR_WIDTH : integer := 32 ;
 	constant AXI_DATA_WIDTH : integer := 32 ;
@@ -48,12 +47,12 @@ architecture sim of AXI4Lite_Ocram_Adapter_TestHarness is
 	constant OCRAM_DATA_BITS       : positive := 32;
 	constant PREFFERED_READ_ACCESS : boolean := TRUE;
 
-	constant tperiod_Clk     : time := 10 ns ;
-	constant tperiod_Clk_SPI : time := 100 ns ;
-	constant tpd             : time := 2 ns ;
+	constant tperiod_Clock     : time := 10 ns ;
+	constant tperiod_Clock_SPI : time := 100 ns ;
+	constant tpd               : time := 2 ns ;
 
-	signal Clk     : std_logic := '1';
-	signal Reset   : std_logic := '1';
+	signal Clock     : std_logic := '1';
+	signal Reset     : std_logic := '1';
 
 	signal write_en : std_logic;
 	signal address  : unsigned(OCRAM_ADDRESS_BITS-1 downto 0);
@@ -80,11 +79,11 @@ architecture sim of AXI4Lite_Ocram_Adapter_TestHarness is
     ReadData    ( Data (AXI_DATA_WIDTH-1 downto 0) )
   ) ;
 
-	component AXI4Lite_Ocram_Adapter_TestController is
+	component AXI4Lite_OCRAM_Adapter_TestController is
 		port (
 			-- Global Signal Interface
-			Clk        : in std_logic ;
-			nReset     : in std_logic ;
+			Clock      : in std_logic ;
+			Reset      : in std_logic ;
 
 			MasterRec : inout AddressBusRecType
 		) ;
@@ -94,16 +93,16 @@ begin
 
 	-- create Clock for TB and 100 Mhz
 	Osvvm.ClockResetPkg.CreateClock (
-		Clk    => Clk,
-		Period => Tperiod_Clk
+		Clk    => Clock,
+		Period => Tperiod_Clock
 	)  ;
 
 	-- create nReset
 	Osvvm.ClockResetPkg.CreateReset (
 		Reset       => Reset,
 		ResetActive => '1',
-		Clk         => Clk,
-		Period      => 7 * tperiod_Clk,
+		Clk         => Clock,
+		Period      => 7 * tperiod_Clock,
 		tpd         => tpd
 	) ;
 
@@ -123,7 +122,7 @@ begin
 			tpd_Clk_RReady  => 0 ns
 		)
 		port map (
-			Clk      => Clk,
+			Clk      => Clock,
 			nReset   => not Reset,
 
 			TransRec => AxiMasterTransRec, -- Testbench Transaction Interface
@@ -133,7 +132,7 @@ begin
 	---------------------------------------------------------------------------
 	-- axi4_slave_rb_interface
 	---------------------------------------------------------------------------
-	AXI4Lite_Ocram_Adaptar : entity PoC.AXI4Lite_Ocram_Adapter
+	AXI4Lite_OCRAM_Adaptar : entity PoC.AXI4Lite_OCRAM_Adapter
 	generic map (
 		OCRAM_ADDRESS_BITS    => OCRAM_ADDRESS_BITS,
 		OCRAM_DATA_BITS       => OCRAM_DATA_BITS,
@@ -141,7 +140,7 @@ begin
 	)
 		port map (
 			-- AXI4lite slave interface
-			Clock                => Clk,
+			Clock                => Clock,
 			Reset                => Reset,
 
 			AXI4Lite_m2s.AWValid =>	AxiBus.WriteAddress.Valid,
@@ -173,14 +172,14 @@ begin
 			Data_Out             => data_out
 		) ;
 
-	ocram : entity PoC.ocram_tdp
+	OCRAM : entity PoC.OCRAM_tdp
     generic map (
       A_BITS   => OCRAM_ADDRESS_BITS,
       D_BITS   => OCRAM_DATA_BITS
     )
     port map (
-      clk1 => Clk,
-      clk2 => Clk,
+      clk1 => Clock,
+      clk2 => Clock,
       ce1  => '1',
       ce2  => '1',
       we1  => write_en,
@@ -193,10 +192,10 @@ begin
       q2   => PortB_data
     ) ;
 
-	TestCtrl : AXI4Lite_Ocram_Adapter_TestController
+	TestCtrl : AXI4Lite_OCRAM_Adapter_TestController
 		port map(
-			Clk    => Clk,
-			nReset => not Reset,
+			Clock    => Clock,
+			Reset    => Reset,
 
 			MasterRec => AxiMasterTransRec
 		);
