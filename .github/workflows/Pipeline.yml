@@ -99,7 +99,7 @@ jobs:
       - Documentation
     if: (success() || failure()) && needs.Documentation.result == 'success'
     with:
-      document:       'The PoC-Library'
+      document:       'PoC'
       latex_artifact: 'PoC-LaTeX'
       pdf_artifact:   'PoC-PDF'
       can-fail:       'true'
