@@ -18,7 +18,7 @@
    :alt: Code license
    :height: 22
    :target: License.html
-.. |SHIELD:png:PoC-src-license| image:: https://img.shields.io/pypi/l/PoC?longCache=true&style=flat-square&logo=Apache&label=code
+.. |SHIELD:png:PoC-src-license| image:: https://raster.shields.io/pypi/l/PoC?longCache=true&style=flat-square&logo=Apache&label=code
    :alt: Code license
    :height: 22
    :target: https://GitHub.com/VHDL/PoC/blob/main/LICENSE.md
