@@ -20,7 +20,6 @@
 # =============================================================================
 
 library tb_common
-include ./common.pro
 
 include ./arith/RunAllTests.pro
 include ./bus/RunAllTests.pro
