@@ -19,7 +19,7 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite PoC.bus.axi4.axi4Lite.Uart
+TestSuite PoC.bus.axi4.axi4Lite.UART
 
 library tb_axi4lite_UART
 
