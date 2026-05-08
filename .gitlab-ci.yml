@@ -343,14 +343,13 @@ MergeReports:
       artifacts: true
   before_script:
     - pip install pyEDAA.Reports
-    - pip install colorama
   script:
-    - mkdir temp/report/unit
-    - touch temp/report/unit/unittest.xml
-    - pyedaa-reports -v unittest "--merge=Any-JUnit:temp/junit/*.xml" "--output=pyTest-JUnit:temp/report/unit/unittest.xml"
+    - mkdir -p report/unit
+    - pyedaa-reports -v unittest "--merge=Any-JUnit:temp/junit/*.xml" "--output=pyTest-JUnit:report/unit/unittest.xml"
+    - mv temp/junit/${SIMULATOR_PAGES}-PoC.yml report/unit/osvvmreport.yml
   artifacts:
     paths:
-      - temp/report/unit/
+      - report/unit
 
 Sphinx:
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
@@ -361,7 +360,6 @@ Sphinx:
     matrix:
       - SPHINX_BUILDER: ["html", "latex"]
   before_script:
-    - apt-get update
     - pip install -U -r docs/requirements.txt
   script:
     - cd docs
