@@ -70,7 +70,7 @@ begin
 
   CheckerProc: process
     constant ProcID : AlertLogIDType := NewID("CheckerProc", TCID);
-    
+
     -- Helper function to compute expected prefix OR
     -- y(i) <= '0' when x(i downto 0) = (i downto 0 => '0') else '1'
     function compute_prefix_or(x : std_logic_vector) return std_logic_vector is
@@ -93,14 +93,14 @@ begin
       end loop;
       return result;
     end function;
-    
+
     variable expected : std_logic_vector(y'range);
     variable test_input : std_logic_vector(y'range);
 
   begin
     wait until Reset = '0';
     WaitForClock(Clock);
-    
+
     test_input := (others => '0');
     x <= test_input;
     WaitForClock(Clock);
@@ -155,7 +155,7 @@ begin
       expected := compute_prefix_or(test_input);
       AffirmIf(ProcID,
         y = expected,
-        "Test " & to_string(len) & " ones from LSB: y = 0x" & to_hstring(y),
+        "Test " & PoC.strings.to_string(len) & " ones from LSB: y = 0x" & to_hstring(y),
         " Expected = 0x" & to_hstring(expected)
       );
     end loop;
@@ -169,7 +169,7 @@ begin
       expected := compute_prefix_or(test_input);
       AffirmIf(ProcID,
         y = expected,
-        "Test bit " & to_string(pos) & " set: y = 0x" & to_hstring(y),
+        "Test bit " & PoC.strings.to_string(pos) & " set: y = 0x" & to_hstring(y),
         " Expected = 0x" & to_hstring(expected)
       );
     end loop;

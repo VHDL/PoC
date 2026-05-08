@@ -18,7 +18,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.firstone
+
+library tb_arith_firstone
+
 analyze arith_firstone_TestController.vhdl
 analyze arith_firstone_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_firstone_Simple.vhdl

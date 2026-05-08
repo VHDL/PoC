@@ -26,7 +26,7 @@ library tb_axi4Lite
 
 disabled ./AXI4Lite_Demux/RunAllTests.pro
 include ./AXI4Lite_Register/RunAllTests.pro
-include ./AXI4Lite_Ocram_Adapter/RunAllTests.pro
+include ./AXI4Lite_OCRAM_Adapter/RunAllTests.pro
 # include ./AXI4Lite_InterruptController/RunAllTests.pro      # Currently not working
-include ./AXI4Lite_Uart/RunAllTests.pro
+include ./AXI4Lite_UART/RunAllTests.pro
 # include ./AXI4Lite_HighResolutionClock/RunAllTests.pro      # Currently not working

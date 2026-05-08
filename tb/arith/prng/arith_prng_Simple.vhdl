@@ -98,7 +98,7 @@ begin
 			WaitForClock(Clock);
 			AffirmIf(ProcID,
 				Value = COMPARE_LIST_8_BITS(i),
-				"Index = " & str_ralign(to_string(i), log10ceil(COMPARE_LIST_8_BITS'high)) & ": Value = 0x" &	to_hstring(Value),
+				"Index = " & str_ralign(PoC.strings.to_string(i), log10ceil(COMPARE_LIST_8_BITS'high)) & ": Value = 0x" &	to_hstring(Value),
 				" Expected = 0x" & to_hstring(COMPARE_LIST_8_BITS(i))
 			);
 		end loop;

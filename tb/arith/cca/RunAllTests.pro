@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.cca
+
+library tb_arith_cca
+
 analyze arith_cca_TestController.vhdl
 analyze arith_cca_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_cca_Simple.vhdl

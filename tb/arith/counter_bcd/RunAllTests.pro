@@ -18,7 +18,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.counter_bcd
+
+library tb_arith_counter_bcd
+
 analyze arith_counter_bcd_TestController.vhdl
 analyze arith_counter_bcd_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_counter_bcd_Simple.vhdl

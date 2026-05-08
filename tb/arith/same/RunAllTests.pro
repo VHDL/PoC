@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.same
+
+library tb_arith_same
+
 analyze arith_same_TestController.vhdl
 analyze arith_same_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_same_Simple.vhdl

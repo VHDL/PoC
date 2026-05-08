@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.counter_gray
+
+library tb_arith_counter_gray
+
 analyze arith_counter_gray_TestController.vhdl
 analyze arith_counter_gray_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_counter_gray_Simple.vhdl

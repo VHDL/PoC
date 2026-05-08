@@ -18,7 +18,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.convert_bin2bcd
+
+library tb_arith_convert_bin2bcd
+
 analyze arith_convert_bin2bcd_TestController.vhdl
 analyze arith_convert_bin2bcd_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_convert_bin2bcd_Simple.vhdl

@@ -20,12 +20,12 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite PoC.bus.axi4.axi4lite.AXI4LiteOcram_Adapter
+TestSuite PoC.bus.axi4.axi4lite.OCRAM_Adapter
 
 library tb_axi4lite_OCRAMAdapter
 
-analyze AXI4Lite_Ocram_Adapter_TestController.vhdl
-analyze AXI4Lite_Ocram_Adapter_TestHarness.vhdl
+analyze AXI4Lite_OCRAM_Adapter_TestController.vhdl
+analyze AXI4Lite_OCRAM_Adapter_TestHarness.vhdl
 
 RunTest TC_AsyncReadWrite.vhdl
 RunTest TC_SimpleReadWrite.vhdl

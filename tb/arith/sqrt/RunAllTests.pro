@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.sqrt
+
+library tb_arith_sqrt
+
 analyze arith_sqrt_TestController.vhdl
 analyze arith_sqrt_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_sqrt_Simple.vhdl

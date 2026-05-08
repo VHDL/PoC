@@ -42,26 +42,16 @@ namespace eval ::poc {
 	variable myProjectFile "../tb/common/my_project.vhdl"
 }
 
-build ../lib/OsvvmLibraries.pro [BuildName "${buildNamePrefix}OsvvmLibraries"]
-if {$::osvvm::AnalyzeErrorCount > 0} {
-	puts "ERROR: While building OSVVM"
-	scriptExit
-}
+build ../lib/OsvvmLibraries.pro [BuildName "${::poc::buildNamePrefix}OsvvmLibraries"]
+checkForBuildErrors
 
 # -s -stop <i>    set the stop counts to <i>
 # -d -debug       enable debugging
 # -w -waves       save waveforms
-configureOSVVM -stop 1 ;# -debug
+# -g -gui         disables system exit (i.e. on errors)
+configureOSVVM -stop 1 ;
 
-build ../src/PoC.pro [BuildName "${buildNamePrefix}PoC"]
-if {$::osvvm::AnalyzeErrorCount > 0} {
-	puts "ERROR: While building PoC Library"
+build ../src/PoC.pro [BuildName "${::poc::buildNamePrefix}PoC"]
+checkForBuildErrors
 
-	puts $::errorInfo
-	puts "====================================="
-	puts $::osvvm::BuildErrorInfo
-
-	scriptExit
-}
-
-build ../tb/RunAllTests.pro  [BuildName "${buildNamePrefix}RunAllTests"]
+build ../tb/RunAllTests.pro  [BuildName "${::poc::buildNamePrefix}RunAllTests"]
