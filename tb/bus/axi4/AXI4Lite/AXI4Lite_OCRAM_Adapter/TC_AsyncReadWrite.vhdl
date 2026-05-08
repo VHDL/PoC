@@ -63,7 +63,7 @@ begin
 
 	begin
 		-------------------------------------
-		-- Normal Rread and Write
+		-- Normal Read and Write
 		-------------------------------------
 		wait until Reset = '0' ;
 		WaitForClock(MasterRec, 2);
@@ -81,14 +81,14 @@ begin
 		WaitForClock(MasterRec, 2) ;
 
 		-------------------------------------
-		-- Async. Wirte
+		-- Async. Write
 		-------------------------------------
 		WriteAsync(MasterRec, 32x"0C", 32x"0C" );
 		WriteAsync(MasterRec, 32x"10", 32x"CC" );
 		WaitForClock(MasterRec, 1) ;
 
 		-------------------------------------
-		-- Async. Address and Wirte Data
+		-- Async. Address and Write Data
 		-------------------------------------
 		WriteAddressAsync(MasterRec, 32x"1C");
 		WaitForClock(MasterRec, 3) ;
