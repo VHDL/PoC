@@ -58,11 +58,11 @@ analyze ./AXI4Lite/AXI4Lite_Termination_Manager.vhdl
 analyze ./AXI4Lite/AXI4Lite_Termination_Subordinate.vhdl
 analyze ./AXI4Lite/AXI4Lite_HighResolutionClock.vhdl
 # analyze ./AXI4Lite/AXI4Lite_Interrupt_Controller.vhdl        ;  # Does not work right now
-analyze ./AXI4Lite/AXI4Lite_Ocram_Adapter.vhdl
+analyze ./AXI4Lite/AXI4Lite_OCRAM_Adapter.vhdl
 analyze ./AXI4Lite/AXI4Lite_OSVVM.pkg.vhdl
 analyze ./AXI4Lite/AXI4Lite_GitVersionRegister.vhdl
 disabled ./AXI4Lite/AXI4Lite_SimpleInterface.vhdl
-analyze ./AXI4Lite/AXI4Lite_Uart.vhdl
+analyze ./AXI4Lite/AXI4Lite_UART.vhdl
 
 analyze ./AXI4Stream/AXI4Stream_FIFO.vhdl
 analyze ./AXI4Stream/AXI4Stream_FIFO_cdc.vhdl

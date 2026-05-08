@@ -43,7 +43,7 @@ begin
 		SetTranscriptMirror(TRUE) ;
 
 		-- Wait for Design Reset
-		wait until nReset = '1' ;
+		wait until Reset = '0' ;
 		ClearAlerts ;
 
 		WaitForBarrier(TestDone, TIMEOUT);

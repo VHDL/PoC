@@ -166,10 +166,11 @@ begin
 			AXI4Lite_s2m.RData   =>	AxiBus.ReadData.Data,
 			AXI4Lite_s2m.RResp   =>	AxiBus.ReadData.Resp,
 
-			Write_En             => write_en,
-			Address              => address,
-			Data_In              => data_in,
-			Data_Out             => data_out
+			OCRAM_Address        => address,
+			OCRAM_WriteEnable    => write_en,
+			OCRAM_ByteEnable     => open,
+			OCRAM_DataIn         => data_in,
+			OCRAM_DataOut        => data_out
 		) ;
 
 	OCRAM : entity PoC.OCRAM_tdp
