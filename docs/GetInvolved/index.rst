@@ -28,9 +28,9 @@ as a third-party components, please contact us.
 Report a Bug
 ************
 
-.. image:: https://img.shields.io/github/issues/VLSI-EDA/PoC.svg
+.. #image:: https://img.shields.io/github/issues/VLSI-EDA/PoC.svg
    :target: https://github.com/VLSI-EDA/PoC/issues
-.. image:: https://img.shields.io/github/issues-closed/VLSI-EDA/PoC.svg
+.. #image:: https://img.shields.io/github/issues-closed/VLSI-EDA/PoC.svg
    :target: https://github.com/VLSI-EDA/PoC/issues
 
 Please report issues of any kind in our Git provider's issue tracker. This allows
@@ -53,7 +53,7 @@ implementation. All enhancements and feature requests are tracked on GitHub at
 Talk to us on Gitter
 ********************
 
-.. image:: https://badges.gitter.im/VLSI-EDA/PoC.svg
+.. #image:: https://badges.gitter.im/VLSI-EDA/PoC.svg
    :target: https://gitter.im/VLSI-EDA/PoC
 
 You can chat with us on `Gitter <https://gitter.im/>`_ in our Giiter Room
@@ -78,7 +78,7 @@ an existing GitHub account.
 Contribute to PoC
 *****************
 
-.. image:: https://img.shields.io/github/contributors/VLSI-EDA/PoC.svg
+.. #image:: https://img.shields.io/github/contributors/VLSI-EDA/PoC.svg
 
 Contibuting source code via Git is very easy. We don't provide direct write
 access to our repositories. Git offers the fork and pull-request philosophy,
@@ -92,7 +92,7 @@ your proposed changes and integrate them into our repository.
 1. Fork the PoC Repository
 ==========================
 
-.. image:: https://img.shields.io/github/forks/VLSI-EDA/PoC.svg
+.. #image:: https://img.shields.io/github/forks/VLSI-EDA/PoC.svg
    :target: https://github.com/VLSI-EDA/PoC/network/members
 
 Git repositories can be cloned on a Git provider's server. This procedure is
@@ -208,9 +208,9 @@ Commit your porposed changes onto your feature branch and push all changes to Gi
 8. Create a Pull-Request
 ========================
 
-.. image:: https://img.shields.io/github/issues-pr/VLSI-EDA/PoC.svg
+.. #image:: https://img.shields.io/github/issues-pr/VLSI-EDA/PoC.svg
    :target: https://github.com/VLSI-EDA/PoC/pulls
-.. image:: https://img.shields.io/github/issues-pr-closed/VLSI-EDA/PoC.svg
+.. #image:: https://img.shields.io/github/issues-pr-closed/VLSI-EDA/PoC.svg
    :target: https://github.com/VLSI-EDA/PoC/pulls
 
 Go to your forked repository and klick on "Compare and Pull-Request" or go to

@@ -159,33 +159,40 @@ modindex_common_prefix = [
 # ==============================================================================
 from textwrap import dedent
 
+# ==============================================================================
+# Options for LaTeX / PDF output
+# ==============================================================================
+latex_engine = "lualatex"
+latex_use_xindy = False
 latex_elements = {
-	# The paper size ('letterpaper' or 'a4paper').
-	"papersize": "a4paper",
+	"papersize":   "a4paper",      # The paper size ('letterpaper' or 'a4paper').
+	"pointsize":   "10pt",         # The font size ('10pt', '11pt' or '12pt').
+	"inputenc":    "",            # Let LuaLaTeX handle input encoding
+	"utf8extra":   "",
+	"polyglossia": "",
+	"babel":      r"\usepackage[english]{babel}",
+	"fontenc":    r"\usepackage{fontspec}",  # Disable the default T1 font encoding (Essential for LuaLaTeX)
+	"fontpkg":    dedent("""\
+		\\usepackage{unicode-math}
 
-	# The font size ('10pt', '11pt' or '12pt').
-	#'pointsize': '10pt',
+		% Set the Text Fonts (Libertinus)
+		\\setmainfont{Libertinus Serif}
+		\\setsansfont{Libertinus Sans}
+		\\setmonofont{Libertinus Mono}
+		\\setmathfont{Libertinus Math}
 
-	# Additional stuff for the LaTeX preamble.
-	"preamble": dedent(r"""
-		% ================================================================================
-		% User defined additional preamble code
-		% ================================================================================
-		% Add more Unicode characters for pdfLaTeX.
-		% - Alternatively, compile with XeLaTeX or LuaLaTeX.
-		% - https://GitHub.com/sphinx-doc/sphinx/issues/3511
-		%
-		\ifdefined\DeclareUnicodeCharacter
-			\DeclareUnicodeCharacter{2265}{$\geq$}
-			\DeclareUnicodeCharacter{21D2}{$\Rightarrow$}
-		\fi
-
-
-		% ================================================================================
-		"""),
-
-	# Latex figure (float) alignment
-	#'figure_align': 'htbp',
+		% Set Symbol font
+		\\usepackage{newunicodechar}
+		\\newfontfamily{\\emojifont}[Renderer=OpenType]{NotoColorEmoji.ttf}
+		\\usepackage{pytooling}
+	"""),
+	"passoptionstopackages": dedent("""\
+		\\PassOptionsToPackage{verbatimvisiblespace=\\ }{sphinx}
+	"""),
+# "sphinxsetup": "verbatimvisiblespace=\\textvisiblespace"
+# "figure_align": "htbp",     # Latex figure (float) alignment
+	"makeindex":  r"\usepackage[columns=1]{idxlayout}\makeindex",
+	"printindex": r"\def\twocolumn[#1]{#1}\printindex",
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -195,7 +202,7 @@ latex_documents = [
 	( master_doc,
 		f"{project}.tex",
 		f"The PoC Library Documentation",
-		f"Patrick Lehmann, Thomas B. Preusser, Martin Zabel",
+		f"Patrick Lehmann, Stefan Unrein, Thomas B. Preusser, Martin Zabel",
 		f"manual"
 	),
 ]
