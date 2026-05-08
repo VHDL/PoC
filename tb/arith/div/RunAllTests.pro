@@ -18,7 +18,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.div
+
+library tb_arith_div
+
 analyze arith_div_TestController.vhdl
 analyze arith_div_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_div_Simple.vhdl

@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.carrychain_inc
+
+library tb_arith_carrychain_inc
+
 analyze arith_carrychain_inc_TestController.vhdl
 analyze arith_carrychain_inc_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_carrychain_inc_Simple.vhdl

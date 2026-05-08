@@ -19,8 +19,13 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.prefix_and
+
+library tb_arith_prefix_and
+
 analyze arith_prefix_and_TestController.vhdl
 analyze arith_prefix_and_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_prefix_and_Simple.vhdl
 RunTest arith_prefix_and_Exhaustive.vhdl

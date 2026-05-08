@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.counter_free
+
+library tb_arith_counter_free
+
 analyze arith_counter_free_TestController.vhdl
 analyze arith_counter_free_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_counter_free_Simple.vhdl

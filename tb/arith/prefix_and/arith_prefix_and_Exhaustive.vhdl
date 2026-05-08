@@ -78,7 +78,7 @@ begin
   begin
     wait until Reset = '0';
     WaitForClock(Clock);
-    
+
     x(x'range) <= (others => '0');
     WaitForClock(Clock);
 
@@ -88,17 +88,17 @@ begin
       test_pattern_slv := std_logic_vector(test_pattern);
       x <= test_pattern_slv;
       WaitForClock(Clock);
-      
+
       -- Check each bit position j
       for j in 0 to x'length - 1 loop
         -- y(j) should be '1' if and only if x(j downto 0) are all '1'
         -- This is equivalent to: x(j downto 0) = (j downto 0 => '1')
         AffirmIf(ProcID,
           (y(j) = '1') = (test_pattern_slv(j downto 0) = (j downto 0 => '1')),
-          "Pattern " & to_string(i) & " / bit " & to_string(j) & 
+          "Pattern " & PoC.strings.to_string(i) & " / bit " & PoC.strings.to_string(j) &
           ": x = 0x" & to_hstring(test_pattern_slv) &
           ", y = 0x" & to_hstring(y) &
-          ", y(" & to_string(j) & ") = " & to_string(y(j))
+          ", y(" & PoC.strings.to_string(j) & ") = " & to_string(y(j))
         );
       end loop;
     end loop;

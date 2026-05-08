@@ -430,7 +430,7 @@ package body strings is
 	end function;
 
 	-- convert an integer Value to a STRING using an arbitrary base
-	function to_string(Value : integer; base : positive) return string is
+	function to_string(Value : integer; base : positive := 10) return string is
 		constant absValue : natural  := abs Value;
 		constant len      : positive := log10ceilnz(absValue);
 		variable power    : positive;

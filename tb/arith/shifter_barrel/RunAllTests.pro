@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.shifter_barrel
+
+library tb_arith_shifter_barrel
+
 analyze arith_shifter_barrel_TestController.vhdl
 analyze arith_shifter_barrel_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_shifter_barrel_Simple.vhdl

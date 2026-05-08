@@ -20,7 +20,7 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite PoC.bus.axi4.axi4lite.AXI4LiteOCRAM_Adapter
+TestSuite PoC.bus.axi4.axi4lite.OCRAM_Adapter
 
 library tb_axi4lite_OCRAMAdapter
 

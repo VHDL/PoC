@@ -8,7 +8,7 @@
 --
 -- Description:
 -- This module bridges the AXI4-Lite bus to a simplified synchronous RAM interface.
--- Includes a PREFFERED_READ_ACCESS generic to resolve simultaneous Read/Write 
+-- Includes a PREFFERED_READ_ACCESS generic to resolve simultaneous Read/Write
 -- requests by prioritizing the read channel when set to TRUE.
 -- Resource Utilization (64-bit Data | 13-bit AXI Addr | 10-bit RAM Addr| with '0' pipeline stages):
 --   +-------------------+-------+
@@ -167,6 +167,8 @@ begin
 			when st_idle =>
 
 				case valid is
+					when "000" =>
+
 					when "001" => -- only read address
 						nextAddress  <= unsigned(AXI4L_m2s_int.ARAddr(OCRAM_ADDRESS_BITS + ADDR_LSB -1 downto ADDR_LSB));
 						nextState    <= st_read_data_ack;
@@ -237,14 +239,9 @@ begin
 				end if;
 
 			when st_read_data_ack =>
-				axi_rvalid  <= '1';
 				axi_arready <= '1';
 
-				if (AXI4L_m2s_int.RReady = '1') then
-					nextState   <= st_idle;
-				else
-					nextState <= st_read_response_wait;
-				end if;
+				nextState <= st_read_response_wait;
 
 			when st_write_response_wait =>
 				axi_bvalid <= '1';

@@ -71,7 +71,7 @@ begin
 
   CheckerProc: process
     constant ProcID : AlertLogIDType := NewID("CheckerProc", TCID);
-    
+
     -- Helper function to compute expected prefix AND
     function compute_prefix_and(x : std_logic_vector) return std_logic_vector is
       variable result : std_logic_vector(x'range);
@@ -93,14 +93,14 @@ begin
       end loop;
       return result;
     end function;
-    
+
     variable expected : std_logic_vector(y'range);
     variable test_input : std_logic_vector(y'range);
 
   begin
     wait until Reset = '0';
     WaitForClock(Clock);
-    
+
     x(x'range) <= (others => '0');
     WaitForClock(Clock);
 
@@ -154,7 +154,7 @@ begin
       expected := compute_prefix_and(test_input);
       AffirmIf(ProcID,
         y = expected,
-        "Test " & to_string(len) & " ones from LSB: y = 0x" & to_hstring(y),
+        "Test " & PoC.strings.to_string(len) & " ones from LSB: y = 0x" & to_hstring(y),
         " Expected = 0x" & to_hstring(expected)
       );
     end loop;
@@ -168,7 +168,7 @@ begin
       expected := compute_prefix_and(test_input);
       AffirmIf(ProcID,
         y = expected,
-        "Test bit " & to_string(pos) & " set: y = 0x" & to_hstring(y),
+        "Test bit " & PoC.strings.to_string(pos) & " set: y = 0x" & to_hstring(y),
         " Expected = 0x" & to_hstring(expected)
       );
     end loop;

@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.counter_ring
+
+library tb_arith_counter_ring
+
 analyze arith_counter_ring_TestController.vhdl
 analyze arith_counter_ring_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_counter_ring_Simple.vhdl

@@ -8,9 +8,32 @@ namespace eval ::poc {
 
 	variable vendorName [getEnv VENDOR "GENERIC"]
 	variable boardName  [getEnv BOARD  "GENERIC"]
+	variable buildNamePrefix ""
+
+	variable disableExit 0
+
+	# Skip report generation if executed within Sigasi/VS Code
+	if {[info exists ::env(OSVVM_TOOL)] && $::env(OSVVM_TOOL) eq "Sigasi"} {
+		set ::osvvm::GenerateOsvvmReports "false"
+	}
+	if {[info exists ::env(GITLAB_CI)]} {
+		if {[info exists ::env(GHDL_BACKEND)]} {
+			set buildNamePrefix "${::osvvm::ToolName}-$::env(GHDL_BACKEND)-"
+		} else {
+			set buildNamePrefix "${::osvvm::ToolName}-"
+		}
+	} else {
+		set buildNamePrefix "${::osvvm::ToolNameVersion}-"
+	}
 
 	proc exitScript {{code 1}} {
-		if {$::osvvm::ToolName eq "RivieraPRO"} {
+		if {$::poc::disableExit == 1} {
+			return
+		}
+
+		set toolsWithDashCode {RivieraPRO NVC}
+
+		if {[lsearch -exact $toolsWithDashCode $::osvvm::ToolName] >= 0} {
 			exit -code $code
 		} else {
 			exit $code
@@ -42,6 +65,10 @@ namespace eval ::poc {
 				"-waves" -
 				"-w" {
 					SetSaveWaves
+				}
+				"-gui" -
+				"-g" {
+					set ::poc::disableExit 1
 				}
 				default {
 					puts "ERROR: Unknown option $arg"
@@ -85,6 +112,34 @@ Other tools:
 		}
 	}
 
+	proc checkForBuildErrors {} {
+		if {$::osvvm::AnalyzeErrorCount > 0} {
+			puts "ERROR: While building $::osvvm::LastBuildName"
+			puts "====================================="
+			puts $::osvvm::BuildErrorInfo
+			puts "====================================="
+
+			exitScript
+		}
+	}
+
+	proc checkForRunErrors {} {
+		if {$::osvvm::AnalyzeErrorCount > 0} {
+			puts "ERROR: While building $::osvvm::LastBuildName"
+			puts "====================================="
+			puts $::osvvm::BuildErrorInfo
+			puts "====================================="
+
+			exitScript 2
+		} elseif {$::osvvm::SimulateErrorCount > 0} {
+			puts "ERROR: While simulating $::osvvm::TestCaseName"
+			puts "====================================="
+			puts $::osvvm::BuildErrorInfo
+			puts "====================================="
+			exitScript 3
+		}
+	}
+
 	# New procedures for OSVVM's *.pro files
 	proc disabled {args} {
 		puts "Disabled from analysis: $args"
@@ -95,6 +150,8 @@ Other tools:
 
 	namespace export exitScript
 	namespace export configureOSVVM
+	namespace export checkForBuildErrors
+	namespace export checkForRunErrors
 	namespace export disabled
 	namespace export duplicate
 }

@@ -1,5 +1,5 @@
 # =============================================================================
-# Authors: 
+# Authors:
 #  Gustavo Martin
 #
 # License:
@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.trng
+
+library tb_arith_trng
+
 analyze arith_trng_TestController.vhdl
 analyze arith_trng_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_trng_Simple.vhdl
