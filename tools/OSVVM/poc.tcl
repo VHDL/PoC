@@ -10,6 +10,9 @@ namespace eval ::poc {
 	variable boardName  [getEnv BOARD  "GENERIC"]
 	variable buildNamePrefix ""
 
+	variable myConfigFile  "../tb/common/my_config_${::poc::vendorName}.vhdl"
+	variable myProjectFile "../tb/common/my_project.vhdl"
+
 	variable disableExit 0
 
 	# Skip report generation if executed within Sigasi/VS Code
@@ -155,3 +158,5 @@ Other tools:
 	namespace export disabled
 	namespace export duplicate
 }
+
+puts "Loaded PoC extensions for OSVVM."

@@ -110,6 +110,7 @@ jobs:
       pdf_artifact:   'PoC-PDF'
       can-fail:       'true'
 
+# TODO: only when on master branch
   PublishToGitHubPages:
     uses: pyTooling/Actions/.github/workflows/PublishToGitHubPages.yml@r7
     needs:
