@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.shifter_barrel
+
+library tb_arith_shifter_barrel
+
 analyze arith_shifter_barrel_TestController.vhdl
 analyze arith_shifter_barrel_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_shifter_barrel_Simple.vhdl

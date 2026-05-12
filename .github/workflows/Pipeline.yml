@@ -5,9 +5,15 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  actions:  write
+  contents: write
+  pages:    write
+  id-token: write
+
 jobs:
   Prepare:
-    uses: pyTooling/Actions/.github/workflows/PrepareJob.yml@r6
+    uses: pyTooling/Actions/.github/workflows/PrepareJob.yml@r7
     with:
       main_branch:    'master'
       release_branch: 'master'
@@ -29,7 +35,7 @@ jobs:
       can-fail:     ${{ matrix.can-fail }}
 
   PublishTestResults:
-    uses: pyTooling/Actions/.github/workflows/PublishTestResults.yml@r6
+    uses: pyTooling/Actions/.github/workflows/PublishTestResults.yml@r7
     needs:
       - Simulate
 #    if: success() || failure()
@@ -69,7 +75,7 @@ jobs:
             PoC-Report-XML-*
 
   Documentation:
-    uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r6
+    uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r7
     needs:
       - PublishTestResults
 #    if: success() || failure()
@@ -94,18 +100,18 @@ jobs:
           printf "Documentation:      '%s'\n" "${{ needs.Documentation.result }}"
 
   PDFDocumentation:
-    uses: pyTooling/Actions/.github/workflows/LaTeXDocumentation.yml@dev
+    uses: pyTooling/Actions/.github/workflows/LaTeXDocumentation.yml@r7
     needs:
       - Documentation
     if: (success() || failure()) && needs.Documentation.result == 'success'
     with:
-      document:       'The PoC-Library'
+      document:       'PoC'
       latex_artifact: 'PoC-LaTeX'
       pdf_artifact:   'PoC-PDF'
       can-fail:       'true'
 
   PublishToGitHubPages:
-    uses: pyTooling/Actions/.github/workflows/PublishToGitHubPages.yml@r6
+    uses: pyTooling/Actions/.github/workflows/PublishToGitHubPages.yml@r7
     needs:
       - Documentation
       - Simulate
@@ -115,7 +121,7 @@ jobs:
 #      coverage: 'PoC-Coverage-HTML'
 
   AutoTag:
-    uses: pyTooling/Actions/.github/workflows/TagReleaseCommit.yml@r6
+    uses: pyTooling/Actions/.github/workflows/TagReleaseCommit.yml@r7
     needs:
       - Prepare
       - PublishToGitHubPages
@@ -128,7 +134,7 @@ jobs:
       auto_tag: ${{ needs.Prepare.outputs.is_release_commit }}
 
   Release:
-    uses: pyTooling/Actions/.github/workflows/PublishReleaseNotes.yml@r6
+    uses: pyTooling/Actions/.github/workflows/PublishReleaseNotes.yml@r7
     needs:
       - PublishToGitHubPages
     if: needs.Prepare.outputs.is_release_tag == 'true'

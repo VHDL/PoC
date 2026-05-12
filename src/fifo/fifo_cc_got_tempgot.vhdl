@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:         Thomas B. Preusser
 --                  Steffen Koehler
@@ -57,7 +54,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2025-2026 The PoC-Library Authors
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --

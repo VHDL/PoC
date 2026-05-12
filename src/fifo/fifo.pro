@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,9 +21,12 @@
 
 analyze fifo.pkg.vhdl
 analyze fifo_shift.vhdl
+disabled fifo_stageFar.vhdl
 analyze fifo_stage.vhdl
 analyze fifo_ic_got.vhdl
 analyze fifo_ic_assembly.vhdl
 analyze fifo_cc_got.vhdl
+disabled fifo_cc_got_commit.vhdl
 analyze fifo_cc_got_tempgot.vhdl
 analyze fifo_cc_got_tempput.vhdl
+disabled fifo_cc_got_tempput_pipelined.vhdl

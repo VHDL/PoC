@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 
 analyze ./comm.pkg.vhdl
 analyze ./comm_crc.vhdl
+disabled ./comm_crc_parallel.vhdl
 analyze ./comm_scramble.vhdl
 analyze ./remote/remote_terminal_control.vhdl
 
