@@ -20,7 +20,7 @@
 -- limitations under the License.
 -- =============================================================================
 
-architecture AsyncReadWrite of AXI4Lite_Ocram_Adapter_TestController is
+architecture AsyncReadWrite of AXI4Lite_OCRAM_Adapter_TestController is
 		signal TestDone : integer_barrier := 1;
 
 begin

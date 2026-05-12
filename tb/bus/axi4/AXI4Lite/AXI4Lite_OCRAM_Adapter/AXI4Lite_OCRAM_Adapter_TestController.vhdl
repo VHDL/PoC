@@ -34,7 +34,7 @@ library OSVVM ;
 library osvvm_Axi4;
   context osvvm_Axi4.Axi4LiteContext ;
 
-entity AXI4Lite_Ocram_Adapter_TestController is
+entity AXI4Lite_OCRAM_Adapter_TestController is
   port (
     -- Global Signal Interface
     Clock : in std_logic ;

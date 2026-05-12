@@ -31,7 +31,7 @@ namespace eval ::poc {
 			return
 		}
 
-		set toolsWithDashCode {RivieraPRO NVC}
+		set toolsWithDashCode {ActiveHDL ModelSim NVC QuestaSim RivieraPRO}
 
 		if {[lsearch -exact $toolsWithDashCode $::osvvm::ToolName] >= 0} {
 			exit -code $code
