@@ -3,7 +3,7 @@
 #   Gustavo Martin
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.counter_bcd
+
+library tb_arith_counter_bcd
+
 analyze arith_counter_bcd_TestController.vhdl
 analyze arith_counter_bcd_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_counter_bcd_Simple.vhdl

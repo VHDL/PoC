@@ -1,11 +1,8 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:
---                  Adrian Weiland (PLC2 Design GmbH)
+--   Adrian Weiland (PLC2 Design GmbH)
 --
--- Entity:          Initial
+-- Testcase: Initial
 --
 -- Description:
 -- -------------------------------------
@@ -13,7 +10,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2025-2026 The PoC-Library Authors
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -46,7 +43,7 @@ begin
 		constant TIMEOUT : time := 10 ms;
 	begin
 		-- Initialization of test
-		SetAlertLogName("AXI4Lite_Register_initial");
+		SetAlertLogName("AXI4Lite_Register_Initial");
 		SetLogEnable(PASSED,                   FALSE);
 		SetLogEnable(INFO,                     FALSE);
 		SetLogEnable(osvvm.AlertLogPkg.DEBUG,  FALSE);
@@ -147,7 +144,7 @@ begin
 
 end architecture;
 
-configuration AXI4Lite_Register_initial of AXI4Lite_Register_TestHarness is
+configuration AXI4Lite_Register_Initial of AXI4Lite_Register_TestHarness is
 	for sim
 		for TestCtrl : AXI4Lite_Register_TestController
 			use entity work.AXI4Lite_Register_TestController(Initial);

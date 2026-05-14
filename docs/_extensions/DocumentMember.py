@@ -1,19 +1,11 @@
-# EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t; python-indent-offset: 2 -*-
-# vim: tabstop=2:shiftwidth=2:noexpandtab
-# kate: tab-width 2; replace-tabs off; indent-width 2;
-#
 # ==============================================================================
 # Authors:          Patrick Lehmann
 #
 # Python Module:
 #
-# Description:
-# ------------------------------------
-#   - TODO
-#
 # License:
 # ==============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,7 +19,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-#
+
 from lib.SphinxExtensions   import DocumentMemberAttribute
 
 

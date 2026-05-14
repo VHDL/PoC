@@ -1,6 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:         Thomas B. Preusser
 --                  Steffen Koehler
@@ -57,7 +54,7 @@
 --
 -- License:
 -- =============================================================================
--- Copyright 2025-2025 The PoC-Library Authors
+-- Copyright 2025-2026 The PoC-Library Authors
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -85,7 +82,7 @@ use     work.ocram.ocram_sdp;
 
 entity fifo_cc_got_tempput is
 	generic (
-		RAM_TYPE       : T_RAM_TYPE := RAM_TYPE_OPTIMIZED;--RAM_TYPE_AUTO;     
+		RAM_TYPE       : T_RAM_TYPE := RAM_TYPE_OPTIMIZED;--RAM_TYPE_AUTO;
 		D_BITS         : positive;         -- Data Width
 		MIN_DEPTH      : positive;         -- Minimum FIFO Depth
 		DATA_REG       : boolean := false; -- Store Data Content in Registers
@@ -165,21 +162,19 @@ begin
 		OP0_slv <= std_logic_vector(OP0);
 
 		incIP : entity work.arith_carrychain_inc
-			generic map(
+			generic map (
 				BITS => A_BITS
 			)
-			port map
-			(
+			port map (
 				X => IP0_slv,
 				Y => IP1_slv
 			);
 
 		incOP : entity work.arith_carrychain_inc
-			generic map(
+			generic map (
 				BITS => A_BITS
 			)
-			port map
-			(
+			port map (
 				X => OP0_slv,
 				Y => OP1_slv
 			);
@@ -318,13 +313,12 @@ begin
 
 		-- Backing Memory
 		ram : entity work.ocram_sdp_optimized
-			generic map(
+			generic map (
 				RAM_TYPE => RAM_TYPE,
 				A_BITS   => A_BITS,
 				D_BITS   => D_BITS
 			)
-			port map
-			(
+			port map (
 				wclk => clk,
 				rclk => clk,
 				wce  => '1',

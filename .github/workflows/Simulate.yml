@@ -14,7 +14,7 @@ on:
         default: false
         type: boolean
       simulator:
-        description: 'simualtor name'
+        description: 'simulator name'
         required: true
         type: string
       ghdl-backend:
@@ -67,23 +67,19 @@ jobs:
         run: |
           simulator="${{ inputs.simulator }}"
           tempDirectory="temp/${simulator}"
-          startScript="StartUp.tcl"
           artifactSuffix="unknown"
 
           if [[ "${simulator}" == "ghdl" ]]; then
-            startScript="StartGHDL.tcl"
             artifactSuffix="${simulator}-${{ inputs.ghdl-backend }}"
           elif [[ "${simulator}" == "nvc" ]]; then
-            startScript="StartNVC.tcl"
             artifactSuffix="${simulator}"
           else
-            printf "::error title=Simulate:Parameters::Unsupported simulator '%s'.\n" "${{ inputs.simulator }}"
+            printf "::error title=Simulate:Parameters::Unsupported simulator '%s'.\n" "${simulator}"
             exit 1
           fi
 
           tee --append "${GITHUB_OUTPUT}" <<EOF
           tempDirectory=${tempDirectory}
-          startScript=${startScript}
           artifactSuffix=${artifactSuffix}
           EOF
 
@@ -141,8 +137,8 @@ jobs:
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
 
           tee run.tcl <<EOF
-          source ../../lib/OSVVM-Scripts/${{ needs.Parameters.outputs.startScript }}
-          build ../../lib/OsvvmLibraries.pro OsvvmLibraries
+          source ../../lib/OSVVM-Scripts/StartUp.tcl
+          build ../../lib/OsvvmLibraries.pro [BuildName "OsvvmLibraries"]
           EOF
 
       - name: Precompile OSVVM (GHDL)
@@ -155,7 +151,7 @@ jobs:
         if: inputs.simulator == 'nvc'
         run: |
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
-          nvc --do run.tcl
+          nvc --ignore-time --do run.tcl
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportHTML }}' artifacts
         uses: pyTooling/upload-artifact@v4
@@ -164,9 +160,11 @@ jobs:
           name: ${{ needs.Parameters.outputs.osvvmReportHTML }}
           working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
           path: |
-            logs
-            reports
+            OsvvmLibraries/logs
+            OsvvmLibraries/reports
+            OsvvmLibraries/*.html
             *.html
+            *.yml
           retention-days: 1
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportYAML }}' artifacts
@@ -174,7 +172,7 @@ jobs:
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.osvvmReportYAML }}
-          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}/OsvvmLibraries'
           path: |
             *.yml
           retention-days: 1
@@ -184,7 +182,7 @@ jobs:
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.osvvmReportXML }}
-          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}/OsvvmLibraries'
           path: |
             *.xml
           retention-days: 1
@@ -255,79 +253,62 @@ jobs:
         with:
           name: ${{ needs.Parameters.outputs.osvvmGenerated }}
 
-      - name: 🔨 Generate run.tcl for pre-compile
+      - name: 🔨 Generate build.tcl for pre-compile
         run: |
           ls -lAh lib/osvvm/*_generated.vhd
 
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
 
-          tee run.tcl <<EOF
-          source ../../lib/OSVVM-Scripts/${{ needs.Parameters.outputs.startScript }}
+          tee build.tcl <<EOF
+          source ../../lib/OSVVM-Scripts/StartUp.tcl
+          source ../../tools/OSVVM/poc.tcl
+          namespace import ::poc::*
 
-          namespace eval ::poc {
-            variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
-            variable myProjectFile "../tb/common/my_project.vhdl"
-            variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
-          }
+          configureOSVVM
 
-          if {$::osvvm::ToolName eq "GHDL"} {
-            SetExtendedAnalyzeOptions {-frelaxed -Wno-specs -Wno-elaboration}
-          }
-          if {$::osvvm::ToolName eq "NVC"} {
-            SetExtendedAnalyzeOptions {--relaxed}
-          }
-
-          build ../../src/PoC.pro PoC
+          build ../../src/PoC.pro [BuildName "PoC"]
+          checkForBuildErrors
           EOF
 
       - name: Precompile PoC (GHDL)
         if: inputs.simulator == 'ghdl'
         run: |
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
-          tclsh run.tcl
+          tclsh build.tcl
 
       - name: Precompile PoC (NVC)
         if: inputs.simulator == 'nvc'
         run: |
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
-          nvc --do run.tcl
+          nvc --ignore-time --do build.tcl
 
-      - name: 📈 Generate run.tcl for simulate
+      - name: 📈 Generate simulate.tcl for simulate
         if: always()
         run: |
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
 
-          tee run2.tcl <<EOF
-          source ../../lib/OSVVM-Scripts/${{ needs.Parameters.outputs.startScript }}
+          tee simulate.tcl <<EOF
+          source ../../lib/OSVVM-Scripts/StartUp.tcl
+          source ../../tools/OSVVM/poc.tcl
+          namespace import ::poc::*
 
-          namespace eval ::poc {
-            variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
-            variable myProjectFile "../tb/common/my_project.vhdl"
-            variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
-          }
+          configureOSVVM
 
-          if {$::osvvm::ToolName eq "GHDL"} {
-            SetExtendedAnalyzeOptions  {-frelaxed -Wno-specs -Wno-elaboration}
-            SetExtendedSimulateOptions {-frelaxed -Wno-specs -Wno-binding}
-          }
-          if {$::osvvm::ToolName eq "NVC"} {
-            SetExtendedAnalyzeOptions {--relaxed}
-          }
-
-          build ../../tb/RunAllTests.pro
+          build ../../tb/RunAllTests.pro [BuildName "RunAllTests"]
+          checkForRunErrors
           EOF
 
       - name: Simulate PoC (GHDL)
         if: inputs.simulator == 'ghdl'
         run: |
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
-          tclsh run2.tcl
+          tclsh simulate.tcl
 
       - name: Simulate PoC (NVC)
         if: always() && inputs.simulator == 'nvc'
         run: |
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
-          nvc --do run2.tcl
+          nvc --ignore-time --do simulate.tcl
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.pocReportHTML }}' artifacts
         uses: pyTooling/upload-artifact@v4
@@ -336,8 +317,15 @@ jobs:
           name: ${{ needs.Parameters.outputs.pocReportHTML }}
           working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
           path: |
-            logs
-            reports
+            OsvvmLibraries/logs
+            OsvvmLibraries/reports
+            OsvvmLibraries/*.html
+            PoC/logs
+            PoC/reports
+            PoC/*.html
+            RunAllTests/logs
+            RunAllTests/reports
+            RunAllTests/*.html
             *.html
           retention-days: 1
 
@@ -346,7 +334,7 @@ jobs:
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.pocReportYAML }}
-          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}/RunAllTests'
           path: |
             *.yml
           retention-days: 1
@@ -356,7 +344,7 @@ jobs:
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.pocReportXML }}
-          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}/RunAllTests'
           path: |
             *.xml
           retention-days: 1

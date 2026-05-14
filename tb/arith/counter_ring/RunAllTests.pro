@@ -4,7 +4,7 @@
 #
 # License:
 # =============================================================================
-# Copyright 2025-2025 The PoC-Library Authors
+# Copyright 2025-2026 The PoC-Library Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,12 @@
 # limitations under the License.
 # =============================================================================
 
+TestSuite PoC.arith.counter_ring
+
+library tb_arith_counter_ring
+
 analyze arith_counter_ring_TestController.vhdl
 analyze arith_counter_ring_TestHarness.vhdl
 
+# Test Cases
 RunTest arith_counter_ring_Simple.vhdl

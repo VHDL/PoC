@@ -1,8 +1,5 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
--- Authors:          Thomas B. Preusser
+-- Authors:         Thomas B. Preusser
 --
 -- Entity:          Address-based FIFO stream assembly, independent clocks (ic)
 --
@@ -44,9 +41,9 @@ use      IEEE.std_logic_1164.all;
 
 entity fifo_ic_assembly is
 	generic (
-		D_BITS : positive;                  -- Data Width
-		A_BITS : positive;                  -- Address Bits
-		G_BITS : positive                    -- Generation Guard Bits
+		D_BITS : positive;       -- Data Width
+		A_BITS : positive;       -- Address Bits
+		G_BITS : positive        -- Generation Guard Bits
 	);
 	port (
 		-- Write Interface

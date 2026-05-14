@@ -62,6 +62,35 @@ shipped with a Python based infrastructure to offer a command line based fronten
 
    .. rubric:: News
 
+.. attention:: v3.0.0
+
+   .. rublic:: Planned Additions
+
+   * AXI4 multiplexer / demultiplexer
+   * AXI4-Lite multiplexer / demultiplexer
+
+   .. rublic:: Planned Changes
+
+   * Rename branch ``master`` to ``main```
+   * Restructure AXI4 subdirectories.
+   * Whitespace fixes.
+   * ``axi4lite_VersionRegister``
+
+     * Reworked memory layout
+     * Linux driver
+
+.. admonition:: v2.3.0
+
+   * New AXI4-Lite devices
+
+     * ``axi4lite_BlockRAMAdapter``
+     * ``axi4lite_DRPdapter``
+     * ``axi4lite_UART``
+     * ``axi4lite_HRClock``
+
+   * Documentation updates
+   * More OSVVM-based testcases
+
 .. admonition:: v2.2.0
 
    * Documentation updates

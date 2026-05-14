@@ -6,4 +6,4 @@
 # set max delay between data register D0 and D4 to lower clock period
 set_max_delay -from [get_cells -regexp {D0_reg\[\d+\]}] \
                 -to [get_cells -regexp {D4_reg\[\d+\]}] \
-     -datapath_only [expr "min([get_property period [get_clocks -of_objects [get_pins {D0_reg[0]/C}]]], [get_property period [get_clocks -of_objects [get_pins {D4_reg[0]/C}]]])"]
+     -datapath_only [expr "min([get_property period [get_clocks -of_objects [get_pins {D0_reg[*]/C}]]], [get_property period [get_clocks -of_objects [get_pins {D4_reg[*]/C}]]])"]
