@@ -151,10 +151,10 @@ jobs:
         if: inputs.simulator == 'nvc'
         run: |
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
-          nvc --ignore-time --do run.tcl
+          nvc --do run.tcl
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportHTML }}' artifacts
-        uses: pyTooling/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v7
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.osvvmReportHTML }}
@@ -168,7 +168,7 @@ jobs:
           retention-days: 1
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportYAML }}' artifacts
-        uses: pyTooling/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v7
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.osvvmReportYAML }}
@@ -178,7 +178,7 @@ jobs:
           retention-days: 1
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportXML }}' artifacts
-        uses: pyTooling/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v7
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.osvvmReportXML }}
@@ -188,7 +188,7 @@ jobs:
           retention-days: 1
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmLibraries }}' artifacts
-        uses: pyTooling/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v7
         with:
           name: ${{ needs.Parameters.outputs.osvvmLibraries }}
           working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
@@ -197,7 +197,7 @@ jobs:
           retention-days: 1
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmGenerated }}' artifacts
-        uses: pyTooling/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v7
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.osvvmGenerated }}
@@ -243,13 +243,13 @@ jobs:
           mv src/common/my_project.vhdl.template tb/common/my_project.vhdl
 
       - name: 📥 Download artifacts '${{ needs.Parameters.outputs.osvvmLibraries }}' from 'Build-OSVVM' job
-        uses: pyTooling/download-artifact@v4
+        uses: pyTooling/download-artifact@v8
         with:
           name: ${{ needs.Parameters.outputs.osvvmLibraries }}
           path: "${{ needs.Parameters.outputs.tempDirectory }}"
 
       - name: 📥 Download artifacts '${{ needs.Parameters.outputs.osvvmGenerated }}' from 'Build-OSVVM' job
-        uses: pyTooling/download-artifact@v4
+        uses: pyTooling/download-artifact@v8
         with:
           name: ${{ needs.Parameters.outputs.osvvmGenerated }}
 
@@ -280,7 +280,7 @@ jobs:
         if: inputs.simulator == 'nvc'
         run: |
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
-          nvc --ignore-time --do build.tcl
+          nvc --do build.tcl
 
       - name: 📈 Generate simulate.tcl for simulate
         if: always()
@@ -308,10 +308,10 @@ jobs:
         if: always() && inputs.simulator == 'nvc'
         run: |
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
-          nvc --ignore-time --do simulate.tcl
+          nvc --do simulate.tcl
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.pocReportHTML }}' artifacts
-        uses: pyTooling/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v7
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.pocReportHTML }}
@@ -330,7 +330,7 @@ jobs:
           retention-days: 1
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.pocReportYAML }}' artifacts
-        uses: pyTooling/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v7
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.pocReportYAML }}
@@ -340,7 +340,7 @@ jobs:
           retention-days: 1
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.pocReportXML }}' artifacts
-        uses: pyTooling/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v7
         continue-on-error: true
         with:
           name: ${{ needs.Parameters.outputs.pocReportXML }}
@@ -350,7 +350,7 @@ jobs:
           retention-days: 1
 
 #      - name: 📤 Upload '${{ needs.Parameters.outputs.pocLibraries }}' artifacts
-#        uses: pyTooling/upload-artifact@v4
+#        uses: pyTooling/upload-artifact@v7
 #        with:
 #          name: ${{ needs.Parameters.outputs.pocLibraries }}
 #          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'

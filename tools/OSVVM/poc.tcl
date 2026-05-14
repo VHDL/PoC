@@ -94,6 +94,7 @@ namespace eval ::poc {
 			set RivieraSimOptions {-unbounderror}
 
 		} elseif {$::osvvm::ToolName eq "NVC"} {
+			append ::osvvm::ExtendedGlobalOptions " --ignore-time"
 			SetExtendedAnalyzeOptions {--relaxed}
 
 		} elseif {$::osvvm::ToolName eq "Sigasi"} {
