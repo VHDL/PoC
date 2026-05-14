@@ -59,7 +59,7 @@ jobs:
 #    if: success() || failure()
     steps:
       - name: 🗑️ Delete YAML artifacts from matrix jobs
-        uses: geekyeggo/delete-artifact@v5
+        uses: geekyeggo/delete-artifact@v6
         continue-on-error: true
         with:
           name: |
@@ -67,12 +67,22 @@ jobs:
             PoC-Report-YAML-*
 
       - name: 🗑️ Delete JUnit XML artifacts from matrix jobs
-        uses: geekyeggo/delete-artifact@v5
+        uses: geekyeggo/delete-artifact@v6
         continue-on-error: true
         with:
           name: |
             OSVVM-Report-XML-*
             PoC-Report-XML-*
+
+#  IntermediateCleanUp:
+#    uses: pyTooling/Actions/.github/workflows/CleanupArtifacts.yml@r7
+#    needs:
+#      - PublishCoverageResults
+#      - PublishPytestResults
+#    with:
+#      others: |
+#        pyGHDL-Coverage-SQLite-*
+#        pyGHDL-Unittest-XML-*
 
   Documentation:
     uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r7
@@ -137,6 +147,7 @@ jobs:
   Release:
     uses: pyTooling/Actions/.github/workflows/PublishReleaseNotes.yml@r7
     needs:
+      - Prepare
       - PublishToGitHubPages
     if: needs.Prepare.outputs.is_release_tag == 'true'
     permissions:
