@@ -130,7 +130,7 @@ begin
 				Param := ID & Dest & User & '1';
 				ExpParam := ID & ID(2 downto 0) & Dest & User;
 
-				Log("IF " & to_string(i) & ": Sending Packet " & to_string(packet) & " of length " & to_string(Bytes) & " with param=" & PoC.strings.to_string(Param(Param'high downto 1), 'h'), INFO);
+				Log("IF " & integer'image(i) & ": Sending Packet " & integer'image(packet) & " of length " & integer'image(Bytes) & " with param=" & PoC.strings.to_string(Param(Param'high downto 1), 'h'), INFO);
 
 				wait for 1 ns;
 				PushBurstVector(AXI4StreamData_SB(i), Data(1 to Bytes), 8);
@@ -175,7 +175,7 @@ begin
 			(ID, Dest, User, Last) := RxParam;
 			index            := to_integer(unsigned(ID));
 
-			Log("Received Packet of length " & to_string(PacketLength) & " with ID=" & PoC.strings.to_string(ID, 'h') & " with Dest=" & PoC.strings.to_string(Dest, 'h') & " with User=" & PoC.strings.to_string(User, 'h'), INFO);
+			Log("Received Packet of length " & integer'image(PacketLength) & " with ID=" & PoC.strings.to_string(ID, 'h') & " with Dest=" & PoC.strings.to_string(Dest, 'h') & " with User=" & PoC.strings.to_string(User, 'h'), INFO);
 
 			Check(AXI4StreamParam_SB(index), ID & Dest & User);
 			CheckBurstFifo(AXI4StreamData_SB(index), StreamRxRec.BurstFifo, PacketLength);

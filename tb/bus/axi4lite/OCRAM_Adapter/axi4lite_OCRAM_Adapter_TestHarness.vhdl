@@ -29,8 +29,9 @@ use     IEEE.numeric_std.ALL;
 library PoC;
 use     PoC.my_project.all;
 use     PoC.utils.all;
-use     PoC.axi4.all;
 use     PoC.vectors.all;
+use     PoC.axi4lite.all;
+use     PoC.axi4lite_OSVVM.all;
 
 library osvvm;
 context osvvm.OsvvmContext ;
@@ -85,6 +86,16 @@ architecture sim of AXI4Lite_OCRAM_Adapter_TestHarness is
 		ReadAddress ( Addr(AXI_ADDR_WIDTH-1 downto 0) ),
 		ReadData    ( Data (AXI_DATA_WIDTH-1 downto 0) )
 	) ;
+
+	signal AXI_m2s : T_AXI4Lite_BUS_M2S(
+		AWAddr(AXI_ADDR_WIDTH - 1 downto 0),
+		WData(AXI_DATA_WIDTH - 1 downto 0),
+		WStrb(AXI_STRB_WIDTH-1 downto 0),
+		ARAddr(AXI_ADDR_WIDTH - 1 downto 0)
+	);
+	signal AXI_s2m : T_AXI4Lite_BUS_S2M(
+		RData(AXI_DATA_WIDTH - 1 downto 0)
+	);
 
 	component AXI4Lite_OCRAM_Adapter_TestController is
 		generic (
@@ -141,6 +152,7 @@ begin
 			TransRec => AxiMasterTransRec, -- Testbench Transaction Interface
 			AxiBus   => AxiBus         -- AXI Master Functional Interface
 		) ;
+	to_PoC_AXI4Lite_Bus_Master(AXI_m2s, AXI_s2m, AxiBus);
 
 	---------------------------------------------------------------------------
 	-- axi4_slave_rb_interface
@@ -156,28 +168,8 @@ begin
 			Clock                => Clock,
 			Reset                => Reset,
 
-			AXI4Lite_m2s.AWValid =>  AxiBus.WriteAddress.Valid,
-			AXI4Lite_m2s.AWAddr  =>  AxiBus.WriteAddress.Addr,
-			AXI4Lite_m2s.AWCache =>  (others => '0'),
-			AXI4Lite_m2s.AWProt  =>  AxiBus.WriteAddress.Prot,
-			AXI4Lite_m2s.WValid  =>  AxiBus.WriteData.Valid,
-			AXI4Lite_m2s.WData   =>  AxiBus.WriteData.Data,
-			AXI4Lite_m2s.WStrb   =>  AxiBus.WriteData.Strb,
-			AXI4Lite_m2s.BReady  =>  AxiBus.WriteResponse.Ready,
-			AXI4Lite_m2s.ARValid =>  AxiBus.ReadAddress.Valid,
-			AXI4Lite_m2s.ARAddr  =>  AxiBus.ReadAddress.Addr,
-			AXI4Lite_m2s.ARCache =>  (others => '0'),
-			AXI4Lite_m2s.ARProt  =>  AxiBus.ReadAddress.Prot,
-			AXI4Lite_m2s.RReady  =>  AxiBus.ReadData.Ready,
-
-			AXI4Lite_s2m.WReady  =>  AxiBus.WriteData.Ready,
-			AXI4Lite_s2m.BValid  =>  AxiBus.WriteResponse.Valid,
-			AXI4Lite_s2m.BResp   =>  AxiBus.WriteResponse.Resp,
-			AXI4Lite_s2m.ARReady =>  AxiBus.ReadAddress.Ready,
-			AXI4Lite_s2m.AWReady =>  AxiBus.WriteAddress.Ready,
-			AXI4Lite_s2m.RValid  =>  AxiBus.ReadData.Valid,
-			AXI4Lite_s2m.RData   =>  AxiBus.ReadData.Data,
-			AXI4Lite_s2m.RResp   =>  AxiBus.ReadData.Resp,
+			AXI4Lite_m2s         =>  AXI_m2s,
+			AXI4Lite_s2m         =>  AXI_s2m,
 
 			OCRAM_Address        => address,
 			OCRAM_WriteEnable    => write_en,

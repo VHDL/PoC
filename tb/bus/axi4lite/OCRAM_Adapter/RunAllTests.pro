@@ -27,6 +27,12 @@ library tb_axi4lite_OCRAMAdapter
 analyze axi4lite_OCRAM_Adapter_TestController.vhdl
 analyze axi4lite_OCRAM_Adapter_TestHarness.vhdl
 
-RunTest TC_InitMemory.vhdl [generic USE_INIT_FILE TRUE]
-RunTest TC_AsyncReadWrite.vhdl
-RunTest TC_SimpleReadWrite.vhdl
+if {$::osvvm::ToolName in {GHDL}} {
+	SkipTest TC_InitMemory.vhdl "Skip GHDL because llvm backend does not support external name required for this test."
+	SkipTest TC_AsyncReadWrite.vhdl "Skip GHDL because llvm backend does not support external name required for this test."
+	SkipTest TC_SimpleReadWrite.vhdl "Skip GHDL because llvm backend does not support external name required for this test."
+} else {
+	RunTest TC_InitMemory.vhdl [generic USE_INIT_FILE TRUE]
+	RunTest TC_AsyncReadWrite.vhdl
+	RunTest TC_SimpleReadWrite.vhdl
+}
