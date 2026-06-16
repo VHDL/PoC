@@ -12,7 +12,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +26,7 @@ use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
 library PoC;
-use     PoC.AXI4Lite_OSVVM.all;
+use     PoC.axi4lite_OSVVM.all;
 use     PoC.physical.all;
 use     PoC.vectors.all;
 use     PoC.axi4lite.all;
@@ -96,23 +96,23 @@ architecture TestHarness of clock_HighResolution_th is
 		ReadAddress (Addr(AXI_ADDR_WIDTH - 1 downto 0)),
 		ReadData    (Data(AXI_DATA_WIDTH - 1 downto 0))
 	);
-	
+
 	component clock_HighResolution_tc
 		generic (
 			CLOCK_FREQ : FREQ
 		);
 		port (
-			Clock       : in std_logic;
-			Reset       : in std_logic;
+			Clock       : in  std_logic;
+			Reset       : in  std_logic;
 			AXI_Manager : inout AddressBusRecType;
 
 			Load_nanoseconds    : out std_logic;
 			Load_datetime       : out std_logic;
 			Nanoseconds_to_load : out unsigned(63 downto 0);
 			Datetime_to_load    : out T_CLOCK_Datetime;
-			
-			Nanoseconds : in unsigned(63 downto 0);
-			Datetime    : in T_CLOCK_Datetime
+
+			Nanoseconds : in  unsigned(63 downto 0);
+			Datetime    : in  T_CLOCK_Datetime
 		);
 	end component;
 
@@ -148,7 +148,7 @@ begin
 			-- AXI manager physical interface
 			AxiBus      => AxiBus
 		);
-		
+
 	dut: entity PoC.clock_HighResolution
 		generic map (
 			SECOND_RESOLUTION => SECOND_RESOLUTION,
@@ -170,7 +170,7 @@ begin
 		);
 
 	Nanoseconds <= Nanoseconds_i when rising_edge(Clock);
-	Datetime	<= Datetime_i    when rising_edge(Clock);
+	Datetime  <= Datetime_i    when rising_edge(Clock);
 
 	TestCtrl: component clock_HighResolution_tc
 		generic map (
@@ -180,7 +180,7 @@ begin
 			Clock          => Clock,
 			Reset          => Reset,
 			AXI_Manager    => AXI_Manager,
-			
+
 			Load_nanoseconds    => Load_nanoseconds,
 			Load_datetime       => Load_datetime,
 			Nanoseconds_to_load => Nanoseconds_to_load,

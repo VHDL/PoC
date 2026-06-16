@@ -16,7 +16,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,8 +29,8 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-use work.physical.all;
-use work.utils.all;
+use     work.physical.all;
+use     work.utils.all;
 
 
 package clock is
@@ -42,7 +42,7 @@ package clock is
 
 	type T_SECOND_RESOLUTION is (NANOSECONDS, MICROSECONDS, MILLISECONDS);
 	attribute Count of T_SECOND_RESOLUTION : type is T_SECOND_RESOLUTION'pos(T_SECOND_RESOLUTION'high) + 1;  -- to find the num of registers available
-	attribute Bits  of T_SECOND_RESOLUTION : type is log2ceil(T_SECOND_RESOLUTION'Count);                    -- no of bits required to represent the num of registers	constant RESOLUTION_TIMES : T_TIME_VEC(0 to 2) := (1.0e-9, 1.0e-6, 1.0e-3);
+	attribute Bits  of T_SECOND_RESOLUTION : type is log2ceil(T_SECOND_RESOLUTION'Count);                    -- no of bits required to represent the num of registers  constant RESOLUTION_TIMES : T_TIME_VEC(0 to 2) := (1.0e-9, 1.0e-6, 1.0e-3);
 
 	function to_enum(value : std_logic_vector)             return T_SECOND_RESOLUTION;
 	function to_timebase(resolution : T_SECOND_RESOLUTION) return T_TIME;

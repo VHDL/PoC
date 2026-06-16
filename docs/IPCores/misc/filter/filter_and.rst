@@ -1,4 +1,4 @@
-.. _IP/filter_and:
+.. _IP/filter_And:
 
 PoC.misc.filter.and
 ###################
@@ -7,7 +7,7 @@ PoC.misc.filter.and
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/filter/filter_and.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/filter/filter_And.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.misc.filter.and
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <misc/filter/filter_and.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <misc/filter/filter_And.vhdl>`
       * |gh-tb| :poctb:`Testbench <misc/filter/filter_and_tb.vhdl>`
 
 .. TODO:: No documentation available.
@@ -25,7 +25,7 @@ PoC.misc.filter.and
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/misc/filter/filter_and.vhdl
+.. literalinclude:: ../../../../src/misc/filter/filter_And.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -35,4 +35,4 @@ PoC.misc.filter.and
 
 .. only:: latex
 
-   Source file: :pocsrc:`misc/filter/filter_and.vhdl <misc/filter/filter_and.vhdl>`
+   Source file: :pocsrc:`misc/filter/filter_And.vhdl <misc/filter/filter_And.vhdl>`

@@ -1,0 +1,48 @@
+# =============================================================================
+# Authors:
+#   Stefan Unrein
+#
+# License:
+# =============================================================================
+# Copyright 2025-2026 The PoC-Library Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# =============================================================================
+
+#analyze ./axi4stream.pkg.vhdl; # analyzed in PoC.pro
+
+analyze ./axi4stream_FIFO.vhdl
+analyze ./axi4stream_FIFO_CDC.vhdl
+analyze ./axi4stream_FIFO_TempGot.vhdl
+analyze ./axi4stream_FIFO_TempPut.vhdl
+analyze ./axi4stream_Stage.vhdl
+disabled ./axi4stream_Mirror.vhdl
+analyze ./axi4stream_Mux.vhdl
+analyze ./axi4stream_Pause.vhdl
+analyze ./axi4stream_DeMux.vhdl
+disabled ./axi4stream_DataExtractor.vhdl
+disabled ./axi4stream_PatternFinder.vhdl
+disabled ./axi4stream_FieldReplacer.vhd
+disabled ./axi4stream_Crossbar.vhdl
+# disabled ./axi4stream_Frame_Buffer.vhdl # Does not work right now
+disabled ./axi4stream_PRBSGenerator.vhdl
+disabled ./axi4stream_Termination_Manager.vhdl
+disabled ./axi4stream_Termination_Subordinate.vhdl
+disabled ./axi4stream_Buffer_no_backpressure.vhdl
+disabled ./axi4stream_To_Stream.vhdl
+disabled ./axi4stream_Splitter.vhdl
+disabled ./axi4stream_Delay.vhdl
+disabled ./axi4stream_Realign.vhdl
+analyze ../../misc/gearbox/gearbox_Down_cc.vhdl
+analyze ../../misc/gearbox/gearbox_Up_cc.vhdl
+disabled ./axi4stream_Gearbox.vhdl

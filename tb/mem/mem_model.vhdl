@@ -3,9 +3,9 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- ============================================================================
--- Authors:					Martin Zabel
+-- Authors:          Martin Zabel
 --
--- Module:					Model of pipelined memory with PoC.Mem interface.
+-- Module:          Model of pipelined memory with PoC.Mem interface.
 --
 -- Description:
 -- ------------------------------------
@@ -24,13 +24,13 @@
 -- License:
 -- ============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
---										 Chair for VLSI-Design, Diagnostics and Architecture
+--                     Chair for VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -60,30 +60,30 @@
 -- tristate internal signal "*_z"
 -------------------------------------------------------------------------------
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 entity mem_model is
 
-  generic (
-    A_BITS  : positive;
-    D_BITS  : positive;
+	generic (
+		A_BITS  : positive;
+		D_BITS  : positive;
 		LATENCY : positive := 1
-  );
+	);
 
-  port (
-    clk : in std_logic;
-    rst : in std_logic;
+	port (
+		clk : in  std_logic;
+		rst : in  std_logic;
 
-    mem_req   : in  std_logic;
-    mem_write : in  std_logic;
-    mem_addr  : in  unsigned(A_BITS-1 downto 0);
-    mem_wdata : in  std_logic_vector(D_BITS-1 downto 0);
-    mem_wmask : in  std_logic_vector(D_BITS/8-1 downto 0) := (others => '0');
-    mem_rdy   : out std_logic;
-    mem_rstb  : out std_logic;
-    mem_rdata : out std_logic_vector(D_BITS-1 downto 0));
+		mem_req   : in  std_logic;
+		mem_write : in  std_logic;
+		mem_addr  : in  unsigned(A_BITS-1 downto 0);
+		mem_wdata : in  std_logic_vector(D_BITS-1 downto 0);
+		mem_wmask : in  std_logic_vector(D_BITS/8-1 downto 0) := (others => '0');
+		mem_rdy   : out std_logic;
+		mem_rstb  : out std_logic;
+		mem_rdata : out std_logic_vector(D_BITS-1 downto 0));
 
 end entity mem_model;
 
@@ -187,7 +187,7 @@ begin  -- architecture sim
 
 			-- reset only read strobe
 			case to_x01(rst) is
-				when '1' =>	rstb_p <= (others => '0');
+				when '1' =>  rstb_p <= (others => '0');
 				when '0' => null;
 				when 'X' => rstb_p <= (others => 'X');
 			end case;
@@ -201,6 +201,6 @@ begin  -- architecture sim
 		'0' when others;
 
 	mem_rdata <= rdata_p(LATENCY);
-	mem_rstb	<= rstb_p (LATENCY);
+	mem_rstb  <= rstb_p (LATENCY);
 
 end architecture sim;

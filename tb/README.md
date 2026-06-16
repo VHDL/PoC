@@ -47,7 +47,7 @@ Table of Content:
 ## Quick Example
 
 The following quick example uses the Xilinx ISE Simulator to compile a testbench for the module
-`arith_prng.vhdl` (Pseudo Random Number Generator - PRNG). The VHDL file is located at
+`arith_PRNG.vhdl` (Pseudo Random Number Generator - PRNG). The VHDL file is located at
 `<PoCRoot>/src/arith/` and virtually a member in the `PoC.arith` namespace. So the module can be
 identified by an unique name: `PoC.arith.prng`, which is passed to the testbench script.
 

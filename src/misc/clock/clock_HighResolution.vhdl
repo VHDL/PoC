@@ -16,7 +16,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,15 +40,15 @@ entity clock_HighResolution is
 		CLOCK_FREQUENCY     : FREQ
 	);
 	port (
-		Clock               : in std_logic;
-		Reset               : in std_logic;
+		Clock               : in  std_logic;
+		Reset               : in  std_logic;
 
-		Load_nanoseconds    : in std_logic;
-		Load_datetime       : in std_logic;
-		Nanoseconds_to_load : in unsigned(63 downto 0);
-		Datetime_to_load    : in T_CLOCK_Datetime;
-		Ns_inc              : in std_logic;
-		Ns_dec              : in std_logic;
+		Load_nanoseconds    : in  std_logic;
+		Load_datetime       : in  std_logic;
+		Nanoseconds_to_load : in  unsigned(63 downto 0);
+		Datetime_to_load    : in  T_CLOCK_Datetime;
+		Ns_inc              : in  std_logic;
+		Ns_dec              : in  std_logic;
 
 		Nanoseconds         : out unsigned(63 downto 0);
 		Datetime            : out T_CLOCK_Datetime

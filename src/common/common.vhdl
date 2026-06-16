@@ -1,22 +1,23 @@
 -- =============================================================================
--- Authors:					Patrick Lehmann
+-- Authors:         Patrick Lehmann
 --
--- Context:					Provides all packages from <PoCRoot>/src/common.
+-- Context:         Provides all packages from <PoCRoot>/src/common.
 --
 -- Description:
 -- -------------------------------------
---		This package provides all common packages as a single context.
+--    This package provides all common packages as a single context.
 --
 -- License:
 -- =============================================================================
+-- Copyright 2024-2026 PLC2 Design GmbH, Endingen - Germany
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,14 +26,13 @@
 -- limitations under the License.
 -- =============================================================================
 
-context Common is
+context common is
 	library PoC ;
-	use PoC.config.all;
-	use PoC.debug.all;
---	use PoC.FileIO.all;
-	use PoC.math.all;
-	use PoC.physical.all;
-	use PoC.strings.all;
-	use PoC.utils.all;
-	use PoC.vectors.all;
+	use     PoC.config.all;
+	use     PoC.components.all;
+	use     PoC.math.all;
+	use     PoC.physical.all;
+	use     PoC.strings.all;
+	use     PoC.utils.all;
+	use     PoC.vectors.all;
 end context;

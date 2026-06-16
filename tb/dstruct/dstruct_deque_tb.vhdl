@@ -2,9 +2,9 @@
 -- vim: tabstop=2:shiftwidth=2:noexpandtab
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- ============================================================================
--- Authors:					Jens Voss
+-- Authors:          Jens Voss
 --
--- Testbench:				dstruct_deque_tb
+-- Testbench:        dstruct_deque_tb
 --
 -- Description:
 -- ------------
@@ -33,12 +33,12 @@ end entity;
 
 
 library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 library PoC;
-use			PoC.physical.all;
-use			PoC.dstruct.all;
+use     PoC.physical.all;
+use     PoC.dstruct.all;
 -- simulation only packages
 use     PoC.sim_types.all;
 use     PoC.simulation.all;
@@ -46,32 +46,32 @@ use     PoC.waveform.all;
 
 architecture tb of dstruct_deque_tb is
 
-  -- component generics
-  constant MIN_DEPTH : positive := 128;
-  constant D_BITS    : positive := 16;
+	-- component generics
+	constant MIN_DEPTH : positive := 128;
+	constant D_BITS    : positive := 16;
 
-  -- Clock Control
+	-- Clock Control
 	constant CLK_FREQ : FREQ := 50 MHz;
-  signal clk  : std_logic;
-  signal rst  : std_logic;
+	signal clk  : std_logic;
+	signal rst  : std_logic;
 
-  -- local Signals
+	-- local Signals
 
 	-- PortA
-	signal dinA		: std_logic_vector(D_BITS-1 downto 0);
-	signal putA		: std_logic;
-	signal gotA		: std_logic;
-	signal doutA	: std_logic_vector(D_BITS-1 downto 0);
-	signal fullA	: std_logic;
+	signal dinA    : std_logic_vector(D_BITS-1 downto 0);
+	signal putA    : std_logic;
+	signal gotA    : std_logic;
+	signal doutA  : std_logic_vector(D_BITS-1 downto 0);
+	signal fullA  : std_logic;
 	signal validA : std_logic;
 
 	-- Port B
-	signal dinB		: std_logic_vector(D_BITS-1 downto 0);
-	signal putB		: std_logic;
-	signal gotB		: std_logic;
-	signal doutB	: std_logic_vector(D_BITS-1 downto 0);
+	signal dinB    : std_logic_vector(D_BITS-1 downto 0);
+	signal putB    : std_logic;
+	signal gotB    : std_logic;
+	signal doutB  : std_logic_vector(D_BITS-1 downto 0);
 	signal validB : std_logic;
-	signal fullB	: std_logic;
+	signal fullB  : std_logic;
 
 begin
 
@@ -79,30 +79,30 @@ begin
 	simInitialize;
 	simGenerateClock(clk, CLK_FREQ);
 
-  -- DUT
-  DUT : dstruct_deque
-    generic map(
-      D_BITS    => D_BITS,
-      MIN_DEPTH => MIN_DEPTH
-    )
-    port map(
-      clk    => clk,
-      rst    => rst,
-      --PORT A
-      dinA   => dinA,
-      putA   => putA,
-      gotA   => gotA,
-      doutA  => doutA,
-      validA => validA,
-      fullA  => fullA,
-      --PORT B
-      dinB   => dinB,
-      putB   => putB,
-      gotB   => gotB,
-      doutB  => doutB,
-      validB => validB,
-      fullB  => fullB
-    );
+	-- DUT
+	DUT : dstruct_deque
+		generic map(
+			D_BITS    => D_BITS,
+			MIN_DEPTH => MIN_DEPTH
+		)
+		port map(
+			clk    => clk,
+			rst    => rst,
+			--PORT A
+			dinA   => dinA,
+			putA   => putA,
+			gotA   => gotA,
+			doutA  => doutA,
+			validA => validA,
+			fullA  => fullA,
+			--PORT B
+			dinB   => dinB,
+			putB   => putB,
+			gotB   => gotB,
+			doutB  => doutB,
+			validB => validB,
+			fullB  => fullB
+		);
 
 -- Stimuli
 	process
@@ -111,15 +111,15 @@ begin
 			for i in 1 to n loop
 				wait until rising_edge(clk);
 			end loop;
-		end;
+		end procedure;
 
-		constant PID		 : T_SIM_PROCESS_ID := simRegisterProcess("main");
+		constant PID     : T_SIM_PROCESS_ID := simRegisterProcess("main");
 		variable i, j, k : integer;
 	begin
 		rst <= '1';
 		cycle;
 
-		rst	 <= '0';
+		rst   <= '0';
 		putA <= '0';
 		gotA <= '0';
 		putB <= '0';

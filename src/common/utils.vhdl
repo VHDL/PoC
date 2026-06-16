@@ -36,7 +36,6 @@ use     IEEE.math_real.all;
 
 
 package utils is
-
 	-- Environment
 	-- ==========================================================================
 	-- Distinguishes simulation from synthesis
@@ -46,34 +45,31 @@ package utils is
 	-- ==========================================================================
 
 	--+ Vectors of primitive standard types +++++++++++++++++++++++++++++++++++++
-	type T_BOOLVEC is array(natural range <>) of boolean;
-	type T_INTVEC  is array(natural range <>) of integer;
-	type T_NATVEC  is array(natural range <>) of natural;
-	type T_POSVEC  is array(natural range <>) of positive;
-	type T_REALVEC is array(natural range <>) of real;
+	type natural_vector  is array(natural range <>) of natural;
+	type positive_vector  is array(natural range <>) of positive;
 
-	function "/"(vec : T_INTVEC; int : integer) return T_INTVEC;
-	function "*"(vec : T_INTVEC; int : integer) return T_INTVEC;
-	function "-"(vec : T_INTVEC; int : integer) return T_INTVEC;
-	function "+"(vec : T_INTVEC; int : integer) return T_INTVEC;
-	function "/"(vec : T_NATVEC; int : positive) return T_NATVEC;
-	function "*"(vec : T_NATVEC; int : natural) return T_NATVEC;
-	function "-"(vec : T_NATVEC; int : integer) return T_NATVEC;
-	function "+"(vec : T_NATVEC; int : integer) return T_NATVEC;
-	function "/"(vec : T_POSVEC; int : positive) return T_POSVEC;
-	function "*"(vec : T_POSVEC; int : positive) return T_POSVEC;
-	function "-"(vec : T_POSVEC; int : integer) return T_POSVEC;
-	function "+"(vec : T_POSVEC; int : integer) return T_POSVEC;
-	function "/"(vec : T_REALVEC; int : real) return T_REALVEC;
-	function "*"(vec : T_REALVEC; int : real) return T_REALVEC;
-	function "-"(vec : T_REALVEC; int : real) return T_REALVEC;
-	function "+"(vec : T_REALVEC; int : real) return T_REALVEC;
+	function "/"(vec : integer_vector; int : integer) return integer_vector;
+	function "*"(vec : integer_vector; int : integer) return integer_vector;
+	function "-"(vec : integer_vector; int : integer) return integer_vector;
+	function "+"(vec : integer_vector; int : integer) return integer_vector;
+	function "/"(vec : natural_vector; int : positive) return natural_vector;
+	function "*"(vec : natural_vector; int : natural) return natural_vector;
+	function "-"(vec : natural_vector; int : integer) return natural_vector;
+	function "+"(vec : natural_vector; int : integer) return natural_vector;
+	function "/"(vec : positive_vector; int : positive) return positive_vector;
+	function "*"(vec : positive_vector; int : positive) return positive_vector;
+	function "-"(vec : positive_vector; int : integer) return positive_vector;
+	function "+"(vec : positive_vector; int : integer) return positive_vector;
+	function "/"(vec : real_vector; int : real) return real_vector;
+	function "*"(vec : real_vector; int : real) return real_vector;
+	function "-"(vec : real_vector; int : real) return real_vector;
+	function "+"(vec : real_vector; int : real) return real_vector;
 
 	--Filter
-	function remove_zero(vec : T_NATVEC) return T_POSVEC;
-	function remove_zero(vec : T_POSVEC) return T_POSVEC;
-	function remove_zero(vec : T_NATVEC) return T_NATVEC;
-	function remove_zero(vec : T_POSVEC) return T_NATVEC;
+	function remove_zero(vec : natural_vector) return positive_vector;
+	function remove_zero(vec : positive_vector) return positive_vector;
+	function remove_zero(vec : natural_vector) return natural_vector;
+	function remove_zero(vec : positive_vector) return natural_vector;
 
 	--+ Integer subranges sometimes useful for speeding up simulation ++++++++++
 	subtype T_INT_8   is integer range -128 to 127;
@@ -171,34 +167,33 @@ package utils is
 	function dec_if(cond : boolean; value : integer; decrement : integer := 1) return integer;
 
 	--+ Max / Min / Sum ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	-- FIXME: replace *min, *max functions by VHDL-2008 minimum and maximum functions
 	function imin(arg1 : integer; arg2 : integer) return integer; -- Calculates: min(arg1, arg2) for integers
 	alias rmin is IEEE.math_real.realmin[real, real return real];
-	-- function rmin(arg1 : real; arg2 : real) return real; -- Calculates: min(arg1, arg2) for reals
 
-	function imin(vec : T_INTVEC) return integer;  -- Calculates: min(vec) for a integer vector
-	function imin(vec : T_NATVEC) return natural;  -- Calculates: min(vec) for a natural vector
-	function imin(vec : T_POSVEC) return positive; -- Calculates: min(vec) for a positive vector
-	function rmin(vec : T_REALVEC) return real;    -- Calculates: min(vec) of real vector
+	function imin(vec : integer_vector) return integer;  -- Calculates: min(vec) for a integer vector
+	function imin(vec : natural_vector) return natural;  -- Calculates: min(vec) for a natural vector
+	function imin(vec : positive_vector) return positive; -- Calculates: min(vec) for a positive vector
+	function rmin(vec : real_vector) return real;    -- Calculates: min(vec) of real vector
 
 	function imax(arg1 : integer; arg2 : integer) return integer; -- Calculates: max(arg1, arg2) for integers
 	alias rmax is IEEE.math_real.realmax[real, real return real];
-	-- function rmax(arg1 : real; arg2 : real) return real;       -- Calculates: max(arg1, arg2) for reals
 
-	function imax(vec : T_INTVEC) return integer;  -- Calculates: max(vec) for a integer vector
-	function imax(vec : T_NATVEC) return natural;  -- Calculates: max(vec) for a natural vector
-	function imax(vec : T_POSVEC) return positive; -- Calculates: max(vec) for a positive vector
-	function rmax(vec : T_REALVEC) return real;    -- Calculates: max(vec) of real vector
+	function imax(vec : integer_vector) return integer;  -- Calculates: max(vec) for a integer vector
+	function imax(vec : natural_vector) return natural;  -- Calculates: max(vec) for a natural vector
+	function imax(vec : positive_vector) return positive; -- Calculates: max(vec) for a positive vector
+	function rmax(vec : real_vector) return real;    -- Calculates: max(vec) of real vector
 
-	function isum(vec : T_NATVEC) return natural;  -- Calculates: sum(vec) for a natural vector
-	function isum(vec : T_POSVEC) return natural;  -- Calculates: sum(vec) for a positive vector
-	function isum(vec : T_INTVEC) return integer;  -- Calculates: sum(vec) of integer vector
-	function rsum(vec : T_REALVEC) return real;    -- Calculates: sum(vec) of real vector
+	function isum(vec : natural_vector) return natural;  -- Calculates: sum(vec) for a natural vector
+	function isum(vec : positive_vector) return natural;  -- Calculates: sum(vec) for a positive vector
+	function isum(vec : integer_vector) return integer;  -- Calculates: sum(vec) of integer vector
+	function rsum(vec : real_vector) return real;    -- Calculates: sum(vec) of real vector
 
 	--+ Find index in array +++++++++++++++++++++++++++++++++++++++++++++++++++
-	function indexof(vec : T_INTVEC;  comp : integer;  falseNum : integer := -1) return integer;
-	function indexof(vec : T_NATVEC;  comp : natural;  falseNum : integer := -1) return integer;
-	function indexof(vec : T_POSVEC;  comp : positive; falseNum : integer := -1) return integer;
-	function indexof(vec : T_REALVEC; comp : real;     falseNum : integer := -1; epsilon : real := 1.0E-6) return integer;
+	function indexof(vec : integer_vector;  comp : integer;  falseNum : integer := -1) return integer;
+	function indexof(vec : natural_vector;  comp : natural;  falseNum : integer := -1) return integer;
+	function indexof(vec : positive_vector;  comp : positive; falseNum : integer := -1) return integer;
+	function indexof(vec : real_vector; comp : real;     falseNum : integer := -1; epsilon : real := 1.0E-6) return integer;
 
 	--+ Conversions ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -352,13 +347,10 @@ package body utils is
 	function is_simulation return boolean is
 		variable temp : boolean := false;
 	begin
-		-- WORKAROUND: for Xilinx ISE
-		--    Version:    all versions with enabled 'use_new_parser' option
-		--    Issue:      Is_X('X') does not evaluate to TRUE in synthesis
-		--    Solution:   Use '--synthesis translate_on/off' pragmas
 		--synthesis translate_off
 		temp := true;
 		--synthesis translate_on
+
 		return temp;
 	end function;
 
@@ -367,7 +359,7 @@ package body utils is
 
 	-- Vector Opperations
 	-- ===========================================================================
-	function "/"(vec : T_INTVEC; int : integer) return T_INTVEC is
+	function "/"(vec : integer_vector; int : integer) return integer_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -376,7 +368,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "*"(vec : T_INTVEC; int : integer) return T_INTVEC is
+	function "*"(vec : integer_vector; int : integer) return integer_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -385,7 +377,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "-"(vec : T_INTVEC; int : integer) return T_INTVEC is
+	function "-"(vec : integer_vector; int : integer) return integer_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -394,7 +386,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "+"(vec : T_INTVEC; int : integer) return T_INTVEC is
+	function "+"(vec : integer_vector; int : integer) return integer_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -403,7 +395,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "/"(vec : T_NATVEC; int : positive) return T_NATVEC is
+	function "/"(vec : natural_vector; int : positive) return natural_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -412,7 +404,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "*"(vec : T_NATVEC; int : natural) return T_NATVEC is
+	function "*"(vec : natural_vector; int : natural) return natural_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -421,7 +413,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "-"(vec : T_NATVEC; int : integer) return T_NATVEC is
+	function "-"(vec : natural_vector; int : integer) return natural_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -430,7 +422,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "+"(vec : T_NATVEC; int : integer) return T_NATVEC is
+	function "+"(vec : natural_vector; int : integer) return natural_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -439,7 +431,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "/"(vec : T_POSVEC; int : positive) return T_POSVEC is
+	function "/"(vec : positive_vector; int : positive) return positive_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -448,7 +440,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "*"(vec : T_POSVEC; int : positive) return T_POSVEC is
+	function "*"(vec : positive_vector; int : positive) return positive_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -457,7 +449,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "-"(vec : T_POSVEC; int : integer) return T_POSVEC is
+	function "-"(vec : positive_vector; int : integer) return positive_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -466,7 +458,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "+"(vec : T_POSVEC; int : integer) return T_POSVEC is
+	function "+"(vec : positive_vector; int : integer) return positive_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -475,7 +467,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "/"(vec : T_REALVEC; int : real) return T_REALVEC is
+	function "/"(vec : real_vector; int : real) return real_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -484,7 +476,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "*"(vec : T_REALVEC; int : real) return T_REALVEC is
+	function "*"(vec : real_vector; int : real) return real_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -493,7 +485,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "-"(vec : T_REALVEC; int : real) return T_REALVEC is
+	function "-"(vec : real_vector; int : real) return real_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -502,7 +494,7 @@ package body utils is
 		return result;
 	end function;
 
-	function "+"(vec : T_REALVEC; int : real) return T_REALVEC is
+	function "+"(vec : real_vector; int : real) return real_vector is
 		variable result : vec'subtype;
 	begin
 		for i in vec'range loop
@@ -512,8 +504,8 @@ package body utils is
 	end function;
 
 
-	function remove_zero(vec : T_NATVEC) return T_POSVEC is
-		variable temp : T_POSVEC(0 to vec'high);
+	function remove_zero(vec : natural_vector) return positive_vector is
+		variable temp : positive_vector(0 to vec'high);
 		variable pos  : natural := 0;
 	begin
 		for i in 0 to vec'length -1 loop
@@ -526,8 +518,8 @@ package body utils is
 		return temp(0 to pos -1);
 	end function;
 
-	function remove_zero(vec : T_POSVEC) return T_POSVEC is
-		variable temp : T_POSVEC(0 to vec'high);
+	function remove_zero(vec : positive_vector) return positive_vector is
+		variable temp : positive_vector(0 to vec'high);
 		variable pos  : natural := 0;
 	begin
 		for i in 0 to vec'length -1 loop
@@ -540,8 +532,8 @@ package body utils is
 		return temp(0 to pos -1);
 	end function;
 
-	function remove_zero(vec : T_NATVEC) return T_NATVEC is
-		variable temp : T_NATVEC(0 to vec'high);
+	function remove_zero(vec : natural_vector) return natural_vector is
+		variable temp : natural_vector(0 to vec'high);
 		variable pos  : natural := 0;
 	begin
 		for i in 0 to vec'length -1 loop
@@ -554,8 +546,8 @@ package body utils is
 		return temp(0 to pos -1);
 	end function;
 
-	function remove_zero(vec : T_POSVEC) return T_NATVEC is
-		variable temp : T_NATVEC(0 to vec'high);
+	function remove_zero(vec : positive_vector) return natural_vector is
+		variable temp : natural_vector(0 to vec'high);
 		variable pos  : natural := 0;
 	begin
 		for i in 0 to vec'length -1 loop
@@ -912,13 +904,7 @@ package body utils is
 		end if;
 	end function;
 
-	-- function rmin(arg1 : real; arg2 : real) return real is
-	-- begin
-		-- if arg1 < arg2 then return arg1; end if;
-		-- return arg2;
-	-- end function;
-
-	function imin(vec : T_INTVEC) return integer is
+	function imin(vec : integer_vector) return integer is
 		variable result : integer;
 	begin
 		result := integer'high;
@@ -930,7 +916,7 @@ package body utils is
 		return result;
 	end function;
 
-	function imin(vec : T_NATVEC) return natural is
+	function imin(vec : natural_vector) return natural is
 		variable result : natural;
 	begin
 		result := natural'high;
@@ -942,7 +928,7 @@ package body utils is
 		return result;
 	end function;
 
-	function imin(vec : T_POSVEC) return positive is
+	function imin(vec : positive_vector) return positive is
 		variable result : positive;
 	begin
 		result := positive'high;
@@ -954,7 +940,7 @@ package body utils is
 		return result;
 	end function;
 
-	function rmin(vec : T_REALVEC) return real is
+	function rmin(vec : real_vector) return real is
 		variable  result : real;
 	begin
 		result := real'high;
@@ -972,13 +958,7 @@ package body utils is
 		return arg2;
 	end function;
 
-	-- function rmax(arg1 : real; arg2 : real) return real is
-	-- begin
-		-- if arg1 > arg2 then return arg1; end if;
-		-- return arg2;
-	-- end function;
-
-	function imax(vec : T_INTVEC) return integer is
+	function imax(vec : integer_vector) return integer is
 		variable result : integer;
 	begin
 		result := integer'low;
@@ -990,7 +970,7 @@ package body utils is
 		return result;
 	end function;
 
-	function imax(vec : T_NATVEC) return natural is
+	function imax(vec : natural_vector) return natural is
 		variable result : natural;
 	begin
 		result := natural'low;
@@ -1002,7 +982,7 @@ package body utils is
 		return result;
 	end function;
 
-	function imax(vec : T_POSVEC) return positive is
+	function imax(vec : positive_vector) return positive is
 		variable result : positive;
 	begin
 		result := positive'low;
@@ -1014,7 +994,7 @@ package body utils is
 		return result;
 	end function;
 
-	function rmax(vec : T_REALVEC) return real is
+	function rmax(vec : real_vector) return real is
 		variable  result : real;
 	begin
 		result := real'low;
@@ -1026,7 +1006,7 @@ package body utils is
 		return  result;
 	end function;
 
-	function isum(vec : T_INTVEC) return integer is
+	function isum(vec : integer_vector) return integer is
 		variable  result : integer;
 	begin
 		result := 0;
@@ -1036,7 +1016,7 @@ package body utils is
 		return  result;
 	end function;
 
-	function isum(vec : T_NATVEC) return natural is
+	function isum(vec : natural_vector) return natural is
 		variable result : natural;
 	begin
 		result := 0;
@@ -1046,7 +1026,7 @@ package body utils is
 		return result;
 	end function;
 
-	function isum(vec : T_POSVEC) return natural is
+	function isum(vec : positive_vector) return natural is
 		variable result : natural;
 	begin
 		result := 0;
@@ -1056,7 +1036,7 @@ package body utils is
 		return result;
 	end function;
 
-	function rsum(vec : T_REALVEC) return real is
+	function rsum(vec : real_vector) return real is
 		variable  result : real;
 	begin
 		result := 0.0;
@@ -1068,46 +1048,46 @@ package body utils is
 
 	-- Find Index in array
 	--=============================================================================
-	function indexof(vec : T_NATVEC; comp : natural; falseNum : integer := -1) return integer is
+	function indexof(vec : natural_vector; comp : natural; falseNum : integer := -1) return integer is
 	begin
-	for i in vec'range loop
-		if vec(i) = comp then
-		return i;
-		end if;
-	end loop;
-	return falseNum;
+		for i in vec'range loop
+			if vec(i) = comp then
+			return i;
+			end if;
+		end loop;
+		return falseNum;
 	end function;
 
-	function indexof(vec : T_INTVEC; comp : integer; falseNum : integer := -1) return integer is
+	function indexof(vec : integer_vector; comp : integer; falseNum : integer := -1) return integer is
 	begin
-	for i in vec'range loop
-		if vec(i) = comp then
-		return i;
-		end if;
-	end loop;
-	return falseNum;
+		for i in vec'range loop
+			if vec(i) = comp then
+			return i;
+			end if;
+		end loop;
+		return falseNum;
 	end function;
 
-	function indexof(vec : T_POSVEC; comp : positive; falseNum : integer := -1) return integer is
+	function indexof(vec : positive_vector; comp : positive; falseNum : integer := -1) return integer is
 	begin
-	for i in vec'range loop
-		if vec(i) = comp then
-		return i;
-		end if;
-	end loop;
-	return falseNum;
+		for i in vec'range loop
+			if vec(i) = comp then
+			return i;
+			end if;
+		end loop;
+		return falseNum;
 	end function;
 
-	function indexof(vec : T_REALVEC; comp : real; falseNum : integer := -1; epsilon : real := 1.0E-6) return integer is
-	constant upper : real := comp + (comp * epsilon);
-	constant lower : real := comp - (comp * epsilon);
+	function indexof(vec : real_vector; comp : real; falseNum : integer := -1; epsilon : real := 1.0E-6) return integer is
+		constant upper : real := comp + (comp * epsilon);
+		constant lower : real := comp - (comp * epsilon);
 	begin
-	for i in vec'range loop
-		if (vec(i) >= lower) and (vec(i) <= upper) then
-		return i;
-		end if;
-	end loop;
-	return falseNum;
+		for i in vec'range loop
+			if (vec(i) >= lower) and (vec(i) <= upper) then
+			return i;
+			end if;
+		end loop;
+		return falseNum;
 	end function;
 
 	-- Vector aggregate functions: slv_*
@@ -1152,7 +1132,7 @@ package body utils is
 		return  res;
 	end function;
 
-	--Example from: https://riptutorial.com/vhdl/example/32304/computing-the-hamming-weight-of-a-vector
+	-- Example from: https://riptutorial.com/vhdl/example/32304/computing-the-hamming-weight-of-a-vector
 	function hammingWeight(v: std_logic_vector) return natural is
 		constant size: natural := v'length;
 		constant vv: std_logic_vector(size - 1 downto 0) := v;
@@ -1650,7 +1630,7 @@ package body utils is
 
 	function movez(vec : std_logic_vector) return std_logic_vector is
 	begin
-	return  move(vec, -vec'low);
+		return move(vec, -vec'low);
 	end function;
 
 	function ascend(vec : std_logic_vector) return std_logic_vector is
@@ -1661,10 +1641,9 @@ package body utils is
 	end function;
 
 	function descend(vec : std_logic_vector) return std_logic_vector is
-		variable  res : std_logic_vector(vec'high downto vec'low);
+		variable res : std_logic_vector(vec'high downto vec'low);
 	begin
 		res := vec;
 		return res;
 	end function;
-
 end package body;

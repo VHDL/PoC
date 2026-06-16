@@ -5,11 +5,11 @@
 -- ============================================================================
 -- Authors:         Martin Zabel
 --
--- Testbench:       Testbench for cache_cpu.
+-- Testbench:       Testbench for cache_CPU.
 --
 -- Description:
 -- ------------------------------------
--- Test cache_cpu using two memories. One connected behind the cache, and one
+-- Test cache_CPU using two memories. One connected behind the cache, and one
 -- directly attached to the CPU. The CPU compares the result of read requests
 -- issued to the cache with the result from the direct attached memory.
 --
@@ -20,13 +20,13 @@
 -- License:
 -- ============================================================================
 -- Copyright 2016-2016 Technische Universitaet Dresden - Germany,
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,18 +35,18 @@
 -- limitations under the License.
 -- ============================================================================
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.math_real.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
+use     IEEE.math_real.all;
 
 library poc;
-use poc.utils.all;
-use poc.physical.all;
+use     poc.utils.all;
+use     poc.physical.all;
 -- simulation only packages
-use poc.sim_types.all;
-use poc.simulation.all;
-use poc.waveform.all;
+use     poc.sim_types.all;
+use     poc.simulation.all;
+use     poc.waveform.all;
 
 entity cache_cpu_tb is
 end entity cache_cpu_tb;
@@ -55,13 +55,13 @@ architecture sim of cache_cpu_tb is
 	constant CLOCK_FREQ : FREQ := 100 MHz;
 
 	-- Cache configuration
-  constant REPLACEMENT_POLICY : string   := "LRU";
-  constant CACHE_LINES        : positive := 32;
-  constant ASSOCIATIVITY      : positive := 4;
+	constant REPLACEMENT_POLICY : string   := "LRU";
+	constant CACHE_LINES        : positive := 32;
+	constant ASSOCIATIVITY      : positive := 4;
 
 	-- Memory configuration
-  constant MEM_ADDR_BITS      : positive := 6;
-  constant MEM_DATA_BITS      : positive := 128;
+	constant MEM_ADDR_BITS      : positive := 6;
+	constant MEM_DATA_BITS      : positive := 128;
 
 	-- NOTE:
 	-- Memory accesses are always aligned to a word boundary. Each memory word
@@ -72,8 +72,8 @@ architecture sim of cache_cpu_tb is
 	-- * memory address 1 selects the bits 128..256 in memory, and so on.
 
 	-- CPU configuration
-  constant CPU_DATA_BITS      : positive := 32;
-  constant CPU_ADDR_BITS      : positive := log2ceil(MEM_DATA_BITS/CPU_DATA_BITS)+MEM_ADDR_BITS;
+	constant CPU_DATA_BITS      : positive := 32;
+	constant CPU_ADDR_BITS      : positive := log2ceil(MEM_DATA_BITS/CPU_DATA_BITS)+MEM_ADDR_BITS;
 	constant MEMORY_WORDS       : positive := 2**CPU_ADDR_BITS;
 	constant BYTES_PER_WORD     : positive := CPU_DATA_BITS/8;
 
@@ -89,39 +89,39 @@ architecture sim of cache_cpu_tb is
 	-- * CPU address 5 selects the bits  32.. 63 in memory word 1, and so on.
 
 	-- Global signals
-  signal clk : std_logic := '1';
-  signal rst : std_logic;
+	signal clk : std_logic := '1';
+	signal rst : std_logic;
 
 	-- Request from CPU
-  signal cpu_req   : std_logic;
-  signal cpu_write : std_logic;
-  signal cpu_addr  : unsigned(CPU_ADDR_BITS-1 downto 0);
-  signal cpu_wdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
-  signal cpu_wmask : std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
+	signal cpu_req   : std_logic;
+	signal cpu_write : std_logic;
+	signal cpu_addr  : unsigned(CPU_ADDR_BITS-1 downto 0);
+	signal cpu_wdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
+	signal cpu_wmask : std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
 	signal cpu_got   : std_logic;
 
 	-- Bus between CPU and Cache
 	-- write / addr / wdata are directly connected to the CPU
-  signal cache_req   : std_logic;
-  signal cache_rstb  : std_logic;
-  signal cache_rdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
+	signal cache_req   : std_logic;
+	signal cache_rstb  : std_logic;
+	signal cache_rdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 
 	-- Bus between Cache and 1st Memory
-  signal mem1_req   : std_logic;
-  signal mem1_write : std_logic;
-  signal mem1_addr  : unsigned(MEM_ADDR_BITS-1 downto 0);
-  signal mem1_wdata : std_logic_vector(MEM_DATA_BITS-1 downto 0);
-  signal mem1_wmask : std_logic_vector(MEM_DATA_BITS/8-1 downto 0);
-  signal mem1_rdy   : std_logic;
-  signal mem1_rstb  : std_logic;
-  signal mem1_rdata : std_logic_vector(MEM_DATA_BITS-1 downto 0);
+	signal mem1_req   : std_logic;
+	signal mem1_write : std_logic;
+	signal mem1_addr  : unsigned(MEM_ADDR_BITS-1 downto 0);
+	signal mem1_wdata : std_logic_vector(MEM_DATA_BITS-1 downto 0);
+	signal mem1_wmask : std_logic_vector(MEM_DATA_BITS/8-1 downto 0);
+	signal mem1_rdy   : std_logic;
+	signal mem1_rstb  : std_logic;
+	signal mem1_rdata : std_logic_vector(MEM_DATA_BITS-1 downto 0);
 
 	-- Bus between CPU and 2nd Memory
 	-- write / addr / wdata are directly connected to the CPU
-  signal mem2_req   : std_logic;
-  signal mem2_rdy   : std_logic;
-  signal mem2_rstb  : std_logic;
-  signal mem2_rdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
+	signal mem2_req   : std_logic;
+	signal mem2_rdy   : std_logic;
+	signal mem2_rstb  : std_logic;
+	signal mem2_rdata : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 
 	-- Write-Data Generator
 	signal wdata_got : std_logic;
@@ -137,7 +137,7 @@ begin
 	simGenerateClock(clk, CLOCK_FREQ);
 
 	-- The Cache
-	UUT: entity poc.cache_cpu
+	UUT: entity poc.cache_CPU
 		generic map (
 			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 			CACHE_LINES        => CACHE_LINES,
@@ -173,8 +173,8 @@ begin
 	-- The 1st Memory
 	memory1: entity work.mem_model
 		generic map (
-			A_BITS	=> MEM_ADDR_BITS,
-			D_BITS	=> MEM_DATA_BITS)
+			A_BITS  => MEM_ADDR_BITS,
+			D_BITS  => MEM_DATA_BITS)
 		port map (
 			clk       => clk,
 			rst       => rst,
@@ -190,8 +190,8 @@ begin
 	-- The 2nd Memory
 	memory2: entity work.mem_model
 		generic map (
-			A_BITS	=> CPU_ADDR_BITS,
-			D_BITS	=> CPU_DATA_BITS)
+			A_BITS  => CPU_ADDR_BITS,
+			D_BITS  => CPU_DATA_BITS)
 		port map (
 			clk       => clk,
 			rst       => rst,
@@ -208,20 +208,20 @@ begin
 	mem2_req <= cpu_got;
 
 	-- The Write-Data Generator of the CPU
-	wdata_prng: entity poc.arith_prng
-    generic map (BITS => CPU_DATA_BITS)
-    port map (
-      clk => clk,
-      rst => rst,
-      got => wdata_got,
-      val => wdata_val);
+	wdata_prng: entity poc.arith_PRNG
+		generic map (BITS => CPU_DATA_BITS)
+		port map (
+			clk => clk,
+			rst => rst,
+			got => wdata_got,
+			val => wdata_val);
 
 	cpu_wdata <= wdata_val when cpu_write = '1' else (others => '-');
 	wdata_got <= cpu_write and cpu_got and mem2_rdy;
 
 	-- The Request Generator of the CPU
-  CPU_RequestGen: process
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("CPU RequestGen");
+	CPU_RequestGen: process
+		constant simProcessID  : T_SIM_PROCESS_ID := simRegisterProcess("CPU RequestGen");
 
 		-- no operation
 		procedure nop is
@@ -236,8 +236,8 @@ begin
 		-- Write random data at given word address.
 		-- Waits until cache and 2nd memory are ready.
 		procedure write(
-			addr       : in natural;
-			wmask      : in std_logic_vector(BYTES_PER_WORD-1 downto 0) := (others => '0')
+			addr       : in  natural;
+			wmask      : in  std_logic_vector(BYTES_PER_WORD-1 downto 0) := (others => '0')
 		) is
 		begin
 			-- apply request (will be ignored if not ready)
@@ -254,8 +254,8 @@ begin
 		-- Write single byte of random data at given word address.
 		-- Waits until cache and 2nd memory are ready.
 		procedure write_byte(
-			word_addr  : in natural;
-			byte_addr  : in natural range 0 to BYTES_PER_WORD-1
+			word_addr  : in  natural;
+			byte_addr  : in  natural range 0 to BYTES_PER_WORD-1
 		) is
 			variable mask : std_logic_vector(BYTES_PER_WORD-1 downto 0);
 		begin
@@ -266,7 +266,7 @@ begin
 
 		-- Read at given word address.
 		-- Waits until cache and 2nd memory are ready.
-		procedure read(addr : in natural) is
+		procedure read(addr : in  natural) is
 		begin
 			-- apply request (will be ignored if not ready)
 			cpu_req   <= '1';
@@ -286,11 +286,11 @@ begin
 		variable temp_r : real;
 		variable temp_r2: real;
 
-  begin
+	begin
 		-- Reset is mandatory
-    rst <= '1';
-    wait until rising_edge(clk);
-    rst <= '0';
+		rst <= '1';
+		wait until rising_edge(clk);
+		rst <= '0';
 
 		-- Check No Operation
 		-- --------------------------------------------
@@ -412,12 +412,12 @@ begin
 		nop;
 		finished  <= true;
 		simDeactivateProcess(simProcessID);
-    wait;
-  end process CPU_RequestGen;
+		wait;
+	end process CPU_RequestGen;
 
 	-- The Checker of the CPU
 	CPU_Checker: process
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("CPU Checker");
+		constant simProcessID  : T_SIM_PROCESS_ID := simRegisterProcess("CPU Checker");
 		variable saved_rdata  : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 	begin
 		-- wait until reset completes

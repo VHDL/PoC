@@ -1,4 +1,4 @@
-.. _IP/cache_cpu:
+.. _IP/cache_CPU:
 
 PoC.cache.cpu
 #############
@@ -7,7 +7,7 @@ PoC.cache.cpu
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_cpu.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_CPU.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.cache.cpu
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <cache/cache_cpu.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <cache/cache_CPU.vhdl>`
       * |gh-tb| :poctb:`Testbench <cache/cache_cpu_tb.vhdl>`
 
 This unit provides a cache (:ref:`IP/cache_par2`) together
@@ -53,7 +53,7 @@ directly fed by the address caculator. But be aware of the high setup time
 of this unit and high propate time for ``cpu_got``.
 
 This unit supports only one outstanding CPU request. More outstanding
-requests are provided by :ref:`IP/cache_mem`.
+requests are provided by :ref:`IP/cache_Mem`.
 
 
 Configuration
@@ -159,7 +159,7 @@ cycles and acknowledged when the data has been issued to the memory.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/cache/cache_cpu.vhdl
+.. literalinclude:: ../../../src/cache/cache_CPU.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -167,10 +167,10 @@ cycles and acknowledged when the data has been issued to the memory.
 
 .. seealso::
 
-     :ref:`IP/cache_mem`
+     :ref:`IP/cache_Mem`
 
 
 
 .. only:: latex
 
-   Source file: :pocsrc:`cache/cache_cpu.vhdl <cache/cache_cpu.vhdl>`
+   Source file: :pocsrc:`cache/cache_CPU.vhdl <cache/cache_CPU.vhdl>`

@@ -1,7 +1,7 @@
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:           Patrick Lehmann
 --
--- Entity:				 	A generic buffer module for the PoC.Stream protocol.
+-- Entity:           A generic buffer module for the PoC.Stream protocol.
 --
 -- Description:
 -- -------------------------------------
@@ -11,13 +11,13 @@
 -- =============================================================================
 -- Copyright 2025      The PoC-Library Authors
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,8 +27,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.vectors.all;
@@ -38,46 +38,46 @@ use     work.stream.all;
 
 entity stream_Source is
 	generic (
-		TESTCASES					: T_SIM_STREAM_FRAMEGROUP_VECTOR_8
+		TESTCASES          : T_SIM_STREAM_FRAMEGROUP_VECTOR_8
 	);
 	port (
-		Clock							: in	std_logic;
-		Reset							: in	std_logic;
+		Clock              : in  std_logic;
+		Reset              : in  std_logic;
 		-- Control interface
-		Enable						: in	std_logic;
+		Enable            : in  std_logic;
 		-- OUT Port
-		Out_Valid					: out	std_logic;
-		Out_Data					: out	T_SLV_8;
-		Out_SOF						: out	std_logic;
-		Out_EOF						: out	std_logic;
-		Out_Ack						: in	std_logic
+		Out_Valid          : out std_logic;
+		Out_Data          : out T_SLV_8;
+		Out_SOF            : out std_logic;
+		Out_EOF            : out std_logic;
+		Out_Ack            : in  std_logic
 	);
 end entity;
 
 
 architecture rtl of stream_Source is
-	constant MAX_CYCLES											: natural																			:= 10 * 1000;
-	constant MAX_ERRORS											: natural																			:=				50;
+	constant MAX_CYCLES                      : natural                                      := 10 * 1000;
+	constant MAX_ERRORS                      : natural                                      :=        50;
 
 	-- dummy signals for iSIM
-	signal FrameGroupNumber_us		: unsigned(log2ceilnz(TESTCASES'length) - 1 downto 0)		:= (others => '0');
+	signal FrameGroupNumber_us    : unsigned(log2ceilnz(TESTCASES'length) - 1 downto 0)    := (others => '0');
 begin
 
 	process
-		variable Cycles							: natural			:= 0;
-		variable Errors							: natural			:= 0;
+		variable Cycles              : natural      := 0;
+		variable Errors              : natural      := 0;
 
-		variable FrameGroupNumber		: natural			:= 0;
+		variable FrameGroupNumber    : natural      := 0;
 
-		variable WordIndex					: natural			:= 0;
-		variable CurFG							: T_SIM_STREAM_FRAMEGROUP_8;
+		variable WordIndex          : natural      := 0;
+		variable CurFG              : T_SIM_STREAM_FRAMEGROUP_8;
 
 	begin
 		-- set interface to default values
-		Out_Valid					<= '0';
-		Out_Data					<= (others => 'U');
-		Out_SOF						<= '0';
-		Out_EOF						<= '0';
+		Out_Valid          <= '0';
+		Out_Data          <= (others => 'U');
+		Out_SOF            <= '0';
+		Out_EOF            <= '0';
 
 		-- wait for global enable signal
 		wait until (Enable = '1');
@@ -88,42 +88,42 @@ begin
 		-- for each testcase in list
 		for TestcaseIndex in 0 to TESTCASES'length - 1 loop
 			-- initialize per loop
-			Cycles	:= 0;
-			Errors	:= 0;
-			CurFG		:= TESTCASES(TestcaseIndex);
+			Cycles  := 0;
+			Errors  := 0;
+			CurFG    := TESTCASES(TestcaseIndex);
 
 			-- continue with next frame if current is disabled
 			assert FALSE report "active=" & to_string(CurFG.Active) severity WARNING;
 			next when CurFG.Active = FALSE;
 
 			-- write dummy signals for iSIM
-			FrameGroupNumber			:= TestcaseIndex;
-			FrameGroupNumber_us		<= to_unsigned(FrameGroupNumber, FrameGroupNumber_us'length);
+			FrameGroupNumber      := TestcaseIndex;
+			FrameGroupNumber_us    <= to_unsigned(FrameGroupNumber, FrameGroupNumber_us'length);
 
 			-- PrePause
 			for i in 1 to CurFG.PrePause loop
 				wait until rising_edge(Clock);
 			end loop;
 
-			WordIndex							:= 0;
+			WordIndex              := 0;
 
 			-- infinite loop
 			loop
 				-- check for to many simulation cycles
 				assert (Cycles < MAX_CYCLES) report "MAX_CYCLES reached:  framegroup=" & integer'image(to_integer(FrameGroupNumber_us)) severity FAILURE;
---				assert (Errors < MAX_ERRORS) report "MAX_ERRORS reached" severity FAILURE;
+--        assert (Errors < MAX_ERRORS) report "MAX_ERRORS reached" severity FAILURE;
 				Cycles := Cycles + 1;
 
 				wait until rising_edge(Clock);
 				-- write frame data to interface
-				Out_Valid					<= CurFG.Data(WordIndex).Valid;
-				Out_Data					<= CurFG.Data(WordIndex).Data;
-				Out_SOF						<= CurFG.Data(WordIndex).SOF;
-				Out_EOF						<= CurFG.Data(WordIndex).EOF;
+				Out_Valid          <= CurFG.Data(WordIndex).Valid;
+				Out_Data          <= CurFG.Data(WordIndex).Data;
+				Out_SOF            <= CurFG.Data(WordIndex).SOF;
+				Out_EOF            <= CurFG.Data(WordIndex).EOF;
 
 				wait until falling_edge(Clock);
 				-- go to next word if interface counterpart has accepted the current word
-				if (Out_Ack	 = '1') then
+				if (Out_Ack   = '1') then
 					WordIndex := WordIndex + 1;
 				end if;
 
@@ -142,10 +142,10 @@ begin
 
 		-- set interface to default values
 		wait until rising_edge(Clock);
-		Out_Valid					<= '0';
-		Out_Data					<= (others => 'U');
-		Out_SOF						<= '0';
-		Out_EOF						<= '0';
+		Out_Valid          <= '0';
+		Out_Data          <= (others => 'U');
+		Out_SOF            <= '0';
+		Out_EOF            <= '0';
 	end process;
 
 end architecture;

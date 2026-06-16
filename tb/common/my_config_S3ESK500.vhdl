@@ -3,17 +3,17 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- =============================================================================
--- Package:					Project specific configuration.
+-- Package:          Project specific configuration.
 --
 -- Authors:         Thomas B. Preusser
 --                  Martin Zabel
 --                  Patrick Lehmann
 --
--- Package:					Project specific configuration.
+-- Package:          Project specific configuration.
 --
 -- Description:
 -- ------------
---		This file was created from the template file:
+--    This file was created from the template file:
 --
 --           <PoCRoot>/src/common/my_config.template.vhdl
 --
@@ -25,7 +25,7 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -42,10 +42,10 @@
 
 
 package my_config is
-  -- Change these lines to setup configuration.
-  constant MY_BOARD   : string := "S3ESK500"; -- Spartan-3E Starter Kit
-  constant MY_DEVICE  : string := "None";
+	-- Change these lines to setup configuration.
+	constant MY_BOARD   : string := "S3ESK500"; -- Spartan-3E Starter Kit
+	constant MY_DEVICE  : string := "None";
 
 	-- For internal use only
-  constant MY_VERBOSE : boolean	:= true;
+	constant MY_VERBOSE : boolean  := true;
 end package;

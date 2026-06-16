@@ -1,4 +1,4 @@
-.. _IP/uart_rx:
+.. _IP/uart_RX:
 
 PoC.io.uart.rx
 ##############
@@ -7,7 +7,7 @@ PoC.io.uart.rx
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/uart/uart_rx.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/uart/uart_RX.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.io.uart.rx
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <io/uart/uart_rx.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <io/uart/uart_RX.vhdl>`
       * |gh-tb| :poctb:`Testbench <io/uart/uart_rx_tb.vhdl>`
 
 :abbr:`UART (Universal Asynchronous Receiver Transmitter)` Receiver:
@@ -26,7 +26,7 @@ PoC.io.uart.rx
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/io/uart/uart_rx.vhdl
+.. literalinclude:: ../../../../src/io/uart/uart_RX.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -36,4 +36,4 @@ PoC.io.uart.rx
 
 .. only:: latex
 
-   Source file: :pocsrc:`io/uart/uart_rx.vhdl <io/uart/uart_rx.vhdl>`
+   Source file: :pocsrc:`io/uart/uart_RX.vhdl <io/uart/uart_RX.vhdl>`

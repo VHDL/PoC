@@ -7,15 +7,15 @@ These are gearbox entities....
 
 **Entities**
 
- * :ref:`IP/gearbox_down_cc`
- * :ref:`IP/gearbox_down_dc`
- * :ref:`IP/gearbox_up_cc`
- * :ref:`IP/gearbox_up_dc`
+ * :ref:`IP/gearbox_Down_cc`
+ * :ref:`IP/gearbox_Down_dc`
+ * :ref:`IP/gearbox_Up_cc`
+ * :ref:`IP/gearbox_Up_dc`
 
 .. toctree::
    :hidden:
 
-   gearbox_down_cc <gearbox_down_cc>
-   gearbox_down_dc <gearbox_down_dc>
-   gearbox_up_cc <gearbox_up_cc>
-   gearbox_up_dc <gearbox_up_dc>
+   gearbox_Down_cc <gearbox_Down_cc>
+   gearbox_Down_dc <gearbox_Down_dc>
+   gearbox_Up_cc <gearbox_Up_cc>
+   gearbox_Up_dc <gearbox_Up_dc>

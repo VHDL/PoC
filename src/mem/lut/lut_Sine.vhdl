@@ -1,7 +1,7 @@
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:           Patrick Lehmann
 --
--- Entity:				 	TODO
+-- Entity:           TODO
 --
 -- Description:
 -- -------------------------------------
@@ -10,13 +10,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,18 +35,19 @@ use     work.strings.all;
 
 entity lut_Sine is
 	generic (
-		REG_OUTPUT    : boolean  := TRUE;
+		OUTPUT_REG    : boolean  := TRUE;
 		MAX_AMPLITUDE : positive := 255;
 		POINTS        : positive := 4096;
 		OFFSET_DEG    : REAL     := 0.0;
 		QUARTERS      : positive := 4
 	);
 	port (
-		Clock  : in std_logic;
-		Input  : in std_logic_vector(log2ceilnz(POINTS) - 1 downto 0);
-		Output : out std_logic_vector(log2ceilnz(MAX_AMPLITUDE + ((QUARTERS - 1) / 2)) downto 0)
+		Clock  : in  std_logic;
+		Input  : in  std_logic_vector(log2ceilnz(POINTS) - 1 downto 0);                            -- XXX: unsigned (offset?)
+		Output : out std_logic_vector(log2ceilnz(MAX_AMPLITUDE + ((QUARTERS - 1) / 2)) downto 0)  -- XXX: unsigned (negative?)
 	);
 end entity;
+
 architecture rtl of lut_Sine is
 	signal Output_nxt : std_logic_vector(Output'range);
 begin
@@ -77,7 +78,7 @@ begin
 
 		Output_nxt <= std_logic_vector(to_unsigned(LUT(to_index(Input, LUT'length)), Output_nxt'length));
 	end generate;
-	
+
 	-- ===========================================================================
 	-- 2 Qudrant LUT
 	-- ===========================================================================
@@ -105,14 +106,14 @@ begin
 
 		Output_nxt <= std_logic_vector(to_unsigned(LUT(to_index(Input, LUT'length)), Output_nxt'length));
 	end generate;
-	
+
 	-- ===========================================================================
 	-- 3 Qudrant LUT -> ERROR
 	-- ===========================================================================
 	genQ13 : if QUARTERS = 3 generate
 		assert false report "QUARTERS=3 is not supported." severity FAILURE;
 	end generate;
-	
+
 	-- ===========================================================================
 	-- 4 Qudrant LUT
 	-- ===========================================================================
@@ -139,23 +140,23 @@ begin
 
 		Output_nxt <= std_logic_vector(to_signed(LUT(to_index(Input, LUT'length)), Output_nxt'length));
 	end generate;
-	
+
 	-- ===========================================================================
 	-- No output registers
 	-- ===========================================================================
-	genNoReg : if not REG_OUTPUT generate
+	genNoReg : if not OUTPUT_REG generate  -- FIXME: else generate
 	begin
 		Output <= Output_nxt;
 	end generate;
-	
+
 	-- ===========================================================================
 	-- Output registers
 	-- ===========================================================================
-	genReg : if REG_OUTPUT generate
+	genReg : if OUTPUT_REG generate
 		signal Output_d : std_logic_vector(Output'range) := (others => '0');
 	begin
 		Output_d <= Output_nxt when rising_edge(Clock);
 
 		Output <= Output_d;
 	end generate;
-end;
+end architecture;

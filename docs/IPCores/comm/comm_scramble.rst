@@ -1,4 +1,4 @@
-.. _IP/comm_scramble:
+.. _IP/comm_Scramble:
 
 PoC.comm.scramble
 #################
@@ -7,7 +7,7 @@ PoC.comm.scramble
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/comm/comm_scramble.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/comm/comm_Scramble.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.comm.scramble
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <comm/comm_scramble.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <comm/comm_Scramble.vhdl>`
       * |gh-tb| :poctb:`Testbench <comm/comm_scramble_tb.vhdl>`
 
 The LFSR computation is unrolled to generate an arbitrary number of mask
@@ -27,7 +27,7 @@ sequence is independent from the chosen output width.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/comm/comm_scramble.vhdl
+.. literalinclude:: ../../../src/comm/comm_Scramble.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -37,4 +37,4 @@ sequence is independent from the chosen output width.
 
 .. only:: latex
 
-   Source file: :pocsrc:`comm/comm_scramble.vhdl <comm/comm_scramble.vhdl>`
+   Source file: :pocsrc:`comm/comm_Scramble.vhdl <comm/comm_Scramble.vhdl>`

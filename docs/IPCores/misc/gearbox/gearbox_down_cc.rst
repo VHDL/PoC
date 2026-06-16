@@ -1,4 +1,4 @@
-.. _IP/gearbox_down_cc:
+.. _IP/gearbox_Down_cc:
 
 PoC.misc.gearbox.down_cc
 ########################
@@ -7,7 +7,7 @@ PoC.misc.gearbox.down_cc
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/gearbox/gearbox_down_cc.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/gearbox/gearbox_Down_cc.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.misc.gearbox.down_cc
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <misc/gearbox/gearbox_down_cc.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <misc/gearbox/gearbox_Down_cc.vhdl>`
       * |gh-tb| :poctb:`Testbench <misc/gearbox/gearbox_down_cc_tb.vhdl>`
 
 This module provides a downscaling gearbox with a common clock (cc)
@@ -29,7 +29,7 @@ can be added by enabling (ADD_***PUT_REGISTERS = TRUE).
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/misc/gearbox/gearbox_down_cc.vhdl
+.. literalinclude:: ../../../../src/misc/gearbox/gearbox_Down_cc.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -39,4 +39,4 @@ can be added by enabling (ADD_***PUT_REGISTERS = TRUE).
 
 .. only:: latex
 
-   Source file: :pocsrc:`misc/gearbox/gearbox_down_cc.vhdl <misc/gearbox/gearbox_down_cc.vhdl>`
+   Source file: :pocsrc:`misc/gearbox/gearbox_Down_cc.vhdl <misc/gearbox/gearbox_Down_cc.vhdl>`

@@ -27,8 +27,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 
 use     work.utils.all;
@@ -73,6 +73,6 @@ begin
 
 		Counter_ov <= Counter_s(Counter_s'high);
 
-		Output(i)     <= ffsr(q => Output(i),	rst => Counter_ov, set => Input(i)) when rising_edge(Clock);
+		Output(i)     <= ffsr(q => Output(i),  rst => Counter_ov, set => Input(i)) when rising_edge(Clock);
 	end generate;
 end architecture;

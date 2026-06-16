@@ -13,11 +13,11 @@ PoC.bus.axi4lite
 .. topic:: Entities
 
    * :ref:`IP/axi4lite_FIFO`
-   * :ref:`IP/axi4lite_FIFO_cdc`
+   * :ref:`IP/axi4lite_FIFO_CDC`
    * :ref:`IP/axi4lite_Register`
    * :ref:`IP/axi4lite_GitVersionRegister`
    * :ref:`IP/axi4lite_HighResolutionClock`
-   * :ref:`IP/axi4lite_Ocram_Adapter`
+   * :ref:`IP/axi4lite_OCRAM_Adapter`
    * :ref:`IP/axi4lite_UART`
 
 .. toctree::
@@ -26,9 +26,9 @@ PoC.bus.axi4lite
    axi4lite Package <axi4lite>
    axi4lite_OSVVM Package <axi4lite_OSVVM>
    FIFO <axi4lite_FIFO>
-   FIFO_cdc <axi4lite_FIFO_cdc>
+   FIFO_cdc <axi4lite_FIFO_CDC>
    Register <axi4lite_Register>
    GitVersionRegister <axi4lite_GitVersionRegister>
    HighResolutionClock <axi4lite_HighResolutionClock>
-   Ocram_Adapter <axi4lite_Ocram_Adapter>
+   Ocram_Adapter <axi4lite_OCRAM_Adapter>
    UART <axi4lite_UART>

@@ -66,21 +66,18 @@ global constants, which need to be adjusted:
 .. code-block:: VHDL
 
    constant MY_PROJECT_DIR      : string := "CHANGE THIS"; -- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
-   constant MY_OPERATING_SYSTEM : string := "CHANGE THIS"; -- e.g. "WINDOWS", "LINUX"
 
 **Example 1: A Windows System:**
 
 .. code-block:: VHDL
 
    constant MY_PROJECT_DIR      : string := "D:/git/GitHub/PoC/";
-   constant MY_OPERATING_SYSTEM : string := "WINDOWS";
 
 **Example 2: A Debian System:**
 
 .. code-block:: VHDL
 
    constant MY_PROJECT_DIR      : string := "/home/paebbels/git/GitHub/PoC/";
-   constant MY_OPERATING_SYSTEM : string := "LINUX";
 
 .. seealso::
    :doc:`Running one or more testbenches </UsingPoC/Simulation>`

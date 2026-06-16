@@ -1,4 +1,4 @@
-.. _IP/filter_mean:
+.. _IP/filter_Mean:
 
 PoC.misc.filter.mean
 ####################
@@ -7,7 +7,7 @@ PoC.misc.filter.mean
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/filter/filter_mean.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/filter/filter_Mean.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.misc.filter.mean
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <misc/filter/filter_mean.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <misc/filter/filter_Mean.vhdl>`
       * |gh-tb| :poctb:`Testbench <misc/filter/filter_mean_tb.vhdl>`
 
 .. TODO:: No documentation available.
@@ -25,7 +25,7 @@ PoC.misc.filter.mean
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/misc/filter/filter_mean.vhdl
+.. literalinclude:: ../../../../src/misc/filter/filter_Mean.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -35,4 +35,4 @@ PoC.misc.filter.mean
 
 .. only:: latex
 
-   Source file: :pocsrc:`misc/filter/filter_mean.vhdl <misc/filter/filter_mean.vhdl>`
+   Source file: :pocsrc:`misc/filter/filter_Mean.vhdl <misc/filter/filter_Mean.vhdl>`

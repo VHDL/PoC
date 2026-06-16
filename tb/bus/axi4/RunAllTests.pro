@@ -22,17 +22,5 @@
 # limitations under the License.
 # =============================================================================
 
-# TestSuite PoC.bus.axi4
-# Deactivated to avoid failure on non-existing testcases
-
-library tb_axi4
-
-include ./AXI4Lite/RunAllTests.pro
-
-#include ./AXI4Stream/Buffer/RunAllTests.pro
-#include ./AXI4Stream/Buffer_CDC/RunAllTests.pro
-#include ./AXI4Stream/DeMux/RunAllTests.pro
-#include ./AXI4Stream/Delay/RunAllTests.pro
-#include ./AXI4Stream/Splitter/RunAllTests.pro
-#include ./AXI4Stream/DestHandler/RunAllTests.pro
-#include ./AXI4Stream/Realign/RunAllTests.pro
+include ./DeMux/RunAllTests.pro
+include ./Mux/RunAllTests.pro

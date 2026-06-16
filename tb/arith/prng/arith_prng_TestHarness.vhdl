@@ -15,7 +15,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -74,10 +74,10 @@ begin
 		tpd         => 0 ns
 	);
 
-	DUT : entity PoC.arith_prng
+	DUT : entity PoC.arith_PRNG
 		generic map (
-			BITS		     => BITS,
-			SEED		     => SEED
+			BITS         => BITS,
+			SEED         => SEED
 		)
 		port map (
 			Clock        => Clock_100,

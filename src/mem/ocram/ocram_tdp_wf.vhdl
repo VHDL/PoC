@@ -1,8 +1,8 @@
 -- =============================================================================
--- Authors:				 	Martin Zabel
---									Patrick Lehmann
+-- Authors:           Martin Zabel
+--                  Patrick Lehmann
 --
--- Entity:				 	True dual-port memory with write-first behavior.
+-- Entity:           True dual-port memory with write-first behavior.
 --
 -- Description:
 -- -------------------------------------
@@ -49,13 +49,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2008-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -65,7 +65,7 @@
 -- =============================================================================
 
 
-library	IEEE;
+library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
@@ -78,21 +78,21 @@ use     work.mem.all;
 
 entity ocram_tdp_wf is
 	generic (
-		A_BITS		: positive;															-- number of address bits
-		D_BITS		: positive;															-- number of data bits
-		FILENAME	: string		:= ""												-- file-name for RAM initialization
+		A_BITS    : positive;                              -- number of address bits
+		D_BITS    : positive;                              -- number of data bits
+		FILENAME  : string    := ""                        -- file-name for RAM initialization
 	);
 	port (
-		clk : in	std_logic;															-- clock
-		ce 	: in	std_logic;															-- clock-enable
-		we1	: in	std_logic;															-- write-enable for 1st port
-		we2	: in	std_logic;															-- write-enable for 2nd port
-		a1	 : in	unsigned(A_BITS-1 downto 0);						-- address for 1st port
-		a2	 : in	unsigned(A_BITS-1 downto 0);						-- address for 2nd port
-		d1	 : in	std_logic_vector(D_BITS-1 downto 0);		-- write-data for 1st port
-		d2	 : in	std_logic_vector(D_BITS-1 downto 0);		-- write-data for 2nd port
-		q1	 : out std_logic_vector(D_BITS-1 downto 0);		-- read-data from 1st port
-		q2	 : out std_logic_vector(D_BITS-1 downto 0) 		-- read-data from 2nd port
+		clk : in  std_logic;                              -- clock
+		ce   : in  std_logic;                              -- clock-enable
+		we1  : in  std_logic;                              -- write-enable for 1st port
+		we2  : in  std_logic;                              -- write-enable for 2nd port
+		a1   : in  unsigned(A_BITS-1 downto 0);            -- address for 1st port
+		a2   : in  unsigned(A_BITS-1 downto 0);            -- address for 2nd port
+		d1   : in  std_logic_vector(D_BITS-1 downto 0);    -- write-data for 1st port
+		d2   : in  std_logic_vector(D_BITS-1 downto 0);    -- write-data for 2nd port
+		q1   : out std_logic_vector(D_BITS-1 downto 0);    -- read-data from 1st port
+		q2   : out std_logic_vector(D_BITS-1 downto 0)     -- read-data from 2nd port
 	);
 end entity;
 
@@ -139,7 +139,7 @@ begin
 					fwd1_r  <= addr_eq and we1;
 					fwd2_r  <= addr_eq and we2;
 
-				when '0' =>	null; -- keep previous state
+				when '0' =>  null; -- keep previous state
 
 				when others => -- X propagation in simulation
 					wd1_r  <= (others => 'X');
@@ -155,24 +155,24 @@ begin
 		end if;
 	end process;
 
-	ram_tdp: entity work.ocram_tdp
+	ram_tdp: entity work.ocram_TrueDualPort
 		generic map (
-			A_BITS   => A_BITS,
-			D_BITS   => D_BITS,
+			ADDRESS_BITS   => A_BITS,
+			DATA_BITS   => D_BITS,
 			FILENAME => FILENAME)
 		port map (
-			clk1 => clk,
-			clk2 => clk,
-			ce1  => ce,
-			ce2  => ce,
-			we1  => we1,
-			we2  => we2,
-			a1   => a1,
-			a2   => a2,
-			d1   => d1,
-			d2   => d2,
-			q1   => ram_q1,
-			q2   => ram_q2);
+			PortA_Clock => clk,
+			PortB_Clock => clk,
+			PortA_ClockEnable  => ce,
+			PortB_ClockEnable  => ce,
+			PortA_WriteEnable  => we1,
+			PortB_WriteEnable  => we2,
+			PortA_Address   => a1,
+			PortB_Address   => a2,
+			PortA_DataIn   => d1,
+			PortB_DataIn   => d2,
+			PortA_DataOut   => ram_q1,
+			PortB_DataOut   => ram_q2);
 
 	with fwd1_r select q2 <=
 		wd1_r            when '1',

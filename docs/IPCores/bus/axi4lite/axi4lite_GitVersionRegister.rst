@@ -269,7 +269,7 @@ All registers are read-only. Version Register should always start with offset ``
 +--------+-----------------------------------------+-------------------------------------------------------------------+
 | 0x008  | Common.VivadoVersion                    | 31:16 Major |br| 15:8 Minor |br| 7:0 Patch                        |
 +--------+-----------------------------------------+-------------------------------------------------------------------+
-| 0x00C  | Common.ProjektName                      | ``String`` Project-Name (20 bytes)                                |
+| 0x00C  | Common.ProjectName                      | ``String`` Project-Name (20 bytes)                                |
 +--------+-----------------------------------------+-------------------------------------------------------------------+
 | 0x020  | Top.Version                             | 31:24 Major |br| 23:16 Minor |br| 15:8 Patch |br|                 |
 |        |                                         | 7:2 Commits-to-Tag(dev-build) |br| 1 Dirty_untracked |br|         |

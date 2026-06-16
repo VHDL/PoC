@@ -1,7 +1,7 @@
 -- =============================================================================
--- Authors:				 	Martin Zabel
+-- Authors:           Martin Zabel
 --
--- Entity:				 	Simple dual-port memory with write-first behavior.
+-- Entity:           Simple dual-port memory with write-first behavior.
 --
 -- Description:
 -- -------------------------------------
@@ -32,13 +32,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,15 +47,16 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	ieee;
-use     ieee.std_logic_1164.all;
-use     ieee.numeric_std.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
+-- XXX: why is this not a mode to ocram_SimpleDualPort?
 entity ocram_sdp_wf is
 	generic (
-		A_BITS		: positive;                           -- number of address bits
-		D_BITS		: positive;                           -- number of data bits
-		FILENAME	: string		:= ""                     -- file-name for RAM initialization
+		A_BITS    : positive;                           -- number of address bits
+		D_BITS    : positive;                           -- number of data bits
+		FILENAME  : string    := ""                     -- file-name for RAM initialization
 	);
 	port (
 		clk : in  std_logic;                            -- clock
@@ -92,11 +93,11 @@ architecture rtl of ocram_sdp_wf is
 	-- * Altera Quartus 13.0: adds proper bypass-logic as expected.
 	--
 	-- * Lattice Synthesis Engine: adds proper bypass-logic, but there was an
-	--   unneccessary multiplexer for the read address to mimic the read enable.
+	--   unnecessary multiplexer for the read address to mimic the read enable.
 	--
 	-- * XST 14.7: RAM is mapped to Block-RAM which has not the desired
 	--   read-during-write behavior and also no bypass logic is added. XST adds
-	--   also an unneccessary multiplexer for the read address to mimic the read
+	--   also an unnecessary multiplexer for the read address to mimic the read
 	--   enable.
 	--
 	--   Enforcing distributed RAM gives the desired behavior when synthesizing
@@ -105,14 +106,14 @@ architecture rtl of ocram_sdp_wf is
 	--
 	-- * Vivado 2016.2: RAM is mapped to Block-RAM which has not the desired
 	--   read-during-write behavior and also no bypass logic is added. Vivado
-	--   adds also an unneccessary multiplexer for the read address to mimic the
+	--   adds also an unnecessary multiplexer for the read address to mimic the
 	--   read enable.
 	--
 	--   Enforcing distributed RAM gives the desired behavior when synthesizing
 	--   just this unit. Synthesis results have not yet been checked for larger
 	--   designs.
 	--
-	-- Thus, the solution below is to explictly implement the bypass logic.
+	-- Thus, the solution below is to explicitly implement the bypass logic.
 
 
 	signal wd_r  : std_logic_vector(d'range); -- write data
@@ -143,7 +144,7 @@ begin
 					wd_r  <= to_x01(d);
 					fwd_r <= addr_equal(ra, wa) and we;
 
-				when '0' =>	null; -- keep previous state
+				when '0' =>  null; -- keep previous state
 
 				when others => -- X propagation in simulation
 					wd_r  <= (others => 'X');
@@ -152,21 +153,21 @@ begin
 		end if;
 	end process;
 
-	ram_sdp: entity work.ocram_sdp
+	ram_sdp: entity work.ocram_SimpleDualPort
 		generic map (
-			A_BITS   => A_BITS,
-			D_BITS   => D_BITS,
+			ADDRESS_BITS   => A_BITS,
+			DATA_BITS   => D_BITS,
 			FILENAME => FILENAME)
 		port map (
-			rclk => clk,
-			rce  => ce,
-			wclk => clk,
-			wce  => ce,
-			we   => we,
-			ra   => ra,
-			wa   => wa,
-			d    => d,
-			q    => ram_q);
+			Read_Clock => clk,
+			Read_ClockEnable  => ce,
+			Write_Clock => clk,
+			Write_ClockEnable  => ce,
+			Write_WriteEnable   => we,
+			Read_Address   => ra,
+			Write_Address   => wa,
+			Write_DataIn    => d,
+			Read_DataOut    => ram_q);
 
 	with fwd_r select q <=
 		wd_r            when '1',

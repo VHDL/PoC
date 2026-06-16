@@ -1,8 +1,8 @@
 -- =============================================================================
--- Authors:				 	Martin Zabel
---									Patrick Lehmann
+-- Authors:           Martin Zabel
+--                  Patrick Lehmann
 --
--- Testbench:			 	Testbench for ocram_sp.
+-- Testbench:         Testbench for ocram_sp.
 --
 -- Description:
 -- -------------------------------------
@@ -10,13 +10,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2016-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,16 +25,16 @@
 -- limitations under the License.
 -- =============================================================================
 
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 library PoC;
-use 		PoC.physical.all;
+use     PoC.physical.all;
 -- simulation specific packages
-use			PoC.sim_types.all;
-use			PoC.simulation.all;
-use			PoC.waveform.all;
+use     PoC.sim_types.all;
+use     PoC.simulation.all;
+use     PoC.waveform.all;
 
 entity ocram_sp_tb is
 end entity ocram_sp_tb;
@@ -44,26 +44,26 @@ architecture sim of ocram_sp_tb is
 	constant D_BITS : positive := A_BITS; -- for test pattern
 
 	signal clk : std_logic := '1';
-	signal ce	 : std_logic;
-	signal we	 : std_logic;
-	signal a	 : unsigned(A_BITS-1 downto 0);
-	signal d	 : std_logic_vector(D_BITS-1 downto 0);
-	signal q	 : std_logic_vector(D_BITS-1 downto 0);
+	signal ce   : std_logic;
+	signal we   : std_logic;
+	signal a   : unsigned(A_BITS-1 downto 0);
+	signal d   : std_logic_vector(D_BITS-1 downto 0);
+	signal q   : std_logic_vector(D_BITS-1 downto 0);
 
 begin  -- architecture sim
 
 	uut: entity PoC.ocram_sp
 		generic map (
-			A_BITS	 => A_BITS,
-			D_BITS	 => D_BITS,
+			A_BITS   => A_BITS,
+			D_BITS   => D_BITS,
 			FILENAME => "")
 		port map (
 			clk => clk,
-			ce	=> ce,
-			we	=> we,
-			a		=> a,
-			d		=> d,
-			q		=> q);
+			ce  => ce,
+			we  => we,
+			a    => a,
+			d    => d,
+			q    => q);
 
 	-- initialize global simulation status
 	simInitialize;
@@ -71,7 +71,7 @@ begin  -- architecture sim
 	simGenerateClock(clk, 100 MHz);
 
 	Stimuli: process
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Stimuli process");
+		constant simProcessID  : T_SIM_PROCESS_ID := simRegisterProcess("Stimuli process");
 	begin
 		-- 1) Fill memory and check read-during-write behavior
 		-- ===================================================

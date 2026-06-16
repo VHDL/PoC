@@ -3,24 +3,24 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- ============================================================================
--- Authors:					Patrick Lehmann
+-- Authors:          Patrick Lehmann
 --
--- Testbench:				For PoC.io.uart.rx
+-- Testbench:        For PoC.io.uart.rx
 --
 -- Description:
 -- ------------------------------------
---	TODO
+--  TODO
 --
 -- License:
 -- ============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,20 +29,20 @@
 -- limitations under the License.
 -- ============================================================================
 
-library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.strings.all;
-use			PoC.physical.all;
-use			PoC.uart.all;
+use     PoC.utils.all;
+use     PoC.vectors.all;
+use     PoC.strings.all;
+use     PoC.physical.all;
+use     PoC.uart.all;
 -- simulation only packages
-use			PoC.sim_types.all;
-use			PoC.simulation.all;
-use			PoC.waveform.all;
+use     PoC.sim_types.all;
+use     PoC.simulation.all;
+use     PoC.waveform.all;
 
 
 entity uart_rx_tb is
@@ -50,27 +50,27 @@ end entity;
 
 
 architecture tb of uart_rx_tb is
-	constant CLOCK_FREQ		: FREQ			:= 100 MHz;
-	constant BAUDRATE			: BAUD			:= 2.1 MBd;
+	constant CLOCK_FREQ    : FREQ      := 100 MHz;
+	constant BAUDRATE      : BAUD      := 2.1 MBd;
 
-	signal Clock					: std_logic;
-	signal Reset					: std_logic;
+	signal Clock          : std_logic;
+	signal Reset          : std_logic;
 
-	signal BitClock				: std_logic;
-	signal BitClock_x8		: std_logic;
+	signal BitClock        : std_logic;
+	signal BitClock_x8    : std_logic;
 
-	signal UART_RX				: std_logic;
+	signal UART_RX        : std_logic;
 
-	signal RX_Strobe			: std_logic;
-	signal RX_Data				: T_SLV_8;
+	signal RX_Strobe      : std_logic;
+	signal RX_Data        : T_SLV_8;
 
 	function simGenerateWaveform_UART_Word(Data : T_SLV_8; Baudrate : BAUD := 115.200 kBd) return T_SIM_WAVEFORM_SL is
-		constant BIT_TIME : time											:= to_time(to_freq(Baudrate));
-		variable Result		: T_SIM_WAVEFORM_SL(0 to 9)	:= (others =>	(Delay => BIT_TIME, Value => '-'));
+		constant BIT_TIME : time                      := to_time(to_freq(Baudrate));
+		variable Result    : T_SIM_WAVEFORM_SL(0 to 9)  := (others =>  (Delay => BIT_TIME, Value => '-'));
 	begin
 		Result(0).Value := '0';
 		for i in Data'range loop
-			Result(i + 1).Value	:= Data(i);
+			Result(i + 1).Value  := Data(i);
 		end loop;
 		Result(9).Value := '1';
 		return Result;
@@ -80,12 +80,12 @@ architecture tb of uart_rx_tb is
 		variable Result : T_SIM_WAVEFORM_SL(0 to (Data'length * 10) - 1);
 	begin
 		for i in Data'range loop
-			Result(i * 10 to ((i + 1) * 10) - 1)	:= simGenerateWaveform_UART_Word(Data(i), Baudrate);
+			Result(i * 10 to ((i + 1) * 10) - 1)  := simGenerateWaveform_UART_Word(Data(i), Baudrate);
 		end loop;
 		return Result;
 	end function;
 
-	constant DATA_STREAM	: T_SLVV_8	:= (x"12", x"45", x"FE", x"C4", x"02");
+	constant DATA_STREAM  : T_SLVV_8  := (x"12", x"45", x"FE", x"C4", x"02");
 
 begin
 	simGenerateClock(Clock, CLOCK_FREQ);
@@ -94,28 +94,28 @@ begin
 
 	bclk : entity PoC.uart_bclk
 		generic map (
-			CLOCK_FREQ	=> CLOCK_FREQ,
-			BAUDRATE		=> BAUDRATE
+			CLOCK_FREQ  => CLOCK_FREQ,
+			BAUDRATE  => BAUDRATE
 		)
 		port map (
-			clk					=> Clock,
-			rst					=> Reset,
-			bclk				=> BitClock,
-			bclk_x8			=> BitClock_x8
+			clk          => Clock,
+			rst          => Reset,
+			bclk        => BitClock,
+			bclk_x8          => BitClock_x8
 		);
 
-	RX : entity PoC.uart_rx
+	RX : entity PoC.uart_RX
 		port map (
-			clk				=> Clock,
-			rst				=> Reset,
-			bclk_x8		=> BitClock_x8,
-			rx 				=> UART_RX,
-			do  			=> RX_Data,
-			stb				=> RX_Strobe
+			clk        => Clock,
+			rst        => Reset,
+			bclk_x8        => BitClock_x8,
+			rx         => UART_RX,
+			do        => RX_Data,
+			stb        => RX_Strobe
 		);
 
 	procChecker : process
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Checker");
+		constant simProcessID  : T_SIM_PROCESS_ID := simRegisterProcess("Checker");
 	begin
 		for i in DATA_STREAM'range loop
 			wait until rising_edge(Clock) and (RX_Strobe = '1');

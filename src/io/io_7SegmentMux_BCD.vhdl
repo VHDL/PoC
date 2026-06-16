@@ -30,14 +30,14 @@
 -- limitations under the License.
 -- =============================================================================
 
-library  IEEE;
-use      IEEE.STD_LOGIC_1164.all;
-use      IEEE.NUMERIC_STD.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-use      work.utils.all;
-use      work.physical.all;
-use      work.components.all;
-use      work.io.all;
+use     work.utils.all;
+use     work.physical.all;
+use     work.components.all;
+use     work.io.all;
 
 
 entity io_7SegmentMux_BCD is

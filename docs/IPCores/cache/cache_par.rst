@@ -1,4 +1,4 @@
-.. _IP/cache_par:
+.. _IP/cache_Par:
 
 PoC.cache.par
 #############
@@ -7,7 +7,7 @@ PoC.cache.par
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_par.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_Par.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.cache.par
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <cache/cache_par.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <cache/cache_Par.vhdl>`
       * |gh-tb| :poctb:`Testbench <cache/cache_par_tb.vhdl>`
 
 Implements a cache with parallel tag-unit and data memory.
@@ -75,7 +75,7 @@ both with a latency of one clock cycle.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/cache/cache_par.vhdl
+.. literalinclude:: ../../../src/cache/cache_Par.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -85,4 +85,4 @@ both with a latency of one clock cycle.
 
 .. only:: latex
 
-   Source file: :pocsrc:`cache/cache_par.vhdl <cache/cache_par.vhdl>`
+   Source file: :pocsrc:`cache/cache_Par.vhdl <cache/cache_Par.vhdl>`

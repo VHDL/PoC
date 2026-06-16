@@ -13,7 +13,7 @@ PoC.bus.axi4
 .. topic:: Entities
 
    * :ref:`IP/axi4_FIFO`
-   * :ref:`IP/axi4_FIFO_cdc`
+   * :ref:`IP/axi4_FIFO_CDC`
    * :ref:`IP/axi4_to_AXI4Lite`
 
 .. toctree::
@@ -22,5 +22,5 @@ PoC.bus.axi4
    axi4 Package <axi4>
    axi4_OSVVM Package <axi4_OSVVM>
    FIFO <axi4_FIFO>
-   FIFO_cdc <axi4_FIFO_cdc>
+   FIFO_cdc <axi4_FIFO_CDC>
    to_AXI4Lite <axi4_to_AXI4Lite>

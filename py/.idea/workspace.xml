@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b1217729-6dda-4bce-a9eb-baa5346607ac" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/../docs/IPCores/arith/arith_firstone.rst" afterPath="$PROJECT_DIR$/../docs/IPCores/arith/arith_firstone.rst" />
+      <change beforePath="$PROJECT_DIR$/../docs/IPCores/arith/arith_FirstOne.rst" afterPath="$PROJECT_DIR$/../docs/IPCores/arith/arith_FirstOne.rst" />
       <change beforePath="$PROJECT_DIR$/../lib/cocotb" afterPath="$PROJECT_DIR$/../lib/cocotb" />
       <change beforePath="$PROJECT_DIR$/../lib/osvvm" afterPath="$PROJECT_DIR$/../lib/osvvm" />
       <change beforePath="$PROJECT_DIR$/../lib/uvvm" afterPath="$PROJECT_DIR$/../lib/uvvm" />
@@ -26,7 +26,7 @@
       <change beforePath="$PROJECT_DIR$/config.entity.ini" afterPath="$PROJECT_DIR$/config.entity.ini" />
       <change beforePath="$PROJECT_DIR$/lib/Functions.py" afterPath="$PROJECT_DIR$/lib/Functions.py" />
       <change beforePath="$PROJECT_DIR$/../sim/vSim.batch.tcl" afterPath="$PROJECT_DIR$/../sim/vSim.batch.tcl" />
-      <change beforePath="$PROJECT_DIR$/../src/arith/arith_firstone.vhdl" afterPath="$PROJECT_DIR$/../src/arith/arith_firstone.vhdl" />
+      <change beforePath="$PROJECT_DIR$/../src/arith/arith_FirstOne.vhdl" afterPath="$PROJECT_DIR$/../src/arith/arith_FirstOne.vhdl" />
       <change beforePath="$PROJECT_DIR$/../src/common/config.vhdl" afterPath="$PROJECT_DIR$/../src/common/config.vhdl" />
       <change beforePath="$PROJECT_DIR$/../src/common/utils.vhdl" afterPath="$PROJECT_DIR$/../src/common/utils.vhdl" />
       <change beforePath="$PROJECT_DIR$/../src/io/io_FanControl.vhdl" afterPath="$PROJECT_DIR$/../src/io/io_FanControl.vhdl" />

@@ -12,40 +12,40 @@ namespace as well as public constants and functions.
 ## Entities
 
  - [`arith_addw`][arith_addw]
- - [`arith_carrychain_inc`][arith_carrychain_inc]
+ - [`arith_CarryChain_inc`][arith_CarryChain_inc]
  - [`arith_convert_bin2bcd`][arith_convert_bin2bcd]
- - [`arith_counter_bcd`][arith_counter_bcd] - implements a BCD (Binary-Coded Decimal) counter.
+ - [`arith_Counter_BCD`][arith_Counter_BCD] - implements a BCD (Binary-Coded Decimal) counter.
  - [`arith_counter_free`][arith_counter_free]
- - [`arith_counter_gray`][arith_counter_gray] - implements a Gray-Code counter.
- - [`arith_counter_ring`][arith_counter_ring] - implements a ring (Johnson) counter.
- - [`arith_div`][arith_addw]
- - [`arith_firstone`][arith_firstone]
+ - [`arith_Counter_Gray`][arith_Counter_Gray] - implements a Gray-Code counter.
+ - [`arith_Counter_Ring`][arith_Counter_Ring] - implements a ring (Johnson) counter.
+ - [`arith_Div`][arith_addw]
+ - [`arith_FirstOne`][arith_FirstOne]
  - [`arith_muls_wide`][arith_muls_wide]
- - [`arith_prefix_and`][arith_prefix_and]
- - [`arith_prefix_or`][arith_prefix_or]
- - [`arith_prng`][arith_prng] - implements a Pseudo Random Number Generator (PRNG).
- - [`arith_same`][arith_same]
- - [`arith_scaler`][arith_scaler]
- - [`arith_shifter_barrel`][arith_shifter_barrel]
+ - [`arith_Prefix_And`][arith_Prefix_And]
+ - [`arith_Prefix_Or`][arith_Prefix_Or]
+ - [`arith_PRNG`][arith_PRNG] - implements a Pseudo Random Number Generator (PRNG).
+ - [`arith_Same`][arith_Same]
+ - [`arith_Scaler`][arith_Scaler]
+ - [`arith_Shifter_Barrel`][arith_Shifter_Barrel]
  - [`arith_sqrt`][arith_sqrt]
 
 
  [arith.pkg]:				arith.pkg.vhdl
 
  [arith_addw]:				arith_addw.vhdl
- [arith_carrychain_inc]:  arith_carrychain_inc.vhdl
+ [arith_CarryChain_inc]:  arith_CarryChain_inc.vhdl
  [arith_convert_bin2bcd]:	arith_convert_bin2bcd.vhdl
- [arith_counter_bcd]:		arith_counter_bcd.vhdl
+ [arith_Counter_BCD]:		arith_Counter_BCD.vhdl
  [arith_counter_free]:		arith_counter_free.vhdl
- [arith_counter_gray]:		arith_counter_gray.vhdl
- [arith_counter_ring]:		arith_counter_ring.vhdl
- [arith_div]:				arith_div.vhdl
- [arith_firstone]:			arith_firstone.vhdl
+ [arith_Counter_Gray]:		arith_Counter_Gray.vhdl
+ [arith_Counter_Ring]:		arith_Counter_Ring.vhdl
+ [arith_Div]:				arith_Div.vhdl
+ [arith_FirstOne]:			arith_FirstOne.vhdl
  [arith_muls_wide]:			arith_muls_wide.vhdl
- [arith_prefix_and]:		arith_prefix_and.vhdl
- [arith_prefix_or]:			arith_prefix_or.vhdl
- [arith_prng]:				arith_prng.vhdl
- [arith_same]:				arith_same.vhdl
- [arith_scaler]:			arith_scaler.vhdl
- [arith_shifter_barrel]:	arith_shifter_barrel.vhdl
+ [arith_Prefix_And]:		arith_Prefix_And.vhdl
+ [arith_Prefix_Or]:			arith_Prefix_Or.vhdl
+ [arith_PRNG]:				arith_PRNG.vhdl
+ [arith_Same]:				arith_Same.vhdl
+ [arith_Scaler]:			arith_Scaler.vhdl
+ [arith_Shifter_Barrel]:	arith_Shifter_Barrel.vhdl
  [arith_sqrt]:				arith_sqrt.vhdl

@@ -17,7 +17,7 @@
 @28
 top.uart_rx_tb.clock
 top.uart_rx_tb.reset
-top.uart_rx_tb.uart_rx
+top.uart_rx_tb.uart_RX
 @23
 #{top.uart_rx_tb.rx_data[7:0]} top.uart_rx_tb.rx_data[7] top.uart_rx_tb.rx_data[6] top.uart_rx_tb.rx_data[5] top.uart_rx_tb.rx_data[4] top.uart_rx_tb.rx_data[3] top.uart_rx_tb.rx_data[2] top.uart_rx_tb.rx_data[1] top.uart_rx_tb.rx_data[0]
 @28

@@ -1,9 +1,9 @@
 -- =============================================================================
--- Authors:					Thomas B. Preusser
---									Patrick Lehmann
+-- Authors:          Thomas B. Preusser
+--                  Patrick Lehmann
 --                  Gustavo Martin
 --
--- Entity:					arith_prefix_and_TestController
+-- Entity:          arith_prefix_and_TestController
 --
 -- Description:
 -- -------------------------------------
@@ -17,7 +17,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,10 +34,10 @@ context osvvm.OsvvmContext;
 
 
 entity arith_prefix_and_TestController is
-  port (
-    Clock : in  std_logic;
-    Reset : in  std_logic;
-    x     : out std_logic_vector;
-    y     : in  std_logic_vector
-  );
+	port (
+		Clock : in  std_logic;
+		Reset : in  std_logic;
+		x     : out std_logic_vector;
+		y     : in  std_logic_vector
+	);
 end entity;

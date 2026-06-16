@@ -1,3 +1,10 @@
+stages:
+  - prepare
+  - build_osvvm
+  - build_poc
+  - test
+  - pages
+
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   SIMULATOR_PAGES: "NVC"  # simulator from which the results should be published on GitLab pages (GHDL, Riviera-PRO)
@@ -9,6 +16,7 @@ variables:
   SIMULATE_POC_NAME   : "PoC-RunAllTests"
 
 Scripts:
+  stage: prepare
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
   script:
     - mv src/common/my_project.vhdl.template tb/common/my_project.vhdl  # use CopyFile when its supporting renaming
@@ -17,19 +25,25 @@ Scripts:
 
     - CreateAndChangeDirectory "temp" "Simulation working directory"
     - |
-      tee poc_namespace.tcl << EOF
-      namespace eval ::poc {
-        variable myConfigFile  "../tb/common/my_config_GENERIC.vhdl"
-        variable myProjectFile "../tb/common/my_project.vhdl"
-        variable vendor        "GENERIC";                               # GENERIC for vendor-less build; Xilinx, Altera,... for vendor specific build
-      }
-      source ../../tools/OSVVM/poc.tcl
-      namespace import ::poc::*
-      EOF
-
       tee setup_simulator.tcl <<EOF
       source ../../lib/OSVVM-Scripts/StartUp.tcl
-      source ../poc_namespace.tcl
+      source ../../tools/OSVVM/poc.tcl
+      namespace import ::poc::*
+      # Skip report generation if executed within Sigasi/VS Code
+      if {[info exists ::env(OSVVM_TOOL)] && $::env(OSVVM_TOOL) eq "Sigasi"} {
+        set ::osvvm::GenerateOsvvmReports "false"
+      }
+      if {[info exists ::env(GITLAB_CI)]} {
+        set buildNamePrefix ""
+      } else {
+        set buildNamePrefix "\${::osvvm::ToolNameVersion}-"
+      }
+      # -g -gui         disables system exit (i.e. on errors)
+      # -v -vendor      Vendor name
+      # -b -board       Board name
+      # -p -projectFile Path to the my_project file
+      # -c -configFile  Path to the my_config file
+      configurePoC
       # -s -stop <i>    set the stop counts to <i>
       # -d -debug       enable debugging
       # -w -waves       save waveforms
@@ -49,7 +63,7 @@ Scripts:
 
       tee poc_compile.tcl <<EOF
       source ../setup_simulator.tcl
-      build ../../src/PoC.pro [BuildName "\${::poc::buildNamePrefix}${COMPILE_POC_NAME}"]
+      build ../../src/build.pro [BuildName "\${::poc::buildNamePrefix}${COMPILE_POC_NAME}"]
       checkForBuildErrors
       EOF
 
@@ -145,6 +159,7 @@ Scripts:
     SIMULATOR: "GHDL"
 
 GHDL_OSVVM_compile:
+  stage: build_osvvm
   extends:
     - .GHDL
     - .compile
@@ -155,6 +170,7 @@ GHDL_OSVVM_compile:
     TCL_FILE: "osvvm_compile.tcl"
 
 GHDL_PoC_compile:
+  stage: build_poc
   extends:
     - .GHDL
     - .compile
@@ -168,6 +184,7 @@ GHDL_PoC_compile:
     RESULT_NAME: "$COMPILE_POC_NAME"
 
 GHDL_OSVVM_sim:
+  stage: test
   extends:
     - .GHDL
     - .simulate
@@ -185,6 +202,7 @@ GHDL_OSVVM_sim:
     RESULT_NAME: "$SIMULATE_OSVVM_NAME"
 
 GHDL_PoC_sim:
+  stage: test
   extends:
     - .GHDL
     - .simulate
@@ -201,11 +219,12 @@ GHDL_PoC_sim:
 # ---- Riviera -----
 # ------------------
 .RIVIERA-PRO:
-  image: ${CI_REGISTRY}/docker-images/rivierapro:latest
+  image: ${CI_REGISTRY}/docker-images/rivierapro:2024.10
   variables:
     SIMULATOR: "Riviera-PRO"
 
 RIVIERA_OSVVM_compile:
+  stage: build_osvvm
   extends:
     - .RIVIERA-PRO
     - .compile
@@ -217,6 +236,7 @@ RIVIERA_OSVVM_compile:
     RESULT_NAME: "$COMPILE_OSVVM_NAME"
 
 RIVIERA_PoC_compile:
+  stage: build_poc
   extends:
     - .RIVIERA-PRO
     - .compile
@@ -230,6 +250,7 @@ RIVIERA_PoC_compile:
     RESULT_NAME: "$COMPILE_POC_NAME"
 
 RIVIERA_OSVVM_sim:
+  stage: test
   extends:
     - .RIVIERA-PRO
     - .simulate
@@ -250,6 +271,7 @@ RIVIERA_OSVVM_sim:
     RESULT_NAME: "$SIMULATE_OSVVM_NAME"
 
 RIVIERA_PoC_sim:
+  stage: test
   extends:
     - .RIVIERA-PRO
     - .simulate
@@ -275,6 +297,7 @@ RIVIERA_PoC_sim:
     SIMULATOR: "NVC"
 
 NVC_OSVVM_compile:
+  stage: build_osvvm
   extends:
     - .NVC
     - .compile
@@ -286,6 +309,7 @@ NVC_OSVVM_compile:
     RESULT_NAME: "$COMPILE_OSVVM_NAME"
 
 NVC_PoC_compile:
+  stage: build_poc
   extends:
     - .NVC
     - .compile
@@ -299,6 +323,7 @@ NVC_PoC_compile:
     RESULT_NAME: "$COMPILE_POC_NAME"
 
 NVC_OSVVM_sim:
+  stage: test
   extends:
     - .NVC
     - .simulate
@@ -316,6 +341,7 @@ NVC_OSVVM_sim:
     RESULT_NAME: "$SIMULATE_OSVVM_NAME"
 
 NVC_PoC_sim:
+  stage: test
   extends:
     - .NVC
     - .simulate
@@ -333,6 +359,7 @@ NVC_PoC_sim:
 # ----- Documentation ------
 # --------------------------
 MergeReports:
+  stage: test
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
   needs:
     - job: GHDL_PoC_sim
@@ -352,6 +379,7 @@ MergeReports:
       - report/unit
 
 Sphinx:
+  stage: pages
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
   needs:
     - job: MergeReports
@@ -369,6 +397,7 @@ Sphinx:
       - docs/_build/${SPHINX_BUILDER}
 
 MikTeX:
+  stage: pages
   needs:
     - job: Sphinx
       parallel:
@@ -410,6 +439,7 @@ MikTeX:
 
 
 pagesGHDL:
+  stage: pages
   rules:
     - if: >
         $SIMULATOR_PAGES == "GHDL" &&
@@ -426,6 +456,7 @@ pagesGHDL:
     - .pages
 
 pagesRiviera:
+  stage: pages
   rules:
     - if: >
         $SIMULATOR_PAGES == "Riviera-PRO" &&
@@ -439,6 +470,7 @@ pagesRiviera:
     - .pages
 
 pagesNVC:
+  stage: pages
   extends:
     - .pages
   rules:

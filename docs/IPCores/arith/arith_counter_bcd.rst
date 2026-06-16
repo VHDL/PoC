@@ -1,4 +1,4 @@
-.. _IP/arith_counter_bcd:
+.. _IP/arith_Counter_BCD:
 
 PoC.arith.counter_bcd
 #####################
@@ -7,7 +7,7 @@ PoC.arith.counter_bcd
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_counter_bcd.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Counter_BCD.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.counter_bcd
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_counter_bcd.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Counter_BCD.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_counter_bcd_tb.vhdl>`
 
 Counter with output in binary coded decimal (BCD). The number of BCD digits
@@ -36,7 +36,7 @@ is specified by ``val(3 downto 0)``.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_counter_bcd.vhdl
+.. literalinclude:: ../../../src/arith/arith_Counter_BCD.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -46,4 +46,4 @@ is specified by ``val(3 downto 0)``.
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_counter_bcd.vhdl <arith/arith_counter_bcd.vhdl>`
+   Source file: :pocsrc:`arith/arith_Counter_BCD.vhdl <arith/arith_Counter_BCD.vhdl>`

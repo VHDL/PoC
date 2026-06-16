@@ -30,9 +30,9 @@ clock) refer to the write- and read-side clock relationship.
    got-interface), extended by a transactional `tempput`-interface (write-side).
  * :ref:`IP/fifo_ic_got` implements a cross-clock FIFO (two independent clocks,
    got-interface)
- * :ref:`IP/fifo_stage` implements a two-stage FIFO (one common clock,
+ * :ref:`IP/fifo_Stage` implements a two-stage FIFO (one common clock,
    got-interface)
- * :ref:`IP/fifo_shift` implements a regular FIFO (one common clock,
+ * :ref:`IP/fifo_Shift` implements a regular FIFO (one common clock,
    got-interface, optimized for FPGAs with shifter primitives)
 
 .. toctree::
@@ -46,7 +46,7 @@ clock) refer to the write- and read-side clock relationship.
    fifo_cc_got <fifo_cc_got>
    fifo_cc_got_tempgot <fifo_cc_got_tempgot>
    fifo_cc_got_tempput <fifo_cc_got_tempput>
-   fifo_stage <fifo_stage>
+   fifo_Stage <fifo_Stage>
    fifo_ic_assembly <fifo_ic_assembly>
    fifo_ic_got <fifo_ic_got>
-   fifo_shift <fifo_shift>
+   fifo_Shift <fifo_Shift>

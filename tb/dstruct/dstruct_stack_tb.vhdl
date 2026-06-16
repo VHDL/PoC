@@ -8,7 +8,7 @@
 --
 -- Description:
 -- ------------
---   Testbench for dstruct_stack.
+--   Testbench for dstruct_Stack.
 --
 -- License:
 -- ============================================================================
@@ -33,40 +33,40 @@ end entity;
 
 
 library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 library PoC;
-use PoC.physical.all;
-use PoC.dstruct.all;
+use     PoC.physical.all;
+use     PoC.dstruct.all;
 -- simulation only packages
-use	PoC.sim_types.all;
-use	PoC.simulation.all;
-use	PoC.waveform.all;
+use     PoC.sim_types.all;
+use     PoC.simulation.all;
+use     PoC.waveform.all;
 
 architecture tb of dstruct_stack_tb is
 
-  -- component generics
-  constant MIN_DEPTH : positive :=  8;
-  constant D_BITS    : positive := 16;
+	-- component generics
+	constant MIN_DEPTH : positive :=  8;
+	constant D_BITS    : positive := 16;
 
-  -- Clock Control
+	-- Clock Control
 	constant CLK_FREQ : FREQ := 50 MHz;
 
 	signal clk  : std_logic;
-  signal rst  : std_logic;
+	signal rst  : std_logic;
 
 	-- DUT Connectivity
-  -- inputs
-  signal din : std_logic_vector(D_BITS-1 downto 0);
-  signal put : std_logic;
-  signal got : std_logic;
+	-- inputs
+	signal din : std_logic_vector(D_BITS-1 downto 0);
+	signal put : std_logic;
+	signal got : std_logic;
 
-  -- outputs
-  signal dout : std_logic_vector(D_BITS-1 downto 0);
-  signal full : std_logic;
-  signal valid : std_logic;
-  signal empty : std_logic;
+	-- outputs
+	signal dout : std_logic_vector(D_BITS-1 downto 0);
+	signal full : std_logic;
+	signal valid : std_logic;
+	signal empty : std_logic;
 
 begin
 
@@ -74,35 +74,35 @@ begin
 	simInitialize;
 	simGenerateClock(clk, CLK_FREQ);
 
-  -- DUT
-  DUT : dstruct_stack
-    generic map (
-      D_BITS    => D_BITS,
-      MIN_DEPTH => MIN_DEPTH
-    )
-    port map(
-      clk   => clk,
-      rst   => rst,
-      din   => din,
-      put   => put,
-      full  => full,
-      got   => got,
-      dout  => dout,
-      valid => valid
-    );
+	-- DUT
+	DUT : dstruct_Stack
+		generic map (
+			D_BITS    => D_BITS,
+			MIN_DEPTH => MIN_DEPTH
+		)
+		port map(
+			clk   => clk,
+			rst   => rst,
+			din   => din,
+			put   => put,
+			full  => full,
+			got   => got,
+			dout  => dout,
+			valid => valid
+		);
 
-  -- Stimuli
-  process
-    procedure checkTOS(constant EXPECT : in integer) is
+	-- Stimuli
+	process
+		procedure checkTOS(constant EXPECT : in integer) is
 		begin
 			simAssertion(to_integer(unsigned(dout)) = EXPECT, "Wrong top of stack: "&
 									 integer'image(to_integer(unsigned(dout)))&
 									 " instead of "&integer'image(EXPECT));
 		end procedure checkTOS;
 
-    constant PID  : T_SIM_PROCESS_ID := simRegisterProcess("main");
-    variable high : integer;
-  begin
+		constant PID  : T_SIM_PROCESS_ID := simRegisterProcess("main");
+		variable high : integer;
+	begin
 
 		-- Reset Sequence
 		rst <= '1';
@@ -126,25 +126,25 @@ begin
 
 		-- One more, which should not be accepted!
 		din <= (others => 'X');
-    wait until falling_edge(clk);
+		wait until falling_edge(clk);
 		put <= '0';
-    simAssertion(valid = '1', "valid != 1!");
-    simAssertion(full = '1', "full != 1!");
+		simAssertion(valid = '1', "valid != 1!");
+		simAssertion(full = '1', "full != 1!");
 
 		-- Idle
-    wait until falling_edge(clk);
+		wait until falling_edge(clk);
 		checkTOS(high);
 
 		-- Pop two (2) elements
 		got <= '1';
 
-    wait until falling_edge(clk);
+		wait until falling_edge(clk);
 		high := high - 1;
 		simAssertion(full = '0', "full != 0");
 		simAssertion(valid = '1', "valid != 1");
 		checkTOS(high);
 
-    wait until falling_edge(clk);
+		wait until falling_edge(clk);
 		high := high - 1;
 		simAssertion(full = '0', "full != 0");
 		simAssertion(valid = '1', "valid != 1");
@@ -155,30 +155,30 @@ begin
 		-- Push two (2) zeroes
 		din <= (others => '0');
 		put <= '1';
-    wait until falling_edge(clk);
+		wait until falling_edge(clk);
 		simAssertion(full = '0', "full != 0");
 		simAssertion(valid = '1', "valid != 1");
-    wait until falling_edge(clk);
+		wait until falling_edge(clk);
 		simAssertion(full = '1', "full != 1");
 		simAssertion(valid = '1', "valid != 1");
 
 		-- One more, which should not be accepted!
 		din <= (others => 'X');
-    wait until falling_edge(clk);
+		wait until falling_edge(clk);
 		put <= '0';
 
 		-- Pop two (2) zeroes
 		got <= '1';
 
-    simAssertion(valid = '1', "valid != 1!");
-    simAssertion(full = '1', "full != 1!");
+		simAssertion(valid = '1', "valid != 1!");
+		simAssertion(full = '1', "full != 1!");
 		checkTOS(0);
-    wait until falling_edge(clk);
+		wait until falling_edge(clk);
 
 		simAssertion(valid = '1', "valid != 1");
 		simAssertion(full = '0', "full != 0");
 		checkTOS(0);
-    wait until falling_edge(clk);
+		wait until falling_edge(clk);
 
 		-- Drain whole stack
 		while valid = '1' loop
@@ -191,7 +191,7 @@ begin
 		got <= '0';
 
 		simDeactivateProcess(PID);
-		wait;	-- forever
+		wait;  -- forever
 	end process;
 
 end tb;

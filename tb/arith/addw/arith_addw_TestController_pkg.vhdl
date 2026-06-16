@@ -1,8 +1,8 @@
 -- =============================================================================
--- Authors:					Thomas B. Preusser
+-- Authors:          Thomas B. Preusser
 --                  Gustavo Martin
 --
--- Entity:					arith_addw_TestController_pkg
+-- Entity:          arith_addw_TestController_pkg
 --
 -- Description:
 -- -------------------------------------
@@ -16,7 +16,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,14 +36,14 @@ use     PoC.arith.all;
 
 package arith_addw_TestController_pkg is
 
-  constant N : positive := 9;
-  constant K : positive := 2;
+	constant N : positive := 9;
+	constant K : positive := 2;
 
-  subtype tArch_test is tArch;
-  subtype tSkip_test is tSkipping;
+	subtype tArch_test is T_Adder_Architecture;
+	subtype tSkip_test is T_Adder_CarrySkipScheme;
 
-  subtype word is std_logic_vector(N-1 downto 0);
-  type word_vector is array(tArch_test, tSkip_test, boolean) of word;
-  type carry_vector is array(tArch_test, tSkip_test, boolean) of std_logic;
+	subtype word is std_logic_vector(N-1 downto 0);
+	type word_vector is array(tArch_test, tSkip_test, boolean) of word;
+	type carry_vector is array(tArch_test, tSkip_test, boolean) of std_logic;
 
 end package;

@@ -7,7 +7,7 @@ $ version 1.1
 /uart_rx_tb/reset
 /uart_rx_tb/bitclock
 /uart_rx_tb/bitclock_x8
-/uart_rx_tb/uart_rx
+/uart_rx_tb/uart_RX
 /uart_rx_tb/rx_strobe
 /uart_rx_tb/rx_data
 /uart_rx_tb/rx/rst

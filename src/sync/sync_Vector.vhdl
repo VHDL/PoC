@@ -37,8 +37,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.sync.all;
@@ -59,7 +59,7 @@ entity sync_Vector is
 		Strobe        : in  std_logic := '0';                                           -- @Clock1:  Transfer Strobe, only if MASTER_BITS=0
 
 		Output        : out std_logic_vector((SLAVE_BITS + MASTER_BITS) - 1 downto 0);  -- @Clock2:  output vector
-		Changed       : out  std_logic                                                  -- @Clock2:  changed bit
+		Changed       : out std_logic                                                  -- @Clock2:  changed bit
 	);
 end entity;
 

@@ -1,4 +1,4 @@
-.. _IP/arith_same:
+.. _IP/arith_Same:
 
 PoC.arith.same
 ##############
@@ -7,7 +7,7 @@ PoC.arith.same
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_same.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Same.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.same
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_same.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Same.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_same_tb.vhdl>`
 
 This circuit may, for instance, be used to detect the first sign change
@@ -32,7 +32,7 @@ bit position as to avoid an undetected sign change between the slices.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_same.vhdl
+.. literalinclude:: ../../../src/arith/arith_Same.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -42,4 +42,4 @@ bit position as to avoid an undetected sign change between the slices.
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_same.vhdl <arith/arith_same.vhdl>`
+   Source file: :pocsrc:`arith/arith_Same.vhdl <arith/arith_Same.vhdl>`

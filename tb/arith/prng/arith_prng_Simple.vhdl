@@ -1,7 +1,7 @@
 -- =============================================================================
--- Authors:					Jonas Schreiner
+-- Authors:          Jonas Schreiner
 --
--- Entity:					arith_prng_TestController
+-- Entity:          arith_prng_TestController
 --
 -- Description:
 -- -------------------------------------
@@ -15,7 +15,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -70,7 +70,7 @@ begin
 	CheckerProc: process
 		constant ProcID : AlertLogIDType := NewID("CheckerProc", TCID);
 
-		constant COMPARE_LIST_8_BITS : T_SLVV_8	:= (
+		constant COMPARE_LIST_8_BITS : T_SLVV_8  := (
 			x"12", x"24", x"48", x"90", x"21", x"42", x"85", x"0A", x"14", x"28", x"51", x"A2", x"45", x"8B", x"17", x"2E",
 			x"5D", x"BB", x"77", x"EF", x"DE", x"BC", x"79", x"F2", x"E4", x"C9", x"93", x"27", x"4E", x"9C", x"38", x"70",
 			x"E1", x"C3", x"86", x"0C", x"18", x"31", x"63", x"C6", x"8C", x"19", x"33", x"67", x"CE", x"9D", x"3A", x"74",
@@ -93,17 +93,17 @@ begin
 		WaitForClock(Clock);
 
 		for i in COMPARE_LIST_8_BITS'range loop
-      Got <= '1';
+			Got <= '1';
 
 			WaitForClock(Clock);
 			AffirmIf(ProcID,
 				Value = COMPARE_LIST_8_BITS(i),
-				"Index = " & str_ralign(PoC.strings.to_string(i), log10ceil(COMPARE_LIST_8_BITS'high)) & ": Value = 0x" &	to_hstring(Value),
+				"Index = " & str_ralign(PoC.strings.to_string(i), log10ceil(COMPARE_LIST_8_BITS'high)) & ": Value = 0x" &  to_hstring(Value),
 				" Expected = 0x" & to_hstring(COMPARE_LIST_8_BITS(i))
 			);
 		end loop;
 
-    Got <= '0';
+		Got <= '0';
 		WaitForClock(Clock);
 
 		WaitForBarrier(TestDone);

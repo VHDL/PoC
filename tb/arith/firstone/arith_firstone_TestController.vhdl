@@ -1,11 +1,11 @@
 -- =============================================================================
 -- Authors:         Gustavo Martin
 --
--- Entity:					arith_firstone_TestController
+-- Entity:          arith_firstone_TestController
 --
 -- Description:
 -- -------------------------------------
--- Test controller for arith_firstone
+-- Test controller for arith_FirstOne
 --
 -- License:
 -- =============================================================================
@@ -15,7 +15,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,21 +32,21 @@ library osvvm;
 context osvvm.OsvvmContext;
 
 library PoC;
-use PoC.utils.all;
+use     PoC.utils.all;
 
 entity arith_firstone_TestController is
-  generic (
-    N : positive := 8
-  );
-  port (
-    Clock : in  std_logic;
-    Reset : in  std_logic;
-    
-    -- DUT signals arith_firstone
-    tin  : out std_logic;
-    rqst : out std_logic_vector(N-1 downto 0);
-    grnt : in  std_logic_vector(N-1 downto 0);
-    tout : in  std_logic;
-    bin  : in  std_logic_vector(log2ceil(N)-1 downto 0)
-  );
+	generic (
+		N : positive := 8
+	);
+	port (
+		Clock : in  std_logic;
+		Reset : in  std_logic;
+		
+		-- DUT signals arith_FirstOne
+		tin  : out std_logic;
+		rqst : out std_logic_vector(N-1 downto 0);
+		grnt : in  std_logic_vector(N-1 downto 0);
+		tout : in  std_logic;
+		bin  : in  std_logic_vector(log2ceil(N)-1 downto 0)
+	);
 end entity;

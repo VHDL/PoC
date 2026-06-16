@@ -61,190 +61,190 @@
 --      Methoden und Anwendungen (FEES 2015), Oct, 2015.
 -- =============================================================================
 library IEEE;
-use IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
 entity misc_bit_lz is
-  generic(
-    COUNT_BITS     : positive;
-    OFFSET_BITS    : positive;
-    OUTPUT_REGS    : boolean := true;   -- Register all outputs
-    OPTIMIZE_SPEED : boolean := true    -- Favor achievable clock over size
-  );
-  port(
-    -- Global Control
-    clk : in std_logic;
-    rst : in std_logic;
+	generic(
+		COUNT_BITS     : positive;
+		OFFSET_BITS    : positive;
+		OUTPUT_REGS    : boolean := true;   -- Register all outputs
+		OPTIMIZE_SPEED : boolean := true    -- Favor achievable clock over size
+	);
+	port(
+		-- Global Control
+		Clock    : in  std_logic;
+		Reset    : in  std_logic;
 
-    -- Data Input
-    din   : in std_logic;
-    put   : in std_logic;
-    flush : in std_logic;  -- end of message,
-                           -- to be asserted after last associated put
+		-- Data Input
+		DataIn   : in  std_logic;
+		Put      : in  std_logic;
+		Flush    : in  std_logic;  -- end of message,
+													 -- to be asserted after last associated put
 
-    -- Data Output
-    odat : out std_logic_vector(COUNT_BITS+OFFSET_BITS downto 0);
-    ostb : out std_logic
-  );
-end misc_bit_lz;
+		-- Data Output
+		DataOut  : out std_logic_vector(COUNT_BITS+OFFSET_BITS downto 0);
+		Strobe   : out std_logic
+	);
+end entity;
 
 
 library IEEE;
-use IEEE.numeric_std.all;
+use     IEEE.numeric_std.all;
 
 architecture rtl of misc_bit_lz is
 
-  constant HISTORY_SIZE : positive := 2**OFFSET_BITS;
-  constant LITERAL_LEN  : positive := COUNT_BITS + OFFSET_BITS;
+	constant HISTORY_SIZE : positive := 2**OFFSET_BITS;
+	constant LITERAL_LEN  : positive := COUNT_BITS + OFFSET_BITS;
 
-  -- History and Match Buffers
-  signal History : std_logic_vector(HISTORY_SIZE   downto 0) := (others => '0');
-  signal Match   : std_logic_vector(HISTORY_SIZE-1 downto 0) := (others => '1');
+	-- History and Match Buffers
+	signal History : std_logic_vector(HISTORY_SIZE   downto 0) := (others => '0');
+	signal Match   : std_logic_vector(HISTORY_SIZE-1 downto 0) := (others => '1');
 
-  signal Count  : signed(COUNT_BITS downto 0)      := to_signed(-LITERAL_LEN-1, 1+COUNT_BITS);
-  signal Offset : unsigned(OFFSET_BITS-1 downto 0) := (others => '-');
-  signal Term   : std_logic                        := '0';
+	signal Count  : signed(COUNT_BITS downto 0)      := to_signed(-LITERAL_LEN-1, 1+COUNT_BITS);
+	signal Offset : unsigned(OFFSET_BITS-1 downto 0) := (others => '-');
+	signal Term   : std_logic                        := '0';
 
-  signal Offset_nxt : unsigned(Offset'range);
-  signal ov         : X01;              -- Counter Overflow
-  signal valid      : X01;              -- Still some Match available
+	signal Offset_nxt : unsigned(Offset'range);
+	signal ov         : X01;              -- Counter Overflow
+	signal valid      : X01;              -- Still some Match available
 
-  -- Outputs
-  signal data : std_logic_vector(odat'range);
-  signal push : std_logic;
+	-- Outputs
+	signal data : std_logic_vector(DataOut'range);
+	signal push : std_logic;
 
 begin
 
-  assert COUNT_BITS <= OFFSET_BITS
-    report "Requiring: COUNT_BITS <= OFFSET_BITS"
-    severity failure;
-  assert LITERAL_LEN < 2**COUNT_BITS
-    report "Requiring: COUNT_BITS + OFFSET_BITS < 2**COUNT_BITS"
-    severity failure;
+	assert COUNT_BITS <= OFFSET_BITS
+		report "Requiring: COUNT_BITS <= OFFSET_BITS"
+		severity failure;
+	assert LITERAL_LEN < 2**COUNT_BITS
+		report "Requiring: COUNT_BITS + OFFSET_BITS < 2**COUNT_BITS"
+		severity failure;
 
-  -- Registers
-  process(clk)
-    variable Count_nxt : signed(Count'range);
-    variable Match_nxt : std_logic_vector(Match'range);
-  begin
-    if rising_edge(clk) then
-      if rst = '1' or Term = '1' then
-        History <= (others => '0');
-        Match   <= (others => '1');
-        Count   <= to_signed(-LITERAL_LEN-1, Count'length);
-        Offset  <= (others => '-');
-        Term    <= '0';
-      elsif flush = '1' then
-        History <= (others => '-');
-        Match   <= (others => '-');
+	-- Registers
+	process(Clock)
+		variable Count_nxt : signed(Count'range);
+		variable Match_nxt : std_logic_vector(Match'range);
+	begin
+		if rising_edge(Clock) then
+			if Reset = '1' or Term = '1' then
+				History <= (others => '0');
+				Match   <= (others => '1');
+				Count   <= to_signed(-LITERAL_LEN-1, Count'length);
+				Offset  <= (others => '-');
+				Term    <= '0';
+			elsif Flush = '1' then
+				History <= (others => '-');
+				Match   <= (others => '-');
 				Count   <= (others => '1');  -- End Marker
 				Count(Count'left) <= '0';    -- Output Format Selector
-        if Count(Count'left) = '0' then
+				if Count(Count'left) = '0' then
 					Offset    <= (others => '0');
-          Offset(0) <= History(0);
-        else
+					Offset(0) <= History(0);
+				else
 					Offset    <= (others => '1'); -- Sign Extension
-          Offset(Count'left-1 downto 0) <= unsigned(Count(Count'left-1 downto 0));
-        end if;
-        Term <= '1';
-      else
+					Offset(Count'left-1 downto 0) <= unsigned(Count(Count'left-1 downto 0));
+				end if;
+				Term <= '1';
+			else
 
-        -- Check for an output condition
-        if push = '0' then
-          Match_nxt := Match;
-          Count_nxt := Count;
-          Offset    <= Offset_nxt;
-        else
-          case ov is
-            when '0' =>
-              Count_nxt := to_signed(-LITERAL_LEN-1, Count'length);
-              Match_nxt := (others => '1');
-            when '1' =>
-              Count_nxt := to_signed(-LITERAL_LEN,   Count'length);
-              Match_nxt := History(History'left downto 1) xnor (Match'range => History(0));
-            when 'X' =>
-              Count_nxt := (others => 'X');
-              Match_nxt := (others => 'X');
-          end case;
+				-- Check for an output condition
+				if push = '0' then
+					Match_nxt := Match;
+					Count_nxt := Count;
+					Offset    <= Offset_nxt;
+				else
+					case ov is
+						when '0' =>
+							Count_nxt := to_signed(-LITERAL_LEN-1, Count'length);
+							Match_nxt := (others => '1');
+						when '1' =>
+							Count_nxt := to_signed(-LITERAL_LEN,   Count'length);
+							Match_nxt := History(History'left downto 1) xnor (Match'range => History(0));
+						when 'X' =>
+							Count_nxt := (others => 'X');
+							Match_nxt := (others => 'X');
+					end case;
 
-          Offset <= (others => '-');
-        end if;
+					Offset <= (others => '-');
+				end if;
 
-        -- Check for an input condition
-        if put = '1' then
-          -- Shift input into History Buffer
-          History <= History(History'left-1 downto 0) & din;
+				-- Check for an input condition
+				if Put = '1' then
+					-- Shift input into History Buffer
+					History <= History(History'left-1 downto 0) & DataIn;
 
-          -- Update Match vector and Count
-          Match_nxt := Match_nxt and (History(Match'range) xnor (Match'range => din));
-          Count_nxt := Count_nxt + 1;
-        end if;
+					-- Update Match vector and Count
+					Match_nxt := Match_nxt and (History(Match'range) xnor (Match'range => DataIn));
+					Count_nxt := Count_nxt + 1;
+				end if;
 
-        Match <= Match_nxt;
-        Count <= Count_nxt;
+				Match <= Match_nxt;
+				Count <= Count_nxt;
 
-      end if; -- rst /= '1'
-    end if;   -- rising_edge(clk)
+			end if; -- rst /= '1'
+		end if;   -- rising_edge(clk)
 
-  end process;
+	end process;
 
-  genPlain: if OPTIMIZE_SPEED generate
-    process(Match)
-    begin
-      Offset_nxt <= (others => '-');
-      for i in Match'range loop
-        if Match(i) = '1' then
-          Offset_nxt <= to_unsigned(i, Offset'length);
-        end if;
-      end loop;
-    end process;
-  end generate genPlain;
-  genArith: if not OPTIMIZE_SPEED generate
-    process(Match)
-      variable onehot : std_logic_vector(Match'range);
-      variable binary : unsigned(Offset'range);
-    begin
-      onehot := std_logic_vector(unsigned(not Match) + 1) and Match;
-      binary := (others => '0');
-      for i in onehot'range loop
-        if onehot(i) = '1' then
-          binary := binary or to_unsigned(i, binary'length);
-        end if;
-      end loop;
-      Offset_nxt <= binary;
-    end process;
-  end generate genArith;
+	genPlain: if OPTIMIZE_SPEED generate
+		process(Match)
+		begin
+			Offset_nxt <= (others => '-');
+			for i in Match'range loop
+				if Match(i) = '1' then
+					Offset_nxt <= to_unsigned(i, Offset'length);
+				end if;
+			end loop;
+		end process;
+	end generate genPlain;
+	genArith: if not OPTIMIZE_SPEED generate
+		process(Match)
+			variable onehot : std_logic_vector(Match'range);
+			variable binary : unsigned(Offset'range);
+		begin
+			onehot := std_logic_vector(unsigned(not Match) + 1) and Match;
+			binary := (others => '0');
+			for i in onehot'range loop
+				if onehot(i) = '1' then
+					binary := binary or to_unsigned(i, binary'length);
+				end if;
+			end loop;
+			Offset_nxt <= binary;
+		end process;
+	end generate genArith;
 
-  -- Check for Counter Overflow
-  ov <= 'X' when Is_X(std_logic_vector(Count)) else
-        '1' when Count = 2**COUNT_BITS-2 else
-        '0';
+	-- Check for Counter Overflow
+	ov <= 'X' when Is_X(std_logic_vector(Count)) else
+				'1' when Count = 2**COUNT_BITS-2 else
+				'0';
 
-  -- Check if there is still some valid Match
-  valid <= '0' when Match = (Match'range => '0') else                                  -- all '0'
-           'X' when to_bitvector(std_ulogic_vector(Match)) = (Match'range => '0') else -- no '1'
-           '1';                                                                        -- some '1'
+	-- Check if there is still some valid Match
+	valid <= '0' when Match = (Match'range => '0') else                                  -- all '0'
+					 'X' when to_bitvector(std_ulogic_vector(Match)) = (Match'range => '0') else -- no '1'
+					 '1';                                                                        -- some '1'
 
-  -- Compute Outputs
-  data <= '1' & History(LITERAL_LEN-1 downto 0) when Count(Count'left) = '1' else -- literal
-          std_logic_vector(Count) & std_logic_vector(Offset);                     -- repetition
-  push <= '1' when flush = '1' or Term = '1' else
-          'X' when Is_X(std_logic_vector(Count)) else
-          ov  when ov /= '0' else
-          not valid when Count >= -1 else
-          '0';
+	-- Compute Outputs
+	data <= '1' & History(LITERAL_LEN-1 downto 0) when Count(Count'left) = '1' else -- literal
+					std_logic_vector(Count) & std_logic_vector(Offset);                     -- repetition
+	push <= '1' when Flush = '1' or Term = '1' else
+					'X' when Is_X(std_logic_vector(Count)) else
+					ov  when ov /= '0' else
+					not valid when Count >= -1 else
+					'0';
 
-  genOutputComb: if not OUTPUT_REGS generate
-    odat <= data;
-    ostb <= push;
-  end generate;
-  genOutputRegs: if OUTPUT_REGS generate
-    process(clk)
-    begin
-      if rising_edge(clk) then
-				odat <= data;
-				ostb <= push;
-      end if;
-    end process;
-  end generate;
+	genOutputComb: if not OUTPUT_REGS generate
+		DataOut <= data;
+		Strobe <= push;
+	end generate;
+	genOutputRegs: if OUTPUT_REGS generate
+		process(Clock)
+		begin
+			if rising_edge(Clock) then
+				DataOut <= data;
+				Strobe <= push;
+			end if;
+		end process;
+	end generate;
 
-end rtl;
+end architecture;

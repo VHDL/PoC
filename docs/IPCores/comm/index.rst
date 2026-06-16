@@ -13,5 +13,5 @@ These are communication entities....
 .. toctree::
    :hidden:
 
-   comm_crc <comm_crc>
-   comm_scramble <comm_scramble>
+   comm_CRC <comm_CRC>
+   comm_Scramble <comm_Scramble>

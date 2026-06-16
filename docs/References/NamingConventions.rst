@@ -26,8 +26,8 @@ also referred to as ``PoCRoot``.
     like \*.xco files from Xilinx Core Generator. Generated IP cores are stored
     in device sub-directories, because most netlists formats are device specific.
     For example the IP core ``PoC.arith.prng`` created from source file
-    ``src\arith\arith_prng.vhdl`` generated for a Kintex-7 325T mounted on a
-    KC705 board will be copied to ``netlist\XC7K325T-2FFG900\arith\arith_prng.ngc``
+    ``src\arith\arith_PRNG.vhdl`` generated for a Kintex-7 325T mounted on a
+    KC705 board will be copied to ``netlist\XC7K325T-2FFG900\arith\arith_PRNG.ngc``
     if Xilinx ISE XST is used for synthesis.
 * ``py``
     The supporting Python infrastructure, the configuration files and the IP

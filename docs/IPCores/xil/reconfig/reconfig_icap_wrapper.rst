@@ -1,4 +1,4 @@
-.. _IP/reconfig_icap_wrapper:
+.. _IP/reconfig_ICAP_Wrapper:
 
 PoC.xil.reconfig.icap_wrapper
 #############################
@@ -7,7 +7,7 @@ PoC.xil.reconfig.icap_wrapper
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/xil/reconfig/reconfig_icap_wrapper.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/xil/reconfig/reconfig_ICAP_Wrapper.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.xil.reconfig.icap_wrapper
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <xil/reconfig/reconfig_icap_wrapper.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <xil/reconfig/reconfig_ICAP_Wrapper.vhdl>`
       * |gh-tb| :poctb:`Testbench <xil/reconfig/reconfig_icap_wrapper_tb.vhdl>`
 
 This module was designed to connect the Xilinx "Internal Configuration Access Port" (ICAP)
@@ -28,7 +28,7 @@ tbd
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/xil/reconfig/reconfig_icap_wrapper.vhdl
+.. literalinclude:: ../../../../src/xil/reconfig/reconfig_ICAP_Wrapper.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -38,4 +38,4 @@ tbd
 
 .. only:: latex
 
-   Source file: :pocsrc:`xil/reconfig/reconfig_icap_wrapper.vhdl <xil/reconfig/reconfig_icap_wrapper.vhdl>`
+   Source file: :pocsrc:`xil/reconfig/reconfig_ICAP_Wrapper.vhdl <xil/reconfig/reconfig_ICAP_Wrapper.vhdl>`

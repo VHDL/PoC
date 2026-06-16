@@ -19,8 +19,8 @@ PoC.bus.wb.uart_wrapper
       * |gh-src| :pocsrc:`Sourcecode <bus/wb/wb_uart_wrapper.vhdl>`
       * |gh-tb| :poctb:`Testbench <bus/wb/wb_uart_wrapper_tb.vhdl>`
 
-Wrapper module for :doc:`PoC.io.uart.rx </IPCores/io/uart/uart_rx>` and
-:doc:`PoC.io.uart.tx </IPCores/io/uart/uart_tx>` to support the Wishbone
+Wrapper module for :doc:`PoC.io.uart.rx </IPCores/io/uart/uart_RX>` and
+:doc:`PoC.io.uart.tx </IPCores/io/uart/uart_TX>` to support the Wishbone
 interface. Synchronized reset is used.
 
 

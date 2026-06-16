@@ -427,7 +427,6 @@ use     work.utils.all;
 
 package config is
 	constant PROJECT_DIR        : string  := normalizePath(MY_PROJECT_DIR);
-	constant OPERATING_SYSTEM   : string  := MY_OPERATING_SYSTEM;
 	constant POC_VERBOSE        : boolean := MY_VERBOSE;
 
 	-- List of known FPGA / Chip vendors
@@ -640,7 +639,7 @@ package body config is
 	function chr_isAlpha(chr : character) return boolean is
 		begin
 		return (((character'pos('a') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('z'))) or
-		        ((character'pos('A') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('Z'))));
+						((character'pos('A') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('Z'))));
 	end function;
 
 	function chr_isLowerAlpha(chr : character) return boolean is

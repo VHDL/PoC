@@ -5,7 +5,7 @@
 --
 -- Description:
 -- -------------------------------------
--- Test harness for arith_same component
+-- Test harness for arith_Same component
 --
 -- License:
 -- =============================================================================
@@ -15,7 +15,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -75,9 +75,9 @@ begin
 		tpd         => 0 ns
 	);
 
-	DUT : entity PoC.arith_same
+	DUT : entity PoC.arith_Same
 		generic map (
-			N => BITS
+			BITS => BITS
 		)
 		port map (
 			g => g,

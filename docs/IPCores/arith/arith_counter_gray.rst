@@ -1,4 +1,4 @@
-.. _IP/arith_counter_gray:
+.. _IP/arith_Counter_Gray:
 
 PoC.arith.counter_gray
 ######################
@@ -7,7 +7,7 @@ PoC.arith.counter_gray
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_counter_gray.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Counter_Gray.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.counter_gray
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_counter_gray.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Counter_Gray.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_counter_gray_tb.vhdl>`
 
 .. TODO:: No documentation available.
@@ -25,7 +25,7 @@ PoC.arith.counter_gray
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_counter_gray.vhdl
+.. literalinclude:: ../../../src/arith/arith_Counter_Gray.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -35,4 +35,4 @@ PoC.arith.counter_gray
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_counter_gray.vhdl <arith/arith_counter_gray.vhdl>`
+   Source file: :pocsrc:`arith/arith_Counter_Gray.vhdl <arith/arith_Counter_Gray.vhdl>`

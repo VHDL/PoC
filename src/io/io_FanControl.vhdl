@@ -45,7 +45,7 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
 use     work.config.all;
@@ -69,7 +69,7 @@ entity io_FanControl is
 		Reset                   : in  std_logic;
 
 		-- Fan Control derived from internal System Health Monitor
-		Fan_PWM                 : out  std_logic;
+		Fan_PWM                 : out std_logic;
 
 		-- Decoding of Speed Sensor (Requires ENABLE_TACHO)
 		Fan_Tacho      : in  std_logic := 'X';
@@ -250,4 +250,4 @@ begin
 		-- multiply by 64; divide by 2 for RPMs (2 impulses per revolution) => append 5x '0'
 		TachoFrequency  <= resize(Tacho_Freq & "00000", TachoFrequency'length);    -- resizing to 16 bit
 	end generate;
-end;
+end architecture;

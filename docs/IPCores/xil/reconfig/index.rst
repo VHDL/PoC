@@ -7,11 +7,11 @@ These are reconfig entities....
 
 **Entities**
 
- * :ref:`IP/reconfig_icap_fsm`
- * :ref:`IP/reconfig_icap_wrapper`
+ * :ref:`IP/reconfig_ICAP_FSM`
+ * :ref:`IP/reconfig_ICAP_Wrapper`
 
 .. toctree::
    :hidden:
 
-   reconfig_icap_fsm <reconfig_icap_fsm>
-   reconfig_icap_wrapper <reconfig_icap_wrapper>
+   reconfig_ICAP_FSM <reconfig_ICAP_FSM>
+   reconfig_ICAP_Wrapper <reconfig_ICAP_Wrapper>

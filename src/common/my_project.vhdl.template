@@ -1,7 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:         Patrick Lehmann
 --
@@ -40,6 +36,5 @@
 
 package my_project is
 	-- Change these lines to setup configuration.
-	constant MY_PROJECT_DIR				: string	:= "CHANGE THIS";		-- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
-	constant MY_OPERATING_SYSTEM	: string	:= "CHANGE THIS";		-- e.g. "WINDOWS", "LINUX"
+	constant MY_PROJECT_DIR				: string	:= "CHANGE THIS in my_project.vhdl";		-- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
 end package;

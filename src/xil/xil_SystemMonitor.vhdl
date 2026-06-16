@@ -1,7 +1,7 @@
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:           Patrick Lehmann
 --
--- Entity:				 	SysMon wrapper for temperature supervision applications
+-- Entity:           SysMon wrapper for temperature supervision applications
 --
 -- Description:
 -- -------------------------------------
@@ -27,13 +27,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,10 +43,10 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library	UniSim;
+library UniSim;
 use     UniSim.vComponents.all;
 
 use     work.config.all;
@@ -54,20 +54,20 @@ use     work.config.all;
 
 entity xil_SystemMonitor is
 	port (
-		Reset								: in	std_logic;				-- Reset signal for the System Monitor control logic
+		Reset                : in  std_logic;        -- Reset signal for the System Monitor control logic
 
-		Alarm_UserTemp			: out	std_logic;				-- Temperature-sensor alarm output
-		Alarm_OverTemp			: out	std_logic;				-- Over-Temperature alarm output
-		Alarm								: out	std_logic;				-- OR'ed output of all the Alarms
-		VP									: in	std_logic;				-- Dedicated Analog Input Pair
-		VN									: in	std_logic
+		Alarm_UserTemp      : out std_logic;        -- Temperature-sensor alarm output
+		Alarm_OverTemp      : out std_logic;        -- Over-Temperature alarm output
+		Alarm                : out std_logic;        -- OR'ed output of all the Alarms
+		VP                  : in  std_logic;        -- Dedicated Analog Input Pair
+		VN                  : in  std_logic
 	);
 end entity;
 
 
 architecture xilinx of xil_SystemMonitor is
-	signal aux_channel_p				: std_logic_vector(15 downto 0);
-	signal aux_channel_n				: std_logic_vector(15 downto 0);
+	signal aux_channel_p        : std_logic_vector(15 downto 0);
+	signal aux_channel_n        : std_logic_vector(15 downto 0);
 
 begin
 	aux_channel_p <= (others => '0');
@@ -79,128 +79,128 @@ begin
 	begin
 		SysMonitor : SYSMON
 			generic map (
-				INIT_40						=> x"0000",										-- config reg 0
-				INIT_41						=> x"300c",										-- config reg 1
-				INIT_42						=> x"0a00",										-- config reg 2
-				INIT_48						=> x"0100",										-- Sequencer channel selection
-				INIT_49						=> x"0000",										-- Sequencer channel selection
-				INIT_4A						=> x"0000",										-- Sequencer Average selection
-				INIT_4B						=> x"0000",										-- Sequencer Average selection
-				INIT_4C						=> x"0000",										-- Sequencer Bipolar selection
-				INIT_4D						=> x"0000",										-- Sequencer Bipolar selection
-				INIT_4E						=> x"0000",										-- Sequencer Acq time selection
-				INIT_4F						=> x"0000",										-- Sequencer Acq time selection
-				INIT_50						=> x"a418",										-- Temp alarm trigger
-				INIT_51						=> x"5999",										-- Vccint upper alarm limit
-				INIT_52						=> x"e000",										-- Vccaux upper alarm limit
-				INIT_53						=> x"b363",										-- Temp alarm OT upper
-				INIT_54						=> x"9c87",										-- Temp alarm reset
-				INIT_55						=> x"5111",										-- Vccint lower alarm limit
-				INIT_56						=> x"caaa",										-- Vccaux lower alarm limit
-				INIT_57						=> x"a425",										-- Temp alarm OT reset
-				SIM_DEVICE				=> "VIRTEX6",
-				SIM_MONITOR_FILE	=> "SystemMonitor_sim.txt"
+				INIT_40            => x"0000",                    -- config reg 0
+				INIT_41            => x"300c",                    -- config reg 1
+				INIT_42            => x"0a00",                    -- config reg 2
+				INIT_48            => x"0100",                    -- Sequencer channel selection
+				INIT_49            => x"0000",                    -- Sequencer channel selection
+				INIT_4A            => x"0000",                    -- Sequencer Average selection
+				INIT_4B            => x"0000",                    -- Sequencer Average selection
+				INIT_4C            => x"0000",                    -- Sequencer Bipolar selection
+				INIT_4D            => x"0000",                    -- Sequencer Bipolar selection
+				INIT_4E            => x"0000",                    -- Sequencer Acq time selection
+				INIT_4F            => x"0000",                    -- Sequencer Acq time selection
+				INIT_50            => x"a418",                    -- Temp alarm trigger
+				INIT_51            => x"5999",                    -- Vccint upper alarm limit
+				INIT_52            => x"e000",                    -- Vccaux upper alarm limit
+				INIT_53            => x"b363",                    -- Temp alarm OT upper
+				INIT_54            => x"9c87",                    -- Temp alarm reset
+				INIT_55            => x"5111",                    -- Vccint lower alarm limit
+				INIT_56            => x"caaa",                    -- Vccaux lower alarm limit
+				INIT_57            => x"a425",                    -- Temp alarm OT reset
+				SIM_DEVICE        => "VIRTEX6",
+				SIM_MONITOR_FILE  => "SystemMonitor_sim.txt"
 			)
 			port map (
 				-- Control and Clock
-				RESET							=> Reset,
-				CONVSTCLK					=> '0',
-				CONVST						=> '0',
+				RESET              => Reset,
+				CONVSTCLK          => '0',
+				CONVST            => '0',
 				-- DRP port
-				DCLK							=> '0',
-				DEN								=> '0',
-				DADDR							=> "0000000",
-				DWE								=> '0',
-				DI								=> x"0000",
-				DO								=> open,
-				DRDY							=> open,
+				DCLK              => '0',
+				DEN                => '0',
+				DADDR              => "0000000",
+				DWE                => '0',
+				DI                => x"0000",
+				DO                => open,
+				DRDY              => open,
 				-- External analog inputs
-				VAUXN							=> aux_channel_n,
-				VAUXP							=> aux_channel_p,
-				VN								=> VN,
-				VP								=> VP,
+				VAUXN              => aux_channel_n,
+				VAUXP              => aux_channel_p,
+				VN                => VN,
+				VP                => VP,
 				-- Alarms
-				OT								=> SysMon_OverTemp,
-				ALM								=> SysMon_Alarm,
+				OT                => SysMon_OverTemp,
+				ALM                => SysMon_Alarm,
 				-- Status
-				CHANNEL						=> open,
-				BUSY							=> open,
-				EOC								=> open,
-				EOS								=> open,
+				CHANNEL            => open,
+				BUSY              => open,
+				EOC                => open,
+				EOS                => open,
 
-				JTAGBUSY					=> open,
-				JTAGLOCKED				=> open,
-				JTAGMODIFIED			=> open
+				JTAGBUSY          => open,
+				JTAGLOCKED        => open,
+				JTAGMODIFIED      => open
 			);
 
-		Alarm_UserTemp	<= SysMon_Alarm(0);
-		Alarm_OverTemp	<= SysMon_OverTemp;
-		Alarm						<= SysMon_Alarm(0) or SysMon_OverTemp;
+		Alarm_UserTemp  <= SysMon_Alarm(0);
+		Alarm_OverTemp  <= SysMon_OverTemp;
+		Alarm            <= SysMon_Alarm(0) or SysMon_OverTemp;
 	end generate;
 	genSeries7: if (DEVICE_SERIES = DEVICE_SERIES_7_SERIES) generate
 		signal XADC_Alarm       : std_logic_vector(7 downto 0);
 	begin
 		SysMonitor : XADC
 			generic map (
-				INIT_40							=> x"8000",					-- config reg 0
-				INIT_41							=> x"8f0c",					-- config reg 1
-				INIT_42							=> x"0400",					-- config reg 2
-				INIT_48							=> x"0000",					-- Sequencer channel selection
-				INIT_49							=> x"0000",					-- Sequencer channel selection
-				INIT_4A							=> x"0000",					-- Sequencer Average selection
-				INIT_4B							=> x"0000",					-- Sequencer Average selection
-				INIT_4C							=> x"0000",					-- Sequencer Bipolar selection
-				INIT_4D							=> x"0000",					-- Sequencer Bipolar selection
-				INIT_4E							=> x"0000",					-- Sequencer Acq time selection
-				INIT_4F							=> x"0000",					-- Sequencer Acq time selection
-				INIT_50							=> x"9c87",					-- Temp alarm trigger
-				INIT_51							=> x"57e4",					-- Vccint upper alarm limit
-				INIT_52							=> x"a147",					-- Vccaux upper alarm limit
-				INIT_53							=> x"b363",					-- Temp alarm OT upper
-				INIT_54							=> x"99fd",					-- Temp alarm reset
-				INIT_55							=> x"52c6",					-- Vccint lower alarm limit
-				INIT_56							=> x"9555",					-- Vccaux lower alarm limit
-				INIT_57							=> x"a93a",					-- Temp alarm OT reset
-				INIT_58							=> x"5999",					-- Vbram upper alarm limit
-				INIT_5C							=> x"5111",					-- Vbram lower alarm limit
-				SIM_DEVICE					=> "7SERIES",
-				SIM_MONITOR_FILE		=> "design.txt"
+				INIT_40              => x"8000",          -- config reg 0
+				INIT_41              => x"8f0c",          -- config reg 1
+				INIT_42              => x"0400",          -- config reg 2
+				INIT_48              => x"0000",          -- Sequencer channel selection
+				INIT_49              => x"0000",          -- Sequencer channel selection
+				INIT_4A              => x"0000",          -- Sequencer Average selection
+				INIT_4B              => x"0000",          -- Sequencer Average selection
+				INIT_4C              => x"0000",          -- Sequencer Bipolar selection
+				INIT_4D              => x"0000",          -- Sequencer Bipolar selection
+				INIT_4E              => x"0000",          -- Sequencer Acq time selection
+				INIT_4F              => x"0000",          -- Sequencer Acq time selection
+				INIT_50              => x"9c87",          -- Temp alarm trigger
+				INIT_51              => x"57e4",          -- Vccint upper alarm limit
+				INIT_52              => x"a147",          -- Vccaux upper alarm limit
+				INIT_53              => x"b363",          -- Temp alarm OT upper
+				INIT_54              => x"99fd",          -- Temp alarm reset
+				INIT_55              => x"52c6",          -- Vccint lower alarm limit
+				INIT_56              => x"9555",          -- Vccaux lower alarm limit
+				INIT_57              => x"a93a",          -- Temp alarm OT reset
+				INIT_58              => x"5999",          -- Vbram upper alarm limit
+				INIT_5C              => x"5111",          -- Vbram lower alarm limit
+				SIM_DEVICE          => "7SERIES",
+				SIM_MONITOR_FILE    => "design.txt"
 			)
 			port map (
 				-- Control and Clock
-				RESET								=> Reset,
-				CONVSTCLK						=> '0',
-				CONVST							=> '0',
+				RESET                => Reset,
+				CONVSTCLK            => '0',
+				CONVST              => '0',
 				-- DRP port
-				DCLK								=> '0',
-				DEN									=> '0',
-				DADDR								=> "0000000",
-				DWE									=> '0',
-				DI									=> x"0000",
-				DO									=> open,
-				DRDY								=> open,
+				DCLK                => '0',
+				DEN                  => '0',
+				DADDR                => "0000000",
+				DWE                  => '0',
+				DI                  => x"0000",
+				DO                  => open,
+				DRDY                => open,
 				-- External analog inputs
-				VAUXN								=> aux_channel_n,
-				VAUXP								=> aux_channel_p,
-				VN									=> VN,
-				VP									=> VP,
+				VAUXN                => aux_channel_n,
+				VAUXP                => aux_channel_p,
+				VN                  => VN,
+				VP                  => VP,
 				-- Alarms
-				OT									=> Alarm_OverTemp,
-				ALM									=> XADC_Alarm,
+				OT                  => Alarm_OverTemp,
+				ALM                  => XADC_Alarm,
 				-- Status
-				MUXADDR							=> open,
-				CHANNEL							=> open,
-				BUSY								=> open,
-				EOC									=> open,
-				EOS									=> open,
+				MUXADDR              => open,
+				CHANNEL              => open,
+				BUSY                => open,
+				EOC                  => open,
+				EOS                  => open,
 
-				JTAGBUSY						=> open,
-				JTAGLOCKED					=> open,
-				JTAGMODIFIED				=> open
+				JTAGBUSY            => open,
+				JTAGLOCKED          => open,
+				JTAGMODIFIED        => open
 		 );
 
-		Alarm						<= XADC_Alarm(7);
-		Alarm_UserTemp	<= XADC_Alarm(0);
+		Alarm            <= XADC_Alarm(7);
+		Alarm_UserTemp  <= XADC_Alarm(0);
 	end generate;
 	genUltraScale: if (DEVICE_SERIES = DEVICE_SERIES_ULTRASCALE) generate
 		signal SysMon_Alarm  : std_logic_vector(15 downto 0);
@@ -286,8 +286,8 @@ begin
 				VP            => VP
 			);
 
-		Alarm						<= SysMon_Alarm(7);
-		Alarm_UserTemp	<= SysMon_Alarm(0);
+		Alarm            <= SysMon_Alarm(7);
+		Alarm_UserTemp  <= SysMon_Alarm(0);
 	end generate;
 	genUltraScalePlus: if (DEVICE_SERIES = DEVICE_SERIES_ULTRASCALE_PLUS) generate
 		signal SysMon_Alarm  : std_logic_vector(7 downto 0);
@@ -383,7 +383,7 @@ begin
 				VP            => vp
 			);
 
-		Alarm						<= SysMon_Alarm(7);
-		Alarm_UserTemp	<= SysMon_Alarm(0);
+		Alarm            <= SysMon_Alarm(7);
+		Alarm_UserTemp  <= SysMon_Alarm(0);
 	end generate;
 end architecture;

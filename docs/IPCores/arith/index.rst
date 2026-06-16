@@ -12,21 +12,21 @@ These are arithmetic entities....
 **Entities**
 
  * :ref:`IP/arith_addw`
- * :ref:`IP/arith_carrychain_inc`
+ * :ref:`IP/arith_CarryChain_inc`
  * :ref:`IP/arith_convert_bin2bcd`
- * :ref:`IP/arith_counter_bcd`
+ * :ref:`IP/arith_Counter_BCD`
  * :ref:`IP/arith_counter_free`
- * :ref:`IP/arith_counter_gray`
- * :ref:`IP/arith_counter_ring`
- * :ref:`IP/arith_div`
- * :ref:`IP/arith_firstone`
+ * :ref:`IP/arith_Counter_Gray`
+ * :ref:`IP/arith_Counter_Ring`
+ * :ref:`IP/arith_Div`
+ * :ref:`IP/arith_FirstOne`
  * :ref:`IP/arith_muls_wide`
- * :ref:`IP/arith_prefix_and`
- * :ref:`IP/arith_prefix_or`
- * :ref:`IP/arith_prng`
- * :ref:`IP/arith_same`
- * :ref:`IP/arith_scaler`
- * :ref:`IP/arith_shifter_barrel`
+ * :ref:`IP/arith_Prefix_And`
+ * :ref:`IP/arith_Prefix_Or`
+ * :ref:`IP/arith_PRNG`
+ * :ref:`IP/arith_Same`
+ * :ref:`IP/arith_Scaler`
+ * :ref:`IP/arith_Shifter_Barrel`
  * :ref:`IP/arith_sqrt`
 
 
@@ -39,19 +39,19 @@ These are arithmetic entities....
    :hidden:
 
    arith_addw <arith_addw>
-   arith_carrychain_inc <arith_carrychain_inc>
+   arith_CarryChain_inc <arith_CarryChain_inc>
    arith_convert_bin2bcd <arith_convert_bin2bcd>
-   arith_counter_bcd <arith_counter_bcd>
+   arith_Counter_BCD <arith_Counter_BCD>
    arith_counter_free <arith_counter_free>
-   arith_counter_gray <arith_counter_gray>
-   arith_counter_ring <arith_counter_ring>
-   arith_div <arith_div>
-   arith_firstone <arith_firstone>
+   arith_Counter_Gray <arith_Counter_Gray>
+   arith_Counter_Ring <arith_Counter_Ring>
+   arith_Div <arith_Div>
+   arith_FirstOne <arith_FirstOne>
    arith_muls_wide <arith_muls_wide>
-   arith_prefix_and <arith_prefix_and>
-   arith_prefix_or <arith_prefix_or>
-   arith_prng <arith_prng>
-   arith_same <arith_same>
-   arith_scaler <arith_scaler>
-   arith_shifter_barrel <arith_shifter_barrel>
+   arith_Prefix_And <arith_Prefix_And>
+   arith_Prefix_Or <arith_Prefix_Or>
+   arith_PRNG <arith_PRNG>
+   arith_Same <arith_Same>
+   arith_Scaler <arith_Scaler>
+   arith_Shifter_Barrel <arith_Shifter_Barrel>
    arith_sqrt <arith_sqrt>

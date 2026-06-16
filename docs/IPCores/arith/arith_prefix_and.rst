@@ -1,4 +1,4 @@
-.. _IP/arith_prefix_and:
+.. _IP/arith_Prefix_And:
 
 PoC.arith.prefix_and
 ####################
@@ -7,7 +7,7 @@ PoC.arith.prefix_and
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_prefix_and.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Prefix_And.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.prefix_and
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_prefix_and.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Prefix_And.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_prefix_and_tb.vhdl>`
 
 Prefix AND computation:
@@ -27,7 +27,7 @@ This implementation uses carry chains for wider implementations.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_prefix_and.vhdl
+.. literalinclude:: ../../../src/arith/arith_Prefix_And.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -37,4 +37,4 @@ This implementation uses carry chains for wider implementations.
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_prefix_and.vhdl <arith/arith_prefix_and.vhdl>`
+   Source file: :pocsrc:`arith/arith_Prefix_And.vhdl <arith/arith_Prefix_And.vhdl>`

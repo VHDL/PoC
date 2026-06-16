@@ -1,11 +1,11 @@
 -- =============================================================================
 -- Authors:         Gustavo Martin
 --
--- Entity:					arith_scaler_TestController
+-- Entity:          arith_scaler_TestController
 --
 -- Description:
 -- -------------------------------------
--- Test controller for arith_scaler
+-- Test controller for arith_Scaler
 --
 -- License:
 -- =============================================================================
@@ -15,7 +15,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,24 +32,24 @@ library osvvm;
 context osvvm.OsvvmContext;
 
 library PoC;
-use PoC.utils.all;
+use     PoC.utils.all;
 
 entity arith_scaler_TestController is
-  generic (
-    MULS      : T_POSVEC;
-    DIVS      : T_POSVEC;
-    ARG_WIDTH : positive
-  );
-  port (
-    Clock : in  std_logic;
-    Reset : in  std_logic;
-    
-    -- DUT signals arith_scaler
-    start : out std_logic;
-    arg   : out std_logic_vector(ARG_WIDTH-1 downto 0);
-    msel  : out std_logic_vector(log2ceil(MULS'length)-1 downto 0);
-    dsel  : out std_logic_vector(log2ceil(DIVS'length)-1 downto 0);
-    done  : in  std_logic;
-    res   : in  std_logic_vector(ARG_WIDTH-1 downto 0)
-  );
+	generic (
+		MULS      : positive_vector;
+		DIVS      : positive_vector;
+		ARG_WIDTH : positive
+	);
+	port (
+		Clock : in  std_logic;
+		Reset : in  std_logic;
+
+		-- DUT signals arith_Scaler
+		start : out std_logic;
+		arg   : out std_logic_vector(ARG_WIDTH-1 downto 0);
+		msel  : out std_logic_vector(log2ceil(MULS'length)-1 downto 0);
+		dsel  : out std_logic_vector(log2ceil(DIVS'length)-1 downto 0);
+		done  : in  std_logic;
+		res   : in  std_logic_vector(ARG_WIDTH-1 downto 0)
+	);
 end entity;

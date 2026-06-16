@@ -1,4 +1,4 @@
-.. _IP/arith_carrychain_inc:
+.. _IP/arith_CarryChain_inc:
 
 PoC.arith.carrychain_inc
 ########################
@@ -7,7 +7,7 @@ PoC.arith.carrychain_inc
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_carrychain_inc.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_CarryChain_inc.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.carrychain_inc
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_carrychain_inc.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_CarryChain_inc.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_carrychain_inc_tb.vhdl>`
 
 This is a generic carry-chain abstraction for increment by one operations.
@@ -27,7 +27,7 @@ Y <= X + (0...0) & Cin
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_carrychain_inc.vhdl
+.. literalinclude:: ../../../src/arith/arith_CarryChain_inc.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -37,4 +37,4 @@ Y <= X + (0...0) & Cin
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_carrychain_inc.vhdl <arith/arith_carrychain_inc.vhdl>`
+   Source file: :pocsrc:`arith/arith_CarryChain_inc.vhdl <arith/arith_CarryChain_inc.vhdl>`

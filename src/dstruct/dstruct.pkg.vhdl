@@ -27,56 +27,58 @@
 -- =============================================================================
 
 library IEEE;
-use IEEE.std_logic_1164.all;
+use     IEEE.std_logic_1164.all;
 
 package dstruct is
 
-  component dstruct_stack is
-    generic (
-      D_BITS    : positive;  						-- Data Width
-      MIN_DEPTH : positive  						-- Minimum Stack Depth
-    );
-    port (
-      -- INPUTS
-      clk, rst : in std_logic;
+	component dstruct_Stack is
+		generic (
+			DATA_BITS    : positive;              -- Data Width
+			MIN_DEPTH : positive              -- Minimum Stack Depth
+		);
+		port (
+			-- INPUTS
+			Clock : in  std_logic;
+			Reset : in  std_logic;
 
-      -- Write Ports
-      din  : in  std_logic_vector(D_BITS-1 downto 0);  -- Data Input
-      put  : in  std_logic;  -- 0 -> pop, 1 -> push
-      full : out std_logic;
+			-- Write Ports
+			Put     : in  std_logic;  -- 0 -> top, 1 -> push
+			DataIn  : in  std_logic_vector(DATA_BITS-1 downto 0);  -- Data Input
+			Full    : out std_logic;
 
-      -- Read Ports
-      got   : in  std_logic;
-      dout  : out std_logic_vector(D_BITS-1 downto 0);
-      valid : out std_logic
-    );
-	end component dstruct_stack;
+			-- Read Ports
+			Got     : in  std_logic;
+			DataOut : out std_logic_vector(DATA_BITS-1 downto 0);
+			Valid   : out std_logic
+		);
+	end component dstruct_Stack;
 
-  component dstruct_deque is
-    generic (
-      D_BITS    : positive;  						-- Data Width
-      MIN_DEPTH : positive  						-- Minimum Deque Depth
-    );
-    port (
-      -- Shared Ports
-      clk, rst : in std_logic;
+	component dstruct_DoubleEndedQueue is
+		generic (
+			DATA_BITS    : positive;              -- Data Width
+			MIN_DEPTH : positive              -- Minimum Deque Depth
+		);
+		port (
+			-- Shared Ports
+			Clock : in  std_logic;
+			Reset : in  std_logic;
 
-      -- Port A
-      dinA   : in  std_logic_vector(D_BITS-1 downto 0);  -- DataA Input
-      putA   : in  std_logic;
-      gotA   : in  std_logic;
-      doutA  : out std_logic_vector(D_BITS-1 downto 0);  -- DataA Output
-      validA : out std_logic;
-      fullA  : out std_logic;
+			-- Port A
+			PortA_Put   : in  std_logic;
+			PortA_DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);  -- DataA Input
+			PortA_Full  : out std_logic;
+			PortA_Got   : in  std_logic;
+			PortA_DataOut  : out std_logic_vector(DATA_BITS-1 downto 0);  -- DataA Output
+			PortA_Valid : out std_logic;
 
-      -- Port B
-      dinB   : in  std_logic_vector(D_BITS-1 downto 0);  -- DataB Input
-      putB   : in  std_logic;
-      gotB   : in  std_logic;
-      doutB  : out std_logic_vector(D_BITS-1 downto 0);
-      validB : out std_logic;
-      fullB  : out std_logic
-    );
-  end component dstruct_deque;
+			-- Port B
+			PortB_Put   : in  std_logic;
+			PortB_DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);  -- DataB Input
+			PortB_Full  : out std_logic;
+			PortB_Got   : in  std_logic;
+			PortB_DataOut  : out std_logic_vector(DATA_BITS-1 downto 0);
+			PortB_Valid : out std_logic
+		);
+	end component dstruct_DoubleEndedQueue;
 
 end package;

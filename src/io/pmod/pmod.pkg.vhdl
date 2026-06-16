@@ -28,16 +28,16 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 
 package pmod is
 	subtype T_PMOD_SINGLE is std_logic_vector(4 downto 1);
-	type    T_PMOD_SINGLE_VECTOR is array(natural range <>) of T_PMOD_SINGLE;
+	type    T_PMOD_SINGLE_VECTOR is array(natural range <>) of T_PMOD_SINGLE;  -- FIXME: T_SLVV
 
 	subtype T_PMOD_DUAL is std_logic_vector(8 downto 1);
-	type    T_PMOD_DUAL_VECTOR is array(natural range <>) of T_PMOD_DUAL;
+	type    T_PMOD_DUAL_VECTOR is array(natural range <>) of T_PMOD_DUAL;  -- FIXME: T_SLVV
 
 	type T_PMOD_KYPD_KEYPAD is record
 		Key0  : std_logic;

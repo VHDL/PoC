@@ -122,21 +122,18 @@ On Windows
 
        ```VHDL
        constant MY_PROJECT_DIR       : string  := "CHANGE THIS";   -- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
-   	constant MY_OPERATING_SYSTEM  : string  := "CHANGE THIS";   -- e.g. "WINDOWS", "LINUX"
        ```
 
        ##### Example 1: A Windows System:
 
        ```VHDL
        constant MY_PROJECT_DIR       : string  := "D:/git/GitHub/PoC/";
-   	constant MY_OPERATING_SYSTEM  : string  := "WINDOWS";
        ```
 
        ##### Example 2: A Debian System:
 
        ```VHDL
        constant MY_PROJECT_DIR       : string  := "/home/lehmann/git/GitHub/PoC/";
-   	constant MY_OPERATING_SYSTEM  : string  := "LINUX";
        ```
 
    ## 4. Compiling shipped Xilinx IP cores to Netlists

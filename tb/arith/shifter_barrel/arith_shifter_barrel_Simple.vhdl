@@ -1,11 +1,11 @@
 -- =============================================================================
--- Authors:					Gustavo Martin
+-- Authors:          Gustavo Martin
 --
--- Entity:					arith_shifter_barrel_TestController
+-- Entity:          arith_shifter_barrel_TestController
 --
 -- Description:
 -- -------------------------------------
--- Simple test for arith_shifter_barrel component
+-- Simple test for arith_Shifter_Barrel component
 --
 -- License:
 -- =============================================================================
@@ -15,7 +15,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,

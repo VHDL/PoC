@@ -5,7 +5,7 @@
 --
 -- Description:
 -- -------------------------------------
--- Test harness for arith_counter_gray component
+-- Test harness for arith_Counter_Gray component
 --
 -- License:
 -- =============================================================================
@@ -15,7 +15,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -78,18 +78,18 @@ begin
 		tpd         => 0 ns
 	);
 
-	DUT : entity PoC.arith_counter_gray
+	DUT : entity PoC.arith_Counter_Gray
 		generic map (
 			BITS => BITS,
 			INIT => INIT
 		)
 		port map (
-			clk => Clock,
-			rst => Reset,
-			inc => inc,
-			dec => dec,
-			val => val,
-			cry => cry
+			Clock => Clock,
+			Reset => Reset,
+			Increment => inc,
+			Decrement => dec,
+			Value => val,
+			CarryOut => cry
 		);
 
 	TestCtrl: component arith_counter_gray_TestController

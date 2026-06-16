@@ -1,4 +1,4 @@
-.. _IP/gearbox_up_dc:
+.. _IP/gearbox_Up_dc:
 
 PoC.misc.gearbox.up_dc
 ######################
@@ -7,7 +7,7 @@ PoC.misc.gearbox.up_dc
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/gearbox/gearbox_up_dc.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/gearbox/gearbox_Up_dc.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.misc.gearbox.up_dc
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <misc/gearbox/gearbox_up_dc.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <misc/gearbox/gearbox_Up_dc.vhdl>`
       * |gh-tb| :poctb:`Testbench <misc/gearbox/gearbox_up_dc_tb.vhdl>`
 
 This module provides a upscaling gearbox with a dependent clock (dc)
@@ -35,7 +35,7 @@ Assertions:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/misc/gearbox/gearbox_up_dc.vhdl
+.. literalinclude:: ../../../../src/misc/gearbox/gearbox_Up_dc.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -45,4 +45,4 @@ Assertions:
 
 .. only:: latex
 
-   Source file: :pocsrc:`misc/gearbox/gearbox_up_dc.vhdl <misc/gearbox/gearbox_up_dc.vhdl>`
+   Source file: :pocsrc:`misc/gearbox/gearbox_Up_dc.vhdl <misc/gearbox/gearbox_Up_dc.vhdl>`

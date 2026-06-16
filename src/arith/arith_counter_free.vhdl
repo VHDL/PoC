@@ -1,7 +1,7 @@
 -- =============================================================================
--- Authors:				 	Thomas B. Preusser
+-- Authors:           Thomas B. Preusser
 --
--- Entity:				 	Poc.arith_counter_free
+-- Entity:           Poc.arith_counter_free
 --
 -- Description:
 -- -------------------------------------
@@ -17,13 +17,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,25 +32,26 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	IEEE;
+library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-use      work.utils.all;
+use     work.utils.all;
 
+-- XXX: discuss generic
 entity arith_counter_free is
 	generic (
-		DIVIDER : positive
+		DIVIDER   : positive
 	);
 	port (
 		-- Global Control
-		clk : in	std_logic;
-		rst : in	std_logic;
+		Clock     : in  std_logic;
+		Reset     : in  std_logic;
 
-		inc : in  std_logic;
-    stb : out std_logic  								-- End-of-Period Strobe
-  );
-end entity arith_counter_free;
+		Increment : in  std_logic;
+		Strobe    : out std_logic                  -- End-of-Period Strobe
+	);
+end entity;
 
 
 
@@ -58,33 +59,33 @@ architecture rtl of arith_counter_free is
 begin
 
 	genNoDiv: if DIVIDER = 1 generate
-		process(clk)
+		process(Clock)
 		begin
-			if rising_edge(clk) then
-				stb <= inc;
+			if rising_edge(Clock) then
+				Strobe <= Increment;
 			end if;
 		end process;
 	end generate genNoDiv;
 	genDoDiv: if DIVIDER > 1 generate
 		-- Note: For DIVIDER=2**K+1, this could be marginally reduced to log2ceil(DIVIDER-1)
 		--       if it was known that the increment input inc would never be deasserted.
-		constant N : natural := log2ceil(DIVIDER);
-		signal Cnt : unsigned(N downto 0) := (others => '0');
+		constant BITS : natural := log2ceil(DIVIDER);
+		signal Cnt : unsigned(BITS downto 0) := (others => '0');
 
 		signal cin : unsigned(0 downto 0);
 	begin
-		cin(0) <= not inc;
-		process(clk)
+		cin(0) <= not Increment;
+		process(Clock)
 		begin
-			if rising_edge(clk) then
-				if rst = '1' then
-					Cnt <= to_unsigned(DIVIDER-2, N+1);
+			if rising_edge(Clock) then
+				if Reset = '1' then
+					Cnt <= to_unsigned(DIVIDER-2, BITS+1);
 				else
-					Cnt <= Cnt + ite(Cnt(N) = '0', (Cnt'range => '1'), to_unsigned(DIVIDER-1, N+1)) + cin;
+					Cnt <= Cnt + ite(Cnt(BITS) = '0', (Cnt'range => '1'), to_unsigned(DIVIDER-1, BITS+1)) + cin;
 				end if;
 			end if;
 		end process;
-		stb <= Cnt(N);
+		Strobe <= Cnt(BITS);
 	end generate genDoDiv;
 
-end rtl;
+end architecture;

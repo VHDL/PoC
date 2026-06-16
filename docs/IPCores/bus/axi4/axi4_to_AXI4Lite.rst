@@ -61,7 +61,7 @@ Interface
 Generics
 ========
 
-.. _IP/axi4_FIFO_cdc/gen/RESPONSE_FIFO_DEPTH:
+.. _IP/axi4_FIFO_CDC/gen/RESPONSE_FIFO_DEPTH:
 
 :generic:`RESPONSE_FIFO_DEPTH`
 ------------------------------

@@ -1,8 +1,8 @@
 -- =============================================================================
--- Authors:					Thomas B. Preusser
+-- Authors:          Thomas B. Preusser
 --                  Gustavo Martin
 --
--- Entity:					arith_addw_TestController
+-- Entity:          arith_addw_TestController
 --
 -- Description:
 -- -------------------------------------
@@ -16,7 +16,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,15 +37,15 @@ use     PoC.arith.all;
 use     work.arith_addw_TestController_pkg.all;
 
 entity arith_addw_TestController is
-  port (
-    Clock : in  std_logic;
-    Reset : in  std_logic;
-    
-    -- DUT ports (arrays for all variants)
-    a     : out word;
-    b     : out word;
-    cin   : out std_logic;
-    s     : in  word_vector;
-    cout  : in  carry_vector
-  );
+	port (
+		Clock : in  std_logic;
+		Reset : in  std_logic;
+		
+		-- DUT ports (arrays for all variants)
+		a     : out word;
+		b     : out word;
+		cin   : out std_logic;
+		s     : in  word_vector;
+		cout  : in  carry_vector
+	);
 end entity;

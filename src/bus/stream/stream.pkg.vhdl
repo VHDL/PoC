@@ -42,8 +42,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.vectors.all;
@@ -51,196 +51,196 @@ use     work.strings.all;
 
 
 package stream is
-		type T_Stream_M2S is record
-				Valid : std_logic;
-				Data  : std_logic_vector;
-				SoF   : std_logic;
-				EoF   : std_logic;
-				BE    : std_logic_vector;
-				Meta  : std_logic_vector;
-		end record;
+	type T_Stream_M2S is record
+		Valid : std_logic;
+		Data  : std_logic_vector;
+		SoF   : std_logic;
+		EoF   : std_logic;
+		BE    : std_logic_vector;
+		Meta  : std_logic_vector;
+	end record;
 
-		type T_Stream_S2M is record
-				ACK  : std_logic;
-				Meta : std_logic_vector;
-		end record;
+	type T_Stream_S2M is record
+		ACK  : std_logic;
+		Meta : std_logic_vector;
+	end record;
 
-		type T_Stream_M2S_VECTOR is array(natural range <>) of T_Stream_M2S;
-		type T_Stream_S2M_VECTOR is array(natural range <>) of T_Stream_S2M;
+	type T_Stream_M2S_VECTOR is array(natural range <>) of T_Stream_M2S;
+	type T_Stream_S2M_VECTOR is array(natural range <>) of T_Stream_S2M;
 
-		function Initialize(DataBits : natural; MetaBits : positive := 1; Value : std_logic := 'Z') return T_Stream_M2S;
-		function Initialize(                    MetaBits : positive := 1; Value : std_logic := 'Z') return T_Stream_S2M;
+	function Initialize(DataBits : natural; MetaBits : positive := 1; Value : std_logic := 'Z') return T_Stream_M2S;
+	function Initialize(                    MetaBits : positive := 1; Value : std_logic := 'Z') return T_Stream_S2M;
 
-		function Get_Valid_vector(M2S : T_Stream_M2S_VECTOR) return std_logic_vector;
-		function Get_SoF_vector(  M2S : T_Stream_M2S_VECTOR) return std_logic_vector;
-		function Get_EoF_vector(  M2S : T_Stream_M2S_VECTOR) return std_logic_vector;
-		function Get_ACK_vector(  S2M : T_Stream_S2M_VECTOR) return std_logic_vector;
-		function Get_Data_vector( M2S : T_Stream_M2S_VECTOR) return T_SLVV;
-		function Get_BE_vector(   M2S : T_Stream_M2S_VECTOR) return T_SLVV;
-		function Get_Meta_vector( M2S : T_Stream_M2S_VECTOR) return T_SLVV;
-		function Get_Meta_vector( S2M : T_Stream_S2M_VECTOR) return T_SLVV;
-		function Resize_meta(    M2S : T_Stream_M2S; length : natural) return T_Stream_M2S;
-		function Replace_meta(   M2S : T_Stream_M2S; slv : std_logic_vector) return T_Stream_M2S;
+	function Get_Valid_vector(M2S : T_Stream_M2S_VECTOR) return std_logic_vector;
+	function Get_SoF_vector(  M2S : T_Stream_M2S_VECTOR) return std_logic_vector;
+	function Get_EoF_vector(  M2S : T_Stream_M2S_VECTOR) return std_logic_vector;
+	function Get_ACK_vector(  S2M : T_Stream_S2M_VECTOR) return std_logic_vector;
+	function Get_Data_vector( M2S : T_Stream_M2S_VECTOR) return T_SLVV;
+	function Get_BE_vector(   M2S : T_Stream_M2S_VECTOR) return T_SLVV;
+	function Get_Meta_vector( M2S : T_Stream_M2S_VECTOR) return T_SLVV;
+	function Get_Meta_vector( S2M : T_Stream_S2M_VECTOR) return T_SLVV;
+	function Resize_meta(    M2S : T_Stream_M2S; length : natural) return T_Stream_M2S;
+	function Replace_meta(   M2S : T_Stream_M2S; slv : std_logic_vector) return T_Stream_M2S;
 
-		type T_Stream_Stage_Meta_Kind is (
-				With_Data,
-				None,
-				Single_Reg
-		);
-		function ite(cond : boolean; value1 : T_Stream_Stage_Meta_Kind; value2 : T_Stream_Stage_Meta_Kind) return T_Stream_Stage_Meta_Kind;
+	type T_Stream_Stage_Meta_Kind is (
+		With_Data,
+		None,
+		Single_Reg
+	);
+	function ite(cond : boolean; value1 : T_Stream_Stage_Meta_Kind; value2 : T_Stream_Stage_Meta_Kind) return T_Stream_Stage_Meta_Kind;
 
 
-	attribute Count : integer;
+attribute Count : integer;
 
-		--types for stream_FrameGenerator
-		type T_FRAMEGEN_COMMAND is (
-				FRAMEGEN_CMD_NONE,
-				FRAMEGEN_CMD_SEQUENCE,
-				FRAMEGEN_CMD_RANDOM,
-				FRAMEGEN_CMD_SINGLE_FRAME,
-				FRAMEGEN_CMD_SINGLE_FRAMEGROUP,
-				FRAMEGEN_CMD_ALL_FRAMES
-		);
-		attribute Count of T_FRAMEGEN_COMMAND : type is T_FRAMEGEN_COMMAND'pos(T_FRAMEGEN_COMMAND'high) + 1;
-		function to_slv(val : T_FRAMEGEN_COMMAND) return std_logic_vector;
-		function to_FRAMEGEN_COMMAND(slv : std_logic_vector) return T_FRAMEGEN_COMMAND;
+	--types for stream_FrameGenerator
+	type T_FRAMEGEN_COMMAND is (
+		FRAMEGEN_CMD_NONE,
+		FRAMEGEN_CMD_SEQUENCE,
+		FRAMEGEN_CMD_RANDOM,
+		FRAMEGEN_CMD_SINGLE_FRAME,
+		FRAMEGEN_CMD_SINGLE_FRAMEGROUP,
+		FRAMEGEN_CMD_ALL_FRAMES
+	);
+	attribute Count of T_FRAMEGEN_COMMAND : type is T_FRAMEGEN_COMMAND'pos(T_FRAMEGEN_COMMAND'high) + 1;
+	function to_slv(val : T_FRAMEGEN_COMMAND) return std_logic_vector;
+	function to_FRAMEGEN_COMMAND(slv : std_logic_vector) return T_FRAMEGEN_COMMAND;
 
-		type T_FRAMEGEN_STATUS is (
-				FRAMEGEN_STATUS_IDLE,
-				FRAMEGEN_STATUS_GENERATING,
-				FRAMEGEN_STATUS_COMPLETE,
-				FRAMEGEN_STATUS_ERROR
-		);
-		attribute Count of T_FRAMEGEN_STATUS : type is T_FRAMEGEN_STATUS'pos(T_FRAMEGEN_STATUS'high) + 1;
-		function to_slv(val : T_FRAMEGEN_STATUS) return std_logic_vector;
-		function to_FRAMEGEN_STATUS(slv : std_logic_vector) return T_FRAMEGEN_STATUS;
+	type T_FRAMEGEN_STATUS is (
+		FRAMEGEN_STATUS_IDLE,
+		FRAMEGEN_STATUS_GENERATING,
+		FRAMEGEN_STATUS_COMPLETE,
+		FRAMEGEN_STATUS_ERROR
+	);
+	attribute Count of T_FRAMEGEN_STATUS : type is T_FRAMEGEN_STATUS'pos(T_FRAMEGEN_STATUS'high) + 1;
+	function to_slv(val : T_FRAMEGEN_STATUS) return std_logic_vector;
+	function to_FRAMEGEN_STATUS(slv : std_logic_vector) return T_FRAMEGEN_STATUS;
 
-		-- single dataword for TestRAM
-		type T_SIM_STREAM_WORD_8 is record
-				Valid : std_logic;
-				Data  : T_SLV_8;
-				SOF   : std_logic;
-				EOF   : std_logic;
-				Ready : std_logic;
-				EOFG  : boolean;
-		end record;
+	-- single dataword for TestRAM
+	type T_SIM_STREAM_WORD_8 is record
+		Valid : std_logic;
+		Data  : T_SLV_8;
+		SOF   : std_logic;
+		EOF   : std_logic;
+		Ready : std_logic;
+		EOFG  : boolean;
+	end record;
 
-		type T_SIM_STREAM_WORD_32 is record
-				Valid : std_logic;
-				Data  : T_SLV_32;
-				SOF   : std_logic;
-				EOF   : std_logic;
-				Ready : std_logic;
-				EOFG  : boolean;
-		end record;
+	type T_SIM_STREAM_WORD_32 is record
+		Valid : std_logic;
+		Data  : T_SLV_32;
+		SOF   : std_logic;
+		EOF   : std_logic;
+		Ready : std_logic;
+		EOFG  : boolean;
+	end record;
 
-		-- define array indices
-		constant C_SIM_STREAM_MAX_PATTERN_COUNT    : positive := 128;-- * 1024;                -- max data size per testcase
-		constant C_SIM_STREAM_MAX_FRAMEGROUP_COUNT : positive := 8;
+	-- define array indices
+	constant C_SIM_STREAM_MAX_PATTERN_COUNT    : positive := 128;-- * 1024;                -- max data size per testcase
+	constant C_SIM_STREAM_MAX_FRAMEGROUP_COUNT : positive := 8;
 
-		constant C_SIM_STREAM_WORD_INDEX_BW       : positive := log2ceilnz(C_SIM_STREAM_MAX_PATTERN_COUNT);
-		constant C_SIM_STREAM_FRAMEGROUP_INDEX_BW : positive := log2ceilnz(C_SIM_STREAM_MAX_FRAMEGROUP_COUNT);
+	constant C_SIM_STREAM_WORD_INDEX_BW       : positive := log2ceilnz(C_SIM_STREAM_MAX_PATTERN_COUNT);
+	constant C_SIM_STREAM_FRAMEGROUP_INDEX_BW : positive := log2ceilnz(C_SIM_STREAM_MAX_FRAMEGROUP_COUNT);
 
-		subtype T_SIM_STREAM_WORD_INDEX       is integer range 0 to C_SIM_STREAM_MAX_PATTERN_COUNT - 1;
-		subtype T_SIM_STREAM_FRAMEGROUP_INDEX is integer range 0 to C_SIM_STREAM_MAX_FRAMEGROUP_COUNT - 1;
+	subtype T_SIM_STREAM_WORD_INDEX       is integer range 0 to C_SIM_STREAM_MAX_PATTERN_COUNT - 1;
+	subtype T_SIM_STREAM_FRAMEGROUP_INDEX is integer range 0 to C_SIM_STREAM_MAX_FRAMEGROUP_COUNT - 1;
 
-		subtype T_SIM_DELAY        is T_UINT_16;
-		type    T_SIM_DELAY_VECTOR is array (natural range <>) of T_SIM_DELAY;
+	subtype T_SIM_DELAY        is T_UINT_16;
+	type    T_SIM_DELAY_VECTOR is array (natural range <>) of T_SIM_DELAY;
 
-		-- define array of datawords
-		type        T_SIM_STREAM_WORD_VECTOR_8  is array (natural range <>) of T_SIM_STREAM_WORD_8;
-		type        T_SIM_STREAM_WORD_VECTOR_32 is array (natural range <>) of T_SIM_STREAM_WORD_32;
+	-- define array of datawords
+	type        T_SIM_STREAM_WORD_VECTOR_8  is array (natural range <>) of T_SIM_STREAM_WORD_8;
+	type        T_SIM_STREAM_WORD_VECTOR_32 is array (natural range <>) of T_SIM_STREAM_WORD_32;
 
-		-- define link layer directions
-		type        T_SIM_STREAM_DIRECTION is (Send, RECEIVE);
+	-- define link layer directions
+	type        T_SIM_STREAM_DIRECTION is (Send, RECEIVE);
 
-		-- define framegroup information
-		type T_SIM_STREAM_FRAMEGROUP_8 is record
-				Active    : boolean;
-				Name      : string(1 to 64);
-				PrePause  : natural;
-				PostPause : natural;
-				DataCount : T_SIM_STREAM_WORD_INDEX;
-				Data      : T_SIM_STREAM_WORD_VECTOR_8(0 to C_SIM_STREAM_MAX_PATTERN_COUNT - 1);
-		end record;
+	-- define framegroup information
+	type T_SIM_STREAM_FRAMEGROUP_8 is record
+		Active    : boolean;
+		Name      : string(1 to 64);
+		PrePause  : natural;
+		PostPause : natural;
+		DataCount : T_SIM_STREAM_WORD_INDEX;
+		Data      : T_SIM_STREAM_WORD_VECTOR_8(0 to C_SIM_STREAM_MAX_PATTERN_COUNT - 1);
+	end record;
 
-		type T_SIM_STREAM_FRAMEGROUP_32 is record
-				Active    : boolean;
-				Name      : string(1 to 64);
-				PrePause  : natural;
-				PostPause : natural;
-				DataCount : T_SIM_STREAM_WORD_INDEX;
-				Data      : T_SIM_STREAM_WORD_VECTOR_32(T_SIM_STREAM_WORD_INDEX);
-		end record;
+	type T_SIM_STREAM_FRAMEGROUP_32 is record
+		Active    : boolean;
+		Name      : string(1 to 64);
+		PrePause  : natural;
+		PostPause : natural;
+		DataCount : T_SIM_STREAM_WORD_INDEX;
+		Data      : T_SIM_STREAM_WORD_VECTOR_32(T_SIM_STREAM_WORD_INDEX);
+	end record;
 
-		-- define array of framegroups
-		type T_SIM_STREAM_FRAMEGROUP_VECTOR_8  is array (natural range <>) of T_SIM_STREAM_FRAMEGROUP_8;
-		type T_SIM_STREAM_FRAMEGROUP_VECTOR_32 is array (natural range <>) of T_SIM_STREAM_FRAMEGROUP_32;
+	-- define array of framegroups
+	type T_SIM_STREAM_FRAMEGROUP_VECTOR_8  is array (natural range <>) of T_SIM_STREAM_FRAMEGROUP_8;
+	type T_SIM_STREAM_FRAMEGROUP_VECTOR_32 is array (natural range <>) of T_SIM_STREAM_FRAMEGROUP_32;
 
-		-- define constants (stored in RAMB36's parity-bits)
-		constant C_SIM_STREAM_WORD_8_EMPTY    : T_SIM_STREAM_WORD_8  := (Valid => '0', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
-		constant C_SIM_STREAM_WORD_32_EMPTY   : T_SIM_STREAM_WORD_32 := (Valid => '0', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
-		constant C_SIM_STREAM_WORD_8_INVALID  : T_SIM_STREAM_WORD_8  := (Valid => '0', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
-		constant C_SIM_STREAM_WORD_32_INVALID : T_SIM_STREAM_WORD_32 := (Valid => '0', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
-		constant C_SIM_STREAM_WORD_8_ZERO     : T_SIM_STREAM_WORD_8  := (Valid => '1', Data => (others => 'Z'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
-		constant C_SIM_STREAM_WORD_32_ZERO    : T_SIM_STREAM_WORD_32 := (Valid => '1', Data => (others => 'Z'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
-		constant C_SIM_STREAM_WORD_8_UNDEF    : T_SIM_STREAM_WORD_8  := (Valid => '1', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
-		constant C_SIM_STREAM_WORD_32_UNDEF   : T_SIM_STREAM_WORD_32 := (Valid => '1', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
+	-- define constants (stored in RAMB36's parity-bits)
+	constant C_SIM_STREAM_WORD_8_EMPTY    : T_SIM_STREAM_WORD_8  := (Valid => '0', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
+	constant C_SIM_STREAM_WORD_32_EMPTY   : T_SIM_STREAM_WORD_32 := (Valid => '0', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
+	constant C_SIM_STREAM_WORD_8_INVALID  : T_SIM_STREAM_WORD_8  := (Valid => '0', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
+	constant C_SIM_STREAM_WORD_32_INVALID : T_SIM_STREAM_WORD_32 := (Valid => '0', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
+	constant C_SIM_STREAM_WORD_8_ZERO     : T_SIM_STREAM_WORD_8  := (Valid => '1', Data => (others => 'Z'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
+	constant C_SIM_STREAM_WORD_32_ZERO    : T_SIM_STREAM_WORD_32 := (Valid => '1', Data => (others => 'Z'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
+	constant C_SIM_STREAM_WORD_8_UNDEF    : T_SIM_STREAM_WORD_8  := (Valid => '1', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
+	constant C_SIM_STREAM_WORD_32_UNDEF   : T_SIM_STREAM_WORD_32 := (Valid => '1', Data => (others => 'U'),    SOF => '0', EOF => '0', Ready => '0', EOFG => FALSE);
 
-		constant C_SIM_STREAM_FRAMEGROUP_8_EMPTY : T_SIM_STREAM_FRAMEGROUP_8 := (
-				Active    => FALSE,
-				Name      => (others => C_POC_NUL),
-				PrePause  => 0,
-				PostPause => 0,
-				DataCount => 0,
-				Data      => (others => C_SIM_STREAM_WORD_8_EMPTY)
-		);
-		constant C_SIM_STREAM_FRAMEGROUP_32_EMPTY : T_SIM_STREAM_FRAMEGROUP_32 := (
-				Active    => FALSE,
-				Name      => (others => C_POC_NUL),
-				PrePause  => 0,
-				PostPause => 0,
-				DataCount => 0,
-				Data      => (others => C_SIM_STREAM_WORD_32_EMPTY)
-		);
+	constant C_SIM_STREAM_FRAMEGROUP_8_EMPTY : T_SIM_STREAM_FRAMEGROUP_8 := (
+		Active    => FALSE,
+		Name      => (others => C_POC_NUL),
+		PrePause  => 0,
+		PostPause => 0,
+		DataCount => 0,
+		Data      => (others => C_SIM_STREAM_WORD_8_EMPTY)
+	);
+	constant C_SIM_STREAM_FRAMEGROUP_32_EMPTY : T_SIM_STREAM_FRAMEGROUP_32 := (
+		Active    => FALSE,
+		Name      => (others => C_POC_NUL),
+		PrePause  => 0,
+		PostPause => 0,
+		DataCount => 0,
+		Data      => (others => C_SIM_STREAM_WORD_32_EMPTY)
+	);
 
-		function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_8)  return natural;
-		function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_32) return natural;
+	function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_8)  return natural;
+	function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_32) return natural;
 
-		function dat(slv    : T_SLV_8)                    return T_SIM_STREAM_WORD_8;
-		function dat(slvv   : T_SLVV_8)                   return T_SIM_STREAM_WORD_VECTOR_8;
-		function dat(slv    : T_SLV_32)                   return T_SIM_STREAM_WORD_32;
-		function dat(slvv   : T_SLVV_32)                  return T_SIM_STREAM_WORD_VECTOR_32;
-		function sof(slv    : T_SLV_8)                    return T_SIM_STREAM_WORD_8;
-		function sof(slvv   : T_SLVV_8)                   return T_SIM_STREAM_WORD_VECTOR_8;
-		function sof(slv    : T_SLV_32)                   return T_SIM_STREAM_WORD_32;
-		function sof(slvv   : T_SLVV_32)                  return T_SIM_STREAM_WORD_VECTOR_32;
-		function eof(slv    : T_SLV_8)                    return T_SIM_STREAM_WORD_8;
-		function eof(slvv   : T_SLVV_8)                   return T_SIM_STREAM_WORD_VECTOR_8;
-		function eof(slv    : T_SLV_32)                   return T_SIM_STREAM_WORD_32;
-		function eof(slvv   : T_SLVV_32)                  return T_SIM_STREAM_WORD_VECTOR_32;
-		function eof(stmw   : T_SIM_STREAM_WORD_8)        return T_SIM_STREAM_WORD_8;
-		function eof(stmwv  : T_SIM_STREAM_WORD_VECTOR_8) return T_SIM_STREAM_WORD_VECTOR_8;
-		function eof(stmw   : T_SIM_STREAM_WORD_32)       return T_SIM_STREAM_WORD_32;
-		function eofg(stmw  : T_SIM_STREAM_WORD_8)        return T_SIM_STREAM_WORD_8;
-		function eofg(stmwv : T_SIM_STREAM_WORD_VECTOR_8) return T_SIM_STREAM_WORD_VECTOR_8;
-		function eofg(stmw  : T_SIM_STREAM_WORD_32)       return T_SIM_STREAM_WORD_32;
+	function dat(slv    : T_SLV_8)                    return T_SIM_STREAM_WORD_8;
+	function dat(slvv   : T_SLVV_8)                   return T_SIM_STREAM_WORD_VECTOR_8;
+	function dat(slv    : T_SLV_32)                   return T_SIM_STREAM_WORD_32;
+	function dat(slvv   : T_SLVV_32)                  return T_SIM_STREAM_WORD_VECTOR_32;
+	function sof(slv    : T_SLV_8)                    return T_SIM_STREAM_WORD_8;
+	function sof(slvv   : T_SLVV_8)                   return T_SIM_STREAM_WORD_VECTOR_8;
+	function sof(slv    : T_SLV_32)                   return T_SIM_STREAM_WORD_32;
+	function sof(slvv   : T_SLVV_32)                  return T_SIM_STREAM_WORD_VECTOR_32;
+	function eof(slv    : T_SLV_8)                    return T_SIM_STREAM_WORD_8;
+	function eof(slvv   : T_SLVV_8)                   return T_SIM_STREAM_WORD_VECTOR_8;
+	function eof(slv    : T_SLV_32)                   return T_SIM_STREAM_WORD_32;
+	function eof(slvv   : T_SLVV_32)                  return T_SIM_STREAM_WORD_VECTOR_32;
+	function eof(stmw   : T_SIM_STREAM_WORD_8)        return T_SIM_STREAM_WORD_8;
+	function eof(stmwv  : T_SIM_STREAM_WORD_VECTOR_8) return T_SIM_STREAM_WORD_VECTOR_8;
+	function eof(stmw   : T_SIM_STREAM_WORD_32)       return T_SIM_STREAM_WORD_32;
+	function eofg(stmw  : T_SIM_STREAM_WORD_8)        return T_SIM_STREAM_WORD_8;
+	function eofg(stmwv : T_SIM_STREAM_WORD_VECTOR_8) return T_SIM_STREAM_WORD_VECTOR_8;
+	function eofg(stmw  : T_SIM_STREAM_WORD_32)       return T_SIM_STREAM_WORD_32;
 
-		function to_string(stmw : T_SIM_STREAM_WORD_8)    return string;
-		function to_string(stmw : T_SIM_STREAM_WORD_32)   return string;
+	function to_string(stmw : T_SIM_STREAM_WORD_8)    return string;
+	function to_string(stmw : T_SIM_STREAM_WORD_32)   return string;
 
-		-- checksum functions
-		-- ================================================================
-		function sim_CRC8(words        : T_SIM_STREAM_WORD_VECTOR_8) return std_logic_vector;
+	-- checksum functions
+	-- ================================================================
+	function sim_CRC8(words        : T_SIM_STREAM_WORD_VECTOR_8) return std_logic_vector;
 --    function sim_CRC16(words    : T_SIM_STREAM_WORD_VECTOR_8) return STD_LOGIC_VECTOR;
 
-		function Stream_serialize(Data      : std_logic_vector; BE : std_logic_vector; SoF : std_logic; EoF : std_logic) return std_logic_vector;
-		function Stream_get_EoF(Serialized  : std_logic_vector) return std_logic;
-		function Stream_get_SoF(Serialized  : std_logic_vector) return std_logic;
-		function Stream_get_BE(Serialized   : std_logic_vector) return std_logic_vector;
-		function Stream_get_Data(Serialized : std_logic_vector) return std_logic_vector;
+	function Stream_serialize(Data      : std_logic_vector; BE : std_logic_vector; SoF : std_logic; EoF : std_logic) return std_logic_vector;
+	function Stream_get_EoF(Serialized  : std_logic_vector) return std_logic;
+	function Stream_get_SoF(Serialized  : std_logic_vector) return std_logic;
+	function Stream_get_BE(Serialized   : std_logic_vector) return std_logic_vector;
+	function Stream_get_Data(Serialized : std_logic_vector) return std_logic_vector;
 
-end;
+end package;
 
 package body stream is
 		function Initialize(DataBits : natural; MetaBits : positive := 1; Value : std_logic := 'Z') return T_Stream_M2S is
@@ -379,7 +379,7 @@ package body stream is
 				end loop;
 
 				return 0;
-		end;
+		end function;
 
 		function CountPatterns(Data : T_SIM_STREAM_WORD_VECTOR_32) return natural is
 		begin
@@ -390,7 +390,7 @@ package body stream is
 				end loop;
 
 				return 0;
-		end;
+		end function;
 
 		function dat(slv : T_SLV_8) return T_SIM_STREAM_WORD_8 is
 				variable result : T_SIM_STREAM_WORD_8;
@@ -398,7 +398,7 @@ package body stream is
 				result := (Valid => '1', Data    => slv,    SOF    => '0',    EOF    => '0', Ready => '-', EOFG => FALSE);
 				report "dat: " & to_string(result) severity NOTE;
 				return result;
-		end;
+		end function;
 
 		function dat(slvv : T_SLVV_8) return T_SIM_STREAM_WORD_VECTOR_8 is
 				variable result            : T_SIM_STREAM_WORD_VECTOR_8(slvv'range);
@@ -408,7 +408,7 @@ package body stream is
 				end loop;
 
 				return result;
-		end;
+		end function;
 
 		function dat(slv : T_SLV_32) return T_SIM_STREAM_WORD_32 is
 				variable result : T_SIM_STREAM_WORD_32;
@@ -416,7 +416,7 @@ package body stream is
 				result := (Valid => '1', Data    => slv,    SOF    => '0',    EOF    => '0', Ready => '-', EOFG => FALSE);
 				report "dat: " & to_string(result) severity NOTE;
 				return result;
-		end;
+		end function;
 
 		function dat(slvv : T_SLVV_32) return T_SIM_STREAM_WORD_VECTOR_32 is
 				variable result            : T_SIM_STREAM_WORD_VECTOR_32(slvv'range);
@@ -426,7 +426,7 @@ package body stream is
 				end loop;
 
 				return result;
-		end;
+		end function;
 
 		function sof(slv : T_SLV_8) return T_SIM_STREAM_WORD_8 is
 				variable result : T_SIM_STREAM_WORD_8;
@@ -434,7 +434,7 @@ package body stream is
 				result := (Valid => '1', Data    => slv,    SOF    => '1',    EOF    => '0', Ready => '-', EOFG => FALSE);
 				report "sof: " & to_string(result) severity NOTE;
 				return result;
-		end;
+		end function;
 
 		function sof(slvv : T_SLVV_8) return T_SIM_STREAM_WORD_VECTOR_8 is
 				variable result            : T_SIM_STREAM_WORD_VECTOR_8(slvv'range);
@@ -444,7 +444,7 @@ package body stream is
 						result(i)        := dat(slvv(i));
 				end loop;
 				return result;
-		end;
+		end function;
 
 		function sof(slv : T_SLV_32) return T_SIM_STREAM_WORD_32 is
 				variable result : T_SIM_STREAM_WORD_32;
@@ -452,7 +452,7 @@ package body stream is
 				result := (Valid => '1', Data    => slv,    SOF    => '1',    EOF    => '0', Ready => '-', EOFG => FALSE);
 				report "sof: " & to_string(result) severity NOTE;
 				return result;
-		end;
+		end function;
 
 		function sof(slvv : T_SLVV_32) return T_SIM_STREAM_WORD_VECTOR_32 is
 				variable result            : T_SIM_STREAM_WORD_VECTOR_32(slvv'range);
@@ -462,7 +462,7 @@ package body stream is
 						result(i)        := dat(slvv(i));
 				end loop;
 				return result;
-		end;
+		end function;
 
 		function eof(slv : T_SLV_8) return T_SIM_STREAM_WORD_8 is
 				variable result : T_SIM_STREAM_WORD_8;
@@ -470,7 +470,7 @@ package body stream is
 				result := (Valid => '1', Data    => slv,    SOF    => '0',    EOF    => '1', Ready => '-', EOFG => FALSE);
 				report "eof: " & to_string(result) severity NOTE;
 				return result;
-		end;
+		end function;
 
 		function eof(slvv : T_SLVV_8) return T_SIM_STREAM_WORD_VECTOR_8 is
 				variable result            : T_SIM_STREAM_WORD_VECTOR_8(slvv'range);
@@ -480,7 +480,7 @@ package body stream is
 				end loop;
 				result(slvv'high)        := eof(slvv(slvv'high));
 				return result;
-		end;
+		end function;
 
 		function eof(slv : T_SLV_32) return T_SIM_STREAM_WORD_32 is
 				variable result : T_SIM_STREAM_WORD_32;
@@ -488,7 +488,7 @@ package body stream is
 				result := (Valid => '1', Data    => slv,    SOF    => '0',    EOF    => '1', Ready => '-', EOFG => FALSE);
 				report "eof: " & to_string(result) severity NOTE;
 				return result;
-		end;
+		end function;
 
 		function eof(slvv : T_SLVV_32) return T_SIM_STREAM_WORD_VECTOR_32 is
 				variable result            : T_SIM_STREAM_WORD_VECTOR_32(slvv'range);
@@ -498,7 +498,7 @@ package body stream is
 				end loop;
 				result(slvv'high)        := eof(slvv(slvv'high));
 				return result;
-		end;
+		end function;
 
 		function eof(stmw : T_SIM_STREAM_WORD_8) return T_SIM_STREAM_WORD_8 is
 		begin
@@ -531,7 +531,7 @@ package body stream is
 				result(stmwv'high) := eof(stmwv(stmwv'high));
 
 				return result;
-		end;
+		end function;
 
 		function eofg(stmw : T_SIM_STREAM_WORD_8) return T_SIM_STREAM_WORD_8 is
 		begin
@@ -564,7 +564,7 @@ package body stream is
 				result(stmwv'high) := eofg(stmwv(stmwv'high));
 
 				return result;
-		end;
+		end function;
 
 		function to_flag1_string(stmw : T_SIM_STREAM_WORD_8) return string is
 				variable flag : std_logic_vector(2 downto 0)    := to_sl(stmw.EOFG) & stmw.EOF & stmw.SOF;
@@ -672,7 +672,7 @@ package body stream is
 				-- report "  CRC8: 0x" & to_string(CRC8_Value, 'h') severity NOTE;
 
 				return CRC8_Value;
-		end;
+		end function;
 
 --    function sim_CRC16(words : T_SIM_STREAM_WORD_VECTOR_8) return STD_LOGIC_VECTOR is
 --        constant CRC16_INIT                    : T_SLV_16                    := x"FFFF";
@@ -784,7 +784,7 @@ package body stream is
 end package body;
 
 
-use work.Stream.all;
+use     work.Stream.all;
 
 package Stream_Sized is
 		generic (

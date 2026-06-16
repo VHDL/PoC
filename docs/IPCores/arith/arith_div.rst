@@ -1,4 +1,4 @@
-.. _IP/arith_div:
+.. _IP/arith_Div:
 
 PoC.arith.div
 #############
@@ -7,7 +7,7 @@ PoC.arith.div
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_div.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Div.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.div
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_div.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Div.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_div_tb.vhdl>`
 
 Implementation of a Non-Performing restoring divider with a configurable radix.
@@ -29,7 +29,7 @@ outputs are undefined in this case.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_div.vhdl
+.. literalinclude:: ../../../src/arith/arith_Div.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -39,4 +39,4 @@ outputs are undefined in this case.
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_div.vhdl <arith/arith_div.vhdl>`
+   Source file: :pocsrc:`arith/arith_Div.vhdl <arith/arith_Div.vhdl>`

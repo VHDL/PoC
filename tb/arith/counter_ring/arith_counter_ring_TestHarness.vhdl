@@ -5,7 +5,7 @@
 --
 -- Description:
 -- -------------------------------------
--- Test harness for arith_counter_ring component
+-- Test harness for arith_Counter_Ring component
 --
 -- License:
 -- =============================================================================
@@ -15,7 +15,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -76,7 +76,7 @@ begin
 		tpd         => 0 ns
 	);
 
-	DUT : entity PoC.arith_counter_ring
+	DUT : entity PoC.arith_Counter_Ring
 		generic map (
 			BITS            => BITS,
 			INVERT_FEEDBACK => FALSE
@@ -84,10 +84,10 @@ begin
 		port map (
 			Clock => Clock,
 			Reset => Reset,
-			seed  => SEED,
-			inc   => inc,
-			dec   => dec,
-			value => value
+			Seed  => SEED,
+			Increment   => inc,
+			Decrement   => dec,
+			Value => value
 		);
 
 	TestCtrl: component arith_counter_ring_TestController

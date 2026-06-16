@@ -1,4 +1,4 @@
-.. _IP/arith_scaler:
+.. _IP/arith_Scaler:
 
 PoC.arith.scaler
 ################
@@ -7,7 +7,7 @@ PoC.arith.scaler
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_scaler.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Scaler.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.scaler
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_scaler.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Scaler.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_scaler_tb.vhdl>`
 
 A flexible scaler for fixed-point values. The scaler is implemented for a set
@@ -39,7 +39,7 @@ highest scaling ratio to be used in order to avoid a truncation overflow.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_scaler.vhdl
+.. literalinclude:: ../../../src/arith/arith_Scaler.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -49,4 +49,4 @@ highest scaling ratio to be used in order to avoid a truncation overflow.
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_scaler.vhdl <arith/arith_scaler.vhdl>`
+   Source file: :pocsrc:`arith/arith_Scaler.vhdl <arith/arith_Scaler.vhdl>`

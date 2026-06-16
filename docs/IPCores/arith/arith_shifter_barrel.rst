@@ -1,4 +1,4 @@
-.. _IP/arith_shifter_barrel:
+.. _IP/arith_Shifter_Barrel:
 
 PoC.arith.shifter_barrel
 ########################
@@ -7,7 +7,7 @@ PoC.arith.shifter_barrel
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_shifter_barrel.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Shifter_Barrel.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.shifter_barrel
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_shifter_barrel.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Shifter_Barrel.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_shifter_barrel_tb.vhdl>`
 
 This Barrel-Shifter supports:
@@ -31,7 +31,7 @@ This is equivalent to the CPU instructions: SLL, SLA, SRL, SRA, RL, RR
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_shifter_barrel.vhdl
+.. literalinclude:: ../../../src/arith/arith_Shifter_Barrel.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -41,4 +41,4 @@ This is equivalent to the CPU instructions: SLL, SLA, SRL, SRA, RL, RR
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_shifter_barrel.vhdl <arith/arith_shifter_barrel.vhdl>`
+   Source file: :pocsrc:`arith/arith_Shifter_Barrel.vhdl <arith/arith_Shifter_Barrel.vhdl>`

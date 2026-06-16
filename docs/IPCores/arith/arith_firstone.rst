@@ -1,4 +1,4 @@
-.. _IP/arith_firstone:
+.. _IP/arith_FirstOne:
 
 PoC.arith.firstone
 ##################
@@ -7,7 +7,7 @@ PoC.arith.firstone
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_firstone.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_FirstOne.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.firstone
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_firstone.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_FirstOne.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_firstone_tb.vhdl>`
 
 Computes from an input word, a word of the same size that has, at most,
@@ -38,7 +38,7 @@ This implementation uses carry chains for wider implementations.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_firstone.vhdl
+.. literalinclude:: ../../../src/arith/arith_FirstOne.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -48,4 +48,4 @@ This implementation uses carry chains for wider implementations.
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_firstone.vhdl <arith/arith_firstone.vhdl>`
+   Source file: :pocsrc:`arith/arith_FirstOne.vhdl <arith/arith_FirstOne.vhdl>`

@@ -1,4 +1,4 @@
-.. _IP/fifo_shift:
+.. _IP/fifo_Shift:
 
 PoC.fifo.shift
 ##############
@@ -7,7 +7,7 @@ PoC.fifo.shift
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/fifo/fifo_shift.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/fifo/fifo_Shift.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.fifo.shift
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <fifo/fifo_shift.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <fifo/fifo_Shift.vhdl>`
       * |gh-tb| :poctb:`Testbench <fifo/fifo_shift_tb.vhdl>`
 
 This FIFO implementation is based on an internal shift register. This is
@@ -31,7 +31,7 @@ The specified depth (``MIN_DEPTH``) is rounded up to the next suitable value.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/fifo/fifo_shift.vhdl
+.. literalinclude:: ../../../src/fifo/fifo_Shift.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -41,4 +41,4 @@ The specified depth (``MIN_DEPTH``) is rounded up to the next suitable value.
 
 .. only:: latex
 
-   Source file: :pocsrc:`fifo/fifo_shift.vhdl <fifo/fifo_shift.vhdl>`
+   Source file: :pocsrc:`fifo/fifo_Shift.vhdl <fifo/fifo_Shift.vhdl>`

@@ -27,8 +27,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     ieee.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.vectors.all;
@@ -279,7 +279,7 @@ begin
 	arith_gen : for i in 0 to N_arith -1 generate
 		constant high : natural := ite(i = (N_arith -1), DATA_BITS -1, (i * 168) + 167);
 	begin
-		PRNG : entity work.arith_prng
+		PRNG : entity work.arith_PRNG
 			generic map (
 				BITS => ite(i = (N_arith -1), DATA_BITS -(i * 168), 168),
 				SEED => std_logic_vector(unsigned'("110001100011101100101111110")+i)

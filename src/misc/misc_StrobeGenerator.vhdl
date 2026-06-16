@@ -26,14 +26,14 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 
 use     work.utils.all;
 use     work.components.all;
 
-
+-- XXX: how does it relate to arith_counter_free?
 entity misc_StrobeGenerator is
 	generic (
 		COUNTER_BITS          : positive    := 16;

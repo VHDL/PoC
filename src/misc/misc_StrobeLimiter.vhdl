@@ -26,8 +26,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 
 use     work.utils.all;
@@ -64,7 +64,7 @@ architecture rtl of misc_StrobeLimiter is
 		else
 			return ST_IDLE;
 		end if;
-	end;
+	end function;
 
 	signal State            : T_STATE          := InitialState(INITIAL_LOCKED, INITIAL_STROBE);
 	signal NextState        : T_STATE;
@@ -145,4 +145,4 @@ begin
 
 	Counter_ov <= Counter_s(Counter_s'high);
 
-end;
+end architecture;

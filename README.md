@@ -192,7 +192,6 @@ defines two global constants, which need to be adjusted:
 
 ```vhdl
 constant MY_PROJECT_DIR      : string := "CHANGE THIS"; -- e.g. d:/vhdl/myproject/, /home/me/projects/myproject/"
-constant MY_OPERATING_SYSTEM : string := "CHANGE THIS"; -- e.g. WINDOWS, LINUX
 ```
 
 Further informations are provided at [Creating my_config/my_project.vhdl][2431].

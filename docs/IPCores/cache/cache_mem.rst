@@ -1,4 +1,4 @@
-.. _IP/cache_mem:
+.. _IP/cache_Mem:
 
 PoC.cache.mem
 #############
@@ -7,7 +7,7 @@ PoC.cache.mem
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_mem.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_Mem.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.cache.mem
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <cache/cache_mem.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <cache/cache_Mem.vhdl>`
       * |gh-tb| :poctb:`Testbench <cache/cache_mem_tb.vhdl>`
 
 This unit provides a cache (:ref:`IP/cache_par2`) together
@@ -28,7 +28,7 @@ It has two :ref:`INT:PoC.Mem` interfaces:
 
 Thus, this unit can be placed into an already available memory path between
 the CPU and the memory (controller). If you want to plugin a cache into a
-CPU pipeline, see :ref:`IP/cache_cpu`.
+CPU pipeline, see :ref:`IP/cache_CPU`.
 
 
 Configuration
@@ -119,7 +119,7 @@ The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/cache/cache_mem.vhdl
+.. literalinclude:: ../../../src/cache/cache_Mem.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -127,10 +127,10 @@ The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
 
 .. seealso::
 
-     :ref:`IP/cache_cpu`
+     :ref:`IP/cache_CPU`
 
 
 
 .. only:: latex
 
-   Source file: :pocsrc:`cache/cache_mem.vhdl <cache/cache_mem.vhdl>`
+   Source file: :pocsrc:`cache/cache_Mem.vhdl <cache/cache_Mem.vhdl>`

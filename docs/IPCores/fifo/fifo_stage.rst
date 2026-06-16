@@ -7,7 +7,7 @@ PoC.fifo.Stage
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/fifo/fifo_stage.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/fifo/fifo_Stage.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.fifo.Stage
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <fifo/fifo_stage.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <fifo/fifo_Stage.vhdl>`
       * |gh-tb| :poctb:`Testbench <fifo/fifo_stage_tb.vhdl>`
 
 Its primary use is the decoupling of enable domains in a processing
@@ -27,7 +27,7 @@ the ``ful``  and the ``vld`` indicators to be driven by registers.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/fifo/fifo_stage.vhdl
+.. literalinclude:: ../../../src/fifo/fifo_Stage.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -37,4 +37,4 @@ the ``ful``  and the ``vld`` indicators to be driven by registers.
 
 .. only:: latex
 
-   Source file: :pocsrc:`fifo/fifo_stage.vhdl <fifo/fifo_stage.vhdl>`
+   Source file: :pocsrc:`fifo/fifo_Stage.vhdl <fifo/fifo_Stage.vhdl>`

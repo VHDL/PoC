@@ -1,6 +1,3 @@
--- EMACS settings: -*-	tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
 -- =============================================================================
 -- Authors:         Patrick Lehmann
 --                  Martin Zabel
@@ -11,10 +8,10 @@
 -- -------------------------------------
 -- This is an optimized implementation of ``sort_lru_list`` to be used for caches.
 -- Only keys are stored within this list, and these keys are the index of the
--- cache lines. The list initially contains all indizes from 0 to ELEMENTS-1.
+-- cache lines. The list initially contains all indices from 0 to ELEMENTS-1.
 -- The least-recently used index ``KeyOut`` is always valid.
 --
--- The first outputed least-recently used index will be ELEMENTS-1.
+-- The first outputted least-recently used index will be ELEMENTS-1.
 --
 -- The inputs ``Insert``, ``Free``, ``KeyIn``, and ``Reset`` are synchronous to the
 -- rising-edge of the clock ``clock``. All control signals are high-active.
@@ -28,13 +25,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,32 +41,32 @@
 -- =============================================================================
 
 library IEEE;
-use IEEE.STD_LOGIC_1164.all;
-use IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-use  work.config.all;
-use  work.utils.all;
-use  work.vectors.all;
-use  work.components.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
+use     work.components.all;
 
-entity sort_lru_cache is
+entity sort_LeastRecentlyUsed_Cache is
 	generic (
-		ELEMENTS			 : positive					:= 32
+		ELEMENTS       : positive          := 32
 	);
 	port (
-		Clock 	: in std_logic;
-		Reset 	: in std_logic;
+		Clock   : in  std_logic;
+		Reset   : in  std_logic;
 
-		Insert 	: in  std_logic;
-		Free 		: in  std_logic;
-		KeyIn	 	: in  std_logic_vector(log2ceilnz(ELEMENTS) - 1 downto 0);
+		Insert   : in  std_logic;
+		Free     : in  std_logic;
+		KeyIn     : in  std_logic_vector(log2ceilnz(ELEMENTS) - 1 downto 0);
 
-		KeyOut 	: out std_logic_vector(log2ceilnz(ELEMENTS) - 1 downto 0)
+		KeyOut   : out std_logic_vector(log2ceilnz(ELEMENTS) - 1 downto 0)
 	);
 end entity;
 
 
-architecture rtl of sort_lru_cache is
+architecture rtl of sort_LeastRecentlyUsed_Cache is
 	constant KEY_BITS : positive := log2ceilnz(ELEMENTS);
 
 	subtype T_ELEMENT is std_logic_vector(KEY_BITS - 1 downto 0);
@@ -77,31 +74,31 @@ architecture rtl of sort_lru_cache is
 
 	signal NewElement    : T_ELEMENT;
 
-	signal ElementsUp			: T_ELEMENT_VECTOR(ELEMENTS downto 0);
-	signal ElementsDown		: T_ELEMENT_VECTOR(ELEMENTS downto 0);
+	signal ElementsUp      : T_ELEMENT_VECTOR(ELEMENTS downto 0);
+	signal ElementsDown    : T_ELEMENT_VECTOR(ELEMENTS downto 0);
 
 	signal MovesDown : std_logic_vector(ELEMENTS downto 0);
-	signal MovesUp	 : std_logic_vector(ELEMENTS downto 0);
-	signal UnEqual	 : std_logic_vector(ELEMENTS-1 downto 0);
+	signal MovesUp   : std_logic_vector(ELEMENTS downto 0);
+	signal UnEqual   : std_logic_vector(ELEMENTS-1 downto 0);
 
-  signal MovesUpCond   		: std_logic_vector(ELEMENTS downto 0);
-  signal MovesDownCond 		: std_logic_vector(ELEMENTS downto 0);
-  signal MovesDownCondRev : std_logic_vector(ELEMENTS downto 0);
-  signal MovesDownRev 		: std_logic_vector(ELEMENTS downto 0);
+	signal MovesUpCond       : std_logic_vector(ELEMENTS downto 0);
+	signal MovesDownCond     : std_logic_vector(ELEMENTS downto 0);
+	signal MovesDownCondRev : std_logic_vector(ELEMENTS downto 0);
+	signal MovesDownRev     : std_logic_vector(ELEMENTS downto 0);
 
 begin
 	-- next element (top)
-	ElementsDown(ELEMENTS) 	<= NewElement;
+	ElementsDown(ELEMENTS)   <= NewElement;
 	MovesDownCond(ELEMENTS) <= Insert;
 
 	-- current element
 	genElements : for I in ELEMENTS - 1 downto 0 generate
 		constant INITIAL_ELEMENT : std_logic_vector(KEY_BITS - 1 downto 0) := std_logic_vector(to_unsigned(ELEMENTS-1 - i, KEY_BITS));
-		signal Element_nxt	 : std_logic_vector(KEY_BITS - 1 downto 0);
-		signal Element_d		 : std_logic_vector(KEY_BITS - 1 downto 0) := INITIAL_ELEMENT;
+		signal Element_nxt   : std_logic_vector(KEY_BITS - 1 downto 0);
+		signal Element_d     : std_logic_vector(KEY_BITS - 1 downto 0) := INITIAL_ELEMENT;
 
 		signal MoveDown : std_logic;
-		signal MoveUp		: std_logic;
+		signal MoveUp    : std_logic;
 
 	begin
 		-- local movements
@@ -110,12 +107,12 @@ begin
 		ElementsUp(I + 1)    <= Element_d;
 
 		-- multiplexer
-		Element_nxt	<= mux(MovesDown(I+1), mux(MovesUp(i), Element_d, ElementsUp(I)), ElementsDown(I + 1));
+		Element_nxt  <= mux(MovesDown(I+1), mux(MovesUp(i), Element_d, ElementsUp(I)), ElementsDown(I + 1));
 
 		-- register
-		Element_d		<= ffdre(q => Element_d,	d => Element_nxt,	rst => Reset, INIT => INITIAL_ELEMENT)	when rising_edge(Clock);
+		Element_d    <= ffdre(q => Element_d,  d => Element_nxt,  rst => Reset, INIT => INITIAL_ELEMENT)  when rising_edge(Clock);
 
-		ElementsDown(I)		<= Element_d;
+		ElementsDown(I)    <= Element_d;
 	end generate;
 
 	-- MovesUp / MovesDown propagation
@@ -124,17 +121,17 @@ begin
 	MovesDownCondRev <= reverse(MovesDownCond);
 	MovesDown        <= reverse(MovesDownRev);
 
-	MovesUpProp: entity work.arith_prefix_and
+	MovesUpProp: entity work.arith_Prefix_And
 		generic map (
-			N => ELEMENTS+1)
+			BITS => ELEMENTS+1)
 		port map (
 			-- Individual association of 'x' didn't work in QuestaSim
 			x => MovesUpCond,
 			y => MovesUp);
 
-	MovesDownProp: entity work.arith_prefix_and
+	MovesDownProp: entity work.arith_Prefix_And
 		generic map (
-			N => ELEMENTS+1)
+			BITS => ELEMENTS+1)
 		port map (
 			-- Individual association of 'x' didn't work in QuestaSim
 			x => MovesDownCondRev,
@@ -142,8 +139,8 @@ begin
 
 	-- previous element (bottom)
 	NewElement        <= KeyIn;
-	ElementsUp(0)	 		<= KeyIn;
-	MovesUpCond(0) 		<= Free;
+	ElementsUp(0)       <= KeyIn;
+	MovesUpCond(0)     <= Free;
 
 
 	KeyOut <= ElementsDown(0);

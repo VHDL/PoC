@@ -15,7 +15,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -77,17 +77,17 @@ begin
 		tpd         => 0 ns
 	);
 
-	DUT : entity PoC.arith_sqrt
+	DUT : entity PoC.arith_SquareRoot
 		generic map (
-			N => N
+			BITS => N
 		)
 		port map (
-			rst   => Reset,
-			clk   => Clock,
-			arg   => arg,
-			start => start,
-			sqrt  => sqrt,
-			rdy   => rdy
+			Reset   => Reset,
+			Clock   => Clock,
+			Operand   => arg,
+			Start => start,
+			Result  => sqrt,
+			Ready   => rdy
 		);
 
 	TestCtrl: component arith_sqrt_TestController

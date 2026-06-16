@@ -7,11 +7,11 @@
 --                  Martin Zabel
 --                  Patrick Lehmann
 --
--- Package:					Project specific configuration.
+-- Package:          Project specific configuration.
 --
 -- Description:
 -- ------------
---		This file was created from the template file:
+--    This file was created from the template file:
 --
 --           <PoCRoot>/src/common/my_config.template.vhdl
 --
@@ -23,7 +23,7 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -40,9 +40,9 @@
 
 
 package my_config is
-  constant MY_BOARD   : string := "ML506";
-  constant MY_DEVICE  : string := "None";
+	constant MY_BOARD   : string := "ML506";
+	constant MY_DEVICE  : string := "None";
 
 	-- For internal use only
-  constant MY_VERBOSE : boolean	:= false;
+	constant MY_VERBOSE : boolean  := false;
 end package;

@@ -1,32 +1,32 @@
-.. _IP/AXI4Lite_Ocram_Adapter:
+.. _IP/axi4lite_OCRAM_Adapter:
 .. index::
-   single: AXI4-Lite; AXI4Lite_Ocram_Adapter
+   single: AXI4-Lite; axi4lite_OCRAM_Adapter
 
-AXI4Lite_Ocram_Adapter
+axi4lite_OCRAM_Adapter
 ###########################
 
 .. todo::
 
-.. _IP/AXI4Lite_Ocram_Adapter/goals:
+.. _IP/axi4lite_OCRAM_Adapter/goals:
 
 .. topic:: Design Goals
 
    * *tbd*
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/features:
+.. _IP/axi4lite_OCRAM_Adapter/features:
 
 .. topic:: Features
 
    * *tbd*
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/instantiation:
+.. _IP/axi4lite_OCRAM_Adapter/instantiation:
 
 Instantiation
 *************
 
-.. _IP/AXI4Lite_Ocram_Adapter/inst/Simple:
+.. _IP/axi4lite_OCRAM_Adapter/inst/Simple:
 
 .. grid:: 2
 
@@ -40,7 +40,7 @@ Instantiation
 
       .. code-block:: vhdl
 
-         Ocram_Adapter : entity PoC.AXI4Lite_Ocram_Adapter
+         Ocram_Adapter : entity PoC.axi4lite_OCRAM_Adapter
          generic map (
             OCRAM_ADDRESS_BITS    => 10,
             OCRAM_DATA_BITS       => 32
@@ -57,18 +57,18 @@ Instantiation
            Data_Out              => Data_Out
          );
 
-.. _IP/AXI4Lite_Ocram_Adapter/inst/Xilinx:
+.. _IP/axi4lite_OCRAM_Adapter/inst/Xilinx:
 
 
 Interface
 *********
 
-.. _IP/AXI4Lite_Ocram_Adapter/generics:
+.. _IP/axi4lite_OCRAM_Adapter/generics:
 
 Generics
 ========
 
-.. _IP/AXI4Lite_Ocram_Adapter/gen/OCRAM_ADDRESS_BITS:
+.. _IP/axi4lite_OCRAM_Adapter/gen/OCRAM_ADDRESS_BITS:
 
 :generic:`OCRAM_ADDRESS_BITS`
 ----------------------------
@@ -79,7 +79,7 @@ Generics
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/gen/OCRAM_DATA_BITS:
+.. _IP/axi4lite_OCRAM_Adapter/gen/OCRAM_DATA_BITS:
 
 :generic:`OCRAM_DATA_BITS`
 ---------------------------
@@ -90,7 +90,7 @@ Generics
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/gen/PREFFERED_READ_ACCESS:
+.. _IP/axi4lite_OCRAM_Adapter/gen/PREFFERED_READ_ACCESS:
 
 :generic:`PREFFERED_READ_ACCESS`
 --------------------------
@@ -101,12 +101,12 @@ Generics
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/ports:
+.. _IP/axi4lite_OCRAM_Adapter/ports:
 
 Ports
 =====
 
-.. _IP/AXI4Lite_Ocram_Adapter/port/Clock:
+.. _IP/axi4lite_OCRAM_Adapter/port/Clock:
 
 :port:`Clock`
 -------------
@@ -118,7 +118,7 @@ Ports
 :Description:   Clock
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/port/Reset:
+.. _IP/axi4lite_OCRAM_Adapter/port/Reset:
 
 :port:`Reset`
 -------------
@@ -130,7 +130,7 @@ Ports
 :Description:   synchronous high-active reset
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/port/AXI4Lite_M2S:
+.. _IP/axi4lite_OCRAM_Adapter/port/AXI4Lite_M2S:
 
 :port:`AXI4Lite_M2S`
 --------------------
@@ -142,7 +142,7 @@ Ports
 :Description:   AXI4-Lite manager to subordinate signals.
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/port/AXI4Lite_s2m:
+.. _IP/axi4lite_OCRAM_Adapter/port/AXI4Lite_s2m:
 
 :port:`AXI4Lite_s2m`
 --------------------
@@ -154,7 +154,7 @@ Ports
 :Description:   AXI4-Lite subordinate to manager signals.
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/port/Write_En:
+.. _IP/axi4lite_OCRAM_Adapter/port/Write_En:
 
 :port:`Write_En`
 --------------------
@@ -166,7 +166,7 @@ Ports
 :Description:   Write enable.
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/port/Address:
+.. _IP/axi4lite_OCRAM_Adapter/port/Address:
 
 :port:`Address`
 --------------------
@@ -178,7 +178,7 @@ Ports
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/port/Data_In:
+.. _IP/axi4lite_OCRAM_Adapter/port/Data_In:
 
 :port:`Data_In`
 --------------------
@@ -190,7 +190,7 @@ Ports
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/port/Data_Out:
+.. _IP/axi4lite_OCRAM_Adapter/port/Data_Out:
 
 :port:`Data_Out`
 --------------------
@@ -202,12 +202,12 @@ Ports
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_Ocram_Adapter/configuration:
+.. _IP/axi4lite_OCRAM_Adapter/configuration:
 
 Configuration
 *************
 
-.. _IP/AXI4Lite_Ocram_Adapter/config/User:
+.. _IP/axi4lite_OCRAM_Adapter/config/User:
 
 User defined Word
 =================

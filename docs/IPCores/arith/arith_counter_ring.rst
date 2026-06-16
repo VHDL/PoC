@@ -1,4 +1,4 @@
-.. _IP/arith_counter_ring:
+.. _IP/arith_Counter_Ring:
 
 PoC.arith.counter_ring
 ######################
@@ -7,7 +7,7 @@ PoC.arith.counter_ring
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_counter_ring.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Counter_Ring.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.counter_ring
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_counter_ring.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Counter_Ring.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_counter_ring_tb.vhdl>`
 
 This module implements an up/down ring-counter with loadable initial value
@@ -28,7 +28,7 @@ enabling ``INVERT_FEEDBACK``. The number of counter bits is configurable with
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_counter_ring.vhdl
+.. literalinclude:: ../../../src/arith/arith_Counter_Ring.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -38,4 +38,4 @@ enabling ``INVERT_FEEDBACK``. The number of counter bits is configurable with
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_counter_ring.vhdl <arith/arith_counter_ring.vhdl>`
+   Source file: :pocsrc:`arith/arith_Counter_Ring.vhdl <arith/arith_Counter_Ring.vhdl>`

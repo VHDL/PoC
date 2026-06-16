@@ -28,8 +28,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.physical.all;
@@ -46,7 +46,7 @@ package io is
 		O : std_logic; -- output / from FPGA to device
 		T : std_logic; -- output disable / tristate enable
 	end record;
-	-- use instead:
+	-- use     instead:
 	type T_IO_TRISTATE_IN is record
 		I : std_logic; -- input / from device to FPGA
 	end record;
@@ -61,7 +61,7 @@ package io is
 	-- values in both directions, see also
 	-- :ref:`ISSUES:General:inout_records`.
 	type T_IO_TRISTATE_VECTOR is array(natural range <>) of T_IO_TRISTATE;
-	-- use instead:
+	-- use     instead:
 	type T_IO_TRISTATE_IN_VECTOR  is array(natural range <>) of T_IO_TRISTATE_IN;
 	type T_IO_TRISTATE_OUT_VECTOR is array(natural range <>) of T_IO_TRISTATE_OUT;
 
@@ -213,11 +213,11 @@ package io is
 			CLOCK_FREQ_MHZ : real
 		);
 		port (
-			Clock : in std_logic;
-			Reset : in std_logic;
+			Clock : in  std_logic;
+			Reset : in  std_logic;
 
 			Fan_PWM   : out std_logic;
-			Fan_Tacho : in std_logic;
+			Fan_Tacho : in  std_logic;
 
 			TachoFrequency : out std_logic_vector(15 downto 0)
 		);

@@ -3,25 +3,25 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- =============================================================================
--- Authors:					Patrick Lehmann
+-- Authors:          Patrick Lehmann
 --
--- Testbench:				Debouncer.
+-- Testbench:        Debouncer.
 --
 -- Description:
 -- ------------------------------------
---		Automated testbench for 'PoC.io_Debounce'.
---		TODO
+--    Automated testbench for 'PoC.io_Debounce'.
+--    TODO
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,18 +31,18 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.strings.all;
-use			PoC.physical.all;
+use     PoC.utils.all;
+use     PoC.vectors.all;
+use     PoC.strings.all;
+use     PoC.physical.all;
 -- simulation only packages
-use			PoC.sim_types.all;
-use			PoC.simulation.all;
-use			PoC.waveform.all;
+use     PoC.sim_types.all;
+use     PoC.simulation.all;
+use     PoC.waveform.all;
 
 
 entity io_Debounce_tb is
@@ -50,19 +50,19 @@ end entity;
 
 
 architecture tb of io_Debounce_tb is
-	constant CLOCK_FREQ			: FREQ					:= 100 MHz;
+	constant CLOCK_FREQ      : FREQ          := 100 MHz;
 
 	-- simulation signals
-	signal SimStop					: std_logic 		:= '0';
-	signal Clock						: std_logic			:= '1';
+	signal SimStop          : std_logic     := '0';
+	signal Clock            : std_logic      := '1';
 
-	signal EventCounter			: natural				:= 0;
+	signal EventCounter      : natural        := 0;
 
 	-- unit Under Test (UUT) configuration
-	constant BOUNCE_TIME		:	T_TIME				:= 50.0e-9;
+	constant BOUNCE_TIME    :  T_TIME        := 50.0e-9;
 
-	signal RawInput					: std_logic			:= '0';
-	signal deb_out					: std_logic;
+	signal RawInput          : std_logic      := '0';
+	signal deb_out          : std_logic;
 
 begin
 	-- initialize global simulation status
@@ -72,42 +72,42 @@ begin
 
 
 	procGenerator : process
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess("Generator");
+		constant simProcessID  : T_SIM_PROCESS_ID := simRegisterProcess("Generator");
 	begin
 		wait for 5 ns;
 
-		RawInput	<= '0';
+		RawInput  <= '0';
 		wait for 200 ns;
 
-		RawInput	<= '1';
+		RawInput  <= '1';
 		wait for 200 ns;
 
-		RawInput	<= '0';
+		RawInput  <= '0';
 		wait for 20 ns;
 
-		RawInput	<= '1';
+		RawInput  <= '1';
 		wait for 20 ns;
 
-		RawInput	<= '0';
+		RawInput  <= '0';
 		wait for 200 ns;
 
-		RawInput	<= '1';
+		RawInput  <= '1';
 		wait for 20 ns;
 
-		RawInput	<= '0';
+		RawInput  <= '0';
 		wait for 200 ns;
 
-		RawInput	<= '1';
+		RawInput  <= '1';
 		wait for 100 ns;
 
-		RawInput	<= '0';
+		RawInput  <= '0';
 		wait for 235 ns;
 
 		-- shut down simulation
-		RawInput	<= '0';
+		RawInput  <= '0';
 
 		-- final assertion
-		simAssertion((EventCounter = 6), "Events counted=" & integer'image(EventCounter) &	" Expected=6");
+		simAssertion((EventCounter = 6), "Events counted=" & integer'image(EventCounter) &  " Expected=6");
 
 		-- This process is finished
 		simDeactivateProcess(simProcessID);
@@ -124,16 +124,16 @@ begin
 
 	UUT : entity PoC.io_Debounce
 		generic map (
-			CLOCK_FREQ							=> CLOCK_FREQ,
-			BOUNCE_TIME							=> BOUNCE_TIME,
-			BITS										=> 1,
-			ADD_INPUT_SYNCHRONIZERS	=> TRUE,
-			COMMON_LOCK							=> FALSE
+			CLOCK_FREQ              => CLOCK_FREQ,
+			BOUNCE_TIME              => BOUNCE_TIME,
+			BITS                    => 1,
+			ADD_INPUT_SYNCHRONIZERS  => TRUE,
+			COMMON_LOCK              => FALSE
 		)
 		port map (
-			Clock			=> Clock,
-			Reset			=> '0',
-			Input(0)	=> RawInput,
-			Output(0)	=> deb_out
+			Clock      => Clock,
+			Reset      => '0',
+			Input(0)  => RawInput,
+			Output(0)  => deb_out
 		);
 end architecture;

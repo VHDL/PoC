@@ -41,9 +41,9 @@
       <obj_property name="ElementShortName">bitclock_x8</obj_property>
       <obj_property name="ObjectShortName">bitclock_x8</obj_property>
    </wvobject>
-   <wvobject fp_name="/uart_rx_tb/uart_rx" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">uart_rx</obj_property>
-      <obj_property name="ObjectShortName">uart_rx</obj_property>
+   <wvobject fp_name="/uart_rx_tb/uart_RX" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">uart_RX</obj_property>
+      <obj_property name="ObjectShortName">uart_RX</obj_property>
    </wvobject>
    <wvobject fp_name="/uart_rx_tb/rx_strobe" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">rx_strobe</obj_property>

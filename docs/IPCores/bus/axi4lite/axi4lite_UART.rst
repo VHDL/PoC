@@ -5,7 +5,7 @@
 AXI4Lite_UART
 ###########################
 
-Based on :ref:`IP/axi4lite_Register`, :ref:`IP/uart_fifo`
+Based on :ref:`IP/axi4lite_Register`, :ref:`IP/uart_FIFO`
 
 .. todo::
 

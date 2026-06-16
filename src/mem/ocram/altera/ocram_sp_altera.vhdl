@@ -1,8 +1,8 @@
 -- =============================================================================
--- Authors:					Martin Zabel
---									Patrick Lehmann
+-- Authors:          Martin Zabel
+--                  Patrick Lehmann
 --
--- Entity:				 	Instantiate single-port memory on Altera FPGAs.
+-- Entity:           Instantiate single-port memory on Altera FPGAs.
 --
 -- Description:
 -- -------------------------------------
@@ -15,13 +15,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,11 +30,11 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	IEEE;
+library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-library	Altera_mf;
+library Altera_mf;
 use     Altera_mf.Altera_MF_Components.all;
 
 use     work.config.all;
@@ -42,56 +42,49 @@ use     work.utils.all;
 use     work.strings.all;
 
 
-entity ocram_sp_altera is
+entity ocram_SimplePort_Altera is
 	generic (
-		A_BITS		: positive;
-		D_BITS		: positive;
-		FILENAME	: string		:= ""
+		ADDRESS_BITS : positive;
+		DATA_BITS     : positive;
+		FILENAME     : string    := ""
 	);
 	port (
-		clk : in	std_logic;
-		ce	: in	std_logic;
-		we	: in	std_logic;
-		a		: in	unsigned(A_BITS-1 downto 0);
-		d		: in	std_logic_vector(D_BITS-1 downto 0);
-		q		: out std_logic_vector(D_BITS-1 downto 0)
+		Clock : in  std_logic;
+		ClockEnable  : in  std_logic;
+		WriteEnable  : in  std_logic;
+		Address      : in  unsigned(ADDRESS_BITS-1 downto 0);
+		DataIn       : in  std_logic_vector(DATA_BITS-1 downto 0);
+		DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)
 	);
 end entity;
 
 
-architecture rtl of ocram_sp_altera is
-	constant DEPTH			: positive	:= 2**A_BITS;
-	constant INIT_FILE	: string		:= ite((str_length(FILENAME) = 0), "UNUSED", FILENAME);
-
-	signal a_sl : std_logic_vector(A_BITS-1 downto 0);
-
+architecture rtl of ocram_SimplePort_Altera is
 begin
-	a_sl <= std_logic_vector(a);
-
 	mem : component altsyncram
 		generic map (
-			address_aclr_a					=> "NONE",
-			indata_aclr_a						=> "NONE",
-			init_file								=> INIT_FILE,
-			intended_device_family	=> getAlteraDeviceName(DEVICE),
-			lpm_hint								=> "ENABLE_RUNTIME_MOD = NO",
-			lpm_type								=> "altsyncram",
-			numwords_a							=> DEPTH,
-			operation_mode					=> "SINGLE_PORT",
-			outdata_aclr_a					=> "NONE",
-			outdata_reg_a						=> "UNREGISTERED",
-			power_up_uninitialized	=> "FALSE",
-			widthad_a								=> A_BITS,
-			width_a									=> D_BITS,
-			width_byteena_a					=> 1,
-			wrcontrol_aclr_a				=> "NONE"
+			address_aclr_a          => "NONE",
+			indata_aclr_a            => "NONE",
+			init_file                => ite((str_length(FILENAME) = 0), "UNUSED", FILENAME),
+			intended_device_family  => getAlteraDeviceName(DEVICE),
+			lpm_hint                => "ENABLE_RUNTIME_MOD = NO",
+			lpm_type                => "altsyncram",
+			numwords_a              => 2**ADDRESS_BITS,
+			operation_mode          => "SINGLE_PORT",
+			outdata_aclr_a          => "NONE",
+			outdata_reg_a            => "UNREGISTERED",
+			power_up_uninitialized  => "FALSE",
+			widthad_a                => ADDRESS_BITS,
+			width_a                  => DATA_BITS,
+			width_byteena_a          => 1,
+			wrcontrol_aclr_a        => "NONE"
 		)
 		port map (
-			clocken0								=> ce,
-			wren_a									=> we,
-			clock0									=> clk,
-			address_a								=> a_sl,
-			data_a									=> d,
-			q_a											=> q
+			clocken0                => ClockEnable,
+			wren_a                  => WriteEnable,
+			clock0                  => Clock,
+			address_a                => std_logic_vector(Address),
+			data_a                  => DataIn,
+			q_a                      => DataOut
 		);
 end architecture;

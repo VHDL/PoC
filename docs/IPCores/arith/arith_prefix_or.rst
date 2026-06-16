@@ -1,4 +1,4 @@
-.. _IP/arith_prefix_or:
+.. _IP/arith_Prefix_Or:
 
 PoC.arith.prefix_or
 ###################
@@ -7,7 +7,7 @@ PoC.arith.prefix_or
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_prefix_or.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Prefix_Or.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.prefix_or
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_prefix_or.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Prefix_Or.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_prefix_or_tb.vhdl>`
 
 Prefix OR computation:
@@ -27,7 +27,7 @@ This implementation uses carry chains for wider implementations.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_prefix_or.vhdl
+.. literalinclude:: ../../../src/arith/arith_Prefix_Or.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -37,4 +37,4 @@ This implementation uses carry chains for wider implementations.
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_prefix_or.vhdl <arith/arith_prefix_or.vhdl>`
+   Source file: :pocsrc:`arith/arith_Prefix_Or.vhdl <arith/arith_Prefix_Or.vhdl>`

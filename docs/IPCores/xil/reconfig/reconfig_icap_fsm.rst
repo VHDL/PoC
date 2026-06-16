@@ -1,4 +1,4 @@
-.. _IP/reconfig_icap_fsm:
+.. _IP/reconfig_ICAP_FSM:
 
 PoC.xil.reconfig.icap_fsm
 #########################
@@ -7,7 +7,7 @@ PoC.xil.reconfig.icap_fsm
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/xil/reconfig/reconfig_icap_fsm.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/xil/reconfig/reconfig_ICAP_FSM.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.xil.reconfig.icap_fsm
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <xil/reconfig/reconfig_icap_fsm.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <xil/reconfig/reconfig_ICAP_FSM.vhdl>`
       * |gh-tb| :poctb:`Testbench <xil/reconfig/reconfig_icap_fsm_tb.vhdl>`
 
 This module parses the data stream to the Xilinx "Internal Configuration Access Port" (ICAP)
@@ -29,7 +29,7 @@ primitives to generate control signals. Tested on:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/xil/reconfig/reconfig_icap_fsm.vhdl
+.. literalinclude:: ../../../../src/xil/reconfig/reconfig_ICAP_FSM.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -39,4 +39,4 @@ primitives to generate control signals. Tested on:
 
 .. only:: latex
 
-   Source file: :pocsrc:`xil/reconfig/reconfig_icap_fsm.vhdl <xil/reconfig/reconfig_icap_fsm.vhdl>`
+   Source file: :pocsrc:`xil/reconfig/reconfig_ICAP_FSM.vhdl <xil/reconfig/reconfig_ICAP_FSM.vhdl>`

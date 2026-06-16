@@ -9,7 +9,7 @@
 -- Description:
 -- -------------------------------------
 -- This package defines the Functions, Strings and Records necessary for
--- the AXI4Lite_GitVersionRegister module.
+-- the axi4lite_GitVersionRegister module.
 --
 -- License:
 -- =============================================================================
@@ -60,7 +60,7 @@ package mem_GitVersionRegister is
 		ToolVersion_Release    : std_logic_vector(7 downto 0);
 		ToolVersion_SubRelease : std_logic_vector(7 downto 0);
 
-		ProjektName            : std_logic_vector(159 downto 0);
+		ProjectName            : std_logic_vector(159 downto 0);
 	end record;
 
 	type T_VersionRegister_Top is record
@@ -105,7 +105,7 @@ package mem_GitVersionRegister is
 		User_ID    => (others => '0')
 	);
 
-	constant C_Num_reg_UID_vec : T_NATVEC := (
+	constant C_Num_reg_UID_vec : natural_vector := (
 		0 => C_VersionRegister_UID_INIT.UID'length / 32,
 		1 => C_VersionRegister_UID_INIT.User_eFuse'length / 32,
 		2 => C_VersionRegister_UID_INIT.User_ID'length / 32
@@ -145,7 +145,7 @@ package body mem_GitVersionRegister is
 		temp(pos) := to_AXI4_Register(Name => "Common.ToolVersion",                       Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
 		addr := addr +4; pos := pos +1;
 		for i in 0 to 4 loop
-			temp(pos) := to_AXI4_Register(Name => "Common.ProjektName(" & integer'image(i) & ")", Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
+			temp(pos) := to_AXI4_Register(Name => "Common.ProjectName(" & integer'image(i) & ")", Address => to_unsigned(addr, 32), RegisterMode => ReadOnly_NotRegistered);
 			addr := addr +4; pos := pos +1;
 		end loop;
 
@@ -195,7 +195,7 @@ package body mem_GitVersionRegister is
 		temp.Common.ToolVersion_Release    := registerValues(2)(15 downto  8);
 		temp.Common.ToolVersion_SubRelease := registerValues(2)( 7 downto  0);
 		for i in 0 to 4 loop
-			temp.Common.ProjektName(32 * i +31 downto 32 * i) := registerValues(i + 3);
+			temp.Common.ProjectName(32 * i +31 downto 32 * i) := registerValues(i + 3);
 		end loop;
 
 		temp.Top.Version_Major          := registerValues(8)(31 downto 24);
@@ -248,7 +248,7 @@ package body mem_GitVersionRegister is
 
 	function to_SLVV_32_Common(data : T_VersionRegister_Common) return T_SLVV_32 is
 		variable temp : T_SLVV_32(0 to 7) := (others => (others => '0'));
-		constant name : T_SLVV_32(4 downto 0) := to_slvv_32(data.ProjektName);
+		constant name : T_SLVV_32(4 downto 0) := to_slvv_32(data.ProjectName);
 	begin
 		temp(0) := data.BuildDate_Day & data.BuildDate_Month & data.BuildDate_Year;
 		temp(1) := data.NumberModule & data.VersionOfVersionReg;
@@ -361,7 +361,7 @@ package body mem_GitVersionRegister is
 		Len := CurrentLine'length;
 		read(CurrentLine, result_s(1 to Len), Good);
 		assert not Verbose report result_s(1 to Len) severity note;
-		HW_BUILD_VERSION_COMMON.ProjektName              := to_slv(to_RawString(resize(result_s(1 to Len), 20, NUL)));
+		HW_BUILD_VERSION_COMMON.ProjectName              := to_slv(to_RawString(resize(result_s(1 to Len), 20, NUL)));
 
 
 		readline(FileHandle, CurrentLine);

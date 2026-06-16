@@ -7,17 +7,17 @@
 --                  Martin Zabel
 --                  Patrick Lehmann
 --
--- Package:					Project specific configuration.
+-- Package:          Project specific configuration.
 --
 -- Description:
 -- ------------------------------------
---		This file was created from template <PoCRoot>/src/common/my_config.template.vhdl.
+--    This file was created from template <PoCRoot>/src/common/my_config.template.vhdl.
 --
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -34,10 +34,10 @@
 
 
 package my_config is
-  -- Change these lines to setup configuration.
-  constant MY_BOARD		: string	:= "S2GXAV";		-- Stratix II GX Audio Video Development Kit
-  constant MY_DEVICE	: string	:= "None";			-- infer from MY_BOARD
+	-- Change these lines to setup configuration.
+	constant MY_BOARD    : string  := "S2GXAV";    -- Stratix II GX Audio Video Development Kit
+	constant MY_DEVICE  : string  := "None";      -- infer from MY_BOARD
 
 	-- For internal use only
- 	constant MY_VERBOSE	: boolean	:= FALSE;
+	 constant MY_VERBOSE  : boolean  := FALSE;
 end package;

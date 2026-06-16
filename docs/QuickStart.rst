@@ -207,7 +207,6 @@ also defines two global constants, which need to be adjusted:
 .. code-block:: vhdl
 
    constant MY_PROJECT_DIR      : string := "CHANGE THIS"; -- e.g. d:/vhdl/myproject/, /home/me/projects/myproject/"
-   constant MY_OPERATING_SYSTEM : string := "CHANGE THIS"; -- e.g. WINDOWS, LINUX
 
 Further informations are provided at
 :doc:`Creating my_config/my_project.vhdl </UsingPoC/VHDLConfiguration>`.
@@ -242,8 +241,8 @@ Run a Simulation
 ****************
 
 The following quick example uses the GHDL Simulator to analyze, elaborate and
-simulate a testbench for the module ``arith_prng`` (Pseudo Random Number
-Generator - PRNG). The VHDL file ``arith_prng.vhdl`` is located at
+simulate a testbench for the module ``arith_PRNG`` (Pseudo Random Number
+Generator - PRNG). The VHDL file ``arith_PRNG.vhdl`` is located at
 ``PoCRoot\src\arith`` and virtually a member in the `PoC.arith` namespace.
 So the module can be identified by an unique name: ``PoC.arith.prng``, which is
 passed to the frontend script.
@@ -280,8 +279,8 @@ Run a Synthesis
 ***************
 
 The following quick example uses the Xilinx Systesis Tool (XST) to synthesize a
-netlist for IP core ``arith_prng`` (Pseudo Random Number Generator - PRNG). The
-VHDL file ``arith_prng.vhdl`` is located at ``PoCRoot\src\arith`` and virtually
+netlist for IP core ``arith_PRNG`` (Pseudo Random Number Generator - PRNG). The
+VHDL file ``arith_PRNG.vhdl`` is located at ``PoCRoot\src\arith`` and virtually
 a member in the `PoC.arith` namespace. So the module can be identified by an
 unique name: ``PoC.arith.prng``, which is passed to the frontend script.
 
@@ -298,8 +297,8 @@ to the tool. Additionally, the development board name is required to load the
 correct ``my_config.vhdl`` file. All required source file are gathered and
 synthesized to a netlist.
 
-.. image:: /_static/images/xst/arith_prng.posh.png
-   :target: /_static/images/xst/arith_prng.posh.png
+.. image:: /_static/images/xst/arith_PRNG.posh.png
+   :target: /_static/images/xst/arith_PRNG.posh.png
 	 :alt: PowerShell console output after running PoC.arith.prng with XST.
 
 

@@ -1,4 +1,4 @@
-.. _IP/arith_prng:
+.. _IP/arith_PRNG:
 
 PoC.arith.prng
 ##############
@@ -7,7 +7,7 @@ PoC.arith.prng
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_prng.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_PRNG.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.arith.prng
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_prng.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_PRNG.vhdl>`
       * |gh-tb| :poctb:`Testbench <arith/arith_prng_tb.vhdl>`
 
 This module implementes a Pseudo-Random Number Generator (PRNG) with
@@ -31,7 +31,7 @@ The generated number sequence includes the value all-zeros, but not all-ones.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_prng.vhdl
+.. literalinclude:: ../../../src/arith/arith_PRNG.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -41,4 +41,4 @@ The generated number sequence includes the value all-zeros, but not all-ones.
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_prng.vhdl <arith/arith_prng.vhdl>`
+   Source file: :pocsrc:`arith/arith_PRNG.vhdl <arith/arith_PRNG.vhdl>`

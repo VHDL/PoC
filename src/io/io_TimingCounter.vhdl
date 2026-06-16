@@ -1,7 +1,7 @@
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:           Patrick Lehmann
 --
--- Entity:				 	optimized down-counter to control timings for low speed signals
+-- Entity:           optimized down-counter to control timings for low speed signals
 --
 -- Description:
 -- -------------------------------------
@@ -13,13 +13,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,18 +29,18 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.my_config.all;
 use     work.utils.all;
 
 
 entity io_TimingCounter is
-  generic (
-	  TIMING_TABLE	: T_NATVEC -- timing table
+	generic (
+		TIMING_TABLE  : natural_vector -- timing table
 	);
-  port (
+	port (
 		Clock   : in  std_logic;                                    -- clock
 		Enable  : in  std_logic;                                    -- enable counter
 		Load    : in  std_logic;                                    -- load Timing Value from TIMING_TABLE selected by slot
@@ -51,18 +51,18 @@ end entity;
 
 
 architecture rtl of io_TimingCounter is
-	function transform(vec : T_NATVEC) return T_INTVEC is
-    variable Result : T_INTVEC(vec'range);
-  begin
+	function transform(vec : natural_vector) return integer_vector is
+		variable Result : integer_vector(vec'range);
+	begin
 		assert (not MY_VERBOSE) report "TIMING_TABLE (transformed):" severity NOTE;
-    for i in vec'range loop
-			Result(i)	 := vec(i) - 1;
+		for i in vec'range loop
+			Result(i)   := vec(i) - 1;
 			assert (not MY_VERBOSE) report "  " & integer'image(i) & " - " & INTEGER'image(Result(i)) severity NOTE;
 		end loop;
 		return Result;
-  end;
+	end function;
 
-	constant TIMING_TABLE2	    : T_INTVEC          := transform(TIMING_TABLE);
+	constant TIMING_TABLE2      : integer_vector          := transform(TIMING_TABLE);
 	constant TIMING_MAX         : natural           := imax(TIMING_TABLE2);
 	constant COUNTER_BITS       : natural           := log2ceilnz(TIMING_MAX + 1);
 
@@ -81,4 +81,4 @@ begin
 	end process;
 
 	Timeout <= Counter_s(Counter_s'high);
-end;
+end architecture;

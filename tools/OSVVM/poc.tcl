@@ -10,8 +10,9 @@ namespace eval ::poc {
 	variable boardName  [getEnv BOARD  "GENERIC"]
 	variable buildNamePrefix ""
 
-	variable myConfigFile  "../tb/common/my_config_${::poc::vendorName}.vhdl"
-	variable myProjectFile "../tb/common/my_project.vhdl"
+	variable myConfigFolder "../tb/common"
+	variable myConfigFile  [file join $myConfigFolder "my_config_${::poc::boardName}.vhdl"]
+	variable myProjectFile [file join $myConfigFolder "my_project.vhdl"]
 
 	variable disableExit 0
 
@@ -69,10 +70,6 @@ namespace eval ::poc {
 				"-w" {
 					SetSaveWaves
 				}
-				"-gui" -
-				"-g" {
-					set ::poc::disableExit 1
-				}
 				default {
 					puts "ERROR: Unknown option $arg"
 					exitScript
@@ -115,6 +112,58 @@ Other tools:
 		}
 	}
 
+	proc configurePoC {args} {
+		set i 0
+		while {$i < [llength $args]} {
+			set arg [lindex $args $i]
+
+			switch -glob -- $arg {
+				"-gui" -
+				"-g" {
+					set ::poc::disableExit 1
+				}
+
+				"-vendor" -
+				"-v" {
+					incr i
+					if {$i < [llength $args]} {
+						set ::poc::vendorName [lindex $args $i]
+					}
+				}
+
+				"-board" -
+				"-b" {
+					incr i
+					if {$i < [llength $args]} {
+						set ::poc::boardName [lindex $args $i]
+					}
+				}
+
+				"-projectFile" -
+				"-p" {
+					incr i
+					if {$i < [llength $args]} {
+							set ::poc::myProjectFile [lindex $args $i]
+					}
+				}
+
+				"-configFile" -
+				"-c" {
+					incr i
+					if {$i < [llength $args]} {
+							set ::poc::myConfigFile [lindex $args $i]
+					}
+				}
+
+				default {
+					puts "ERROR: Unknown option $arg"
+					exitScript
+				}
+			}
+			incr i
+		}
+	}
+
 	proc checkForBuildErrors {} {
 		if {$::osvvm::AnalyzeErrorCount > 0} {
 			puts "ERROR: While building $::osvvm::LastBuildName"
@@ -123,7 +172,9 @@ Other tools:
 			puts "====================================="
 
 			exitScript
+			return 1
 		}
+		return 0
 	}
 
 	proc checkForRunErrors {} {
@@ -134,13 +185,16 @@ Other tools:
 			puts "====================================="
 
 			exitScript 2
+			return 1
 		} elseif {$::osvvm::SimulateErrorCount > 0} {
 			puts "ERROR: While simulating $::osvvm::TestCaseName"
 			puts "====================================="
 			puts $::osvvm::BuildErrorInfo
 			puts "====================================="
 			exitScript 3
+			return 1
 		}
+		return 0
 	}
 
 	# New procedures for OSVVM's *.pro files
@@ -153,6 +207,7 @@ Other tools:
 
 	namespace export exitScript
 	namespace export configureOSVVM
+	namespace export configurePoC
 	namespace export checkForBuildErrors
 	namespace export checkForRunErrors
 	namespace export disabled

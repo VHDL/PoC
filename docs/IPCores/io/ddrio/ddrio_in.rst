@@ -1,4 +1,4 @@
-.. _IP/ddrio_in:
+.. _IP/ddrio_In:
 
 PoC.io.ddrio.in
 ###############
@@ -7,7 +7,7 @@ PoC.io.ddrio.in
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/ddrio/ddrio_in.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/ddrio/ddrio_In.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.io.ddrio.in
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <io/ddrio/ddrio_in.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <io/ddrio/ddrio_In.vhdl>`
       * |gh-tb| :poctb:`Testbench <io/ddrio/ddrio_in_tb.vhdl>`
 
 Instantiates chip-specific :abbr:`DDR (Double Data Rate)` input registers.
@@ -57,7 +57,7 @@ IOBs.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/io/ddrio/ddrio_in.vhdl
+.. literalinclude:: ../../../../src/io/ddrio/ddrio_In.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -67,4 +67,4 @@ IOBs.
 
 .. only:: latex
 
-   Source file: :pocsrc:`io/ddrio/ddrio_in.vhdl <io/ddrio/ddrio_in.vhdl>`
+   Source file: :pocsrc:`io/ddrio/ddrio_In.vhdl <io/ddrio/ddrio_In.vhdl>`

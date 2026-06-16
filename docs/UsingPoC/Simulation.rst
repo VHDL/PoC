@@ -43,8 +43,8 @@ Quick Example
 *************
 
 The following quick example uses the GHDL Simulator to analyze, elaborate and
-simulate a testbench for the module ``arith_prng`` (Pseudo Random Number
-Generator - PRNG). The VHDL file ``arith_prng.vhdl`` is located at
+simulate a testbench for the module ``arith_PRNG`` (Pseudo Random Number
+Generator - PRNG). The VHDL file ``arith_PRNG.vhdl`` is located at
 ``PoCRoot\src\arith`` and virtually a member in the `PoC.arith` namespace.
 So the module can be identified by an unique name: ``PoC.arith.prng``, which is
 passed to the frontend script.
@@ -365,11 +365,11 @@ current namespace and all sub-namespaces.
 +--------------------------------------+-----------------------------------------------------------------------------------+
 | PoC entity list                      | Description                                                                       |
 +======================================+===================================================================================+
-| PoC.arith.prng                       | A single PoC entity: ``arith_prng``                                               |
+| PoC.arith.prng                       | A single PoC entity: ``arith_PRNG``                                               |
 +--------------------------------------+-----------------------------------------------------------------------------------+
 | PoC.*                                | All entities in the whole library                                                 |
 +--------------------------------------+-----------------------------------------------------------------------------------+
-| PoC.io.ddrio.?                       | All entities in ``PoC.io.ddrio``: ``ddrio_in``, ``ddrio_inout``, ``ddrio_out``    |
+| PoC.io.ddrio.?                       | All entities in ``PoC.io.ddrio``: ``ddrio_In``, ``ddrio_InOut``, ``ddrio_Out``    |
 +--------------------------------------+-----------------------------------------------------------------------------------+
 | PoC.fifo.* PoC.cache.* PoC.dstruct.* | All FIFO, cache and data-structure testbenches.                                   |
 +--------------------------------------+-----------------------------------------------------------------------------------+

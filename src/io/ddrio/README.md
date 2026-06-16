@@ -16,23 +16,23 @@ The package [`PoC.ddrio`][ddrio.pkg] holds all component declarations for this n
 
 #### Dual-Data-Rate Input
 
-The module [`ddrio_in`][ddrio_in] captures the input data at the pad
+The module [`ddrio_In`][ddrio_In] captures the input data at the pad
 with both edges of the clock. The data captured with the falling edge
 is again synchronized to the rising edge, so that both data parts are
 provided for the internal logic with the rising edge of the clock.
 
 It's possible to configure the width of the data bus as well as the
 initialization state provided for the internal logic. The vendor specific
-implementations are named [`ddrio_in_altera`][ddrio_in_altera] and
-[`ddrio_in_xilinx`][ddrio_in_xilinx] respectively.
+implementations are named [`ddrio_In_Altera`][ddrio_In_Altera] and
+[`ddrio_In_Xilinx`][ddrio_In_Xilinx] respectively.
 
-See the ASCII art inside the [VHDL description][ddrio_in] for more
+See the ASCII art inside the [VHDL description][ddrio_In] for more
 details on how data to is sampled at the pad.
 
 
 #### Dual-Data-Rate Output
 
-The module [`ddrio_out`][ddrio_out] brings out the ouput data at the pad
+The module [`ddrio_Out`][ddrio_Out] brings out the ouput data at the pad
 with both edges of the clock. The data is sampled from the internal logic
 with the rising edge only.
 
@@ -40,37 +40,37 @@ It's possible to configure the width of the data bus as well as the
 initialization state of the value present at the pad. The output
 driver can be disabled by a synchronous control signal. This control
 signal can be removed by a parameter to save some logic. The vendor specific
-implementations are named [`ddrio_out_altera`][ddrio_out_altera] and
-[`ddrio_out_xilinx`][ddrio_out_xilinx] respectively.
+implementations are named [`ddrio_Out_Altera`][ddrio_Out_Altera] and
+[`ddrio_Out_Xilinx`][ddrio_Out_Xilinx] respectively.
 
-See the ASCII art inside the [VHDL description][ddrio_out] for more
+See the ASCII art inside the [VHDL description][ddrio_Out] for more
 details on how data to is driven at the pad.
 
 
 #### Dual-Data-Rate Input and Output
 
-The module [`ddrio_inout`][ddrio_inout] is combination of the DDR
+The module [`ddrio_InOut`][ddrio_InOut] is combination of the DDR
 input and DDR output functionality described above. Two different
 clocks are available for the input side and the output side.
 
 It's possible to configure the width of the data bus, but not the 
 initialization state due to a limitation of the Altera specific
 implementation. The vendor specific implementations are named
-[`ddrio_inout_altera`][ddrio_inout_altera] and 
-[`ddrio_inout_xilinx`][ddrio_inout_xilinx] respectively.
+[`ddrio_InOut_Altera`][ddrio_InOut_Altera] and 
+[`ddrio_InOut_Xilinx`][ddrio_InOut_Xilinx] respectively.
 
-See the ASCII art inside the [VHDL description][ddrio_inout] for more
+See the ASCII art inside the [VHDL description][ddrio_InOut] for more
 details on how data to is sampled and driven at the pad.
 
 
  [my_config]:						../../common/my_config.vhdl.template
  [ddrio.pkg]:						ddrio.pkg.vhdl
- [ddrio_in]:						ddrio_in.vhdl
- [ddrio_in_altera]:			ddrio_in_altera.vhdl
- [ddrio_in_xilinx]:			ddrio_in_xilinx.vhdl
- [ddrio_inout]:					ddrio_inout.vhdl
- [ddrio_inout_altera]:	ddrio_inout_altera.vhdl
- [ddrio_inout_xilinx]:	ddrio_inout_xilinx.vhdl
- [ddrio_out]:						ddrio_out.vhdl
- [ddrio_out_altera]:		ddrio_out_altera.vhdl
- [ddrio_out_xilinx]:		ddrio_out_xilinx.vhdl
+ [ddrio_In]:						ddrio_In.vhdl
+ [ddrio_In_Altera]:			ddrio_In_Altera.vhdl
+ [ddrio_In_Xilinx]:			ddrio_In_Xilinx.vhdl
+ [ddrio_InOut]:					ddrio_InOut.vhdl
+ [ddrio_InOut_Altera]:	ddrio_InOut_Altera.vhdl
+ [ddrio_InOut_Xilinx]:	ddrio_InOut_Xilinx.vhdl
+ [ddrio_Out]:						ddrio_Out.vhdl
+ [ddrio_Out_Altera]:		ddrio_Out_Altera.vhdl
+ [ddrio_Out_Xilinx]:		ddrio_Out_Xilinx.vhdl

@@ -32,8 +32,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.config.all;
 use     work.utils.all;
@@ -71,12 +71,12 @@ package xil is
 	);
 
 	type T_XIL_DRP_BUS_OUT is record
-	Data : T_XIL_DRP_DATA;
-	Ack  : std_logic;
+		Data : T_XIL_DRP_DATA;
+		Ack  : std_logic;
 	end record;
 
 	constant C_XIL_DRP_BUS_OUT_EMPTY : T_XIL_DRP_BUS_OUT := (
-		Ack        => '0',
+		Ack       => '0',
 		Data      => (others => '0')
 	);
 
@@ -117,9 +117,9 @@ package xil is
 		port (
 			Reset          : in  std_logic;  -- Reset signal for the System Monitor control logic
 
-			Alarm_UserTemp : out  std_logic; -- Temperature-sensor alarm output
-			Alarm_OverTemp : out  std_logic; -- Over-Temperature alarm output
-			Alarm          : out  std_logic; -- OR'ed output of all the alarms
+			Alarm_UserTemp : out std_logic; -- Temperature-sensor alarm output
+			Alarm_OverTemp : out std_logic; -- Over-Temperature alarm output
+			Alarm          : out std_logic; -- OR'ed output of all the alarms
 			VP             : in  std_logic;  -- Dedicated analog input pair
 			VN             : in  std_logic
 		);

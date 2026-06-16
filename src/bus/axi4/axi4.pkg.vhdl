@@ -35,12 +35,12 @@ use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
 use     work.utils.all;
-use     work.AXI4_Common.all;
-use     work.AXI4Stream.all;
-use     work.AXI4Lite.all;
-use     work.AXI4_Full.all;
+use     work.axi4_Common.all;
+use     work.axi4stream.all;
+use     work.axi4lite.all;
+use     work.axi4_Full.all;
 
-package AXI4 is
+package axi4 is
 	--ATTENTION::Whe using this function, keep in mind that return id is always zero!
 	--           Use only when connected AXI4Full is not using ID!
 	--           If ID is needed, use Moduel "AXI4_to_AXI4Lite"
@@ -51,45 +51,45 @@ package AXI4 is
 	function to_AXI4_BUS(lite : T_AXI4LITE_BUS_S2M; databit : natural := 0; id_bits : positive := 1; user_bits : positive := 1) return T_AXI4_BUS_S2M;
 
 	-- AXI4 common types and constants
-	alias T_AXI4_Response is work.AXI4_Common.T_AXI4_Response;
-	alias C_AXI4_RESPONSE_OKAY is work.AXI4_Common.C_AXI4_RESPONSE_OKAY;
-	alias C_AXI4_RESPONSE_EX_OKAY is work.AXI4_Common.C_AXI4_RESPONSE_EX_OKAY;
-	alias C_AXI4_RESPONSE_SLAVE_ERROR is work.AXI4_Common.C_AXI4_RESPONSE_SLAVE_ERROR;
-	alias C_AXI4_RESPONSE_DECODE_ERROR is work.AXI4_Common.C_AXI4_RESPONSE_DECODE_ERROR;
-	alias C_AXI4_RESPONSE_INIT is work.AXI4_Common.C_AXI4_RESPONSE_INIT;
+	alias T_AXI4_Response is work.axi4_Common.T_AXI4_Response;
+	alias C_AXI4_RESPONSE_OKAY is work.axi4_Common.C_AXI4_RESPONSE_OKAY;
+	alias C_AXI4_RESPONSE_EX_OKAY is work.axi4_Common.C_AXI4_RESPONSE_EX_OKAY;
+	alias C_AXI4_RESPONSE_SLAVE_ERROR is work.axi4_Common.C_AXI4_RESPONSE_SLAVE_ERROR;
+	alias C_AXI4_RESPONSE_DECODE_ERROR is work.axi4_Common.C_AXI4_RESPONSE_DECODE_ERROR;
+	alias C_AXI4_RESPONSE_INIT is work.axi4_Common.C_AXI4_RESPONSE_INIT;
 
-	alias T_AXI4_Cache is work.AXI4_Common.T_AXI4_Cache;
-	alias C_AXI4_CACHE_INIT is work.AXI4_Common.C_AXI4_CACHE_INIT;
-	alias C_AXI4_CACHE is work.AXI4_Common.C_AXI4_CACHE;
+	alias T_AXI4_Cache is work.axi4_Common.T_AXI4_Cache;
+	alias C_AXI4_CACHE_INIT is work.axi4_Common.C_AXI4_CACHE_INIT;
+	alias C_AXI4_CACHE is work.axi4_Common.C_AXI4_CACHE;
 
-	alias T_AXI4_QoS is work.AXI4_Common.T_AXI4_QoS;
-	alias C_AXI4_QOS_INIT is work.AXI4_Common.C_AXI4_QOS_INIT;
+	alias T_AXI4_QoS is work.axi4_Common.T_AXI4_QoS;
+	alias C_AXI4_QOS_INIT is work.axi4_Common.C_AXI4_QOS_INIT;
 
-	alias T_AXI4_Region is work.AXI4_Common.T_AXI4_Region;
-	alias C_AXI4_REGION_INIT is work.AXI4_Common.C_AXI4_REGION_INIT;
+	alias T_AXI4_Region is work.axi4_Common.T_AXI4_Region;
+	alias C_AXI4_REGION_INIT is work.axi4_Common.C_AXI4_REGION_INIT;
 
-	alias T_AXI4_Size is work.AXI4_Common.T_AXI4_Size;
-	alias C_AXI4_SIZE_1 is work.AXI4_Common.C_AXI4_SIZE_1;
-	alias C_AXI4_SIZE_2 is work.AXI4_Common.C_AXI4_SIZE_2;
-	alias C_AXI4_SIZE_4 is work.AXI4_Common.C_AXI4_SIZE_4;
-	alias C_AXI4_SIZE_8 is work.AXI4_Common.C_AXI4_SIZE_8;
-	alias C_AXI4_SIZE_16 is work.AXI4_Common.C_AXI4_SIZE_16;
-	alias C_AXI4_SIZE_32 is work.AXI4_Common.C_AXI4_SIZE_32;
-	alias C_AXI4_SIZE_64 is work.AXI4_Common.C_AXI4_SIZE_64;
-	alias C_AXI4_SIZE_128 is work.AXI4_Common.C_AXI4_SIZE_128;
-	alias C_AXI4_SIZE_INIT is work.AXI4_Common.C_AXI4_SIZE_INIT;
+	alias T_AXI4_Size is work.axi4_Common.T_AXI4_Size;
+	alias C_AXI4_SIZE_1 is work.axi4_Common.C_AXI4_SIZE_1;
+	alias C_AXI4_SIZE_2 is work.axi4_Common.C_AXI4_SIZE_2;
+	alias C_AXI4_SIZE_4 is work.axi4_Common.C_AXI4_SIZE_4;
+	alias C_AXI4_SIZE_8 is work.axi4_Common.C_AXI4_SIZE_8;
+	alias C_AXI4_SIZE_16 is work.axi4_Common.C_AXI4_SIZE_16;
+	alias C_AXI4_SIZE_32 is work.axi4_Common.C_AXI4_SIZE_32;
+	alias C_AXI4_SIZE_64 is work.axi4_Common.C_AXI4_SIZE_64;
+	alias C_AXI4_SIZE_128 is work.axi4_Common.C_AXI4_SIZE_128;
+	alias C_AXI4_SIZE_INIT is work.axi4_Common.C_AXI4_SIZE_INIT;
 
-	alias T_AXI4_Burst is work.AXI4_Common.T_AXI4_Burst;
-	alias C_AXI4_BURST_FIXED is work.AXI4_Common.C_AXI4_BURST_FIXED;
-	alias C_AXI4_BURST_INCR is work.AXI4_Common.C_AXI4_BURST_INCR;
-	alias C_AXI4_BURST_WRAP is work.AXI4_Common.C_AXI4_BURST_WRAP;
-	alias C_AXI4_BURST_INIT is work.AXI4_Common.C_AXI4_BURST_INIT;
+	alias T_AXI4_Burst is work.axi4_Common.T_AXI4_Burst;
+	alias C_AXI4_BURST_FIXED is work.axi4_Common.C_AXI4_BURST_FIXED;
+	alias C_AXI4_BURST_INCR is work.axi4_Common.C_AXI4_BURST_INCR;
+	alias C_AXI4_BURST_WRAP is work.axi4_Common.C_AXI4_BURST_WRAP;
+	alias C_AXI4_BURST_INIT is work.axi4_Common.C_AXI4_BURST_INIT;
 
-	alias T_AXI4_Protect is work.AXI4_Common.T_AXI4_Protect;
-	alias C_AXI4_PROTECT_INIT is work.AXI4_Common.C_AXI4_PROTECT_INIT;
-	alias C_AXI4_PROTECT is work.AXI4_Common.C_AXI4_PROTECT;
+	alias T_AXI4_Protect is work.axi4_Common.T_AXI4_Protect;
+	alias C_AXI4_PROTECT_INIT is work.axi4_Common.C_AXI4_PROTECT_INIT;
+	alias C_AXI4_PROTECT is work.axi4_Common.C_AXI4_PROTECT;
 end package;
-package body AXI4 is
+package body axi4 is
 
 	function to_AXI4LITE_BUS(full : T_AXI4_BUS_M2S; databit : natural := 0) return T_AXI4LITE_BUS_M2S is
 		constant addrbit   : natural                                      := full.AWAddr'length;

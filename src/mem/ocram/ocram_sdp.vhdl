@@ -49,9 +49,9 @@
 -- limitations under the License.
 -- =============================================================================
 
-library  IEEE;
-use      IEEE.std_logic_1164.all;
-use      IEEE.numeric_std.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.config.all;
 use     work.utils.all;
@@ -60,29 +60,30 @@ use     work.vectors.all;
 use     work.mem.all;
 
 
-entity ocram_sdp is
+entity ocram_SimpleDualPort is
 	generic (
-		A_BITS    : positive;                              -- number of address bits
-		D_BITS    : positive;                              -- number of data bits
-		RAM_TYPE  : T_RAM_TYPE := RAM_TYPE_AUTO;
-		FILENAME  : string    := ""                        -- file-name for RAM initialization
+		RAM_TYPE     : T_RAM_TYPE := RAM_TYPE_AUTO;
+		ADDRESS_BITS : positive;                              -- number of address bits
+		DATA_BITS    : positive;                              -- number of data bits
+		FILENAME     : string    := ""                        -- file-name for RAM initialization
 	);
 	port (
-		rclk  : in  std_logic;                            -- read clock
-		rce   : in  std_logic;                            -- read clock-enable
-		wclk  : in  std_logic;                            -- write clock
-		wce   : in  std_logic;                            -- write clock-enable
-		we    : in  std_logic;                            -- write enable
-		ra    : in  unsigned(A_BITS-1 downto 0);          -- read address
-		wa    : in  unsigned(A_BITS-1 downto 0);          -- write address
-		d     : in  std_logic_vector(D_BITS-1 downto 0);  -- data in
-		q     : out std_logic_vector(D_BITS-1 downto 0)    -- data out
+		Write_Clock       : in  std_logic;                            -- write clock
+		Write_ClockEnable : in  std_logic;                            -- write clock-enable
+		Write_WriteEnable : in  std_logic;                            -- write enable
+		Write_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);          -- write address
+		Write_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);  -- data in
+
+		Read_Clock        : in  std_logic;                            -- read clock
+		Read_ClockEnable  : in  std_logic;                            -- read clock-enable
+		Read_Address      : in  unsigned(ADDRESS_BITS-1 downto 0);          -- read address
+		Read_DataOut      : out std_logic_vector(DATA_BITS-1 downto 0)    -- data out
 	);
 end entity;
 
 
-architecture rtl of ocram_sdp is
-	constant DEPTH : positive := 2**A_BITS;
+architecture rtl of ocram_SimpleDualPort is
+	constant DEPTH : positive := 2**ADDRESS_BITS;
 
 begin
 
@@ -94,14 +95,14 @@ begin
 		-- Altera notes:
 		--   Setting attribute "ramstyle" to "no_rw_check" suppresses generation of
 		--   bypass logic, when 'clk1'='clk2' and 'ra' is feed from a register.
-		--   This is the expected behaviour.
+		--   This is the expected behavior.
 		--   With two different clocks, synthesis complains about an undefined
-		--   read-write behaviour, that can be ignored.
+		--   read-write behavior, that can be ignored.
 		attribute ram_style : string;
 		attribute ramstyle : string;
 
-		subtype  word_t  is std_logic_vector(D_BITS - 1 downto 0);
-		type    ram_t    is array(0 to DEPTH - 1) of word_t;
+		subtype  word_t  is std_logic_vector(DATA_BITS - 1 downto 0);
+		type    ram_t    is array(0 to DEPTH - 1) of word_t;     -- XXX: T_SLVV
 
 		-- Compute the initialization of a RAM array, if specified, from the passed file.
 		impure function ocram_InitMemory(FilePath : string) return ram_t is
@@ -130,20 +131,20 @@ begin
 		attribute ram_style of ram : signal is get_ram_style_string(RAM_TYPE);
 
 	begin
-		process(wclk)
+		process(Write_Clock)
 		begin
-			if rising_edge(wclk) then
-				if (wce and we) = '1' then
-					ram(to_integer(wa)) <= d;
+			if rising_edge(Write_Clock) then
+				if (Write_ClockEnable and Write_WriteEnable) = '1' then
+					ram(to_integer(Write_Address)) <= Write_DataIn;
 				end if;
 			end if;
 		end process;
 
-		process(rclk)
+		process(Read_Clock)
 		begin
-			if rising_edge(rclk) then
-				if rce = '1' then
-					q <= ram(to_integer(ra));
+			if rising_edge(Read_Clock) then
+				if Read_ClockEnable = '1' then
+					Read_DataOut <= ram(to_integer(Read_Address));
 				end if;
 			end if;
 		end process;
@@ -152,10 +153,10 @@ begin
 	gSim: if SIMULATION generate
 		-- Use component instantiation so that simulation model can be excluded
 		-- from synthesis.
-		component ocram_tdp_sim is
+		component ocram_TrueDualPort_sim is
 			generic (
-				A_BITS   : positive;
-				D_BITS   : positive;
+				ADDRESS_BITS   : positive;
+				DATA_BITS   : positive;
 				FILENAME : string);
 			port (
 				clk1 : in  std_logic;
@@ -164,32 +165,32 @@ begin
 				ce2  : in  std_logic;
 				we1  : in  std_logic;
 				we2  : in  std_logic;
-				a1   : in  unsigned(A_BITS-1 downto 0);
-				a2   : in  unsigned(A_BITS-1 downto 0);
-				d1   : in  std_logic_vector(D_BITS-1 downto 0);
-				d2   : in  std_logic_vector(D_BITS-1 downto 0);
-				q1   : out std_logic_vector(D_BITS-1 downto 0);
-				q2   : out std_logic_vector(D_BITS-1 downto 0));
-		end component ocram_tdp_sim;
+				a1   : in  unsigned(ADDRESS_BITS-1 downto 0);
+				a2   : in  unsigned(ADDRESS_BITS-1 downto 0);
+				d1   : in  std_logic_vector(DATA_BITS-1 downto 0);
+				d2   : in  std_logic_vector(DATA_BITS-1 downto 0);
+				q1   : out std_logic_vector(DATA_BITS-1 downto 0);
+				q2   : out std_logic_vector(DATA_BITS-1 downto 0));
+		end component ocram_TrueDualPort_sim;
 	begin
-		sim_tdp: ocram_tdp_sim
+		sim_tdp: ocram_TrueDualPort_sim
 			generic map (
-				A_BITS   => A_BITS,
-				D_BITS   => D_BITS,
+				ADDRESS_BITS   => ADDRESS_BITS,
+				DATA_BITS   => DATA_BITS,
 				FILENAME => FILENAME)
 			port map (
-				clk1 => wclk,
-				clk2 => rclk,
-				ce1  => wce,
-				ce2  => rce,
-				we1  => we,
+				clk1 => Write_Clock,
+				clk2 => Read_Clock,
+				ce1  => Write_ClockEnable,
+				ce2  => Read_ClockEnable,
+				we1  => Write_WriteEnable,
 				we2  => '0',
-				a1   => wa,
-				a2   => ra,
-				d1   => d,
+				a1   => Write_Address,
+				a2   => Read_Address,
+				d1   => Write_DataIn,
 				d2   => (others => '0'),
 				q1   => open,
-				q2   => q);
+				q2   => Read_DataOut);
 	end generate gSim;
 
 	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC and SIMULATION) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
