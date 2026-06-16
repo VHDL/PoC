@@ -99,7 +99,7 @@ begin
 			Clock   => Clock,
 			Reset   => Reset,
 			Start => start,
-			arg   => arg,
+			Operand   => arg,
 			MultiplierSelect  => msel,
 			DivisorSelect  => dsel,
 			Done  => done,

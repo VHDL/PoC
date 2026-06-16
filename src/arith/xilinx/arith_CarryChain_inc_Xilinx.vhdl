@@ -1,17 +1,18 @@
 -- =============================================================================
--- Authors:          Patrick Lehmann
+-- Authors:  Patrick Lehmann
 --
--- Entity:          Carry-chain abstraction for increment by one operations
+-- Entity:   Carry-chain abstraction for increment by one operations
 --
 -- Description:
 -- -------------------------------------
 --  This is a Xilinx specific carry-chain abstraction for increment by one
 --  operations.
 --
---  Y <= X + (0...0) & Cin
+--  Sum <= A + (0...0) & CarryIn
 --
 -- License:
 -- =============================================================================
+-- Copyright 2025-2026 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -40,9 +41,9 @@ entity arith_CarryChain_inc_Xilinx is
 		BITS      : positive
 	);
 	port (
-		X    : in  std_logic_vector(BITS - 1 downto 0);
-		CIn  : in  std_logic                              := '1';
-		Y    : out std_logic_vector(BITS - 1 downto 0)
+		A       : in  std_logic_vector(BITS - 1 downto 0);
+		CarryIn : in  std_logic                              := '1';
+		Sum     : out std_logic_vector(BITS - 1 downto 0)
 	);
 end entity;
 
@@ -52,20 +53,21 @@ architecture rtl of arith_CarryChain_inc_Xilinx is
 	signal co    : std_logic_vector(BITS downto 0);
 
 begin
-	ci(0) <= CIn;
+	ci(0) <= CarryIn;
+
 	genBits : for i in 0 to BITS - 1 generate
-		cc_mux : MUXCY
+		cc_mux : component MUXCY
 			port map (
 				O  => ci(i + 1),
 				CI => ci(i),
 				DI => '0',
-				S  => X(i)
+				S  => A(i)
 			);
-		cc_xor : XORCY
+		cc_xor : component XORCY
 			port map (
-				O  => Y(i),
+				O  => Sum(i),
 				CI => ci(i),
-				LI => X(i)
+				LI => A(i)
 			);
 	end generate;
  end architecture;

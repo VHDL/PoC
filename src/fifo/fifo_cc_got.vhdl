@@ -199,8 +199,8 @@ begin
 				)
 				port map
 				(
-					X => IP0_slv,
-					Y => IP1_slv
+					A => IP0_slv,
+					Sum => IP1_slv
 				);
 
 			incOP : entity work.arith_CarryChain_inc
@@ -209,8 +209,8 @@ begin
 				)
 				port map
 				(
-					X => OP0_slv,
-					Y => OP1_slv
+					A => OP0_slv,
+					Sum => OP1_slv
 				);
 
 			IP1 <= unsigned(IP1_slv);

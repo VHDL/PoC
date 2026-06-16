@@ -10,6 +10,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2025-2026 The PoC-Library Authors
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --

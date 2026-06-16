@@ -80,9 +80,9 @@ begin
 			BITS => BITS
 		)
 		port map (
-			X   => X,
-			CIn => CIn,
-			Y   => Y
+			A   => X,
+			CarryIn => CIn,
+			Sum   => Y
 		);
 
 	TestCtrl: component arith_carrychain_inc_TestController

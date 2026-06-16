@@ -55,7 +55,7 @@ entity arith_Scaler is
 		Reset            : in  std_logic;
 
 		Start            : in  std_logic;          -- Start of Computation
-		arg              : in  std_logic_vector;   -- Fixed-point value to be scaled
+		Operand          : in  std_logic_vector;   -- Fixed-point value to be scaled
 		MultiplierSelect : in  std_logic_vector(log2ceil(MULTIPLIERS'length)-1 downto 0) := (others => '0');
 		DivisorSelect    : in  std_logic_vector(log2ceil(DIVISORS'length)-1 downto 0)    := (others => '0');
 
@@ -67,7 +67,7 @@ end entity;
 architecture rtl of arith_Scaler is
 
 	-- Derived Constants
-	constant BITS : positive := arg'length;
+	constant BITS : positive := Operand'length;
 	constant X    : positive := log2ceil(imax(imax(MULTIPLIERS), imax(DIVISORS)/2+1));
 	constant R    : positive := log2ceil(imax(DIVISORS)+1);
 
@@ -191,7 +191,7 @@ begin
 				else
 					if Start = '1' then
 						C <= "11" & to_unsigned(MAX_MUL_STEPS-1, C'length-2);
-						Q <= '0' & muloffset & unsigned(arg);
+						Q <= '0' & muloffset & unsigned(Operand);
 					elsif C(C'left) = '1' then
 
 						cnxt := C - 1;

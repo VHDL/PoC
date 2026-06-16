@@ -1,16 +1,17 @@
 -- =============================================================================
--- Authors:          Patrick Lehmann
+-- Authors:  Patrick Lehmann
 --
--- Entity:          Carry-chain abstraction for increment by one operations
+-- Entity:   Carry-chain abstraction for increment by one operations
 --
 -- Description:
 -- -------------------------------------
 -- This is a generic carry-chain abstraction for increment by one operations.
 --
--- Y <= X + (0...0) & Cin
+-- Sum <= A + (0...0) & CarryIn
 --
 -- License:
 -- =============================================================================
+-- Copyright 2025-2026 The PoC-Library Authors
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -41,34 +42,34 @@ entity arith_CarryChain_inc is
 		BITS      : positive
 	);
 	port (
-		X    : in  std_logic_vector(BITS - 1 downto 0);
-		CIn  : in  std_logic                              := '1';
-		Y    : out std_logic_vector(BITS - 1 downto 0)
+		A       : in  std_logic_vector(BITS - 1 downto 0);
+		CarryIn : in  std_logic                              := '1';
+		Sum     : out std_logic_vector(BITS - 1 downto 0)
 	);
 end entity;
 
 
 architecture rtl of arith_CarryChain_inc is
 	-- Force Carry-chain use for pointer increments on Xilinx architectures
-	constant XILINX_FORCE_CARRYCHAIN    : boolean    := (not SIMULATION) and (VENDOR = VENDOR_XILINX) and (BITS > 4);
+	constant XILINX_FORCE_CARRYCHAIN : boolean := (not SIMULATION) and (VENDOR = VENDOR_XILINX) and (BITS > 4);
 
 begin
 	genGeneric : if not XILINX_FORCE_CARRYCHAIN generate
 		signal Cin_vec : unsigned(0 downto 0);
 	begin
-		Cin_vec(0) <= Cin; -- WORKAROUND: for GHDL
-		Y <= std_logic_vector(unsigned(X) + Cin_vec);
+		Cin_vec(0) <= CarryIn; -- WORKAROUND: for GHDL
+		Sum <= std_logic_vector(unsigned(A) + Cin_vec);
 	end generate;
 
 	genXilinx : if XILINX_FORCE_CARRYCHAIN generate
-		inc : arith_CarryChain_inc_Xilinx
+		inc : component arith_CarryChain_inc_Xilinx
 			generic map (
 				BITS    => BITS
 			)
 			port map (
-				X        => X,
-				CarryIn      => CIn,
-				Y        => Y
+				A        => A,
+				CarryIn  => CarryIn,
+				Sum      => Sum
 			);
 	end generate;
 end architecture;

@@ -192,9 +192,9 @@ package arith is
 			BITS      : positive
 		);
 		port (
-			X       : in  std_logic_vector(BITS - 1 downto 0);
+			A       : in  std_logic_vector(BITS - 1 downto 0);
 			CarryIn : in  std_logic                              := '1';
-			Y       : out std_logic_vector(BITS - 1 downto 0)
+			Sum       : out std_logic_vector(BITS - 1 downto 0)
 		);
 	end component;
 
