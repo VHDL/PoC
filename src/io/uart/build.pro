@@ -19,7 +19,7 @@
 # =============================================================================
 
 analyze uart.pkg.vhdl
-analyze uart_bclk.vhdl
+analyze uart_BitClock.vhdl
 analyze uart_RX.vhdl
 analyze uart_TX.vhdl
 analyze uart_FIFO.vhdl
