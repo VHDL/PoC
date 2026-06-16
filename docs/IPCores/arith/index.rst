@@ -13,12 +13,12 @@ These are arithmetic entities....
 
  * :ref:`IP/arith_addw`
  * :ref:`IP/arith_CarryChain_inc`
- * :ref:`IP/arith_convert_bin2bcd`
+ * :ref:`IP/arith_Convert_Binary2BCD`
  * :ref:`IP/arith_Counter_BCD`
  * :ref:`IP/arith_counter_free`
  * :ref:`IP/arith_Counter_Gray`
  * :ref:`IP/arith_Counter_Ring`
- * :ref:`IP/arith_Div`
+ * :ref:`IP/arith_Divider`
  * :ref:`IP/arith_FirstOne`
  * :ref:`IP/arith_muls_wide`
  * :ref:`IP/arith_Prefix_And`
@@ -27,7 +27,7 @@ These are arithmetic entities....
  * :ref:`IP/arith_Same`
  * :ref:`IP/arith_Scaler`
  * :ref:`IP/arith_Shifter_Barrel`
- * :ref:`IP/arith_sqrt`
+ * :ref:`IP/arith_SquareRoot`
 
 
 .. toctree::
@@ -38,14 +38,14 @@ These are arithmetic entities....
 .. toctree::
    :hidden:
 
-   arith_addw <arith_addw>
+   arith_addw <arith_Adder_Wide>
    arith_CarryChain_inc <arith_CarryChain_inc>
-   arith_convert_bin2bcd <arith_convert_bin2bcd>
+   arith_Convert_Binary2BCD <arith_Convert_Binary2BCD>
    arith_Counter_BCD <arith_Counter_BCD>
    arith_counter_free <arith_counter_free>
    arith_Counter_Gray <arith_Counter_Gray>
    arith_Counter_Ring <arith_Counter_Ring>
-   arith_Div <arith_Div>
+   arith_Divider <arith_Divider>
    arith_FirstOne <arith_FirstOne>
    arith_muls_wide <arith_muls_wide>
    arith_Prefix_And <arith_Prefix_And>
@@ -54,4 +54,4 @@ These are arithmetic entities....
    arith_Same <arith_Same>
    arith_Scaler <arith_Scaler>
    arith_Shifter_Barrel <arith_Shifter_Barrel>
-   arith_sqrt <arith_sqrt>
+   arith_SquareRoot <arith_SquareRoot>

@@ -53,7 +53,7 @@ directly fed by the address caculator. But be aware of the high setup time
 of this unit and high propate time for ``cpu_got``.
 
 This unit supports only one outstanding CPU request. More outstanding
-requests are provided by :ref:`IP/cache_Mem`.
+requests are provided by :ref:`IP/cache_Memory`.
 
 
 Configuration
@@ -167,7 +167,7 @@ cycles and acknowledged when the data has been issued to the memory.
 
 .. seealso::
 
-     :ref:`IP/cache_Mem`
+     :ref:`IP/cache_Memory`
 
 
 

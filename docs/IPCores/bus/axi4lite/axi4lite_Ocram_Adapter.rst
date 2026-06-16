@@ -3,7 +3,7 @@
    single: AXI4-Lite; axi4lite_OCRAM_Adapter
 
 axi4lite_OCRAM_Adapter
-###########################
+######################
 
 .. todo::
 

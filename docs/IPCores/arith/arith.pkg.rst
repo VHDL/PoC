@@ -32,7 +32,7 @@ This package holds all component declarations for this namespace.
 * PoC.arith.carrychain_inc_xilinx
 * :ref:`PoC.arith.counter_bcd <IP/arith_Counter_BCD>`
 * :ref:`PoC.arith.counter_gray <IP/arith_Counter_Gray>`
-* :ref:`PoC.arith.div <IP/arith_Div>`
+* :ref:`PoC.arith.divider <IP/arith_Divider>`
 * :ref:`PoC.arith.firstone <IP/arith_FirstOne>`
 * PoC.arith.inc_ovcy_xilinx
 * :ref:`PoC.arith.muls_wide <IP/arith_muls_wide>`

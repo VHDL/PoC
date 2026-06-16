@@ -1,13 +1,13 @@
-.. _IP/cache_TagUnit_Par:
+.. _IP/cache_TagUnit_Parallel:
 
-PoC.cache.tagunit_par
-#####################
+PoC.cache.tagunit_parallel
+##########################
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_TagUnit_Par.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_TagUnit_Parallel.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.cache.tagunit_par
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <cache/cache_TagUnit_Par.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <cache/cache_TagUnit_Parallel.vhdl>`
       * |gh-tb| :poctb:`Testbench <cache/cache_tagunit_par_tb.vhdl>`
 
 Tag-unit with fully-parallel compare of tag.
@@ -99,7 +99,7 @@ must be a power of 2.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/cache/cache_TagUnit_Par.vhdl
+.. literalinclude:: ../../../src/cache/cache_TagUnit_Parallel.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -109,4 +109,4 @@ must be a power of 2.
 
 .. only:: latex
 
-   Source file: :pocsrc:`cache/cache_TagUnit_Par.vhdl <cache/cache_TagUnit_Par.vhdl>`
+   Source file: :pocsrc:`cache/cache_TagUnit_Parallel.vhdl <cache/cache_TagUnit_Parallel.vhdl>`

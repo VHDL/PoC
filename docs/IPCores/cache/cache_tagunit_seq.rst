@@ -1,13 +1,13 @@
-.. _IP/cache_TagUnit_Seq:
+.. _IP/cache_TagUnit_Sequential:
 
-PoC.cache.tagunit_seq
-#####################
+PoC.cache.tagunit_sequential
+############################
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_TagUnit_Seq.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_TagUnit_Sequential.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.cache.tagunit_seq
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <cache/cache_TagUnit_Seq.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <cache/cache_TagUnit_Sequential.vhdl>`
       * |gh-tb| :poctb:`Testbench <cache/cache_tagunit_seq_tb.vhdl>`
 
 .. TODO:: No documentation available.
@@ -25,7 +25,7 @@ PoC.cache.tagunit_seq
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/cache/cache_TagUnit_Seq.vhdl
+.. literalinclude:: ../../../src/cache/cache_TagUnit_Sequential.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -35,4 +35,4 @@ PoC.cache.tagunit_seq
 
 .. only:: latex
 
-   Source file: :pocsrc:`cache/cache_TagUnit_Seq.vhdl <cache/cache_TagUnit_Seq.vhdl>`
+   Source file: :pocsrc:`cache/cache_TagUnit_Sequential.vhdl <cache/cache_TagUnit_Sequential.vhdl>`

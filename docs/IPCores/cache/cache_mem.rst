@@ -1,13 +1,13 @@
-.. _IP/cache_Mem:
+.. _IP/cache_Memory:
 
-PoC.cache.mem
-#############
+PoC.cache.memory
+################
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_Mem.vhdl
+               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/cache/cache_Memory.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
@@ -16,7 +16,7 @@ PoC.cache.mem
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <cache/cache_Mem.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <cache/cache_Memory.vhdl>`
       * |gh-tb| :poctb:`Testbench <cache/cache_mem_tb.vhdl>`
 
 This unit provides a cache (:ref:`IP/cache_par2`) together
@@ -119,7 +119,7 @@ The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/cache/cache_Mem.vhdl
+.. literalinclude:: ../../../src/cache/cache_Memory.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -133,4 +133,4 @@ The interface is documented in detail :ref:`here <INT:PoC.Mem>`.
 
 .. only:: latex
 
-   Source file: :pocsrc:`cache/cache_Mem.vhdl <cache/cache_Mem.vhdl>`
+   Source file: :pocsrc:`cache/cache_Memory.vhdl <cache/cache_Memory.vhdl>`
