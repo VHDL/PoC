@@ -15,9 +15,9 @@ PoC-Library and VHDL.
     
         git config --global alias.tree 'log --decorate --pretty=oneline --abbrev-commit --date-order --graph'
     
-    `git treea`:
+    `git treeall`:
     
-        git config --global alias.tree 'log --decorate --pretty=oneline --abbrev-commit --date-order --graph --all'
+        git config --global alias.treeall 'log --decorate --pretty=oneline --abbrev-commit --date-order --graph --all'
     
 		
 ## Notepad++
