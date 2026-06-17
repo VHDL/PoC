@@ -24,15 +24,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { simulator: 'nvc',  backend: '',      version: 'latest',  can-fail: false }
-          - { simulator: 'ghdl', backend: 'mcode', version: 'nightly', can-fail: false }
-          - { simulator: 'ghdl', backend: 'llvm',  version: 'nightly', can-fail: false }
+          - {ubuntu-version: 'ubuntu-24.04', simulator: 'nvc',  backend: '',      version: 'latest',  can-fail: false}
+          - {ubuntu-version: 'ubuntu-26.04', simulator: 'ghdl', backend: 'mcode', version: 'nightly', can-fail: false}
+          - {ubuntu-version: 'ubuntu-26.04', simulator: 'ghdl', backend: 'llvm',  version: 'nightly', can-fail: false}
     with:
-      simulator:    ${{ matrix.simulator }}
-      ghdl-version: ${{ matrix.version }}
-      ghdl-backend: ${{ matrix.backend }}
-      nvc-version:  ${{ matrix.version }}
-      can-fail:     ${{ matrix.can-fail }}
+      ubuntu-version: ${{ matrix.ubuntu-version }}
+      simulator:      ${{ matrix.simulator }}
+      ghdl-version:   ${{ matrix.version }}
+      ghdl-backend:   ${{ matrix.backend }}
+      nvc-version:    ${{ matrix.version }}
+      can-fail:       ${{ matrix.can-fail }}
 
   PublishTestResults:
     uses: pyTooling/Actions/.github/workflows/PublishTestResults.yml@r7
