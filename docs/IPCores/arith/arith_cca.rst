@@ -49,7 +49,7 @@ limitations under the License.
    :linenos:
    :lines: 49-61
 
-Source file: `arith/arith_cca.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_cca.vhdl>`_
+Source file: `arith/arith_cca.vhdl <https://github.com/VHDL/PoC/blob/master/src/arith/arith_cca.vhdl>`_
 
 
 

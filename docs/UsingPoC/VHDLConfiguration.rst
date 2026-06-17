@@ -16,7 +16,7 @@ Create my_config.vhdl
 
 The **my_config.vhdl** file can easily be created from the template file
 ``my_config.vhdl.template`` provided by PoC in ``PoCRoot\src\common``.
-(View source on `GitHub <https://github.com/VLSI-EDA/PoC/blob/master/src/common/my_config.vhdl.template>`_.)
+(View source on `GitHub <https://github.com/VHDL/PoC/blob/master/src/common/my_config.vhdl.template>`_.)
 Copy this file into the project's source directory and rename it to
 ``my_config.vhdl``.
 

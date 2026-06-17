@@ -7,11 +7,11 @@ PoC.io.ddrio.inout
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/ddrio/ddrio_InOut.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/io/ddrio/ddrio_InOut.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/io/ddrio/ddrio_inout_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/io/ddrio/ddrio_inout_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

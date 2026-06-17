@@ -32,7 +32,7 @@ example is given in PoC-Examples_.
 
 
 
-.. _PoC-Examples: https://github.com/VLSI-EDA/PoC-Examples
+.. _PoC-Examples: https://github.com/VHDL/PoC-Examples
 
 .. toctree::
    :hidden:

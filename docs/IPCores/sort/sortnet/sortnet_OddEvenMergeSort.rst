@@ -7,11 +7,11 @@ PoC.sort.sortnet.OddEvenMergeSort
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/sort/sortnet/sortnet_OddEvenMergeSort_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/sort/sortnet/sortnet_OddEvenMergeSort_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

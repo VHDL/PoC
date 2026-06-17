@@ -7,11 +7,11 @@ PoC.io.lcd.LCDSynchronizer
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/lcd/lcd_LCDSynchronizer.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/io/lcd/lcd_LCDSynchronizer.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/io/lcd/lcd_LCDSynchronizer_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/io/lcd/lcd_LCDSynchronizer_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

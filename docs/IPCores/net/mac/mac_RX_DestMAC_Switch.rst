@@ -7,11 +7,11 @@ PoC.net.mac.RX_DestMAC_Switch
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/net/mac/mac_RX_DestMAC_Switch.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/net/mac/mac_RX_DestMAC_Switch.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/net/mac/mac_RX_DestMAC_Switch_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/net/mac/mac_RX_DestMAC_Switch_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

@@ -7,11 +7,11 @@ PoC.net.eth.PHYController_Marvell_88E1111
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/net/eth/eth_PHYController_Marvell_88E1111.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/net/eth/eth_PHYController_Marvell_88E1111.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/net/eth/eth_PHYController_Marvell_88E1111_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/net/eth/eth_PHYController_Marvell_88E1111_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

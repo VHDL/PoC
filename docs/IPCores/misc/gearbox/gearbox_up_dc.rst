@@ -7,11 +7,11 @@ PoC.misc.gearbox.up_dc
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/misc/gearbox/gearbox_Up_dc.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/misc/gearbox/gearbox_Up_dc.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/misc/gearbox/gearbox_up_dc_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/misc/gearbox/gearbox_up_dc_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

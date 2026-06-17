@@ -7,11 +7,11 @@ PoC.mem.sdram.ctrl_phy_s3esk
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/mem/sdram/sdram_ctrl_phy_s3esk.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/mem/sdram/sdram_ctrl_phy_s3esk.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/mem/sdram/sdram_ctrl_phy_s3esk_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/mem/sdram/sdram_ctrl_phy_s3esk_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

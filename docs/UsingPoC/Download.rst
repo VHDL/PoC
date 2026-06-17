@@ -17,11 +17,11 @@ table, to choose your desired git branch.
 
 .. |zip-master| image:: /_static/icons/ZIP.png
    :scale: 40
-   :target: https://github.com/VLSI-EDA/PoC/archive/master.zip
+   :target: https://github.com/VHDL/PoC/archive/master.zip
    :alt: Source Code from GitHub - 'master' branch.
 .. |zip-release| image:: /_static/icons/ZIP.png
    :scale: 40
-   :target: https://github.com/VLSI-EDA/PoC/archive/release.zip
+   :target: https://github.com/VHDL/PoC/archive/release.zip
    :alt: Source Code from GitHub - 'release' branch.
 
 +----------+------------------------+
@@ -49,7 +49,7 @@ instructions or on other pages in this documentation.
 +----------+----------------------------------------+
 | Protocol | GitHub Repository URL                  |
 +==========+========================================+
-| HTTPS    | https://github.com/VLSI-EDA/PoC.git    |
+| HTTPS    | https://github.com/VHDL/PoC.git    |
 +----------+----------------------------------------+
 | SSH      | ssh://git@github.com:VLSI-EDA/PoC.git  |
 +----------+----------------------------------------+
@@ -64,7 +64,7 @@ HTTPS protocol:
 .. code-block:: Bash
 
    cd GitRoot
-   git clone --recursive "https://github.com/VLSI-EDA/PoC.git" PoC
+   git clone --recursive "https://github.com/VHDL/PoC.git" PoC
    cd PoC
    git remote rename origin github
 
@@ -102,7 +102,7 @@ HTTPS protocol:
 .. code-block:: PowerShell
 
    cd GitRoot
-   git clone --recursive "https://github.com/VLSI-EDA/PoC.git" PoC
+   git clone --recursive "https://github.com/VHDL/PoC.git" PoC
    cd PoC
    git remote rename origin github
 
@@ -146,7 +146,7 @@ HTTPS protocol:
 
    cd ProjectRoot
    mkdir lib
-   git submodule add "https://github.com/VLSI-EDA/PoC.git" lib/PoC
+   git submodule add "https://github.com/VHDL/PoC.git" lib/PoC
    cd lib/PoC
    git remote rename origin github
    cd ../..
@@ -192,7 +192,7 @@ HTTPS protocol:
 
    cd <ProjectRoot>
    mkdir lib | cd
-   git submodule add "https://github.com/VLSI-EDA/PoC.git" PoC
+   git submodule add "https://github.com/VHDL/PoC.git" PoC
    cd PoC
    git remote rename origin github
    cd ..\..

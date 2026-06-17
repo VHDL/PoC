@@ -7,11 +7,11 @@ PoC.io.uart.fifo
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/uart/uart_FIFO.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/io/uart/uart_FIFO.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/io/uart/uart_fifo_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/io/uart/uart_fifo_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

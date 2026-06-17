@@ -7,11 +7,11 @@ PoC.mem.lut.Sine
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/mem/lut/lut_Sine.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/mem/lut/lut_Sine.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/mem/lut/lut_Sine_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/mem/lut/lut_Sine_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

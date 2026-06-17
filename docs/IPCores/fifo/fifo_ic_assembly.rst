@@ -7,11 +7,11 @@ PoC.fifo.ic_assembly
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/fifo/fifo_ic_assembly.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/fifo/fifo_ic_assembly.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/fifo/fifo_ic_assembly_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/fifo/fifo_ic_assembly_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

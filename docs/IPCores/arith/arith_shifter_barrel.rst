@@ -7,11 +7,11 @@ PoC.arith.shifter_barrel
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Shifter_Barrel.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/arith/arith_Shifter_Barrel.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/arith/arith_shifter_barrel_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/arith/arith_shifter_barrel_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

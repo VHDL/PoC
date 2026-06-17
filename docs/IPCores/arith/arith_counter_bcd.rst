@@ -7,11 +7,11 @@ PoC.arith.counter_bcd
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Counter_BCD.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/arith/arith_Counter_BCD.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/arith/arith_counter_bcd_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/arith/arith_counter_bcd_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

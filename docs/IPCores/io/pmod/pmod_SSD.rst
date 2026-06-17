@@ -7,11 +7,11 @@ PoC.io.pmod.SSD
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/pmod/pmod_SSD.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/io/pmod/pmod_SSD.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/io/pmod/pmod_SSD_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/io/pmod/pmod_SSD_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

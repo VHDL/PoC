@@ -7,11 +7,11 @@ PoC.net.mac.TX_Type_Prepender
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/net/mac/mac_TX_Type_Prepender.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/net/mac/mac_TX_Type_Prepender.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/net/mac/mac_TX_Type_Prepender_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/net/mac/mac_TX_Type_Prepender_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

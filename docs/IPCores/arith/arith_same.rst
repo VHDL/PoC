@@ -7,11 +7,11 @@ PoC.arith.same
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith_Same.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/arith/arith_Same.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/arith/arith_same_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/arith/arith_same_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

@@ -14,7 +14,7 @@ WordAligner
    :linenos:
    :lines: 39-52
 
-Source file: `misc/misc_WordAligner.vhdl <https://github.com/VLSI-EDA/PoC/blob/master/src/misc/misc_WordAligner.vhdl>`_
+Source file: `misc/misc_WordAligner.vhdl <https://github.com/VHDL/PoC/blob/master/src/misc/misc_WordAligner.vhdl>`_
 
 
 

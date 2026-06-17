@@ -29,15 +29,15 @@ Report a Bug
 ************
 
 .. #image:: https://img.shields.io/github/issues/VLSI-EDA/PoC.svg
-   :target: https://github.com/VLSI-EDA/PoC/issues
+   :target: https://github.com/VHDL/PoC/issues
 .. #image:: https://img.shields.io/github/issues-closed/VLSI-EDA/PoC.svg
-   :target: https://github.com/VLSI-EDA/PoC/issues
+   :target: https://github.com/VHDL/PoC/issues
 
 Please report issues of any kind in our Git provider's issue tracker. This allows
 us to categorize issues into groups and assign developers to them. You can track
 the issue's state and see how it's getting solved. All enhancements and feature
 requests are tracked on GitHub at
-`GitHub Issues <https://github.com/VLSI-EDA/PoC/issues>`_.
+`GitHub Issues <https://github.com/VHDL/PoC/issues>`_.
 
 
 Feature Request
@@ -47,7 +47,7 @@ Please report missing features of any kind. We are allways looking forward to
 provide a full feature set. Please use our Git provider's issue tracker to report
 enhancements and feature requests, so you can track the request's status and
 implementation. All enhancements and feature requests are tracked on GitHub at
-`GitHub Issues <https://github.com/VLSI-EDA/PoC/issues>`_.
+`GitHub Issues <https://github.com/VHDL/PoC/issues>`_.
 
 
 Talk to us on Gitter
@@ -93,7 +93,7 @@ your proposed changes and integrate them into our repository.
 ==========================
 
 .. #image:: https://img.shields.io/github/forks/VLSI-EDA/PoC.svg
-   :target: https://github.com/VLSI-EDA/PoC/network/members
+   :target: https://github.com/VHDL/PoC/network/members
 
 Git repositories can be cloned on a Git provider's server. This procedure is
 called *forking*. This allows Git providers to track the repository's network,
@@ -209,12 +209,12 @@ Commit your porposed changes onto your feature branch and push all changes to Gi
 ========================
 
 .. #image:: https://img.shields.io/github/issues-pr/VLSI-EDA/PoC.svg
-   :target: https://github.com/VLSI-EDA/PoC/pulls
+   :target: https://github.com/VHDL/PoC/pulls
 .. #image:: https://img.shields.io/github/issues-pr-closed/VLSI-EDA/PoC.svg
-   :target: https://github.com/VLSI-EDA/PoC/pulls
+   :target: https://github.com/VHDL/PoC/pulls
 
 Go to your forked repository and klick on "Compare and Pull-Request" or go to
-our PoC repository and create a new `pull request <https://github.com/VLSI-EDA/PoC/pulls>`_.
+our PoC repository and create a new `pull request <https://github.com/VHDL/PoC/pulls>`_.
 
 If this is your first Pull-Request, you need to sign our Contributers License
 Agreement (CLA).

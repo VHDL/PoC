@@ -7,11 +7,11 @@ PoC.sync.Bits
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/sync/sync_Bits.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/sync/sync_Bits.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/sync/sync_Bits_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/sync/sync_Bits_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

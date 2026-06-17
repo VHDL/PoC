@@ -7,11 +7,11 @@ PoC.bus.wb.uart_wrapper
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/bus/wb/wb_uart_wrapper.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/bus/wb/wb_uart_wrapper.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/bus/wb/wb_uart_wrapper_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/bus/wb/wb_uart_wrapper_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

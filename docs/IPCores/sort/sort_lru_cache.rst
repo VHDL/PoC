@@ -7,11 +7,11 @@ PoC.sort.lru_cache
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/sort/sort_lru_cache.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/sort/sort_lru_cache.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/sort/sort_lru_cache_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/sort/sort_lru_cache_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

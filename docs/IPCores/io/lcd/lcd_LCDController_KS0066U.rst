@@ -7,11 +7,11 @@ PoC.io.lcd.LCDController_KS0066U
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/lcd/lcd_LCDController_KS0066U.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/io/lcd/lcd_LCDController_KS0066U.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/io/lcd/lcd_LCDController_KS0066U_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/io/lcd/lcd_LCDController_KS0066U_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

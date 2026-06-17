@@ -23,7 +23,7 @@ Programming Languages and Runtime Environments:
     * `colorama <https://pypi.python.org/pypi/colorama>`_
     * `py-flags <https://pypi.python.org/pypi/py-flags>`_
 
-    All Python requirements are listed in `requirements.txt <https://github.com/VLSI-EDA/PoC/blob/master/requirements.txt>`_ and can be installed via: |br|
+    All Python requirements are listed in `requirements.txt <https://github.com/VHDL/PoC/blob/master/requirements.txt>`_ and can be installed via: |br|
     ``sudo python3.5 -m pip install -r requirements.txt``
 Synthesis tool chains:
   * Altera Quartus Prime |geq| 15.1 or

@@ -25,7 +25,7 @@ Git
      git config --global alias.tree 'log --decorate --pretty=oneline --abbrev-commit --date-order --graph'
      git config --global alias.tree 'log --decorate --pretty=oneline --abbrev-commit --date-order --graph --all'
 
-Browse the `Git directory <https://github.com/VLSI-EDA/PoC/tree/master/tools/git>`_.
+Browse the `Git directory <https://github.com/VHDL/PoC/tree/master/tools/git>`_.
 
 
 Notepad++
@@ -39,6 +39,6 @@ The following additional file types are supported:
 * PoC *.Rules Files (*.rules)
 * Xilinx User Constraint Files (*.ucf): ``Syntax Highlighting - Xilinx UCF``
 
-Browse the `Notepad++ directory <https://github.com/VLSI-EDA/PoC/tree/master/tools/Notepad%2B%2B>`_.
+Browse the `Notepad++ directory <https://github.com/VHDL/PoC/tree/master/tools/Notepad%2B%2B>`_.
 
 

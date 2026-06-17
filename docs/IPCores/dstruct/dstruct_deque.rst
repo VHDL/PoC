@@ -7,11 +7,11 @@ PoC.dstruct.deque
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/dstruct/dstruct_deque.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/dstruct/dstruct_deque.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/dstruct/dstruct_deque_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/dstruct/dstruct_deque_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
