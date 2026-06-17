@@ -21,21 +21,21 @@
 
 analyze ./mem.pkg.vhdl
 analyze ./ocram/ocram.pkg.vhdl
-analyze ./ocram/ocram_tdp_sim.vhdl
-analyze ./ocram/ocram_tdp.vhdl
-analyze ./ocram/ocram_esdp.vhdl
-analyze ./ocram/ocram_sdp.vhdl
-analyze ./ocram/ocram_sdp_optimized.vhdl
-analyze ./ocram/ocram_sdp_wf.vhdl
-analyze ./ocram/ocram_sp.vhdl
-analyze ./ocram/ocram_tdp_wf.vhdl
+analyze ./ocram/ocram_TrueDualPort_sim.vhdl
+analyze ./ocram/ocram_TrueDualPort.vhdl
+analyze ./ocram/ocram_EnhancedSimpleDualPort.vhdl
+analyze ./ocram/ocram_SimpleDualPort.vhdl
+analyze ./ocram/ocram_SimpleDualPort_Optimized.vhdl
+analyze ./ocram/ocram_sdp_wfasd.vhdl
+analyze ./ocram/ocram_SinglePort.vhdl
+analyze ./ocram/ocram_tdp_wasdf.vhdl
 
 if { $::poc::vendorName eq "Xilinx" } {
 	puts "No files for Xilinx."
 
 } elseif { $::poc::vendorName eq "Altera" } {
-	analyze ./ocram/altera/ocram_sp_altera.vhdl
-	analyze ./ocram/altera/ocram_tdp_altera.vhdl
+	analyze ./ocram/altera/ocram_SimplePort_Altera.vhdl
+	analyze ./ocram/altera/ocram_TrueDualPort_Altera.vhdl
 
 } elseif { $::poc::vendorName ne "GENERIC" } {
 	puts "Unknown vendor '$::poc::vendorName'!"
@@ -43,8 +43,8 @@ if { $::poc::vendorName eq "Xilinx" } {
 }
 
 analyze ./ocrom/ocrom.pkg.vhdl
-analyze ./ocrom/ocrom_dp.vhdl
-analyze ./ocrom/ocrom_sp.vhdl
+analyze ./ocrom/ocrom_DualPort.vhdl
+analyze ./ocrom/ocrom_SinglePort.vhdl
 
 analyze ./sdram/sdram_ctrl_fsm.vhdl
 

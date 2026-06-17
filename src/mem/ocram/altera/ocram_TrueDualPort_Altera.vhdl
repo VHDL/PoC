@@ -1,5 +1,5 @@
 -- =============================================================================
--- Authors:          Martin Zabel
+-- Authors:         Martin Zabel
 --                  Patrick Lehmann
 --
 -- Entity:           Instantiate true dual-port memory on Altera FPGAs.
@@ -41,8 +41,7 @@ use     work.config.all;
 use     work.utils.all;
 use     work.strings.all;
 
--- XXX: activate altera
-entity ocram_tdp_altera is
+entity ocram_TrueDualPort_Altera is
 	generic (
 		A_BITS    : positive;
 		D_BITS    : positive;
@@ -62,10 +61,10 @@ entity ocram_tdp_altera is
 		q1   : out std_logic_vector(D_BITS-1 downto 0);
 		q2   : out std_logic_vector(D_BITS-1 downto 0)
 	);
-end ocram_tdp_altera;
+end entity;
 
 
-architecture rtl of ocram_tdp_altera is
+architecture rtl of ocram_TrueDualPort_Altera is
 	constant DEPTH      : positive  := 2**A_BITS;
 	constant INIT_FILE  : string    := ite((str_length(FILENAME) = 0), "UNUSED", FILENAME);
 
