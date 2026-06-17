@@ -1,6 +1,5 @@
 # =============================================================================
-# Authors: Adrian Weiland
-#          Stefan Unrein
+# Authors: Stefan Unrein
 #
 # License:
 # =============================================================================
@@ -19,27 +18,22 @@
 # limitations under the License.
 # =============================================================================
 
-analyze ./io.pkg.vhdl
-analyze ./io_Debounce.vhdl
-analyze ./io_FrequencyCounter.vhdl
-analyze ./io_TimingCounter.vhdl
-analyze ./io_GlitchFilter.vhdl
-analyze ./io_PulseWidthModulation.vhdl
-analyze ./io_KeyPadScanner.vhdl
-analyze ./io_7SegmentMux_BCD.vhdl
-analyze ./io_7SegmentMux_HEX.vhdl
-analyze ./io_FanControl.vhdl
+analyze ./ddrio.pkg.vhdl
+analyze ./ddrio_In.vhdl
+analyze ./ddrio_InOut.vhdl
+analyze ./ddrio_Out.vhdl
 
+if { $::poc::vendorName eq "Xilinx" } {
+	analyze ./ddrio_In_Xilinx.vhdl
+	analyze ./ddrio_InOut_Xilinx.vhdl
+	analyze ./ddrio_Out_Xilinx.vhdl
 
-include ./ddrio
-disabled ./spi/spi.pro
-include ./uart
-disabled ./iic/iic.pro
-disabled ./fan/fan.pro
+} elseif { $::poc::vendorName eq "Altera" } {
+	analyze ./ddrio_In_Altera.vhdl
+	analyze ./ddrio_InOut_Altera.vhdl
+	analyze ./ddrio_Out_Altera.vhdl
 
-analyze ./pmod/pmod.pkg.vhdl
-analyze ./pmod/pmod_KYPD.vhdl
-analyze ./pmod/pmod_SSD.vhdl
-disabled ./pmod/pmod_USBUART.vhdl
-disabled ./jtag/jtag.pkg.vhdl
-disabled ./led/led.pkg.vhdl
+} elseif { $::poc::vendorName ne "GENERIC" } {
+	puts "Unknown vendor '$::poc::vendorName' in io!"
+	exit 1
+}
