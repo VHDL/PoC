@@ -38,6 +38,7 @@ namespace eval ::poc {
 		set toolsWithDashCode {ActiveHDL ModelSim NVC QuestaSim RivieraPRO}
 
 		if {[lsearch -exact $toolsWithDashCode $::osvvm::ToolName] >= 0} {
+			# noqa: E003
 			exit -code $code
 		} else {
 			exit $code
@@ -215,3 +216,72 @@ Other tools:
 }
 
 puts "Loaded PoC extensions for OSVVM."
+
+namespace eval ::regression {
+	proc createRegressionLevels {args} {
+		set map(all) 0
+
+		set i 0
+		foreach level $args {
+			set map($level) $i
+			incr i
+		}
+
+		return [array get map]
+	}
+
+	proc mapRegressionLevel {step levelMap} {
+		if {[string is integer -strict $step]} {
+			return $step
+		}
+
+		array set map $levelMap
+
+		if {[info exists map($step)]} {
+			return $map($step)
+		}
+
+		puts "\[WARNING\] Unknown build level '$step', using 'all'."
+		return 0
+	}
+
+	proc evaluateRegressionLevel {defaultStep regressionLevels} {
+		set ::regression::executeSingleStep 0
+		if {[info exists ::env(REGRESSION_STEP)]} {
+			set ::regression::executeSingleStep 1  ; # return after selected step
+		}
+
+		# 1. argv (when used interactively)
+		if {[info exists ::argv] && [llength $::argv] > 0} {
+			set buildConfigSource "interactive"
+			set selectedStep [lindex $::argv 0]
+
+		# 2. Check for environment variables
+		} elseif {[info exists ::env(REGRESSION_STEP)]} {
+			set buildConfigSource "environment variable"
+			set selectedStep $::env(REGRESSION_STEP)
+
+		} elseif {[info exists ::env(REGRESSION_FROM)]} {
+			set buildConfigSource "environment variable"
+			set selectedStep $::env(REGRESSION_FROM)
+		
+		} else {
+			set buildConfigSource "default"
+			set selectedStep $defaultStep
+			puts "\[REGRESSION INFO\] Undefined or unknown argument, using default settings."
+		}
+		set ::regression::level [mapRegressionLevel $selectedStep $regressionLevels]
+		
+		# 3. output result
+		puts "=================================="
+		puts "Build configuration"
+		puts "  Level: $::regression::level (set by $buildConfigSource)"
+		puts "  Executing [expr {$::regression::executeSingleStep ? "only" : "starting from"}] step '$selectedStep'"
+		puts "=================================="
+	}
+
+	namespace export createRegressionLevels
+	namespace export evaluateRegressionLevel
+}
+
+puts "Loaded regression extensions."

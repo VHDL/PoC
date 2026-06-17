@@ -41,9 +41,9 @@ use     work.axi4lite.all;
 use     work.axi4_Full.all;
 
 package axi4 is
-	--ATTENTION::Whe using this function, keep in mind that return id is always zero!
+	--ATTENTION::When using this function, keep in mind that return id is always zero!
 	--           Use only when connected AXI4Full is not using ID!
-	--           If ID is needed, use Moduel "axi4_AXI4Lite_Converter"
+	--           If ID is needed, use Module "axi4_AXI4Lite_Converter"
 	function to_AXI4LITE_BUS(full : T_AXI4_BUS_M2S; databit : natural := 0) return T_AXI4LITE_BUS_M2S;
 	function to_AXI4LITE_BUS(full : T_AXI4_BUS_S2M; databit : natural := 0) return T_AXI4LITE_BUS_S2M;
 

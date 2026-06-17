@@ -3,17 +3,12 @@ stages:
   - build_osvvm
   - build_poc
   - test
+  - documentation
   - pages
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   SIMULATOR_PAGES: "NVC"  # simulator from which the results should be published on GitLab pages (GHDL, Riviera-PRO)
-
-  # Names for specific jobs
-  COMPILE_OSVVM_NAME  : "OsvvmLibraries"
-  COMPILE_POC_NAME    : "PoC"
-  SIMULATE_OSVVM_NAME : "OSVVM-RunAllTests"
-  SIMULATE_POC_NAME   : "PoC-RunAllTests"
 
 Scripts:
   stage: prepare
@@ -21,127 +16,34 @@ Scripts:
   script:
     - mv src/common/my_project.vhdl.template tb/common/my_project.vhdl  # use CopyFile when its supporting renaming
     - sed -i 's#\(constant\sMY_PROJECT_DIR\s*:\s*string\s*:=\s*\)".*";#\1"'"$(pwd)"'";#' tb/common/my_project.vhdl
-    - sed -i 's#\(constant\sMY_OPERATING_SYSTEM\s*:\s*string\s*:=\s*\)".*";#\1"LINUX";#' tb/common/my_project.vhdl
-
-    - CreateAndChangeDirectory "temp" "Simulation working directory"
-    - |
-      tee setup_simulator.tcl <<EOF
-      source ../../lib/OSVVM-Scripts/StartUp.tcl
-      source ../../tools/OSVVM/poc.tcl
-      namespace import ::poc::*
-      # Skip report generation if executed within Sigasi/VS Code
-      if {[info exists ::env(OSVVM_TOOL)] && $::env(OSVVM_TOOL) eq "Sigasi"} {
-        set ::osvvm::GenerateOsvvmReports "false"
-      }
-      if {[info exists ::env(GITLAB_CI)]} {
-        set buildNamePrefix ""
-      } else {
-        set buildNamePrefix "\${::osvvm::ToolNameVersion}-"
-      }
-      # -g -gui         disables system exit (i.e. on errors)
-      # -v -vendor      Vendor name
-      # -b -board       Board name
-      # -p -projectFile Path to the my_project file
-      # -c -configFile  Path to the my_config file
-      configurePoC
-      # -s -stop <i>    set the stop counts to <i>
-      # -d -debug       enable debugging
-      # -w -waves       save waveforms
-      configureOSVVM
-      EOF
-
-      tee eval_prefix.tcl <<EOF
-      source ../setup_simulator.tcl
-      puts -nonewline $::poc::buildNamePrefix
-      EOF
-
-      tee osvvm_compile.tcl <<EOF
-      source ../setup_simulator.tcl
-      build ../../lib/OsvvmLibraries.pro [BuildName "\${::poc::buildNamePrefix}${COMPILE_OSVVM_NAME}"]
-      checkForBuildErrors
-      EOF
-
-      tee poc_compile.tcl <<EOF
-      source ../setup_simulator.tcl
-      build ../../src/build.pro [BuildName "\${::poc::buildNamePrefix}${COMPILE_POC_NAME}"]
-      checkForBuildErrors
-      EOF
-
-      tee osvvm_sim.tcl <<EOF
-      source ../setup_simulator.tcl
-      build ../../lib/RunAllTests.pro [BuildName "\${::poc::buildNamePrefix}${SIMULATE_OSVVM_NAME}"]
-      checkForRunErrors
-      EOF
-
-      tee poc_sim.tcl <<EOF
-      source ../setup_simulator.tcl
-      build ../../tb/RunAllTests.pro [BuildName "\${::poc::buildNamePrefix}${SIMULATE_POC_NAME}"]
-      checkForRunErrors
-      EOF
-
   artifacts:
     paths:
       - tb/common/my_project.vhdl
-      - temp/*.tcl
     expire_in: 1 hour
 
 
 # --------------------
 # ---- Templates -----
 # --------------------
-.SimulationWrapper:
-  before_script:
-    - |
-      if [ "$SIMULATOR" = "NVC" ]; then
-        CreateAndChangeDirectory "temp/NVC" "Simulation working directory"
-        export buildNamePrefix=$(nvc --do ../eval_prefix.tcl | tail -n 1 | sed 's/^#\s*//')
-      else
-        export buildNamePrefix=$(exec-$SIMULATOR.sh -n --tcl-file=temp/eval_prefix.tcl | tail -n 1 | sed 's/^#\s*//')
-      fi
-    - FullBuildName="${buildNamePrefix}${RESULT_NAME}"
-    - echo "Full buildname is $FullBuildName"
-    - echo "$FullBuildName" > $CI_PROJECT_DIR/temp/$SIMULATOR/full_build_name.txt
-  after_script:
-    - FullBuildName=$(cat temp/$SIMULATOR/full_build_name.txt)
-    - mkdir -p temp/junit
-    - CopyFile "temp/$SIMULATOR/$FullBuildName/$FullBuildName.xml" "temp/junit"
-    - CopyFile "temp/$SIMULATOR/$FullBuildName/$FullBuildName.yml" "temp/junit"
-
-.compile:
-  extends:
-    - .SimulationWrapper
+.run:
   script:
     - |
       if [ "$SIMULATOR" = "NVC" ]; then
+        CreateAndChangeDirectory "temp/NVC" "Simulation working directory"
         # before_script and script are running in the same shell; therefore no need to change the directory
-        nvc --do ../${TCL_FILE}
+        nvc --do ../../regression.tcl
       else
-        exec-$SIMULATOR.sh -n --tcl-file=temp/${TCL_FILE}
+        exec-$SIMULATOR.sh -n --tcl-file=regression.tcl
       fi
+  after_script:
+    - mkdir -p temp/junit
+    - CopyFile "temp/$SIMULATOR/*/*.xml" "temp/junit"
+    - CopyFile "temp/$SIMULATOR/*/*.yml" "temp/junit"
   artifacts:
     paths:
       - temp/$SIMULATOR
       - temp/junit
       - lib/osvvm/*_generated.vhd
-    expire_in: 1 week
-    when: always
-
-.simulate:
-  extends:
-    - .SimulationWrapper
-  script:
-    - |
-      if [ "$SIMULATOR" = "NVC" ]; then
-        # before_script and script are running in the same shell; therefore no need to change the directory
-        nvc --do ../${TCL_FILE}
-      else
-        exec-$SIMULATOR.sh -n --tcl-file=temp/${TCL_FILE}
-      fi
-  allow_failure: true  # if case the Riviera license is in use
-  artifacts:
-    paths:
-      - temp/junit
-      - temp/$SIMULATOR
     reports:
       junit: "temp/junit/*.xml"
     expire_in: 1 week
@@ -155,111 +57,104 @@ Scripts:
     matrix:
       - GHDL_BACKEND: ["llvm", "mcode"]
   image: ${CI_REGISTRY}/docker-images/ghdl:${GHDL_BACKEND}
+  extends:
+    - .run
   variables:
     SIMULATOR: "GHDL"
 
-GHDL_OSVVM_compile:
+GHDL_OSVVM_run:
   stage: build_osvvm
   extends:
     - .GHDL
-    - .compile
   needs:
     job: Scripts
     artifacts: true
   variables:
-    TCL_FILE: "osvvm_compile.tcl"
+    REGRESSION_STEP: "osvvm"
 
-GHDL_PoC_compile:
+GHDL_PoC_run:
   stage: build_poc
   extends:
     - .GHDL
-    - .compile
   needs:
     - job: Scripts
       artifacts: true
-    - job: GHDL_OSVVM_compile
+    - job: GHDL_OSVVM_run
       artifacts: true
   variables:
-    TCL_FILE: "poc_compile.tcl"
-    RESULT_NAME: "$COMPILE_POC_NAME"
+    REGRESSION_STEP: "poc"
 
-GHDL_OSVVM_sim:
+.GHDL_OSVVM_sim:  # step has to be added to regression.tcl
   stage: test
   extends:
     - .GHDL
-    - .simulate
   needs:
     - job: Scripts
       artifacts: true
-    - job: GHDL_OSVVM_compile
+    - job: GHDL_OSVVM_run
       artifacts: true
   only:
     - main
     - master
     - dev
   variables:
-    TCL_FILE: "osvvm_sim.tcl"
-    RESULT_NAME: "$SIMULATE_OSVVM_NAME"
+    REGRESSION_STEP: "osvvm_test"  # todo: add this to regression.tcl
 
 GHDL_PoC_sim:
   stage: test
   extends:
     - .GHDL
-    - .simulate
   needs:
     - job: Scripts
       artifacts: true
-    - job: GHDL_PoC_compile
+    - job: GHDL_PoC_run
       artifacts: true
+  allow_failure: true  # todo: fix llvm error
   variables:
-    TCL_FILE: "poc_sim.tcl"
-    RESULT_NAME: "$SIMULATE_POC_NAME"
+    REGRESSION_STEP: "test"
 
 # ------------------
 # ---- Riviera -----
 # ------------------
 .RIVIERA-PRO:
   image: ${CI_REGISTRY}/docker-images/rivierapro:2024.10
+  extends:
+    - .run
   variables:
     SIMULATOR: "Riviera-PRO"
 
-RIVIERA_OSVVM_compile:
+RIVIERA_OSVVM_run:
   stage: build_osvvm
   extends:
     - .RIVIERA-PRO
-    - .compile
   needs:
     job: Scripts
     artifacts: true
   variables:
-    TCL_FILE: "osvvm_compile.tcl"
-    RESULT_NAME: "$COMPILE_OSVVM_NAME"
+    REGRESSION_STEP: "osvvm"
 
-RIVIERA_PoC_compile:
+RIVIERA_PoC_run:
   stage: build_poc
   extends:
     - .RIVIERA-PRO
-    - .compile
   needs:
     - job: Scripts
       artifacts: true
-    - job: RIVIERA_OSVVM_compile
+    - job: RIVIERA_OSVVM_run
       artifacts: true
   variables:
-    TCL_FILE: "poc_compile.tcl"
-    RESULT_NAME: "$COMPILE_POC_NAME"
+    REGRESSION_STEP: "poc"
 
-RIVIERA_OSVVM_sim:
+.RIVIERA_OSVVM_sim:
   stage: test
   extends:
     - .RIVIERA-PRO
-    - .simulate
   needs:
     - job: Scripts
       artifacts: true
-    - job: RIVIERA_OSVVM_compile
+    - job: RIVIERA_OSVVM_run
       artifacts: true
-    - job: RIVIERA_PoC_compile  # avoid license blocking
+    - job: RIVIERA_PoC_run  # avoid license blocking
       artifacts: true
   only:
     - main
@@ -267,25 +162,23 @@ RIVIERA_OSVVM_sim:
     - dev
   allow_failure: true
   variables:
-    TCL_FILE: "osvvm_sim.tcl"
-    RESULT_NAME: "$SIMULATE_OSVVM_NAME"
+    REGRESSION_STEP: "osvvm_test"
 
 RIVIERA_PoC_sim:
   stage: test
   extends:
     - .RIVIERA-PRO
-    - .simulate
   needs:
     - job: Scripts
       artifacts: true
-    - job: RIVIERA_PoC_compile
+    - job: RIVIERA_PoC_run
       artifacts: true
     - job: RIVIERA_OSVVM_sim  # avoid license blocking
       optional: true
       artifacts: false
+  allow_failure: true  # if license is in use
   variables:
-    TCL_FILE: "poc_sim.tcl"
-    RESULT_NAME: "$SIMULATE_POC_NAME"
+    REGRESSION_STEP: "test"
 
 
 # --------------
@@ -293,74 +186,68 @@ RIVIERA_PoC_sim:
 # --------------
 .NVC:
   image: ${CI_REGISTRY}/docker-images/nvc:latest
+  extends:
+    - .run
   variables:
     SIMULATOR: "NVC"
 
-NVC_OSVVM_compile:
+NVC_OSVVM_run:
   stage: build_osvvm
   extends:
     - .NVC
-    - .compile
   needs:
     job: Scripts
     artifacts: true
   variables:
-    TCL_FILE: "osvvm_compile.tcl"
-    RESULT_NAME: "$COMPILE_OSVVM_NAME"
+    REGRESSION_STEP: "osvvm"
 
-NVC_PoC_compile:
+NVC_PoC_run:
   stage: build_poc
   extends:
     - .NVC
-    - .compile
   needs:
     - job: Scripts
       artifacts: true
-    - job: NVC_OSVVM_compile
+    - job: NVC_OSVVM_run
       artifacts: true
   variables:
-    TCL_FILE: "poc_compile.tcl"
-    RESULT_NAME: "$COMPILE_POC_NAME"
+    REGRESSION_STEP: "poc"
 
-NVC_OSVVM_sim:
+.NVC_OSVVM_sim:
   stage: test
   extends:
     - .NVC
-    - .simulate
   needs:
     - job: Scripts
       artifacts:
-    - job: NVC_OSVVM_compile
+    - job: NVC_OSVVM_run
       artifacts: true
   only:
     - main
     - master
     - dev
   variables:
-    TCL_FILE: "osvvm_sim.tcl"
-    RESULT_NAME: "$SIMULATE_OSVVM_NAME"
+    REGRESSION_STEP: "osvvm_test"
 
 NVC_PoC_sim:
   stage: test
   extends:
     - .NVC
-    - .simulate
   needs:
     - job: Scripts
       artifacts: true
-    - job: NVC_PoC_compile
+    - job: NVC_PoC_run
       artifacts: true
   variables:
-    TCL_FILE: "poc_sim.tcl"
-    RESULT_NAME: "$SIMULATE_POC_NAME"
+    REGRESSION_STEP: "test"
 
 
 # --------------------------
 # ----- Documentation ------
 # --------------------------
 MergeReports:
-  stage: test
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
+  stage: documentation
   needs:
     - job: GHDL_PoC_sim
       artifacts: true
@@ -379,8 +266,8 @@ MergeReports:
       - report/unit
 
 Sphinx:
-  stage: pages
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
+  stage: documentation
   needs:
     - job: MergeReports
       artifacts: true
@@ -397,14 +284,14 @@ Sphinx:
       - docs/_build/${SPHINX_BUILDER}
 
 MikTeX:
-  stage: pages
+  image: ${CI_REGISTRY}/docker-images/miktex:sphinx
   needs:
     - job: Sphinx
       parallel:
         matrix:
           - SPHINX_BUILDER: "latex"
       artifacts: true
-  image: ${CI_REGISTRY}/docker-images/miktex:sphinx
+  stage: documentation
   script:
     - cd docs/_build/latex
     - exec-LaTeX.sh --xelatex "PoC.tex"
@@ -421,6 +308,7 @@ MikTeX:
 # ------------------
 .pages:
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
+  stage: pages
   variables:
     GIT_SUBMODULE_STRATEGY: normal
   pages: true
@@ -439,7 +327,6 @@ MikTeX:
 
 
 pagesGHDL:
-  stage: pages
   rules:
     - if: >
         $SIMULATOR_PAGES == "GHDL" &&
@@ -456,7 +343,6 @@ pagesGHDL:
     - .pages
 
 pagesRiviera:
-  stage: pages
   rules:
     - if: >
         $SIMULATOR_PAGES == "Riviera-PRO" &&
@@ -470,7 +356,6 @@ pagesRiviera:
     - .pages
 
 pagesNVC:
-  stage: pages
   extends:
     - .pages
   rules:

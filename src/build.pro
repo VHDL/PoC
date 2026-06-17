@@ -25,7 +25,6 @@ analyze $::poc::myConfigFile
 analyze $::poc::myProjectFile
 
 include ./common
-include ./xil
 disabled ./misc/misc_ClockBuffer.vhdl
 include ./sync
 include ./arith
@@ -39,6 +38,7 @@ analyze ./bus/axi4/axi4.pkg.vhdl
 
 include ./mem
 include ./fifo
+include ./xil
 
 include ./dstruct
 include ./io

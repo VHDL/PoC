@@ -7,31 +7,31 @@
 #
 # Description:
 #   This file is structured in a way that it can run in different modes locally
-#   and on the CI server. Parameters can be set through arguments (1) if used
-#   interactively and through environment variables (2).
+#   and on the CI server. Parameters can be set through arguments (a) if used
+#   interactively and through environment variables (b).
 #
-#   (1) When in interactive mode arguments can be set as shown below
-#       set argv {<build_step>}; set argc 1
-#       (it has been tested with Riviera-PRO, NVC and GHDL)
+#   (a) When in interactive mode, arguments can be set as shown below:
+#       set ::argv <build_step>; set ::argc 1
+#       (it has been tested with Riviera-PRO interactive, NVC interactive and tclsh with GHDL)
 #
-#   (2) The following environment variables can be set:
-#       REGRESSION_START_STEP  : <build_step> (similar to (1))
-#       REGRESSION_SINGLE_STEP : Execute only the selected step in
-#                                REGRESSION_START_STEP (can be "1" or "0")
+#   (b) One of the following environment variables can be set - REGRESSION_STEP has priority:
+#       REGRESSION_FROM : <build_step> (similar to variant a)
+#       REGRESSION_STEP : <build_step> - Execute only the selected step
 #
 #   Afterwards the file can be sourced as usual.
-#   Note that (1) always has priority over (2). If none are specified all steps
+#   Note that (a) always has priority over (b). If none are specified all steps
 #   are executed and everything is built.
 #
 #   Examples:
 #     Riviera-PRO:
-#       'set argv {poc}; set argc 1; source ../regression.tcl'
-#       This will built everything starting with the PoC. If only the PoC should
-#       be build REGRESSION_SINGLE_STEP has to be set to "1" previously
+#       'set ::argv {poc}; set ::argc 1; source ../regression.tcl'
+#       This will built everything starting with the PoC.
 #     exec-NVC:
-#       'export REGRESSION_START_STEP="test"; export REGRESSION_SINGLE_STEP="1"'
-#       'exec-NVC.sh -n --tcl-file=regression.tcl'
-#       This will only run the tests.
+#       - 'REGRESSION_FROM="poc" exec-NVC.sh -n --tcl-file=regression.tcl'
+#            This will build everything starting from the poc
+#       - 'REGRESSION_STEP="test" exec-NVC.sh -n --tcl-file=regression.tcl'
+#         'REGRESSION_FROM="poc" REGRESSION_STEP="test" exec-NVC.sh -n --tcl-file=regression.tcl'
+#           This will only run the tests.
 #
 # License:
 # =============================================================================
@@ -57,47 +57,13 @@ source ${root}/lib/OSVVM-Scripts/StartUp.tcl
 source ${root}/tools/OSVVM/poc.tcl
 
 namespace import ::poc::*
+namespace import ::regression::*
 
-set executeSingleStep 0
-if {[info exists ::env(REGRESSION_SINGLE_STEP)]} {
-	set executeSingleStep [expr {$::env(REGRESSION_SINGLE_STEP) == 1}] ; # Only build selected step
-}
-
-proc map_level {step} {
-	switch -nocase -- $step {
-		"all"   { return 0 }
-		"osvvm" { return 0 }
-		"poc"   { return 1 }
-		"test"  { return 2 }
-		default {
-			puts "\[WARNING\] Unknown build level '$step', using 'all'"
-			return 0
-		}
-	}
-}
-
-# 1. argv (when used interactively)
-#    example for only compiling poc and running the tests: 'set argv {poc}; set argc 1; clear; source ../regression.tcl'
-if {[info exists argv] && [llength $argv] > 0} {
-	set buildConfigSource "interactive"
-	set level [map_level [lindex $argv 0]]
-
-# 2. Check for environment variables
-#    can i.e. set by 'export REGRESSION_START_STEP="test"'
-} elseif {[info exists ::env(REGRESSION_START_STEP)]} {
-	set buildConfigSource "environment variable"
-	set level [map_level $::env(REGRESSION_START_STEP)]
-} else {
-	set buildConfigSource "default"
-	set level 0
-}
-
-# 3. output result
-puts "=================================="
-puts "Build configuration"
-puts "  Level: $level (set by $buildConfigSource)"
-puts "  Executing [expr {$executeSingleStep ? "single step" : "multiple steps"}]"
-puts "=================================="
+#---------------------#
+# Configuration space #
+#---------------------#
+set defaultStep "all"
+set regressionLevels [createRegressionLevels osvvm poc test] ; # all
 
 # -g -gui         disables system exit (i.e. on errors)
 # -v -vendor      Vendor name
@@ -111,22 +77,26 @@ configurePoC -g
 # -w -waves       save waveforms
 configureOSVVM -stop 1 ;
 
-if {$level <= 0} {
+#---------------------#
+
+evaluateRegressionLevel $defaultStep $regressionLevels
+
+if {$::regression::level <= 0} {
 	build ${root}/lib/OsvvmLibraries.pro [BuildName "${::poc::buildNamePrefix}OsvvmLibraries"]
-	if {[checkForBuildErrors] || $executeSingleStep} {
+	if {[checkForBuildErrors] || $::regression::executeSingleStep} {
 		return
 	}
 }
 
-if {$level <= 1} {
+if {$::regression::level <= 1} {
 	build ${root}/PoC.pro [BuildName "${::poc::buildNamePrefix}PoC"]
-	if {[checkForBuildErrors] || $executeSingleStep} {
+	if {[checkForBuildErrors] || $::regression::executeSingleStep} {
 		return
 	}
 }
-if {$level <= 2} {
+if {$::regression::level <= 2} {
 	build ${root}/tb/RunAllTests.pro [BuildName "${::poc::buildNamePrefix}RunAllTests"]
-	if {[checkForRunErrors] || $executeSingleStep} {
+	if {[checkForRunErrors] || $::regression::executeSingleStep} {
 		return
 	}
 }
