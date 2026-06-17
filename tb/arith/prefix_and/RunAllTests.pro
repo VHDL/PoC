@@ -21,11 +21,11 @@
 
 TestSuite PoC.arith.prefix_and
 
-library tb_arith_prefix_and
+library tb_arith_Prefix_And
 
-analyze arith_prefix_and_TestController.vhdl
-analyze arith_prefix_and_TestHarness.vhdl
+analyze arith_Prefix_And_TestController.vhdl
+analyze arith_Prefix_And_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_prefix_and_Simple.vhdl
-RunTest arith_prefix_and_Exhaustive.vhdl
+RunTest arith_Prefix_And_Simple.vhdl
+RunTest arith_Prefix_And_Exhaustive.vhdl

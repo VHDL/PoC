@@ -26,7 +26,7 @@ PoC.bus.axi4lite
    axi4lite Package <axi4lite>
    axi4lite_OSVVM Package <axi4lite_OSVVM>
    FIFO <axi4lite_FIFO>
-   FIFO_cdc <axi4lite_FIFO_CDC>
+   FIFO_CDC <axi4lite_FIFO_CDC>
    Register <axi4lite_Register>
    GitVersionRegister <axi4lite_GitVersionRegister>
    HighResolutionClock <axi4lite_HighResolutionClock>

@@ -20,10 +20,10 @@
 
 TestSuite PoC.arith.firstone
 
-library tb_arith_firstone
+library tb_arith_FirstOne
 
-analyze arith_firstone_TestController.vhdl
-analyze arith_firstone_TestHarness.vhdl
+analyze arith_FirstOne_TestController.vhdl
+analyze arith_FirstOne_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_firstone_Simple.vhdl
+RunTest arith_FirstOne_Simple.vhdl

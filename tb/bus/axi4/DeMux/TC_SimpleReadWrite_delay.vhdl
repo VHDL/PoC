@@ -31,7 +31,7 @@ use     osvvm.ScoreBoardPkg_slv.all;
 library osvvm_Axi4 ;
 context osvvm_Axi4.Axi4LiteContext ;
 
-architecture SimpleReadWrite_delay of AXI4_Demux_TestController is
+architecture SimpleReadWrite_delay of axi4_DeMux_TestController is
 	signal TestDone : integer_barrier := 1;
 	signal WriteAddr_SB : ScoreboardIDArrayType(1 to CHANNELS);
 	signal WriteData_SB : ScoreboardIDArrayType(1 to CHANNELS);
@@ -204,10 +204,10 @@ begin
 
 end architecture;
 
-configuration TC_SimpleReadWrite_delay of AXI4_Demux_TestHarness is
+configuration TC_SimpleReadWrite_delay of axi4_DeMux_TestHarness is
 	for Harness
-		for TestCtrl : AXI4_Demux_TestController
-			use entity work.AXI4_Demux_TestController(SimpleReadWrite_delay);
+		for TestCtrl : axi4_DeMux_TestController
+			use entity work.axi4_DeMux_TestController(SimpleReadWrite_delay);
 		end for;
 	end for;
 end configuration;

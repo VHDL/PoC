@@ -1,11 +1,11 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /lut_sine_tb/Clock
-add wave -noupdate /lut_sine_tb/lut_in
-add wave -noupdate -format Analog-Step -height 74 -max 127.0 /lut_sine_tb/lut_Q1_out
-add wave -noupdate -format Analog-Step -height 74 -max 127.0 /lut_sine_tb/lut_Q2_out
-add wave -noupdate -format Analog-Step -height 74 -max 127.0 -min -127.0 -radix decimal /lut_sine_tb/lut_Q3_out
-add wave -noupdate -format Analog-Step -height 74 -max 127.0 -min -127.0 -radix decimal /lut_sine_tb/lut_Q4_out
+add wave -noupdate /lut_Sine_tb/Clock
+add wave -noupdate /lut_Sine_tb/lut_in
+add wave -noupdate -format Analog-Step -height 74 -max 127.0 /lut_Sine_tb/lut_Q1_out
+add wave -noupdate -format Analog-Step -height 74 -max 127.0 /lut_Sine_tb/lut_Q2_out
+add wave -noupdate -format Analog-Step -height 74 -max 127.0 -min -127.0 -radix decimal /lut_Sine_tb/lut_Q3_out
+add wave -noupdate -format Analog-Step -height 74 -max 127.0 -min -127.0 -radix decimal /lut_Sine_tb/lut_Q4_out
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {490000000 fs} 0}
 quietly wave cursor active 1

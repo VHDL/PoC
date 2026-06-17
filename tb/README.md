@@ -62,10 +62,10 @@ The CLI option switch `isim` chooses *ISE Simulator* (iSim) as the simulator and
 to the tool. All required source file are gathered and "fused" to an executable. Afterwards this
 executable is launched in CLI mode and it's outputs are displayed in console:
 
-[![PowerShell console output for PoC.arith.prng][arith_prng_tb]][arith_prng_tb]
+[![PowerShell console output for PoC.arith.prng][arith_PRNG_tb]][arith_PRNG_tb]
 (click to enlarge)
 
- [arith_prng_tb]: https://github.com/VHDL/PoC/wiki/images/arith_prng_tb.png
+ [arith_PRNG_tb]: https://github.com/VHDL/PoC/wiki/images/arith_PRNG_tb.png
 
 ##### Example 2:
 
@@ -79,10 +79,10 @@ cd <PoCRoot>
 See the red frame in the lower left corner: If everything was ok: `SIMULATION RESULT = PASSED` is
 printed onto the simulator console.
 
-[![iSim GUI for PoC.arith.prng][arith_prng_tb_isim]][arith_prng_tb_isim]
+[![iSim GUI for PoC.arith.prng][arith_PRNG_tb_isim]][arith_PRNG_tb_isim]
 (click to enlarge)
 
- [arith_prng_tb_isim]: https://github.com/VHDL/PoC/wiki/images/arith_prng_tb_isim.png
+ [arith_PRNG_tb_isim]: https://github.com/VHDL/PoC/wiki/images/arith_PRNG_tb_isim.png
 
 
 ## Running a Testbench

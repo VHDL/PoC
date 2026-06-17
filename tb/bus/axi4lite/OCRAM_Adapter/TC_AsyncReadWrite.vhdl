@@ -20,7 +20,7 @@
 -- limitations under the License.
 -- =============================================================================
 
-architecture AsyncReadWrite of AXI4Lite_OCRAM_Adapter_TestController is
+architecture AsyncReadWrite of axi4lite_OCRAM_Adapter_TestController is
 begin
 
 	------------------------------------------------------------
@@ -126,10 +126,10 @@ begin
 
 end architecture;
 
-configuration TC_AsyncReadWrite of AXI4Lite_Ocram_Adapter_TestHarness is
+configuration TC_AsyncReadWrite of axi4lite_Ocram_Adapter_TestHarness is
 	for sim
-		for TestCtrl : AXI4Lite_Ocram_Adapter_TestController
-			use entity work.AXI4Lite_Ocram_Adapter_TestController(AsyncReadWrite) ;
+		for TestCtrl : axi4lite_Ocram_Adapter_TestController
+			use entity work.axi4lite_Ocram_Adapter_TestController(AsyncReadWrite) ;
 		end for ;
 	end for ;
 end configuration ;

@@ -20,7 +20,7 @@
 -- limitations under the License.
 -- =============================================================================
 
-architecture SimpleReadWrite of AXI4Lite_Demux_TestController is
+architecture SimpleReadWrite of axi4lite_Demux_TestController is
 		signal TestDone : integer_barrier := 1;
 
 begin
@@ -145,10 +145,10 @@ begin
 
 end architecture ;
 
-configuration TC_SimpleReadWrite of AXI4Lite_Demux_TestHarness is
+configuration TC_SimpleReadWrite of axi4lite_Demux_TestHarness is
 	for sim
-		for TestCtrl : AXI4Lite_Demux_TestController
-			use entity work.AXI4Lite_Demux_TestController(SimpleReadWrite) ;
+		for TestCtrl : axi4lite_Demux_TestController
+			use entity work.axi4lite_Demux_TestController(SimpleReadWrite) ;
 		end for ;
 	end for ;
 end configuration ;

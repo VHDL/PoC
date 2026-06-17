@@ -125,7 +125,7 @@ begin
 
 end architecture;
 
-configuration TC_SimpleReadWrite of AXI4_Mux_TestHarness is
+configuration TC_SimpleReadWrite of axi4_Mux_TestHarness is
 	for Harness
 		for TestControl_inst : TestControl
 			use entity work.TestControl(SimpleReadWrite);

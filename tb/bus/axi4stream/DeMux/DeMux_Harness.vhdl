@@ -96,7 +96,7 @@ architecture Harness of DeMux_Harness is
 	);
 	end component;
 
-	package AXI4Stream_D64 is
+	package axi4stream_D64 is
 		new PoC.axi4stream_Sized
 		generic map(
 			DATA_BITS     => DATA_BITS

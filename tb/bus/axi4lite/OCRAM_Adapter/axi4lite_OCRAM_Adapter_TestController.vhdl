@@ -38,7 +38,7 @@ context osvvm_Axi4.Axi4LiteContext ;
 library PoC;
 use     PoC.vectors.all;
 
-entity AXI4Lite_OCRAM_Adapter_TestController is
+entity axi4lite_OCRAM_Adapter_TestController is
 	generic (
 		constant OCRAM_ADDRESS_BITS : positive := 8;
 		constant OCRAM_DATA_BITS    : positive := 32

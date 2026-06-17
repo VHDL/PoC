@@ -2,7 +2,7 @@
 -- Authors:
 --   Stefan Unrein
 --
--- Entity: AXI4_to_AXI4Lite
+-- Entity: axi4_AXI4Lite_Converter
 --
 -- License:
 -- =============================================================================

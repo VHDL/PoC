@@ -6,7 +6,7 @@
 -- Authors:           Patrick Lehmann
 --                  Martin Zabel
 --
--- Module:           Testbench for `sort_lru_cache`
+-- Module:           Testbench for `sort_LeastRecentlyUsed_Cache`
 --
 -- Description:
 -- ------------------------------------
@@ -48,11 +48,11 @@ library OSVVM;
 use     OSVVM.RandomPkg.all;
 
 
-entity sort_lru_cache_tb is
+entity sort_LeastRecentlyUsed_Cache_tb is
 end entity;
 
 
-architecture tb of sort_lru_cache_tb is
+architecture tb of sort_LeastRecentlyUsed_Cache_tb is
 	constant ELEMENTS          : positive  := 8;
 	constant KEY_BITS          : positive  := log2ceilnz(ELEMENTS);
 
@@ -112,7 +112,7 @@ begin
 		wait;
 	end process;
 
-	sort : entity PoC.sort_lru_cache
+	sort : entity PoC.sort_LeastRecentlyUsed_Cache
 		generic map (
 			ELEMENTS          => ELEMENTS
 		)

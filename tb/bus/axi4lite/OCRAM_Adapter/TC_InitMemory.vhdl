@@ -19,7 +19,7 @@
 -- limitations under the License.
 -- =============================================================================
 
-architecture InitMemory of AXI4Lite_OCRAM_Adapter_TestController is
+architecture InitMemory of axi4lite_OCRAM_Adapter_TestController is
 begin
 	ControlProc : process
 		constant ProcID  : AlertLogIDType := NewID("ControlProc", TCID);
@@ -103,10 +103,10 @@ begin
 	end process;
 end architecture;
 
-configuration TC_InitMemory of AXI4Lite_Ocram_Adapter_TestHarness is
+configuration TC_InitMemory of axi4lite_Ocram_Adapter_TestHarness is
 	for sim
-		for TestCtrl : AXI4Lite_Ocram_Adapter_TestController
-			use entity work.AXI4Lite_Ocram_Adapter_TestController(InitMemory);
+		for TestCtrl : axi4lite_Ocram_Adapter_TestController
+			use entity work.axi4lite_Ocram_Adapter_TestController(InitMemory);
 		end for;
 	end for;
 end configuration;

@@ -1,0 +1,8 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/arith_Prefix_And_tb/clock
+/arith_Prefix_And_tb/x
+/arith_Prefix_And_tb/y

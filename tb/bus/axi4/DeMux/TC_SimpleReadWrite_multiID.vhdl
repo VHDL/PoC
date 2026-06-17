@@ -23,7 +23,7 @@ library PoC;
 use     PoC.utils.all;
 use     PoC.vectors.all;
 
-architecture SimpleReadWrite_multiID of AXI4_Demux_TestController is
+architecture SimpleReadWrite_multiID of axi4_DeMux_TestController is
 	signal TestDone : integer_barrier := 1;
 
 begin
@@ -198,10 +198,10 @@ begin
 
 end architecture;
 
-configuration TC_SimpleReadWrite_multiID of AXI4_Demux_TestHarness is
+configuration TC_SimpleReadWrite_multiID of axi4_DeMux_TestHarness is
 	for Harness
-		for TestCtrl : AXI4_Demux_TestController
-			use entity work.AXI4_Demux_TestController(SimpleReadWrite_multiID);
+		for TestCtrl : axi4_DeMux_TestController
+			use entity work.axi4_DeMux_TestController(SimpleReadWrite_multiID);
 		end for;
 	end for;
 end configuration;

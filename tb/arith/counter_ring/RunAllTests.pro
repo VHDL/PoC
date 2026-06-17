@@ -21,10 +21,10 @@
 
 TestSuite PoC.arith.counter_ring
 
-library tb_arith_counter_ring
+library tb_arith_Counter_Ring
 
-analyze arith_counter_ring_TestController.vhdl
-analyze arith_counter_ring_TestHarness.vhdl
+analyze arith_Counter_Ring_TestController.vhdl
+analyze arith_Counter_Ring_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_counter_ring_Simple.vhdl
+RunTest arith_Counter_Ring_Simple.vhdl

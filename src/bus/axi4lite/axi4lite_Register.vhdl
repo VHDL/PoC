@@ -78,7 +78,7 @@ end entity;
 
 
 architecture rtl of axi4lite_Register is
-	constant Assert_prefix              : string   := "PoC.Axi4LiteRegister";
+	constant Assert_prefix              : string   := "PoC.axi4lite_Register";
 	constant ADDRESS_BITS               : positive := AXI4Lite_m2s.AWAddr'length;
 	constant DATA_BITS                  : positive := AXI4Lite_m2s.WData'length;
 	constant DATA_BITS_intern           : positive := 32;

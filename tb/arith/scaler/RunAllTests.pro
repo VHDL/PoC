@@ -20,10 +20,10 @@
 
 TestSuite PoC.arith.scaler
 
-library tb_arith_scaler
+library tb_arith_Scaler
 
-analyze arith_scaler_TestController.vhdl
-analyze arith_scaler_TestHarness.vhdl
+analyze arith_Scaler_TestController.vhdl
+analyze arith_Scaler_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_scaler_Simple.vhdl
+RunTest arith_Scaler_Simple.vhdl

@@ -39,14 +39,14 @@ context osvvm.OsvvmContext ;
 library OSVVM_AXI4;
 context OSVVM_AXI4.Axi4LiteContext ;
 
-entity AXI4Lite_OCRAM_Adapter_TestHarness is
+entity axi4lite_OCRAM_Adapter_TestHarness is
 	generic (
 		constant USE_INIT_FILE : boolean  := False;
 		constant AXI_DATA_BITS : positive := 32
 	);
 end entity;
 
-architecture sim of AXI4Lite_OCRAM_Adapter_TestHarness is
+architecture sim of axi4lite_OCRAM_Adapter_TestHarness is
 
 	constant AXI_ADDR_WIDTH        : integer := 32 ;
 	constant AXI_DATA_WIDTH        : integer := AXI_DATA_BITS ;
@@ -97,7 +97,7 @@ architecture sim of AXI4Lite_OCRAM_Adapter_TestHarness is
 		RData(AXI_DATA_WIDTH - 1 downto 0)
 	);
 
-	component AXI4Lite_OCRAM_Adapter_TestController is
+	component axi4lite_OCRAM_Adapter_TestController is
 		generic (
 			constant OCRAM_ADDRESS_BITS : positive := 8;
 			constant OCRAM_DATA_BITS    : positive := 32
@@ -199,7 +199,7 @@ begin
 			PortB_DataOut   => PortB_data
 		);
 
-	TestCtrl : AXI4Lite_OCRAM_Adapter_TestController
+	TestCtrl : axi4lite_OCRAM_Adapter_TestController
 		generic map (
 			OCRAM_ADDRESS_BITS => OCRAM_ADDRESS_BITS,
 			OCRAM_DATA_BITS    => OCRAM_DATA_BITS

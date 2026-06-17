@@ -22,4 +22,4 @@
 # TestSuite PoC.dstruct
 # Deactivated to avoid failure on non-existing testcases
 
-include ./OutofOrder_Buffer/RunAllTests.pro
+include ./OutOfOrderBuffer/RunAllTests.pro

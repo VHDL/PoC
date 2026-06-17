@@ -20,7 +20,7 @@
 -- limitations under the License.
 -- =============================================================================
 
-architecture SimpleReadWrite of AXI4Lite_OCRAM_Adapter_TestController is
+architecture SimpleReadWrite of axi4lite_OCRAM_Adapter_TestController is
 begin
 
 	------------------------------------------------------------
@@ -80,10 +80,10 @@ begin
 	end process MasterProc ;
 end architecture ;
 
-configuration TC_SimpleReadWrite of AXI4Lite_Ocram_Adapter_TestHarness is
+configuration TC_SimpleReadWrite of axi4lite_Ocram_Adapter_TestHarness is
 	for sim
-		for TestCtrl : AXI4Lite_Ocram_Adapter_TestController
-			use entity work.AXI4Lite_Ocram_Adapter_TestController(SimpleReadWrite) ;
+		for TestCtrl : axi4lite_Ocram_Adapter_TestController
+			use entity work.axi4lite_Ocram_Adapter_TestController(SimpleReadWrite) ;
 		end for ;
 	end for ;
 end configuration ;

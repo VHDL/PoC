@@ -21,10 +21,10 @@
 
 TestSuite PoC.arith.sqrt
 
-library tb_arith_sqrt
+library tb_arith_SquareRoot
 
-analyze arith_sqrt_TestController.vhdl
-analyze arith_sqrt_TestHarness.vhdl
+analyze arith_SquareRoot_TestController.vhdl
+analyze arith_SquareRoot_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_sqrt_Simple.vhdl
+RunTest arith_SquareRoot_Simple.vhdl

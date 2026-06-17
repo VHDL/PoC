@@ -23,8 +23,8 @@ TestSuite PoC.bus.axi4.Mux
 
 library tb_axi4_Mux
 
-analyze AXI4_Mux_TestController.vhdl
-analyze AXI4_Mux_TestHarness.vhdl
+analyze axi4_Mux_TestController.vhdl
+analyze axi4_Mux_TestHarness.vhdl
 
 # Test cases
 RunTest TC_SimpleReadWrite.vhdl [generic NUM_TRANSACTIONS 1]

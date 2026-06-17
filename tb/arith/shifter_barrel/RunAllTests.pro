@@ -21,10 +21,10 @@
 
 TestSuite PoC.arith.shifter_barrel
 
-library tb_arith_shifter_barrel
+library tb_arith_Shifter_Barrel
 
-analyze arith_shifter_barrel_TestController.vhdl
-analyze arith_shifter_barrel_TestHarness.vhdl
+analyze arith_Shifter_Barrel_TestController.vhdl
+analyze arith_Shifter_Barrel_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_shifter_barrel_Simple.vhdl
+RunTest arith_Shifter_Barrel_Simple.vhdl

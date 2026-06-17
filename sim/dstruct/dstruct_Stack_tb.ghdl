@@ -1,0 +1,32 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/dstruct_Stack_tb/clk
+/dstruct_Stack_tb/rst
+/dstruct_Stack_tb/din
+/dstruct_Stack_tb/put
+/dstruct_Stack_tb/got
+/dstruct_Stack_tb/dout
+/dstruct_Stack_tb/full
+/dstruct_Stack_tb/valid
+/dstruct_Stack_tb/empty
+/dstruct_Stack_tb/dut/clk
+/dstruct_Stack_tb/dut/rst
+/dstruct_Stack_tb/dut/din
+/dstruct_Stack_tb/dut/put
+/dstruct_Stack_tb/dut/full
+/dstruct_Stack_tb/dut/got
+/dstruct_Stack_tb/dut/dout
+/dstruct_Stack_tb/dut/valid
+/dstruct_Stack_tb/dut/stackpointer
+/dstruct_Stack_tb/dut/we
+/dstruct_Stack_tb/dut/adr
+/dstruct_Stack_tb/dut/s_adr
+/dstruct_Stack_tb/dut/s_dout
+/dstruct_Stack_tb/dut/s_valid
+/dstruct_Stack_tb/dut/s_din
+/dstruct_Stack_tb/dut/ctrl
+/dstruct_Stack_tb/dut/current_state
+/dstruct_Stack_tb/dut/next_state

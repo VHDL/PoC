@@ -5,10 +5,10 @@
 
 TestSuite PoC.arith.prng
 
-library tb_arith_prng
+library tb_arith_PRNG
 
-analyze arith_prng_TestController.vhdl
-analyze arith_prng_TestHarness.vhdl
+analyze arith_PRNG_TestController.vhdl
+analyze arith_PRNG_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_prng_Simple.vhdl
+RunTest arith_PRNG_Simple.vhdl

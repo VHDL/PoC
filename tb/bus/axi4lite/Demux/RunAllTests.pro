@@ -23,8 +23,8 @@ TestSuite PoC.bus.axi4lite.DeMux
 
 library tb_axi4lite_DeMux
 
-analyze AXI4Lite_Demux_TestController.vhdl
-analyze AXI4Lite_Demux_TestHarness.vhdl
+analyze axi4lite_Demux_TestController.vhdl
+analyze axi4lite_Demux_TestHarness.vhdl
 
 RunTest TC_SimpleReadWrite.vhdl
 RunTest TC_SimpleReadWrite_02.vhdl

@@ -20,7 +20,7 @@
 # =============================================================================
 
 include ./FIFO/RunAllTests.pro
-include ./FIFO_cdc/RunAllTests.pro
+include ./FIFO_CDC/RunAllTests.pro
 include ./DeMux/RunAllTests.pro
 include ./Mux/RunAllTests.pro
 disabled ./Delay/RunAllTests.pro

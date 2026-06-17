@@ -260,8 +260,8 @@ to the tool. All required source file are gathered and compiled to an
 executable. Afterwards this executable is launched in CLI mode and its outputs
 are displayed in console:
 
-.. image:: /_static/images/ghdl/arith_prng_tb.posh.png
-   :target: /_static/images/ghdl/arith_prng_tb.posh.png
+.. image:: /_static/images/ghdl/arith_PRNG_tb.posh.png
+   :target: /_static/images/ghdl/arith_PRNG_tb.posh.png
 	 :alt: PowerShell console output after running PoC.arith.prng with GHDL.
 
 Each testbench uses PoC's simulation helper packages to count asserts and to

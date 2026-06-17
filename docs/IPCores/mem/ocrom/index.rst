@@ -17,8 +17,8 @@ The package PoC.mem.ocrom holds all component declarations for this namespace.
 
 **Entities**
 
- - :ref:`ocrom_sp <IP/ocrom_sp>` is a on-chip RAM with a single port interface.
- - :ref:`ocrom_dp <IP/ocrom_dp>` is a on-chip RAM with a dual port interface.
+ - :ref:`ocrom_SinglePort <IP/ocrom_SinglePort>` is a on-chip RAM with a single port interface.
+ - :ref:`ocrom_DualPort <IP/ocrom_DualPort>` is a on-chip RAM with a dual port interface.
 
 
 .. toctree::
@@ -29,5 +29,5 @@ The package PoC.mem.ocrom holds all component declarations for this namespace.
 .. toctree::
    :hidden:
 
-   ocrom_sp <ocrom_sp>
-   ocrom_dp <ocrom_dp>
+   ocrom_SinglePort <ocrom_SinglePort>
+   ocrom_DualPort <ocrom_DualPort>

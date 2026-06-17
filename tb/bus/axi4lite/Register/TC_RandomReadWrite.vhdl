@@ -30,7 +30,7 @@
 -- limitations under the License.
 -- =============================================================================
 
-architecture RandomReadWrite of AXI4Lite_Register_TestController is
+architecture RandomReadWrite of axi4lite_Register_TestController is
 	constant Timeout : time := 100 ms;
 
 	constant number : positive := 7;
@@ -130,10 +130,10 @@ begin
 
 end architecture;
 
-configuration TC_RandomReadWrite of AXI4Lite_Register_TestHarness is
+configuration TC_RandomReadWrite of axi4lite_Register_TestHarness is
 	for sim
-		for TestCtrl : AXI4Lite_Register_TestController
-			use entity work.AXI4Lite_Register_TestController(RandomReadWrite);
+		for TestCtrl : axi4lite_Register_TestController
+			use entity work.axi4lite_Register_TestController(RandomReadWrite);
 		end for;
 	end for;
 end configuration;

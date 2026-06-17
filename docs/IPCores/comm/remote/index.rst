@@ -14,4 +14,4 @@ These are communication entities....
 .. toctree::
    :hidden:
 
-   remote_terminal_control <remote_terminal_control>
+   remote_TerminalControl <remote_TerminalControl>

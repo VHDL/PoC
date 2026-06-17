@@ -22,5 +22,5 @@ PoC.bus.axi4
    axi4 Package <axi4>
    axi4_OSVVM Package <axi4_OSVVM>
    FIFO <axi4_FIFO>
-   FIFO_cdc <axi4_FIFO_CDC>
+   FIFO_CDC <axi4_FIFO_CDC>
    AXI4Lite_Converter <AXI4Lite_Converter>

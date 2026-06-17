@@ -32,7 +32,7 @@ USE     IEEE.NUMERIC_STD.ALL;
 
 use     work.utils.ALL;
 
--- list_expire_fixed
+-- list_Expire_fixed
 --    expire  = list of expireable items
 --    fixed    = insert_time := current_time + fixed interval
 

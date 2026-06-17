@@ -1,7 +1,7 @@
 name: PileOfCores
 project_disk_path: ''
 project_type: genericProject
-toplevel: ../../src/bus/axi4/AXI4Lite/AXI4Lite_HighResolutionClock.vhdl
+toplevel: ../../src/bus/axi4lite/axi4lite_HighResolutionClock.vhdl
 files:
   - name: ../../src/common/common.vhdl
     file_type: vhdlSource
@@ -251,7 +251,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/arith/arith_sqrt.vhdl
+  - name: ../../src/arith/arith_SquareRoot.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -435,7 +435,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4_to_AXI4Lite.vhdl
+  - name: ../../src/bus/axi4/axi4_AXI4Lite_Converter.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -443,7 +443,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream.pkg.vhdl
+  - name: ../../src/bus/axi4stream/axi4stream.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -451,7 +451,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Stream/axi4stream_FIFO.vhdl
+  - name: ../../src/bus/axi4stream/axi4stream_FIFO.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -459,7 +459,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Stream/axi4stream_FIFO_CDC.vhdl
+  - name: ../../src/bus/axi4stream/axi4stream_FIFO_CDC.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -467,7 +467,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Stream/axi4stream_FIFO_TempGot.vhdl
+  - name: ../../src/bus/axi4stream/axi4stream_FIFO_TempGot.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -475,7 +475,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Stream/axi4stream_FIFO_TempPut.vhdl
+  - name: ../../src/bus/axi4stream/axi4stream_FIFO_TempPut.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -483,7 +483,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_DeMux.vhdl
+  - name: ../../src/bus/axi4stream/axi4stream_DeMux.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -491,7 +491,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_Stage.vhdl
+  - name: ../../src/bus/axi4stream/axi4stream_Stage.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -499,7 +499,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Stream/AXI4Stream_Mux.vhdl
+  - name: ../../src/bus/axi4stream/axi4stream_Mux.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -507,7 +507,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite.pkg.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -515,7 +515,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/axi4lite_FIFO.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_FIFO.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -523,7 +523,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/axi4lite_FIFO_CDC.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_FIFO_CDC.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -531,7 +531,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_OSVVM.pkg.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_OSVVM.pkg.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -539,7 +539,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/axi4lite_Register.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_Register.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -547,7 +547,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Termination_Manager.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_Termination_Manager.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -555,7 +555,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_Termination_Subordinate.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_Termination_Subordinate.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -651,7 +651,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/comm/remote/remote_terminal_control.vhdl
+  - name: ../../src/comm/remote/remote_TerminalControl.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -835,7 +835,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/io/uart/uart_bclk.vhdl
+  - name: ../../src/io/uart/uart_BitClock.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1051,7 +1051,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocrom/ocrom_dp.vhdl
+  - name: ../../src/mem/ocrom/ocrom_DualPort.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1059,7 +1059,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocrom/ocrom_sp.vhdl
+  - name: ../../src/mem/ocrom/ocrom_SinglePort.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1283,7 +1283,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/sort/sort_lru_cache.vhdl
+  - name: ../../src/sort/sort_LeastRecentlyUsed_Cache.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1291,7 +1291,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/sort/sort_lru_list.vhdl
+  - name: ../../src/sort/sort_LeastRecentlyUsed_List.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1883,7 +1883,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/axi4lite_GitVersionRegister.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_GitVersionRegister.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1899,7 +1899,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_HighResolutionClock.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_HighResolutionClock.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1939,7 +1939,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/axi4lite_OCRAM_Adapter.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_OCRAM_Adapter.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1947,7 +1947,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_UART.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_UART.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2675,7 +2675,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4/src/Axi4Subordinate_a.vhd
+  - name: ../../lib/OSVVM-AXI4/Axi4/src/axi4subordinate_a.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2683,7 +2683,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4/src/Axi4Subordinate_e.vhd
+  - name: ../../lib/OSVVM-AXI4/Axi4/src/axi4subordinate_e.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2691,7 +2691,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteComponentPkg.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteComponentPkg.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2699,7 +2699,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteComponentVtiPkg.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteComponentVtiPkg.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2707,7 +2707,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteContext.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteContext.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2715,7 +2715,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteInterfacePkg.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteInterfacePkg.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2723,7 +2723,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteManager.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteManager.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2731,7 +2731,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteManagerVti.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteManagerVti.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2739,7 +2739,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteMemory.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteMemory.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2747,7 +2747,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteMemoryVti.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteMemoryVti.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2755,7 +2755,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteMonitor_dummy.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteMonitor_dummy.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2763,7 +2763,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LitePassThru.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4litePassThru.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2771,7 +2771,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteSubordinate.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteSubordinate.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2779,7 +2779,7 @@ files:
     logical_name: osvvm_axi4
     is_manual: true
     source_type: none
-  - name: ../../lib/OSVVM-AXI4/Axi4Lite/src/Axi4LiteSubordinateVti.vhd
+  - name: ../../lib/OSVVM-axi4lite/src/axi4liteSubordinateVti.vhd
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2947,7 +2947,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/axi4_Mux/AXI4_Mux_TestController.vhdl
+  - name: ../../tb/bus/axi4/axi4_Mux/axi4_Mux_TestController.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2955,7 +2955,7 @@ files:
     logical_name: TB_bus.axi4.axi4_Mux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/axi4_Mux/AXI4_Mux_TestHarness.vhdl
+  - name: ../../tb/bus/axi4/axi4_Mux/axi4_Mux_TestHarness.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2987,7 +2987,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/axi4_DeMux/AXI4_Demux_TestController.vhdl
+  - name: ../../tb/bus/axi4/axi4_DeMux/axi4_DeMux_TestController.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -2995,7 +2995,7 @@ files:
     logical_name: TB_bus.axi4.axi4_DeMux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/axi4_DeMux/AXI4_Demux_TestHarness.vhdl
+  - name: ../../tb/bus/axi4/axi4_DeMux/axi4_DeMux_TestHarness.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3011,7 +3011,7 @@ files:
     logical_name: TB_bus.axi4.axi4_DeMux
     is_manual: true
     source_type: none
-  - name: ../../src/dstruct/dstruct_OutOfOrder_buffer.vhdl
+  - name: ../../src/dstruct/dstruct_OutOfOrderBuffer.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3019,7 +3019,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/bus/axi4/AXI4Lite/AXI4Lite_DeMux.vhdl
+  - name: ../../src/bus/axi4lite/axi4lite_DeMux.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3051,7 +3051,7 @@ files:
     logical_name: TB_bus.axi4.axi4_DeMux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/Mux/RunAllTests.pro
+  - name: ../../tb/bus/axi4stream/Mux/RunAllTests.pro
     file_type: osvvmProject
     file_version: !<tag:yaml.org,2002:js/undefined> ''
     is_include_file: false
@@ -3059,7 +3059,7 @@ files:
     logical_name: TB_bus.axi4.axi4stream_Mux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/Mux/tb_axi4stream_mux.vhdl
+  - name: ../../tb/bus/axi4stream/Mux/tb_axi4stream_mux.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3067,7 +3067,7 @@ files:
     logical_name: TB_bus.axi4.axi4stream_Mux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/Mux/TestController_e.vhdl
+  - name: ../../tb/bus/axi4stream/Mux/TestController_e.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3075,7 +3075,7 @@ files:
     logical_name: TB_bus.axi4.axi4stream_Mux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/DeMux/DeMux_Harness.vhdl
+  - name: ../../tb/bus/axi4stream/DeMux/DeMux_Harness.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3083,7 +3083,7 @@ files:
     logical_name: TB_bus.axi4.axi4stream_DeMux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/DeMux/RunAllTests.pro
+  - name: ../../tb/bus/axi4stream/DeMux/RunAllTests.pro
     file_type: osvvmProject
     file_version: !<tag:yaml.org,2002:js/undefined> ''
     is_include_file: false
@@ -3091,7 +3091,7 @@ files:
     logical_name: TB_bus.axi4.axi4stream_DeMux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/DeMux/TC_DeMux_a1.vhdl
+  - name: ../../tb/bus/axi4stream/DeMux/TC_DeMux_a1.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3099,7 +3099,7 @@ files:
     logical_name: TB_bus.axi4.axi4stream_DeMux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/DeMux/TC_DeMux_a2.vhdl
+  - name: ../../tb/bus/axi4stream/DeMux/TC_DeMux_a2.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3107,7 +3107,7 @@ files:
     logical_name: TB_bus.axi4.axi4stream_DeMux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/DeMux/TC_DeMux_a3.vhdl
+  - name: ../../tb/bus/axi4stream/DeMux/TC_DeMux_a3.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3115,7 +3115,7 @@ files:
     logical_name: TB_bus.axi4.axi4stream_DeMux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/DeMux/TC_DeMux_a4.vhdl
+  - name: ../../tb/bus/axi4stream/DeMux/TC_DeMux_a4.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3123,7 +3123,7 @@ files:
     logical_name: TB_bus.axi4.axi4stream_DeMux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/DeMux/TC_DeMux_e.vhdl
+  - name: ../../tb/bus/axi4stream/DeMux/TC_DeMux_e.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -3131,7 +3131,7 @@ files:
     logical_name: TB_bus.axi4.axi4stream_DeMux
     is_manual: true
     source_type: none
-  - name: ../../tb/bus/axi4/AXI4Stream/Mux/TC_RandomTransfer.vhdl
+  - name: ../../tb/bus/axi4stream/Mux/TC_RandomTransfer.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false

@@ -6,7 +6,7 @@
 --
 -- Description:
 -- -------------------------------------
--- This is an optimized implementation of ``sort_lru_list`` to be used for caches.
+-- This is an optimized implementation of ``sort_LeastRecentlyUsed_List`` to be used for caches.
 -- Only keys are stored within this list, and these keys are the index of the
 -- cache lines. The list initially contains all indices from 0 to ELEMENTS-1.
 -- The least-recently used index ``KeyOut`` is always valid.

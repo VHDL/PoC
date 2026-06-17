@@ -21,10 +21,10 @@
 
 TestSuite PoC.arith.same
 
-library tb_arith_same
+library tb_arith_Same
 
-analyze arith_same_TestController.vhdl
-analyze arith_same_TestHarness.vhdl
+analyze arith_Same_TestController.vhdl
+analyze arith_Same_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_same_Simple.vhdl
+RunTest arith_Same_Simple.vhdl

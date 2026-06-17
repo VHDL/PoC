@@ -27,6 +27,6 @@ PoC.bus.axi4stream
    DeMux <axi4stream_DeMux>
    Stage <axi4stream_Stage>
    FIFO <axi4stream_FIFO>
-   FIFO_cdc <axi4stream_FIFO_CDC>
+   FIFO_CDC <axi4stream_FIFO_CDC>
    FIFO_tempput <axi4stream_FIFO_TempPut>
    FIFO_tempgot <axi4stream_FIFO_TempGot>

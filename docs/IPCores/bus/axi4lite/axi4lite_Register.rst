@@ -559,7 +559,7 @@ Record Data Structure
 ---------------------
 
 The configuration specified via :ref:`IP/axi4lite_Register/gen/CONFIG` generic determines the functionality of the
-register. It's an array of the ``AXI4Lite.pkg:T_AXI4_Register_Description``. This record has the following elements:
+register. It's an array of the ``axi4lite.pkg:T_AXI4_Register_Description``. This record has the following elements:
 
 +-----------------------+-------------------------------+--------------------------------------------------------------+
 | Field                 | Type                          | Description                                                  |
@@ -880,7 +880,7 @@ Atomic Register
 
 An ``Atomic Register`` is an external wiring. This is used to avoid read-modify-write operations from software by
 introducing a `clear-bit-register`, ``set-bit-register`` and `toggle-bit-register`. A constant is prepared for this
-register inside ``AXI4Lite.pkg.vhdl`` called `Atomic_RegisterDescription_Vector`. It can be mapped/created inside of the
+register inside ``axi4lite.pkg.vhdl`` called `Atomic_RegisterDescription_Vector`. It can be mapped/created inside of the
 ``gen_config`` function like this:
 
 .. code-block:: vhdl
@@ -1032,7 +1032,7 @@ Create C-Header File from CSV
 
 A big advantage of this register is the automatic register handover to the Software. This is done by converting the
 freshly generated csv file and converting it into a C-Header file. The registers specified in the config are combined
-into struct's. The final struct can than be layed over the AXI4Lite-Register Address.
+into struct's. The final struct can than be layed over the axi4lite-Register Address.
 
 The conversion is done by a python-script from *************************. This python script works but has currently a
 lot of limitations.
@@ -1048,10 +1048,10 @@ lot of limitations.
 
 
 .. #
-   AXI4Lite Register Split
+   axi4lite Register Split
    =======================
 
-   The moduel ``axi4lite_Register_split`` is an addition to the normal register. It splits up a big register into multiple smaller ones, that can then better acheave timing. This is done by the Address-Demultiplexer `AXI4Lite_DeMux`.
+   The moduel ``axi4lite_Register_split`` is an addition to the normal register. It splits up a big register into multiple smaller ones, that can then better acheave timing. This is done by the Address-Demultiplexer `axi4lite_DeMux`.
 
    This module adds the following generics:
    | Name | Type | Default | Description |
@@ -1063,7 +1063,7 @@ lot of limitations.
    {-Interrupts are currently not working for this module fully! It is only working if all interrupt-registers are in one sub-register and the Interrupt match and enable register addresses are located in the same sub-register.-}
 
 
-   ## AXI4Lite Register Single-Access (BRAM AXI4Lite Register)
+   ## axi4lite Register Single-Access (BRAM axi4lite Register)
    {-Experimental Module-}
    This module is a variant with singel access from PL instead parallel. With this restriction, it is possible to put the register completally into Lut-Ram or BRAM and save a lot of ressources. 1 BRAM can store in total 1k registers without timing problems.
 

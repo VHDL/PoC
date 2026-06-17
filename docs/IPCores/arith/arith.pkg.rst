@@ -40,7 +40,7 @@ This package holds all component declarations for this namespace.
 * PoC.arith.prefix_or_xilinx
 * :ref:`PoC.arith.prng <IP/arith_PRNG>`
 * :ref:`PoC.arith.same <IP/arith_Same>`
-* :ref:`PoC.arith.sqrt <IP/arith_sqrt>`
+* :ref:`PoC.arith.sqrt <IP/arith_SquareRoot>`
 
 .. only:: latex
 

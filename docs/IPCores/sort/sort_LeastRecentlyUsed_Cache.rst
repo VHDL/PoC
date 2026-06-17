@@ -1,4 +1,4 @@
-.. _IP/sort_lru_cache:
+.. _IP/sort_LeastRecentlyUsed_Cache:
 
 PoC.sort.lru_cache
 ##################
@@ -7,19 +7,19 @@ PoC.sort.lru_cache
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/sort/sort_lru_cache.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/sort/sort_LeastRecentlyUsed_Cache.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/sort/sort_lru_cache_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/sort/sort_LeastRecentlyUsed_Cache_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <sort/sort_lru_cache.vhdl>`
-      * |gh-tb| :poctb:`Testbench <sort/sort_lru_cache_tb.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <sort/sort_LeastRecentlyUsed_Cache.vhdl>`
+      * |gh-tb| :poctb:`Testbench <sort/sort_LeastRecentlyUsed_Cache_tb.vhdl>`
 
-This is an optimized implementation of ``sort_lru_list`` to be used for caches.
+This is an optimized implementation of ``sort_LeastRecentlyUsed_List`` to be used for caches.
 Only keys are stored within this list, and these keys are the index of the
 cache lines. The list initially contains all indizes from 0 to ELEMENTS-1.
 The least-recently used index ``KeyOut`` is always valid.
@@ -39,7 +39,7 @@ Supported operations:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/sort/sort_lru_cache.vhdl
+.. literalinclude:: ../../../src/sort/sort_LeastRecentlyUsed_Cache.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -49,4 +49,4 @@ Supported operations:
 
 .. only:: latex
 
-   Source file: :pocsrc:`sort/sort_lru_cache.vhdl <sort/sort_lru_cache.vhdl>`
+   Source file: :pocsrc:`sort/sort_LeastRecentlyUsed_Cache.vhdl <sort/sort_LeastRecentlyUsed_Cache.vhdl>`

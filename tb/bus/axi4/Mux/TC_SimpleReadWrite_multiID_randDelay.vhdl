@@ -169,7 +169,7 @@ begin
 
 end architecture;
 
-configuration TC_SimpleReadWrite_multiID_randDelay of AXI4_Mux_TestHarness is
+configuration TC_SimpleReadWrite_multiID_randDelay of axi4_Mux_TestHarness is
 	for Harness
 		for TestControl_inst : TestControl
 			use entity work.TestControl(SimpleReadWrite_multiID_randDelay);

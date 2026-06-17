@@ -19,14 +19,14 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite PoC.bus.axi4Lite.Register
+TestSuite PoC.bus.axi4lite.Register
 
 library tb_axi4lite_Register
 
-analyze AXI4Lite_Register_pkg.vhdl
-analyze AXI4Lite_Register_TestController.vhdl
-analyze AXI4Lite_Register_TestHarness.vhdl
+analyze axi4lite_Register_pkg.vhdl
+analyze axi4lite_Register_TestController.vhdl
+analyze axi4lite_Register_TestHarness.vhdl
 
 # Test cases
-RunTest AXI4Lite_Register_Initial.vhdl
-RunTest AXI4Lite_Register_ReadWrite.vhdl
+RunTest axi4lite_Register_Initial.vhdl
+RunTest axi4lite_Register_ReadWrite.vhdl

@@ -21,10 +21,10 @@
 
 TestSuite PoC.arith.trng
 
-library tb_arith_trng
+library tb_arith_TRNG
 
-analyze arith_trng_TestController.vhdl
-analyze arith_trng_TestHarness.vhdl
+analyze arith_TRNG_TestController.vhdl
+analyze arith_TRNG_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_trng_Simple.vhdl
+RunTest arith_TRNG_Simple.vhdl

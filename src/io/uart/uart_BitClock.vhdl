@@ -76,7 +76,7 @@ architecture rtl of uart_BitClock is
 	signal bclk_x8_r    : std_logic    := '0';
 begin
 	assert FALSE    -- LF works in QuartusII
-		report "uart_bclk:" & LF &
+		report "uart_BitClock:" & LF &
 					 "  CLOCK_FREQ="    & to_string(CLOCK_FREQ, 3) & LF &
 					 "  BAUDRATE="      & to_string(BAUDRATE, 3) & LF &
 					 "  COUNTER_MAX="    & integer'image(BAUDRATE_COUNTER_MAX) & LF &

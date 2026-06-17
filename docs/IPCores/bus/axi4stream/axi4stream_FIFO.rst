@@ -112,7 +112,7 @@ Ports
 --------------
 
 :Name:          ``In_m2s``
-:Type:          ``axi4stream.T_AXI4stream_Bus_m2s``
+:Type:          ``axi4stream.T_axi4stream_Bus_m2s``
 :Mode:          in
 :Default Value: — — — —
 :Description:   AXI4-stream manager to subordinate signals.
@@ -124,7 +124,7 @@ Ports
 --------------
 
 :Name:          ``In_s2m``
-:Type:          ``axi4stream.T_AXI4stream_Bus_s2m``
+:Type:          ``axi4stream.T_axi4stream_Bus_s2m``
 :Mode:          out
 :Default Value: — — — —
 :Description:   AXI4-stream subordinate to manager signals.
@@ -136,7 +136,7 @@ Ports
 ---------------
 
 :Name:          ``Out_m2s``
-:Type:          ``axi4stream.T_AXI4stream_Bus_m2s``
+:Type:          ``axi4stream.T_axi4stream_Bus_m2s``
 :Mode:          out
 :Default Value: — — — —
 :Description:   AXI4-stream manager to subordinate signals.
@@ -148,7 +148,7 @@ Ports
 ---------------
 
 :Name:          ``Out_s2m``
-:Type:          ``axi4stream.T_AXI4stream_Bus_s2m``
+:Type:          ``axi4stream.T_axi4stream_Bus_s2m``
 :Mode:          in
 :Default Value: — — — —
 :Description:   AXI4-stream subordinate to manager signals.

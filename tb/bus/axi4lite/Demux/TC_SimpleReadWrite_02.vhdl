@@ -27,7 +27,7 @@ use     PoC.strings.all;
 use     PoC.utils.all;
 
 
-architecture SimpleReadWrite_02 of AXI4Lite_Demux_TestController is
+architecture SimpleReadWrite_02 of axi4lite_Demux_TestController is
 	signal TestDone : integer_barrier := 1;
 
 begin
@@ -146,10 +146,10 @@ begin
 
 end architecture ;
 
-configuration TC_SimpleReadWrite_02 of AXI4Lite_Demux_TestHarness is
+configuration TC_SimpleReadWrite_02 of axi4lite_Demux_TestHarness is
 	for sim
-		for TestCtrl : AXI4Lite_Demux_TestController
-			use entity work.AXI4Lite_Demux_TestController(SimpleReadWrite_02) ;
+		for TestCtrl : axi4lite_Demux_TestController
+			use entity work.axi4lite_Demux_TestController(SimpleReadWrite_02) ;
 		end for ;
 	end for ;
 end configuration ;

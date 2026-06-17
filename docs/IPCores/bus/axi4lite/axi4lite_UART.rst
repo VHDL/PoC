@@ -1,34 +1,34 @@
-.. _IP/AXI4Lite_UART:
+.. _IP/axi4lite_UART:
 .. index::
-   single: AXI4-Lite; AXI4Lite_UART
+   single: AXI4-Lite; axi4lite_UART
 
-AXI4Lite_UART
+axi4lite_UART
 ###########################
 
 Based on :ref:`IP/axi4lite_Register`, :ref:`IP/uart_FIFO`
 
 .. todo::
 
-.. _IP/AXI4Lite_UART/goals:
+.. _IP/axi4lite_UART/goals:
 
 .. topic:: Design Goals
 
    * *tbd*
 
 
-.. _IP/AXI4Lite_UART/features:
+.. _IP/axi4lite_UART/features:
 
 .. topic:: Features
 
    * *tbd*
 
 
-.. _IP/AXI4Lite_UART/instantiation:
+.. _IP/axi4lite_UART/instantiation:
 
 Instantiation
 *************
 
-.. _IP/AXI4Lite_UART/inst/Simple:
+.. _IP/axi4lite_UART/inst/Simple:
 
 .. grid:: 2
 
@@ -42,7 +42,7 @@ Instantiation
 
       .. code-block:: vhdl
 
-         UART : entity PoC.AXI4Lite_UART
+         UART : entity PoC.axi4lite_UART
          generic map (
             CLOCK_FREQ => 100 MHz,
             BAUDRATE   => 115.200 kBd
@@ -61,18 +61,18 @@ Instantiation
            UART_CTS     => UART_CTS
          );
 
-.. _IP/AXI4Lite_UART/inst/Xilinx:
+.. _IP/axi4lite_UART/inst/Xilinx:
 
 
 Interface
 *********
 
-.. _IP/AXI4Lite_UART/generics:
+.. _IP/axi4lite_UART/generics:
 
 Generics
 ========
 
-.. _IP/AXI4Lite_UART/gen/CLOCK_FREQ:
+.. _IP/axi4lite_UART/gen/CLOCK_FREQ:
 
 :generic:`CLOCK_FREQ`
 ----------------------------
@@ -83,7 +83,7 @@ Generics
 :Description:   Frequency of input clock.
 
 
-.. _IP/AXI4Lite_UART/gen/BAUDRATE:
+.. _IP/axi4lite_UART/gen/BAUDRATE:
 
 :generic:`BAUDRATE`
 ----------------------------
@@ -93,7 +93,7 @@ Generics
 :Default Value: 115.200 kBd
 :Description:   *tbd*
 
-.. _IP/AXI4Lite_UART/gen/PARITY:
+.. _IP/axi4lite_UART/gen/PARITY:
 
 :generic:`PARITY`
 ---------------------------
@@ -104,7 +104,7 @@ Generics
 :Description:   ``PARITY_EVEN``, ``PARITY_ODD``, ``PARITY_NONE``
 
 
-.. _IP/AXI4Lite_UART/gen/PARITY_ERROR_HANDLING:
+.. _IP/axi4lite_UART/gen/PARITY_ERROR_HANDLING:
 
 :generic:`PARITY_ERROR_HANDLING`
 --------------------------
@@ -115,7 +115,7 @@ Generics
 :Description:   ``PASSTHROUGH_ERROR_BYTE``, ``REPLACE_ERROR_BYTE``, ``DROP_ERROR_BYTE``
 
 
-.. _IP/AXI4Lite_UART/gen/PARITY_ERROR_IDENTIFIER:
+.. _IP/axi4lite_UART/gen/PARITY_ERROR_IDENTIFIER:
 
 :generic:`PARITY_ERROR_IDENTIFIER`
 --------------------------------
@@ -126,7 +126,7 @@ Generics
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_UART/gen/ADD_INPUT_SYNCHRONIZERS:
+.. _IP/axi4lite_UART/gen/ADD_INPUT_SYNCHRONIZERS:
 
 :generic:`ADD_INPUT_SYNCHRONIZERS`
 --------------------------------
@@ -137,7 +137,7 @@ Generics
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_UART/gen/TX_FIFO_DEPTH:
+.. _IP/axi4lite_UART/gen/TX_FIFO_DEPTH:
 
 :generic:`TX_FIFO_DEPTH`
 --------------------------------
@@ -148,7 +148,7 @@ Generics
 :Description:   *tbd**
 
 
-.. _IP/AXI4Lite_UART/gen/RX_FIFO_DEPTH:
+.. _IP/axi4lite_UART/gen/RX_FIFO_DEPTH:
 
 :generic:`RX_FIFO_DEPTH`
 --------------------------------
@@ -159,7 +159,7 @@ Generics
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_UART/gen/FLOWCONTROL:
+.. _IP/axi4lite_UART/gen/FLOWCONTROL:
 
 :generic:`FLOWCONTROL`
 --------------------------------
@@ -170,7 +170,7 @@ Generics
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_UART/gen/SWFC_XON_CHAR:
+.. _IP/axi4lite_UART/gen/SWFC_XON_CHAR:
 
 :generic:`SWFC_XON_CHAR`
 --------------------------------
@@ -181,7 +181,7 @@ Generics
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_UART/gen/SWFC_XOFF_CHAR:
+.. _IP/axi4lite_UART/gen/SWFC_XOFF_CHAR:
 
 :generic:`SWFC_XOFF_CHAR`
 --------------------------------
@@ -192,12 +192,12 @@ Generics
 :Description:   *tbd*
 
 
-.. _IP/AXI4Lite_UART/ports:
+.. _IP/axi4lite_UART/ports:
 
 Ports
 =====
 
-.. _IP/AXI4Lite_UART/port/Clock:
+.. _IP/axi4lite_UART/port/Clock:
 
 :port:`Clock`
 -------------
@@ -209,7 +209,7 @@ Ports
 :Description:   Clock
 
 
-.. _IP/AXI4Lite_UART/port/Reset:
+.. _IP/axi4lite_UART/port/Reset:
 
 :port:`Reset`
 -------------
@@ -221,7 +221,7 @@ Ports
 :Description:   synchronous high-active reset
 
 
-.. _IP/AXI4Lite_UART/port/AXI4Lite_m2s:
+.. _IP/axi4lite_UART/port/axi4lite_m2s:
 
 :port:`AXI4Lite_m2s`
 --------------------
@@ -233,7 +233,7 @@ Ports
 :Description:   AXI4-Lite manager to subordinate signals.
 
 
-.. _IP/AXI4Lite_UART/port/AXI4Lite_s2m:
+.. _IP/axi4lite_UART/port/axi4lite_s2m:
 
 :port:`AXI4Lite_s2m`
 --------------------
@@ -245,7 +245,7 @@ Ports
 :Description:   AXI4-Lite subordinate to manager signals.
 
 
-.. _IP/AXI4Lite_UART/port/Config_irq:
+.. _IP/axi4lite_UART/port/Config_irq:
 
 :port:`Config_irq`
 --------------------
@@ -257,7 +257,7 @@ Ports
 :Description:   AXI4-Lite subordinate to manager signals.
 
 
-.. _IP/AXI4Lite_UART/port/UART_TX:
+.. _IP/axi4lite_UART/port/UART_TX:
 
 :port:`UART_TX`
 --------------------
@@ -269,7 +269,7 @@ Ports
 :Description:   *tbd*.
 
 
-.. _IP/AXI4Lite_UART/port/UART_RX:
+.. _IP/axi4lite_UART/port/UART_RX:
 
 :port:`UART_RX`
 --------------------
@@ -281,7 +281,7 @@ Ports
 :Description:   *tbd*.
 
 
-.. _IP/AXI4Lite_UART/port/UART_RTS:
+.. _IP/axi4lite_UART/port/UART_RTS:
 
 :port:`UART_RTS`
 --------------------
@@ -293,7 +293,7 @@ Ports
 :Description:   *tbd*.
 
 
-.. _IP/AXI4Lite_UART/port/UART_CTS:
+.. _IP/axi4lite_UART/port/UART_CTS:
 
 :port:`UART_CTS`
 --------------------
@@ -305,12 +305,12 @@ Ports
 :Description:   *tbd*.
 
 
-.. _IP/AXI4Lite_UART/configuration:
+.. _IP/axi4lite_UART/configuration:
 
 Configuration
 *************
 
-.. _IP/AXI4Lite_UART/config/User:
+.. _IP/axi4lite_UART/config/User:
 
 User defined Word
 =================
@@ -318,7 +318,7 @@ User defined Word
 .. todo:: tbd
 
 
-.. _IP/AXI4Lite_UART/RegisterMap:
+.. _IP/axi4lite_UART/RegisterMap:
 
 Register Map
 ************

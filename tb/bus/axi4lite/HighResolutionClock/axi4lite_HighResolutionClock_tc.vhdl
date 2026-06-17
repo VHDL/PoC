@@ -41,7 +41,7 @@ context OSVVM.OsvvmContext;
 library osvvm_Axi4;
 context osvvm_Axi4.Axi4LiteContext;
 
-use     work.axi4Lite_HighResolutionClock_tb_pkg.all;
+use     work.axi4lite_HighResolutionClock_tb_pkg.all;
 
 
 entity axi4lite_HighResolutionClock_tc is

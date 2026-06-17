@@ -14,13 +14,13 @@ The package [`PoC.sort`][sort.pkg] holds all component declarations for this nam
 
 ## Entities
 
- -  [`sort_lru_cache`][sort_lru_cache] implements a list of least-recently-used (LRU) items. The implementation is optimized for the use in caches.
- -  [`sort_lru_list`][sort_lru_list] implements a list of least-recently-used (LRU) items. The implementation is generic.
+ -  [`sort_LeastRecentlyUsed_Cache`][sort_LeastRecentlyUsed_Cache] implements a list of least-recently-used (LRU) items. The implementation is optimized for the use in caches.
+ -  [`sort_LeastRecentlyUsed_List`][sort_LeastRecentlyUsed_List] implements a list of least-recently-used (LRU) items. The implementation is generic.
 
 
  [sort_sortnet]:				sortnet
 
  [sort.pkg]:				  	sort.pkg.vhdl
 
- [sort_lru_cache]:			sort_lru_cache.vhdl
- [sort_lru_list]:				sort_lru_list.vhdl
+ [sort_LeastRecentlyUsed_Cache]:			sort_LeastRecentlyUsed_Cache.vhdl
+ [sort_LeastRecentlyUsed_List]:				sort_LeastRecentlyUsed_List.vhdl

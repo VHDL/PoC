@@ -23,8 +23,8 @@ TestSuite PoC.bus.axi4.DeMux
 
 library tb_axi4_DeMux
 
-analyze AXI4_Demux_TestController.vhdl
-analyze AXI4_Demux_TestHarness.vhdl
+analyze axi4_DeMux_TestController.vhdl
+analyze axi4_DeMux_TestHarness.vhdl
 
 RunTest TC_SimpleReadWrite.vhdl [generic NUM_TRANSACTIONS 1]
 RunTest TC_SimpleReadWrite_delay.vhdl [generic NUM_TRANSACTIONS 1]
