@@ -1,6 +1,6 @@
 .. _IP/reconfig_ICAP_FSM:
 
-PoC.xil.reconfig.icap_fsm
+PoC.xil.reconfig.ICAP_FSM
 #########################
 
 .. only:: html

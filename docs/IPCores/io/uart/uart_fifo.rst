@@ -1,6 +1,6 @@
 .. _IP/uart_FIFO:
 
-PoC.io.uart.fifo
+PoC.io.uart.FIFO
 ################
 
 .. only:: html

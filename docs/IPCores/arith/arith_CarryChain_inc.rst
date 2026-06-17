@@ -1,6 +1,6 @@
 .. _IP/arith_CarryChain_inc:
 
-PoC.arith.carrychain_inc
+PoC.arith.CarryChain_inc
 ########################
 
 .. only:: html

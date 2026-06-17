@@ -17,7 +17,7 @@ table, to choose your desired git branch.
 
 .. |zip-master| image:: /_static/icons/ZIP.png
    :scale: 40
-   :target: https://github.com/VHDL/PoC/archive/master.zip
+   :target: https://github.com/VHDL/PoC/archive/main.zip
    :alt: Source Code from GitHub - 'master' branch.
 .. |zip-release| image:: /_static/icons/ZIP.png
    :scale: 40
@@ -49,7 +49,7 @@ instructions or on other pages in this documentation.
 +----------+----------------------------------------+
 | Protocol | GitHub Repository URL                  |
 +==========+========================================+
-| HTTPS    | https://github.com/VHDL/PoC.git    |
+| HTTPS    | https://github.com/VHDL/PoC.git        |
 +----------+----------------------------------------+
 | SSH      | ssh://git@github.com:VLSI-EDA/PoC.git  |
 +----------+----------------------------------------+

@@ -1,6 +1,6 @@
 .. _IP/uart_FT245:
 
-PoC.io.uart.ft245
+PoC.io.uart.FT245
 #################
 
 .. only:: html

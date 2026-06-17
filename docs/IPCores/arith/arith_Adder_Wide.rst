@@ -1,7 +1,7 @@
 .. _IP/arith_Adder_Wide:
 
 PoC.arith.Adder_Wide
-##############
+####################
 
 .. only:: html
 

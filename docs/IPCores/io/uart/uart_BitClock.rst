@@ -1,7 +1,7 @@
 .. _IP/uart_BitClock:
 
-PoC.io.uart.bclk
-################
+PoC.io.uart.BitClock
+####################
 
 .. only:: html
 

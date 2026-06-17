@@ -1,7 +1,7 @@
 .. _IP/sort_LeastRecentlyUsed_List:
 
-PoC.sort.lru_list
-#################
+PoC.sort.LeastRecentlyUsed_List
+###############################
 
 .. only:: html
 

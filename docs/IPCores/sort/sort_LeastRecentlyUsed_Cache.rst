@@ -1,7 +1,7 @@
 .. _IP/sort_LeastRecentlyUsed_Cache:
 
-PoC.sort.lru_cache
-##################
+PoC.sort.LeastRecentlyUsed_Cache
+################################
 
 .. only:: html
 

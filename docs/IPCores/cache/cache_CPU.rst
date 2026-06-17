@@ -1,6 +1,6 @@
 .. _IP/cache_CPU:
 
-PoC.cache.cpu
+PoC.cache.CPU
 #############
 
 .. only:: html

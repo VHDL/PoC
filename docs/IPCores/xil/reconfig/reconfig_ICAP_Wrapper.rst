@@ -1,6 +1,6 @@
 .. _IP/reconfig_ICAP_Wrapper:
 
-PoC.xil.reconfig.icap_wrapper
+PoC.xil.reconfig.ICAP_Wrapper
 #############################
 
 .. only:: html
