@@ -23,5 +23,4 @@ analyze uart_BitClock.vhdl
 analyze uart_RX.vhdl
 analyze uart_TX.vhdl
 analyze uart_FIFO.vhdl
-analyze uart_ft245.vhdl
-# analyze uart_axiLite.vhdl
+analyze uart_FT245.vhdl

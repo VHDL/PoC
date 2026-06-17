@@ -31,7 +31,7 @@
 library IEEE;
 use     IEEE.std_logic_1164.all;
 
-entity uart_ft245 is
+entity uart_FT245 is
 	generic (
 		CLOCK_FREQ : positive    -- XXX: use FREQ
 	);
@@ -65,7 +65,7 @@ use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 
-architecture rtl of uart_ft245 is
+architecture rtl of uart_FT245 is
 
 	-- clock frequency (MHz)
 	constant CLK_FREQ_MHZ : integer := CLOCK_FREQ / 1000000;
