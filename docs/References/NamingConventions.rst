@@ -152,19 +152,19 @@ Other implementation variants are:
 +============================+===============================================+
 | Fully Qualified Name       | PoC.mem.ocram.tdp                             |
 +----------------------------+-----------------------------------------------+
-| VHDL entity name           | ocram_TrueDualPort                                     |
+| VHDL entity name           | ocram_TrueDualPort                            |
 +----------------------------+-----------------------------------------------+
-| File name                  | ocram_TrueDualPort.vhdl                                |
+| File name                  | ocram_TrueDualPort.vhdl                       |
 +----------------------------+-----------------------------------------------+
-| IP Core Description File   | \\src\\mem\\ocram\\ocram_TrueDualPort.files            |
+| IP Core Description File   | \\src\\mem\\ocram\\ocram_TrueDualPort.files   |
 +----------------------------+-----------------------------------------------+
-| Source File Location       | \\src\\mem\\ocram\\ocram_TrueDualPort.vhdl             |
+| Source File Location       | \\src\\mem\\ocram\\ocram_TrueDualPort.vhdl    |
 +----------------------------+-----------------------------------------------+
-| Testbench Location         | \\tb\\mem\\ocram\\ocram_TrueDualPort_tb.vhdl           |
+| Testbench Location         | \\tb\\mem\\ocram\\ocram_TrueDualPort_tb.vhdl  |
 +----------------------------+-----------------------------------------------+
-| Testbench Description File | \\tb\\mem\\ocram\\ocram_TrueDualPort_tb.files          |
+| Testbench Description File | \\tb\\mem\\ocram\\ocram_TrueDualPort_tb.files |
 +----------------------------+-----------------------------------------------+
-| Waveform Description Files | \\sim\\mem\\ocram\\ocram_TrueDualPort_tb.*             |
+| Waveform Description Files | \\sim\\mem\\ocram\\ocram_TrueDualPort_tb.*    |
 +----------------------------+-----------------------------------------------+
 
 
