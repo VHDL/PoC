@@ -73,28 +73,30 @@ use     work.utils.all;
 use     work.strings.all;
 use     work.vectors.all;
 use     work.mem.all;
+use     work.ocram.all;
 
 
 entity ocram_TrueDualPort is
 	generic (
+		-- FIXME: Why doesn't it support RAM_STYLE (a subset like BlockRAM and UltraRAM)?
 		ADDRESS_BITS : positive;                              -- number of address bits
 		DATA_BITS    : positive;                              -- number of data bits
 		FILENAME     : string    := ""                        -- file-name for RAM initialization
 	);
 	port (
-		PortA_Clock : in  std_logic;                              -- clock for 1st port
-		PortA_ClockEnable  : in  std_logic;                              -- clock-enable for 1st port
-		PortA_WriteEnable  : in  std_logic;                              -- write-enable for 1st port
-		PortA_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);            -- address for 1st port
-		PortA_DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);    -- write-data for 1st port
-		PortA_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0);    -- read-data from 1st port
+		PortA_Clock       : in  std_logic;                               -- clock for 1st port
+		PortA_ClockEnable : in  std_logic;                               -- clock-enable for 1st port
+		PortA_WriteEnable : in  std_logic;                               -- write-enable for 1st port
+		PortA_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);       -- address for 1st port
+		PortA_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);  -- write-data for 1st port
+		PortA_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0);  -- read-data from 1st port
 
-		PortB_Clock : in  std_logic;                              -- clock for 2nd port
-		PortB_ClockEnable  : in  std_logic;                              -- clock-enable for 2nd port
-		PortB_WriteEnable  : in  std_logic;                              -- write-enable for 2nd port
-		PortB_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);            -- address for 2nd port
-		PortB_DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);    -- write-data for 2nd port
-		PortB_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0)     -- read-data from 2nd port
+		PortB_Clock       : in  std_logic;                               -- clock for 2nd port
+		PortB_ClockEnable : in  std_logic;                               -- clock-enable for 2nd port
+		PortB_WriteEnable : in  std_logic;                               -- write-enable for 2nd port
+		PortB_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);       -- address for 2nd port
+		PortB_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);  -- write-data for 2nd port
+		PortB_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)   -- read-data from 2nd port
 	);
 end entity;
 
@@ -103,39 +105,12 @@ architecture rtl of ocram_TrueDualPort is
 	constant DEPTH : positive := 2**ADDRESS_BITS;
 
 begin
-	gInfer : if not SIMULATION and ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
-		-- RAM can be inferred correctly only if '-use_new_parser yes' is enabled in XST options
-		subtype word_t  is std_logic_vector(DATA_BITS - 1 downto 0);
-		type    ram_t    is array(0 to DEPTH - 1) of word_t;      -- XXX: T_SLVV
-
-		-- Compute the initialization of a RAM array, if specified, from the passed file.
-		impure function ocram_InitMemory(FilePath : string) return ram_t is
-			variable Memory    : T_SLM(DEPTH - 1 downto 0, word_t'range);
-			variable res      : ram_t;
-		begin
-			if str_length(FilePath) = 0 then
-				-- shortcut required by Vivado
-				return (others => (others => ite(SIMULATION, 'U', '0')));
-			elsif mem_FileExtension(FilePath) = "mem" then
-				Memory  := mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
-			else
-				Memory  := mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
-			end if;
-
-			for i in Memory'range(1) loop
-				for j in word_t'range loop
-					res(i)(j)    := Memory(i, j);
-				end loop;
-			end loop;
-			return  res;
-		end function;
-
-		signal ram      : ram_t    := ocram_InitMemory(FILENAME);
-		signal a1_reg    : unsigned(ADDRESS_BITS-1 downto 0) := (others => 'U');
-		signal a2_reg    : unsigned(ADDRESS_BITS-1 downto 0) := (others => 'U');
+	gen: if gInfer: not SIMULATION and ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
+		signal ram    : T_SLVV    := mem_InitMemory(FILENAME, DEPTH, DATA_BITS);
+		signal a1_reg : unsigned(ADDRESS_BITS-1 downto 0) := (others => 'U');
+		signal a2_reg : unsigned(ADDRESS_BITS-1 downto 0) := (others => 'U');
 
 	begin
-
 		process (PortA_Clock, PortB_Clock)
 		begin  -- process
 			if rising_edge(PortA_Clock) then
@@ -159,13 +134,9 @@ begin
 			end if;
 		end process;
 
-		PortA_DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a1_reg)) else
-					ram(to_integer(a1_reg));    -- returns new data
-		PortB_DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a2_reg)) else
-					ram(to_integer(a2_reg));    -- returns new data
-	end generate gInfer;
-
-	gAltera: if not SIMULATION and (VENDOR = VENDOR_ALTERA) generate
+		PortA_DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a1_reg)) else ram(to_integer(a1_reg));    -- returns new data
+		PortB_DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a2_reg)) else ram(to_integer(a2_reg));    -- returns new data
+	elsif gAltera: not SIMULATION and (VENDOR = VENDOR_ALTERA) generate
 		component ocram_TrueDualPort_Altera
 			generic (
 				ADDRESS_BITS : positive;
@@ -199,23 +170,21 @@ begin
 				FILENAME     => FILENAME
 			)
 			port map (
-				PortA_Clock        => PortA_Clock,
-				PortA_ClockEnable  => PortA_ClockEnable,
-				PortA_WriteEnable  => PortA_WriteEnable,
-				PortA_Address      => PortA_Address,
+				PortA_Clock       => PortA_Clock,
+				PortA_ClockEnable => PortA_ClockEnable,
+				PortA_WriteEnable => PortA_WriteEnable,
+				PortA_Address     => PortA_Address,
 				PortA_DataIn      => PortA_DataIn,
-				PortA_DataOut      => PortA_DataOut,
+				PortA_DataOut     => PortA_DataOut,
 
-				PortB_Clock        => PortB_Clock,
-				PortB_ClockEnable  => PortB_ClockEnable,
-				PortB_WriteEnable  => PortB_WriteEnable,
+				PortB_Clock       => PortB_Clock,
+				PortB_ClockEnable => PortB_ClockEnable,
+				PortB_WriteEnable => PortB_WriteEnable,
 				PortB_Address     => PortB_Address,
 				PortB_DataIn      => PortB_DataIn,
-				PortB_DataOut      => PortB_DataOut
+				PortB_DataOut     => PortB_DataOut
 			);
-	end generate gAltera;
-
-	gSim: if SIMULATION generate
+	elsif gSim: SIMULATION generate
 		-- Use component instantiation so that simulation model can be excluded
 		-- from synthesis.
 		component ocram_TrueDualPort_sim is
@@ -246,19 +215,17 @@ begin
 			port map (
 				clk1 => PortA_Clock,
 				clk2 => PortB_Clock,
-				ce1   => PortA_ClockEnable,
-				ce2   => PortB_ClockEnable,
-				we1   => PortA_WriteEnable,
-				we2   => PortB_WriteEnable,
+				ce1  => PortA_ClockEnable,
+				ce2  => PortB_ClockEnable,
+				we1  => PortA_WriteEnable,
+				we2  => PortB_WriteEnable,
 				a1   => PortA_Address,
 				a2   => PortB_Address,
 				d1   => PortA_DataIn,
 				d2   => PortB_DataIn,
 				q1   => PortA_DataOut,
 				q2   => PortB_DataOut);
-	end generate gSim;
-
-	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC and SIMULATION) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
-		report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported."
-		severity failure;
+	else generate
+		assert FALSE report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported." severity failure;
+	end generate;
 end architecture;

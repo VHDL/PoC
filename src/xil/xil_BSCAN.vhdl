@@ -46,16 +46,16 @@ entity xil_BSCAN is
 		DISABLE_JTAG        : boolean      := FALSE
 	);
 	port (
-		Reset                : out std_logic;
-		RunTest              : out std_logic;
-		Sel                  : out std_logic;
-		Capture              : out std_logic;
+		Reset               : out std_logic;
+		RunTest             : out std_logic;
+		Sel                 : out std_logic;
+		Capture             : out std_logic;
 		drck                : out std_logic;
-		Shift                : out std_logic;
+		Shift               : out std_logic;
 		Test_Clock          : out std_logic;
-		Test_DataIn          : out std_logic;
+		Test_DataIn         : out std_logic;
 		Test_DataOut        : in  std_logic;
-		Test_ModeSelect      : out std_logic;
+		Test_ModeSelect     : out std_logic;
 		Update              : out std_logic
 	);
 end entity;

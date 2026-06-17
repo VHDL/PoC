@@ -63,57 +63,29 @@ use     work.mem.all;
 
 entity ocram_SinglePort is
 	generic (
-		-- XXX: RAM_STYLE?
+		-- FIXME: RAM_STYLE?
 		ADDRESS_BITS : positive;                              -- number of address bits
-		DATA_BITS     : positive;                              -- number of data bits
+		DATA_BITS    : positive;                              -- number of data bits
 		FILENAME     : string    := ""                        -- file-name for RAM initialization
 	);
 	port (
-		Clock       : in  std_logic;                              -- clock
-		ClockEnable  : in  std_logic;                              -- clock enable
-		WriteEnable  : in  std_logic;                              -- write enable
-		Address      : in  unsigned(ADDRESS_BITS-1 downto 0);              -- address
-		DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);      -- write data
-		DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)       -- read output
+		Clock       : in  std_logic;                               -- clock
+		ClockEnable : in  std_logic;                               -- clock enable
+		WriteEnable : in  std_logic;                               -- write enable
+		Address     : in  unsigned(ADDRESS_BITS-1 downto 0);       -- address
+		DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);  -- write data
+		DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)   -- read output
 	);
 end entity;
 
 
 architecture rtl of ocram_SinglePort is
-	constant DEPTH      : positive := 2**ADDRESS_BITS;
+	constant DEPTH : positive := 2**ADDRESS_BITS;
 
 begin
-
-	gInfer : if (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX) generate
-		-- RAM can be inferred correctly
-		-- XST Advanced HDL Synthesis generates single-port memory as expected.
-		subtype word_t  is std_logic_vector(DATA_BITS - 1 downto 0);
-		type    ram_t    is array(0 to DEPTH - 1) of word_t;
-
-		-- Compute the initialization of a RAM array, if specified, from the passed file.
-		impure function ocram_InitMemory(FilePath : string) return ram_t is
-			variable Memory    : T_SLM(DEPTH - 1 downto 0, word_t'range);
-			variable res      : ram_t;
-		begin
-			if str_length(FilePath) = 0 then
-				-- shortcut required by Vivado
-				return (others => (others => ite(SIMULATION, 'U', '0')));
-			elsif mem_FileExtension(FilePath) = "mem" then
-				Memory  := mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
-			else
-				Memory  := mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
-			end if;
-
-			for i in Memory'range(1) loop
-				for j in word_t'range loop
-					res(i)(j)    := Memory(i, j);
-				end loop;
-			end loop;
-			return  res;
-		end function;
-
-		signal ram    : ram_t    := ocram_InitMemory(FILENAME);
-		signal a_reg  : unsigned(ADDRESS_BITS-1 downto 0);
+	gen: if gInfer: (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX) generate
+		signal ram   : T_SLVV    := mem_InitMemory(FILENAME, DEPTH, DATA_BITS);
+		signal a_reg : unsigned(ADDRESS_BITS-1 downto 0);
 
 	begin
 		process (Clock)
@@ -129,24 +101,21 @@ begin
 			end if;
 		end process;
 
-		DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a_reg)) else
-				 ram(to_integer(a_reg));          -- gets new data
-	end generate gInfer;
-
-	gAltera: if VENDOR = VENDOR_ALTERA generate
+		DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a_reg)) else ram(to_integer(a_reg));          -- gets new data
+	elsif gAltera: VENDOR = VENDOR_ALTERA generate
 		component ocram_SimplePort_Altera
 			generic (
-				ADDRESS_BITS    : positive;
+				ADDRESS_BITS : positive;
 				DATA_BITS    : positive;
-				FILENAME  : string    := ""
+				FILENAME     : string    := ""
 			);
 			port (
-				Clock : in  std_logic;
-				ClockEnable  : in  std_logic;
-				WriteEnable  : in  std_logic;
-				Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-				DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);
-				DataOut   : out std_logic_vector(DATA_BITS-1 downto 0));
+				Clock       : in  std_logic;
+				ClockEnable : in  std_logic;
+				WriteEnable : in  std_logic;
+				Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+				DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);
+				DataOut     : out std_logic_vector(DATA_BITS-1 downto 0));
 		end component;
 	begin
 		-- Direct instantiation of altsyncram (including component
@@ -159,16 +128,14 @@ begin
 				FILENAME  => FILENAME
 			)
 			port map (
-				Clock => Clock,
-				ClockEnable  => ClockEnable,
-				WriteEnable  => WriteEnable,
-				Address   => Address,
-				DataIn   => DataIn,
-				DataOut   => DataOut
+				Clock       => Clock,
+				ClockEnable => ClockEnable,
+				WriteEnable => WriteEnable,
+				Address     => Address,
+				DataIn      => DataIn,
+				DataOut     => DataOut
 			);
-	end generate gAltera;
-
-	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
-		report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported."
-		severity failure;
+	else generate
+		assert FALSE report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported." severity failure;
+	end generate;
 end architecture;

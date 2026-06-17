@@ -1,5 +1,5 @@
 -- =============================================================================
--- Authors:           Martin Zabel
+-- Authors:          Martin Zabel
 --
 -- Entity:           Simple dual-port memory with write-first behavior.
 --
@@ -31,6 +31,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2025-2026 The PoC-Library Authors
 -- Copyright 2008-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -51,26 +52,30 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
+use     work.ocram.all;
+
 -- XXX: why is this not a mode to ocram_SimpleDualPort?
-entity ocram_SimpleDualPort_wf is
+entity ocram_SimpleDualPort_WriteFirst is
 	generic (
-		A_BITS    : positive;                           -- number of address bits
-		D_BITS    : positive;                           -- number of data bits
-		FILENAME  : string    := ""                     -- file-name for RAM initialization
+		ADDRESS_BITS : positive;                           -- number of address bits
+		DATA_BITS    : positive;                           -- number of data bits
+		FILENAME     : string    := ""                     -- file-name for RAM initialization
 	);
 	port (
-		clk : in  std_logic;                            -- clock
-		ce  : in  std_logic;                            -- clock-enable
-		we  : in  std_logic;                            -- write enable
-		ra  : in  unsigned(A_BITS-1 downto 0);          -- read address
-		wa  : in  unsigned(A_BITS-1 downto 0);          -- write address
-		d   : in  std_logic_vector(D_BITS-1 downto 0);  -- data in
-		q   : out std_logic_vector(D_BITS-1 downto 0)   -- data out
+		Clock         : in  std_logic;                               -- clock
+		ClockEnable   : in  std_logic;                               -- clock-enable
+
+		Write_Enable  : in  std_logic;                               -- write enable
+		Write_Address : in  unsigned(ADDRESS_BITS-1 downto 0);       -- write address
+		Write_DataIn  : in  std_logic_vector(DATA_BITS-1 downto 0);  -- data in
+
+		Read_Address  : in  unsigned(ADDRESS_BITS-1 downto 0);       -- read address
+		Read_DataOut  : out std_logic_vector(DATA_BITS-1 downto 0)   -- data out
 	);
 end entity;
 
 
-architecture rtl of ocram_SimpleDualPort_wf is
+architecture rtl of ocram_SimpleDualPort_WriteFirst is
 	-- Implementation Notes:
 	-- ---------------------
 	--
@@ -115,63 +120,50 @@ architecture rtl of ocram_SimpleDualPort_wf is
 	--
 	-- Thus, the solution below is to explicitly implement the bypass logic.
 
-
-	signal wd_r  : std_logic_vector(d'range); -- write data
-	signal fwd_r : std_logic;                 -- forward write data
-	signal ram_q : std_logic_vector(q'range); -- RAM output
-
-	-- Compares two addresses, returns 'X' if either ``a1`` or ``a2`` contains
-	-- meta-values, otherwise returns '1' if ``a1 == a2`` is true else
-	-- '0'. Returns 'X' even when the addresses contain '-' values, to signal an
-	-- undefined outcome.
-	function addr_equal(a1 : unsigned; a2 : unsigned) return X01 is
-	begin
-		-- synthesis translate_off
-		if is_x(a1) or is_x(a2) then return 'X'; end if;
-		-- synthesis translate_on
-		if to_x01(std_logic_vector(a1)) = to_x01(std_logic_vector(a2)) then
-			return '1';
-		end if;
-		return '0';
-	end function;
+	signal WriteData_d : Write_DataIn'subtype; -- write data
+	signal Forward_d   : std_logic;            -- forward write data
+	signal RAM_DataOut : Read_DataOut'subtype; -- RAM output
 
 begin
-	process(clk)
+	process(Clock)
 	begin
-		if rising_edge(clk) then
-			case to_x01(ce) is
+		if rising_edge(Clock) then
+			case to_x01(ClockEnable) is
 				when '1' =>
-					wd_r  <= to_x01(d);
-					fwd_r <= addr_equal(ra, wa) and we;
+					WriteData_d <= to_x01(Write_DataIn);
+					Forward_d   <= addressIsEqual(Write_Address, Read_Address) and Write_Enable;
 
-				when '0' =>  null; -- keep previous state
+				when '0' =>    -- keep previous state
+					null;
 
 				when others => -- X propagation in simulation
-					wd_r  <= (others => 'X');
-					fwd_r <= 'X';
+					WriteData_d  <= (others => 'X');
+					Forward_d <= 'X';
 			end case;
 		end if;
 	end process;
 
 	ram_sdp: entity work.ocram_SimpleDualPort
 		generic map (
-			ADDRESS_BITS   => A_BITS,
-			DATA_BITS   => D_BITS,
-			FILENAME => FILENAME)
+			ADDRESS_BITS => ADDRESS_BITS,
+			DATA_BITS    => DATA_BITS,
+			FILENAME     => FILENAME
+		)
 		port map (
-			Read_Clock => clk,
-			Read_ClockEnable  => ce,
-			Write_Clock => clk,
-			Write_ClockEnable  => ce,
-			Write_WriteEnable   => we,
-			Read_Address   => ra,
-			Write_Address   => wa,
-			Write_DataIn    => d,
-			Read_DataOut    => ram_q);
+			Write_Clock       => Clock,
+			Write_ClockEnable => ClockEnable,
+			Write_WriteEnable => Write_Enable,
+			Write_Address     => Write_Address,
+			Write_DataIn      => Write_DataIn,
 
-	with fwd_r select q <=
-		wd_r            when '1',
-		ram_q           when '0',
+			Read_Clock        => Clock,
+			Read_ClockEnable  => ClockEnable,
+			Read_Address      => Read_Address,
+			Read_DataOut      => RAM_DataOut
+		);
+
+	with Forward_d select Read_DataOut <=
+		WriteData_d     when '1',
+		RAM_DataOut     when '0',
 		(others => 'X') when others; -- X propagation in simulation
-
 end architecture;

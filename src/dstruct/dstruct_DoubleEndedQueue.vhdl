@@ -104,23 +104,22 @@ architecture rtl of dstruct_DoubleEndedQueue is
 
 begin
 
-	ram : entity work.ocram_TrueDualPort_wf
+	ram : entity work.ocram_TrueDualPort_WriteFirst
 		generic map(
-			A_BITS => ADDRESS_BITS,
-			D_BITS => DATA_BITS,
-			FILENAME =>  ""
+			ADDRESS_BITS => ADDRESS_BITS,
+			DATA_BITS    => DATA_BITS
 		)
 		port map(
-			clk => Clock,
-			ce   => '1',
-			we1  => weA,
-			we2  => weB,
-			a1  => adrA,
-			a2  => adrB,
-			d1  => PortA_DataIn,
-			d2  => PortB_DataIn,
-			q1  => PortA_DataOut,
-			q2  => PortB_DataOut
+			Clock             => Clock,
+			ClockEnable       => '1',
+			PortA_WriteEnable => weA,
+			PortB_WriteEnable => weB,
+			PortA_Address     => adrA,
+			PortB_Address     => adrB,
+			PortA_DataIn      => PortA_DataIn,
+			PortB_DataIn      => PortB_DataIn,
+			PortA_DataOut     => PortA_DataOut,
+			PortB_DataOut     => PortB_DataOut
 		);
 
 	sub <= stackpointerB - stackpointerA;

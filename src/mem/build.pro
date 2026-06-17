@@ -23,12 +23,12 @@ analyze ./mem.pkg.vhdl
 analyze ./ocram/ocram.pkg.vhdl
 analyze ./ocram/ocram_TrueDualPort_sim.vhdl
 analyze ./ocram/ocram_TrueDualPort.vhdl
+analyze ./ocram/ocram_TrueDualPort_WriteFirst.vhdl
 analyze ./ocram/ocram_EnhancedSimpleDualPort.vhdl
 analyze ./ocram/ocram_SimpleDualPort.vhdl
 analyze ./ocram/ocram_SimpleDualPort_Optimized.vhdl
-analyze ./ocram/ocram_SimpleDualPort_wfasd.vhdl
+analyze ./ocram/ocram_SimpleDualPort_WriteFirst.vhdl
 analyze ./ocram/ocram_SinglePort.vhdl
-analyze ./ocram/ocram_TrueDualPort_wasdf.vhdl
 
 if { $::poc::vendorName eq "Xilinx" } {
 	puts "No files for Xilinx."

@@ -1,8 +1,8 @@
 -- =============================================================================
--- Authors:           Martin Zabel
+-- Authors:         Martin Zabel
 --                  Patrick Lehmann
 --
--- Entity:           True dual-port memory with write-first behavior.
+-- Entity:          True dual-port memory with write-first behavior.
 --
 -- Description:
 -- -------------------------------------
@@ -48,6 +48,7 @@
 --
 -- License:
 -- =============================================================================
+-- Copyright 2025-2026 The PoC-Library Authors
 -- Copyright 2008-2016 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -74,72 +75,61 @@ use     work.utils.all;
 use     work.strings.all;
 use     work.vectors.all;
 use     work.mem.all;
+use     work.ocram.all;
 
 
-entity ocram_TrueDualPort_wf is
+entity ocram_TrueDualPort_WriteFirst is
 	generic (
-		A_BITS    : positive;                              -- number of address bits
-		D_BITS    : positive;                              -- number of data bits
-		FILENAME  : string    := ""                        -- file-name for RAM initialization
+		ADDRESS_BITS : positive;                              -- number of address bits
+		DATA_BITS    : positive;                              -- number of data bits
+		FILENAME     : string    := ""                        -- file-name for RAM initialization
 	);
 	port (
-		clk : in  std_logic;                              -- clock
-		ce   : in  std_logic;                              -- clock-enable
-		we1  : in  std_logic;                              -- write-enable for 1st port
-		we2  : in  std_logic;                              -- write-enable for 2nd port
-		a1   : in  unsigned(A_BITS-1 downto 0);            -- address for 1st port
-		a2   : in  unsigned(A_BITS-1 downto 0);            -- address for 2nd port
-		d1   : in  std_logic_vector(D_BITS-1 downto 0);    -- write-data for 1st port
-		d2   : in  std_logic_vector(D_BITS-1 downto 0);    -- write-data for 2nd port
-		q1   : out std_logic_vector(D_BITS-1 downto 0);    -- read-data from 1st port
-		q2   : out std_logic_vector(D_BITS-1 downto 0)     -- read-data from 2nd port
+		Clock             : in  std_logic;                                 -- clock
+		ClockEnable       : in  std_logic;                                 -- clock-enable
+		PortA_WriteEnable : in  std_logic;                                 -- write-enable for 1st port
+		PortB_WriteEnable : in  std_logic;                                 -- write-enable for 2nd port
+		PortA_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);         -- address for 1st port
+		PortB_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);         -- address for 2nd port
+		PortA_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);    -- write-data for 1st port
+		PortB_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);    -- write-data for 2nd port
+		PortA_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0);    -- read-data from 1st port
+		PortB_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)     -- read-data from 2nd port
 	);
 end entity;
 
 
-architecture rtl of ocram_TrueDualPort_wf is
+architecture rtl of ocram_TrueDualPort_WriteFirst is
 	-- Two read/write ports are only supported in true-dual port block memories
 	-- on FPGAs. But not all synthesis tools, do infer the required bypass logic
 	-- as already shown for :ref:`IP:ocram_SimpleDualPort_wf`.
 	-- Thus, bypass logic has to be explicitly described to get the intended
 	-- write-first behavior.
 
-	signal wd1_r  : std_logic_vector(d1'range); -- write data from port 1
-	signal wd2_r  : std_logic_vector(d2'range); -- write data from port 2
+	signal wd1_r  : std_logic_vector(PortA_DataIn'range); -- write data from port 1
+	signal wd2_r  : std_logic_vector(PortB_DataIn'range); -- write data from port 2
 	signal fwd1_r : std_logic;                  -- forward write data from port 1 to port 2
 	signal fwd2_r : std_logic;                  -- forward write data from port 2 to port 1
-	signal ram_q1 : std_logic_vector(q1'range); -- RAM output, port 1
-	signal ram_q2 : std_logic_vector(q2'range); -- RAM output, port 2
+	signal ram_q1 : std_logic_vector(PortA_DataOut'range); -- RAM output, port 1
+	signal ram_q2 : std_logic_vector(PortB_DataOut'range); -- RAM output, port 2
 
-	-- Compares two addresses, returns 'X' if either ``a1`` or ``a2`` contains
-	-- meta-values, otherwise returns '1' if ``a1 == a2`` is true else
-	-- '0'. Returns 'X' even when the addresses contain '-' values, to signal an
-	-- undefined outcome.
-	function addr_equal(a1 : unsigned; a2 : unsigned) return X01 is
-	begin
-		-- synthesis translate_off
-		if is_x(a1) or is_x(a2) then return 'X'; end if;
-		-- synthesis translate_on
-		if to_x01(std_logic_vector(a1)) = to_x01(std_logic_vector(a2)) then
-			return '1';
-		end if;
-		return '0';
-	end function;
+
 
 begin
-	process(clk)
+	process(Clock)
 		variable addr_eq : X01;
 	begin
-		if rising_edge(clk) then
-			case to_x01(ce) is
+		if rising_edge(Clock) then
+			case to_x01(ClockEnable) is
 				when '1' =>
-					wd1_r   <= to_x01(d1);
-					wd2_r   <= to_x01(d2);
-					addr_eq := addr_equal(a1, a2);
-					fwd1_r  <= addr_eq and we1;
-					fwd2_r  <= addr_eq and we2;
+					wd1_r   <= to_x01(PortA_DataIn);
+					wd2_r   <= to_x01(PortB_DataIn);
+					addr_eq := addressIsEqual(PortA_Address, PortB_Address);
+					fwd1_r  <= addr_eq and PortA_WriteEnable;
+					fwd2_r  <= addr_eq and PortB_WriteEnable;
 
-				when '0' =>  null; -- keep previous state
+				when '0' =>    -- keep previous state
+					null;
 
 				when others => -- X propagation in simulation
 					wd1_r  <= (others => 'X');
@@ -148,38 +138,36 @@ begin
 			end case;
 
 			if SIMULATION then
-				if (fwd1_r and fwd2_r) = '1' then
-					report "ERROR: both ports write to the same address." severity error;
-				end if;
+				assert (fwd1_r and fwd2_r) /= '1' report "ERROR: both ports write to the same address." severity error;
 			end if;
 		end if;
 	end process;
 
 	ram_tdp: entity work.ocram_TrueDualPort
 		generic map (
-			ADDRESS_BITS   => A_BITS,
-			DATA_BITS   => D_BITS,
+			ADDRESS_BITS   => ADDRESS_BITS,
+			DATA_BITS   => DATA_BITS,
 			FILENAME => FILENAME)
 		port map (
-			PortA_Clock => clk,
-			PortB_Clock => clk,
-			PortA_ClockEnable  => ce,
-			PortB_ClockEnable  => ce,
-			PortA_WriteEnable  => we1,
-			PortB_WriteEnable  => we2,
-			PortA_Address   => a1,
-			PortB_Address   => a2,
-			PortA_DataIn   => d1,
-			PortB_DataIn   => d2,
+			PortA_Clock => Clock,
+			PortB_Clock => Clock,
+			PortA_ClockEnable  => ClockEnable,
+			PortB_ClockEnable  => ClockEnable,
+			PortA_WriteEnable  => PortA_WriteEnable,
+			PortB_WriteEnable  => PortB_WriteEnable,
+			PortA_Address   => PortA_Address,
+			PortB_Address   => PortB_Address,
+			PortA_DataIn   => PortA_DataIn,
+			PortB_DataIn   => PortB_DataIn,
 			PortA_DataOut   => ram_q1,
 			PortB_DataOut   => ram_q2);
 
-	with fwd1_r select q2 <=
+	with fwd1_r select PortB_DataOut <=
 		wd1_r            when '1',
 		ram_q2           when '0',
 		(others => 'X') when others; -- X propagation in simulation
 
-	with fwd2_r select q1 <=
+	with fwd2_r select PortA_DataOut <=
 		wd2_r            when '1',
 		ram_q1           when '0',
 		(others => 'X') when others; -- X propagation in simulation

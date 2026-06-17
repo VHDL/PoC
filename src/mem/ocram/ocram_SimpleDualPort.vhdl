@@ -58,6 +58,7 @@ use     work.utils.all;
 use     work.strings.all;
 use     work.vectors.all;
 use     work.mem.all;
+use     work.ocram.all;
 
 
 entity ocram_SimpleDualPort is
@@ -68,16 +69,16 @@ entity ocram_SimpleDualPort is
 		FILENAME     : string    := ""                        -- file-name for RAM initialization
 	);
 	port (
-		Write_Clock       : in  std_logic;                            -- write clock
-		Write_ClockEnable : in  std_logic;                            -- write clock-enable
-		Write_WriteEnable : in  std_logic;                            -- write enable
-		Write_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);          -- write address
+		Write_Clock       : in  std_logic;                               -- write clock
+		Write_ClockEnable : in  std_logic;                               -- write clock-enable
+		Write_WriteEnable : in  std_logic;                               -- write enable
+		Write_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);       -- write address
 		Write_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);  -- data in
 
-		Read_Clock        : in  std_logic;                            -- read clock
-		Read_ClockEnable  : in  std_logic;                            -- read clock-enable
-		Read_Address      : in  unsigned(ADDRESS_BITS-1 downto 0);          -- read address
-		Read_DataOut      : out std_logic_vector(DATA_BITS-1 downto 0)    -- data out
+		Read_Clock        : in  std_logic;                               -- read clock
+		Read_ClockEnable  : in  std_logic;                               -- read clock-enable
+		Read_Address      : in  unsigned(ADDRESS_BITS-1 downto 0);       -- read address
+		Read_DataOut      : out std_logic_vector(DATA_BITS-1 downto 0)   -- data out
 	);
 end entity;
 
@@ -86,8 +87,7 @@ architecture rtl of ocram_SimpleDualPort is
 	constant DEPTH : positive := 2**ADDRESS_BITS;
 
 begin
-
-	gInfer : if not SIMULATION and ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
+	gen: if gInfer: not SIMULATION and ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
 		-- RAM can be inferred correctly
 		-- Xilinx notes:
 		--   WRITE_MODE is set to WRITE_FIRST, but this also means that read data
@@ -98,35 +98,8 @@ begin
 		--   This is the expected behavior.
 		--   With two different clocks, synthesis complains about an undefined
 		--   read-write behavior, that can be ignored.
-		attribute ram_style : string;
-		attribute ramstyle : string;
 
-		subtype  word_t  is std_logic_vector(DATA_BITS - 1 downto 0);
-		type    ram_t    is array(0 to DEPTH - 1) of word_t;     -- XXX: T_SLVV
-
-		-- Compute the initialization of a RAM array, if specified, from the passed file.
-		impure function ocram_InitMemory(FilePath : string) return ram_t is
-			variable Memory    : T_SLM(DEPTH - 1 downto 0, word_t'range);
-			variable res      : ram_t;
-		begin
-			if str_length(FilePath) = 0 then
-				-- shortcut required by Vivado
-				return (others => (others => ite(SIMULATION, 'U', '0')));
-			elsif mem_FileExtension(FilePath) = "mem" then
-				Memory  := mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
-			else
-				Memory  := mem_ReadMemoryFile(FilePath, DEPTH, word_t'length, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
-			end if;
-
-			for i in Memory'range(1) loop
-				for j in word_t'range loop
-					res(i)(j)    := Memory(i, j);
-				end loop;
-			end loop;
-			return  res;
-		end function;
-
-		signal ram : ram_t  := ocram_InitMemory(FILENAME);
+		signal ram : T_SLVV  := mem_InitMemory(FILENAME, DEPTH, DATA_BITS);
 		attribute ramstyle  of ram : signal is get_ramstyle_string(RAM_TYPE);
 		attribute ram_style of ram : signal is get_ram_style_string(RAM_TYPE);
 
@@ -148,9 +121,7 @@ begin
 				end if;
 			end if;
 		end process;
-	end generate gInfer;
-
-	gSim: if SIMULATION generate
+	elsif gSim: SIMULATION generate
 		-- Use component instantiation so that simulation model can be excluded
 		-- from synthesis.
 		component ocram_TrueDualPort_sim is
@@ -191,9 +162,7 @@ begin
 				d2   => (others => '0'),
 				q1   => open,
 				q2   => Read_DataOut);
-	end generate gSim;
-
-	assert ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_GENERIC and SIMULATION) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX))
-		report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported."
-		severity failure;
+	else generate
+		assert FALSE report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported." severity failure;
+	end generate;
 end architecture;

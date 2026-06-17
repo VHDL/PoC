@@ -33,10 +33,16 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
+use     work.utils.all;
 use     work.mem.all;
 
 
 package ocram is
+	attribute ram_style : string;
+	attribute ramstyle  : string;
+
+	function addressIsEqual(addressA : unsigned; addressB : unsigned) return X01;
+
 	-- Single-Port
 	component ocram_SinglePort
 		generic (
@@ -116,3 +122,21 @@ package ocram is
 			PortB_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0));
 	end component;
 end package;
+
+package body ocram is
+	-- Compares two addresses, returns 'X' if either ``a1`` or ``a2`` contains
+	-- meta-values, otherwise returns '1' if ``a1 == a2`` is true else
+	-- '0'. Returns 'X' even when the addresses contain '-' values, to signal an
+	-- undefined outcome.
+	function addressIsEqual(addressA : unsigned; addressB : unsigned) return X01 is
+	begin
+		-- synthesis translate_off
+		if is_x(addressA) or is_x(addressB) then
+			return 'X';
+		end if;
+		-- synthesis translate_on
+
+		return to_sl(to_x01(std_logic_vector(addressA)) = to_x01(std_logic_vector(addressB)));
+	end function;
+end package body ocram;
+

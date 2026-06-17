@@ -78,7 +78,11 @@ package mem is
 	);
 
 	function mem_FileExtension(Filename : string) return string;
-	impure function mem_InitMemory(FilePath : string; WORDS : positive; DATA_BITS : positive) return T_SLVV;
+	impure function mem_InitMemory(
+		FilePath  : string;
+		WORDS     : positive;
+		DATA_BITS : positive
+	) return T_SLVV;
 
 	impure function mem_ReadMemoryFile(
 		FileName : string;
@@ -108,25 +112,24 @@ package body mem is
 		return "";
 	end function;
 
-	impure function mem_InitMemory(FilePath : string; WORDS : positive; DATA_BITS : positive) return T_SLVV is
-		variable Memory : T_SLM(WORDS - 1 downto 0, DATA_BITS - 1 downto 0);
-		variable result : T_SLVV(0 to WORDS - 1)(DATA_BITS - 1 downto 0) := (others => (others => ite(SIMULATION, 'U', '0')));
+	impure function mem_InitMemory(
+		FilePath  : string;
+		WORDS     : positive;
+		DATA_BITS : positive
+	) return T_SLVV is
+		variable memory : T_SLM(WORDS - 1 downto 0, DATA_BITS - 1 downto 0);
+		variable empty  : T_SLVV(0 to WORDS - 1)(DATA_BITS - 1 downto 0) := (others => (others => ite(SIMULATION, 'U', '0')));
 	begin
 		if str_length(FilePath) = 0 then
 			-- shortcut required by Vivado
-			return result;
+			return empty;
 		elsif mem_FileExtension(FilePath) = "mem" then
-			Memory := mem_ReadMemoryFile(FilePath, WORDS, DATA_BITS, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
+			memory := mem_ReadMemoryFile(FilePath, WORDS, DATA_BITS, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
 		else
-			Memory := mem_ReadMemoryFile(FilePath, WORDS, DATA_BITS, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
+			memory := mem_ReadMemoryFile(FilePath, WORDS, DATA_BITS, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
 		end if;
 
-		for i in Memory'range(1) loop
-			for j in Memory'range(2) loop
-				result(i)(j) := Memory(i, j);
-			end loop;
-		end loop;
-		return result;
+		return to_slvv(memory);
 	end function;
 
 	procedure ReadHex(L : inout LINE; Value : out std_logic_vector; Good : out boolean) is
