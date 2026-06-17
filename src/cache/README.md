@@ -15,8 +15,8 @@ namespace as well as public constants and functions.
  - [`cache_Par`][cache_Par]
  - [`cache_par2`][cache_par2]
  - [`cache_replacement_policy`][cache_replacement_policy]
- - [`cache_TagUnit_Par`][cache_TagUnit_Par]
- - [`cache_TagUnit_Seq`][cache_TagUnit_Seq]
+ - [`cache_TagUnit_Parallel`][cache_TagUnit_Parallel]
+ - [`cache_TagUnit_Sequential`][cache_TagUnit_Sequential]
  
 Read detailed documentation on [ReadTheDocs](http://poc-library.readthedocs.io/en/latest/PoC/cache/index.html).
 
@@ -27,6 +27,6 @@ Read detailed documentation on [ReadTheDocs](http://poc-library.readthedocs.io/e
 [cache_Par]:				cache_Par.vhdl
 [cache_par2]:				cache_par2.vhdl
 [cache_replacement_policy]:				cache_replacement_policy.vhdl
-[cache_TagUnit_Par]:				cache_TagUnit_Par.vhdl
-[cache_TagUnit_Seq]:				cache_TagUnit_Seq.vhdl
+[cache_TagUnit_Parallel]:				cache_TagUnit_Parallel.vhdl
+[cache_TagUnit_Sequential]:				cache_TagUnit_Sequential.vhdl
 

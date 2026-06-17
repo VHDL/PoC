@@ -19,7 +19,7 @@
 # limitations under the License.
 # =============================================================================
 
-analyze sort_lru_cache.vhdl
-analyze sort_lru_list.vhdl
+analyze sort_LeastRecentlyUsed_Cache.vhdl
+analyze sort_LeastRecentlyUsed_List.vhdl
 
 include ./sortnet

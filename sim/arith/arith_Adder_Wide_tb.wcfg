@@ -6,7 +6,7 @@
       <db_ref path="./isim.wdb" id="1" type="auto">
          <top_modules>
             <top_module name="arith" />
-            <top_module name="arith_addw_tb" />
+            <top_module name="arith_Adder_Wide_tb" />
             <top_module name="config" />
             <top_module name="config_private" />
             <top_module name="math_real" />
@@ -27,29 +27,29 @@
       </db_ref>
    </db_ref_list>
    <WVObjectSize size="6" />
-   <wvobject fp_name="/arith_addw_tb/clock" type="logic" db_ref_id="1">
+   <wvobject fp_name="/arith_Adder_Wide_tb/clock" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">clock</obj_property>
       <obj_property name="ObjectShortName">clock</obj_property>
    </wvobject>
-   <wvobject fp_name="/arith_addw_tb/a" type="array" db_ref_id="1">
+   <wvobject fp_name="/arith_Adder_Wide_tb/a" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">a[8:0]</obj_property>
       <obj_property name="ObjectShortName">a[8:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/arith_addw_tb/b" type="array" db_ref_id="1">
+   <wvobject fp_name="/arith_Adder_Wide_tb/b" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">b[8:0]</obj_property>
       <obj_property name="ObjectShortName">b[8:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/arith_addw_tb/cin" type="logic" db_ref_id="1">
+   <wvobject fp_name="/arith_Adder_Wide_tb/cin" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">cin</obj_property>
       <obj_property name="ObjectShortName">cin</obj_property>
    </wvobject>
-   <wvobject fp_name="/arith_addw_tb/s" type="array" db_ref_id="1">
+   <wvobject fp_name="/arith_Adder_Wide_tb/s" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">s[0:3]</obj_property>
       <obj_property name="ObjectShortName">s[0:3]</obj_property>
    </wvobject>
-   <wvobject fp_name="/arith_addw_tb/cout" type="array" db_ref_id="1">
+   <wvobject fp_name="/arith_Adder_Wide_tb/cout" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">cout[0:3]</obj_property>
       <obj_property name="ObjectShortName">cout[0:3]</obj_property>
    </wvobject>

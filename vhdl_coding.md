@@ -8,7 +8,7 @@ this license.
 ## Naming
 1. VHDL sources have the file extension `.vhdl`.
 2. Prepend the name of an entity with its containing package using snake case,
-   e.g.: `arith_addw` for the wide adder in package `arith`. Each module is
+   e.g.: `arith_Adder_Wide` for the wide adder in package `arith`. Each module is
    implemented in its own source file, the name of which is `<entity>.vhdl`.
 3. Synthesizable module implementations are provided through an
    architecture named `rtl`.
@@ -21,9 +21,9 @@ this license.
 1. An OSVVM testbench generally consists of three parts: the Test Harness,
 Test Controller and one or more Test Cases.
 2. All three parts shall be in one subdirectory which shall be named after the DUT.
-For example, the testbench files for the `arith_addw` shall be in the directory `tb/arith/addw`.
+For example, the testbench files for the `arith_Adder_Wide` shall be in the directory `tb/arith/Adder_Wide`.
 3. The Test Controller's and Test Harness' names shall be prefixed with the DUT's name, e.g.
-`addw_TestController.vhdl` and `addw_TestHarness.vhdl`.
+`Adder_Wide_TestController.vhdl` and `Adder_Wide_TestHarness.vhdl`.
 4. All testcases shall have the prefix `TC_` followed by a meaningfull name.
 
 ## Formatting

@@ -2,11 +2,11 @@
 -- Authors:          Thomas B. Preusser
 --                  Gustavo Martin
 --
--- Entity:          arith_addw_TestController_pkg
+-- Entity:          arith_Adder_Wide_TestController_pkg
 --
 -- Description:
 -- -------------------------------------
--- Test controller package for arith_addw
+-- Test controller package for arith_Adder_Wide
 --
 -- License:
 -- =============================================================================
@@ -34,7 +34,7 @@ context osvvm.OsvvmContext;
 library PoC;
 use     PoC.arith.all;
 
-package arith_addw_TestController_pkg is
+package arith_Adder_Wide_TestController_pkg is
 
 	constant N : positive := 9;
 	constant K : positive := 2;

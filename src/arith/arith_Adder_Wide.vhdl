@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Authors:          Thomas B. Preusser
 --
--- Entity:          arith_addw
+-- Entity:          arith_Adder_Wide
 --
 -- Description:
 -- -------------------------------------

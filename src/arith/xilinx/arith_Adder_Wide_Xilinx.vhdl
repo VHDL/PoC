@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Authors:          Thomas B. Preusser
 --
--- Entity:          arith_addw_xilinx
+-- Entity:          arith_Adder_Wide_xilinx
 --
 -- Description:
 -- -------------------------------------

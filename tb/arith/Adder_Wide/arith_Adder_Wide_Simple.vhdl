@@ -2,11 +2,11 @@
 -- Authors:          Thomas B. Preusser
 --                  Gustavo Martin
 --
--- Entity:          arith_addw_Simple
+-- Entity:          arith_Adder_Wide_Simple
 --
 -- Description:
 -- -------------------------------------
--- Simple OSVVM test for arith_addw
+-- Simple OSVVM test for arith_Adder_Wide
 --
 -- License:
 -- =============================================================================
@@ -37,9 +37,9 @@ use     PoC.strings.all;
 use     PoC.physical.all;
 use     PoC.arith.all;
 
-use     work.arith_addw_TestController_pkg.all;
+use     work.arith_Adder_Wide_TestController_pkg.all;
 
-architecture Simple of arith_addw_TestController is
+architecture Simple of arith_Adder_Wide_TestController is
 	signal TestDone : integer_barrier := 1;
 	constant TCID : AlertLogIDType := NewID("AddWTest");
 	constant TPERIOD_CLOCK : time := 10 ns;
@@ -50,7 +50,7 @@ begin
 		constant ProcID : AlertLogIDType := NewID("ControlProc", TCID);
 		constant TIMEOUT : time := 10 ms;
 	begin
-		SetTestName("arith_addw_Simple");
+		SetTestName("arith_Adder_Wide_Simple");
 
 		SetLogEnable(PASSED, FALSE);
 		SetLogEnable(INFO,   FALSE);
@@ -134,10 +134,10 @@ begin
 	end process;
 end architecture;
 
-configuration arith_addw_Simple of arith_addw_TestHarness is
+configuration arith_Adder_Wide_Simple of arith_Adder_Wide_TestHarness is
 	for TestHarness
-		for TestCtrl: arith_addw_TestController
-			use entity work.arith_addw_TestController(Simple);
+		for TestCtrl: arith_Adder_Wide_TestController
+			use entity work.arith_Adder_Wide_TestController(Simple);
 		end for;
 	end for;
 end configuration;

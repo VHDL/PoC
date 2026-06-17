@@ -27,7 +27,7 @@ library tb_arith
 include ./prng/RunAllTests.pro
 include ./prefix_and/RunAllTests.pro
 include ./prefix_or/RunAllTests.pro
-include ./addw/RunAllTests.pro
+include ./Adder_Wide/RunAllTests.pro
 include ./counter_bcd/RunAllTests.pro
 include ./convert_bin2bcd/RunAllTests.pro
 include ./div/RunAllTests.pro

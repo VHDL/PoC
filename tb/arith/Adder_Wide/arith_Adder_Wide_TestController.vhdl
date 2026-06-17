@@ -2,11 +2,11 @@
 -- Authors:          Thomas B. Preusser
 --                  Gustavo Martin
 --
--- Entity:          arith_addw_TestController
+-- Entity:          arith_Adder_Wide_TestController
 --
 -- Description:
 -- -------------------------------------
--- Test controller for arith_addw
+-- Test controller for arith_Adder_Wide
 --
 -- License:
 -- =============================================================================
@@ -34,9 +34,9 @@ context osvvm.OsvvmContext;
 library PoC;
 use     PoC.arith.all;
 
-use     work.arith_addw_TestController_pkg.all;
+use     work.arith_Adder_Wide_TestController_pkg.all;
 
-entity arith_addw_TestController is
+entity arith_Adder_Wide_TestController is
 	port (
 		Clock : in  std_logic;
 		Reset : in  std_logic;

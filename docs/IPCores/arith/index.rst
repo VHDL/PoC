@@ -11,7 +11,7 @@ These are arithmetic entities....
 
 **Entities**
 
- * :ref:`IP/arith_addw`
+ * :ref:`IP/arith_Adder_Wide`
  * :ref:`IP/arith_CarryChain_inc`
  * :ref:`IP/arith_Convert_Binary2BCD`
  * :ref:`IP/arith_Counter_BCD`
@@ -38,7 +38,7 @@ These are arithmetic entities....
 .. toctree::
    :hidden:
 
-   arith_addw <arith_Adder_Wide>
+   arith_Adder_Wide <arith_Adder_Wide>
    arith_CarryChain_inc <arith_CarryChain_inc>
    arith_Convert_Binary2BCD <arith_Convert_Binary2BCD>
    arith_Counter_BCD <arith_Counter_BCD>

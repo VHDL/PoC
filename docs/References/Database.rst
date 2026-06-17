@@ -107,7 +107,7 @@ context.
    bus =           Namespace
 
    [PoC.arith]
-   addw =          Entity
+   Adder_Wide =          Entity
    prng =          Entity
 
    [PoC.bus]

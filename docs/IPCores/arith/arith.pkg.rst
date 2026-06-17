@@ -28,7 +28,7 @@ This package holds all component declarations for this namespace.
 
 .. rubric:: Exported Components
 
-* :ref:`PoC.arith.addw <IP/arith_addw>`
+* :ref:`PoC.arith.Adder_Wide <IP/arith_Adder_Wide>`
 * PoC.arith.carrychain_inc_xilinx
 * :ref:`PoC.arith.counter_bcd <IP/arith_Counter_BCD>`
 * :ref:`PoC.arith.counter_gray <IP/arith_Counter_Gray>`

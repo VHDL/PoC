@@ -19,13 +19,13 @@
 # limitations under the License.
 # =============================================================================
 
-TestSuite PoC.arith.addw
+TestSuite PoC.arith.Adder_Wide
 
-library tb_arith_addw
+library tb_arith_Adder_Wide
 
-analyze arith_addw_TestController_pkg.vhdl
-analyze arith_addw_TestController.vhdl
-analyze arith_addw_TestHarness.vhdl
+analyze arith_Adder_Wide_TestController_pkg.vhdl
+analyze arith_Adder_Wide_TestController.vhdl
+analyze arith_Adder_Wide_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_addw_Simple.vhdl
+RunTest arith_Adder_Wide_Simple.vhdl

@@ -1,23 +1,23 @@
-.. _IP/arith_addw:
+.. _IP/arith_Adder_Wide:
 
-PoC.arith.addw
+PoC.arith.Adder_Wide
 ##############
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/arith/arith_addw.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/arith/arith_Adder_Wide.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/arith/arith_addw_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/arith/arith_Adder_Wide_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <arith/arith_addw.vhdl>`
-      * |gh-tb| :poctb:`Testbench <arith/arith_addw_tb.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Adder_Wide.vhdl>`
+      * |gh-tb| :poctb:`Testbench <arith/arith_Adder_Wide_tb.vhdl>`
 
 Implements wide addition providing several options all based
 on an adaptation of a carry-select approach.
@@ -40,7 +40,7 @@ References:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/arith/arith_addw.vhdl
+.. literalinclude:: ../../../src/arith/arith_Adder_Wide.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -50,4 +50,4 @@ References:
 
 .. only:: latex
 
-   Source file: :pocsrc:`arith/arith_addw.vhdl <arith/arith_addw.vhdl>`
+   Source file: :pocsrc:`arith/arith_Adder_Wide.vhdl <arith/arith_Adder_Wide.vhdl>`

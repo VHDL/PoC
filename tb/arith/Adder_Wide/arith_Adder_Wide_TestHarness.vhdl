@@ -2,11 +2,11 @@
 -- Authors:          Thomas B. Preusser
 --                  Gustavo Martin
 --
--- Entity:          arith_addw_TestHarness
+-- Entity:          arith_Adder_Wide_TestHarness
 --
 -- Description:
 -- -------------------------------------
--- Test harness for arith_addw
+-- Test harness for arith_Adder_Wide
 --
 -- License:
 -- =============================================================================
@@ -37,12 +37,12 @@ use     PoC.strings.all;
 use     PoC.physical.all;
 use     PoC.arith.all;
 
-use     work.arith_addw_TestController_pkg.all;
+use     work.arith_Adder_Wide_TestController_pkg.all;
 
-entity arith_addw_TestHarness is
+entity arith_Adder_Wide_TestHarness is
 end entity;
 
-architecture TestHarness of arith_addw_TestHarness is
+architecture TestHarness of arith_Adder_Wide_TestHarness is
 	constant TPERIOD_CLOCK : time := 10 ns;
 
 	signal Clock : std_logic := '1';
@@ -52,7 +52,7 @@ architecture TestHarness of arith_addw_TestHarness is
 	signal s     : word_vector;
 	signal cout  : carry_vector;
 
-	component arith_addw_TestController is
+	component arith_Adder_Wide_TestController is
 		port (
 			Clock : in  std_logic;
 			Reset : in  std_logic;
@@ -118,7 +118,7 @@ begin
 		end generate;
 	end generate;
 
-	TestCtrl: component arith_addw_TestController
+	TestCtrl: component arith_Adder_Wide_TestController
 		port map (
 			Clock => Clock,
 			Reset => Reset,

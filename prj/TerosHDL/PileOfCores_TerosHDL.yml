@@ -123,7 +123,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/arith/arith_addw.vhdl
+  - name: ../../src/arith/arith_Adder_Wide.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -267,7 +267,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/arith/xilinx/arith_addw_xilinx.vhdl
+  - name: ../../src/arith/xilinx/arith_Adder_Wide_xilinx.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -611,7 +611,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/cache/cache_TagUnit_Par.vhdl
+  - name: ../../src/cache/cache_TagUnit_Parallel.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -619,7 +619,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/cache/cache_TagUnit_Seq.vhdl
+  - name: ../../src/cache/cache_TagUnit_Sequential.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false

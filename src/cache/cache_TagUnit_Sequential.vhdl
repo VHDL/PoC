@@ -457,7 +457,7 @@ begin
 		signal TagHit_i   : std_logic;
 		signal TagMiss_i : std_logic;
 	begin
-		assert false report "PoC.cache_TagUnit_Seq:: Implementation of 'ASSOCIATIVITY = 1' not available!" severity failure;
+		assert false report "PoC.cache_TagUnit_Sequential:: Implementation of 'ASSOCIATIVITY = 1' not available!" severity failure;
 
 	-- -- generate comparators
 	-- genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
@@ -534,7 +534,7 @@ begin
 		signal TagHit_i   : std_logic;
 		signal TagMiss_i : std_logic;
 	begin
-		assert false report "PoC.cache_TagUnit_Seq:: Implementation of '(ASSOCIATIVITY > 1) and (SETS > 1)' not available!" severity failure;
+		assert false report "PoC.cache_TagUnit_Sequential:: Implementation of '(ASSOCIATIVITY > 1) and (SETS > 1)' not available!" severity failure;
 
 	 -- -- generate comparators
 	 -- genVectors : for i in 0 to FA_CACHE_LINES - 1 generate
