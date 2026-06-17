@@ -7,11 +7,11 @@ PoC.misc.filter.Mean
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/misc/filter/filter_Mean.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/misc/filter/filter_Mean.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/misc/filter/filter_Mean_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/misc/filter/filter_Mean_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

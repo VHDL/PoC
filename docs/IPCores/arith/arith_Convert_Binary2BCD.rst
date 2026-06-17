@@ -7,11 +7,11 @@ PoC.arith.Convert_Binary2BCD
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/arith/arith_Convert_Binary2BCD.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/arith/arith_Convert_Binary2BCD.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/arith/arith_Convert_Binary2BCD_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/arith/arith_Convert_Binary2BCD_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

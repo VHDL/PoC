@@ -7,11 +7,11 @@ PoC.net.FrameChecksum
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/net/net_FrameChecksum.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/net/net_FrameChecksum.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/net/net_FrameChecksum_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/net/net_FrameChecksum_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

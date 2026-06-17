@@ -194,14 +194,14 @@ in the files:
    cp lib\PoC\src\common\my_config.vhdl.template src\common\my_config.vhdl
    cp lib\PoC\src\common\my_project.vhdl.template src\common\my_project.vhdl
 
-`my_config.vhdl <https://github.com/VHDL/PoC/blob/master/src/common/my_config.vhdl.template>`_ defines two global constants, which need to be adjusted:
+`my_config.vhdl <https://github.com/VHDL/PoC/blob/main/src/common/my_config.vhdl.template>`_ defines two global constants, which need to be adjusted:
 
 .. code-block:: vhdl
 
    constant MY_BOARD            : string := "CHANGE THIS"; -- e.g. Custom, ML505, KC705, Atlys
    constant MY_DEVICE           : string := "CHANGE THIS"; -- e.g. None, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
 
-`my_project.vhdl <https://github.com/VHDL/PoC/blob/master/src/common/my_project.vhdl.template>`_
+`my_project.vhdl <https://github.com/VHDL/PoC/blob/main/src/common/my_project.vhdl.template>`_
 also defines two global constants, which need to be adjusted:
 
 .. code-block:: vhdl

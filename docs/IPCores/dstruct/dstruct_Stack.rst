@@ -7,11 +7,11 @@ PoC.dstruct.stack
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/dstruct/dstruct_Stack.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/dstruct/dstruct_Stack.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/dstruct/dstruct_Stack_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/dstruct/dstruct_Stack_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

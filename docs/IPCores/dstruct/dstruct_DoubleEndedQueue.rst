@@ -7,11 +7,11 @@ PoC.dstruct.DoubleEndedQueue
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/dstruct/dstruct_DoubleEndedQueue.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/dstruct/dstruct_DoubleEndedQueue.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/dstruct/dstruct_DoubleEndedQueue_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/dstruct/dstruct_DoubleEndedQueue_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

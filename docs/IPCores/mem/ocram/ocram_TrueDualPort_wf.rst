@@ -7,11 +7,11 @@ PoC.mem.ocram.TrueDualPort_WriteFirst
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/mem/ocram/ocram_TrueDualPort_wf.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/mem/ocram/ocram_TrueDualPort_wf.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/mem/ocram/ocram_TrueDualPort_wf_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/mem/ocram/ocram_TrueDualPort_wf_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

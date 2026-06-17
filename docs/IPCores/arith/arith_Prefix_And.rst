@@ -7,11 +7,11 @@ PoC.arith.Prefix_And
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/arith/arith_Prefix_And.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/arith/arith_Prefix_And.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/arith/arith_Prefix_And_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/arith/arith_Prefix_And_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

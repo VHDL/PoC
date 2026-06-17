@@ -90,7 +90,7 @@ On Windows
        ```
 
 
-   Source file: `common/my_config.vhdl.template <https://github.com/VHDL/PoC/blob/master/src/common/my_config.vhdl.template>`_
+   Source file: `common/my_config.vhdl.template <https://github.com/VHDL/PoC/blob/main/src/common/my_config.vhdl.template>`_
 
 
        The easiest way is to define a board name and set `MY_DEVICE` to `None`. So
