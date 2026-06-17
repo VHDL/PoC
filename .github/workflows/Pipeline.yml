@@ -15,8 +15,8 @@ jobs:
   Prepare:
     uses: pyTooling/Actions/.github/workflows/PrepareJob.yml@r7
     with:
-      main_branch:    'master'
-      release_branch: 'master'
+      main_branch:    'main'
+      release_branch: 'main'
 
   Simulate:
     uses: ./.github/workflows/Simulate.yml
@@ -24,9 +24,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { simulator: 'nvc',  backend: '',      version: 'latest', can-fail: false }
-#          - { simulator: 'ghdl', backend: 'mcode', version: 'latest', can-fail: false }
-          - { simulator: 'ghdl', backend: 'llvm',  version: 'latest', can-fail: false }
+          - { simulator: 'nvc',  backend: '',      version: 'latest',  can-fail: false }
+          - { simulator: 'ghdl', backend: 'mcode', version: 'nightly', can-fail: false }
+          - { simulator: 'ghdl', backend: 'llvm',  version: 'nightly', can-fail: false }
     with:
       simulator:    ${{ matrix.simulator }}
       ghdl-version: ${{ matrix.version }}
@@ -52,7 +52,7 @@ jobs:
 
   IntermediateCleanUp:
     name: 🗑️ Intermediate Artifact Cleanup
-    runs-on: 'ubuntu-24.04'
+    runs-on: 'ubuntu-26.04'
     needs:
       - Simulate
       - PublishTestResults
@@ -87,7 +87,7 @@ jobs:
       latex_artifact:        'PoC-LaTeX'
 
   Test:
-    runs-on: 'ubuntu-24.04'
+    runs-on: 'ubuntu-26.04'
     needs:
       - Simulate
       - PublishTestResults
