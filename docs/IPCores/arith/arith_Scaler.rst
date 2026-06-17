@@ -1,6 +1,6 @@
 .. _IP/arith_Scaler:
 
-PoC.arith.scaler
+PoC.arith.Scaler
 ################
 
 .. only:: html

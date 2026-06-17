@@ -1,7 +1,7 @@
 .. _IP/remote_TerminalControl:
 
-PoC.comm.remote.terminal_control
-################################
+PoC.comm.remote.TerminalControl
+###############################
 
 .. only:: html
 

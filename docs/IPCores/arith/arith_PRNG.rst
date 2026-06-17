@@ -1,6 +1,6 @@
 .. _IP/arith_PRNG:
 
-PoC.arith.prng
+PoC.arith.PRNG
 ##############
 
 .. only:: html

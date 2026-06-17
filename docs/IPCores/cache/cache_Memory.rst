@@ -1,6 +1,6 @@
 .. _IP/cache_Memory:
 
-PoC.cache.memory
+PoC.cache.Memory
 ################
 
 .. only:: html

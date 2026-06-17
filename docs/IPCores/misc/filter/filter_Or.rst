@@ -1,6 +1,6 @@
 .. _IP/filter_Or:
 
-PoC.misc.filter.or
+PoC.misc.filter.Or
 ##################
 
 .. only:: html

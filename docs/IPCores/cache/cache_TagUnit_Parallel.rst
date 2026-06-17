@@ -1,6 +1,6 @@
 .. _IP/cache_TagUnit_Parallel:
 
-PoC.cache.tagunit_parallel
+PoC.cache.tagunit_Parallel
 ##########################
 
 .. only:: html

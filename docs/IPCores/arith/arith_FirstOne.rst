@@ -1,6 +1,6 @@
 .. _IP/arith_FirstOne:
 
-PoC.arith.firstone
+PoC.arith.FirstOne
 ##################
 
 .. only:: html

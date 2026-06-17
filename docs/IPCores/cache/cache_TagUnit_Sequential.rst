@@ -1,6 +1,6 @@
 .. _IP/cache_TagUnit_Sequential:
 
-PoC.cache.tagunit_sequential
+PoC.cache.TagUnit_Sequential
 ############################
 
 .. only:: html

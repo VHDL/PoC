@@ -1,6 +1,6 @@
 .. _IP/arith_Prefix_And:
 
-PoC.arith.prefix_and
+PoC.arith.Prefix_And
 ####################
 
 .. only:: html

@@ -1,7 +1,7 @@
 .. _IP/arith_Divider:
 
 PoC.arith.Divider
-#############
+#################
 
 .. only:: html
 

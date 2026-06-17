@@ -1,6 +1,6 @@
 .. _IP/arith_Same:
 
-PoC.arith.same
+PoC.arith.Same
 ##############
 
 .. only:: html

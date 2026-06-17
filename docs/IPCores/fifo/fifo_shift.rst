@@ -1,6 +1,6 @@
 .. _IP/fifo_Shift:
 
-PoC.fifo.shift
+PoC.fifo.Shift
 ##############
 
 .. only:: html

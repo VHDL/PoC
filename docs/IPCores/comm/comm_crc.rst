@@ -1,6 +1,6 @@
 .. _IP/comm_CRC:
 
-PoC.comm.crc
+PoC.comm.CRC
 ############
 
 .. only:: html

@@ -1,6 +1,6 @@
 .. _IP/cache_Parallel:
 
-PoC.cache.parallel
+PoC.cache.Parallel
 ##################
 
 .. only:: html

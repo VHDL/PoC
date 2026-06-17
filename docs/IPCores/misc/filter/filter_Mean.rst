@@ -1,6 +1,6 @@
 .. _IP/filter_Mean:
 
-PoC.misc.filter.mean
+PoC.misc.filter.Mean
 ####################
 
 .. only:: html

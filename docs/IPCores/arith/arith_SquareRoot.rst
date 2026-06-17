@@ -1,7 +1,7 @@
 .. _IP/arith_SquareRoot:
 
-PoC.arith.sqrt
-##############
+PoC.arith.SquareRoot
+####################
 
 .. only:: html
 

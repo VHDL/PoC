@@ -1,7 +1,7 @@
 .. _IP/ocram_SimpleDualPort:
 
-PoC.mem.ocram.sdp
-#################
+PoC.mem.ocram.SimpleDualPort
+############################
 
 .. only:: html
 
@@ -38,7 +38,7 @@ Mixed-Port Read-During-Write
   rising-edge of the write clock and (in the worst case) extends until the
   next rising-edge of the write clock.
 
-For simulation, always our dedicated simulation model :ref:`IP/ocram_TrueDualPort_sim`
+For simulation, always our dedicated simulation model :ref:`IP/ocram_TrueDualPort_Simulation`
 is used.
 
 

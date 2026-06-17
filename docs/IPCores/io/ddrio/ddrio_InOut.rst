@@ -1,6 +1,6 @@
 .. _IP/ddrio_InOut:
 
-PoC.io.ddrio.inout
+PoC.io.ddrio.InOut
 ##################
 
 .. only:: html

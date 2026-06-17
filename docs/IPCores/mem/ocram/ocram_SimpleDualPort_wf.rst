@@ -1,23 +1,23 @@
-.. _IP/ocram_SimpleDualPort_wf:
+.. _IP/ocram_SimpleDualPort_WriteFirst:
 
-PoC.mem.ocram.sdp_wf
-####################
+PoC.mem.ocram.SimpleDualPort_WriteFirst
+#######################################
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/mem/ocram/ocram_SimpleDualPort_wf.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/mem/ocram/ocram_SimpleDualPort_WriteFirst.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/mem/ocram/ocram_SimpleDualPort_wf_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/mem/ocram/ocram_SimpleDualPort_WriteFirst_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <mem/ocram/ocram_SimpleDualPort_wf.vhdl>`
-      * |gh-tb| :poctb:`Testbench <mem/ocram/ocram_SimpleDualPort_wf_tb.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <mem/ocram/ocram_SimpleDualPort_WriteFirst.vhdl>`
+      * |gh-tb| :poctb:`Testbench <mem/ocram/ocram_SimpleDualPort_WriteFirst_tb.vhdl>`
 
 Inferring / instantiating simple dual-port memory, with:
 
@@ -47,7 +47,7 @@ Mixed-Port Read-During-Write
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/mem/ocram/ocram_SimpleDualPort_wf.vhdl
+.. literalinclude:: ../../../../src/mem/ocram/ocram_SimpleDualPort_WriteFirst.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -57,4 +57,4 @@ Mixed-Port Read-During-Write
 
 .. only:: latex
 
-   Source file: :pocsrc:`mem/ocram/ocram_SimpleDualPort_wf.vhdl <mem/ocram/ocram_SimpleDualPort_wf.vhdl>`
+   Source file: :pocsrc:`mem/ocram/ocram_SimpleDualPort_WriteFirst.vhdl <mem/ocram/ocram_SimpleDualPort_WriteFirst.vhdl>`

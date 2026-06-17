@@ -1,7 +1,7 @@
 .. _IP/dstruct_DoubleEndedQueue:
 
-PoC.dstruct.deque
-#################
+PoC.dstruct.DoubleEndedQueue
+############################
 
 .. only:: html
 

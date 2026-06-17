@@ -1,6 +1,6 @@
 .. _IP/ddrio_In:
 
-PoC.io.ddrio.in
+PoC.io.ddrio.In
 ###############
 
 .. only:: html

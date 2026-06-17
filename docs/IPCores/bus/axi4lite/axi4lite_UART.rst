@@ -3,7 +3,7 @@
    single: AXI4-Lite; axi4lite_UART
 
 axi4lite_UART
-###########################
+#############
 
 Based on :ref:`IP/axi4lite_Register`, :ref:`IP/uart_FIFO`
 

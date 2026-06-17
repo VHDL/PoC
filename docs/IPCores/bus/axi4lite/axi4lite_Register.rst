@@ -1032,7 +1032,7 @@ Create C-Header File from CSV
 
 A big advantage of this register is the automatic register handover to the Software. This is done by converting the
 freshly generated csv file and converting it into a C-Header file. The registers specified in the config are combined
-into struct's. The final struct can than be layed over the axi4lite-Register Address.
+into struct's. The final struct can than be layed over the axi4lite_Register Address.
 
 The conversion is done by a python-script from *************************. This python script works but has currently a
 lot of limitations.

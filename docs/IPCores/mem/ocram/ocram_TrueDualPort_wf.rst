@@ -1,7 +1,7 @@
-.. _IP/ocram_TrueDualPort_wf:
+.. _IP/ocram_TrueDualPort_WriteFirst:
 
-PoC.mem.ocram.tdp_wf
-####################
+PoC.mem.ocram.TrueDualPort_WriteFirst
+#####################################
 
 .. only:: html
 
@@ -16,8 +16,8 @@ PoC.mem.ocram.tdp_wf
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <mem/ocram/ocram_TrueDualPort_wf.vhdl>`
-      * |gh-tb| :poctb:`Testbench <mem/ocram/ocram_TrueDualPort_wf_tb.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <mem/ocram/ocram_TrueDualPort_WriteFirst.vhdl>`
+      * |gh-tb| :poctb:`Testbench <mem/ocram/ocram_TrueDualPort_WriteFirst_tb.vhdl>`
 
 Inferring / instantiating true dual-port memory, with:
 
@@ -56,14 +56,14 @@ Mixed-Port Read-During-Write
 If a write is issued on both ports to the same address, then the output of
 this unit and the content of the addressed memory cell are undefined.
 
-For simulation, always our dedicated simulation model :ref:`IP/ocram_TrueDualPort_sim`
+For simulation, always our dedicated simulation model :ref:`IP/ocram_TrueDualPort_Simulation`
 is used.
 
 
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/mem/ocram/ocram_TrueDualPort_wf.vhdl
+.. literalinclude:: ../../../../src/mem/ocram/ocram_TrueDualPort_WriteFirst.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -73,4 +73,4 @@ is used.
 
 .. only:: latex
 
-   Source file: :pocsrc:`mem/ocram/ocram_TrueDualPort_wf.vhdl <mem/ocram/ocram_TrueDualPort_wf.vhdl>`
+   Source file: :pocsrc:`mem/ocram/ocram_TrueDualPort_WriteFirst.vhdl <mem/ocram/ocram_TrueDualPort_WriteFirst.vhdl>`

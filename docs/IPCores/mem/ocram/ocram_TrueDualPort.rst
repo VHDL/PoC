@@ -1,7 +1,7 @@
 .. _IP/ocram_TrueDualPort:
 
-PoC.mem.ocram.tdp
-#################
+PoC.mem.ocram.TrueDualPort
+##########################
 
 .. only:: html
 

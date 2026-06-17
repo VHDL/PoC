@@ -1,6 +1,6 @@
 .. _IP/comm_Scramble:
 
-PoC.comm.scramble
+PoC.comm.Scramble
 #################
 
 .. only:: html

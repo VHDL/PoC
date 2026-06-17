@@ -1,23 +1,23 @@
-.. _IP/ocram_TrueDualPort_sim:
+.. _IP/ocram_TrueDualPort_Simulation:
 
-PoC.mem.ocram.tdp_sim
-#####################
+PoC.mem.ocram.TrueDualPort_Simulation
+#####################################
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/mem/ocram/ocram_TrueDualPort_sim.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/mem/ocram/ocram_TrueDualPort_Simulation.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/mem/ocram/ocram_TrueDualPort_sim_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/mem/ocram/ocram_TrueDualPort_Simulation_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <mem/ocram/ocram_TrueDualPort_sim.vhdl>`
-      * |gh-tb| :poctb:`Testbench <mem/ocram/ocram_TrueDualPort_sim_tb.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <mem/ocram/ocram_TrueDualPort_Simulation.vhdl>`
+      * |gh-tb| :poctb:`Testbench <mem/ocram/ocram_TrueDualPort_Simulation_tb.vhdl>`
 
 Simulation model for true dual-port memory, with:
 
@@ -33,7 +33,7 @@ correct Mixed-Port Read-During-Write Behavior and handles X propagation.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/mem/ocram/ocram_TrueDualPort_sim.vhdl
+.. literalinclude:: ../../../../src/mem/ocram/ocram_TrueDualPort_Simulation.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -43,4 +43,4 @@ correct Mixed-Port Read-During-Write Behavior and handles X propagation.
 
 .. only:: latex
 
-   Source file: :pocsrc:`mem/ocram/ocram_TrueDualPort_sim.vhdl <mem/ocram/ocram_TrueDualPort_sim.vhdl>`
+   Source file: :pocsrc:`mem/ocram/ocram_TrueDualPort_simSimulation.vhdl <mem/ocram/ocram_TrueDualPort_Simulation.vhdl>`

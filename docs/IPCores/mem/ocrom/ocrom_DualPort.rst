@@ -1,7 +1,7 @@
 .. _IP/ocrom_DualPort:
 
-PoC.mem.ocrom.dp
-################
+PoC.mem.ocrom.DualPort
+######################
 
 .. only:: html
 

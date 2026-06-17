@@ -1,6 +1,6 @@
 .. _IP/arith_Counter_Ring:
 
-PoC.arith.counter_ring
+PoC.arith.Counter_Ring
 ######################
 
 .. only:: html

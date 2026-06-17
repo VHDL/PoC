@@ -1,7 +1,7 @@
 .. _IP/arith_Convert_Binary2BCD:
 
-PoC.arith.convert_bin2bcd
-#########################
+PoC.arith.Convert_Binary2BCD
+############################
 
 .. only:: html
 

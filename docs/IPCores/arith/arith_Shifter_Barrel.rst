@@ -1,6 +1,6 @@
 .. _IP/arith_Shifter_Barrel:
 
-PoC.arith.shifter_barrel
+PoC.arith.Shifter_Barrel
 ########################
 
 .. only:: html

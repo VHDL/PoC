@@ -1,7 +1,7 @@
 .. _IP/ocram_SinglePort:
 
-PoC.mem.ocram.sp
-################
+PoC.mem.ocram.SinglePort
+########################
 
 .. only:: html
 
