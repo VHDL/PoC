@@ -137,36 +137,14 @@ begin
 		PortA_DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a1_reg)) else ram(to_integer(a1_reg));    -- returns new data
 		PortB_DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a2_reg)) else ram(to_integer(a2_reg));    -- returns new data
 	elsif gAltera: not SIMULATION and (VENDOR = VENDOR_ALTERA) generate
-		component ocram_TrueDualPort_Altera
-			generic (
-				ADDRESS_BITS : positive;
-				DATA_BITS    : positive;
-				FILENAME     : string    := ""
-			);
-			port (
-				PortA_Clock : in  std_logic;
-				PortB_Clock : in  std_logic;
-				PortA_ClockEnable  : in  std_logic;
-				PortB_ClockEnable  : in  std_logic;
-				PortA_WriteEnable  : in  std_logic;
-				PortB_WriteEnable  : in  std_logic;
-				PortA_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-				PortB_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-				PortA_DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);
-				PortB_DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);
-				PortA_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0);
-				PortB_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0)
-			);
-		end component;
-	begin
 		-- Direct instantiation of altsyncram (including component
 		-- declaration above) is not sufficient for ModelSim.
 		-- That requires also usage of altera_mf library.
 
-		ram_altera: ocram_TrueDualPort_Altera
+		ram_altera: component ocram_TrueDualPort_Altera
 			generic map (
 				ADDRESS_BITS => ADDRESS_BITS,
-				DATA_BITS     => DATA_BITS,
+				DATA_BITS    => DATA_BITS,
 				FILENAME     => FILENAME
 			)
 			port map (
@@ -185,46 +163,27 @@ begin
 				PortB_DataOut     => PortB_DataOut
 			);
 	elsif gSim: SIMULATION generate
-		-- Use component instantiation so that simulation model can be excluded
-		-- from synthesis.
-		component ocram_TrueDualPort_sim is
-			generic (
-				ADDRESS_BITS   : positive;
-				DATA_BITS   : positive;
-				FILENAME : string);
-			port (
-				clk1 : in  std_logic;
-				clk2 : in  std_logic;
-				ce1   : in  std_logic;
-				ce2   : in  std_logic;
-				we1   : in  std_logic;
-				we2   : in  std_logic;
-				a1   : in  unsigned(ADDRESS_BITS-1 downto 0);
-				a2   : in  unsigned(ADDRESS_BITS-1 downto 0);
-				d1   : in  std_logic_vector(DATA_BITS-1 downto 0);
-				d2   : in  std_logic_vector(DATA_BITS-1 downto 0);
-				q1   : out std_logic_vector(DATA_BITS-1 downto 0);
-				q2   : out std_logic_vector(DATA_BITS-1 downto 0));
-		end component ocram_TrueDualPort_sim;
-	begin
-		sim_tdp: ocram_TrueDualPort_sim
+		sim_tdp: ocram_TrueDualPort_Simulation
 			generic map (
-				ADDRESS_BITS   => ADDRESS_BITS,
-				DATA_BITS   => DATA_BITS,
-				FILENAME => FILENAME)
+				ADDRESS_BITS => ADDRESS_BITS,
+				DATA_BITS    => DATA_BITS,
+				FILENAME     => FILENAME
+			)
 			port map (
-				clk1 => PortA_Clock,
-				clk2 => PortB_Clock,
-				ce1  => PortA_ClockEnable,
-				ce2  => PortB_ClockEnable,
-				we1  => PortA_WriteEnable,
-				we2  => PortB_WriteEnable,
-				a1   => PortA_Address,
-				a2   => PortB_Address,
-				d1   => PortA_DataIn,
-				d2   => PortB_DataIn,
-				q1   => PortA_DataOut,
-				q2   => PortB_DataOut);
+				PortA_Clock       => PortA_Clock,
+				PortA_ClockEnable => PortA_ClockEnable,
+				PortA_WriteEnable => PortA_WriteEnable,
+				PortA_Address     => PortA_Address,
+				PortA_DataIn      => PortA_DataIn,
+				PortA_DataOut     => PortA_DataOut,
+
+				PortB_Clock       => PortB_Clock,
+				PortB_ClockEnable => PortB_ClockEnable,
+				PortB_WriteEnable => PortB_WriteEnable,
+				PortB_Address     => PortB_Address,
+				PortB_DataIn      => PortB_DataIn,
+				PortB_DataOut     => PortB_DataOut
+			);
 	else generate
 		assert FALSE report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported." severity failure;
 	end generate;

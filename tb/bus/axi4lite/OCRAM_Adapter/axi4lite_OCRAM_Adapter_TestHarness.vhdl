@@ -180,9 +180,9 @@ begin
 
 	OCRAM : entity PoC.ocram_TrueDualPort
 		generic map (
-			ADDRESS_BITS   => OCRAM_ADDRESS_BITS,
-			DATA_BITS   => OCRAM_DATA_BITS,
-			FILENAME => ite(USE_INIT_FILE, MY_PROJECT_DIR & "/tb/bus/axi4lite/OCRAM_Adapter/axi4lite_OCRAM_Adapter.hex", "")
+			ADDRESS_BITS => OCRAM_ADDRESS_BITS,
+			DATA_BITS    => OCRAM_DATA_BITS,
+			FILENAME     => ite(USE_INIT_FILE, MY_PROJECT_DIR & "/tb/bus/axi4lite/OCRAM_Adapter/axi4lite_OCRAM_Adapter.hex", "")
 		)
 		port map (
 			PortA_Clock => Clock,

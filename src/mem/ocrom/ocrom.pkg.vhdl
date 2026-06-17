@@ -58,14 +58,14 @@ package ocrom is
 			FILENAME  : string    := ""
 		);
 		port (
-			clk1 : in  std_logic;
-			clk2 : in  std_logic;
-			ce1  : in  std_logic;
-			ce2  : in  std_logic;
-			a1   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			a2   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			q1   : out std_logic_vector(DATA_BITS-1 downto 0);
-			q2   : out std_logic_vector(DATA_BITS-1 downto 0)
+			PortA_Clock : in  std_logic;
+			PortB_Clock : in  std_logic;
+			PortA_ClockEnable  : in  std_logic;
+			PortB_ClockEnable  : in  std_logic;
+			PortA_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortB_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortA_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0);
+			PortB_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0)
 		);
 	end component;
 end package;

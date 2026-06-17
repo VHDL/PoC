@@ -21,7 +21,7 @@
 
 analyze ./mem.pkg.vhdl
 analyze ./ocram/ocram.pkg.vhdl
-analyze ./ocram/ocram_TrueDualPort_sim.vhdl
+analyze ./ocram/ocram_TrueDualPort_Simulation.vhdl
 analyze ./ocram/ocram_TrueDualPort.vhdl
 analyze ./ocram/ocram_TrueDualPort_WriteFirst.vhdl
 analyze ./ocram/ocram_EnhancedSimpleDualPort.vhdl

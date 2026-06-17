@@ -122,46 +122,28 @@ begin
 			end if;
 		end process;
 	elsif gSim: SIMULATION generate
-		-- Use component instantiation so that simulation model can be excluded
-		-- from synthesis.
-		component ocram_TrueDualPort_sim is
-			generic (
-				ADDRESS_BITS   : positive;
-				DATA_BITS   : positive;
-				FILENAME : string);
-			port (
-				clk1 : in  std_logic;
-				clk2 : in  std_logic;
-				ce1  : in  std_logic;
-				ce2  : in  std_logic;
-				we1  : in  std_logic;
-				we2  : in  std_logic;
-				a1   : in  unsigned(ADDRESS_BITS-1 downto 0);
-				a2   : in  unsigned(ADDRESS_BITS-1 downto 0);
-				d1   : in  std_logic_vector(DATA_BITS-1 downto 0);
-				d2   : in  std_logic_vector(DATA_BITS-1 downto 0);
-				q1   : out std_logic_vector(DATA_BITS-1 downto 0);
-				q2   : out std_logic_vector(DATA_BITS-1 downto 0));
-		end component ocram_TrueDualPort_sim;
 	begin
-		sim_tdp: ocram_TrueDualPort_sim
+		sim_tdp: ocram_TrueDualPort_Simulation
 			generic map (
-				ADDRESS_BITS   => ADDRESS_BITS,
-				DATA_BITS   => DATA_BITS,
-				FILENAME => FILENAME)
+				ADDRESS_BITS => ADDRESS_BITS,
+				DATA_BITS    => DATA_BITS,
+				FILENAME     => FILENAME
+			)
 			port map (
-				clk1 => Write_Clock,
-				clk2 => Read_Clock,
-				ce1  => Write_ClockEnable,
-				ce2  => Read_ClockEnable,
-				we1  => Write_WriteEnable,
-				we2  => '0',
-				a1   => Write_Address,
-				a2   => Read_Address,
-				d1   => Write_DataIn,
-				d2   => (others => '0'),
-				q1   => open,
-				q2   => Read_DataOut);
+				PortA_Clock       => Write_Clock,
+				PortA_ClockEnable => Write_ClockEnable,
+				PortA_WriteEnable => Write_WriteEnable,
+				PortA_Address     => Write_Address,
+				PortA_DataIn      => Write_DataIn,
+				PortA_DataOut     => open,
+
+				PortB_Clock       => Read_Clock,
+				PortB_ClockEnable => Read_ClockEnable,
+				PortB_WriteEnable => '0',
+				PortB_Address     => Read_Address,
+				PortB_DataIn      => (others => '0'),
+				PortB_DataOut     => Read_DataOut
+			);
 	else generate
 		assert FALSE report "Vendor '" & T_VENDOR'image(VENDOR) & "' not yet supported." severity failure;
 	end generate;

@@ -161,11 +161,11 @@ package body mem is
 
 	-- Reads a memory file and returns a 2D std_logic matrix
 	impure function mem_ReadMemoryFile(
-		FileName : string;
-		MemoryLines : positive;
+		FileName          : string;
+		MemoryLines       : positive;
 		BitsPerMemoryLine : positive;
-		FORMAT : T_MEM_FILEFORMAT;
-		CONTENT : T_MEM_CONTENT := MEM_CONTENT_HEX
+		FORMAT            : T_MEM_FILEFORMAT;
+		CONTENT           : T_MEM_CONTENT     := MEM_CONTENT_HEX
 	) return T_SLM is
 		file FileHandle       : TEXT open READ_MODE is FileName;
 		variable CurrentLine  : LINE;

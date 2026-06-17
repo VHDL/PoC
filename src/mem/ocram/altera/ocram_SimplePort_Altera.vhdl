@@ -45,15 +45,15 @@ use     work.strings.all;
 entity ocram_SimplePort_Altera is
 	generic (
 		ADDRESS_BITS : positive;
-		DATA_BITS     : positive;
+		DATA_BITS    : positive;
 		FILENAME     : string    := ""
 	);
 	port (
-		Clock : in  std_logic;
-		ClockEnable  : in  std_logic;
-		WriteEnable  : in  std_logic;
-		Address      : in  unsigned(ADDRESS_BITS-1 downto 0);
-		DataIn       : in  std_logic_vector(DATA_BITS-1 downto 0);
+		Clock       : in  std_logic;
+		ClockEnable : in  std_logic;
+		WriteEnable : in  std_logic;
+		Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+		DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);
 		DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)
 	);
 end entity;

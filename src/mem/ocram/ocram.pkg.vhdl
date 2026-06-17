@@ -46,80 +46,145 @@ package ocram is
 	-- Single-Port
 	component ocram_SinglePort
 		generic (
-			ADDRESS_BITS    : positive;
+			ADDRESS_BITS : positive;
 			DATA_BITS    : positive;
-			FILENAME  : string    := ""
+			FILENAME     : string    := ""
 		);
 		port (
-			Clock : in  std_logic;
-			ClockEnable  : in  std_logic;
-			WriteEnable  : in  std_logic;
-			Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);
-			DataOut   : out std_logic_vector(DATA_BITS-1 downto 0));
+			Clock       : in  std_logic;
+			ClockEnable : in  std_logic;
+			WriteEnable : in  std_logic;
+			Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+			DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);
+			DataOut     : out std_logic_vector(DATA_BITS-1 downto 0));
+	end component;
+
+	component ocram_SimplePort_Altera is
+		generic (
+			ADDRESS_BITS : positive;
+			DATA_BITS    : positive;
+			FILENAME     : string    := ""
+		);
+		port (
+			Clock       : in  std_logic;
+			ClockEnable : in  std_logic;
+			WriteEnable : in  std_logic;
+			Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+			DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);
+			DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)
+		);
 	end component;
 
 	-- Simple-Dual-Port
 	component ocram_SimpleDualPort
 		generic(
-			ADDRESS_BITS   : positive;
-			DATA_BITS   : positive;
-			RAM_TYPE : T_RAM_TYPE := RAM_TYPE_AUTO;
-			FILENAME : string     := ""
+			ADDRESS_BITS : positive;
+			DATA_BITS    : positive;
+			RAM_TYPE     : T_RAM_TYPE := RAM_TYPE_AUTO;
+			FILENAME     : string     := ""
 		);
 		port(
-			Read_Clock : in  std_logic;
+			Write_Clock       : in  std_logic;
+			Write_ClockEnable : in  std_logic;
+			Write_WriteEnable : in  std_logic;
+			Write_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+			Write_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);
+
+			Read_Clock        : in  std_logic;
 			Read_ClockEnable  : in  std_logic;
-			Write_Clock : in  std_logic;
-			Write_ClockEnable  : in  std_logic;
-			Write_WriteEnable   : in  std_logic;
-			Read_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			Write_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			Write_DataIn    : in  std_logic_vector(DATA_BITS-1 downto 0);
-			Read_DataOut    : out std_logic_vector(DATA_BITS-1 downto 0)
+			Read_Address      : in  unsigned(ADDRESS_BITS-1 downto 0);
+			Read_DataOut      : out std_logic_vector(DATA_BITS-1 downto 0)
 		);
 	end component ocram_SimpleDualPort;
 
 	-- Enhanced-Simple-Dual-Port
 	component ocram_EnhancedSimpleDualPort
 		generic (
-			ADDRESS_BITS    : positive;
+			ADDRESS_BITS : positive;
 			DATA_BITS    : positive;
-			FILENAME  : string    := ""
+			FILENAME     : string    := ""
 		);
 		port (
-			PortA_Clock : in  std_logic;
-			PortB_Clock : in  std_logic;
-			PortA_ClockEnable  : in  std_logic;
-			PortB_ClockEnable  : in  std_logic;
-			PortA_WriteEnable  : in  std_logic;
-			PortA_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			PortB_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			PortA_DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);
-			PortA_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0);
-			PortB_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0));
+			PortA_Clock       : in  std_logic;
+			PortB_Clock       : in  std_logic;
+			PortA_ClockEnable : in  std_logic;
+			PortB_ClockEnable : in  std_logic;
+			PortA_WriteEnable : in  std_logic;
+			PortA_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortB_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortA_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);
+			PortA_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0);
+			PortB_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0));
 	end component;
 
 	-- True-Dual-Port
 	component ocram_TrueDualPort
 		generic (
-			ADDRESS_BITS    : positive;
+			ADDRESS_BITS : positive;
 			DATA_BITS    : positive;
-			FILENAME  : string    := ""
+			FILENAME     : string    := ""
 		);
 		port (
-			PortA_Clock : in  std_logic;
-			PortB_Clock : in  std_logic;
+			PortA_Clock        : in  std_logic;
 			PortA_ClockEnable  : in  std_logic;
-			PortB_ClockEnable  : in  std_logic;
 			PortA_WriteEnable  : in  std_logic;
+			PortA_Address      : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortA_DataIn       : in  std_logic_vector(DATA_BITS-1 downto 0);
+			PortA_DataOut      : out std_logic_vector(DATA_BITS-1 downto 0);
+
+			PortB_Clock        : in  std_logic;
+			PortB_ClockEnable  : in  std_logic;
 			PortB_WriteEnable  : in  std_logic;
-			PortA_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			PortB_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			PortA_DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);
-			PortB_DataIn   : in  std_logic_vector(DATA_BITS-1 downto 0);
-			PortA_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0);
-			PortB_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0));
+			PortB_Address      : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortB_DataIn       : in  std_logic_vector(DATA_BITS-1 downto 0);
+			PortB_DataOut      : out std_logic_vector(DATA_BITS-1 downto 0)
+		);
+	end component;
+
+	component ocram_TrueDualPort_Altera is
+		generic (
+			ADDRESS_BITS : positive;
+			DATA_BITS    : positive;
+			FILENAME     : string    := ""
+		);
+		port (
+			PortA_Clock       : in  std_logic;
+			PortA_ClockEnable : in  std_logic;
+			PortA_WriteEnable : in  std_logic;
+			PortA_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortA_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);
+			PortA_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0);
+
+			PortB_Clock       : in  std_logic;
+			PortB_ClockEnable : in  std_logic;
+			PortB_WriteEnable : in  std_logic;
+			PortB_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortB_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);
+			PortB_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)
+		);
+	end component;
+
+	component ocram_TrueDualPort_Simulation is
+		generic (
+			ADDRESS_BITS : positive;                              -- number of address bits
+			DATA_BITS    : positive;                              -- number of data bits
+			FILENAME     : string    := ""                        -- file-name for RAM initialization
+		);
+		port (
+			PortA_Clock       : in  std_logic;                               -- clock for 1st port
+			PortA_ClockEnable : in  std_logic;                               -- clock-enable for 1st port
+			PortA_WriteEnable : in  std_logic;                               -- write-enable for 1st port
+			PortA_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);       -- address for 1st port
+			PortA_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);  -- write-data for 1st port
+			PortA_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0);  -- read-data from 1st port
+
+			PortB_Clock       : in  std_logic;                               -- clock for 2nd port
+			PortB_ClockEnable : in  std_logic;                               -- clock-enable for 2nd port
+			PortB_WriteEnable : in  std_logic;                               -- write-enable for 2nd port
+			PortB_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);       -- address for 2nd port
+			PortB_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);  -- write-data for 2nd port
+			PortB_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)   -- read-data from 2nd port
+		);
 	end component;
 end package;
 
