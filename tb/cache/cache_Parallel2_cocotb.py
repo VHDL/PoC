@@ -9,7 +9,7 @@
 #
 # Description:
 # ------------------------------------
-#	Automated testbench for PoC.cache_par2
+#	Automated testbench for PoC.cache_Parallel2
 #
 # Supported configuration:
 # * REPLACEMENT_POLICY = "LRU"

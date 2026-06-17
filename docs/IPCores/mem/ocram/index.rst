@@ -17,17 +17,17 @@ The package PoC.mem.ocram holds all component declarations for this namespace.
 
 **Entities**
 
- * :ref:`IP/ocram_sp` - An on-chip RAM with a single port interface.
- * :ref:`IP/ocram_sdp` - An on-chip RAM with a simple dual-port interface.
- * :ref:`IP/ocram_sdp_wf` - An on-chip RAM with a simple dual-port
+ * :ref:`IP/ocram_SinglePort` - An on-chip RAM with a single port interface.
+ * :ref:`IP/ocram_SimpleDualPort` - An on-chip RAM with a simple dual-port interface.
+ * :ref:`IP/ocram_SimpleDualPort_wf` - An on-chip RAM with a simple dual-port
    interface and write-first behavior.
- * :ref:`IP/ocram_tdp` - An on-chip RAM with a true dual-port interface.
- * :ref:`IP/ocram_tdp_wf` - An on-chip RAM with a true dual-port
+ * :ref:`IP/ocram_TrueDualPort` - An on-chip RAM with a true dual-port interface.
+ * :ref:`IP/ocram_TrueDualPort_wf` - An on-chip RAM with a true dual-port
    interface and write-first behavior.
 
 **Simulation Helper**
 
- * :ref:`IP/ocram_tdp_sim` - Simulation model of on-chip RAM with a true dual port interface.
+ * :ref:`IP/ocram_TrueDualPort_sim` - Simulation model of on-chip RAM with a true dual port interface.
 
 **Deprecated Entities**
 
@@ -42,16 +42,16 @@ The package PoC.mem.ocram holds all component declarations for this namespace.
 .. toctree::
    :hidden:
 
-   ocram_sp <ocram_sp>
-   ocram_sdp <ocram_sdp>
-   ocram_sdp_wf <ocram_sdp_wf>
-   ocram_tdp <ocram_tdp>
-   ocram_tdp_wf <ocram_tdp_wf>
+   ocram_SinglePort <ocram_SinglePort>
+   ocram_SimpleDualPort <ocram_SimpleDualPort>
+   ocram_SimpleDualPort_wf <ocram_SimpleDualPort_wf>
+   ocram_TrueDualPort <ocram_TrueDualPort>
+   ocram_TrueDualPort_wf <ocram_TrueDualPort_wf>
 
 .. toctree::
    :hidden:
 
-   ocram_tdp_sim <ocram_tdp_sim>
+   ocram_TrueDualPort_sim <ocram_TrueDualPort_sim>
 
 .. toctree::
    :hidden:

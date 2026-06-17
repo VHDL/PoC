@@ -26,9 +26,9 @@ analyze ./ocram/ocram_TrueDualPort.vhdl
 analyze ./ocram/ocram_EnhancedSimpleDualPort.vhdl
 analyze ./ocram/ocram_SimpleDualPort.vhdl
 analyze ./ocram/ocram_SimpleDualPort_Optimized.vhdl
-analyze ./ocram/ocram_sdp_wfasd.vhdl
+analyze ./ocram/ocram_SimpleDualPort_wfasd.vhdl
 analyze ./ocram/ocram_SinglePort.vhdl
-analyze ./ocram/ocram_tdp_wasdf.vhdl
+analyze ./ocram/ocram_TrueDualPort_wasdf.vhdl
 
 if { $::poc::vendorName eq "Xilinx" } {
 	puts "No files for Xilinx."

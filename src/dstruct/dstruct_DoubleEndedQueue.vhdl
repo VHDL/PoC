@@ -104,7 +104,7 @@ architecture rtl of dstruct_DoubleEndedQueue is
 
 begin
 
-	ram : entity work.ocram_tdp_wf
+	ram : entity work.ocram_TrueDualPort_wf
 		generic map(
 			A_BITS => ADDRESS_BITS,
 			D_BITS => DATA_BITS,

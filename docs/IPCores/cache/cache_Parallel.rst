@@ -11,13 +11,13 @@ PoC.cache.parallel
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/cache/cache_par_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/cache/cache_Parallel_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
       * |gh-src| :pocsrc:`Sourcecode <cache/cache_Parallel.vhdl>`
-      * |gh-tb| :poctb:`Testbench <cache/cache_par_tb.vhdl>`
+      * |gh-tb| :poctb:`Testbench <cache/cache_Parallel_tb.vhdl>`
 
 Implements a cache with parallel tag-unit and data memory.
 
@@ -26,7 +26,7 @@ Implements a cache with parallel tag-unit and data memory.
    is, upon writes the old-data is returned on the read output. Such memory
    (e.g. LUT-RAM) is not available on all devices. Thus, synthesis may
    infer a lot of flip-flops plus multiplexers instead, which is very inefficient.
-   It is recommended to use :doc:`PoC.cache.par2 <cache_par2>` instead which has a
+   It is recommended to use :doc:`PoC.cache.par2 <cache_Parallel2>` instead which has a
    slightly different interface.
 
 All inputs are synchronous to the rising-edge of the clock `clock`.

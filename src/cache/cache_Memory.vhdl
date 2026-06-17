@@ -5,7 +5,7 @@
 --
 -- Description:
 -- -------------------------------------
--- This unit provides a cache (:ref:`IP:cache_par2`) together
+-- This unit provides a cache (:ref:`IP:cache_Parallel2`) together
 -- with a cache controller which reads / writes cache lines from / to memory.
 -- It has two :ref:`INT:PoC.Mem` interfaces:
 --
@@ -179,7 +179,7 @@ architecture rtl of cache_Memory is
 
 begin
 
-	cache_cpu_inst: entity work.cache_CPU
+	cache_CPU_inst: entity work.cache_CPU
 		generic map (
 			REPLACEMENT_POLICY => REPLACEMENT_POLICY,
 			CACHE_LINES        => CACHE_LINES,

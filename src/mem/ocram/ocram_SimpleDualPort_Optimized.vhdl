@@ -25,7 +25,7 @@
 --   rising-edge of the write clock and (in the worst case) extends until the
 --   next rising-edge of the write clock.
 --
--- For simulation, always our dedicated simulation model :ref:`IP:ocram_tdp_sim`
+-- For simulation, always our dedicated simulation model :ref:`IP:ocram_TrueDualPort_sim`
 -- is used.
 --
 -- License:
@@ -92,16 +92,16 @@ architecture rtl of ocram_SimpleDualPort_Optimized is
 
 	constant debug_ranges : boolean := false;
 begin
-	assert not debug_ranges report "PoC.ocram_sdp_optimized:: D_BITS      : " & integer'image(DATA_BITS)     severity warning;
-	assert not debug_ranges report "PoC.ocram_sdp_optimized:: U-Ram-Depth : " & integer'image(RAM_Type_Depth(0))     severity warning;
-	assert not debug_ranges report "PoC.ocram_sdp_optimized:: B-Ram-Depth : " & integer'image(RAM_Type_Depth(1))     severity warning;
-	assert not debug_ranges report "PoC.ocram_sdp_optimized:: BRAM_width  : " & integer'image(BRAM_width)     severity warning;
-	assert not debug_ranges report "PoC.ocram_sdp_optimized:: U_Low_Bit   : " & integer'image(U_Low_Bit)  severity warning;
-	assert not debug_ranges report "PoC.ocram_sdp_optimized:: U_High_Bit  : " & integer'image(U_High_Bit) severity warning;
-	assert not debug_ranges report "PoC.ocram_sdp_optimized:: B_Low_Bit   : " & integer'image(B_Low_Bit)  severity warning;
-	assert not debug_ranges report "PoC.ocram_sdp_optimized:: B_High_Bit  : " & integer'image(B_High_Bit) severity warning;
-	assert not debug_ranges report "PoC.ocram_sdp_optimized:: L_Low_Bit   : " & integer'image(L_Low_Bit)  severity warning;
-	assert not debug_ranges report "PoC.ocram_sdp_optimized:: L_High_Bit  : " & integer'image(L_High_Bit) severity warning;
+	assert not debug_ranges report "PoC.ocram_SimpleDualPort_optimized:: D_BITS      : " & integer'image(DATA_BITS)     severity warning;
+	assert not debug_ranges report "PoC.ocram_SimpleDualPort_optimized:: U-Ram-Depth : " & integer'image(RAM_Type_Depth(0))     severity warning;
+	assert not debug_ranges report "PoC.ocram_SimpleDualPort_optimized:: B-Ram-Depth : " & integer'image(RAM_Type_Depth(1))     severity warning;
+	assert not debug_ranges report "PoC.ocram_SimpleDualPort_optimized:: BRAM_width  : " & integer'image(BRAM_width)     severity warning;
+	assert not debug_ranges report "PoC.ocram_SimpleDualPort_optimized:: U_Low_Bit   : " & integer'image(U_Low_Bit)  severity warning;
+	assert not debug_ranges report "PoC.ocram_SimpleDualPort_optimized:: U_High_Bit  : " & integer'image(U_High_Bit) severity warning;
+	assert not debug_ranges report "PoC.ocram_SimpleDualPort_optimized:: B_Low_Bit   : " & integer'image(B_Low_Bit)  severity warning;
+	assert not debug_ranges report "PoC.ocram_SimpleDualPort_optimized:: B_High_Bit  : " & integer'image(B_High_Bit) severity warning;
+	assert not debug_ranges report "PoC.ocram_SimpleDualPort_optimized:: L_Low_Bit   : " & integer'image(L_Low_Bit)  severity warning;
+	assert not debug_ranges report "PoC.ocram_SimpleDualPort_optimized:: L_High_Bit  : " & integer'image(L_High_Bit) severity warning;
 
 	optimized_gen : if RAM_TYPE = RAM_TYPE_OPTIMIZED and RAM_Type_Depth(0) /= -1 generate
 		genURAM : if RAM_Type_Depth(0) > 0 generate

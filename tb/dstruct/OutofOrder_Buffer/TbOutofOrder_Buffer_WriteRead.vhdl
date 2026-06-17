@@ -27,7 +27,7 @@
 -- limitations under the License.
 -- =============================================================================
 
-architecture WriteRead of dstruct_OutofOrder_Buffer_tc is
+architecture WriteRead of dstruct_OutofOrder_Buffer_TestController is
 
 	constant NUM_TRANSACTIONS : positive := 100000;
 	constant TestName : string := "TbOutofOrder_Buffer_WriteRead";
@@ -189,8 +189,8 @@ end architecture;
 
 configuration TbOutofOrder_Buffer_WriteRead of tb_OutofOrder_Buffer is
 	for TestHarness
-		for TestCtrl : dstruct_OutofOrder_Buffer_tc
-			use entity work.dstruct_OutofOrder_Buffer_tc(WriteRead);
+		for TestCtrl : dstruct_OutofOrder_Buffer_TestController
+			use entity work.dstruct_OutofOrder_Buffer_TestController(WriteRead);
 		end for;
 	end for;
 end configuration;

@@ -7,7 +7,7 @@
 -- Description:
 -- -------------------------------------
 -- Cache with parallel tag-unit and data memory. For the data memory,
--- :ref:`IP:ocram_sp` is used.
+-- :ref:`IP:ocram_SinglePort` is used.
 --
 -- Configuration
 -- *************

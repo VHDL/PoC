@@ -147,7 +147,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/arith/arith_convert_bin2bcd.vhdl
+  - name: ../../src/arith/arith_Convert_Binary2BCD.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -187,7 +187,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/arith/arith_Div.vhdl
+  - name: ../../src/arith/arith_Divider.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -579,7 +579,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/cache/cache_Mem.vhdl
+  - name: ../../src/cache/cache_Memory.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -587,7 +587,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/cache/cache_Par.vhdl
+  - name: ../../src/cache/cache_Parallel.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -595,7 +595,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/cache/cache_par2.vhdl
+  - name: ../../src/cache/cache_Parallel2.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -667,7 +667,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/dstruct/dstruct_deque.vhdl
+  - name: ../../src/dstruct/dstruct_DoubleEndedQueue.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -851,7 +851,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/io/uart/uart_ft245.vhdl
+  - name: ../../src/io/uart/uart_FT245.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1083,7 +1083,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocram/ocram_sdp.vhdl
+  - name: ../../src/mem/ocram/ocram_SimpleDualPort.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1091,7 +1091,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocram/ocram_sdp_wf.vhdl
+  - name: ../../src/mem/ocram/ocram_SimpleDualPort_wf.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1099,7 +1099,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocram/ocram_sp.vhdl
+  - name: ../../src/mem/ocram/ocram_SinglePort.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1107,7 +1107,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocram/ocram_tdp.vhdl
+  - name: ../../src/mem/ocram/ocram_TrueDualPort.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1115,7 +1115,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocram/ocram_tdp_sim.vhdl
+  - name: ../../src/mem/ocram/ocram_TrueDualPort_sim.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1123,7 +1123,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocram/ocram_tdp_wf.vhdl
+  - name: ../../src/mem/ocram/ocram_TrueDualPort_wf.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1131,7 +1131,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocram/altera/ocram_sp_altera.vhdl
+  - name: ../../src/mem/ocram/altera/ocram_SinglePort_altera.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1139,7 +1139,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocram/altera/ocram_tdp_altera.vhdl
+  - name: ../../src/mem/ocram/altera/ocram_TrueDualPort_Altera.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
@@ -1875,7 +1875,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocram/ocram_sdp_optimized.vhdl
+  - name: ../../src/mem/ocram/ocram_SimpleDualPort_optimized.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false

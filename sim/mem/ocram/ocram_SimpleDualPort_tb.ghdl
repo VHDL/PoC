@@ -1,0 +1,13 @@
+$ version 1.1
+
+# Signals in packages :
+
+# Signals in entities :
+/ocram_SimpleDualPort_tb/rce
+/ocram_SimpleDualPort_tb/wce
+/ocram_SimpleDualPort_tb/we
+/ocram_SimpleDualPort_tb/ra
+/ocram_SimpleDualPort_tb/wa
+/ocram_SimpleDualPort_tb/d
+/ocram_SimpleDualPort_tb/q
+/ocram_SimpleDualPort_tb/clk

@@ -13,7 +13,7 @@
 --    is, upon writes the old-data is returned on the read output. Such memory
 --    (e.g. LUT-RAM) is not available on all devices. Thus, synthesis may
 --    infer a lot of flip-flops plus multiplexers instead, which is very inefficient.
---    It is recommended to use :doc:`PoC.cache.par2 <cache_par2>` instead which has a
+--    It is recommended to use :doc:`PoC.cache.par2 <cache_Parallel2>` instead which has a
 --    slightly different interface.
 --
 -- All inputs are synchronous to the rising-edge of the clock `clock`.
@@ -170,7 +170,7 @@ begin
 			end if;
 
 			-- Single-port memory with read before write is required here.
-			-- Cannot be mapped to `PoC.ocram_sdp`.
+			-- Cannot be mapped to `PoC.ocram_SimpleDualPort`.
 			CacheLineOut <= CacheMemory(to_integer(MemoryIndex_us));
 
 			-- Control outputs have same latency as cache line data.

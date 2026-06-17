@@ -24,15 +24,15 @@ This package holds all component declarations for this namespace.
 
 .. rubric:: Exported Functions
 
-* ``arith_div_latency``
+* ``arith_Divider_latency``
 
 .. rubric:: Exported Components
 
 * :ref:`PoC.arith.Adder_Wide <IP/arith_Adder_Wide>`
 * PoC.arith.carrychain_inc_xilinx
-* :ref:`PoC.arith.counter_bcd <IP/arith_Counter_BCD>`
-* :ref:`PoC.arith.counter_gray <IP/arith_Counter_Gray>`
-* :ref:`PoC.arith.divider <IP/arith_Divider>`
+* :ref:`PoC.arith.Counter_BCD <IP/arith_Counter_BCD>`
+* :ref:`PoC.arith.Counter_Gray <IP/arith_Counter_Gray>`
+* :ref:`PoC.arith.Divider <IP/arith_Divider>`
 * :ref:`PoC.arith.firstone <IP/arith_FirstOne>`
 * PoC.arith.inc_ovcy_xilinx
 * :ref:`PoC.arith.muls_wide <IP/arith_muls_wide>`

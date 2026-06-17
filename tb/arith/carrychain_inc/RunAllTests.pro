@@ -21,10 +21,10 @@
 
 TestSuite PoC.arith.carrychain_inc
 
-library tb_arith_carrychain_inc
+library tb_arith_CarryChain_inc
 
-analyze arith_carrychain_inc_TestController.vhdl
-analyze arith_carrychain_inc_TestHarness.vhdl
+analyze arith_CarryChain_inc_TestController.vhdl
+analyze arith_CarryChain_inc_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_carrychain_inc_Simple.vhdl
+RunTest arith_CarryChain_inc_Simple.vhdl

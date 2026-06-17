@@ -20,10 +20,10 @@
 
 TestSuite PoC.arith.div
 
-library tb_arith_div
+library tb_arith_Divider
 
-analyze arith_div_TestController.vhdl
-analyze arith_div_TestHarness.vhdl
+analyze arith_Divider_TestController.vhdl
+analyze arith_Divider_TestHarness.vhdl
 
 # Test Cases
-RunTest arith_div_Simple.vhdl
+RunTest arith_Divider_Simple.vhdl

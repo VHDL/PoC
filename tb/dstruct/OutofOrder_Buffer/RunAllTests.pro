@@ -23,7 +23,7 @@ TestSuite PoC.dstruct.OutOfOrderBuffer
 
 library tb_struct_OutOfOrderBuffer
 
-analyze dstruct_OutofOrder_Buffer_tc.vhdl
+analyze dstruct_OutofOrder_Buffer_TestController.vhdl
 analyze tb_OutofOrder_Buffer.vhdl
 
 # Enable code coverage collection in simulations

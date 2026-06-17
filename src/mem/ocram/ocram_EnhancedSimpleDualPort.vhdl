@@ -13,7 +13,7 @@
 --
 -- .. deprecated:: 1.1
 --
---    **Please use** :ref:`IP:ocram_tdp` **for new designs.
+--    **Please use** :ref:`IP:ocram_TrueDualPort` **for new designs.
 --    This component has been provided because older FPGA compilers where not
 --    able to infer true dual-port memory from an RTL description.**
 --
@@ -55,7 +55,7 @@
 --   rising-edge of the write clock (``clk1``) and (in the worst case) extends
 --   until the next rising-edge of the write clock.
 --
--- For simulation, always our dedicated simulation model :ref:`IP:ocram_tdp_sim`
+-- For simulation, always our dedicated simulation model :ref:`IP:ocram_TrueDualPort_sim`
 -- is used.
 --
 -- License:
@@ -116,7 +116,7 @@ architecture rtl of ocram_EnhancedSimpleDualPort is
 
 begin
 	gInfer : if not SIMULATION and ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
-		-- For Xilinx ISE, Xilinx Vivado and Lattice LSE we can reuse the ocram_tdp.
+		-- For Xilinx ISE, Xilinx Vivado and Lattice LSE we can reuse the ocram_TrueDualPort.
 		--
 		-- **Attention**: This encapsulation is mandatory for Xilinx Vivado,
 		-- otherwise Vivado synthesizes a lot of LUT-RAM instead of Block-RAM.

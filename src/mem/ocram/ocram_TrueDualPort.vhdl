@@ -42,7 +42,7 @@
 --   rising-edge of the write clock and (in the worst case) extends
 --   until the next rising-edge of that write clock.
 --
--- For simulation, always our dedicated simulation model :ref:`IP:ocram_tdp_sim`
+-- For simulation, always our dedicated simulation model :ref:`IP:ocram_TrueDualPort_sim`
 -- is used.
 --
 -- License:

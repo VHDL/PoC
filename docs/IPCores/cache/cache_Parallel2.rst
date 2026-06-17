@@ -1,4 +1,4 @@
-.. _IP/cache_par2:
+.. _IP/cache_Parallel2:
 
 PoC.cache.par2
 ##############
@@ -7,20 +7,20 @@ PoC.cache.par2
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/cache/cache_par2.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/src/cache/cache_Parallel2.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/tb/cache/cache_par2_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/master/tb/cache/cache_Parallel2_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <cache/cache_par2.vhdl>`
-      * |gh-tb| :poctb:`Testbench <cache/cache_par2_tb.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <cache/cache_Parallel2.vhdl>`
+      * |gh-tb| :poctb:`Testbench <cache/cache_Parallel2_tb.vhdl>`
 
 Cache with parallel tag-unit and data memory. For the data memory,
-:ref:`IP/ocram_sp` is used.
+:ref:`IP/ocram_SinglePort` is used.
 
 Configuration
 *************
@@ -107,7 +107,7 @@ Replacing a cache line requires two steps, both with ``Replace = '1'``:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/cache/cache_par2.vhdl
+.. literalinclude:: ../../../src/cache/cache_Parallel2.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -117,4 +117,4 @@ Replacing a cache line requires two steps, both with ``Replace = '1'``:
 
 .. only:: latex
 
-   Source file: :pocsrc:`cache/cache_par2.vhdl <cache/cache_par2.vhdl>`
+   Source file: :pocsrc:`cache/cache_Parallel2.vhdl <cache/cache_Parallel2.vhdl>`

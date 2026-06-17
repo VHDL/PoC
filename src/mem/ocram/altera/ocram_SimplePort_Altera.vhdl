@@ -9,8 +9,8 @@
 -- Quartus synthesis does not infer this RAM type correctly.
 -- Instead, altsyncram is instantiated directly.
 --
--- For further documentation see module "ocram_sp"
--- (src/mem/ocram/ocram_sp.vhdl).
+-- For further documentation see module "ocram_SinglePort"
+-- (src/mem/ocram/ocram_SinglePort.vhdl).
 --
 -- License:
 -- =============================================================================

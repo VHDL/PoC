@@ -5,7 +5,7 @@
 --
 -- Description:
 -- -------------------------------------
--- This unit provides a cache (:ref:`IP:cache_par2`) together
+-- This unit provides a cache (:ref:`IP:cache_Parallel2`) together
 -- with a cache controller which reads / writes cache lines from / to memory.
 -- The memory is accessed using a :ref:`INT:PoC.Mem` interfaces, the related
 -- ports and parameters are prefixed with ``mem_``.
@@ -39,7 +39,7 @@
 -- of this unit and high propagate time for ``cpu_got``.
 --
 -- This unit supports only one outstanding CPU request. More outstanding
--- requests are provided by :ref:`IP:cache_Mem`.
+-- requests are provided by :ref:`IP:cache_Memory`.
 --
 --
 -- Configuration
@@ -142,7 +142,7 @@
 --    option "Keep Hierarchy" must be set to SOFT or TRUE.
 --
 -- SeeAlso:
---   :ref:`IP:cache_Mem`
+--   :ref:`IP:cache_Memory`
 --
 -- License:
 -- =============================================================================

@@ -62,7 +62,7 @@ architecture TestHarness of tb_OutofOrder_Buffer is
 	signal IndexIn  : unsigned(log2ceilnz(NUM_INDEX) -1 downto 0);
 	signal DataOut  : std_logic_vector(DATA_BITS-1 downto 0);
 
-	component dstruct_OutofOrder_Buffer_tc
+	component dstruct_OutofOrder_Buffer_TestController
 		generic(
 			NUM_INDEX : positive;
 			DATA_BITS : positive
@@ -103,7 +103,7 @@ begin
 		tpd         => tpd
 	);
 
-	TestCtrl : component dstruct_OutofOrder_Buffer_tc
+	TestCtrl : component dstruct_OutofOrder_Buffer_TestController
 		generic map (
 			NUM_INDEX => NUM_INDEX,
 			DATA_BITS => DATA_BITS

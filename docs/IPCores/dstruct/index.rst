@@ -11,7 +11,7 @@ The package :ref:`NS/dstruct` holds all component declarations for this namespac
 
 **Entities**
 
- * :ref:`IP/dstruct_deque` implements a deque (two-sided FIFO).
+ * :ref:`IP/dstruct_DoubleEndedQueue` implements a deque (two-sided FIFO).
  * :ref:`IP/dstruct_Stack` implements a regular stack.
 
 .. toctree::
@@ -22,5 +22,5 @@ The package :ref:`NS/dstruct` holds all component declarations for this namespac
 .. toctree::
    :hidden:
 
-   dstruct_deque <dstruct_deque>
+   dstruct_DoubleEndedQueue <dstruct_DoubleEndedQueue>
    dstruct_Stack <dstruct_Stack>

@@ -30,10 +30,6 @@ use     osvvm.ScoreboardPkg_slv.all;
 library osvvm_AXI4;
 context osvvm_AXI4.AxiStreamContext;
 
--- library tb_common;
--- use     tb_common.OsvvmTestCommonPkg.OSVVM_RESULTS_DIR;
-
-
 entity FIFO_CDC_TestController is
 	generic(
 		Test_index : natural

@@ -36,5 +36,5 @@ The namespace `PoC.cache` offers different cache implementations.
    cache_Parallel <cache_Parallel>
    cache_Parallel2 <cache_Parallel2>
    cache_ReplacementPolicy <cache_ReplacementPolicy>
-   cache_TagUnit_Parallel <cache_TagUnit_Par>
+   cache_TagUnit_Parallel <cache_TagUnit_Parallel>
    cache_TagUnit_Sequential <cache_TagUnit_Sequential>
