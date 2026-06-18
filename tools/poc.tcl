@@ -182,6 +182,7 @@ Other tools:
 	}
 
 	proc WriteLocalConfiguration {} {
+		puts "Generate local configuration in '$::poc::localConfigurationPath' with working dir to root '$::poc::projectRoot'"
 		set content "package local_configuration is\n"
 		append content "\tconstant LOCAL_PROJECT_DIR : string := \"$::poc::projectRoot\";\n"
 		append content "end package;\n"
@@ -235,6 +236,7 @@ Other tools:
 	namespace export exitScript
 	namespace export configureOSVVM
 	namespace export configurePoC
+	namespace export WriteLocalConfiguration
 	namespace export checkForBuildErrors
 	namespace export checkForRunErrors
 	namespace export disabled

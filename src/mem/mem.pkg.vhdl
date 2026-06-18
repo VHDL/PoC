@@ -171,7 +171,7 @@ package body mem is
 		variable CurrentLine  : LINE;
 		variable Good         : boolean;
 		variable TempWord     : std_logic_vector((div_ceil(BitsPerMemoryLine, 4) * 4) - 1 downto 0);
-		variable Result       : T_SLM(MemoryLines - 1 downto 0, BitsPerMemoryLine - 1 downto 0);
+		variable Result       : T_SLM(0 to MemoryLines - 1, BitsPerMemoryLine - 1 downto 0);
 	begin
 		Result := (others => (others => ite(SIMULATION, 'U', '0')));
 
