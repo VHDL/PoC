@@ -1,8 +1,8 @@
 # =============================================================================
-# Authors: Jonas Schreiner
-#          Gustavo Martin
-#
-# License:
+# Authors:
+#	Thomas B. Preusser
+#	Patrick Lehmann
+#   Gustavo Martin
 # =============================================================================
 # Copyright 2025-2026 The PoC-Library Authors
 #
@@ -19,26 +19,13 @@
 # limitations under the License.
 # =============================================================================
 
-# TestSuite PoC.arith
-# Deactivated to avoid failure on non-existing testcases
+TestSuite PoC.arith.Prefix_And
 
-library tb_arith
+library tb_arith_Prefix_And
 
-include ./PRNG/RunAllTests.pro
-include ./Prefix_And/RunAllTests.pro
-include ./Prefix_Or/RunAllTests.pro
-include ./Adder_Wide/RunAllTests.pro
-include ./Counter_BCD/RunAllTests.pro
-include ./Convert_Binary2BCD/RunAllTests.pro
-include ./Divider/RunAllTests.pro
-include ./FirstOne/RunAllTests.pro
-include ./Scaler/RunAllTests.pro
-include ./Same/RunAllTests.pro
-include ./Counter_Ring/RunAllTests.pro
-include ./Counter_Gray/RunAllTests.pro
-include ./Counter_Free/RunAllTests.pro
-include ./CarryChain_inc/RunAllTests.pro
-include ./cca/RunAllTests.pro
-include ./Shifter_Barrel/RunAllTests.pro
-include ./SquareRoot/RunAllTests.pro
-include ./TRNG/RunAllTests.pro
+analyze arith_Prefix_And_TestController.vhdl
+analyze arith_Prefix_And_TestHarness.vhdl
+
+# Test Cases
+RunTest arith_Prefix_And_Simple.vhdl
+RunTest arith_Prefix_And_Exhaustive.vhdl

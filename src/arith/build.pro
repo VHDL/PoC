@@ -51,7 +51,7 @@ analyze ./arith_CarryChain_inc.vhdl
 analyze ./arith_cca.vhdl
 analyze ./arith_Convert_Binary2BCD.vhdl
 analyze ./arith_Counter_BCD.vhdl
-analyze ./arith_counter_free.vhdl
+analyze ./arith_Counter_Free.vhdl
 analyze ./arith_Counter_Gray.vhdl
 analyze ./arith_Counter_Ring.vhdl
 analyze ./arith_Divider.vhdl

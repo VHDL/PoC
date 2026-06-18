@@ -15,7 +15,7 @@ namespace as well as public constants and functions.
  - [`arith_CarryChain_inc`][arith_CarryChain_inc]
  - [`arith_Convert_Binary2BCD`][arith_Convert_Binary2BCD]
  - [`arith_Counter_BCD`][arith_Counter_BCD] - implements a BCD (Binary-Coded Decimal) counter.
- - [`arith_counter_free`][arith_counter_free]
+ - [`arith_Counter_Free`][arith_Counter_Free]
  - [`arith_Counter_Gray`][arith_Counter_Gray] - implements a Gray-Code counter.
  - [`arith_Counter_Ring`][arith_Counter_Ring] - implements a ring (Johnson) counter.
  - [`arith_Divider`][arith_Divider]
@@ -36,7 +36,7 @@ namespace as well as public constants and functions.
  [arith_CarryChain_inc]:  arith_CarryChain_inc.vhdl
  [arith_Convert_Binary2BCD]:	arith_Convert_Binary2BCD.vhdl
  [arith_Counter_BCD]:		arith_Counter_BCD.vhdl
- [arith_counter_free]:		arith_counter_free.vhdl
+ [arith_Counter_Free]:		arith_Counter_Free.vhdl
  [arith_Counter_Gray]:		arith_Counter_Gray.vhdl
  [arith_Counter_Ring]:		arith_Counter_Ring.vhdl
  [arith_Divider]:				arith_Divider.vhdl

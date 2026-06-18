@@ -163,7 +163,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/arith/arith_counter_free.vhdl
+  - name: ../../src/arith/arith_Counter_Free.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false

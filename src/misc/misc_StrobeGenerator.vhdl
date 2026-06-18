@@ -33,7 +33,7 @@ use     IEEE.numeric_std.all;
 use     work.utils.all;
 use     work.components.all;
 
--- XXX: how does it relate to arith_counter_free?
+-- XXX: how does it relate to arith_Counter_Free?
 entity misc_StrobeGenerator is
 	generic (
 		COUNTER_BITS          : positive    := 16;

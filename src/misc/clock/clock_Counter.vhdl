@@ -31,7 +31,7 @@ use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 
--- XXX: How does it relate to arith_counter_free ?
+-- XXX: How does it relate to arith_Counter_Free ?
 entity clock_Counter is
 	generic (
 		MODULO : positive;

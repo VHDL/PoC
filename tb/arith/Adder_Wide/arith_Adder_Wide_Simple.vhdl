@@ -41,7 +41,7 @@ use     work.arith_Adder_Wide_TestController_pkg.all;
 
 architecture Simple of arith_Adder_Wide_TestController is
 	signal TestDone : integer_barrier := 1;
-	constant TCID : AlertLogIDType := NewID("AddWTest");
+	constant TCID : AlertLogIDType := NewID("Adder_WideTest");
 	constant TPERIOD_CLOCK : time := 10 ns;
 
 begin
