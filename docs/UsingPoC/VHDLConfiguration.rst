@@ -1,7 +1,7 @@
 .. _USING/VHDLConf:
 
 Creating project_configuration/local_configuration.vhdl
-##################################
+#######################################################
 
 The PoC-Library needs two VHDL files for its configuration. These files are
 used to determine the most suitable implementation depending on the provided
@@ -12,7 +12,7 @@ arounds.
 .. _USING/VHDLConf/myconfig:
 
 Create project_configuration.vhdl
-*********************
+*********************************
 
 The **project_configuration.vhdl** file can easily be created from the template file
 ``project_configuration.vhdl.template`` provided by PoC in ``PoCRoot\src\common``.
@@ -53,7 +53,7 @@ If the requested board is not known to PoC or it's custom made, then set
 .. _USING/VHDLConf/myproject:
 
 Create local_configuration.vhdl
-**********************
+*******************************
 
 The **local_configuration.vhdl** file can also be created from a template file
 ``local_configuration.vhdl.template`` provided by PoC in ``PoCRoot\src\common``.
