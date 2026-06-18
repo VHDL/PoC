@@ -26,9 +26,9 @@ begin
 	begin
 		-- Initialization of test
 		SetAlertLogName("TC_InitMemory") ;
-		SetLogEnable(PASSED, TRUE);
-		SetLogEnable(INFO,   TRUE);
-		SetLogEnable(DEBUG,  TRUE);
+		SetLogEnable(PASSED, FALSE);
+		SetLogEnable(INFO,   FALSE);
+		SetLogEnable(DEBUG,  FALSE);
 
 		-- Wait for testbench initialization
 		wait for 0 ns ;

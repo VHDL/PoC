@@ -83,7 +83,7 @@ architecture rtl of ocram_SinglePort is
 	constant DEPTH : positive := 2**ADDRESS_BITS;
 
 begin
-	gen: if gInfer: (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX) generate
+	gen: if (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX) generate
 		signal ram   : T_SLVV    := mem_InitMemory(FILENAME, DEPTH, DATA_BITS);
 		signal a_reg : unsigned(ADDRESS_BITS-1 downto 0);
 
@@ -102,7 +102,7 @@ begin
 		end process;
 
 		DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a_reg)) else ram(to_integer(a_reg));          -- gets new data
-	elsif gAltera: VENDOR = VENDOR_ALTERA generate
+	elsif VENDOR = VENDOR_ALTERA generate
 		component ocram_SimplePort_Altera
 			generic (
 				ADDRESS_BITS : positive;

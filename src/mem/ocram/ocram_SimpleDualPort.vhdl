@@ -87,7 +87,7 @@ architecture rtl of ocram_SimpleDualPort is
 	constant DEPTH : positive := 2**ADDRESS_BITS;
 
 begin
-	gen: if gInfer: not SIMULATION and ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
+	gen: if not SIMULATION and ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
 		-- RAM can be inferred correctly
 		-- Xilinx notes:
 		--   WRITE_MODE is set to WRITE_FIRST, but this also means that read data
@@ -121,7 +121,7 @@ begin
 				end if;
 			end if;
 		end process;
-	elsif gSim: SIMULATION generate
+	elsif SIMULATION generate
 	begin
 		sim_tdp: ocram_TrueDualPort_Simulation
 			generic map (

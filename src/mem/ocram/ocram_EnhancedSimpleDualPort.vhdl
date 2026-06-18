@@ -116,7 +116,7 @@ architecture rtl of ocram_EnhancedSimpleDualPort is
 	constant DEPTH : positive := 2**ADDRESS_BITS;
 
 begin
-	gen: if gInfer: not SIMULATION and ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
+	gen: if not SIMULATION and ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
 		-- For Xilinx ISE, Xilinx Vivado and Lattice LSE we can reuse the ocram_TrueDualPort.
 		--
 		-- **Attention**: This encapsulation is mandatory for Xilinx Vivado,
@@ -142,7 +142,7 @@ begin
 				PortB_DataIn       => (others => '0'),
 				PortB_DataOut      => PortB_DataOut
 			);
-	elsif gAltera: not SIMULATION and (VENDOR = VENDOR_ALTERA) generate
+	elsif not SIMULATION and (VENDOR = VENDOR_ALTERA) generate
 		-- Direct instantiation of altsyncram (including component
 		-- declaration above) is not sufficient for ModelSim.
 		-- That requires also usage of altera_mf library.
@@ -167,7 +167,7 @@ begin
 				PortB_DataIn      => (others => '0'),
 				PortB_DataOut     => PortB_DataOut
 			);
-	elsif gSim: SIMULATION generate
+	elsif SIMULATION generate
 		tdp: component ocram_TrueDualPort_Simulation  -- XXX: why is this not a second architecture?
 			generic map (
 				ADDRESS_BITS => ADDRESS_BITS,
