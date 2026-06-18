@@ -30,8 +30,8 @@ disabled ./axi4stream_Mirror.vhdl
 analyze ./axi4stream_Mux.vhdl
 analyze ./axi4stream_Pause.vhdl
 analyze ./axi4stream_DeMux.vhdl
-analyze ./axi4stream_Termination_Manager.vhdl
-analyze ./axi4stream_Termination_Subordinate.vhdl
+analyze ./axi4stream_Termination_Transmitter.vhdl
+analyze ./axi4stream_Termination_Receiver.vhdl
 disabled ./axi4stream_DataExtractor.vhdl
 disabled ./axi4stream_PatternFinder.vhdl
 disabled ./axi4stream_FieldReplacer.vhd

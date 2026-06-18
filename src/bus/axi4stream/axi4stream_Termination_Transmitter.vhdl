@@ -2,12 +2,12 @@
 -- Authors:         Stefan Unrein
 --                  Patrick Lehmann
 --
--- Entity:          A slave-side bus termination module for AXI4-Stream.
+-- Entity:          A master-side bus termination module for AXI4-Stream.
 --
 -- Description:
 -- -------------------------------------
 -- This entity is a bus termination module for AXI4-Stream that represents a
--- dummy slave.
+-- dummy master.
 --
 -- License:
 -- =============================================================================
@@ -28,28 +28,31 @@
 
 library IEEE;
 use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.axi4stream.all;
 
 
-entity axi4stream_Termination_Subordinate is
+entity axi4stream_Termination_Transmitter is
 	generic (
 		VALUE     : std_logic := '0'
 	);
 	port (
-		-- IN Port
-		In_M2S    : in  T_AXI4Stream_M2S;
-		In_S2M    : out T_AXI4Stream_S2M
+		-- OUT Port
+		Out_M2S   : out T_AXI4Stream_M2S;
+		Out_S2M   : in  T_AXI4Stream_S2M
 	);
 end entity;
 
 
-architecture rtl of axi4stream_Termination_Subordinate is
-  constant DataBits : natural := In_M2S.Data'length;
-  constant UserBits : natural := In_M2S.User'length;
+architecture rtl of axi4stream_Termination_Transmitter is
+	constant DataBits : natural := Out_M2S.Data'length;
+	constant UserBits : natural := Out_M2S.User'length;
+	constant DestBits : natural := Out_M2S.Dest'length;
+	constant IDBits   : natural := Out_M2S.ID'length;
 begin
 
-	In_S2M <= Initialize_AXI4Stream_S2M(UserBits, VALUE);
+	Out_M2S <= Initialize_AXI4Stream_M2S(DataBits, UserBits, DestBits, IDBits, VALUE);
 
 end architecture;
