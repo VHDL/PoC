@@ -6,13 +6,16 @@ namespace eval ::poc {
 		return $default
 	}
 
+	variable projectRoot "."
 	variable vendorName [getEnv VENDOR "GENERIC"]
 	variable boardName  [getEnv BOARD  "GENERIC"]
 	variable buildNamePrefix ""
 
-	variable localConfigurationFolder "../tb/common"
-	variable projectConfigurationFile  [file join $localConfigurationFolder "project_configuration_${::poc::boardName}.vhdl"]
-	variable localConfigurationFile    [file join $localConfigurationFolder "local_configuration.vhdl"]
+	variable localConfigurationFolder "${projectRoot}/tb/common"
+	variable projectConfigurationFile "project_configuration_${::poc::boardName}.vhdl"
+	variable localConfigurationFile   "local_configuration.vhdl"
+	variable projectConfigurationPath [file join $localConfigurationFolder "project_configuration_${::poc::boardName}.vhdl"]
+	variable localConfigurationPath   [file join $localConfigurationFolder "local_configuration.vhdl"]
 
 	variable disableExit 0
 
@@ -141,6 +144,15 @@ Other tools:
 					}
 				}
 
+				"-projectRoot" -
+				"-P" {
+					incr i
+					if {$i < [llength $args]} {
+							set ::poc::projectRoot [lindex $args $i]
+							set ::poc::localConfigurationFolder "${::poc::projectRoot}/tb/common"
+					}
+				}
+
 				"-projectFile" -
 				"-p" {
 					incr i
@@ -164,6 +176,9 @@ Other tools:
 			}
 			incr i
 		}
+
+		set ::poc::projectConfigurationPath [file join ${::poc::localConfigurationFolder} ${::poc::projectConfigurationFile}]
+		set ::poc::localConfigurationPath   [file join ${::poc::localConfigurationFolder} ${::poc::localConfigurationFile}]
 	}
 
 	proc checkForBuildErrors {} {
