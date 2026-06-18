@@ -30,14 +30,14 @@ disabled ./axi4stream_Mirror.vhdl
 analyze ./axi4stream_Mux.vhdl
 analyze ./axi4stream_Pause.vhdl
 analyze ./axi4stream_DeMux.vhdl
+analyze ./axi4stream_Termination_Manager.vhdl
+analyze ./axi4stream_Termination_Subordinate.vhdl
 disabled ./axi4stream_DataExtractor.vhdl
 disabled ./axi4stream_PatternFinder.vhdl
 disabled ./axi4stream_FieldReplacer.vhd
 disabled ./axi4stream_Crossbar.vhdl
 # disabled ./axi4stream_Frame_Buffer.vhdl # Does not work right now
 disabled ./axi4stream_PRBSGenerator.vhdl
-disabled ./axi4stream_Termination_Manager.vhdl
-disabled ./axi4stream_Termination_Subordinate.vhdl
 disabled ./axi4stream_Buffer_no_backpressure.vhdl
 disabled ./axi4stream_To_Stream.vhdl
 disabled ./axi4stream_Splitter.vhdl

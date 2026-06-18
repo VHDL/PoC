@@ -603,7 +603,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/cache/cache_replacement_policy.vhdl
+  - name: ../../src/cache/cache_ReplacementPolicy.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false
