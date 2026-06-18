@@ -54,7 +54,7 @@ set root [file dirname [info script]]
 # noqa: W300
 source ${root}/lib/OSVVM-Scripts/StartUp.tcl
 # noqa: W300
-source ${root}/tools/OSVVM/poc.tcl
+source ${root}/tools/poc.tcl
 
 namespace import ::poc::*
 namespace import ::regression::*
