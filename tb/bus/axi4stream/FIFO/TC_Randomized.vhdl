@@ -79,7 +79,7 @@ begin
 		wait;
 	end process;
 
-	ControlProc : process
+	DispatchProc : process
 		variable BytesRV   : RandomPType ;
 
 		variable fifo_size : natural := 0;
