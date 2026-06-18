@@ -65,8 +65,8 @@ architecture Harness of DeMux_Harness is
 		);
 		port (
 			-- Global Signal Interface
-			Clock_sys           : In    std_logic ;
-			Reset_sys           : In    std_logic ;
+			Clock           : In    std_logic ;
+			Reset           : In    std_logic ;
 
 			Stream_RX_Pause     : out std_logic_vector;
 			Hit_Vector          : out std_logic_vector;
@@ -112,8 +112,8 @@ architecture Harness of DeMux_Harness is
 	signal Stream_Pause  : std_logic_vector(0 to NUMBER_PORTS -1);
 
 
-	signal Clock_sys           : std_logic :='0';
-	signal Reset_sys           : std_logic :='1';
+	signal Clock           : std_logic :='0';
+	signal Reset           : std_logic :='1';
 
 
 	signal Stream_RX_Transaction : StreamRecArrayType(0 to NUMBER_PORTS -1)(
@@ -134,14 +134,14 @@ begin
 	Reset_Clock_blk : block
 	begin
 		Osvvm.ClockResetPkg.CreateClock (
-			Clk        => Clock_sys,
+			Clk        => Clock,
 			Period     => to_time(CLOCK_FREQ_sys)
 		);
 
 		Osvvm.ClockResetPkg.CreateReset (
-			Reset       => Reset_sys,
+			Reset       => Reset,
 			ResetActive => '1',
-			Clk         => Clock_sys,
+			Clk         => Clock,
 			Period      => 200 ns,
 			tpd         => 1 ns
 		) ;
@@ -150,8 +150,8 @@ begin
 	TestControl_inst : TestControl
 	port map(
 		-- Global Signal Interface
-		Clock_sys            => Clock_sys,
-		Reset_sys            => Reset_sys,
+		Clock            => Clock,
+		Reset            => Reset,
 
 		Stream_TX_Transaction       => Stream_TX_Transaction,
 		Stream_RX_Transaction       => Stream_RX_Transaction,
@@ -170,8 +170,8 @@ begin
 		)
 		port map(
 			-- Globals
-			Clk       => Clock_sys,
-			nReset    => not Reset_sys,
+			Clk       => Clock,
+			nReset    => not Reset,
 
 			-- AXI Master Functional Interface
 			TValid    => Stream_TX_m2s.Valid,
@@ -204,8 +204,8 @@ begin
 			)
 			port map(
 				-- Globals
-				Clk       => Clock_sys,
-				nReset    => not Reset_sys,
+				Clk       => Clock,
+				nReset    => not Reset,
 
 				-- AXI Master Functional Interface
 				TValid    => Stream_RX_m2s_i.Valid,
@@ -244,8 +244,8 @@ begin
 		ENABLE_REVERSE_USER =>  false
 	)
 	port map(
-		Clock               => Clock_sys,
-		Reset               => Reset_sys,
+		Clock               => Clock,
+		Reset               => Reset,
 		-- Control interface
 		DeMuxControl        => Hit_Vector,
 		-- IN Port

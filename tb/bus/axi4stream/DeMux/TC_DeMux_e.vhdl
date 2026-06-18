@@ -46,8 +46,8 @@ entity TestControl is
 	);
 	port (
 		-- Global Signal Interface
-		Clock_sys           : In    std_logic ;
-		Reset_sys           : In    std_logic ;
+		Clock           : In    std_logic ;
+		Reset           : In    std_logic ;
 
 		Stream_RX_Pause     : out std_logic_vector;
 		Hit_Vector          : out std_logic_vector;

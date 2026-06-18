@@ -51,8 +51,8 @@ context OSVVM_AXI4.AxiStreamContext;
 	-- );
 	-- port (
 		-- -- Global Signal Interface
-		-- Clock_sys           : In    std_logic ;
-		-- Reset_sys           : In    std_logic ;
+		-- Clock           : In    std_logic ;
+		-- Reset           : In    std_logic ;
 
 		-- Stream_RX_Pause     : out std_logic_vector;
 		-- Hit_Vector          : out std_logic_vector
@@ -107,7 +107,7 @@ begin
 		wait for 0 ns ;
 
 		-- Wait for Design Reset
-		wait until Reset_sys = '0';
+		wait until Reset = '0';
 		ClearAlerts ;
 		LOG("Start of Transactions");
 
@@ -147,7 +147,7 @@ begin
 		GapRV.InitSeed(GapRV'instance_name);
 		Hit_Vector <= (others => '0');
 
-		wait until Reset_sys = '0' ;
+		wait until Reset = '0' ;
 		wait for 50 ns;
 
 		for index in 0 to NUM_PACKETS -1 loop
@@ -201,7 +201,7 @@ begin
 			NoOpRV.InitSeed(NoOpRV'instance_name);
 			Stream_RX_Pause(index -1) <= '0';
 
-			wait until Reset_sys = '0' ;
+			wait until Reset = '0' ;
 			while true loop
 				for i in 0 to OpRV.RandInt(1, 5) loop
 					Get(Stream_RX_Transaction(index -1), SData, Last);
