@@ -27,7 +27,7 @@ library tb_axi4stream_DeMux
 analyze TC_DeMux_e.vhdl
 analyze DeMux_Harness.vhdl
 
-RunTest TC_DeMux_a1.vhdl
-RunTest TC_DeMux_a2.vhdl
-RunTest TC_DeMux_a3.vhdl
-RunTest TC_DeMux_a4.vhdl
+RunTest TC_DeMux_random.vhdl
+RunTest TC_DeMux_random_withGlue.vhdl
+RunTest TC_DeMux_random_mirror.vhdl
+RunTest TC_DeMux_random_mirror_multiDest.vhdl

@@ -38,31 +38,7 @@ use     OSVVM.ScoreBoardPkg_slv.all;
 library OSVVM_AXI4;
 context OSVVM_AXI4.AxiStreamContext;
 
-
--- entity TestControl is
-	-- generic (
-		-- MIN_PACKET_SIZE    : positive := 1;
-		-- MAX_PACKET_SIZE    : positive := 500;
-		-- NUM_PACKETS        : positive := 15;
-		-- MIN_WAIT_CYCLE     : natural  := 1;
-		-- MAX_WAIT_CYCLE     : natural  := 1000;
-		-- MIN_BACKPRESS_CYCLE: natural  := 1;
-		-- MAX_BACKPRESS_CYCLE: natural  := 500
-	-- );
-	-- port (
-		-- -- Global Signal Interface
-		-- Clock           : In    std_logic ;
-		-- Reset           : In    std_logic ;
-
-		-- Stream_RX_Pause     : out std_logic_vector;
-		-- Hit_Vector          : out std_logic_vector
-
-		-- Stream_TX_Transaction       : inout StreamRecType;
-		-- Stream_RX_Transaction       : inout StreamRecType_Vector
-	-- );
--- end entity;
-
-architecture TC_a4 of TestControl is
+architecture TC_random_mirror_multiDest of TestControl is
 	constant NUMBER_PORTS    : positive := Stream_RX_Transaction'length;
 
 	signal TestDone          : integer_barrier := 1 ;
@@ -93,7 +69,7 @@ begin
 	ControlProc : process
 	begin
 		-- Initialization of test
-		SetAlertLogName("TC_DeMux_a4") ;
+		SetAlertLogName("TC_DeMux_random_mirror_multiDest") ;
 		TranscriptOpen;
 		SetTranscriptMirror(TRUE);
 		AXI4Stream_SB <= NewID("AXI4Stream_SB", NUMBER_PORTS);
@@ -220,10 +196,10 @@ begin
 end architecture;
 
 
-Configuration TC_DeMux_a4 of DeMux_Harness is
+Configuration TC_DeMux_random_mirror_multiDest of DeMux_Harness is
 	for Harness
 		for TestControl_inst : TestControl
-			use entity work.TestControl(TC_a4)
+			use entity work.TestControl(TC_random_mirror_multiDest)
 			generic map(
 				MIN_PACKET_SIZE     => 1,
 				MAX_PACKET_SIZE     => 500,

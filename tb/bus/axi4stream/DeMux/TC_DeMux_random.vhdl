@@ -38,31 +38,7 @@ use     OSVVM.ScoreBoardPkg_slv.all;
 library OSVVM_AXI4;
 context OSVVM_AXI4.AxiStreamContext;
 
-
--- entity TestControl is
-	-- generic (
-		-- MIN_PACKET_SIZE    : positive := 1;
-		-- MAX_PACKET_SIZE    : positive := 500;
-		-- NUM_PACKETS        : positive := 15;
-		-- MIN_WAIT_CYCLE     : natural  := 1;
-		-- MAX_WAIT_CYCLE     : natural  := 1000;
-		-- MIN_BACKPRESS_CYCLE: natural  := 1;
-		-- MAX_BACKPRESS_CYCLE: natural  := 500
-	-- );
-	-- port (
-		-- -- Global Signal Interface
-		-- Clock           : In    std_logic ;
-		-- Reset           : In    std_logic ;
-
-		-- Stream_RX_Pause     : out std_logic_vector;
-		-- Hit_Vector          : out std_logic_vector
-
-		-- Stream_TX_Transaction       : inout StreamRecType;
-		-- Stream_RX_Transaction       : inout StreamRecType_Vector
-	-- );
--- end entity;
-
-architecture TC_a3 of TestControl is
+architecture TC_random of TestControl is
 	constant NUMBER_PORTS    : positive := Stream_RX_Transaction'length;
 
 	signal TestDone          : integer_barrier := 1 ;
@@ -93,12 +69,12 @@ begin
 	ControlProc : process
 	begin
 		-- Initialization of test
-		SetAlertLogName("TC_DeMux_a3") ;
+		SetAlertLogName("TC_DeMux_random") ;
 		TranscriptOpen;
 		SetTranscriptMirror(TRUE);
 		AXI4Stream_SB <= NewID("AXI4Stream_SB", NUMBER_PORTS);
 		LOG("PoC.Bus/AXI/AXI4Stream/DeMux Testbench.");
-		LOG("Start of Test 3: Random transfer, ADD_MIRROR_MODE => true, ADD_OUTPUT_GLUE => true, ENABLE_REVERSE_USER => false");
+		LOG("Start of Test 1: Random transfer, ADD_MIRROR_MODE => false, ADD_OUTPUT_GLUE => false, ENABLE_REVERSE_USER => false");
 
 		SetLogEnable(PASSED, FALSE);    -- Enable PASSED logs
 		SetLogEnable(INFO,   FALSE);    -- Enable INFO logs
@@ -217,10 +193,10 @@ begin
 end architecture;
 
 
-Configuration TC_DeMux_a3 of DeMux_Harness is
+Configuration TC_DeMux_random of DeMux_Harness is
 	for Harness
 		for TestControl_inst : TestControl
-			use entity work.TestControl(TC_a3)
+			use entity work.TestControl(TC_random)
 			generic map(
 				MIN_PACKET_SIZE     => 1,
 				MAX_PACKET_SIZE     => 500,
@@ -234,8 +210,8 @@ Configuration TC_DeMux_a3 of DeMux_Harness is
 		for DUT : axi4stream_DeMux
 			use entity PoC.axi4stream_DeMux
 			generic map(
-				ADD_MIRROR_MODE     =>  true,
-				OUTPUT_STAGES       =>  1,
+				ADD_MIRROR_MODE     =>  false,
+				OUTPUT_STAGES       =>  0,
 				ENABLE_REVERSE_USER =>  false
 			);
 		end for;
