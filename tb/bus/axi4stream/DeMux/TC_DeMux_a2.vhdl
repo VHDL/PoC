@@ -90,7 +90,7 @@ architecture TC_a2 of TestControl is
 
 begin
 
-	BaseProc : process
+	ControlProc : process
 	begin
 		-- Initialization of test
 		SetAlertLogName("TC_DeMux_a2") ;

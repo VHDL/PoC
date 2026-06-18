@@ -50,7 +50,7 @@ architecture Randomized of FIFO_TestController is
 	signal BackPressure_NoOp_Upper : integer;
 
 begin
-	BasicProc: process
+	ControlProc: process
 	begin
 		-- Initialization of test
 		SetAlertLogName("TC_Randomized");

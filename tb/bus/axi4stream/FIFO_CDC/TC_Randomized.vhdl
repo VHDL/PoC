@@ -50,7 +50,7 @@ architecture Randomized of FIFO_CDC_TestController is
 	signal BackPressure_NoOp_Upper : integer;
 
 begin
-	BasicProc: process
+	ControlProc: process
 	begin
 		-- Initialization of test
 		if Test_index = 0 then
