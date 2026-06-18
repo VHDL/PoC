@@ -4,8 +4,9 @@
 from sys import path as sys_path
 from os.path import abspath
 from pathlib import Path
+from textwrap import dedent
 
-from pyTooling.Packaging import extractVersionInformation
+# from pyTooling.Packaging import extractVersionInformation
 
 ROOT = Path(__file__).resolve().parent
 
@@ -153,11 +154,6 @@ html_last_updated_fmt = "%d.%m.%Y"
 modindex_common_prefix = [
 	f"{project}."
 ]
-
-# ==============================================================================
-# Options for LaTeX / PDF output
-# ==============================================================================
-from textwrap import dedent
 
 # ==============================================================================
 # Options for LaTeX / PDF output
