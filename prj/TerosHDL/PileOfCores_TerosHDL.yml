@@ -1075,7 +1075,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/mem/ocram/ocram_esdp.vhdl
+  - name: ../../src/mem/ocram/ocram_EnhancedSimpleDualPort.vhdl
     file_type: vhdlSource
     file_version: '2008'
     is_include_file: false

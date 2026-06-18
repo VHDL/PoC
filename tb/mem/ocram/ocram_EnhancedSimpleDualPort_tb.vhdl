@@ -42,10 +42,10 @@ use     PoC.simulation.all;
 use     PoC.waveform.all;
 
 
-entity ocram_esdp_tb is
+entity ocram_EnhancedSimpleDualPort_tb is
 end entity;
 
-architecture tb of ocram_esdp_tb is
+architecture tb of ocram_EnhancedSimpleDualPort_tb is
 	constant CLOCK_FREQ              : FREQ          := 100 MHz;
 
 	-- component generics
@@ -110,7 +110,7 @@ begin
 		simGenerateClock(simTestID, clk2, CLOCK_FREQ, CLOCK2_PHASE);
 
 		-- component instantiation
-		UUT: entity poc.ocram_esdp
+		UUT: entity poc.ocram_EnhancedSimpleDualPort
 			generic map (
 				A_BITS   => A_BITS,
 				D_BITS   => D_BITS,

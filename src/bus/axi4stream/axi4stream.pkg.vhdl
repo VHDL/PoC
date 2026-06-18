@@ -8,8 +8,8 @@
 -- Description:
 -- -------------------------------------
 -- This package implements a generic AMBA AXI4-Stream description.
--- The bus created by the two main unconstrained records T_axi4stream_BUS_M2S and
--- T_axi4stream_BUS_S2M. *_M2S stands for Master-to-Slave and defines the direction
+-- The bus created by the two main unconstrained records T_AXI4Stream_m2s and
+-- T_AXI4Stream_s2m. *_M2S stands for Master-to-Slave and defines the direction
 -- from master to the slave component of the bus. Vice versa for the *_S2M type.
 --
 -- Usage:
@@ -26,7 +26,7 @@
 -- signal DeMux_S2M : axi4stream_Sized_64D_1ID_1Dest_1User.Sized_S2M;
 --
 -- If multiple components need to be connected, you can also use the predefined
--- vector type T_axi4stream_BUS_M2S_VECTOR and T_axi4stream_BUS_S2M_VECTOR, which
+-- vector type T_AXI4Stream_m2s_VECTOR and T_AXI4Stream_s2m_VECTOR, which
 -- gives you a vector of axi4stream records. This is also available in the generic
 -- package as Sized_M2S_Vector and Sized_S2M_Vector.
 --

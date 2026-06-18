@@ -31,7 +31,7 @@ The package PoC.mem.ocram holds all component declarations for this namespace.
 
 **Deprecated Entities**
 
- * :ref:`IP/ocram_esdp` - An on-chip RAM with an extended simple dual port interface.
+ * :ref:`IP/ocram_EnhancedSimpleDualPort` - An on-chip RAM with an extended simple dual port interface.
 
 
 .. toctree::
@@ -56,4 +56,4 @@ The package PoC.mem.ocram holds all component declarations for this namespace.
 .. toctree::
    :hidden:
 
-   ocram_esdp <ocram_esdp>
+   ocram_EnhancedSimpleDualPort <ocram_EnhancedSimpleDualPort>

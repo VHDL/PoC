@@ -1,4 +1,4 @@
-.. _IP/ocram_esdp:
+.. _IP/ocram_EnhancedSimpleDualPort:
 
 PoC.mem.ocram.esdp
 .. _IP/ocram_EnhancedSimpleDualPort:
@@ -10,17 +10,17 @@ PoC.mem.ocram.EnhancedSimpleDualPort
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/main/src/mem/ocram/ocram_esdp.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/mem/ocram/ocram_EnhancedSimpleDualPort.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/main/tb/mem/ocram/ocram_esdp_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/mem/ocram/ocram_EnhancedSimpleDualPort_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <mem/ocram/ocram_esdp.vhdl>`
-      * |gh-tb| :poctb:`Testbench <mem/ocram/ocram_esdp_tb.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <mem/ocram/ocram_EnhancedSimpleDualPort.vhdl>`
+      * |gh-tb| :poctb:`Testbench <mem/ocram/ocram_EnhancedSimpleDualPort_tb.vhdl>`
 
 Inferring / instantiating enhanced simple dual-port memory, with:
 
@@ -78,7 +78,7 @@ is used.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/mem/ocram/ocram_esdp.vhdl
+.. literalinclude:: ../../../../src/mem/ocram/ocram_EnhancedSimpleDualPort.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -88,4 +88,4 @@ is used.
 
 .. only:: latex
 
-   Source file: :pocsrc:`mem/ocram/ocram_esdp.vhdl <mem/ocram/ocram_esdp.vhdl>`
+   Source file: :pocsrc:`mem/ocram/ocram_EnhancedSimpleDualPort.vhdl <mem/ocram/ocram_EnhancedSimpleDualPort.vhdl>`
