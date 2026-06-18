@@ -181,6 +181,16 @@ Other tools:
 		set ::poc::localConfigurationPath   [file join ${::poc::localConfigurationFolder} ${::poc::localConfigurationFile}]
 	}
 
+	proc WriteLocalConfiguration {} {
+		set content "package local_configuration is\n"
+		append content "\tconstant LOCAL_PROJECT_DIR : string := \"$::poc::projectRoot\";\n"
+		append content "end package;\n"
+
+		set fileHandle [open $::poc::localConfigurationPath "w"]
+		puts -nonewline $fileHandle $content
+		close $fileHandle
+	}
+
 	proc checkForBuildErrors {} {
 		if {$::osvvm::AnalyzeErrorCount > 0} {
 			puts "ERROR: While building $::osvvm::LastBuildName"
@@ -235,6 +245,7 @@ puts "Loaded PoC extensions for OSVVM."
 
 namespace eval ::regression {
 	proc createRegressionLevels {args} {
+		set map(clean) -1
 		set map(all) 0
 
 		set i 0
