@@ -10,9 +10,9 @@ namespace eval ::poc {
 	variable boardName  [getEnv BOARD  "GENERIC"]
 	variable buildNamePrefix ""
 
-	variable myConfigFolder "../tb/common"
-	variable myConfigFile  [file join $myConfigFolder "project_configuration_${::poc::boardName}.vhdl"]
-	variable myProjectFile [file join $myConfigFolder "local_configuration.vhdl"]
+	variable localConfigurationFolder "../tb/common"
+	variable projectConfigurationFile  [file join $localConfigurationFolder "project_configuration_${::poc::boardName}.vhdl"]
+	variable localConfigurationFile    [file join $localConfigurationFolder "local_configuration.vhdl"]
 
 	variable disableExit 0
 
@@ -144,7 +144,7 @@ Other tools:
 				"-p" {
 					incr i
 					if {$i < [llength $args]} {
-							set ::poc::myProjectFile [lindex $args $i]
+							set ::poc::localConfigurationFile [lindex $args $i]
 					}
 				}
 
@@ -152,7 +152,7 @@ Other tools:
 				"-c" {
 					incr i
 					if {$i < [llength $args]} {
-							set ::poc::myConfigFile [lindex $args $i]
+							set ::poc::projectConfigurationFile [lindex $args $i]
 					}
 				}
 
@@ -264,14 +264,14 @@ namespace eval ::regression {
 		} elseif {[info exists ::env(REGRESSION_FROM)]} {
 			set buildConfigSource "environment variable"
 			set selectedStep $::env(REGRESSION_FROM)
-		
+
 		} else {
 			set buildConfigSource "default"
 			set selectedStep $defaultStep
 			puts "\[REGRESSION INFO\] Undefined or unknown argument, using default settings."
 		}
 		set ::regression::level [mapRegressionLevel $selectedStep $regressionLevels]
-		
+
 		# 3. output result
 		puts "=================================="
 		puts "Build configuration"
