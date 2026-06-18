@@ -39,7 +39,8 @@ package utils is
 	-- Environment
 	-- ==========================================================================
 	-- Distinguishes simulation from synthesis
-	constant SIMULATION : boolean;                -- deferred constant declaration
+	constant SIMULATION   : boolean;                -- deferred constant declaration
+	constant INTEGER_BITS : positive;
 
 	-- Type declarations
 	-- ==========================================================================
@@ -354,8 +355,15 @@ package body utils is
 		return temp;
 	end function;
 
+	function get_integer_bits return positive is
+	begin
+		return integer(log2(real(integer'high))) +1;
+	end function;
+
+
 	-- deferred constant assignment
-	constant SIMULATION : boolean := is_simulation;
+	constant SIMULATION   : boolean  := is_simulation;
+	constant INTEGER_BITS : positive := get_integer_bits;
 
 	-- Vector Opperations
 	-- ===========================================================================
@@ -742,11 +750,12 @@ package body utils is
 		variable log : natural  := 1;
 	begin
 		if arg = 1 then    return 0; end if;
-		while arg > tmp loop
-			tmp := tmp * 2;
-			log := log + 1;
+		for i in 1 to INTEGER_BITS -2 loop
+			if arg <= 2**i then
+				return i;
+			end if;
 		end loop;
-		return log;
+		return INTEGER_BITS -1;
 	end function;
 
 	-- return log2; always rounded up; the return value is >= 1
