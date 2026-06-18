@@ -39,22 +39,6 @@ end entity;
 
 architecture tb of Tb_common_utils_log2ceil is
 	constant TestName : string := "Tb_common_utils_log2ceil";
- --
-	-- function log2ceil(arg : positive) return natural is
-	-- 	variable tmp          : positive := 2;
-	-- 	variable log          : natural  := 1;
-	-- begin
-	-- 	if arg = 1 then
-	-- 		return 0;
-	-- 	end if;
- --
-	-- 	while arg > tmp loop
-	-- 		tmp := tmp * 2;
-	-- 		log := log + 1;
-	-- 	end loop;
-	-- 	return log;
-	-- end function;
-
 begin
 
 	------------------------------------------------------------
