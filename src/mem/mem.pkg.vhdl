@@ -78,6 +78,11 @@ package mem is
 	);
 
 	function mem_FileExtension(Filename : string) return string;
+	impure function mem_InitMemory(
+		FilePath  : string;
+		WORDS     : positive;
+		DATA_BITS : positive
+	) return T_SLVV;
 
 	impure function mem_ReadMemoryFile(
 		FileName : string;
@@ -89,7 +94,7 @@ package mem is
 
 	function get_ram_style_string(ram_style : T_RAM_TYPE) return string;
 	function get_ramstyle_string(ram_style : T_RAM_TYPE)  return string;
-	function get_ram_type(a : positive; d : positive) return T_INTVEC;
+	function get_ram_type(a : positive; d : positive) return integer_vector;
 
 	function get_BRAM_half_width(a : positive) return integer;
 	function get_BRAM_full_width(a : positive) return integer;
@@ -105,6 +110,26 @@ package body mem is
 			end if;
 		end loop;
 		return "";
+	end function;
+
+	impure function mem_InitMemory(
+		FilePath  : string;
+		WORDS     : positive;
+		DATA_BITS : positive
+	) return T_SLVV is
+		variable memory : T_SLM(WORDS - 1 downto 0, DATA_BITS - 1 downto 0);
+		variable empty  : T_SLVV(0 to WORDS - 1)(DATA_BITS - 1 downto 0) := (others => (others => ite(SIMULATION, 'U', '0')));
+	begin
+		if str_length(FilePath) = 0 then
+			-- shortcut required by Vivado
+			return empty;
+		elsif mem_FileExtension(FilePath) = "mem" then
+			memory := mem_ReadMemoryFile(FilePath, WORDS, DATA_BITS, MEM_FILEFORMAT_XILINX_MEM, MEM_CONTENT_HEX);
+		else
+			memory := mem_ReadMemoryFile(FilePath, WORDS, DATA_BITS, MEM_FILEFORMAT_INTEL_HEX, MEM_CONTENT_HEX);
+		end if;
+
+		return to_slvv(memory);
 	end function;
 
 	procedure ReadHex(L : inout LINE; Value : out std_logic_vector; Good : out boolean) is
@@ -136,11 +161,11 @@ package body mem is
 
 	-- Reads a memory file and returns a 2D std_logic matrix
 	impure function mem_ReadMemoryFile(
-		FileName : string;
-		MemoryLines : positive;
+		FileName          : string;
+		MemoryLines       : positive;
 		BitsPerMemoryLine : positive;
-		FORMAT : T_MEM_FILEFORMAT;
-		CONTENT : T_MEM_CONTENT := MEM_CONTENT_HEX
+		FORMAT            : T_MEM_FILEFORMAT;
+		CONTENT           : T_MEM_CONTENT     := MEM_CONTENT_HEX
 	) return T_SLM is
 		file FileHandle       : TEXT open READ_MODE is FileName;
 		variable CurrentLine  : LINE;
@@ -151,7 +176,7 @@ package body mem is
 		Result := (others => (others => ite(SIMULATION, 'U', '0')));
 
 		if FORMAT = MEM_FILEFORMAT_XILINX_MEM then
-			-- discard the first line of a mem file
+			report "PoC.mem.pkg:: Using XILINX memory format - First line of mem file is discarded." severity warning;
 			readline(FileHandle, CurrentLine);
 		end if;
 
@@ -159,8 +184,8 @@ package body mem is
 			exit when endfile(FileHandle);
 
 			readline(FileHandle, CurrentLine);
---			report CurrentLine.all severity NOTE;
---			ReadHex(CurrentLine, TempWord, Good);
+--      report CurrentLine.all severity NOTE;
+--      ReadHex(CurrentLine, TempWord, Good);
 			-- WORKAROUND: for Xilinx Vivado (tested with 2018.3)
 			--  Version:  All versions
 			--  Issue:    User defined procedures using access types like line are not supported (synthesizable).
@@ -202,19 +227,19 @@ package body mem is
 		end if;
 	end function;
 
-	function get_ram_type(a : positive; d : positive) return T_INTVEC is
+	function get_ram_type(a : positive; d : positive) return integer_vector is
 		constant URAM : natural := 0;
 		constant BRAM : natural := 1;
---		constant LRAM : natural := 2;
-		
+--    constant LRAM : natural := 2;
+
 		variable reminder  : natural := d;
 
-		variable result : T_INTVEC(0 to 1) := (others => 0);
+		variable result : integer_vector(0 to 1) := (others => 0);
 	begin
 		--==================================================================
 		--***********depth smaler than 512, everithing in LUT_RAM***********
 		if a <= 8 then
---			LRAM := d;
+--      LRAM := d;
 			return result;
 
 		--==================================================================
@@ -224,8 +249,8 @@ package body mem is
 			reminder := reminder - (result(BRAM) * 36);
 			if reminder > 28 then
 				result(BRAM) := result(BRAM) +1;
---			else
---				LRAM := (d - reminder);
+--      else
+--        LRAM := (d - reminder);
 			end if;
 
 		--==================================================================
@@ -235,8 +260,8 @@ package body mem is
 			reminder := reminder - (result(BRAM) * 18);
 			if reminder > 14 then
 				result(BRAM) := result(BRAM) +1;
---			else
---				LRAM := (d - reminder);
+--      else
+--        LRAM := (d - reminder);
 			end if;
 
 		--==================================================================
@@ -246,8 +271,8 @@ package body mem is
 			reminder := reminder - (result(BRAM) * 9);
 			if reminder > 6 then
 				result(BRAM) := result(BRAM) +1;
---			else
---				LRAM := (d - reminder);
+--      else
+--        LRAM := (d - reminder);
 			end if;
 
 		--==================================================================
@@ -264,8 +289,8 @@ package body mem is
 				reminder := reminder - (result(BRAM) * 4);
 				if reminder > 2 then
 					result(BRAM) := result(BRAM) +1;
---				else
---					LRAM := (d - reminder);
+--        else
+--          LRAM := (d - reminder);
 				end if;
 			end if;
 

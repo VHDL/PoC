@@ -7,11 +7,11 @@ PoC.io.pmod.USBUART
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/pmod/pmod_USBUART.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/io/pmod/pmod_USBUART.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/io/pmod/pmod_USBUART_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/io/pmod/pmod_USBUART_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
@@ -20,7 +20,7 @@ PoC.io.pmod.USBUART
       * |gh-tb| :poctb:`Testbench <io/pmod/pmod_USBUART_tb.vhdl>`
 
 This module abstracts a FTDI FT232R USB-UART bridge by instantiating a
-:doc:`PoC.io.uart.fifo <../uart/uart_fifo>`. The FT232R supports up to
+:doc:`PoC.io.uart.fifo <../uart/uart_FIFO>`. The FT232R supports up to
 3 MBaud. A synchronous FIFO interface with a 32 words buffer is provided.
 Hardware flow control (RTS_CTS) is enabled.
 

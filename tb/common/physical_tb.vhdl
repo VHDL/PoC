@@ -3,25 +3,25 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- =============================================================================
--- Testbench:				Testing the physical package.
+-- Testbench:        Testing the physical package.
 --
--- Authors:					Thomas B. Preusser
---									Patrick Lehmann
+-- Authors:          Thomas B. Preusser
+--                  Patrick Lehmann
 --
 -- Description:
 -- ------------------------------------
---		TODO
+--    TODO
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,15 +31,15 @@
 -- =============================================================================
 
 entity physical_tb is
-end;
+end entity;
 
 
-library	PoC;
-use PoC.physical.all;
+library PoC;
+use     PoC.physical.all;
 
 -- simulation only packages
-use PoC.sim_types.all;
-use PoC.simulation.all;
+use     PoC.sim_types.all;
+use     PoC.simulation.all;
 
 architecture tb of physical_tb is
 	constant simTestID : T_SIM_TEST_ID := simCreateTest("Physical types test.");
@@ -64,4 +64,4 @@ begin
 		wait;   --forever
 	end process;
 
-end;
+end architecture;

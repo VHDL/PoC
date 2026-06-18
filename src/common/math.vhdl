@@ -62,8 +62,8 @@ package math is
 	-- ReturnValue.denominator  -> denominator of the real's fractional part
 	function fract(F : real; maxDenominator : natural := 1000; maxError : real := 1.0E-6) return T_FRACTIONAL;
 	-- calculate time increments to met fraction
-	function fract2timing(numerator : natural; denominator : natural) return T_NATVEC;
-	function fract2timing(fractional : T_FRACTIONAL)                  return T_NATVEC;
+	function fract2timing(numerator : natural; denominator : natural) return natural_vector;
+	function fract2timing(fractional : T_FRACTIONAL)                  return natural_vector;
 end package;
 
 package body math is
@@ -162,14 +162,14 @@ package body math is
 	end function;
 
 	-- calculate time increments to met fraction
-	function fract2timing(numerator : natural; denominator : natural) return T_NATVEC is
+	function fract2timing(numerator : natural; denominator : natural) return natural_vector is
 		constant fractionalInReal: real             := real(numerator) / real(denominator);
-		constant zeroes          : T_NATVEC(0 to 0) := (others => 0);
+		constant zeroes          : natural_vector(0 to 0) := (others => 0);
 		variable actualNumerator : natural  := 1;
 		variable tab             : natural  := 0;
 		variable increment       : real  := fractionalInReal;
 		variable remainder       : real  := fractionalInReal;
-		variable result          : T_NATVEC(0 to numerator -1) := (others => 0);
+		variable result          : natural_vector(0 to numerator -1) := (others => 0);
 	begin
 		if numerator = 0 then
 			return zeroes;
@@ -189,7 +189,7 @@ package body math is
 		return result;
 	end function;
 	-- calculate time increments to met fraction
-	function fract2timing(fractional : T_FRACTIONAL) return T_NATVEC is
+	function fract2timing(fractional : T_FRACTIONAL) return natural_vector is
 	begin
 		return fract2timing(fractional.numerator,fractional.denominator);
 	end function;

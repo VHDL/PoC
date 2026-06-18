@@ -14,8 +14,8 @@ These are sorting entities....
  * :ref:`IP/sort_ExpireList`
  * :ref:`IP/sort_InsertSort`
  * :ref:`IP/sort_LeastFrequentlyUsed`
- * :ref:`IP/sort_lru_cache`
- * :ref:`IP/sort_lru_list`
+ * :ref:`IP/sort_LeastRecentlyUsed_Cache`
+ * :ref:`IP/sort_LeastRecentlyUsed_List`
 
 .. toctree::
    :hidden:
@@ -28,5 +28,5 @@ These are sorting entities....
    sort_ExpireList <sort_ExpireList>
    sort_InsertSort <sort_InsertSort>
    sort_LeastFrequentlyUsed <sort_LeastFrequentlyUsed>
-   sort_lru_cache <sort_lru_cache>
-   sort_lru_list <sort_lru_list>
+   sort_LeastRecentlyUsed_Cache <sort_LeastRecentlyUsed_Cache>
+   sort_LeastRecentlyUsed_List <sort_LeastRecentlyUsed_List>

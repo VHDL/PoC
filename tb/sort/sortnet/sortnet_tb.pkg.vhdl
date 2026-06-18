@@ -3,24 +3,24 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- =============================================================================
--- Authors:					Patrick Lehmann
+-- Authors:          Patrick Lehmann
 --
--- Module:					TODO
+-- Module:          TODO
 --
 -- Description:
 -- ------------------------------------
---		TODO
+--    TODO
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,26 +30,26 @@
 -- =============================================================================
 
 library IEEE;
-use			IEEE.STD_LOGIC_1164.all;
-use			IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 library OSVVM;
 
 library PoC;
-use			PoC.utils.all;
-use			PoC.vectors.all;
-use			PoC.strings.all;
+use     PoC.utils.all;
+use     PoC.vectors.all;
+use     PoC.strings.all;
 
 
 package sortnet_tb is
 	generic (
-		META_BITS			: positive;
-		DATA_BITS			: positive;
-		INPUTS				: positive
+		META_BITS      : positive;
+		DATA_BITS      : positive;
+		INPUTS        : positive
 	);
 
-	subtype T_DATA				is std_logic_vector(DATA_BITS - 1 downto 0);
-	type T_DATA_VECTOR		is array(natural range <>) of T_DATA;
+	subtype T_DATA        is std_logic_vector(DATA_BITS - 1 downto 0);
+	type T_DATA_VECTOR    is array(natural range <>) of T_DATA;
 
 	function to_dv(slm : T_SLM) return T_DATA_VECTOR;
 	function to_slm(dv : T_DATA_VECTOR) return T_SLM;
@@ -80,11 +80,11 @@ package body sortnet_tb is
 	function match(expected : T_SCOREBOARD_DATA; actual : T_SCOREBOARD_DATA) return boolean is
 		variable good : boolean;
 	begin
-		good :=						(expected.IsKey = actual.IsKey);
-		good := good and	(expected.Meta = actual.Meta);
+		good :=            (expected.IsKey = actual.IsKey);
+		good := good and  (expected.Meta = actual.Meta);
 		if (expected.IsKey = '1') then
 			for i in expected.Data'range loop
-				good := good and	(expected.Data(i) = actual.Data(i));
+				good := good and  (expected.Data(i) = actual.Data(i));
 				exit when (good = FALSE);
 			end loop;
 		end if;
@@ -96,28 +96,28 @@ package body sortnet_tb is
 	begin
 		KeyMarker := ite((dataset.IsKey = '1'), "* ", "  ");
 		-- for i in 0 to 0 loop --dataset.Key'range loop
-			return	"Data: " & to_string(dataset.Data(0), 'h') & KeyMarker &
+			return  "Data: " & to_string(dataset.Data(0), 'h') & KeyMarker &
 						"  Meta: " & to_string(dataset.Meta, 'h');
 		-- end loop;
 	end function;
 
 	function to_dv(slm : T_SLM) return T_DATA_VECTOR is
-		variable Result	: T_DATA_VECTOR(slm'range(1));
+		variable Result  : T_DATA_VECTOR(slm'range(1));
 	begin
 		for i in slm'high(1) downto slm'low(1) loop
 			for j in T_DATA'range loop
-				Result(i)(j)	:= slm(i, j);
+				Result(i)(j)  := slm(i, j);
 			end loop;
 		end loop;
 		return Result;
 	end function;
 
 	function to_slm(dv : T_DATA_VECTOR) return T_SLM is
-		variable Result	: T_SLM(dv'range, T_DATA'range);
+		variable Result  : T_SLM(dv'range, T_DATA'range);
 	begin
 		for i in dv'range loop
 			for j in T_DATA'range loop
-				Result(i, j)	:= dv(i)(j);
+				Result(i, j)  := dv(i)(j);
 			end loop;
 		end loop;
 		return Result;

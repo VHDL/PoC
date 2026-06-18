@@ -57,7 +57,7 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.std_logic_1164.all;
 
 use     work.utils.all;
 use     work.sync.all;
@@ -67,51 +67,51 @@ use     UniSim.VComponents.all;
 
 
 entity sync_Pulse_Xilinx is
-  generic (
-    BITS          : positive            := 1;                 -- number of bit to be synchronized
-    SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := 2                  -- generate SYNC_DEPTH many stages, at least 2
-  );
-  port (
-    Clock         : in  std_logic;                            -- Clock to be synchronized to
-    Input         : in  std_logic_vector(BITS - 1 downto 0);  -- Data to be synchronized
-    Output        : out  std_logic_vector(BITS - 1 downto 0)  -- synchronised data
-  );
+	generic (
+		BITS          : positive            := 1;                 -- number of bit to be synchronized
+		SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := 2                  -- generate SYNC_DEPTH many stages, at least 2
+	);
+	port (
+		Clock         : in  std_logic;                            -- Clock to be synchronized to
+		Input         : in  std_logic_vector(BITS - 1 downto 0);  -- Data to be synchronized
+		Output        : out std_logic_vector(BITS - 1 downto 0)  -- synchronised data
+	);
 end entity;
 
 
 architecture rtl of sync_Pulse_Xilinx is
-  signal Captured_async     : std_logic_vector(BITS - 1 downto 0);
-  signal Input_sync         : std_logic_vector(BITS - 1 downto 0);
+	signal Captured_async     : std_logic_vector(BITS - 1 downto 0);
+	signal Input_sync         : std_logic_vector(BITS - 1 downto 0);
 
 begin
-  gen : for i in 0 to BITS - 1 generate
-    signal Clear            : std_logic;
-  begin
-    capture : FDCE
-      generic map (
-        INIT => '0'
-      )
-      port map (
-        C =>    Input(i),
-        CE =>    '1',
-        CLR =>  Clear,
-        D =>    '1',
-        Q =>    Captured_async(i)
-      );
+	gen : for i in 0 to BITS - 1 generate
+		signal Clear            : std_logic;
+	begin
+		capture : FDCE
+			generic map (
+				INIT => '0'
+			)
+			port map (
+				C =>    Input(i),
+				CE =>    '1',
+				CLR =>  Clear,
+				D =>    '1',
+				Q =>    Captured_async(i)
+			);
 
-    Clear <= not Input(i) and Input_sync(i);
-  end generate;
+		Clear <= not Input(i) and Input_sync(i);
+	end generate;
 
-  Sync: entity work.sync_Bits_Xilinx
-    generic map (
-      BITS        => BITS,
-      SYNC_DEPTH  => SYNC_DEPTH
-    )
-    port map (
-      Clock   => Clock,
-      Input   => Captured_async,
-      Output  => Input_sync
-    );
+	Sync: entity work.sync_Bits_Xilinx
+		generic map (
+			BITS        => BITS,
+			SYNC_DEPTH  => SYNC_DEPTH
+		)
+		port map (
+			Clock   => Clock,
+			Input   => Captured_async,
+			Output  => Input_sync
+		);
 
-  Output <= Input_sync;
+	Output <= Input_sync;
 end architecture;

@@ -132,8 +132,8 @@ Generics
 :Name:          :generic:`VERSION_FILE_NAME`
 :Type:          :type:`string`
 :Default Value: — — — —
-:Description:   Path to the Version-mem-file created by `set_BuildVersion.tcl`. Relative to ``constant MY_PROJECT_DIR``
-                in ``src/PoC/my_project.vhdl``
+:Description:   Path to the Version-mem-file created by `set_BuildVersion.tcl`. Relative to ``constant LOCAL_PROJECT_DIR``
+                in ``src/PoC/local_configuration.vhdl``
 
 
 .. _IP/axi4lite_GitVersionRegister/gen/HEADER_FILE_NAME:
@@ -145,7 +145,7 @@ Generics
 :Type:          :type:`string`
 :Default Value: — — — —
 :Description:   If csv-file with all register spaces is needed, put here the name/path of csv-file. Relative to
-                ``constant MY_PROJECT_DIR`` in ``src/PoC/my_project.vhdl``
+                ``constant LOCAL_PROJECT_DIR`` in ``src/PoC/local_configuration.vhdl``
 
 
 .. _IP/axi4lite_GitVersionRegister/gen/INCLUDE_XIL_DNA:
@@ -269,7 +269,7 @@ All registers are read-only. Version Register should always start with offset ``
 +--------+-----------------------------------------+-------------------------------------------------------------------+
 | 0x008  | Common.VivadoVersion                    | 31:16 Major |br| 15:8 Minor |br| 7:0 Patch                        |
 +--------+-----------------------------------------+-------------------------------------------------------------------+
-| 0x00C  | Common.ProjektName                      | ``String`` Project-Name (20 bytes)                                |
+| 0x00C  | Common.ProjectName                      | ``String`` Project-Name (20 bytes)                                |
 +--------+-----------------------------------------+-------------------------------------------------------------------+
 | 0x020  | Top.Version                             | 31:24 Major |br| 23:16 Minor |br| 15:8 Patch |br|                 |
 |        |                                         | 7:2 Commits-to-Tag(dev-build) |br| 1 Dirty_untracked |br|         |

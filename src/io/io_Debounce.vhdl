@@ -1,8 +1,8 @@
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
---									Thomas B. Preusser
+-- Authors:           Patrick Lehmann
+--                  Thomas B. Preusser
 --
--- Entity:				 	Debounce module for BITS many bouncing input pins.
+-- Entity:           Debounce module for BITS many bouncing input pins.
 --
 -- Description:
 -- -------------------------------------
@@ -22,13 +22,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,7 +38,7 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
 use     work.utils.all;
@@ -73,7 +73,7 @@ architecture rtl of io_Debounce is
 	signal active : std_logic_vector(Input'range);                     -- Allow Output Updates
 
 begin
-  -----------------------------------------------------------------------------
+	-----------------------------------------------------------------------------
 	-- Input Synchronization
 	genNoSync: if not ADD_INPUT_SYNCHRONIZERS generate
 		sync <= Input;

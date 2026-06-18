@@ -180,7 +180,7 @@ following command lines will start the configuration process:
    .\lib\PoC\poc.ps1 configure
 
 
-.. rubric:: 3. Creating PoC's ``my_config.vhdl`` and ``my_project.vhdl`` Files
+.. rubric:: 3. Creating PoC's ``project_configuration.vhdl`` and ``local_configuration.vhdl`` Files
 
 The PoC-Library needs two VHDL files for its configuration. These files are
 used to determine the most suitable implementation depending on the provided
@@ -191,26 +191,25 @@ in the files:
 .. code-block:: PowerShell
 
    cd ProjectRoot
-   cp lib\PoC\src\common\my_config.vhdl.template src\common\my_config.vhdl
-   cp lib\PoC\src\common\my_project.vhdl.template src\common\my_project.vhdl
+   cp lib\PoC\src\common\project_configuration.vhdl.template src\common\project_configuration.vhdl
+   cp lib\PoC\src\common\local_configuration.vhdl.template src\common\local_configuration.vhdl
 
-`my_config.vhdl <https://github.com/VHDL/PoC/blob/master/src/common/my_config.vhdl.template>`_ defines two global constants, which need to be adjusted:
+`project_configuration.vhdl <https://github.com/VHDL/PoC/blob/main/src/common/project_configuration.vhdl.template>`_ defines two global constants, which need to be adjusted:
 
 .. code-block:: vhdl
 
    constant MY_BOARD            : string := "CHANGE THIS"; -- e.g. Custom, ML505, KC705, Atlys
    constant MY_DEVICE           : string := "CHANGE THIS"; -- e.g. None, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
 
-`my_project.vhdl <https://github.com/VHDL/PoC/blob/master/src/common/my_project.vhdl.template>`_
+`local_configuration.vhdl <https://github.com/VHDL/PoC/blob/main/src/common/local_configuration.vhdl.template>`_
 also defines two global constants, which need to be adjusted:
 
 .. code-block:: vhdl
 
-   constant MY_PROJECT_DIR      : string := "CHANGE THIS"; -- e.g. d:/vhdl/myproject/, /home/me/projects/myproject/"
-   constant MY_OPERATING_SYSTEM : string := "CHANGE THIS"; -- e.g. WINDOWS, LINUX
+   constant LOCAL_PROJECT_DIR      : string := "CHANGE THIS"; -- e.g. d:/vhdl/myproject/, /home/me/projects/myproject/"
 
 Further informations are provided at
-:doc:`Creating my_config/my_project.vhdl </UsingPoC/VHDLConfiguration>`.
+:doc:`Creating project_configuration/local_configuration.vhdl </UsingPoC/VHDLConfiguration>`.
 
 .. rubric:: 4. Adding PoC's Common Packages to a Synthesis or Simulation Project
 
@@ -242,8 +241,8 @@ Run a Simulation
 ****************
 
 The following quick example uses the GHDL Simulator to analyze, elaborate and
-simulate a testbench for the module ``arith_prng`` (Pseudo Random Number
-Generator - PRNG). The VHDL file ``arith_prng.vhdl`` is located at
+simulate a testbench for the module ``arith_PRNG`` (Pseudo Random Number
+Generator - PRNG). The VHDL file ``arith_PRNG.vhdl`` is located at
 ``PoCRoot\src\arith`` and virtually a member in the `PoC.arith` namespace.
 So the module can be identified by an unique name: ``PoC.arith.prng``, which is
 passed to the frontend script.
@@ -261,8 +260,8 @@ to the tool. All required source file are gathered and compiled to an
 executable. Afterwards this executable is launched in CLI mode and its outputs
 are displayed in console:
 
-.. image:: /_static/images/ghdl/arith_prng_tb.posh.png
-   :target: /_static/images/ghdl/arith_prng_tb.posh.png
+.. image:: /_static/images/ghdl/arith_PRNG_tb.posh.png
+   :target: /_static/images/ghdl/arith_PRNG_tb.posh.png
 	 :alt: PowerShell console output after running PoC.arith.prng with GHDL.
 
 Each testbench uses PoC's simulation helper packages to count asserts and to
@@ -280,8 +279,8 @@ Run a Synthesis
 ***************
 
 The following quick example uses the Xilinx Systesis Tool (XST) to synthesize a
-netlist for IP core ``arith_prng`` (Pseudo Random Number Generator - PRNG). The
-VHDL file ``arith_prng.vhdl`` is located at ``PoCRoot\src\arith`` and virtually
+netlist for IP core ``arith_PRNG`` (Pseudo Random Number Generator - PRNG). The
+VHDL file ``arith_PRNG.vhdl`` is located at ``PoCRoot\src\arith`` and virtually
 a member in the `PoC.arith` namespace. So the module can be identified by an
 unique name: ``PoC.arith.prng``, which is passed to the frontend script.
 
@@ -295,11 +294,11 @@ unique name: ``PoC.arith.prng``, which is passed to the frontend script.
 The CLI command ``xst`` chooses *Xilinx Synthesis Tool* as the synthesizer and
 passes the fully qualified PoC entity name ``PoC.arith.prng`` as a parameter
 to the tool. Additionally, the development board name is required to load the
-correct ``my_config.vhdl`` file. All required source file are gathered and
+correct ``project_configuration.vhdl`` file. All required source file are gathered and
 synthesized to a netlist.
 
-.. image:: /_static/images/xst/arith_prng.posh.png
-   :target: /_static/images/xst/arith_prng.posh.png
+.. image:: /_static/images/xst/arith_PRNG.posh.png
+   :target: /_static/images/xst/arith_PRNG.posh.png
 	 :alt: PowerShell console output after running PoC.arith.prng with XST.
 
 

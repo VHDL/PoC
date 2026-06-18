@@ -29,8 +29,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.vectors.all;
@@ -51,8 +51,8 @@ entity io_7SegmentMux_HEX is
 		HexDigits       : in  T_SLVV_4(DIGITS - 1 downto 0);
 		HexDots         : in  std_logic_vector(DIGITS - 1 downto 0);
 
-		SegmentControl  : out  std_logic_vector(7 downto 0);
-		DigitControl    : out  std_logic_vector(DIGITS - 1 downto 0)
+		SegmentControl  : out std_logic_vector(7 downto 0);
+		DigitControl    : out std_logic_vector(DIGITS - 1 downto 0)
 	);
 end entity;
 

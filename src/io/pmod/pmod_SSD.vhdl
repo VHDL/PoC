@@ -1,11 +1,11 @@
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:           Patrick Lehmann
 --
--- Entity:				 	Digilent Peritherial Module: Pmod_SSD
+-- Entity:           Digilent Peritherial Module: pmod_SSD
 --
 -- Description:
 -- -------------------------------------
--- This module drives a dual-digit 7-segment display (Pmod_SSD). The module
+-- This module drives a dual-digit 7-segment display (pmod_SSD). The module
 -- expects two binary encoded 4-bit ``Digit<i>`` signals and drives a 2x6 bit
 -- Pmod connector (7 anode bits, 1 cathode bit).
 --
@@ -23,13 +23,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,8 +39,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.physical.all;
@@ -51,49 +51,49 @@ use     work.pmod.all;
 
 entity pmod_SSD is
 	generic (
-		CLOCK_FREQ		: FREQ		:= 100 MHz;
-		REFRESH_RATE	: FREQ		:= 1 kHz
+		CLOCK_FREQ    : FREQ    := 100 MHz;
+		REFRESH_RATE  : FREQ    := 1 kHz
 	);
 	port (
-		Clock			: in	std_logic;
+		Clock      : in  std_logic;
 
-		Digit0		: in	std_logic_vector(3 downto 0);
-		Digit1		: in	std_logic_vector(3 downto 0);
+		Digit0    : in  std_logic_vector(3 downto 0);
+		Digit1    : in  std_logic_vector(3 downto 0);
 
-		SSD				: out	T_PMOD_SSD_PINS
+		SSD        : out T_PMOD_SSD_PINS
 	);
 end entity;
 
 
 architecture rtl of pmod_SSD is
-	constant REFRESHTIMER_MAX		: positive	:= TimingToCycles(to_time(REFRESH_RATE), CLOCK_FREQ) - 1;
-	constant REFRESHTIMER_BITS	: positive	:= log2ceilnz(REFRESHTIMER_MAX) + 1;
+	constant REFRESHTIMER_MAX    : positive  := TimingToCycles(to_time(REFRESH_RATE), CLOCK_FREQ) - 1;
+	constant REFRESHTIMER_BITS  : positive  := log2ceilnz(REFRESHTIMER_MAX) + 1;
 
-	signal RefreshTimer_rst	: std_logic;
-	signal RefreshTimer_s		: signed(REFRESHTIMER_BITS - 1 downto 0)	:= to_signed(REFRESHTIMER_MAX, REFRESHTIMER_BITS);
+	signal RefreshTimer_rst  : std_logic;
+	signal RefreshTimer_s    : signed(REFRESHTIMER_BITS - 1 downto 0)  := to_signed(REFRESHTIMER_MAX, REFRESHTIMER_BITS);
 
-	signal CathodeSelect_en	: std_logic;
-	signal CathodeSelect_r	: std_logic		:= '0';
+	signal CathodeSelect_en  : std_logic;
+	signal CathodeSelect_r  : std_logic    := '0';
 
-	signal Digit						: std_logic_vector(3 downto 0);
-	signal Segments					: std_logic_vector(6 downto 0);
+	signal Digit            : std_logic_vector(3 downto 0);
+	signal Segments          : std_logic_vector(6 downto 0);
 begin
 	-- generate a < 1 kHz enable to toggle the CathodeSelect register
-	RefreshTimer_s		<= downcounter_next(cnt => RefreshTimer_s, rst => RefreshTimer_rst, INIT => REFRESHTIMER_MAX) when rising_edge(Clock);
-	RefreshTimer_rst	<= downcounter_neg(cnt => RefreshTimer_s);
+	RefreshTimer_s    <= downcounter_next(cnt => RefreshTimer_s, rst => RefreshTimer_rst, INIT => REFRESHTIMER_MAX) when rising_edge(Clock);
+	RefreshTimer_rst  <= downcounter_neg(cnt => RefreshTimer_s);
 
 	-- generate a cathode select signal, based on a T-FF
-	CathodeSelect_en	<= RefreshTimer_rst;
-	CathodeSelect_r		<= fftre(q => CathodeSelect_r, t => CathodeSelect_en) when rising_edge(Clock);
+	CathodeSelect_en  <= RefreshTimer_rst;
+	CathodeSelect_r    <= fftre(q => CathodeSelect_r, t => CathodeSelect_en) when rising_edge(Clock);
 
-	Digit				<= mux(CathodeSelect_r, Digit0, Digit1);
-	Segments		<= io_7SegmentDisplayEncoding(Digit);
-	SSD.AnodeA	<= Segments(0);
-	SSD.AnodeB	<= Segments(1);
-	SSD.AnodeC	<= Segments(2);
-	SSD.AnodeD	<= Segments(3);
-	SSD.AnodeE	<= Segments(4);
-	SSD.AnodeF	<= Segments(5);
-	SSD.AnodeG	<= Segments(6);
-	SSD.Cathode	<= CathodeSelect_r;
+	Digit        <= mux(CathodeSelect_r, Digit0, Digit1);
+	Segments    <= io_7SegmentDisplayEncoding(Digit);
+	SSD.AnodeA  <= Segments(0);
+	SSD.AnodeB  <= Segments(1);
+	SSD.AnodeC  <= Segments(2);
+	SSD.AnodeD  <= Segments(3);
+	SSD.AnodeE  <= Segments(4);
+	SSD.AnodeF  <= Segments(5);
+	SSD.AnodeG  <= Segments(6);
+	SSD.Cathode  <= CathodeSelect_r;
 end architecture;

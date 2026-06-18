@@ -21,7 +21,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,9 +31,9 @@
 -- =============================================================================
 --
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.STD_LOGIC_TEXTIO.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.std_logic_textio.all;
+use     IEEE.numeric_std.all;
 use     STD.TEXTIO.all;
 
 use     work.utils.all;
@@ -41,7 +41,7 @@ use     work.strings.all;
 
 
 package sim_VCDParser is
-	subtype T_VCDLINE		is		string(1 to 80);
+	subtype T_VCDLINE    is    string(1 to 80);
 
 	procedure VCD_ReadHeader(file VCDFile : TEXT; VCDLine : inout T_VCDLINE);
 	procedure VCD_ReadLine(file VCDFile : TEXT; VCDLine : out string);
@@ -62,9 +62,9 @@ package body sim_VCDParser is
 	end procedure;
 
 	procedure VCD_ReadLine(file VCDFile : TEXT; VCDLine : out string) is
-		variable vcdFileLine	: LINE;
-		variable char					: character;
-		variable isString			: boolean;
+		variable vcdFileLine  : LINE;
+		variable char          : character;
+		variable isString      : boolean;
 	begin
 		readline(VCDFile, vcdFileLine);
 
@@ -75,29 +75,29 @@ package body sim_VCDParser is
 		for i in VCDLine'range loop
 			read(vcdFileLine, char, isString);
 			exit when not isString;
-			VCDLine(I)	:= char;
+			VCDLine(I)  := char;
 		end loop;
 	end procedure;
 
 	procedure VCD_Read_StdLogic(VCDLine : string; signal sl : out std_logic; WaveName : string) is
-		constant length	: natural				:= str_length(VCDLine);
+		constant length  : natural        := str_length(VCDLine);
 	begin
 		if (str_equal(VCDLine(2 to length), WaveName)) then
-			sl	<= to_sl(VCDLine(1));
+			sl  <= to_sl(VCDLine(1));
 		end if;
 	end procedure;
 
 	procedure VCD_Read_StdLogicVector(VCDLine : string; signal slv : out std_logic_vector; WaveName : string; def : std_logic := '0') is
-		constant length	: natural				:= str_length(VCDLine);
-		variable Result	: std_logic_vector(slv'range);
-		variable k			: natural;
+		constant length  : natural        := str_length(VCDLine);
+		variable Result  : std_logic_vector(slv'range);
+		variable k      : natural;
 	begin
-		Result	:= (others => def);
-		k				:= 0;
+		Result  := (others => def);
+		k        := 0;
 
 		for i in 2 to length loop
 			if not is_sl(VCDLine(i)) then
-				k				:= i;
+				k        := i;
 				exit;
 			else
 				Result := Result(Result'high - 1 downto Result'low) & to_sl(VCDLine(i));
@@ -105,7 +105,7 @@ package body sim_VCDParser is
 		end loop;
 
 		if (str_equal(VCDLine(k + 1 to length), WaveName)) then
-			slv				<= Result;
+			slv        <= Result;
 		end if;
 	end procedure;
 end package body;

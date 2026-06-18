@@ -1,22 +1,22 @@
-.. _IP/comm_crc:
+.. _IP/comm_CRC:
 
-PoC.comm.crc
+PoC.comm.CRC
 ############
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/comm/comm_crc.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/comm/comm_CRC.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/comm/comm_crc_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/comm/comm_crc_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <comm/comm_crc.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <comm/comm_CRC.vhdl>`
       * |gh-tb| :poctb:`Testbench <comm/comm_crc_tb.vhdl>`
 
 Computes the Cyclic Redundancy Check (CRC) for a data packet as remainder
@@ -31,7 +31,7 @@ processing width.
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../src/comm/comm_crc.vhdl
+.. literalinclude:: ../../../src/comm/comm_CRC.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -41,4 +41,4 @@ processing width.
 
 .. only:: latex
 
-   Source file: :pocsrc:`comm/comm_crc.vhdl <comm/comm_crc.vhdl>`
+   Source file: :pocsrc:`comm/comm_CRC.vhdl <comm/comm_CRC.vhdl>`

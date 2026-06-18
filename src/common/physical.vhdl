@@ -575,7 +575,7 @@ package body physical is
 			end if;
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: min(vec) for a frequency vector
 	function fmin(vec : T_FREQVEC)  return FREQ is
@@ -587,7 +587,7 @@ package body physical is
 			end if;
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: min(vec) for a baud vector
 	function bmin(vec : T_BAUDVEC)  return BAUD is
@@ -599,7 +599,7 @@ package body physical is
 			end if;
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: min(vec) for a memory vector
 	function mmin(vec : T_MEMVEC)  return MEMORY is
@@ -611,7 +611,7 @@ package body physical is
 			end if;
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: max(vec) for a time vector
 	function tmax(vec : T_TIMEVEC)  return T_TIME is
@@ -623,7 +623,7 @@ package body physical is
 			end if;
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: max(vec) for a frequency vector
 	function fmax(vec : T_FREQVEC)  return FREQ is
@@ -635,7 +635,7 @@ package body physical is
 			end if;
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: max(vec) for a baud vector
 	function bmax(vec : T_BAUDVEC)  return BAUD is
@@ -647,7 +647,7 @@ package body physical is
 			end if;
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: max(vec) for a memory vector
 	function mmax(vec : T_MEMVEC)  return MEMORY is
@@ -659,7 +659,7 @@ package body physical is
 			end if;
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: sum(vec) for a time vector
 	function tsum(vec : T_TIMEVEC)  return T_TIME is
@@ -669,7 +669,7 @@ package body physical is
 			res  := res + vec(i);
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: sum(vec) for a frequency vector
 	function fsum(vec : T_FREQVEC)  return FREQ is
@@ -679,7 +679,7 @@ package body physical is
 			res  := res + vec(i);
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: sum(vec) for a baud vector
 	function bsum(vec : T_BAUDVEC)  return BAUD is
@@ -689,7 +689,7 @@ package body physical is
 			res  := res + vec(i);
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- Calculates: sum(vec) for a memory vector
 	function msum(vec : T_MEMVEC)  return MEMORY is
@@ -699,7 +699,7 @@ package body physical is
 			res  := res + vec(i);
 		end loop;
 		return  res;
-	end;
+	end function;
 
 	-- convert standard types (NATURAL, REAL) to time (T_TIME)
 	-- ===========================================================================
@@ -862,7 +862,7 @@ package body physical is
 		else  report "to_real: scale must have a value of '1 <unit>'" severity failure;
 		return 0.0;
 		end if;
-	end;
+	end function;
 
 	function to_real(t : T_TIME; scale : T_TIME) return REAL is
 	begin
@@ -873,7 +873,7 @@ package body physical is
 			end if;
 		end if;
 		return t/scale;
-	end;
+	end function;
 
 	function to_real(f : FREQ; scale : FREQ) return REAL is
 	begin
@@ -884,7 +884,7 @@ package body physical is
 		else  report "to_real: scale must have a value of '1 <unit>'" severity failure;
 		end if;
 		return 0.0;
-	end;
+	end function;
 
 	function to_real(br : BAUD; scale : BAUD) return REAL is
 	begin
@@ -895,7 +895,7 @@ package body physical is
 		else  report "to_real: scale must have a value of '1 <unit>'" severity failure;
 		end if;
 		return 0.0;
-	end;
+	end function;
 
 	function to_real(mem : MEMORY; scale : MEMORY) return REAL is
 	begin
@@ -906,7 +906,7 @@ package body physical is
 		else  report "to_real: scale must have a value of '1 <unit>'" severity failure;
 		end if;
 		return 0.0;
-	end;
+	end function;
 
 	-- convert physical types to standard type (INTEGER)
 	-- ===========================================================================
@@ -920,7 +920,7 @@ package body physical is
 		end case;
 		report "to_int: unsupported RoundingStyle: " & T_ROUNDING_STYLE'image(RoundingStyle) severity failure;
 		return 0;
-	end;
+	end function;
 
 	function to_int(f : FREQ; scale : FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return integer is
 	begin
@@ -932,7 +932,7 @@ package body physical is
 		end case;
 		report "to_int: unsupported RoundingStyle: " & T_ROUNDING_STYLE'image(RoundingStyle) severity failure;
 		return 0;
-	end;
+	end function;
 
 	function to_int(br : BAUD; scale : BAUD; RoundingStyle : T_ROUNDING_STYLE := ROUND_TO_NEAREST) return integer is
 	begin
@@ -944,7 +944,7 @@ package body physical is
 		end case;
 		report "to_int: unsupported RoundingStyle: " & T_ROUNDING_STYLE'image(RoundingStyle) severity failure;
 		return 0;
-	end;
+	end function;
 
 	function to_int(mem : MEMORY; scale : MEMORY; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return integer is
 	begin
@@ -956,7 +956,7 @@ package body physical is
 		end case;
 		report "to_int: unsupported RoundingStyle: " & T_ROUNDING_STYLE'image(RoundingStyle) severity failure;
 		return 0;
-	end;
+	end function;
 
 	-- calculate needed counter cycles to achieve a given 1. timing/delay and 2. frequency/period
 	-- ===========================================================================
@@ -1005,7 +1005,7 @@ package body physical is
 		end if;
 
 		return res_nat;
-	end;
+	end function;
 
 	function TimingToCycles(Timing : T_TIME; Clock_Frequency  : FREQ; RoundingStyle : T_ROUNDING_STYLE := ROUND_UP) return natural is
 	begin

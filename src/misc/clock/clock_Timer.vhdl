@@ -16,7 +16,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -57,8 +57,8 @@ end entity;
 
 architecture rtl of clock_Timer is
 
-	function "-" (left : t_natvec; right : integer) return t_natvec is
-		variable result : t_natvec(left'range) := (others => 0);
+	function "-" (left : natural_vector; right : integer) return natural_vector is
+		variable result : natural_vector(left'range) := (others => 0);
 	begin
 		for i in left'range loop
 			if left(i) > right then
@@ -71,7 +71,7 @@ architecture rtl of clock_Timer is
 	constant PERIOD            : T_TIME       := to_time(CLOCK_FREQ);
 	constant PERIOD_FRACT      : t_fractional := fract(PERIOD / TIME_BASE, 1000000, 1.0e-12);
 	constant INCREMENT_FULL    : natural      := PERIOD_FRACT.whole;
-	constant INCREMENT_VEC     : t_natvec     := fract2timing(PERIOD_FRACT);
+	constant INCREMENT_VEC     : natural_vector     := fract2timing(PERIOD_FRACT);
 
 	constant WRAP_VALUE : integer := ite(WRAP_TIME /= 0.0, to_int(WRAP_TIME / TIME_BASE, 1.0), 0);
 

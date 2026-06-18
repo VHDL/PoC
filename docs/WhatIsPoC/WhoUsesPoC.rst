@@ -1,7 +1,7 @@
 Who uses PoC?
 #############
 
-PoC has a related Git repository called `PoC-Examples <https://github.com/VLSI-EDA/PoC-Examples>`_
+PoC has a related Git repository called `PoC-Examples <https://github.com/VHDL/PoC-Examples>`_
 on GitHub. This repository hosts a list of example and reference implementations
 of the PoC-Library. Additional to reading an IP cores documentation and viewing
 its characteristic stimulus waveform in a simulation, it can helper to

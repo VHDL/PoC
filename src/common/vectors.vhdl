@@ -96,7 +96,7 @@ package vectors is
 	type T_DATA_BE_VECTOR is array(natural range <>) of T_DATA_BE;
 
 	-- STD_LOGIC_VECTOR_VECTORs
-	type    T_SLVV              is array(NATURAL range <>) of STD_LOGIC_VECTOR;          -- VHDL 2008 syntax - not yet supported by Xilinx
+	type    T_SLVV              is array(NATURAL range <>) of STD_LOGIC_VECTOR;
 	subtype T_SLVV_2            is T_SLVV(open)(1 downto 0);
 	subtype T_SLVV_3            is T_SLVV(open)(2 downto 0);
 	subtype T_SLVV_4            is T_SLVV(open)(3 downto 0);
@@ -111,7 +111,7 @@ package vectors is
 	subtype T_SLVV_256          is T_SLVV(open)(255 downto 0);
 	subtype T_SLVV_512          is T_SLVV(open)(511 downto 0);
 	-- UNSIGNED_VECTORs
-	type    T_SLUV              is array(NATURAL range <>) of UNSIGNED;          -- VHDL 2008 syntax - not yet supported by Xilinx
+	type    T_SLUV              is array(NATURAL range <>) of UNSIGNED;
 	subtype T_SLUV_2            is T_SLUV(open)(1 downto 0);
 	subtype T_SLUV_3            is T_SLUV(open)(2 downto 0);
 	subtype T_SLUV_4            is T_SLUV(open)(3 downto 0);
@@ -126,7 +126,7 @@ package vectors is
 	subtype T_SLUV_256          is T_SLUV(open)(255 downto 0);
 	subtype T_SLUV_512          is T_SLUV(open)(511 downto 0);
 	-- SIGNED_VECTORs
-	type    T_SLSV              is array(NATURAL range <>) of SIGNED;          -- VHDL 2008 syntax - not yet supported by Xilinx
+	type    T_SLSV              is array(NATURAL range <>) of SIGNED;
 	subtype T_SLSV_2            is T_SLSV(open)(1 downto 0);
 	subtype T_SLSV_3            is T_SLSV(open)(2 downto 0);
 	subtype T_SLSV_4            is T_SLSV(open)(3 downto 0);
@@ -150,29 +150,23 @@ package vectors is
 	-- ATTENTION:
 	-- 1. you MUST initialize your matrix signal with 'Z' to get correct simulation results (iSIM, vSIM, ghdl/gtkwave)
 	--    Example: signal myMatrix  : T_SLM(3 downto 0, 7 downto 0)      := (others => (others => 'Z'));
-	-- 2. Xilinx iSIM bug: DON'T use myMatrix'range(n) for n >= 2
-	--    myMatrix'range(2) returns always myMatrix'range(1); see work-around notes below
 	--
 	-- USAGE NOTES:
 	--  dimension 1 => rows       - e.g. Words
 	--  dimension 2 => columns    - e.g. Bits/Bytes in a word
-	--
-	-- WORKAROUND: for Xilinx ISE/iSim
-	--  Version:  14.2
-	--  Issue:    myMatrix'range(n) for n >= 2 returns always myMatrix'range(1)
 
 	-- ==========================================================================
 	-- Function declarations
 	-- ==========================================================================
 	-- slicing boundary calculations
-	function low (lenvec : T_POSVEC; index : natural) return natural;
-	function low (lenvec : T_NATVEC; index : natural) return natural;
-	function high(lenvec : T_POSVEC; index : natural) return natural;
-	function high(lenvec : T_NATVEC; index : natural) return natural;
+	function low (lenvec : positive_vector; index : natural) return natural;
+	function low (lenvec : natural_vector; index : natural) return natural;
+	function high(lenvec : positive_vector; index : natural) return natural;
+	function high(lenvec : natural_vector; index : natural) return natural;
 
 	-- Make vector of constant
-	function genVector(const : std_logic;   length : natural) return std_logic_vector;
-	function genVector(const : T_SLV_8;     length : natural) return T_SLVV_8;  -- FIXME; input should be std_logic_vector and output any SLVV
+	function genVector(const : std_logic;        length : natural) return std_logic_vector;
+	function genVector(const : std_logic_vector; length : natural) return T_SLVV;
 	-- FIXME: provide also for SLUV, SLSV
 
 	-- Assign procedures: assign_*
@@ -180,8 +174,8 @@ package vectors is
 	procedure assign_row(signal slm : out T_SLM_8 ; slv : T_SLVV_8        ; constant RowIndex : natural);                                  -- assign vector to complete row
 	procedure assign_row(signal slm : out T_SLM_32; slv : T_SLVV_32       ; constant RowIndex : natural);                                  -- assign vector to complete row
 	procedure assign_row(signal slm : out T_SLM   ; slv : std_logic_vector; constant RowIndex : natural; Position : natural);              -- assign short vector to row starting at position
-	procedure assign_row(signal slm : out T_SLM   ; slv : std_logic_vector; constant RowIndex : natural; High : natural; Low : natural);    -- assign short vector to row in range high:low
-	procedure assign_row(signal slm : out T_SLM_8 ; slv : T_SLVV_8        ; constant RowIndex : natural; High : natural; Low : natural);    -- assign short vector to row in range high:low
+	procedure assign_row(signal slm : out T_SLM   ; slv : std_logic_vector; constant RowIndex : natural; High : natural; Low : natural);   -- assign short vector to row in range high:low
+	procedure assign_row(signal slm : out T_SLM_8 ; slv : T_SLVV_8        ; constant RowIndex : natural; High : natural; Low : natural);   -- assign short vector to row in range high:low
 	procedure assign_col(signal slm : out T_SLM   ; slv : std_logic_vector; constant ColIndex : natural);                                  -- assign vector to complete column
 	-- ATTENTION:  see T_SLM definition for further details and work-arounds
 
@@ -339,7 +333,7 @@ end package vectors;
 package body vectors is
 	-- slicing boundary calulations
 	-- ==========================================================================
-	function low(lenvec : T_POSVEC; index : natural) return natural is
+	function low(lenvec : positive_vector; index : natural) return natural is
 		variable pos    : natural   := 0;
 	begin
 		for i in lenvec'low to index - 1 loop
@@ -348,7 +342,7 @@ package body vectors is
 		return pos;
 	end function;
 
-	function low(lenvec : T_NATVEC; index : natural) return natural is
+	function low(lenvec : natural_vector; index : natural) return natural is
 		variable pos    : natural    := 0;
 	begin
 		for i in lenvec'low to index - 1 loop
@@ -357,7 +351,7 @@ package body vectors is
 		return pos;
 	end function;
 
-	function high(lenvec : T_POSVEC; index : natural) return natural is
+	function high(lenvec : positive_vector; index : natural) return natural is
 		variable pos    : natural   := 0;
 	begin
 		for i in lenvec'low to index loop
@@ -366,7 +360,7 @@ package body vectors is
 		return pos - 1;
 	end function;
 
-	function high(lenvec : T_NATVEC; index : natural) return natural is
+	function high(lenvec : natural_vector; index : natural) return natural is
 		variable pos    : natural    := 0;
 	begin
 		for i in lenvec'low to index loop
@@ -383,8 +377,8 @@ package body vectors is
 	end function;
 
 	-- FIXME: input as std_logic, return an SLVV of that size
-	function genVector(const : T_SLV_8;     length : natural) return T_SLVV_8 is
-		variable slv : T_SLVV_8(length -1 downto 0) := (others => const);  -- FIXME: use (length - 1 downto 0 => ...) directly in return statement
+	function genVector(const : std_logic_vector; length : natural) return T_SLVV is
+		variable slv : T_SLVV(length -1 downto 0)(const'range) := (others => const);  -- FIXME: use (length - 1 downto 0 => ...) directly in return statement
 	begin
 		return slv;
 	end function;
@@ -392,7 +386,7 @@ package body vectors is
 	-- Assign procedures: assign_*
 	-- ==========================================================================
 	procedure assign_row(signal slm : out T_SLM; slv : std_logic_vector; constant RowIndex : natural) is
-		variable temp : std_logic_vector(slm'high(2) downto slm'low(2));          -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+		variable temp : std_logic_vector(slm'range(2));
 	begin
 		temp := slv;
 		for i in temp'range loop
@@ -402,7 +396,7 @@ package body vectors is
 
 	--todo : test
 	procedure assign_row(signal slm : out T_SLM_8; slv : T_SLVV_8; constant RowIndex : natural) is
-		variable temp : T_SLVV_8(slm'high(2) downto slm'low(2));          -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+		variable temp : T_SLVV_8(slm'range(2));
 	begin
 		temp := slv;
 		for i in temp'range loop
@@ -412,7 +406,7 @@ package body vectors is
 
 	--todo : test
 	procedure assign_row(signal slm : out T_SLM_32; slv : T_SLVV_32; constant RowIndex : natural) is
-		variable temp : T_SLVV_32(slm'high(2) downto slm'low(2));          -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+		variable temp : T_SLVV_32(slm'range(2));
 	begin
 		temp := slv;
 		for i in temp'range loop
@@ -460,7 +454,7 @@ package body vectors is
 	-- Matrix to matrix conversion: slm_slice*
 	-- ==========================================================================
 	function slm_slice(slm : T_SLM; RowIndex : natural; ColIndex : natural; Height : natural; Width : natural) return T_SLM is
-		variable Result   : T_SLM(Height - 1 downto 0, Width - 1 downto 0)    := (others => (others => '0'));
+		variable Result : T_SLM(Height - 1 downto 0, Width - 1 downto 0) := (others => (others => '0'));
 	begin
 		for i in 0 to Height - 1 loop
 			for j in 0 to Width - 1 loop
@@ -471,7 +465,7 @@ package body vectors is
 	end function;
 
 	function slm_slice_rows(slm : T_SLM; High : natural; Low : natural) return T_SLM is
-		variable Result   : T_SLM(High - Low downto 0, slm'length(2) - 1 downto 0)    := (others => (others => '0'));
+		variable Result : T_SLM(High - Low downto 0, slm'length(2) - 1 downto 0) := (others => (others => '0'));
 	begin
 		for i in 0 to High - Low loop
 			for j in 0 to slm'length(2) - 1 loop
@@ -482,7 +476,7 @@ package body vectors is
 	end function;
 
 	function slm_slice_cols(slm : T_SLM; High : natural; Low : natural) return T_SLM is
-		variable Result   : T_SLM(slm'length(1) - 1 downto 0, High - Low downto 0)    := (others => (others => '0'));
+		variable Result : T_SLM(slm'length(1) - 1 downto 0, High - Low downto 0) := (others => (others => '0'));
 	begin
 		for i in 0 to slm'length(1) - 1 loop
 			for j in 0 to High - Low loop
@@ -494,7 +488,7 @@ package body vectors is
 
 	-- Boolean Operators
 	function "not"(a : t_slm) return t_slm is
-		variable  res : t_slm(a'range(1), a'range(2));
+		variable res : t_slm(a'range(1), a'range(2));
 	begin
 		for i in res'range(1) loop
 			for j in res'range(2) loop
@@ -505,7 +499,8 @@ package body vectors is
 	end function;
 
 	function "and"(a, b : t_slm) return t_slm is
-		variable  bb, res : t_slm(a'range(1), a'range(2));
+		variable bb  : t_slm(a'range(1), a'range(2));
+		variable res : t_slm(a'range(1), a'range(2));
 	begin
 		bb := b;
 		for i in res'range(1) loop
@@ -517,7 +512,8 @@ package body vectors is
 	end function;
 
 	function "or"(a, b : t_slm) return t_slm is
-		variable  bb, res : t_slm(a'range(1), a'range(2));
+		variable bb  : t_slm(a'range(1), a'range(2));
+		variable res : t_slm(a'range(1), a'range(2));
 	begin
 		bb := b;
 		for i in res'range(1) loop
@@ -529,7 +525,8 @@ package body vectors is
 	end function;
 
 	function "xor"(a, b : t_slm) return t_slm is
-		variable  bb, res : t_slm(a'range(1), a'range(2));
+		variable bb  : t_slm(a'range(1), a'range(2));
+		variable res : t_slm(a'range(1), a'range(2));
 	begin
 		bb := b;
 		for i in res'range(1) loop
@@ -562,12 +559,12 @@ package body vectors is
 		variable slm      : T_SLM(ROWS - 1 downto 0, COLUMNS - 1 downto 0);
 	begin
 		for i in slm1'range(1) loop
-			for j in slm1'low(2) to slm1'high(2) loop         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+			for j in slm1'range(2) loop
 				slm(i, j)   := slm1(i, j);
 			end loop;
 		end loop;
 		for i in slm2'range(1) loop
-			for j in slm2'low(2) to slm2'high(2) loop         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+			for j in slm2'range(2) loop
 				slm(slm1'length(1) + i, j)    := slm2(i, j);
 			end loop;
 		end loop;
@@ -580,10 +577,10 @@ package body vectors is
 		variable slm      : T_SLM(ROWS - 1 downto 0, COLUMNS - 1 downto 0);
 	begin
 		for i in slm1'range(1) loop
-			for j in slm1'low(2) to slm1'high(2) loop         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+			for j in slm1'range(2) loop
 				slm(i, j)   := slm1(i, j);
 			end loop;
-			for j in slm2'low(2) to slm2'high(2) loop         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+			for j in slm2'range(2) loop
 				slm(i, slm1'length(2) + j)    := slm2(i, j);
 			end loop;
 		end loop;
@@ -605,7 +602,7 @@ package body vectors is
 
 	-- get a matrix row
 	function get_row(slm : T_SLM; RowIndex : natural) return std_logic_vector is
-		variable slv    : std_logic_vector(slm'high(2) downto slm'low(2));          -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+		variable slv : std_logic_vector(slm'range(2));
 	begin
 		for i in slv'range loop
 			slv(i)  := slm(RowIndex, i);
@@ -614,7 +611,7 @@ package body vectors is
 	end function;
 
 	function get_row(slm : T_SLM; RowIndex : natural) return unsigned is
-		variable us    : unsigned(slm'high(2) downto slm'low(2));          -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+		variable us : unsigned(slm'range(2));
 	begin
 		for i in us'range loop
 			us(i)  := slm(RowIndex, i);
@@ -623,7 +620,7 @@ package body vectors is
 	end function;
 
 	function get_row(slm : T_SLM; RowIndex : natural) return signed is
-		variable s    : signed(slm'high(2) downto slm'low(2));          -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+		variable s : signed(slm'range(2));
 	begin
 		for i in s'range loop
 			s(i)  := slm(RowIndex, i);
@@ -633,7 +630,7 @@ package body vectors is
 
 	-- TODO: test
 	function get_row(slm : T_SLM_8; RowIndex : natural)  return T_SLVV_8 is
-		variable slv    : T_SLVV_8(slm'high(2) downto slm'low(2));          -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+		variable slv : T_SLVV_8(slm'range(2));
 	begin
 		for i in slv'range loop
 			slv(i)  := slm(RowIndex, i);
@@ -643,7 +640,7 @@ package body vectors is
 
 	-- TODO: test
 	function get_row(slm : T_SLM_32; RowIndex : natural)  return T_SLVV_32 is
-		variable slv    : T_SLVV_32(slm'high(2) downto slm'low(2));          -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+		variable slv : T_SLVV_32(slm'range(2));
 	begin
 		for i in slv'range loop
 			slv(i)  := slm(RowIndex, i);
@@ -671,7 +668,7 @@ package body vectors is
 	-- ==========================================================================
 	-- get a vector-vector row
 	function extract_row(slvv : T_SLVV; RowIndex : natural) return std_logic_vector is
-		variable slv    : std_logic_vector(slvv'range);
+		variable slv : std_logic_vector(slvv'range);
 	begin
 		for i in slv'range loop
 			slv(i)  := slvv(i)(RowIndex);
@@ -680,7 +677,7 @@ package body vectors is
 	end function;
 
 	function extract_row(sluv : T_SLUV; RowIndex : natural) return unsigned is
-		variable us    : unsigned(sluv'range);
+		variable us : unsigned(sluv'range);
 	begin
 		for i in us'range loop
 			us(i)  := sluv(i)(RowIndex);
@@ -689,7 +686,7 @@ package body vectors is
 	end function;
 
 	function extract_row(slsv : T_SLSV; RowIndex : natural) return signed is
-		variable s    : signed(slsv'range);
+		variable s : signed(slsv'range);
 	begin
 		for i in s'range loop
 			s(i)  := slsv(i)(RowIndex);
@@ -706,7 +703,7 @@ package body vectors is
 		variable slv        : std_logic_vector((first_len * second_len) - 1 downto 0);
 	begin
 		for i in slvv'range loop
-			slv(((i - slvv'low) * second_len) + second_len -1 downto ((i - slvv'low) * second_len))   := slvv(i);
+			slv(((i - slvv'low) * second_len) + second_len -1 downto ((i - slvv'low) * second_len)) := slvv(i);
 		end loop;
 		return slv;
 	end function;
@@ -717,7 +714,7 @@ package body vectors is
 		variable slv        : std_logic_vector((first_len * second_len) - 1 downto 0);
 	begin
 		for i in sluv'range loop
-			slv(((i - sluv'low) * second_len) + second_len -1 downto ((i - sluv'low) * second_len))   := std_logic_vector(sluv(i));
+			slv(((i - sluv'low) * second_len) + second_len -1 downto ((i - sluv'low) * second_len)) := std_logic_vector(sluv(i));
 		end loop;
 		return slv;
 	end function;
@@ -728,7 +725,7 @@ package body vectors is
 		variable slv        : std_logic_vector((first_len * second_len) - 1 downto 0);
 	begin
 		for i in slsv'range loop
-			slv(((i - slsv'low) * second_len) + second_len -1 downto ((i - slsv'low) * second_len))   := std_logic_vector(slsv(i));
+			slv(((i - slsv'low) * second_len) + second_len -1 downto ((i - slsv'low) * second_len)) := std_logic_vector(slsv(i));
 		end loop;
 		return slv;
 	end function;
@@ -760,7 +757,7 @@ package body vectors is
 		variable slv : std_logic_vector((slm'length(1) * slm'length(2)) - 1 downto 0);
 	begin
 		for i in slm'range(1) loop
-			for j in slm'high(2) downto slm'low(2) loop         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+			for j in slm'range(2) loop
 				slv((i * slm'length(2)) + j)    := slm(i, j);
 			end loop;
 		end loop;
@@ -771,7 +768,7 @@ package body vectors is
 		variable us : unsigned((slm'length(1) * slm'length(2)) - 1 downto 0);
 	begin
 		for i in slm'range(1) loop
-			for j in slm'high(2) downto slm'low(2) loop         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+			for j in slm'range(2) loop
 				us((i * slm'length(2)) + j)    := slm(i, j);
 			end loop;
 		end loop;
@@ -782,7 +779,7 @@ package body vectors is
 		variable s : signed((slm'length(1) * slm'length(2)) - 1 downto 0);
 	begin
 		for i in slm'range(1) loop
-			for j in slm'high(2) downto slm'low(2) loop         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+			for j in slm'range(2) loop
 				s((i * slm'length(2)) + j)    := slm(i, j);
 			end loop;
 		end loop;
@@ -794,7 +791,7 @@ package body vectors is
 	-- ==========================================================================
 	-- create vector-vector from vector
 	function to_slvv(slv : std_logic_vector; sub_element_length : natural) return T_SLVV is
-		variable Result   : T_SLVV((slv'length / sub_element_length) - 1 downto 0)(sub_element_length -1 downto 0);
+		variable Result : T_SLVV((slv'length / sub_element_length) - 1 downto 0)(sub_element_length -1 downto 0);
 	begin
 		assert ((slv'length mod sub_element_length) = 0) report "to_slvv: width mismatch - slv'length is no multiple of sub_element_length (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE;
 		assert slv'left >= slv'right report "to_slvv:: slv is not descending: slv'left=" & integer'image(slv'left) & ", slv'right=" & integer'image(slv'right) severity FAILURE;
@@ -806,7 +803,7 @@ package body vectors is
 	end function;
 
 	function to_sluv(slv : std_logic_vector; sub_element_length : natural) return T_SLUV is
-		variable Result   : T_SLUV((slv'length / sub_element_length) - 1 downto 0)(sub_element_length -1 downto 0);
+		variable Result : T_SLUV((slv'length / sub_element_length) - 1 downto 0)(sub_element_length -1 downto 0);
 	begin
 		if ((slv'length mod sub_element_length) /= 0) then  report "to_sluv: width mismatch - slv'length is no multiple of sub_element_length (slv'length=" & INTEGER'image(slv'length) & ")" severity FAILURE; end if;
 
@@ -1113,7 +1110,7 @@ package body vectors is
 	-- ==========================================================================
 	-- create vector-vector from matrix
 	function to_slvv(slm : T_SLM) return T_SLVV is
-		variable Result   : T_SLVV(slm'length(1) -1 downto 0)(slm'length(2) -1 downto 0);
+		variable Result : T_SLVV(slm'length(1) -1 downto 0)(slm'length(2) -1 downto 0);
 	begin
 		for i in slm'range(1) loop
 			Result(i) := get_row(slm, i);
@@ -1122,7 +1119,7 @@ package body vectors is
 	end function;
 
 	function to_sluv(slm : T_SLM) return T_SLUV is
-		variable Result   : T_SLUV(slm'length(1) -1 downto 0)(slm'length(2) -1 downto 0);
+		variable Result : T_SLUV(slm'length(1) -1 downto 0)(slm'length(2) -1 downto 0);
 	begin
 		for i in slm'range(1) loop
 			Result(i) := get_row(slm, i);
@@ -1131,7 +1128,7 @@ package body vectors is
 	end function;
 
 	function to_slsv(slm : T_SLM) return T_SLSV is
-		variable Result   : T_SLSV(slm'length(1) -1 downto 0)(slm'length(2) -1 downto 0);
+		variable Result : T_SLSV(slm'length(1) -1 downto 0)(slm'length(2) -1 downto 0);
 	begin
 		for i in slm'range(1) loop
 			Result(i) := get_row(slm, i);
@@ -1142,6 +1139,7 @@ package body vectors is
 	-- create vector-vector from matrix (2 bit)
 	function to_slvv_2(slm : T_SLM) return T_SLVV_2 is
 	begin
+		-- FIXME: change to assert statement
 		if (slm'length(2) /= 2) then  report "to_slvv_2: type mismatch - slm'length(2)=" & integer'image(slm'length(2)) severity FAILURE; end if;
 		return to_slvv(slm);
 	end function;
@@ -1333,7 +1331,7 @@ package body vectors is
 	-- ==========================================================================
 	-- create matrix from vector
 	function to_slm(slv : std_logic_vector; ROWS : positive; COLS : positive) return T_SLM is
-		variable slm    : T_SLM(ROWS - 1 downto 0, COLS - 1 downto 0);
+		variable slm : T_SLM(ROWS - 1 downto 0, COLS - 1 downto 0);
 	begin
 		for i in 0 to ROWS - 1 loop
 			for j in 0 to COLS - 1 loop
@@ -1344,7 +1342,7 @@ package body vectors is
 	end function;
 
 	function to_slm(us : unsigned; ROWS : positive; COLS : positive) return T_SLM is
-		variable slm    : T_SLM(ROWS - 1 downto 0, COLS - 1 downto 0);
+		variable slm : T_SLM(ROWS - 1 downto 0, COLS - 1 downto 0);
 	begin
 		for i in 0 to ROWS - 1 loop
 			for j in 0 to COLS - 1 loop
@@ -1355,7 +1353,7 @@ package body vectors is
 	end function;
 
 	function to_slm(s : signed; ROWS : positive; COLS : positive) return T_SLM is
-		variable slm    : T_SLM(ROWS - 1 downto 0, COLS - 1 downto 0);
+		variable slm : T_SLM(ROWS - 1 downto 0, COLS - 1 downto 0);
 	begin
 		for i in 0 to ROWS - 1 loop
 			for j in 0 to COLS - 1 loop
@@ -1367,35 +1365,33 @@ package body vectors is
 
 	-- create matrix from vector-vector
 	function to_slm(slvv : T_SLVV) return T_SLM is
-		variable slm    : T_SLM(slvv'range, slvv(slvv'left)'range);
+		variable slm : T_SLM(slvv'range, slvv(slvv'left)'range);
 	begin
 		for i in slvv'range loop
 			for j in slvv(slvv'left)'range loop
-				slm(i, j)   := slvv(i)(j);
+				slm(i, j) := slvv(i)(j);
 			end loop;
 		end loop;
 		return slm;
 	end function;
 
-
 	function to_slm(sluv : T_SLUV) return T_SLM is
-		variable slm    : T_SLM(sluv'range, sluv(sluv'left)'range);
+		variable slm : T_SLM(sluv'range, sluv(sluv'left)'range);
 	begin
 		for i in sluv'range loop
 			for j in sluv(sluv'left)'range loop
-				slm(i, j)   := sluv(i)(j);
+				slm(i, j) := sluv(i)(j);
 			end loop;
 		end loop;
 		return slm;
 	end function;
 
-
 	function to_slm(slsv : T_SLSV) return T_SLM is
-		variable slm    : T_SLM(slsv'range, slsv(slsv'left)'range);
+		variable slm  : T_SLM(slsv'range, slsv(slsv'left)'range);
 	begin
 		for i in slsv'range loop
 			for j in slsv(slsv'left)'range loop
-				slm(i, j)   := slsv(i)(j);
+				slm(i, j) := slsv(i)(j);
 			end loop;
 		end loop;
 		return slm;
@@ -1458,7 +1454,7 @@ package body vectors is
 	-- vectors are extended on the left by the provided fill value (default: '0'). Use the resize functions of the numeric_std package for
 	-- value-preserving resizes of the signed and unsigned data types.
 	function resize(slm : T_SLM; size : positive) return T_SLM is
-		variable Result   : T_SLM(size - 1 downto 0, slm'high(2) downto slm'low(2))   := (others => (others => '0'));         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+		variable Result : T_SLM(size - 1 downto 0, slm'high(2) downto slm'low(2))   := (others => (others => '0'));         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
 	begin
 		for i in slm'range(1) loop
 			for j in slm'high(2) downto slm'low(2) loop         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
@@ -1469,9 +1465,9 @@ package body vectors is
 	end function;
 
 	function to_string(slvv : T_SLVV_8; sep : character := ':') return string is
-		constant hex_len      : positive                := ite((sep = C_POC_NUL), (slvv'length * 2), (slvv'length * 3) - 1);
-		variable Result       : string(1 to hex_len)    := (others => sep);
-		variable pos          : positive                := 1;
+		constant hex_len : positive             := ite((sep = C_POC_NUL), (slvv'length * 2), (slvv'length * 3) - 1);
+		variable Result  : string(1 to hex_len) := (others => sep);
+		variable pos     : positive             := 1;
 	begin
 		for i in slvv'range loop
 			Result(pos to pos + 1)  := to_string(slvv(i), 'h');
@@ -1491,7 +1487,7 @@ package body vectors is
 		Writer        := 2;
 		GroupCounter  := 0;
 		for i in slm'low(1) to slm'high(1) loop
-			for j in slm'high(2) downto slm'low(2) loop         -- WORKAROUND: Xilinx iSIM work-around, because 'range(2) evaluates to 'range(1); see work-around notes at T_SLM type declaration
+			for j in slm'range(2) loop
 				Result(Writer)    := to_char(slm(i, j));
 				Writer            := Writer + 1;
 				GroupCounter      := GroupCounter + 1;

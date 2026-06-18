@@ -7,9 +7,9 @@ These are :abbr:`DDR-I/O (Double Data Rate - Input/Output)` entities....
 
 **Entities**
 
- * :ref:`IP/ddrio_in`
- * :ref:`IP/ddrio_inout`
- * :ref:`IP/ddrio_out`
+ * :ref:`IP/ddrio_In`
+ * :ref:`IP/ddrio_InOut`
+ * :ref:`IP/ddrio_Out`
 
 
 .. toctree::
@@ -20,6 +20,6 @@ These are :abbr:`DDR-I/O (Double Data Rate - Input/Output)` entities....
 .. toctree::
    :hidden:
 
-   ddrio_in <ddrio_in>
-   ddrio_inout <ddrio_inout>
-   ddrio_out <ddrio_out>
+   ddrio_In <ddrio_In>
+   ddrio_InOut <ddrio_InOut>
+   ddrio_Out <ddrio_Out>

@@ -17,21 +17,21 @@ The package PoC.mem.ocram holds all component declarations for this namespace.
 
 **Entities**
 
- * :ref:`IP/ocram_sp` - An on-chip RAM with a single port interface.
- * :ref:`IP/ocram_sdp` - An on-chip RAM with a simple dual-port interface.
- * :ref:`IP/ocram_sdp_wf` - An on-chip RAM with a simple dual-port
+ * :ref:`IP/ocram_SinglePort` - An on-chip RAM with a single port interface.
+ * :ref:`IP/ocram_SimpleDualPort` - An on-chip RAM with a simple dual-port interface.
+ * :ref:`IP/ocram_SimpleDualPort_WriteFirst` - An on-chip RAM with a simple dual-port
    interface and write-first behavior.
- * :ref:`IP/ocram_tdp` - An on-chip RAM with a true dual-port interface.
- * :ref:`IP/ocram_tdp_wf` - An on-chip RAM with a true dual-port
+ * :ref:`IP/ocram_TrueDualPort` - An on-chip RAM with a true dual-port interface.
+ * :ref:`IP/ocram_TrueDualPort_WriteFirst` - An on-chip RAM with a true dual-port
    interface and write-first behavior.
 
 **Simulation Helper**
 
- * :ref:`IP/ocram_tdp_sim` - Simulation model of on-chip RAM with a true dual port interface.
+ * :ref:`IP/ocram_TrueDualPort_Simulation` - Simulation model of on-chip RAM with a true dual port interface.
 
 **Deprecated Entities**
 
- * :ref:`IP/ocram_esdp` - An on-chip RAM with an extended simple dual port interface.
+ * :ref:`IP/ocram_EnhancedSimpleDualPort` - An on-chip RAM with an extended simple dual port interface.
 
 
 .. toctree::
@@ -42,18 +42,18 @@ The package PoC.mem.ocram holds all component declarations for this namespace.
 .. toctree::
    :hidden:
 
-   ocram_sp <ocram_sp>
-   ocram_sdp <ocram_sdp>
-   ocram_sdp_wf <ocram_sdp_wf>
-   ocram_tdp <ocram_tdp>
-   ocram_tdp_wf <ocram_tdp_wf>
+   ocram_SinglePort <ocram_SinglePort>
+   ocram_SimpleDualPort <ocram_SimpleDualPort>
+   ocram_SimpleDualPort_WriteFirst <ocram_SimpleDualPort_WriteFirst>
+   ocram_TrueDualPort <ocram_TrueDualPort>
+   ocram_TrueDualPort_WriteFirst <ocram_TrueDualPort_WriteFirst>
 
 .. toctree::
    :hidden:
 
-   ocram_tdp_sim <ocram_tdp_sim>
+   ocram_TrueDualPort_Simulation <ocram_TrueDualPort_Simulation>
 
 .. toctree::
    :hidden:
 
-   ocram_esdp <ocram_esdp>
+   ocram_EnhancedSimpleDualPort <ocram_EnhancedSimpleDualPort>

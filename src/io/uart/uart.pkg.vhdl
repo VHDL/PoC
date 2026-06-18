@@ -32,22 +32,25 @@ use     work.physical.all;
 
 
 package uart is
-	type T_IO_UART_FLOWCONTROL_KIND is (
+	type T_UART_FLOWCONTROL_KIND is (
 		UART_FLOWCONTROL_NONE,
 		UART_FLOWCONTROL_XON_XOFF,
 		UART_FLOWCONTROL_RTS_CTS,
 		UART_FLOWCONTROL_RTR_CTS
 	);
+
 	type T_UART_PARITY_MODE is (
 		PARITY_NONE,
-		PARITY_EVEN,		
+		PARITY_EVEN,
 		PARITY_ODD
 	);
+
 	type T_UART_PARITY_ERROR_HANDLING is (
-		REPLACE_ERROR_BYTE, 
-		PASSTHROUGH_ERROR_BYTE,   
-		DROP_ERROR_BYTE		
+		REPLACE_ERROR_BYTE,
+		PASSTHROUGH_ERROR_BYTE,
+		DROP_ERROR_BYTE
 	);
+
 	constant C_IO_UART_TYPICAL_BAUDRATES : T_BAUDVEC := (
 		 0 =>    300 Bd,   1 =>    600 Bd,   2 =>   1200 Bd,   3 =>   1800 Bd,   4 =>   2400 Bd,
 		 5 =>   4000 Bd,   6 =>   4800 Bd,   7 =>   7200 Bd,   8 =>   9600 Bd,   9 =>  14400 Bd,
@@ -60,100 +63,106 @@ package uart is
 	function io_UART_IsTypicalBaudRate(br : BAUD) return boolean;
 
 	-- Bit Clock Generator: 8 Ticks per Bit
-	component uart_bclk
-		generic (
-			CLK_FREQ : positive;
-			BAUDRATE : positive
+	component uart_BitClock
+		generic(
+			CLOCK_FREQ        : FREQ     := 100 MHz;
+			BAUDRATE          : BAUD     := 115200 Bd;
+			OVERSAMPLING_RATE : positive := 8
 		);
-		port (
-			clk     : in  std_logic;
-			rst     : in  std_logic;
-			bclk    : out std_logic;
-			bclk_x8 : out std_logic
+		port(
+			Clock       : in  std_logic;
+			Reset       : in  std_logic;
+			BitClock    : out std_logic;
+			SampleClock : out std_logic
 		);
-	end component;
+	end component uart_BitClock;
 
 	-- Receiver
-	component uart_rx is
-		generic (
-			SYNC_DEPTH : natural := 2  -- use zero for already clock-synchronous rx
+	component uart_RX
+		generic(
+			SYNC_DEPTH              : natural                      := 2;             -- Use 0 for already clock-synchronous RX signal
+			PARITY                  : T_UART_PARITY_MODE           := PARITY_NONE;
+			PARITY_ERROR_HANDLING   : T_UART_PARITY_ERROR_HANDLING := PASSTHROUGH_ERROR_BYTE;
+			PARITY_ERROR_IDENTIFIER : std_logic_vector(7 downto 0) := x"15"
 		);
-		port (
-			-- Global Control
-			clk : in std_logic;
-			rst : in std_logic;
+		port(
+			Clock       : in  std_logic;
+			Reset       : in  std_logic;
 
-			-- Bit Clock and RX Line
-			bclk_x8 : in std_logic;    -- bit clock, eight strobes per bit length
-			rx      : in std_logic;
+			SampleClock : in  std_logic;
+			RX          : in  std_logic;
 
-			-- Byte Stream Output
-			do  : out std_logic_vector(7 downto 0);
-			stb : out std_logic
+			DataOut     : out std_logic_vector(7 downto 0);
+			Strobe      : out std_logic;
+			ParityError : out std_logic
 		);
-	end component;
+	end component uart_RX;
 
 	-- Transmitter
-	component uart_tx is
-		port (
-			-- Global Control
-			clk : in std_logic;
-			rst : in std_logic;
-
-			-- Bit Clock and TX Line
-			bclk : in  std_logic;  -- bit clock, one strobe each bit length
-			tx   : out std_logic;
-
-			-- Byte Stream Input
-			di  : in  std_logic_vector(7 downto 0);
-			put : in  std_logic;
-			ful : out std_logic
+	component uart_TX
+		generic(
+			PARITY   : T_UART_PARITY_MODE := PARITY_NONE
 		);
-	end component;
+		port(
+			Clock    : in  std_logic;
+			Reset    : in  std_logic;
+
+			BitClock : in  std_logic;
+			TX       : out std_logic;
+
+			Put      : in  std_logic;
+			DataIn   : in  std_logic_vector(7 downto 0);
+			Full     : out std_logic
+		);
+	end component uart_TX;
 
 	-- Wrappers
 	-- ===========================================================================
 	-- UART with FIFOs and optional flow control
-	component uart_fifo is
-		generic (
-			-- Communication Parameters
-			CLOCK_FREQ  : FREQ;
-			BAUDRATE    : BAUD;
-
-			-- Buffer Dimensioning
-			TX_MIN_DEPTH   : positive := 16;
-			TX_ESTATE_BITS : natural  :=  0;
-			RX_MIN_DEPTH   : positive := 16;
-			RX_FSTATE_BITS : natural  :=  0;
-
-			-- Flow Control
-			FLOWCONTROL       : T_IO_UART_FLOWCONTROL_KIND   := UART_FLOWCONTROL_NONE;
-			SWFC_XON_CHAR     : std_logic_vector(7 downto 0) := x"11";  -- ^Q
-			SWFC_XON_TRIGGER  : real                         := 0.0625;
-			SWFC_XOFF_CHAR    : std_logic_vector(7 downto 0) := x"13";  -- ^S
-			SWFC_XOFF_TRIGGER : real                         := 0.75
+	component uart_FIFO
+		generic(
+			CLOCK_FREQ              : FREQ;
+			BAUDRATE                : BAUD;
+			PARITY                  : T_UART_PARITY_MODE           := PARITY_NONE;
+			PARITY_ERROR_HANDLING   : T_UART_PARITY_ERROR_HANDLING := PASSTHROUGH_ERROR_BYTE;
+			PARITY_ERROR_IDENTIFIER : std_logic_vector(7 downto 0) := 8x"0";
+			ADD_INPUT_SYNCHRONIZERS : boolean                      := TRUE;
+			TX_MIN_DEPTH            : positive                     := 16;
+			TX_ESTATE_BITS          : natural                      := 0;
+			RX_MIN_DEPTH            : positive                     := 16;
+			RX_FSTATE_BITS          : natural                      := 0;
+			FLOWCTRL_XON_THRESHOLD  : real                         := 0.0625;
+			FLOWCTRL_XOFF_THRESHOLD : real                         := 0.75;
+			FLOWCONTROL             : T_UART_FLOWCONTROL_KIND   := UART_FLOWCONTROL_NONE;
+			SWFC_XON_CHAR           : std_logic_vector(7 downto 0) := x"11";
+			SWFC_XOFF_CHAR          : std_logic_vector(7 downto 0) := x"13"
 		);
-		port (
-			Clock : in std_logic;
-			Reset : in std_logic;
+		port(
+			Clock            : in  std_logic;
+			Reset            : in  std_logic;
 
-			-- FIFO interface
-			TX_put        : in  std_logic;
-			TX_Data       : in  std_logic_vector(7 downto 0);
-			TX_Full       : out std_logic;
-			TX_EmptyState : out std_logic_vector(TX_ESTATE_BITS - 1 downto 0);
+			TX_Put           : in  std_logic;
+			TX_Data          : in  std_logic_vector(7 downto 0);
+			TX_Full          : out std_logic;
+			TX_EmptyState    : out std_logic_vector(imax(0, TX_ESTATE_BITS-1) downto 0);
+			TXFIFO_Reset     : in  std_logic;
+			TXFIFO_Empty     : out std_logic;
 
-			RX_Valid     : out std_logic;
-			RX_Data      : out std_logic_vector(7 downto 0);
-			RX_got       : in  std_logic;
-			RX_FullState : out std_logic_vector(RX_FSTATE_BITS - 1 downto 0);
-			RX_Overflow  : out std_logic;
+			RX_Valid         : out std_logic;
+			RX_Data          : out std_logic_vector(7 downto 0);
+			RX_Got           : in  std_logic;
+			RX_FullState     : out std_logic_vector(imax(0, RX_FSTATE_BITS-1) downto 0);
+			RX_Overflow      : out std_logic;
+			RXFIFO_Full      : out std_logic;
+			RXFIFO_Reset     : in  std_logic;
 
-			-- External Pins
-			UART_RX : in  std_logic;
-			UART_TX : out std_logic
+			UART_TX          : out std_logic;
+			UART_RX          : in  std_logic;
+			UART_RTS         : out std_logic;
+			UART_CTS         : in  std_logic;
+			UART_ParityError : out std_logic
 		);
-	end component;
+	end component uart_FIFO;
 
 	-- USB-UART
 	component ft245_uart is
@@ -162,25 +171,25 @@ package uart is
 		);
 		port (
 			-- common signals
-			clk         : in  std_logic;
-			reset       : in  std_logic;
+			Clock       : in  std_logic;
+			Reset       : in  std_logic;
 
-			-- send data
-			snd_ready   : out std_logic;
-			snd_strobe  : in  std_logic;
-			snd_data    : in  std_logic_vector(7 downto 0);
+			-- Send data
+			TX_Put     : in  std_logic;
+			TX_Data    : in  std_logic_vector(7 downto 0);
+			TX_Full    : out std_logic;
 
-			-- receive data
-			rec_strobe  : out std_logic;
-			rec_data    : out std_logic_vector(7 downto 0);
+			-- Receive data
+			RX_Valid   : out std_logic;
+			RX_Data    : out std_logic_vector(7 downto 0);
 
-			-- connection to ft245
-			ft245_data  : inout std_logic_vector (7 downto 0);
-			ft245_rdn   : out std_logic;
-			ft245_wrn   : out std_logic;
-			ft245_rxfn  : in std_logic;
-			ft245_txen  : in std_logic;
-			ft245_pwrenn : in std_logic
+			-- Connection to FT245
+			FT245_PowerEnable_n : in    std_logic;
+			FT245_Read_n        : out   std_logic;
+			FT245_Write_n       : out   std_logic;
+			FT245_Data          : inout std_logic_vector(7 downto 0);
+			FT245_RXF_n         : in    std_logic;
+			FT245_TXE_n         : in    std_logic
 		);
 	end component;
 

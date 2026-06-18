@@ -268,13 +268,13 @@ extlinks = {
 	"gh":       (f"https://GitHub.com/%s", "gh:%s"),
 	"ghissue":  (f"https://GitHub.com/{githubNamespace}/{project}/issues/%s", "issue #%s"),
 	"ghpull":   (f"https://GitHub.com/{githubNamespace}/{project}/pull/%s", "pull request #%s"),
-	"ghsrc":    (f"https://GitHub.com/{githubNamespace}/{project}/blob/master/%s", None),
+	"ghsrc":    (f"https://GitHub.com/{githubNamespace}/{project}/blob/main/%s", None),
 	"wiki":     (f"https://en.wikipedia.org/wiki/%s", None),
 
 	"pocissue": (f"https://github.com/{githubNamespace}/{project}/issues/%s", 'issue #%s'),           # => replace by ghissue
 	"pocpull":  (f"https://github.com/{githubNamespace}/{project}/pull/%s", 'pull request #%s'),      # => replace by ghpull
-	"pocsrc":   (f"https://github.com/{githubNamespace}/{project}/blob/master/src/%s?ts=2", None),  # => replace by ghsrc
-	"poctb":    (f"https://github.com/{githubNamespace}/{project}/blob/master/tb/%s?ts=2", None)
+	"pocsrc":   (f"https://github.com/{githubNamespace}/{project}/blob/main/src/%s?ts=2", None),  # => replace by ghsrc
+	"poctb":    (f"https://github.com/{githubNamespace}/{project}/blob/main/tb/%s?ts=2", None)
 }
 
 

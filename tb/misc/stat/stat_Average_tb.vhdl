@@ -3,24 +3,24 @@
 -- kate: tab-width 2; replace-tabs off; indent-width 2;
 --
 -- =============================================================================
--- Authors:					Patrick Lehmann
+-- Authors:          Patrick Lehmann
 --
--- Testbench:				for PoC.misc.stat.Average
+-- Testbench:        for PoC.misc.stat.Average
 --
 -- Description:
 -- ------------------------------------
---	TODO
+--  TODO
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,18 +29,18 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	IEEE;
-use			IEEE.std_logic_1164.all;
-use			IEEE.numeric_std.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-library	PoC;
-use			poC.utils.all;
-use			poC.vectors.all;
-use			poC.physical.all;
+library PoC;
+use     poC.utils.all;
+use     poC.vectors.all;
+use     poC.physical.all;
 -- simulation only packages
-use			PoC.sim_types.all;
-use			PoC.simulation.all;
-use			PoC.waveform.all;
+use     PoC.sim_types.all;
+use     PoC.simulation.all;
+use     PoC.waveform.all;
 
 
 entity stat_Average_tb is
@@ -48,10 +48,10 @@ end entity;
 
 
 architecture tb of stat_Average_tb is
-	constant CLOCK_FREQ							: FREQ					:= 100 MHz;
+	constant CLOCK_FREQ              : FREQ          := 100 MHz;
 
-  -- component generics
-  constant VALUES : T_NATVEC := (
+	-- component generics
+	constant VALUES : T_NATVEC := (
 		113, 106, 126, 239, 146, 72, 51, 210, 44, 56, 10, 126, 7, 7, 22, 18,
 		128, 217, 106, 210, 58, 71, 213, 206, 169, 213, 90, 27, 166, 159, 83, 116,
 		246, 208, 105, 64, 112, 12, 110, 10, 5, 100, 12, 231, 191, 235, 27, 143,
@@ -87,67 +87,67 @@ architecture tb of stat_Average_tb is
 	);
 
 	type T_RESULT is record
-		Minimum			: natural;
-		Count				: positive;
+		Minimum      : natural;
+		Count        : positive;
 	end record;
 
-	type T_RESULT_VECTOR	is array(natural range <>) of T_RESULT;
+	type T_RESULT_VECTOR  is array(natural range <>) of T_RESULT;
 
-	constant DATA_BITS		: positive				:= 8;
-	constant COUNTER_BITS	: positive				:= 16;
-	constant simTestID		: T_SIM_TEST_ID		:= simCreateTest("Test setup for DATA_BITS=" & integer'image(DATA_BITS) & "  COUNTER_BITS=" & INTEGER'image(COUNTER_BITS));
+	constant DATA_BITS    : positive        := 8;
+	constant COUNTER_BITS  : positive        := 16;
+	constant simTestID    : T_SIM_TEST_ID    := simCreateTest("Test setup for DATA_BITS=" & integer'image(DATA_BITS) & "  COUNTER_BITS=" & INTEGER'image(COUNTER_BITS));
 
-  -- component ports
-  signal Clock		: std_logic;
-  signal Reset		: std_logic;
+	-- component ports
+	signal Clock    : std_logic;
+	signal Reset    : std_logic;
 
-  signal Enable		: std_logic		:= '0';
-  signal DataIn		: std_logic_vector(DATA_BITS - 1 downto 0);
+	signal Enable    : std_logic    := '0';
+	signal DataIn    : std_logic_vector(DATA_BITS - 1 downto 0);
 
-	signal Count		: std_logic_vector(COUNTER_BITS - 1 downto 0);
-	signal Sum			: std_logic_vector(COUNTER_BITS - 1 downto 0);
-	signal Average	: std_logic_vector(COUNTER_BITS - 1 downto 0);
-	signal Valid		: std_logic;
+	signal Count    : std_logic_vector(COUNTER_BITS - 1 downto 0);
+	signal Sum      : std_logic_vector(COUNTER_BITS - 1 downto 0);
+	signal Average  : std_logic_vector(COUNTER_BITS - 1 downto 0);
+	signal Valid    : std_logic;
 
 begin
 	-- initialize global simulation status
 	simInitialize;
 	-- generate global testbench clock
-	simGenerateClock(simTestID,			Clock,	CLOCK_FREQ);
-	simGenerateWaveform(simTestID,	Reset,	simGenerateWaveform_Reset(Pause =>  5 ns, ResetPulse => 10 ns));
-	simGenerateWaveform(simTestID,	Enable,	simGenerateWaveform_Reset(Pause => 25 ns, ResetPulse => (VALUES'length * 10 ns)));
+	simGenerateClock(simTestID,      Clock,  CLOCK_FREQ);
+	simGenerateWaveform(simTestID,  Reset,  simGenerateWaveform_Reset(Pause =>  5 ns, ResetPulse => 10 ns));
+	simGenerateWaveform(simTestID,  Enable,  simGenerateWaveform_Reset(Pause => 25 ns, ResetPulse => (VALUES'length * 10 ns)));
 
-  -- component instantiation
-  UUT: entity PoC.stat_Average
-    generic map (
-			DATA_BITS			=> DATA_BITS,
-			COUNTER_BITS	=> COUNTER_BITS
-    )
-    port map (
-      Clock			=> Clock,
-      Reset			=> Reset,
+	-- component instantiation
+	UUT: entity PoC.stat_Average
+		generic map (
+			DATA_BITS      => DATA_BITS,
+			COUNTER_BITS  => COUNTER_BITS
+		)
+		port map (
+			Clock      => Clock,
+			Reset      => Reset,
 
-			Enable		=> Enable,
-			DataIn		=> DataIn,
+			Enable    => Enable,
+			DataIn    => DataIn,
 
-			Count			=> Count,
-			Sum				=> Sum,
-			Average		=> Average,
-			Valid			=> Valid
-    );
+			Count      => Count,
+			Sum        => Sum,
+			Average    => Average,
+			Valid      => Valid
+		);
 
 	procStimuli : process
-		constant simProcessID	: T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Generator and Checker");
-		variable ExpectedCnt	: natural;
-		variable ExpectedSum	: natural;
-		variable ExpectedAvg	: natural;
+		constant simProcessID  : T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "Generator and Checker");
+		variable ExpectedCnt  : natural;
+		variable ExpectedSum  : natural;
+		variable ExpectedAvg  : natural;
 	begin
-		DataIn		<= (others => '0');
+		DataIn    <= (others => '0');
 		wait until (Enable = '1') and falling_edge(Clock);
 
 		for i in VALUES'range loop
-			--Enable	<= to_sl(VALUES(i) /= 35);
-			DataIn	<= to_slv(VALUES(i), DataIn'length);
+			--Enable  <= to_sl(VALUES(i) /= 35);
+			DataIn  <= to_slv(VALUES(i), DataIn'length);
 			wait until falling_edge(Clock);
 		end loop;
 

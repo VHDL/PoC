@@ -30,8 +30,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.config.all;
 use     work.utils.all;
@@ -43,8 +43,8 @@ entity stream_FIFO is
 		FRAMES            : positive    := 2;
 		DATA_BITS         : positive    := 8;
 		DATA_FIFO_DEPTH   : positive    := 8;
-		META_BITS         : T_POSVEC    := (0 => 8);
-		META_FIFO_DEPTH   : T_POSVEC    := (0 => 16)
+		META_BITS         : positive_vector    := (0 => 8);
+		META_FIFO_DEPTH   : positive_vector    := (0 => 16)
 	);
 	port (
 		Clock             : in  std_logic;
@@ -179,30 +179,30 @@ begin
 
 	DataFIFO: entity work.fifo_cc_got
 		generic map (
-			D_BITS              => DATA_BITS + 1,               -- Data Width
+			DATA_BITS              => DATA_BITS + 1,               -- Data Width
 			MIN_DEPTH           => (DATA_FIFO_DEPTH * FRAMES),  -- Minimum FIFO Depth
 			DATA_REG            => ((DATA_FIFO_DEPTH * FRAMES) <= 128), -- Store Data Content in Registers
 			STATE_REG           => TRUE,                        -- Registered Full/Empty Indicators
 			OUTPUT_REG          => FALSE,                       -- Registered FIFO Output
-			ESTATE_WR_BITS      => 0,                           -- Empty State Bits
-			FSTATE_RD_BITS      => 0                            -- Full State Bits
+			EMPTY_STATE_BITS      => 0,                           -- Empty State Bits
+			FILL_STATE_BITS      => 0                            -- Full State Bits
 		)
 		port map (
 			-- Global Reset and Clock
-			clk                 => Clock,
-			rst                 => Reset,
+			Clock                 => Clock,
+			Reset                 => Reset,
 
 			-- Writing Interface
-			put                 => DataFIFO_put,
-			din                 => DataFIFO_DataIn,
-			full                => DataFIFO_Full,
-			estate_wr           => open,
+			Put                 => DataFIFO_put,
+			DataIn                 => DataFIFO_DataIn,
+			Full                => DataFIFO_Full,
+			EmptyState           => open,
 
 			-- Reading Interface
-			got                 => DataFIFO_got,
-			dout                => DataFIFO_DataOut,
-			valid               => DataFIFO_Valid,
-			fstate_rd           => open
+			Got                 => DataFIFO_got,
+			DataOut                => DataFIFO_DataOut,
+			Valid               => DataFIFO_Valid,
+			FillState           => open
 		);
 
 	FrameCommit    <= DataFIFO_Valid and DataFIFO_DataOut(EOF_BIT) and Out_Ack;
@@ -282,33 +282,33 @@ begin
 
 			MetaFIFO: entity work.fifo_cc_got_tempgot
 				generic map (
-					D_BITS              => META_BITS(i),                    -- Data Width
+					DATA_BITS              => META_BITS(i),                    -- Data Width
 					MIN_DEPTH           => (META_FIFO_DEPTH(i) * FRAMES),   -- Minimum FIFO Depth
 					DATA_REG            => TRUE,                            -- Store Data Content in Registers
 					STATE_REG           => FALSE,                           -- Registered Full/Empty Indicators
 					OUTPUT_REG          => FALSE,                           -- Registered FIFO Output
-					ESTATE_WR_BITS      => 0,                               -- Empty State Bits
-					FSTATE_RD_BITS      => 0                                -- Full State Bits
+					EMPTY_STATE_BITS      => 0,                               -- Empty State Bits
+					FILL_STATE_BITS      => 0                                -- Full State Bits
 				)
 				port map (
 					-- Global Reset and Clock
-					clk                 => Clock,
-					rst                 => Reset,
+					Clock                 => Clock,
+					Reset                 => Reset,
 
 					-- Writing Interface
-					put                 => MetaFIFO_put,
-					din                 => MetaFIFO_DataIn,
-					full                => MetaFIFO_Full,
-					estate_wr           => open,
+					Put                 => MetaFIFO_put,
+					DataIn                 => MetaFIFO_DataIn,
+					Full                => MetaFIFO_Full,
+					EmptyState           => open,
 
 					-- Reading Interface
-					got                 => MetaFIFO_got,
-					dout                => MetaFIFO_DataOut,
-					valid               => MetaFIFO_Valid,
-					fstate_rd           => open,
+					Got                 => MetaFIFO_got,
+					DataOut             => MetaFIFO_DataOut,
+					Valid               => MetaFIFO_Valid,
+					FillState           => open,
 
-					commit              => MetaFIFO_Commit,
-					rollback            => MetaFIFO_Rollback
+					Commit              => MetaFIFO_Commit,
+					Rollback            => MetaFIFO_Rollback
 				);
 
 			MetaFIFO_got        <= Out_Meta_nxt(i);

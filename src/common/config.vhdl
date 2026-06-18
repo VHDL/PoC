@@ -8,8 +8,8 @@
 --
 -- Description:
 -- -------------------------------------
---    This file evaluates the settings declared in the project specific package my_config.
---    See also template file my_config.vhdl.template.
+--    This file evaluates the settings declared in the project specific package project_configuration.
+--    See also template file project_configuration.vhdl.template.
 --
 -- License:
 -- =============================================================================
@@ -419,15 +419,14 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-use     work.my_config.all;
-use     work.my_project.all;
+use     work.project_configuration.all;
+use     work.local_configuration.all;
 use     work.config_private.all;
 use     work.utils.all;
 
 
 package config is
-	constant PROJECT_DIR        : string  := normalizePath(MY_PROJECT_DIR);
-	constant OPERATING_SYSTEM   : string  := MY_OPERATING_SYSTEM;
+	constant PROJECT_DIR        : string  := normalizePath(LOCAL_PROJECT_DIR);
 	constant POC_VERBOSE        : boolean := MY_VERBOSE;
 
 	-- List of known FPGA / Chip vendors
@@ -578,7 +577,7 @@ package config is
 	constant THIS_DEVICE : T_DEVICE_INFO;
 
 	-- Functions extracting board and PCB properties from "MY_BOARD"
-	-- which is declared in package "my_config".
+	-- which is declared in package "project_configuration".
 	-- ===========================================================================
 	function BOARD                             (BoardConfig : string := C_BOARD_STRING_EMPTY)                       return natural;
 	function BOARD_INFO                        (BoardConfig : string := C_BOARD_STRING_EMPTY)                       return T_BOARD_INFO;
@@ -593,7 +592,7 @@ package config is
 	function BOARD_ETH_PHY_ManagementInterface (EthID : natural := 0; BoardConfig : string := C_BOARD_STRING_EMPTY)  return string;
 
 	-- Functions extracting device and architecture properties from "MY_DEVICE"
-	-- which is declared in package "my_config".
+	-- which is declared in package "project_configuration".
 	-- ===========================================================================
 	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY)             return T_VENDOR;
 	function SYNTHESIS_TOOL(DeviceString : string := C_DEVICE_STRING_EMPTY)     return T_SYNTHESIS_TOOL;
@@ -640,7 +639,7 @@ package body config is
 	function chr_isAlpha(chr : character) return boolean is
 		begin
 		return (((character'pos('a') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('z'))) or
-		        ((character'pos('A') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('Z'))));
+						((character'pos('A') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('Z'))));
 	end function;
 
 	function chr_isLowerAlpha(chr : character) return boolean is

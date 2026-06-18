@@ -1,7 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Module:           misc_Sequencer
 --
@@ -51,7 +47,7 @@ ENTITY misc_Sequencer IS
 		nxt                 : IN  STD_LOGIC;
 		Output              : OUT STD_LOGIC_VECTOR(OUTPUT_BITS - 1 DOWNTO 0)
 	);
-END;
+end entity;
 
 
 ARCHITECTURE rtl OF misc_Sequencer IS

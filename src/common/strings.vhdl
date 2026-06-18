@@ -29,10 +29,10 @@
 -- limitations under the License.
 -- =============================================================================
 
-library  IEEE;
-use      IEEE.std_logic_1164.all;
-use      IEEE.numeric_std.all;
-use      IEEE.math_real.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
+use     IEEE.math_real.all;
 
 use     work.config.all;
 use     work.utils.all;
@@ -98,7 +98,7 @@ package strings is
 
 	-- to_string
 	function to_string(Value : boolean) return string;
-	function to_string(Value : integer; base : positive := 10) return string; -- Do not initialize base to 10. This causes signature overlap to to_string from std packages
+	function to_string(Value : integer; base : positive := 10) return string;
 	function to_string(slv : std_logic_vector; format : character := 'h'; Length : natural := 0; fill : character := '0') return string;
 	function to_string(slv : unsigned;         format : character := 'h'; Length : natural := 0; fill : character := '0') return string;
 	function to_string(rawstring : T_RAWSTRING) return string;
@@ -132,8 +132,8 @@ package strings is
 	function to_RawString(str : string)   return T_RAWSTRING;
 
 	-- resize
-	function resize(str : string; size : positive; FillChar : character := C_POC_NUL)			return string;
---	function resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00")	return T_RAWSTRING;
+	function resize(str : string; size : positive; FillChar : character := C_POC_NUL)      return string;
+--  function resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00")  return T_RAWSTRING;
 
 	-- Character functions
 	function chr_toLower(chr : character) return character;
@@ -477,11 +477,11 @@ package body strings is
 			end loop;
 		elsif (format = 'd') then
 			-- TODO: enable big integer conversion
---			if (slv'length < 32) then
---				return INTEGER'image(int);
---			else
---				return raw_format_slv_dec(slv);
---			end if;
+--      if (slv'length < 32) then
+--        return INTEGER'image(int);
+--      else
+--        return raw_format_slv_dec(slv);
+--      end if;
 			Result(Result'length - str'length + 1 to Result'high) := str;
 		elsif (format = 'h') then
 			for i in Result'reverse_range loop
@@ -801,9 +801,9 @@ package body strings is
 		else
 			return false;
 		end if;
---		return (((str1'length = len) and (str2'length = len)) or                            -- both strings are fully consumed and equal
---						((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or     -- str1 is longer, but str_length equals len
---						((str2'length > len) and (str2(str2'low + len) = C_POC_NUL)));      -- str2 is longer, but str_length equals len
+--    return (((str1'length = len) and (str2'length = len)) or                            -- both strings are fully consumed and equal
+--            ((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or     -- str1 is longer, but str_length equals len
+--            ((str2'length > len) and (str2(str2'low + len) = C_POC_NUL)));      -- str2 is longer, but str_length equals len
 	end function;
 
 	-- compare two POC_NUL terminated STRINGs; case insentitve

@@ -1,7 +1,7 @@
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:           Patrick Lehmann
 --
--- Entity:				 	A generic buffer module for the PoC.Stream protocol.
+-- Entity:           A generic buffer module for the PoC.Stream protocol.
 --
 -- Description:
 -- -------------------------------------
@@ -11,13 +11,13 @@
 -- =============================================================================
 -- Copyright 2025      The PoC-Library Authors
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,40 +27,40 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
-use work.config.all;
-use work.utils.all;
-use work.vectors.all;
+use     work.config.all;
+use     work.utils.all;
+use     work.vectors.all;
 
 entity stream_Mirror is
 	generic (
 		PORTS       : positive := 2;
 		DATA_BITS   : positive := 8;
-		META_BITS   : T_POSVEC := (0 => 8);
-		META_LENGTH : T_POSVEC := (0 => 16)
+		META_BITS   : positive_vector := (0 => 8);
+		META_LENGTH : positive_vector := (0 => 16)
 	);
 	port (
-		Clock : in std_logic;
-		Reset : in std_logic;
+		Clock : in  std_logic;
+		Reset : in  std_logic;
 		-- IN Port
-		In_Valid     : in std_logic;
-		In_Data      : in std_logic_vector(DATA_BITS - 1 downto 0);
-		In_SOF       : in std_logic;
-		In_EOF       : in std_logic;
+		In_Valid     : in  std_logic;
+		In_Data      : in  std_logic_vector(DATA_BITS - 1 downto 0);
+		In_SOF       : in  std_logic;
+		In_EOF       : in  std_logic;
 		In_Ack       : out std_logic;
 		In_Meta_rst  : out std_logic;
 		In_Meta_nxt  : out std_logic_vector(META_BITS'length - 1 downto 0);
-		In_Meta_Data : in std_logic_vector(isum(META_BITS) - 1 downto 0);
+		In_Meta_Data : in  std_logic_vector(isum(META_BITS) - 1 downto 0);
 		-- OUT Port
 		Out_Valid     : out std_logic_vector(PORTS - 1 downto 0);
 		Out_Data      : out T_SLM(PORTS - 1 downto 0, DATA_BITS - 1 downto 0);
 		Out_SOF       : out std_logic_vector(PORTS - 1 downto 0);
 		Out_EOF       : out std_logic_vector(PORTS - 1 downto 0);
-		Out_Ack       : in std_logic_vector(PORTS - 1 downto 0);
-		Out_Meta_rst  : in std_logic_vector(PORTS - 1 downto 0);
-		Out_Meta_nxt  : in T_SLM(PORTS - 1 downto 0, META_BITS'length - 1 downto 0);
+		Out_Ack       : in  std_logic_vector(PORTS - 1 downto 0);
+		Out_Meta_rst  : in  std_logic_vector(PORTS - 1 downto 0);
+		Out_Meta_nxt  : in  T_SLM(PORTS - 1 downto 0, META_BITS'length - 1 downto 0);
 		Out_Meta_Data : out T_SLM(PORTS - 1 downto 0, isum(META_BITS) - 1 downto 0)
 	);
 end entity;
@@ -93,25 +93,25 @@ begin
 
 	In_Ack <= not FifoStage_Full;
 
-	FIFOstage : entity work.fifo_stage
+	FIFOstage : entity work.fifo_Stage
 		generic map(
-			D_BITS => DATA_BITS + 2 -- Data Width
+			DATA_BITS => DATA_BITS + 2 -- Data Width
 		)
 		port map
 		(
 			-- Control
-			clk => Clock, -- Clock
-			rst => Reset, -- Synchronous Reset
+			Clock => Clock, -- Clock
+			Reset => Reset, -- Synchronous Reset
 
 			-- Input
-			put => FifoStage_put,    -- Put Value
-			di  => FifoStage_DataIn, -- Data Input
-			ful => FifoStage_Full,   -- Full
+			Put => FifoStage_put,    -- Put Value
+			DataIn  => FifoStage_DataIn, -- Data Input
+			Full => FifoStage_Full,   -- Full
 
 			-- Output
-			vld => FifoStage_Valid,   -- Data Available
-			do  => FifoStage_DataOut, -- Data Output
-			got => FifoStage_got      -- Data Consumed
+			Valid => FifoStage_Valid,   -- Data Available
+			DataOut  => FifoStage_DataOut, -- Data Output
+			Got => FifoStage_got      -- Data Consumed
 		);
 
 	genPorts : for i in 0 to PORTS - 1 generate

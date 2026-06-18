@@ -1,7 +1,7 @@
 -- =============================================================================
--- Authors:				 	Patrick Lehmann
+-- Authors:           Patrick Lehmann
 --
--- Entity:				 	TODO
+-- Entity:           TODO
 --
 -- Description:
 -- -------------------------------------
@@ -10,13 +10,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,12 +26,12 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 
-use work.utils.all;
-use work.physical.all;
+use     work.utils.all;
+use     work.physical.all;
 
 
 entity io_FrequencyCounter is
@@ -41,9 +41,9 @@ entity io_FrequencyCounter is
 		RESOLUTION     : positive := 8
 	);
 	port (
-		Clock          : in std_logic;
-		Reset          : in std_logic;
-        FreqIn         : in std_logic;
+		Clock          : in  std_logic;
+		Reset          : in  std_logic;
+		FreqIn         : in  std_logic;
 		FreqOut        : out std_logic_vector(RESOLUTION - 1 downto 0);
 		FreqOut_Strobe : out std_logic
 	);
@@ -61,7 +61,7 @@ architecture rtl of io_FrequencyCounter is
 	signal FrequencyCounter_us     : unsigned(FREQUENCYCOUNTER_BITS downto 0)    := (others => '0');
 	signal FrequencyCounter_ov     : std_logic;
 
-	signal FreqIn_d	               : std_logic := '0';
+	signal FreqIn_d                 : std_logic := '0';
 	signal FreqIn_re               : std_logic;
 
 	signal FreqOut_d               : std_logic_vector(RESOLUTION - 1 downto 0)   := (others => '0');
@@ -96,7 +96,7 @@ begin
 		end if;
 	end process;
 
-	FrequencyCounter_ov	<= FrequencyCounter_us(FrequencyCounter_us'high);
+	FrequencyCounter_ov  <= FrequencyCounter_us(FrequencyCounter_us'high);
 
 	-- hold counter value until next TimeBaseCounter event
 	process(Clock)
@@ -117,4 +117,4 @@ begin
 	end process;
 
 	FreqOut <= FreqOut_d;
-end;
+end architecture;

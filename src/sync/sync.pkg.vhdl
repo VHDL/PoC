@@ -29,8 +29,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 
 package sync is
@@ -63,7 +63,7 @@ package sync is
 		port (
 			Clock         : in  std_logic;                                -- Clock to be synchronized to
 			Input         : in  std_logic_vector(BITS - 1 downto 0);      -- Data to be synchronized
-			Output        : out  std_logic_vector(BITS - 1 downto 0)      -- synchronized data
+			Output        : out std_logic_vector(BITS - 1 downto 0)      -- synchronized data
 		);
 	end component;
 
@@ -78,7 +78,7 @@ package sync is
 		port (
 			Clock         : in  std_logic;                                -- Clock to be synchronized to
 			Input         : in  std_logic_vector(BITS - 1 downto 0);      -- Data to be synchronized
-			Output        : out  std_logic_vector(BITS - 1 downto 0)      -- synchronized data
+			Output        : out std_logic_vector(BITS - 1 downto 0)      -- synchronized data
 		);
 	end component;
 
@@ -150,7 +150,7 @@ package sync is
 		port (
 			Clock         : in  std_logic;                            -- Clock to be synchronized to
 			Input         : in  std_logic_vector(BITS - 1 downto 0);  -- Data to be synchronized
-			Output        : out  std_logic_vector(BITS - 1 downto 0)  -- synchronised data
+			Output        : out std_logic_vector(BITS - 1 downto 0)  -- synchronised data
 		);
 	end component;
 end package;

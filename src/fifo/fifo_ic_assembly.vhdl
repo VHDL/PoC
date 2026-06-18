@@ -36,8 +36,8 @@
 -- limitations under the License.
 -- =============================================================================
 
-library  IEEE;
-use      IEEE.std_logic_1164.all;
+library IEEE;
+use     IEEE.std_logic_1164.all;
 
 entity fifo_ic_assembly is
 	generic (
@@ -47,8 +47,8 @@ entity fifo_ic_assembly is
 	);
 	port (
 		-- Write Interface
-		clk_wr : in std_logic;
-		rst_wr : in std_logic;
+		clk_wr : in  std_logic;
+		rst_wr : in  std_logic;
 
 		-- Only write addresses in the range [base, base+2**(A_BITS-G_BITS)) are
 		-- acceptable. This is equivalent to the test
@@ -65,21 +65,21 @@ entity fifo_ic_assembly is
 		put  : in  std_logic;
 
 		-- Read Interface
-		clk_rd : in std_logic;
-		rst_rd : in std_logic;
+		clk_rd : in  std_logic;
+		rst_rd : in  std_logic;
 
 		dout : out std_logic_vector(D_BITS-1 downto 0);
 		vld  : out std_logic;
 		got  : in  std_logic
 	);
-end entity fifo_ic_assembly;
+end entity;
 
 
 library IEEE;
-use  IEEE.numeric_std.all;
+use     IEEE.numeric_std.all;
 
-use  work.utils.all;
-use  work.ocram.all;
+use     work.utils.all;
+use     work.ocram.all;
 
 architecture rtl of fifo_ic_assembly is
 
@@ -198,23 +198,23 @@ begin
 	end block blkRead;
 
 	-- Backing internal assembly memory
-	ram : ocram_sdp
+	ram : ocram_SimpleDualPort
 		generic map (
-			A_BITS => AN,
-			D_BITS => DN
+			ADDRESS_BITS => AN,
+			DATA_BITS => DN
 		)
 		port map (
-			wclk   => clk_wr,
-			rclk   => clk_rd,
+			Write_Clock   => clk_wr,
+			Read_Clock   => clk_rd,
 
-			wa     => wa,
-			wce    => '1',
-			we     => we,
-			d      => di,
+			Write_Address     => wa,
+			Write_ClockEnable    => '1',
+			Write_WriteEnable     => we,
+			Write_DataIn      => di,
 
-			ra     => ra,
-			rce    => '1',
-			q      => do
+			Read_Address     => ra,
+			Read_ClockEnable    => '1',
+			Read_DataOut      => do
 		);
 
 end rtl;
