@@ -38,20 +38,18 @@ context osvvm_axi4.Axi4Context;
 
 entity axi4_Mux_TestHarness is
 	generic(
-		NUM_TRANSACTIONS : natural := 0
+		TRANSACTIONS : natural := 0
 	);
 end entity;
 
 architecture Harness of axi4_Mux_TestHarness is
-	constant IS_SIM : boolean := true;
-
 	constant CLOCK_FREQ : FREQ := 100 MHz;
 
 	constant AXI_ADDR_WIDTH : natural := 32;
 	constant AXI_DATA_WIDTH : natural := 32;
 	constant AXI_STRB_WIDTH : natural := AXI_DATA_WIDTH / 8;
 
-	constant NUMBER_PORTS : positive := 5;
+	constant PORTS : positive := 5;
 
 	component TestControl is
 		generic (
@@ -84,7 +82,7 @@ architecture Harness of axi4_Mux_TestHarness is
 			ID_BITS      => 4
 		);
 
-	signal AXI4_Manager_Transaction : AddressBusRecArrayType(0 to NUMBER_PORTS - 1)(
+	signal AXI4_Manager_Transaction : AddressBusRecArrayType(0 to PORTS - 1)(
 		Address(AXI_ADDR_WIDTH - 1 downto 0),
 		DataToModel(AXI_DATA_WIDTH - 1 downto 0),
 		DataFromModel(AXI_DATA_WIDTH - 1 downto 0)
@@ -98,8 +96,8 @@ architecture Harness of axi4_Mux_TestHarness is
 	signal Clock : std_logic := '1';
 	signal Reset : std_logic := '1';
 
-	signal In_M2S   : AXI4_Package_Sized_In.Sized_M2S_VECTOR(0 to NUMBER_PORTS - 1);
-	signal In_S2M   : AXI4_Package_Sized_In.Sized_S2M_VECTOR(0 to NUMBER_PORTS - 1);
+	signal In_M2S   : AXI4_Package_Sized_In.Sized_M2S_VECTOR(0 to PORTS - 1);
+	signal In_S2M   : AXI4_Package_Sized_In.Sized_S2M_VECTOR(0 to PORTS - 1);
 	signal Out_M2S  : AXI4_Package_Sized_Out.Sized_M2S;
 	signal Out_S2M  : AXI4_Package_Sized_Out.Sized_S2M;
 begin
@@ -120,7 +118,7 @@ begin
 		);
 	end block;
 
-	Manager_gen : for i in 0 to NUMBER_PORTS - 1 generate
+	Manager_gen : for i in 0 to PORTS - 1 generate
 		signal AxiBus : Axi4RecType(
 			WriteAddress(
 				Addr(AXI_ADDR_WIDTH - 1 downto 0),
@@ -238,8 +236,8 @@ begin
 	generic map(
 		PIPELINE_IN => (In_M2S'range => 0),
 		PIPELINE_OUT => 0,
-		NUM_OUTSTANDING_READS  => NUM_TRANSACTIONS,
-		NUM_OUTSTANDING_WRITES => NUM_TRANSACTIONS
+		NUM_OUTSTANDING_READS  => TRANSACTIONS,
+		NUM_OUTSTANDING_WRITES => TRANSACTIONS
 	)
 	port map
 	(

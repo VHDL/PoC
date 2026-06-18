@@ -50,7 +50,7 @@ begin
 	-- Wait for testbench initialization
 
 	-- Wait for Design Reset
-	wait until nReset = '1' ;
+	wait until Reset = '0' ;
 	ClearAlerts ;
 
 		-- Wait for test to finish
@@ -79,7 +79,7 @@ begin
 		-------------------------------------
 		-- Normal Rread and Wirte
 		-------------------------------------
-		wait until nReset = '1' ;
+		wait until Reset = '0' ;
 		WaitForClock(ManagerRec, 2);
 
 		Write(ManagerRec, 32x"0000", 64x"F" );
@@ -109,7 +109,7 @@ begin
 		-------------------------------------
 		-- Normal Rread and Wirte
 		-------------------------------------
-		wait until nReset = '1' ;
+		wait until Reset = '0' ;
 		WaitForClock(SubordinateRec(0), 2);
 		GetWrite(SubordinateRec(0), Address, Data) ;
 
@@ -131,7 +131,7 @@ begin
 		-------------------------------------
 		-- Normal Rread and Wirte
 		-------------------------------------
-		wait until nReset = '1' ;
+		wait until Reset = '0' ;
 
 		for i in 0 to 63 loop
 			WaitForClock(SubordinateRec(1), 2);

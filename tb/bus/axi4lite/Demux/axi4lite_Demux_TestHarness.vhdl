@@ -47,15 +47,15 @@ architecture sim of axi4lite_Demux_TestHarness is
 	constant AXI_DATA_WIDTH : integer := 64;
 	constant AXI_STRB_WIDTH : integer := AXI_DATA_WIDTH/8 ;
 
-	constant tperiod_Clk : time := 10 ns ;
-	constant tpd         : time := 2 ns ;
+	constant tperiod_Clock : time := 10 ns ;
+	constant tpd           : time := 2 ns ;
 
 	constant BASE_ADDRESS      : T_SLUV(0 to 1) := (0 => 32x"0000", 1 => 32x"4000");
 	constant BASE_ADDRESS_MASK : T_SLUV(0 to 1) := (0 to 1 => 32x"03FFF");
 	constant PIPELINE_OUT      : natural_vector(BASE_ADDRESS'range) := (others => 0);
 
-	signal Clk    : std_logic := '0';
-	signal nReset : std_logic := '1';
+	signal Clock    : std_logic := '0';
+	signal Reset : std_logic := '1';
 
 	-- Testbench Transaction Interface
 	subtype ManagerRec is AddressBusTransactionRecType(
@@ -91,8 +91,8 @@ architecture sim of axi4lite_Demux_TestHarness is
 	component axi4lite_Demux_TestController is
 		port (
 			-- Global Signal Interface
-			Clk    : in  std_logic ;
-			nReset : in  std_logic ;
+			Clock    : in  std_logic ;
+			Reset : in  std_logic ;
 			-- Transaction Interfaces
 			ManagerRec     : inout AddressBusRecType;
 			SubordinateRec : inout AddressBusRecArrayType
@@ -103,16 +103,16 @@ begin
 
 	-- create Clock for TB and 100 Mhz
 	Osvvm.ClockResetPkg.CreateClock (
-		Clk    => Clk,
-		Period => Tperiod_Clk
+		Clk    => Clock,
+		Period => Tperiod_Clock
 	)  ;
 
-	-- create nReset
+	-- create Reset
 	Osvvm.ClockResetPkg.CreateReset (
-		Reset       => nReset,
-		ResetActive => '0',
-		Clk         => Clk,
-		Period      => 7 * tperiod_Clk,
+		Reset       => Reset,
+		ResetActive => '1',
+		Clk         => Clock,
+		Period      => 7 * tperiod_Clock,
 		tpd         => tpd
 	) ;
 
@@ -135,8 +135,8 @@ begin
 		tpd_Clk_RReady  => 0 ns
 	)
 	port map (
-		Clk      => Clk,
-		nReset   => nReset,
+		Clk      => Clock,
+		nReset   => not Reset,
 
 		TransRec => AxiManagerTransRec, -- Testbench Transaction Interface
 		AxiBus   => In_AxiBus           -- AXI Master Functional Interface
@@ -162,8 +162,8 @@ begin
 			DEFAULT_DELAY => 0 ns
 		)
 		port map (
-			Clk    => Clk,
-			nReset => nReset,
+			Clk    => Clock,
+			nReset => not Reset,
 
 			AxiBus   => Out_AxiBus,
 			TransRec => SubordinateRec(i)
@@ -173,8 +173,8 @@ begin
 
 	TestCtrl : axi4lite_Demux_TestController
 		port map(
-			Clk    => Clk,
-			nReset => nReset,
+			Clock => Clock,
+			Reset => Reset,
 
 			ManagerRec     => AxiManagerTransRec,
 			SubordinateRec => SubordinateRec
@@ -191,8 +191,8 @@ begin
 	)
 	port map (
 		-- AXI4lite slave interface
-		Clock => Clk,
-		Reset => not nReset,
+		Clock => Clock,
+		Reset => Reset,
 
 		In_M2S => In_AXI4Lite_M2S,
 		In_S2M => In_AXI4Lite_S2M,

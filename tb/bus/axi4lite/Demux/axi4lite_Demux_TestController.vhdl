@@ -34,8 +34,8 @@ context osvvm_Axi4.Axi4LiteContext ;
 entity axi4lite_Demux_TestController is
 	port (
 		-- Global Signal Interface
-		Clk    : in  std_logic ;
-		nReset : in  std_logic ;
+		Clock    : in  std_logic ;
+		Reset : in  std_logic ;
 		-- Transaction Interfaces
 		ManagerRec     : inout AddressBusRecType;
 		SubordinateRec : inout AddressBusRecArrayType
