@@ -14,11 +14,11 @@ Scripts:
   stage: prepare
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
   script:
-    - mv src/common/my_project.vhdl.template tb/common/my_project.vhdl  # use CopyFile when its supporting renaming
-    - sed -i 's#\(constant\sMY_PROJECT_DIR\s*:\s*string\s*:=\s*\)".*";#\1"'"$(pwd)"'";#' tb/common/my_project.vhdl
+    - mv src/common/local_configuration.vhdl.template tb/common/local_configuration.vhdl  # use CopyFile when its supporting renaming
+    - sed -i 's#\(constant\sLOCAL_PROJECT_DIR\s*:\s*string\s*:=\s*\)".*";#\1"'"$(pwd)"'";#' tb/common/local_configuration.vhdl
   artifacts:
     paths:
-      - tb/common/my_project.vhdl
+      - tb/common/local_configuration.vhdl
     expire_in: 1 hour
 
 

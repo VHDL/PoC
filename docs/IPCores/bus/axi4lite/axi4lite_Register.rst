@@ -1016,7 +1016,7 @@ Write Register CSV File (deprecated)
 
 A csv file can be written out of the configuration with the function `write_csv_file`. It is commanded to use it with an
 enabled ``assert`` statement or writing it into a constant. With assert, you can also see in the synthesis log if
-everything was successfully. ``PROJECT_DIR`` is a constant inside ``my_project.vhdl`` normally located at `src/PoC/`.
+everything was successfully. ``PROJECT_DIR`` is a constant inside ``local_configuration.vhdl`` normally located at `src/PoC/`.
 
 .. code-block:: vhdl
 

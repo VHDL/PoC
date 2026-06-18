@@ -27,7 +27,7 @@ use     IEEE.std_logic_1164.ALL;
 use     IEEE.numeric_std.ALL;
 
 library PoC;
-use     PoC.my_project.all;
+use     PoC.local_configuration.all;
 use     PoC.utils.all;
 use     PoC.vectors.all;
 use     PoC.axi4lite.all;
@@ -182,7 +182,7 @@ begin
 		generic map (
 			ADDRESS_BITS => OCRAM_ADDRESS_BITS,
 			DATA_BITS    => OCRAM_DATA_BITS,
-			FILENAME     => ite(USE_INIT_FILE, MY_PROJECT_DIR & "/tb/bus/axi4lite/OCRAM_Adapter/axi4lite_OCRAM_Adapter.hex", "")
+			FILENAME     => ite(USE_INIT_FILE, LOCAL_PROJECT_DIR & "/tb/bus/axi4lite/OCRAM_Adapter/axi4lite_OCRAM_Adapter.hex", "")
 		)
 		port map (
 			PortA_Clock => Clock,

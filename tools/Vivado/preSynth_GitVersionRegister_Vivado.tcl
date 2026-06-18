@@ -33,7 +33,7 @@
 puts "BuildVersion: Running script..."
 
 # Script configuration
-# Go up by three folders from ./project/my_project.runs/synth_1
+# Go up by three folders from ./project/local_configuration.runs/synth_1
 set version_file ../../../temp/GitVersion.mem;
 
 # Project Versioning

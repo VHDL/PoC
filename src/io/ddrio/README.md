@@ -4,7 +4,7 @@ The namespace `PoC.io.ddrio` offers components for dual-data-rate (DDR) input
 and output of data. It uses the DDR flip flops in the FPGA
 I/O buffers, if available. PoC has two platform specific
 implementations for Altera and Xilinx, which are chosen, if the
-appropriate `MY_DEVICE` is configured in [`my_config.vhdl`][my_config].
+appropriate `MY_DEVICE` is configured in [`project_configuration.vhdl`][project_configuration].
  
 
 ## Package(s)
@@ -63,7 +63,7 @@ See the ASCII art inside the [VHDL description][ddrio_InOut] for more
 details on how data to is sampled and driven at the pad.
 
 
- [my_config]:						../../common/my_config.vhdl.template
+ [project_configuration]:						../../common/project_configuration.vhdl.template
  [ddrio.pkg]:						ddrio.pkg.vhdl
  [ddrio_In]:						ddrio_In.vhdl
  [ddrio_In_Altera]:			ddrio_In_Altera.vhdl

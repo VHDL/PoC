@@ -68,8 +68,8 @@ set regressionLevels [createRegressionLevels osvvm poc test] ; # all
 # -g -gui         disables system exit (i.e. on errors)
 # -v -vendor      Vendor name
 # -b -board       Board name
-# -p -projectFile Path to the my_project file
-# -c -configFile  Path to the my_config file
+# -p -projectFile Path to the local_configuration file
+# -c -configFile  Path to the project_configuration file
 configurePoC -g
 
 # -s -stop <i>    set the stop counts to <i>

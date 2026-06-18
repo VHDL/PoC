@@ -59,7 +59,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/common/my_config.vhdl.template
+  - name: ../../src/common/project_configuration.vhdl.template
     file_type: none
     file_version: !<tag:yaml.org,2002:js/undefined> ''
     is_include_file: false
@@ -67,7 +67,7 @@ files:
     logical_name: PoC
     is_manual: true
     source_type: none
-  - name: ../../src/common/my_project.vhdl.template
+  - name: ../../src/common/local_configuration.vhdl.template
     file_type: none
     file_version: !<tag:yaml.org,2002:js/undefined> ''
     is_include_file: false

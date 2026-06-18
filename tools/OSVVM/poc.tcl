@@ -11,8 +11,8 @@ namespace eval ::poc {
 	variable buildNamePrefix ""
 
 	variable myConfigFolder "../tb/common"
-	variable myConfigFile  [file join $myConfigFolder "my_config_${::poc::boardName}.vhdl"]
-	variable myProjectFile [file join $myConfigFolder "my_project.vhdl"]
+	variable myConfigFile  [file join $myConfigFolder "project_configuration_${::poc::boardName}.vhdl"]
+	variable myProjectFile [file join $myConfigFolder "local_configuration.vhdl"]
 
 	variable disableExit 0
 

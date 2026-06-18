@@ -132,8 +132,8 @@ Generics
 :Name:          :generic:`VERSION_FILE_NAME`
 :Type:          :type:`string`
 :Default Value: — — — —
-:Description:   Path to the Version-mem-file created by `set_BuildVersion.tcl`. Relative to ``constant MY_PROJECT_DIR``
-                in ``src/PoC/my_project.vhdl``
+:Description:   Path to the Version-mem-file created by `set_BuildVersion.tcl`. Relative to ``constant LOCAL_PROJECT_DIR``
+                in ``src/PoC/local_configuration.vhdl``
 
 
 .. _IP/axi4lite_GitVersionRegister/gen/HEADER_FILE_NAME:
@@ -145,7 +145,7 @@ Generics
 :Type:          :type:`string`
 :Default Value: — — — —
 :Description:   If csv-file with all register spaces is needed, put here the name/path of csv-file. Relative to
-                ``constant MY_PROJECT_DIR`` in ``src/PoC/my_project.vhdl``
+                ``constant LOCAL_PROJECT_DIR`` in ``src/PoC/local_configuration.vhdl``
 
 
 .. _IP/axi4lite_GitVersionRegister/gen/INCLUDE_XIL_DNA:

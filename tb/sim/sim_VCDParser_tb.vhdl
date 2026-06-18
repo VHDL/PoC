@@ -32,7 +32,7 @@ use     IEEE.numeric_std.all;
 use     STD.TEXTIO.all;
 
 library PoC;
-use     PoC.my_project.all;
+use     PoC.local_configuration.all;
 use     PoC.strings.all;
 use     PoC.physical.all;
 -- simulation only packages
@@ -86,7 +86,7 @@ begin
 		simWaitUntilRisingEdge(Clock, 2);
 
 		-- open *.vcd file and read header
-		file_open(VCDFile, MY_PROJECT_DIR & "tb/sim/sim_VCDParser_tb.vcd", READ_MODE);
+		file_open(VCDFile, LOCAL_PROJECT_DIR & "tb/sim/sim_VCDParser_tb.vcd", READ_MODE);
 		VCD_ReadHeader(VCDFile, VCDLine);
 
 		-- read initial stimuli values

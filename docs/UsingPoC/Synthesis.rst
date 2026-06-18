@@ -63,7 +63,7 @@ by an unique name: ``PoC.arith.prng``, which is passed to the frontend script.
 The CLI command ``xst`` chooses *Xilinx Synthesis Tool* as the synthesizer and
 passes the fully qualified PoC entity name ``PoC.arith.prng`` as a parameter
 to the tool. Additionally, the development board name is required to load the
-correct ``my_config.vhdl`` file. All required source file are gathered and
+correct ``project_configuration.vhdl`` file. All required source file are gathered and
 synthesized to a netlist.
 
 .. image:: /_static/images/xst/arith_PRNG.posh.png

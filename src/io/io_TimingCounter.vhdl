@@ -32,7 +32,7 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-use     work.my_config.all;
+use     work.project_configuration.all;
 use     work.utils.all;
 
 

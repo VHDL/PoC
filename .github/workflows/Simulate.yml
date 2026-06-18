@@ -231,7 +231,7 @@ jobs:
         run: |
           mkdir -p "${{ needs.Parameters.outputs.tempDirectory }}"
 
-          mv src/common/my_project.vhdl.template tb/common/my_project.vhdl
+          mv src/common/local_configuration.vhdl.template tb/common/local_configuration.vhdl
 
       - name: 📥 Download artifacts '${{ needs.Parameters.outputs.osvvmLibraries }}' from 'Build-OSVVM' job
         uses: pyTooling/download-artifact@v4

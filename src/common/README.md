@@ -40,8 +40,8 @@ use work.vectors.all;
 
 ## Templates
 
- - [`PoC.my_config`][my_config]
- - [`PoC.my_project`][my_project]
+ - [`PoC.project_configuration`][project_configuration]
+ - [`PoC.local_configuration`][local_configuration]
 
 
  [config]:			config.vhdl
@@ -56,5 +56,5 @@ use work.vectors.all;
 
  [common]:			common.vhdl
 
- [my_config]:		my_config.vhdl.template
- [my_project]:	my_project.vhdl.template
+ [project_configuration]:		project_configuration.vhdl.template
+ [local_configuration]:	local_configuration.vhdl.template

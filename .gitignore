@@ -35,7 +35,7 @@ temp/*
 .pyIPCMI/config.private.ini
 
 # ignore private files from PoC
-tb/common/my_project.vhdl
+tb/common/local_configuration.vhdl
 
 
 # ignore external tool files: ActiveHDL, QuestaSim

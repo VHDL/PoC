@@ -1,6 +1,6 @@
 # Namespace `PoC.misc.sync`
 
-The namespace `PoC.misc.sync` offers different clock-domain-crossing (CDC) synchronizer circuits. All synchronizers are based on the basic 2 flip-flop synchonizer called [`sync_Bits`][sync_Bits]. PoC has a generic and two platform specific implementations for Altera and Xilinx, which are choosen, if the appropriate `MY_DEVICE` is configured in [`my_config.vhdl`][my_config].
+The namespace `PoC.misc.sync` offers different clock-domain-crossing (CDC) synchronizer circuits. All synchronizers are based on the basic 2 flip-flop synchonizer called [`sync_Bits`][sync_Bits]. PoC has a generic and two platform specific implementations for Altera and Xilinx, which are choosen, if the appropriate `MY_DEVICE` is configured in [`project_configuration.vhdl`][project_configuration].
  
 
 ## Package(s)
@@ -32,7 +32,7 @@ These synchronizers also need to be constrained, so static timing analysis will 
 
 See [`PoC.fifo.ic_got`][fifo] for a cross-clock capable FIFO.
 
- [my_config]:			../../common/my_config.vhdl.template
+ [project_configuration]:			../../common/project_configuration.vhdl.template
  [sync.pkg]:			sync.pkg.vhdl
  [sync_Bits]:			sync_Bits.vhdl
  [sync_Bits_Altera]:	sync_Bits_Altera.vhdl
