@@ -27,11 +27,12 @@ variables:
     - mkdir -p temp/junit
     - CopyFile temp/${SIMULATOR_TOOL}/*/*.xml "temp/junit"
     - CopyFile temp/${SIMULATOR_TOOL}/*/*.yml "temp/junit"
+    - tree temp
   artifacts:
     paths:
       - temp/[GNR]*
       - temp/junit
-       - lib/osvvm/*_generated.vhd
+      - lib/osvvm/*_generated.vhd
     reports:
       junit: "temp/junit/*.xml"
     expire_in: 1 week
