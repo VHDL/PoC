@@ -286,7 +286,7 @@ begin
 		begin
 			NextState     <= State;
 
-			In_S2M_write  <= Initialize_AXI4_Bus_S2M(In_M2S.AWAddr'length, In_S2M.RData'length, In_S2M.RUser'length, In_S2M.BID'length, '0');
+			In_S2M_write  <= Initialize_AXI4_Bus_S2M(In_S2M.RData'length, In_S2M.RUser'length, In_S2M.BID'length, '0');
 			Out_M2S_write <= (Out_M2S'range => In_M2S_write);
 
 			for i in 0 to PORTS -1 loop

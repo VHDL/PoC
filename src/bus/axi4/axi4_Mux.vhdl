@@ -202,7 +202,7 @@ begin
 		begin
 			NextState <= State;
 
-			In_S2M_write  <= (In_S2M'range => Initialize_AXI4_Bus_S2M(Out_M2S.AWAddr'length, Out_S2M.RData'length, Out_S2M.RUser'length, In_S2M(In_S2M'low).BID'length, '0'));
+			In_S2M_write  <= (In_S2M'range => Initialize_AXI4_Bus_S2M(Out_S2M.RData'length, Out_S2M.RUser'length, In_S2M(In_S2M'low).BID'length, '0'));
 			Out_M2S_write <= Initialize_AXI4_Bus_M2S(Out_M2S.AWAddr'length, Out_M2S.WData'length, Out_M2S.WUser'length, Out_M2S.AWID'length, '0');
 
 			Arbitrate <= '0';

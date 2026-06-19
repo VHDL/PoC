@@ -201,8 +201,8 @@ begin
 
 						Insert                    <= '1';
 						CacheMemory_we            <= '1';
-						NewMACAddress_rst          <= '0';
-						NewMACAddress_nxt          <= '1';
+						NewMACAddress_rst         <= '0';
+						NewMACAddress_nxt         <= '1';
 						NewDataChunkIndex_en      <= '1';
 
 						FSMReplace_NextState      <= ST_REPLACE;
@@ -213,7 +213,7 @@ begin
 				Status                        <= NET_ARP_ARPCACHE_STATUS_UPDATING;
 
 				CacheMemory_we                <= '1';
-				NewMACAddress_nxt              <= '1';
+				NewMACAddress_nxt             <= '1';
 				NewDataChunkIndex_en          <= '1';
 
 				if (NewDataChunkIndex_us = NewDataChunkIndex_max_us) then
@@ -238,36 +238,36 @@ begin
 	TU: entity work.cache_TagUnit_Sequential
 		generic map (
 			REPLACEMENT_POLICY        => REPLACEMENT_POLICY,
-			CACHE_LINES                => CACHE_LINES,
-			ASSOCIATIVITY              => CACHE_LINES,
+			CACHE_LINES               => CACHE_LINES,
+			ASSOCIATIVITY             => CACHE_LINES,
 			TAG_BITS                  => TAG_BITS,
 			CHUNK_BITS                => TAGCHUNK_BITS,
 			TAG_BYTE_ORDER            => TAG_BYTE_ORDER,
-			USE_INITIAL_TAGS           => TRUE,
+			USE_INITIAL_TAGS          => TRUE,
 			INITIAL_TAGS              => INITIAL_TAGS
 		)
 		port map (
-			Clock                      => Clock,
-			Reset                      => Reset,
+			Clock                     => Clock,
+			Reset                     => Reset,
 
-			Replace                    => Insert,
-			Replaced                  => TU_Replaced,
+			Replace                   => Insert,
+			Replaced                  => open,
 			Replace_NewTag_rst        => TU_NewTag_rst,
 			Replace_NewTag_rev        => open,
 			Replace_NewTag_nxt        => TU_NewTag_nxt,
-			Replace_NewTag_Data        => NewTag_Data,
+			Replace_NewTag_Data       => NewTag_Data,
 			Replace_NewIndex          => TU_NewIndex,
 
-			Request                    => Lookup,
-			Request_ReadWrite          => '0',
+			Request                   => Lookup,
+			Request_ReadWrite         => '0',
 			Request_Invalidate        => '0',--Invalidate,
-			Request_Tag_rst            => TU_Tag_rst,
-			Request_Tag_rev            => open,
-			Request_Tag_nxt            => TU_Tag_nxt,
+			Request_Tag_rst           => TU_Tag_rst,
+			Request_Tag_rev           => open,
+			Request_Tag_nxt           => TU_Tag_nxt,
 			Request_Tag_Data          => TU_Tag_Data,
-			Request_Index              => TU_Index,
+			Request_Index             => TU_Index,
 			Request_TagHit            => TU_TagHit,
-			Request_TagMiss            => TU_TagMiss
+			Request_TagMiss           => TU_TagMiss
 		);
 
 	-- expiration time tick generator
@@ -287,22 +287,22 @@ begin
 --  Exp: entity work.list_Expire
 	Exp: entity work.list_Expire
 		generic map (
-			CLOCK_CYCLE_TICKS        => 65536,
-			EXPIRATION_TIME_TICKS    => 8192,
+			CLOCK_CYCLE_TICKS       => 65536,
+			EXPIRATION_TIME_TICKS   => 8192,
 			ELEMENTS                => CACHE_LINES,
 			KEY_BITS                => CACHEMEMORY_INDEX_BITS
 		)
 		port map (
-			Clock                    => Clock,
-			Reset                    => Reset,
+			Clock                   => Clock,
+			Reset                   => Reset,
 
 			Tick                    => Tick,
 
 			Insert                  => Insert,
-			KeyIn                    => TU_NewIndex,
+			KeyIn                   => TU_NewIndex,
 
-			Expired                  => Exp_Expired,
-			KeyOut                  => Exp_KeyOut
+			Expired                 => open,  -- FIXME: why is it not used?
+			KeyOut                  => open
 		);
 
 
