@@ -227,20 +227,20 @@ begin
 		)
 		port map (
 			-- Writing Interface
-			clk_wr              => ite(i<3,In_Clock,Out_Clock),
-			rst_wr              => ite(i<3,In_Reset,Out_Reset),
-			put                 => DataFIFO_put,
-			din                 => DataFIFO_DataIn_i,
-			full                => DataFIFO_Full,
-			estate_wr           => open,
+			Write_Clock              => ite(i<3,In_Clock,Out_Clock),
+			Write_Reset              => ite(i<3,In_Reset,Out_Reset),
+			Write_Put                 => DataFIFO_put,
+			Write_DataIn                 => DataFIFO_DataIn_i,
+			Write_Full                => DataFIFO_Full,
+			Write_EmptyState           => open,
 
 			-- Reading Interface
-			clk_rd              => ite(i<3,Out_Clock,In_Clock),
-			rst_rd              => ite(i<3,Out_Reset,In_Reset),
-			got                 => DataFIFO_got,
-			dout                => DataFIFO_DataOut_i,
-			valid               => DataFIFO_Valid,
-			fstate_rd           => open
+			Read_Clock              => ite(i<3,Out_Clock,In_Clock),
+			Read_Reset              => ite(i<3,Out_Reset,In_Reset),
+			Read_Got                 => DataFIFO_got,
+			Read_DataOut                => DataFIFO_DataOut_i,
+			Read_Valid               => DataFIFO_Valid,
+			Read_FillState           => open
 		);
 
 

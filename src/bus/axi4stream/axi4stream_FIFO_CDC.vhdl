@@ -175,20 +175,20 @@ begin
 		)
 		port map (
 			-- Writing Interface
-			clk_wr              => In_Clock,
-			rst_wr              => In_Reset,
-			put                 => DataFIFO_put,
-			din                 => DataFIFO_DataIn(ite(USER_IS_DYNAMIC, isum(FIFO_BIT_VEC), isum(FIFO_BIT_VEC) - USER_BITS) -1 downto 0),
-			full                => DataFIFO_Full,
-			estate_wr           => open,
+			Write_Clock              => In_Clock,
+			Write_Reset              => In_Reset,
+			Write_Put                 => DataFIFO_put,
+			Write_DataIn                 => DataFIFO_DataIn(ite(USER_IS_DYNAMIC, isum(FIFO_BIT_VEC), isum(FIFO_BIT_VEC) - USER_BITS) -1 downto 0),
+			Write_Full                => DataFIFO_Full,
+			Write_EmptyState           => open,
 
 			-- Reading Interface
-			clk_rd              => Out_Clock,
-			rst_rd              => Out_Reset,
-			got                 => DataFIFO_got,
-			dout                => DataFIFO_DataOut(ite(USER_IS_DYNAMIC, isum(FIFO_BIT_VEC), isum(FIFO_BIT_VEC) - USER_BITS) -1 downto 0),
-			valid               => DataFIFO_Valid,
-			fstate_rd           => open
+			Read_Clock              => Out_Clock,
+			Read_Reset              => Out_Reset,
+			Read_Got                 => DataFIFO_got,
+			Read_DataOut                => DataFIFO_DataOut(ite(USER_IS_DYNAMIC, isum(FIFO_BIT_VEC), isum(FIFO_BIT_VEC) - USER_BITS) -1 downto 0),
+			Read_Valid               => DataFIFO_Valid,
+			Read_FillState           => open
 		);
 
 	Out_M2S     <= Out_M2S_i;
@@ -229,20 +229,20 @@ begin
 			)
 			port map (
 				-- Writing Interface
-				clk_wr              => In_Clock,
-				rst_wr              => In_Reset,
-				put                 => MetaFIFO_put,
-				din                 => Meta_In,
-				full                => MetaFIFO_Full,
-				estate_wr           => open,
+				Write_Clock              => In_Clock,
+				Write_Reset              => In_Reset,
+				Write_Put                 => MetaFIFO_put,
+				Write_DataIn                 => Meta_In,
+				Write_Full                => MetaFIFO_Full,
+				Write_EmptyState           => open,
 
 				-- Reading Interface
-				clk_rd              => Out_Clock,
-				rst_rd              => Out_Reset,
-				got                 => Out_M2S_i.Valid and Out_M2S_i.Last and Out_S2M.Ready,
-				dout                => Meta_Out,
-				valid               => open,
-				fstate_rd           => open
+				Read_Clock              => Out_Clock,
+				Read_Reset              => Out_Reset,
+				Read_Got                 => Out_M2S_i.Valid and Out_M2S_i.Last and Out_S2M.Ready,
+				Read_DataOut                => Meta_Out,
+				Read_Valid               => open,
+				Read_FillState           => open
 			);
 		else generate
 			MetaFIFO_Full <= '0';

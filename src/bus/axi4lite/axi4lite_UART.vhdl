@@ -76,7 +76,7 @@ end entity;
 
 architecture rtl of axi4lite_UART is
 	constant TX_EMPTY_STATE_BITS : natural := 4;
-	constant RX_FULL_STATE_BITS  : natural := 4;
+	constant RX_FILL_STATE_BITS  : natural := 4;
 
 	constant Reg_config : T_AXI4_Register_Vector := (
 		to_AXI4_Register(Name => "Rx",      Address => 32x"00", RegisterMode => ReadOnly_NotRegistered,  Init_Value => x"00000000"),
@@ -120,7 +120,7 @@ architecture rtl of axi4lite_UART is
 	signal Control_InterruptEnable : std_logic;
 
 	signal Status_TX_EmptyState : std_logic_vector(imax(0, TX_EMPTY_STATE_BITS - 1) downto 0);
-	signal Status_RX_FullState  : std_logic_vector(imax(0, RX_FULL_STATE_BITS - 1) downto 0);
+	signal Status_RX_FillState  : std_logic_vector(imax(0, RX_FILL_STATE_BITS - 1) downto 0);
 begin
 	Reg : entity work.axi4lite_Register
 	generic map(
@@ -187,10 +187,10 @@ begin
 		ADD_INPUT_SYNCHRONIZERS => ADD_INPUT_SYNCHRONIZERS,
 
 		-- Buffer Dimensioning
-		TX_MIN_DEPTH   => TX_FIFO_DEPTH,
-		TX_ESTATE_BITS => TX_EMPTY_STATE_BITS,
-		RX_MIN_DEPTH   => RX_FIFO_DEPTH,
-		RX_FSTATE_BITS => RX_FULL_STATE_BITS,
+		TX_MIN_DEPTH        => TX_FIFO_DEPTH,
+		TX_EMPTY_STATE_BITS => TX_EMPTY_STATE_BITS,
+		RX_MIN_DEPTH        => RX_FIFO_DEPTH,
+		RX_FILL_STATE_BITS  => RX_FILL_STATE_BITS,
 
 		-- Flow Control
 		FLOWCONTROL    => FLOWCONTROL,
@@ -211,7 +211,7 @@ begin
 		RX_Valid      => Status_RX_Valid,
 		RX_Data       => RX_Data,
 		RX_Got        => RX_Got,
-		RX_FullState  => Status_RX_FullState,
+		RX_FillState  => Status_RX_FillState,
 		RX_Overflow   => RX_OverFlow,
 		RXFIFO_Full   => Status_RX_Full,
 		RXFIFO_Reset  => Control_RX_Reset,

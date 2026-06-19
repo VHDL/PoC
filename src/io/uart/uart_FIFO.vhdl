@@ -61,9 +61,9 @@ entity uart_FIFO is
 
 		-- Buffer Dimensioning
 		TX_MIN_DEPTH                    : positive          := 16;
-		TX_ESTATE_BITS                  : natural           := 0;     -- XXX: adjust to FIFO naming
+		TX_EMPTY_STATE_BITS                  : natural           := 0;     -- XXX: adjust to FIFO naming
 		RX_MIN_DEPTH                    : positive          := 16;
-		RX_FSTATE_BITS                  : natural           := 0;
+		RX_FILL_STATE_BITS                  : natural           := 0;
 
 		FLOWCTRL_XON_THRESHOLD          : real := 0.0625;
 		FLOWCTRL_XOFF_THRESHOLD         : real := 0.75;
@@ -82,14 +82,14 @@ entity uart_FIFO is
 		TX_Put              : in  std_logic;
 		TX_Data             : in  std_logic_vector(7 downto 0);
 		TX_Full             : out std_logic;
-		TX_EmptyState       : out std_logic_vector(imax(0, TX_ESTATE_BITS-1) downto 0);
+		TX_EmptyState       : out std_logic_vector(imax(0, TX_EMPTY_STATE_BITS-1) downto 0);
 		TXFIFO_Reset        : in  std_logic;
 		TXFIFO_Empty        : out std_logic;
 
 		RX_Valid            : out std_logic;
 		RX_Data             : out std_logic_vector(7 downto 0);
 		RX_Got              : in  std_logic;
-		RX_FullState        : out std_logic_vector(imax(0, RX_FSTATE_BITS-1) downto 0);     -- XXX: FullState or FillState ?
+		RX_FillState        : out std_logic_vector(imax(0, RX_FILL_STATE_BITS-1) downto 0);
 		RX_Overflow         : out std_logic;
 		RXFIFO_Full         : out std_logic;
 		RXFIFO_Reset        : in  std_logic;
@@ -117,7 +117,7 @@ architecture rtl of uart_FIFO is
 	signal TXFIFO_Data          : T_SLV_8;
 
 	signal RXFIFO_Full_int      : std_logic;
-	signal RX_FullState_int     : std_logic_vector(imax(0, RX_FSTATE_BITS-1) downto 0);
+	signal RX_FillState_int     : std_logic_vector(imax(0, RX_FILL_STATE_BITS-1) downto 0);
 
 	signal TXUART_Full          : std_logic;
 	signal RXUART_Strobe        : std_logic;
@@ -144,7 +144,7 @@ begin
 			DATA_REG         => TRUE,               -- Store Data Content in Registers
 			STATE_REG        => FALSE,              -- Registered Full/Empty Indicators
 			OUTPUT_REG       => FALSE,              -- Registered FIFO Output
-			EMPTY_STATE_BITS   => TX_ESTATE_BITS,     -- Empty State Bits
+			EMPTY_STATE_BITS   => TX_EMPTY_STATE_BITS,     -- Empty State Bits
 			FILL_STATE_BITS   => 0                   -- Full State Bits
 		)
 		port map (
@@ -169,7 +169,7 @@ begin
 			STATE_REG           => FALSE,             -- Registered Full/Empty Indicators
 			OUTPUT_REG          => FALSE,             -- Registered FIFO Output
 			EMPTY_STATE_BITS      => 0,                 -- Empty State Bits
-			FILL_STATE_BITS      => RX_FSTATE_BITS     -- Full State Bits
+			FILL_STATE_BITS      => RX_FILL_STATE_BITS     -- Full State Bits
 		)
 		port map (
 			Reset             => Reset or RXFIFO_Reset,
@@ -182,11 +182,11 @@ begin
 			Valid           => RX_Valid,
 			DataOut            => RX_Data,
 			Got             => RX_Got,
-			FillState       => RX_FullState_int
+			FillState       => RX_FillState_int
 		);
 
 		RXFIFO_Full  <=  RXFIFO_Full_int;
-		RX_FullState <=  RX_FullState_int;
+		RX_FillState <=  RX_FillState_int;
 		TXFIFO_Empty <=  NOT TXFIFO_Valid;
 
 
@@ -207,8 +207,8 @@ begin
 	-- Software Flow Control
 	-- ===========================================================================
 	genSWFC : if FLOWCONTROL = UART_FLOWCONTROL_XON_XOFF generate
-		constant XON_TRIG       : integer := integer(FLOWCTRL_XON_THRESHOLD * real(2**RX_FSTATE_BITS));
-		constant XOFF_TRIG      : integer := integer(FLOWCTRL_XOFF_THRESHOLD * real(2**RX_FSTATE_BITS));
+		constant XON_TRIG       : integer := integer(FLOWCTRL_XON_THRESHOLD * real(2**RX_FILL_STATE_BITS));
+		constant XOFF_TRIG      : integer := integer(FLOWCTRL_XOFF_THRESHOLD * real(2**RX_FILL_STATE_BITS));
 
 		signal send_xoff        : std_logic;
 		signal send_xon         : std_logic;
@@ -217,21 +217,21 @@ begin
 		signal clr_xoff_transmitted     : std_logic;
 		signal discard_user_tx          : std_logic;
 		signal discard_user_rx          : std_logic;
-		signal RxFifo_FullState         : integer := 0; -- receive fifo full_state
+		signal RxFifo_FillState         : integer := 0; -- receive fifo fill_state
 
 		-- registers
 		signal xoff_transmitted         : std_logic := '0';
 		signal transmit_enable          : std_logic := '1';
 	begin
-		RxFifo_FullState <= to_integer(unsigned(RX_FullState_int));
+		RxFifo_FillState <= to_integer(unsigned(RX_FillState_int));
 		--assert false report"FLOWCONTROL=" & T_IO_UART_FLOWCONTROL_KIND'image(FLOWCONTROL) & " is currently not supported!" severity failure;
 		-- send XOFF only once when fill state goes above trigger level
-		send_xoff <= not xoff_transmitted   when (RxFifo_FullState >= XOFF_TRIG) else '0';
-		set_xoff_transmitted <= (not TXUART_Full)    when (RxFifo_FullState >= XOFF_TRIG) else '0';
+		send_xoff <= not xoff_transmitted   when (RxFifo_FillState >= XOFF_TRIG) else '0';
+		set_xoff_transmitted <= (not TXUART_Full)    when (RxFifo_FillState >= XOFF_TRIG) else '0';
 
 		-- send XON only once when receive FIFO is almost empty
-		send_xon <=  xoff_transmitted     when (RxFifo_FullState <= XON_TRIG) else '0';
-		clr_xoff_transmitted <= (not TXUART_Full) when (RxFifo_FullState <= XON_TRIG) else '0';
+		send_xon <=  xoff_transmitted     when (RxFifo_FillState <= XON_TRIG) else '0';
+		clr_xoff_transmitted <= (not TXUART_Full) when (RxFifo_FillState <= XON_TRIG) else '0';
 
 		-- discard any user supplied XON/XOFF
 		discard_user_tx <= '1' when (TXFIFO_Data = SWFC_XON_CHAR) or (TXFIFO_Data = SWFC_XOFF_CHAR) else '0';
@@ -274,8 +274,8 @@ begin
 	-- Hardware Flow Control
 	-- ===========================================================================
 	genHWFC1 : if FLOWCONTROL = UART_FLOWCONTROL_RTS_CTS generate
-		constant RX_FSTATE_UPPER_LIMIT     : integer  := integer(FLOWCTRL_XOFF_THRESHOLD * real(2**RX_FSTATE_BITS));
-		constant RX_FSTATE_LOWER_LIMIT     : integer  := integer(FLOWCTRL_XON_THRESHOLD * real(2**RX_FSTATE_BITS));
+		constant RX_FSTATE_UPPER_LIMIT     : integer  := integer(FLOWCTRL_XOFF_THRESHOLD * real(2**RX_FILL_STATE_BITS));
+		constant RX_FSTATE_LOWER_LIMIT     : integer  := integer(FLOWCTRL_XON_THRESHOLD * real(2**RX_FILL_STATE_BITS));
 	begin
 		--assert false report"FLOWCONTROL=" & T_IO_UART_FLOWCONTROL_KIND'image(FLOWCONTROL) & " is currently not supported!" severity failure;
 
@@ -293,9 +293,9 @@ begin
 			if  TXUART_Full = '0' then
 				if Reset = '1' then
 					UART_RTS<='1';
-				elsif (to_integer(unsigned(RX_FullState_int)) >= RX_FSTATE_UPPER_LIMIT)   then
+				elsif (to_integer(unsigned(RX_FillState_int)) >= RX_FSTATE_UPPER_LIMIT)   then
 					UART_RTS<='0';
-				elsif (to_integer(unsigned(RX_FullState_int)) <= RX_FSTATE_LOWER_LIMIT)  then
+				elsif (to_integer(unsigned(RX_FillState_int)) <= RX_FSTATE_LOWER_LIMIT)  then
 					UART_RTS<='1';
 				end if;
 			end if;

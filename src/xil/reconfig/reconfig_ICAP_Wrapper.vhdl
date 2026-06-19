@@ -38,28 +38,28 @@ use     work.utils.all;
 
 entity reconfig_ICAP_Wrapper is
 	generic (
-		MIN_DEPTH_OUT     : positive := 256;
-		MIN_DEPTH_IN      : positive := 256
+		INPUT_FIFO_DEPTH  : positive := 256;
+		OUTPUT_FIFO_DEPTH : positive := 256
 	);
 	port (
-		Clock       : in  std_logic;
-		Reset      : in  std_logic;
-		ICAP_Clock    : in  std_logic;    -- clock signal for ICAP, max 100 MHz (double check with manual)
+		Clock            : in  std_logic;
+		Reset            : in  std_logic;
+		ICAP_Clock       : in  std_logic;    -- clock signal for ICAP, max 100 MHz (double check with manual)
 
-		icap_busy    : out std_logic;    -- the ICAP is processing the data
-		icap_readback  : out std_logic;    -- high during a readback
-		icap_partial_res: out std_logic;    -- high during reconfiguration
+		ICAP_Busy        : out std_logic;    -- the ICAP is processing the data
+		ICAP_Readback    : out std_logic;    -- high during a readback
+		ICAP_Partial_res : out std_logic;    -- high during reconfiguration
 
 		-- data in
-		write_put    : in  std_logic;
-		write_full    : out std_logic;
-		write_data    : in  std_logic_vector(31 downto 0);
-		write_done    : in  std_logic;    -- high pulse/edge after all data was written
+		Write_Put        : in  std_logic;
+		Write_Data       : in  std_logic_vector(31 downto 0);
+		Write_Full       : out std_logic;
+		Write_Done       : in  std_logic;    -- high pulse/edge after all data was written
 
 		-- data out
-		read_got    : in  std_logic;
-		read_valid     : out std_logic;
-		read_data     : out std_logic_vector(31 downto 0)
+		Read_Valid       : out std_logic;
+		Read_Data        : out std_logic_vector(31 downto 0);
+		Read_Got         : in  std_logic
 	);
 end entity;
 
@@ -99,12 +99,12 @@ architecture Behavioral of reconfig_ICAP_Wrapper is
 	signal fsm_ready        : std_logic;
 	signal fsm_ready_d        : std_logic;
 begin
-	write_done_d <= write_done when rising_edge(Clock);
-	write_done_edge <= to_sl(write_done = '1' and write_done_d = '0');
+	write_done_d <= Write_Done when rising_edge(Clock);
+	write_done_edge <= to_sl(Write_Done = '1' and write_done_d = '0');
 
-	icap_busy      <= not fsm_status_clk(3);
-	icap_readback    <= fsm_status_clk(1);
-	icap_partial_res  <= fsm_status_clk(0);
+	ICAP_Busy      <= not fsm_status_clk(3);
+	ICAP_Readback    <= fsm_status_clk(1);
+	ICAP_Partial_res  <= fsm_status_clk(0);
 
 	fsm_ready <= fsm_status(3);
 	fsm_ready_d <= fsm_ready when rising_edge(ICAP_Clock);
@@ -131,25 +131,25 @@ begin
 	-- reader: core
 	fifo_in: entity work.fifo_ic_got
 		generic map(
-			DATA_BITS      => 32,
-			MIN_DEPTH    => MIN_DEPTH_IN,
-			OUTPUT_REG    => false,
+			DATA_BITS        => 32,
+			MIN_DEPTH        => INPUT_FIFO_DEPTH,
+			OUTPUT_REG       => false,
 			FILL_STATE_BITS  => STATE_BITS
 		)
 		port map(
-			clk_wr       => Clock,
-			rst_wr       => Reset,
-			put          => write_put,
-			din          => write_data,
-			full         => write_full,
-			estate_wr    => open,
+			Write_Clock      => Clock,
+			Write_Reset      => Reset,
+			Write_Put        => Write_Put,
+			Write_DataIn     => Write_Data,
+			Write_Full       => Write_Full,
+			Write_EmptyState => open,
 
-			clk_rd       => ICAP_Clock,
-			rst_rd       => reset_icap,
-			got          => in_data_rden,
-			valid        => in_data_valid,
-			dout         => in_data,
-			fstate_rd    => in_data_fill_state
+			Read_Clock       => ICAP_Clock,
+			Read_Reset       => reset_icap,
+			Read_Valid       => in_data_valid,
+			Read_DataOut     => in_data,
+			Read_Got         => in_data_rden,
+			Read_FillState   => in_data_fill_state
 		);
 
 	-- sync data from this core to the pci bus
@@ -157,22 +157,24 @@ begin
 	-- reader: pci
 	fifo_out: entity work.fifo_ic_got
 		generic map(
-			DATA_BITS      => 32,
-			MIN_DEPTH    => MIN_DEPTH_OUT,
-			OUTPUT_REG    => false
+			DATA_BITS        => 32,
+			MIN_DEPTH        => OUTPUT_FIFO_DEPTH,
+			OUTPUT_REG       => false
 		)
 		port map(
-			clk_wr       => ICAP_Clock,
-			rst_wr       => reset_icap,
-			put          => out_data_put,
-			din          => out_data,
-			full         => out_data_full,
+			Write_Clock      => ICAP_Clock,
+			Write_Reset      => reset_icap,
+			Write_Put        => out_data_put,
+			Write_DataIn     => out_data,
+			Write_Full       => out_data_full,
+			Write_EmptyState => open,
 
-			clk_rd       => Clock,
-			rst_rd       => Reset,
-			got          => read_got,
-			valid        => read_valid,
-			dout         => read_data
+			Read_Clock       => Clock,
+			Read_Reset       => Reset,
+			Read_Valid       => Read_Valid,
+			Read_DataOut     => Read_Data,
+			Read_Got         => Read_Got,
+			Read_FillState   => open
 		);
 
 	FSM: entity work.reconfig_ICAP_FSM
