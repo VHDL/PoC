@@ -1,26 +1,14 @@
 stages:
-  - prepare
-  - build_osvvm
-  - build_poc
-  - test
-  - documentation
-  - pages
+#  - prepare
+  - Build-OSVVM
+  - Build-PoC
+  - Simulate
+  - Documentation
+  - GitLabPages
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  SIMULATOR_PAGES: "NVC"  # simulator from which the results should be published on GitLab pages (GHDL, Riviera-PRO)
-
-Scripts:
-  stage: prepare
-  image: ${CI_REGISTRY}/docker-images/base-image:alpine
-  script:
-    - mv src/common/local_configuration.vhdl.template tb/common/local_configuration.vhdl  # use CopyFile when its supporting renaming
-    - sed -i 's#\(constant\sLOCAL_PROJECT_DIR\s*:\s*string\s*:=\s*\)".*";#\1"'"$(pwd)"'";#' tb/common/local_configuration.vhdl
-  artifacts:
-    paths:
-      - tb/common/local_configuration.vhdl
-    expire_in: 1 hour
-
+  SIMULATOR_PAGES:        "nvc"      # simulator from which the results should be published on GitLab pages (GHDL, Riviera-PRO)
 
 # --------------------
 # ---- Templates -----
@@ -28,22 +16,22 @@ Scripts:
 .run:
   script:
     - |
-      if [ "$SIMULATOR" = "NVC" ]; then
+      if [[ "${SIMULATOR_TOOL}" == "NVC" ]]; then
         CreateAndChangeDirectory "temp/NVC" "Simulation working directory"
         # before_script and script are running in the same shell; therefore no need to change the directory
         nvc --do ../../regression.tcl
       else
-        exec-$SIMULATOR.sh -n --tcl-file=regression.tcl
+        exec-${SIMULATOR_TOOL}.sh -n --tcl-file=regression.tcl
       fi
   after_script:
     - mkdir -p temp/junit
-    - CopyFile "temp/$SIMULATOR/*/*.xml" "temp/junit"
-    - CopyFile "temp/$SIMULATOR/*/*.yml" "temp/junit"
+    - CopyFile temp/${SIMULATOR_TOOL}/*/*.xml "temp/junit"
+    - CopyFile temp/${SIMULATOR_TOOL}/*/*.yml "temp/junit"
   artifacts:
     paths:
-      - temp/$SIMULATOR
+      - temp/[GNR]*
       - temp/junit
-      - lib/osvvm/*_generated.vhd
+       - lib/osvvm/*_generated.vhd
     reports:
       junit: "temp/junit/*.xml"
     expire_in: 1 week
@@ -52,47 +40,65 @@ Scripts:
 # ---------------
 # ---- GHDL -----
 # ---------------
-.GHDL:
-  parallel:
-    matrix:
-      - GHDL_BACKEND: ["llvm", "mcode"]
-  image: ${CI_REGISTRY}/docker-images/ghdl:${GHDL_BACKEND}
+OSVVM-build:
   extends:
     - .run
-  variables:
-    SIMULATOR: "GHDL"
-
-GHDL_OSVVM_run:
-  stage: build_osvvm
-  extends:
-    - .GHDL
-  needs:
-    job: Scripts
-    artifacts: true
+  stage: Build-OSVVM
+  image: ${CI_REGISTRY}/docker-images/${IMAGE}:${VERSION}
+  parallel:
+    matrix:
+      - IMAGE:     "rivierapro"
+        VERSION:   "2024.10"
+      - IMAGE:     "nvc"
+        VERSION:   "latest"
+      - IMAGE:     "ghdl"
+        VERSION:   ["llvm", "mcode"]
   variables:
     REGRESSION_STEP: "osvvm"
 
-GHDL_PoC_run:
-  stage: build_poc
+PoC-build:
   extends:
-    - .GHDL
+    - .run
+  stage: Build-PoC
+  image: ${CI_REGISTRY}/docker-images/${IMAGE}:${VERSION}
+  parallel:
+    matrix:
+      - IMAGE:     "rivierapro"
+        VERSION:   "2024.10"
+      - IMAGE:     "nvc"
+        VERSION:   "latest"
+      - IMAGE:     "ghdl"
+        VERSION:   ["llvm", "mcode"]
   needs:
-    - job: Scripts
+    - job: OSVVM-build
       artifacts: true
-    - job: GHDL_OSVVM_run
-      artifacts: true
+      parallel:
+        matrix:
+          - IMAGE: $[[ matrix.IMAGE ]]
+            VERSION: $[[ matrix.VERSION ]]
   variables:
     REGRESSION_STEP: "poc"
 
-.GHDL_OSVVM_sim:  # step has to be added to regression.tcl
-  stage: test
+.OSVVM-sim:  # step has to be added to regression.tcl
   extends:
-    - .GHDL
+    - .run
+  stage: Simulate
+  image: ${CI_REGISTRY}/docker-images/${IMAGE}:${VERSION}
+  parallel:
+    matrix:
+      - IMAGE:     "rivierapro"
+        VERSION:   "2024.10"
+      - IMAGE:     "nvc"
+        VERSION:   "latest"
+      - IMAGE:     "ghdl"
+        VERSION:   ["llvm", "mcode"]
   needs:
-    - job: Scripts
+    - job: OSVVM-build
       artifacts: true
-    - job: GHDL_OSVVM_run
-      artifacts: true
+      parallel:
+        matrix:
+          - IMAGE: $[[ matrix.IMAGE ]]
+            VERSION: $[[ matrix.VERSION ]]
   only:
     - main
     - master
@@ -100,174 +106,51 @@ GHDL_PoC_run:
   variables:
     REGRESSION_STEP: "osvvm_test"  # todo: add this to regression.tcl
 
-GHDL_PoC_sim:
-  stage: test
-  extends:
-    - .GHDL
-  needs:
-    - job: Scripts
-      artifacts: true
-    - job: GHDL_PoC_run
-      artifacts: true
-  allow_failure: true  # todo: fix llvm error
-  variables:
-    REGRESSION_STEP: "test"
-
-# ------------------
-# ---- Riviera -----
-# ------------------
-.RIVIERA-PRO:
-  image: ${CI_REGISTRY}/docker-images/rivierapro:2024.10
+PoC-sim:
   extends:
     - .run
-  variables:
-    SIMULATOR: "Riviera-PRO"
-
-RIVIERA_OSVVM_run:
-  stage: build_osvvm
-  extends:
-    - .RIVIERA-PRO
+  stage: Simulate
+  image: ${CI_REGISTRY}/docker-images/${IMAGE}:${VERSION}
+  parallel:
+    matrix:
+      - IMAGE:     "rivierapro"
+        VERSION:   "2024.10"
+      - IMAGE:     "nvc"
+        VERSION:   "latest"
+      - IMAGE:     "ghdl"
+        VERSION:   ["llvm", "mcode"]
   needs:
-    job: Scripts
-    artifacts: true
-  variables:
-    REGRESSION_STEP: "osvvm"
-
-RIVIERA_PoC_run:
-  stage: build_poc
-  extends:
-    - .RIVIERA-PRO
-  needs:
-    - job: Scripts
+    - job: PoC-build
       artifacts: true
-    - job: RIVIERA_OSVVM_run
-      artifacts: true
-  variables:
-    REGRESSION_STEP: "poc"
-
-.RIVIERA_OSVVM_sim:
-  stage: test
-  extends:
-    - .RIVIERA-PRO
-  needs:
-    - job: Scripts
-      artifacts: true
-    - job: RIVIERA_OSVVM_run
-      artifacts: true
-    - job: RIVIERA_PoC_run  # avoid license blocking
-      artifacts: true
-  only:
-    - main
-    - master
-    - dev
+      parallel:
+        matrix:
+          - IMAGE: $[[ matrix.IMAGE ]]
+            VERSION: $[[ matrix.VERSION ]]
   allow_failure: true
   variables:
-    REGRESSION_STEP: "osvvm_test"
-
-RIVIERA_PoC_sim:
-  stage: test
-  extends:
-    - .RIVIERA-PRO
-  needs:
-    - job: Scripts
-      artifacts: true
-    - job: RIVIERA_PoC_run
-      artifacts: true
-    - job: RIVIERA_OSVVM_sim  # avoid license blocking
-      optional: true
-      artifacts: false
-  allow_failure: true  # if license is in use
-  variables:
     REGRESSION_STEP: "test"
-
-
-# --------------
-# ---- NVC -----
-# --------------
-.NVC:
-  image: ${CI_REGISTRY}/docker-images/nvc:latest
-  extends:
-    - .run
-  variables:
-    SIMULATOR: "NVC"
-
-NVC_OSVVM_run:
-  stage: build_osvvm
-  extends:
-    - .NVC
-  needs:
-    job: Scripts
-    artifacts: true
-  variables:
-    REGRESSION_STEP: "osvvm"
-
-NVC_PoC_run:
-  stage: build_poc
-  extends:
-    - .NVC
-  needs:
-    - job: Scripts
-      artifacts: true
-    - job: NVC_OSVVM_run
-      artifacts: true
-  variables:
-    REGRESSION_STEP: "poc"
-
-.NVC_OSVVM_sim:
-  stage: test
-  extends:
-    - .NVC
-  needs:
-    - job: Scripts
-      artifacts:
-    - job: NVC_OSVVM_run
-      artifacts: true
-  only:
-    - main
-    - master
-    - dev
-  variables:
-    REGRESSION_STEP: "osvvm_test"
-
-NVC_PoC_sim:
-  stage: test
-  extends:
-    - .NVC
-  needs:
-    - job: Scripts
-      artifacts: true
-    - job: NVC_PoC_run
-      artifacts: true
-  variables:
-    REGRESSION_STEP: "test"
-
 
 # --------------------------
 # ----- Documentation ------
 # --------------------------
 MergeReports:
+  stage: Documentation
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
-  stage: documentation
   needs:
-    - job: GHDL_PoC_sim
-      artifacts: true
-    - job: RIVIERA_PoC_sim
-      artifacts: true
-    - job: NVC_PoC_sim
+    - job: PoC-sim
       artifacts: true
   before_script:
     - pip install pyEDAA.Reports
   script:
     - mkdir -p report/unit
     - pyedaa-reports -v unittest "--merge=Any-JUnit:temp/junit/*.xml" "--output=pyTest-JUnit:report/unit/unittest.xml"
-    - mv temp/junit/${SIMULATOR_PAGES}-PoC.yml report/unit/osvvmreport.yml
   artifacts:
     paths:
       - report/unit
 
 Sphinx:
+  stage: Documentation
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
-  stage: documentation
   needs:
     - job: MergeReports
       artifacts: true
@@ -284,6 +167,7 @@ Sphinx:
       - docs/_build/${SPHINX_BUILDER}
 
 MikTeX:
+  stage: Documentation
   image: ${CI_REGISTRY}/docker-images/miktex:sphinx
   needs:
     - job: Sphinx
@@ -291,7 +175,6 @@ MikTeX:
         matrix:
           - SPHINX_BUILDER: "latex"
       artifacts: true
-  stage: documentation
   script:
     - cd docs/_build/latex
     - exec-LaTeX.sh --xelatex "PoC.tex"
@@ -306,9 +189,28 @@ MikTeX:
 # ------------------
 # ----- Pages ------
 # ------------------
-.pages:
+pages:
+  stage: GitLabPages
   image: ${CI_REGISTRY}/docker-images/base-image:alpine
-  stage: pages
+  parallel:
+    matrix:
+      - IMAGE:   "nvc"
+        VERSION: "latest"
+      - IMAGE:   "ghdl"
+        VERSION: "llvm"
+  needs:
+    - job: PoC-sim  # main only
+      artifacts: true
+      parallel:
+        matrix:
+          - IMAGE:   $[[ matrix.IMAGE ]]
+            VERSION: $[[ matrix.VERSION ]]
+      optional: true
+  rules:
+    - if: >
+        $SIMULATOR_PAGES == "$[[ matrix.IMAGE ]]" &&
+        $CI_PIPELINE_SOURCE == "push" &&
+        $CI_COMMIT_BRANCH =~ /^(main|master|dev)$/
   variables:
     GIT_SUBMODULE_STRATEGY: normal
   pages: true
@@ -316,7 +218,7 @@ MikTeX:
     - apk update
     - apk add tree
   script:
-    - CopyDir docs/_build/html       public
+    - CopyDir docs/_build/html public
     #- CopyFile PoC.pdf  public
     - tree public
   after_script:
@@ -324,50 +226,3 @@ MikTeX:
   artifacts:
     paths:
       - public
-
-
-pagesGHDL:
-  rules:
-    - if: >
-        $SIMULATOR_PAGES == "GHDL" &&
-        $CI_PIPELINE_SOURCE == "push" &&
-        $CI_COMMIT_BRANCH =~ /^(main|master|dev)$/
-  needs:
-    - job: GHDL_OSVVM_sim  # main only
-      artifacts: true
-      optional: true
-    - job: GHDL_PoC_sim
-      artifacts: true
-      optional: true
-  extends:
-    - .pages
-
-pagesRiviera:
-  rules:
-    - if: >
-        $SIMULATOR_PAGES == "Riviera-PRO" &&
-        $CI_PIPELINE_SOURCE == "push" &&
-        $CI_COMMIT_BRANCH =~ /^(main|master|dev)$/
-  needs:
-    - job: RIVIERA_PoC_sim  # inherits artifacts from previous jobs
-      artifacts: true
-      optional: true
-  extends:
-    - .pages
-
-pagesNVC:
-  extends:
-    - .pages
-  rules:
-    - if: >
-        $SIMULATOR_PAGES == "NVC" &&
-        $CI_PIPELINE_SOURCE == "push"
-  needs:
-    - job: NVC_OSVVM_sim
-      artifacts: true
-      optional: true
-    - job: NVC_PoC_sim
-      artifacts: true
-      optional: true
-    - job: Sphinx
-      artifacts: true
