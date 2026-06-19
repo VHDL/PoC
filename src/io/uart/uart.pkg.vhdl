@@ -165,9 +165,9 @@ package uart is
 	end component uart_FIFO;
 
 	-- USB-UART
-	component ft245_uart is
+	component uart_FT245 is
 		generic (
-			CLK_FREQ : positive
+			CLOCK_FREQUENCY : positive
 		);
 		port (
 			-- common signals

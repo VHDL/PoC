@@ -71,8 +71,6 @@ end entity;
 
 
 architecture rtl of cache_TagUnit_Sequential is
-	attribute KEEP : boolean;
-
 	constant SETS : positive := CACHE_LINES / ASSOCIATIVITY;
 
 begin

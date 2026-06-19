@@ -125,7 +125,7 @@ package axi4lite is
 	type T_axi4lite_Bus_VECTOR is array(natural range <>) of T_axi4lite_Bus;
 
 	function Initialize_axi4lite_Bus_M2S(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4LITE_BUS_M2S;
-	function Initialize_axi4lite_Bus_S2M(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_AXI4LITE_BUS_S2M;
+	function Initialize_axi4lite_Bus_S2M(DataBits : natural; Value : std_logic := 'Z') return T_AXI4LITE_BUS_S2M;
 	function Initialize_axi4lite_Bus(AddressBits : natural; DataBits : natural) return T_axi4lite_Bus;
 
 	-------Define AXI Register structure-------------
@@ -365,7 +365,7 @@ package body axi4lite is
 	end function;
 
 	function Initialize_axi4lite_Bus_M2S(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_axi4lite_Bus_M2S is
-		variable var : T_axi4lite_Bus_M2S(
+		constant init : T_axi4lite_Bus_M2S(
 			AWAddr(AddressBits - 1 downto 0), WData(DataBits - 1 downto 0),
 			WStrb((DataBits /8) - 1 downto 0), ARAddr(AddressBits - 1 downto 0)) := (
 			--        AClk    => Value,
@@ -385,11 +385,11 @@ package body axi4lite is
 			RReady  => Value
 		);
 	begin
-		return var;
+		return init;
 	end function;
 
-	function Initialize_axi4lite_Bus_S2M(AddressBits : natural; DataBits : natural; Value : std_logic := 'Z') return T_axi4lite_Bus_S2M is
-		variable var : T_axi4lite_Bus_S2M(RData(DataBits - 1 downto 0))                                   := (
+	function Initialize_axi4lite_Bus_S2M(DataBits : natural; Value : std_logic := 'Z') return T_axi4lite_Bus_S2M is
+		constant init : T_axi4lite_Bus_S2M(RData(DataBits - 1 downto 0))                                   := (
 			AWReady => Value,
 			WReady  => Value,
 			BValid  => Value,
@@ -400,14 +400,14 @@ package body axi4lite is
 			RResp => (others => Value)
 		);
 	begin
-		return var;
+		return init;
 	end function;
 
 	function Initialize_axi4lite_Bus(AddressBits : natural; DataBits : natural) return T_axi4lite_Bus is
 	begin
 		return (
 			M2S => Initialize_axi4lite_Bus_M2S(AddressBits, DataBits),
-			S2M => Initialize_axi4lite_Bus_S2M(AddressBits, DataBits)
+			S2M => Initialize_axi4lite_Bus_S2M(DataBits)
 		);
 	end function;
 
@@ -421,8 +421,6 @@ package body axi4lite is
 	end function;
 
 	impure function write_csv_file(FileName : string; reg : T_AXI4_Register_Vector) return boolean is
-		constant QM          : character := '"';
-		constant size_header : natural   := imax(FileName'length, 51);
 		file FileHandle      : TEXT open write_MODE is FileName;
 		variable CurrentLine : LINE;
 
@@ -547,7 +545,7 @@ package body axi4lite is
 		AutoClear_Mask                             : std_logic_vector(DATA_BITS - 1 downto 0) := (others => '0');
 		IsInterruptRegister                        : boolean                                  := false
 	) return T_AXI4_Register is
-		variable temp : T_AXI4_Register := (
+		constant init : T_AXI4_Register := (
 			Name                  => resize(Name, NAME_LENGTH),
 			Address               => Address,
 			RegisterMode          => RegisterMode,
@@ -556,7 +554,7 @@ package body axi4lite is
 			IsInterruptRegister   => IsInterruptRegister
 		);
 	begin
-		return temp;
+		return init;
 	end function;
 
 	procedure assign(
@@ -836,12 +834,10 @@ package body axi4lite is
 		constant T_reg                     : in  std_logic_vector(DATA_BITS - 1 downto 0);
 		signal nextT_reg                   : out std_logic_vector(DATA_BITS - 1 downto 0)
 	) is
-		constant Value_idx  : natural := 0;
-		constant BitSet_idx : natural := 1;
-		constant BitClr_idx : natural := 2;
-		constant BitTgl_idx : natural := 3;
-
-		variable newValue : std_logic_vector(DATA_BITS - 1 downto 0);
+		-- constant Value_idx  : natural := 0;
+		-- constant BitSet_idx : natural := 1;
+		-- constant BitClr_idx : natural := 2;
+		-- constant BitTgl_idx : natural := 3;
 	begin
 		--IO Register
 		Output <= IO_reg;

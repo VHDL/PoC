@@ -92,7 +92,7 @@ end entity;
 architecture rtl of ddrio_Out is
 
 begin
-	assert ((VENDOR = VENDOR_ALTERA) or ((SIMULATION = TRUE) and (VENDOR = VENDOR_GENERIC)) or (VENDOR = VENDOR_XILINX))
+	assert ((VENDOR = VENDOR_ALTERA) or (SIMULATION and (VENDOR = VENDOR_GENERIC)) or (VENDOR = VENDOR_XILINX))
 		report "PoC.io.ddrio.out is not implemented for given DEVICE."
 		severity FAILURE;
 

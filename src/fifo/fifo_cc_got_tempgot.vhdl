@@ -119,7 +119,7 @@ architecture rtl of fifo_cc_got_tempgot is
 	constant ADDRESS_BITS : natural := log2ceil(MIN_DEPTH);
 
 	-- Force Carry-Chain Use for Pointer Increments on Xilinx Architectures
-	constant FORCE_XILCY : boolean := (not SIMULATION) and (VENDOR = VENDOR_XILINX) and STATE_REG and (ADDRESS_BITS > 4);
+	-- constant FORCE_XILCY : boolean := (not SIMULATION) and (VENDOR = VENDOR_XILINX) and STATE_REG and (ADDRESS_BITS > 4);
 
 	-----------------------------------------------------------------------------
 	-- Memory Pointers

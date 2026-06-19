@@ -320,7 +320,7 @@ package body physical is
 			end if;
 		end if;
 		res := 1.0 / real(f / 1 Hz);
-		if (POC_VERBOSE = TRUE) then
+		if POC_VERBOSE then
 			report "to_time: f= " & to_string(f, 3) & "  return " & to_string(res, 3) severity note;
 		end if;
 		return res;
@@ -425,7 +425,7 @@ package body physical is
 			end if;
 		end if;
 		res := (f / 1 Hz)  * 1  Bd;
-		if (POC_VERBOSE = TRUE) then
+		if POC_VERBOSE then
 			report "to_baud: f= " & to_string(f, 3) & "  return " & to_string(res, 3) severity note;
 		end if;
 		return res;

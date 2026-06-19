@@ -475,15 +475,16 @@ begin
 
 	-- Output register or memory read data
 	process(Clock) is
-		function first_out(slv : std_logic_vector; reg : T_SLVV) return std_logic_vector is
-		begin
-			for i in slv'low to slv'high loop
-				if (slv(i)) = '1' then
-					return reg(i);
-				end if;
-			end loop;
-			return reg(0);
-		end function;
+		-- function first_out(slv : std_logic_vector; reg : T_SLVV) return std_logic_vector is
+		-- begin
+		-- 	for i in slv'low to slv'high loop
+		-- 		if (slv(i)) = '1' then
+		-- 			return reg(i);
+		-- 		end if;
+		-- 	end loop;
+		-- 	return reg(0);
+		-- end function;
+
 		function lssb_idx_with_loop(slv : std_logic_vector) return integer is
 		begin
 			for i in slv'low to slv'high loop
@@ -493,6 +494,7 @@ begin
 			end loop;
 			return 0;
 		end function;
+
 		variable idx : integer;
 	begin
 		if (rising_edge (Clock)) then
@@ -542,7 +544,7 @@ begin
 
 
 	------------ Address Hit's ---------------------------
-	high_addr_gen : if (REG_ADDRESS_BITS >= ADDRESS_BITS) or (IGNORE_HIGH_ADDRESS = TRUE) generate
+	high_addr_gen : if (REG_ADDRESS_BITS >= ADDRESS_BITS) or IGNORE_HIGH_ADDRESS generate
 		is_high_r <= '1';
 		is_high_w <= '1';
 	else generate

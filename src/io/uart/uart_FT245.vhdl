@@ -33,7 +33,7 @@ use     IEEE.std_logic_1164.all;
 
 entity uart_FT245 is
 	generic (
-		CLOCK_FREQ : positive    -- XXX: use FREQ
+		CLOCK_FREQUENCY : positive    -- XXX: use FREQ
 	);
 	port (
 		-- common signals
@@ -41,21 +41,21 @@ entity uart_FT245 is
 		Reset : in  std_logic;
 
 		-- send data
-		snd_ready  : out std_logic;    -- XXX: this should fit the FIFO interface
-		snd_strobe : in  std_logic;
-		snd_data   : in  std_logic_vector(7 downto 0);
+		TX_Put   : in  std_logic;
+		TX_Data  : in  std_logic_vector(7 downto 0);
+		TX_Full  : out std_logic;
 
 		-- receive data
-		rec_strobe : out std_logic;
-		rec_data   : out std_logic_vector(7 downto 0);
+		RX_Valid : out std_logic;
+		RX_Data  : out std_logic_vector(7 downto 0);
 
 		-- connection to ft245
-		ft245_data   : inout std_logic_vector(7 downto 0);
-		ft245_rdn    : out std_logic;
-		ft245_wrn    : out std_logic;
-		ft245_rxfn   : in  std_logic;
-		ft245_txen   : in  std_logic;
-		ft245_pwrenn : in  std_logic
+		FT245_PowerEnable_n : in  std_logic;
+		FT245_Read_n        : out std_logic;
+		FT245_Write_n       : out std_logic;
+		FT245_Data          : inout std_logic_vector(7 downto 0);
+		FT245_RXF_n         : in  std_logic;
+		FT245_TXE_n         : in  std_logic
 	);
 end entity;
 
@@ -68,7 +68,7 @@ use     work.utils.all;
 architecture rtl of uart_FT245 is
 
 	-- clock frequency (MHz)
-	constant CLK_FREQ_MHZ : integer := CLOCK_FREQ / 1000000;
+	constant CLK_FREQ_MHZ : integer := CLOCK_FREQUENCY / 1000000;
 
 	-- FT245 communication delay cycles (minimum delay is 50 ns = 1/20 us)
 	constant DELAY_CYCLES : integer := CLK_FREQ_MHZ / 20;
@@ -122,16 +122,16 @@ begin
 				ff_txe  <= '1';
 			else
 				-- Wait for Initilization to Complete
-				ff_susp <= ft245_pwrenn;
+				ff_susp <= FT245_PowerEnable_n;
 
 				-- Now forward Fill Signals
-				ff_rxf  <= ft245_rxfn;
-				ff_txe  <= ft245_txen;
+				ff_rxf  <= FT245_RXF_n;
+				ff_txe  <= FT245_TXE_n;
 			end if;
 		end if;
 	end process;
 
-	process(fsm_state, snd_strobe, reg_delay, ff_susp, ff_rxf, ff_txe)
+	process(fsm_state, TX_Put, reg_delay, ff_susp, ff_rxf, ff_txe)
 	begin
 		fsm_nextstate <= fsm_state;
 		ctrl_ld_rec <= '0';
@@ -146,7 +146,7 @@ begin
 					if ff_rxf = '0' then
 							-- receive data
 							fsm_nextstate <= RD1;
-					elsif ff_txe = '0' and snd_strobe = '1' then
+					elsif ff_txe = '0' and TX_Put = '1' then
 							-- ok, send...
 							fsm_nextstate <= WR1;
 					end if;
@@ -236,8 +236,8 @@ begin
 			end if;
 
 			-- data to send
-			if snd_strobe = '1' then
-				reg_data_snd <= snd_data;
+			if TX_Put = '1' then
+				reg_data_snd <= TX_Data;
 			end if;
 
 		end if;
@@ -245,14 +245,14 @@ begin
 
 	----------------------------------------------
 	-- tristate driver and output assignments
-	ft245_data <= reg_data_snd when reg_dto_b = '0' else (others => 'Z');
-	data_in <= ft245_data;
+	FT245_Data <= reg_data_snd when reg_dto_b = '0' else (others => 'Z');
+	data_in    <= FT245_Data;
 
-	ft245_rdn <= reg_rd_b;
-	ft245_wrn <= reg_wr_b;
+	FT245_Read_n  <= reg_rd_b;
+	FT245_Write_n <= reg_wr_b;
 
-	rec_data   <= reg_data_rec;
-	rec_strobe <= reg_ld_rec;
-	snd_ready  <= ff_rxf and not ff_txe and not ff_susp when fsm_state = IDLE else '0';
+	RX_Data  <= reg_data_rec;
+	RX_Valid <= reg_ld_rec;
+	TX_Full  <= not ff_rxf and not ff_txe and not ff_susp when fsm_state = IDLE else '0';
 
 end architecture;

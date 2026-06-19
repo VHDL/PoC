@@ -371,14 +371,14 @@ package body vectors is
 
 	-- Make vector of constant
 	function genVector(const : std_logic;   length : natural) return std_logic_vector is
-		variable slv : std_logic_vector(length -1 downto 0) := (others => const);  -- FIXME: use (length - 1 downto 0 => ...) directly in return statement
+		constant slv : std_logic_vector(length -1 downto 0) := (others => const);  -- FIXME: use (length - 1 downto 0 => ...) directly in return statement
 	begin
 		return slv;
 	end function;
 
 	-- FIXME: input as std_logic, return an SLVV of that size
 	function genVector(const : std_logic_vector; length : natural) return T_SLVV is
-		variable slv : T_SLVV(length -1 downto 0)(const'range) := (others => const);  -- FIXME: use (length - 1 downto 0 => ...) directly in return statement
+		constant slv : T_SLVV(length -1 downto 0)(const'range) := (others => const);  -- FIXME: use (length - 1 downto 0 => ...) directly in return statement
 	begin
 		return slv;
 	end function;
@@ -1477,7 +1477,7 @@ package body vectors is
 	end function;
 
 	function to_string_bin(slm : T_SLM; groups : positive := 4; format : character := 'h') return string is
-		variable PerLineOverheader  : positive  := div_ceil(slm'length(2), groups);
+		constant PerLineOverheader  : positive  := div_ceil(slm'length(2), groups);
 		variable Result             : string(1 to (slm'length(1) * (slm'length(2) + PerLineOverheader)) + 10);
 		variable Writer             : positive;
 		variable GroupCounter       : natural;

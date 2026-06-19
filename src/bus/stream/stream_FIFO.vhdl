@@ -72,10 +72,6 @@ end entity;
 
 
 architecture rtl of stream_FIFO is
-	attribute FSM_ENCODING            : string;
-
-	constant META_STREAMS             : positive         := META_BITS'length;
-
 	type T_WRITER_STATE is (ST_IDLE, ST_FRAME);
 	type T_READER_STATE is (ST_IDLE, ST_FRAME);
 

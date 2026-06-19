@@ -181,9 +181,7 @@ begin
 					nxt_wstate <= Idle;
 				end if;
 
-			when others => nxt_wstate <= Idle;
-
-		end case;
+			end case;
 	end process;
 
 	read_proc : process (all)

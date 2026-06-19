@@ -95,8 +95,6 @@ architecture rtl of axi4lite_UART is
 	--user required axi registers
 	signal RX_Data : std_logic_vector(7 downto 0);
 	signal TX_Data : std_logic_vector(7 downto 0);
-	signal Status  : std_logic_vector(31 downto 0);
-	signal Control : std_logic_vector(31 downto 0);
 
 	--Bit positions of the above registers
 	signal Status_RX_Valid        : std_logic;
@@ -119,8 +117,6 @@ architecture rtl of axi4lite_UART is
 	signal Control_TX_Reset        : std_logic;
 	signal Control_InterruptEnable : std_logic;
 
-	signal Status_TX_EmptyState : std_logic_vector(imax(0, TX_EMPTY_STATE_BITS - 1) downto 0);
-	signal Status_RX_FillState  : std_logic_vector(imax(0, RX_FILL_STATE_BITS - 1) downto 0);
 begin
 	Reg : entity work.axi4lite_Register
 	generic map(
@@ -205,13 +201,13 @@ begin
 		TX_Put        => TX_Put,
 		TX_Data       => TX_Data,
 		TX_Full       => Status_TX_Full,
-		TX_EmptyState => Status_TX_EmptyState,
+		TX_EmptyState => open,
 		TXFIFO_Reset  => Control_TX_Reset,
 		TXFIFO_Empty  => TXFIFO_Empty,
 		RX_Valid      => Status_RX_Valid,
 		RX_Data       => RX_Data,
 		RX_Got        => RX_Got,
-		RX_FillState  => Status_RX_FillState,
+		RX_FillState  => open,
 		RX_Overflow   => RX_OverFlow,
 		RXFIFO_Full   => Status_RX_Full,
 		RXFIFO_Reset  => Control_RX_Reset,

@@ -56,9 +56,6 @@ entity bus_Arbiter is
 	);
 end entity;
 architecture rtl of bus_Arbiter is
-	attribute KEEP         : boolean;
-	attribute FSM_ENCODING : string;
-
 begin
 	-- XXX: How does arith_FirstOne relate to an arbiter and to RR or Priority arbitration?
 	gen_Strategy : if STRATEGY = "RR" generate -- Round Robin Arbiter

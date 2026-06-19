@@ -567,7 +567,7 @@ package body stream is
 		end function;
 
 		function to_flag1_string(stmw : T_SIM_STREAM_WORD_8) return string is
-				variable flag : std_logic_vector(2 downto 0)    := to_sl(stmw.EOFG) & stmw.EOF & stmw.SOF;
+				constant flag : std_logic_vector(2 downto 0)    := to_sl(stmw.EOFG) & stmw.EOF & stmw.SOF;
 		begin
 				case flag is
 						when "000"  => return "";
@@ -583,7 +583,7 @@ package body stream is
 		end function;
 
 		function to_flag1_string(stmw : T_SIM_STREAM_WORD_32) return string is
-				variable flag : std_logic_vector(2 downto 0)    := to_sl(stmw.EOFG) & stmw.EOF & stmw.SOF;
+				constant flag : std_logic_vector(2 downto 0)    := to_sl(stmw.EOFG) & stmw.EOF & stmw.SOF;
 		begin
 				case flag is
 						when "000"  => return "";
@@ -599,7 +599,7 @@ package body stream is
 		end function;
 
 		function to_flag2_string(stmw : T_SIM_STREAM_WORD_8) return string is
-				variable flag : std_logic_vector(1 downto 0)    := stmw.Ready & stmw.Valid;
+				constant flag : std_logic_vector(1 downto 0)    := stmw.Ready & stmw.Valid;
 		begin
 				case flag is
 						when "00"   => return "  ";
@@ -613,7 +613,7 @@ package body stream is
 		end function;
 
 		function to_flag2_string(stmw : T_SIM_STREAM_WORD_32) return string is
-				variable flag : std_logic_vector(1 downto 0)    := stmw.Ready & stmw.Valid;
+				constant flag : std_logic_vector(1 downto 0)    := stmw.Ready & stmw.Valid;
 		begin
 				case flag is
 						when "00"   => return "  ";

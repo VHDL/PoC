@@ -53,7 +53,6 @@ end entity;
 architecture rtl of io_FrequencyCounter is
 	constant TIMEBASECOUNTER_MAX   : positive := TimingToCycles(TIMEBASE, CLOCK_FREQ);
 	constant TIMEBASECOUNTER_BITS  : positive := log2ceilnz(TIMEBASECOUNTER_MAX);
-	constant REQUENCYCOUNTER_MAX   : positive := 2**RESOLUTION;
 	constant FREQUENCYCOUNTER_BITS : positive := RESOLUTION;
 
 	signal TimeBaseCounter_us      : unsigned(TIMEBASECOUNTER_BITS - 1 downto 0) := (others => '0');

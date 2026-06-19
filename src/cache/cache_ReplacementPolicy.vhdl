@@ -101,11 +101,6 @@ end entity;
 
 
 architecture rtl of cache_ReplacementPolicy is
-	attribute KEEP         : boolean;
-	attribute FSM_ENCODING : string;
-
-	constant KEY_BITS : positive := log2ceilnz(CACHE_WAYS);
-
 begin
 	assert (str_equal(REPLACEMENT_POLICY, "RR") or
 					str_equal(REPLACEMENT_POLICY, "LRU"))
@@ -117,17 +112,17 @@ begin
 	-- policy: RR - round robin
 	-- ===========================================================================
 	genRR : if str_equal(REPLACEMENT_POLICY, "RR") generate
-		constant VALID_BIT : natural := 0;
+		-- constant VALID_BIT : natural := 0;
 
-		subtype T_OPTION_LINE is std_logic_vector(0 downto 0);
-		type T_OPTION_LINE_VECTOR is array (natural range <>) of T_OPTION_LINE;
+		-- subtype T_OPTION_LINE is std_logic_vector(0 downto 0);
+		-- type T_OPTION_LINE_VECTOR is array (natural range <>) of T_OPTION_LINE;
 
-		signal OptionMemory : T_OPTION_LINE_VECTOR(CACHE_WAYS - 1 downto 0) := (others => (
-			VALID_BIT                                                                      => '0')
-																																						 );
+		-- signal OptionMemory : T_OPTION_LINE_VECTOR(CACHE_WAYS - 1 downto 0) := (others => (
+		-- 	VALID_BIT                                                                      => '0')
+		-- 																																				 );
 
-		signal ValidHit    : std_logic;
-		signal Pointer_us : unsigned(log2ceilnz(CACHE_WAYS) - 1 downto 0) := (others => '0');
+		-- signal ValidHit    : std_logic;
+		-- signal Pointer_us : unsigned(log2ceilnz(CACHE_WAYS) - 1 downto 0) := (others => '0');
 
 	begin
 --    ValidHit    <= OptionMemory(to_integer(unsigned(HitWay)))(VALID_BIT);
