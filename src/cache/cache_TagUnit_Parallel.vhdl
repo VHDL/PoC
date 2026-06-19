@@ -133,8 +133,6 @@ entity cache_TagUnit_Parallel is
 end entity;
 
 architecture rtl of cache_TagUnit_Parallel is
-	attribute KEEP : boolean;
-
 	constant SETS : positive := CACHE_LINES / ASSOCIATIVITY;
 
 	-- Returns true if unsigned value contains metalogical values.

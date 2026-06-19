@@ -30,26 +30,30 @@
 library IEEE;
 use     IEEE.std_logic_1164.all;
 
+use     work.utils.all;
+
 
 package comm is
 	-- Calculates the Remainder of the Division by the Generator Polynomial GEN.
-	component comm_CRC is
-		generic (
-			POLYNOMIAL : bit_vector;                                      -- Generator Polynom
-			BITS       : positive                                        -- Number of Bits to be processed in parallel
+	component comm_CRC
+		generic(
+			POLYNOMIAL  : bit_vector;
+			BITS        : positive;
+			CHUNK_BITS  : positive         := BITS;
+			INIT        : std_logic_vector := "0";
+			OUTPUT_REGS : boolean          := true
 		);
-		port (
-			Clock     : in  std_logic;                                       -- Clock
-
-			Load      : in  std_logic;                                       -- Parallel Preload of Remainder
-			Seed      : in  std_logic_vector(POLYNOMIAL'length-2 downto 0);  --
-			Enable    : in  std_logic;                                       -- Process Input Data (MSB first)
-			DataIn    : in  std_logic_vector(BITS-1 downto 0);               --
-
-			Remainder : out std_logic_vector(POLYNOMIAL'length-2 downto 0);  -- Remainder
-			IsZero    : out std_logic                                        -- Remainder is Zero
+		port(
+			Clock       : in  std_logic;
+			Load        : in  std_logic;
+			Seed        : in  std_logic_vector(abs(mssb_idx(POLYNOMIAL)-POLYNOMIAL'right)-1 downto 0);
+			Enable      : in  std_logic;
+			ChunkEnable : in  std_logic_vector(CHUNK_BITS-1 downto 0) := (CHUNK_BITS-1 downto 0 => '1');
+			DataIn      : in  std_logic_vector(BITS-1 downto 0);
+			Remainder   : out std_logic_vector(abs(mssb_idx(POLYNOMIAL)-POLYNOMIAL'right)-1 downto 0);
+			IsZero      : out std_logic
 		);
-	end component;
+	end component comm_CRC;
 
 	-- Computes XOR masks for stream scrambling from an LFSR generator.
 	component comm_Scramble is

@@ -170,8 +170,8 @@ package axi4_Full is
 	function IDResize(InBus : T_AXI4_Bus_M2S; AWIDBits : natural; ARIDBits : natural) return T_AXI4_Bus_M2S;
 	function IDResize(InBus : T_AXI4_Bus_S2M; RIDBits : natural; BIDBits : natural) return T_AXI4_Bus_S2M;
 
-	function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M;
 	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_M2S;
+	function Initialize_AXI4_Bus_S2M(DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M;
 
 	procedure ConnectAndResize(signal In_M2S : in  T_AXI4_Bus_M2S; signal In_S2M : out T_AXI4_Bus_S2M; signal Out_M2S : out T_AXI4_Bus_M2S; signal Out_S2M : in  T_AXI4_Bus_S2M; constant Info_Prefix : string := "");
 	type T_AXI4_Bus is record
@@ -634,32 +634,8 @@ package body axi4_Full is
 		return temp;
 	end function;
 
-	function Initialize_AXI4_Bus_S2M(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M is
-		variable var : T_AXI4_Bus_S2M(
-			BID(ite(IDBits = 0, 1, IDBits) - 1 downto 0), RID(ite(IDBits = 0, 1, IDBits) - 1 downto 0),
-			BUser(ite(UserBits = 0, 1, UserBits) - 1 downto 0), RUser(ite(UserBits = 0, 1, UserBits) - 1 downto 0),
-			RData(DataBits - 1 downto 0)
-		) := (
-			AWReady => Value,
-			WReady  => Value,
-			BValid  => Value,
-			BResp   => (others => Value),
-			BID     => (ite(IDBits = 0, 1, IDBits) - 1 downto 0 => Value),
-			BUser   => (ite(UserBits = 0, 1, UserBits) - 1 downto 0 => Value),
-			ARReady => Value,
-			RValid  => Value,
-			RData   => (DataBits - 1 downto 0 => Value),
-			RResp   => (others => Value),
-			RID     => (ite(IDBits = 0, 1, IDBits) - 1 downto 0 => Value),
-			RLast   => Value,
-			RUser   => (ite(UserBits = 0, 1, UserBits) - 1 downto 0 => Value)
-		);
-	begin
-		return var;
-	end function;
-
 	function Initialize_AXI4_Bus_M2S(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_M2S is
-		variable var : T_AXI4_Bus_M2S(
+		constant init : T_AXI4_Bus_M2S(
 			AWID(ite(IDBits = 0, 1, IDBits) - 1 downto 0), ARID(ite(IDBits = 0, 1, IDBits) - 1 downto 0),
 			AWUser(ite(UserBits = 0, 1, UserBits) - 1 downto 0), ARUser(ite(UserBits = 0, 1, UserBits) - 1 downto 0), WUser(ite(UserBits = 0, 1, UserBits) - 1 downto 0),
 			WData(DataBits - 1 downto 0), WStrb((DataBits / 8) - 1 downto 0),
@@ -698,14 +674,38 @@ package body axi4_Full is
 			RReady  => Value
 		);
 	begin
-		return var;
+		return init;
+	end function;
+
+	function Initialize_AXI4_Bus_S2M(DataBits : natural; UserBits : natural := 0; IDBits : natural := 0; Value : std_logic := 'Z') return T_AXI4_Bus_S2M is
+		constant init : T_AXI4_Bus_S2M(
+			BID(ite(IDBits = 0, 1, IDBits) - 1 downto 0), RID(ite(IDBits = 0, 1, IDBits) - 1 downto 0),
+			BUser(ite(UserBits = 0, 1, UserBits) - 1 downto 0), RUser(ite(UserBits = 0, 1, UserBits) - 1 downto 0),
+			RData(DataBits - 1 downto 0)
+		) := (
+			AWReady => Value,
+			WReady  => Value,
+			BValid  => Value,
+			BResp   => (others => Value),
+			BID     => (ite(IDBits = 0, 1, IDBits) - 1 downto 0 => Value),
+			BUser   => (ite(UserBits = 0, 1, UserBits) - 1 downto 0 => Value),
+			ARReady => Value,
+			RValid  => Value,
+			RData   => (DataBits - 1 downto 0 => Value),
+			RResp   => (others => Value),
+			RID     => (ite(IDBits = 0, 1, IDBits) - 1 downto 0 => Value),
+			RLast   => Value,
+			RUser   => (ite(UserBits = 0, 1, UserBits) - 1 downto 0 => Value)
+		);
+	begin
+		return init;
 	end function;
 
 	function Initialize_AXI4_Bus(AddressBits : natural; DataBits : natural; UserBits : natural := 0; IDBits : natural := 0) return T_AXI4_Bus is
 	begin
 		return (
 			M2S => Initialize_AXI4_Bus_M2S(AddressBits, DataBits, UserBits, IDBits),
-			S2M => Initialize_AXI4_Bus_S2M(AddressBits, DataBits, UserBits, IDBits)
+			S2M => Initialize_AXI4_Bus_S2M(DataBits, UserBits, IDBits)
 		);
 	end function;
 

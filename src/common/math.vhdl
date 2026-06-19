@@ -167,7 +167,7 @@ package body math is
 		constant zeroes          : natural_vector(0 to 0) := (others => 0);
 		variable actualNumerator : natural  := 1;
 		variable tab             : natural  := 0;
-		variable increment       : real  := fractionalInReal;
+		constant increment       : real  := fractionalInReal;
 		variable remainder       : real  := fractionalInReal;
 		variable result          : natural_vector(0 to numerator -1) := (others => 0);
 	begin

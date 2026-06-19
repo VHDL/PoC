@@ -117,17 +117,15 @@ architecture rtl of axi4stream_FIFO_TempPut is
 	signal DataFIFO_DataOut   : std_logic_vector(DataFIFO_DataIn'range);
 	signal DataFIFO_Valid     : std_logic;
 
-	signal In_SOF                     : std_logic;
-	signal started                    : std_logic := '0';
+	signal started            : std_logic := '0';
 
 	--We set the ranges of Out_S2M_i manually to the values from input to force the input and output record to be the same sizes.
-	signal Out_M2S_i                  : T_AXI4Stream_M2S(Data(DATA_BITS -1 downto 0), Keep(DATA_BITS /8 -1 downto 0), User(USER_BITS -1 downto 0), ID(ID_BITS-1 downto 0), DEST(DEST_BITS-1 downto 0));
+	signal Out_M2S_i          : T_AXI4Stream_M2S(Data(DATA_BITS -1 downto 0), Keep(DATA_BITS /8 -1 downto 0), User(USER_BITS -1 downto 0), ID(ID_BITS-1 downto 0), DEST(DEST_BITS-1 downto 0));
 
 begin
 	assert not NO_META_FIFO report "PoC.axi4stream_FIFO_TempPut:: NO_META_FIFO is set. Meta Fifo is removed! Dest, ID and, depending on USER_IS_DYNAMIC, User is removed" severity warning;
 
-	In_SOF      <= In_M2S.Valid and not started;
-	started     <= ffrs(q => started, rst => ((In_M2S.Valid and In_M2S.Last) or Reset), set => (In_M2S.Valid)) when rising_edge(Clock);
+	started <= ffrs(q => started, rst => ((In_M2S.Valid and In_M2S.Last) or Reset), set => (In_M2S.Valid)) when rising_edge(Clock);
 
 	process(Clock)
 	begin

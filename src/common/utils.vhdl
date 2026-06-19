@@ -1573,7 +1573,6 @@ package body utils is
 				when ROUND_TO_INF =>     report "scale: unsupported RoundingStyle." severity FAILURE;
 				when ROUND_UP =>         return integer(ceil(result));
 				when ROUND_DOWN =>       return integer(floor(result));
-				when others =>           report "scale: unsupported RoundingStyle." severity FAILURE;
 			end case;
 			return integer(result);
 		end if;

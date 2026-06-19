@@ -32,7 +32,7 @@ library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-use     work.project_configuration.all;
+use     work.config.all;
 use     work.utils.all;
 
 
@@ -54,10 +54,10 @@ architecture rtl of io_TimingCounter is
 	function transform(vec : natural_vector) return integer_vector is
 		variable Result : integer_vector(vec'range);
 	begin
-		assert (not MY_VERBOSE) report "TIMING_TABLE (transformed):" severity NOTE;
+		assert not POC_VERBOSE report "TIMING_TABLE (transformed):" severity NOTE;
 		for i in vec'range loop
 			Result(i)   := vec(i) - 1;
-			assert (not MY_VERBOSE) report "  " & integer'image(i) & " - " & INTEGER'image(Result(i)) severity NOTE;
+			assert not POC_VERBOSE report "  " & integer'image(i) & " - " & INTEGER'image(Result(i)) severity NOTE;
 		end loop;
 		return Result;
 	end function;

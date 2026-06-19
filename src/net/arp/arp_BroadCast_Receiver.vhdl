@@ -231,10 +231,10 @@ begin
 					RX_Ack          <= '1';
 
 					if (Is_EOF = '0') then
-						if ((ALLOWED_PROTOCOL_IPV4 = TRUE) and (RX_Data = x"08")) then
+						if (ALLOWED_PROTOCOL_IPV4 and (RX_Data = x"08")) then
 							IsIPv4_set  <= '1';
 							NextState    <= ST_RECEIVE_PROTOCOL_type_1;
-						elsif ((ALLOWED_PROTOCOL_IPV6 = TRUE) and (RX_Data = x"86")) then
+						elsif (ALLOWED_PROTOCOL_IPV6 and (RX_Data = x"86")) then
 							IsIPv6_set  <= '1';
 							NextState    <= ST_RECEIVE_PROTOCOL_type_1;
 						else

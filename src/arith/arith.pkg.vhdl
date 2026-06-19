@@ -137,16 +137,16 @@ package arith is
 	end component;
 
 	component arith_SquareRoot
-		generic (
-			BITS    : positive
+		generic(
+			BITS     : positive
 		);
-		port (
-			Clock   : in  std_logic;
-			Reset   : in  std_logic;
-			Operand : in  std_logic_vector(BITS-1 downto 0);
-			Start   : in  std_logic;
-			Result  : out std_logic_vector((BITS-1)/2 downto 0);
-			Ready   : out std_logic
+		port(
+			Clock    : in  std_logic;
+			Reset    : in  std_logic;
+			Radicand : in  std_logic_vector(BITS-1 downto 0);
+			Start    : in  std_logic;
+			Result   : out std_logic_vector((BITS-1)/2 downto 0);
+			Ready    : out std_logic
 		);
 	end component;
 

@@ -209,24 +209,23 @@ package io is
 	-- Component Declarations
 	---------------------------------------------------------------------
 	component io_FanControl
-		generic (
-			CLOCK_FREQ_MHZ : real
+		generic(
+			CLOCK_FREQ              : FREQ;
+			ADD_INPUT_SYNCHRONIZERS : boolean := TRUE;
+			ENABLE_TACHO            : boolean := FALSE
 		);
-		port (
-			Clock : in  std_logic;
-			Reset : in  std_logic;
-
-			Fan_PWM   : out std_logic;
-			Fan_Tacho : in  std_logic;
-
+		port(
+			Clock          : in  std_logic;
+			Reset          : in  std_logic;
+			Fan_PWM        : out std_logic;
+			Fan_Tacho      : in  std_logic := 'X';
 			TachoFrequency : out std_logic_vector(15 downto 0)
 		);
-	end component;
+	end component io_FanControl;
 
 end package;
 
 package body io is
-
 	function get_i_vector(vec : T_IO_TRISTATE_VECTOR) return std_logic_vector is
 		variable temp : std_logic_vector(vec'range);
 	begin

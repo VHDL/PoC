@@ -65,9 +65,6 @@ entity stream_Mirror is
 	);
 end entity;
 architecture rtl of stream_Mirror is
-	attribute KEEP         : boolean;
-	attribute FSM_ENCODING : string;
-
 	signal FifoStage_put     : std_logic;
 	signal FifoStage_DataIn  : std_logic_vector(DATA_BITS + 1 downto 0);
 	signal FifoStage_Full    : std_logic;

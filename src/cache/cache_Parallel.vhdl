@@ -112,8 +112,6 @@ end entity;
 
 
 architecture rtl of cache_Parallel is
-	attribute KEEP : boolean;
-
 	constant LINE_INDEX_BITS : positive := log2ceilnz(CACHE_LINES);
 
 	subtype T_CACHE_LINE is std_logic_vector(DATA_BITS - 1 downto 0);

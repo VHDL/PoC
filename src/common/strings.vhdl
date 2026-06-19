@@ -215,7 +215,6 @@ package body strings is
 			when 'L' =>     return 'L';
 			when 'H' =>     return 'H';
 			when '-' =>     return '-';
-			when others =>  return 'X';
 		end case;
 	end function;
 
