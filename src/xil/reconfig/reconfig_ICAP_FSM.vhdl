@@ -135,7 +135,7 @@ begin
 	-- combinatorial state machine
 	cur_state <= nxt_state when rising_edge(Clock);
 
-	combi : process (Reset, nxt_state, cur_state, in_data, in_data_valid, in_data_valid_re,
+	combi : process (Reset, cur_state, in_data, in_data_valid, in_data_valid_re,
 						sync_state, sync_state_flag, out_data_full, readback_cnt, pr_reset) begin
 		-- default assignments
 		nxt_state  <= cur_state;

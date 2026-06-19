@@ -118,7 +118,7 @@ begin
 	process(State,
 					SendRequest,
 					IsIPv4_l, IsIPv6_l,
-					TX_Ack, TX_Meta_DestMACAddress_rst, TX_Meta_DestMACAddress_nxt,
+					TX_Ack,
 					SenderMACAddress_Data, SenderIPv4Address_Data, TargetMACAddress_Data, TargetIPv4Address_Data,
 					Reader_Counter_us)
 	begin

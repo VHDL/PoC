@@ -46,24 +46,24 @@ use     work.xil.all;
 
 entity xil_Reconfigurator is
 	generic (
-		DEBUG            : boolean                    := FALSE;                                        --
-		CLOCK_FREQ      : FREQ                      := 100 MHz;                                      --
+		DEBUG           : boolean                    := FALSE;                                        --
+		CLOCK_FREQUENCY : FREQ                      := 100 MHz;                                      --
 		CONFIG_ROM      : in  T_XIL_DRP_CONFIG_ROM  := (0 downto 0 => C_XIL_DRP_CONFIG_SET_EMPTY)    --
 	);
 	port (
-		Clock            : in  std_logic;
-		Reset            : in  std_logic;
+		Clock           : in  std_logic;
+		Reset           : in  std_logic;
 
 		Reconfig        : in  std_logic;                                                            --
 		ReconfigDone    : out std_logic;                                                            --
 		ConfigSelect    : in  std_logic_vector(log2ceilnz(CONFIG_ROM'length) - 1 downto 0);          --
 
 		DRP_Enable      : out std_logic;                                                            --
-		DRP_Address      : out T_XIL_DRP_ADDRESS;                                                    --
-		DRP_WriteEnable  : out std_logic;                                                            --
+		DRP_Address     : out T_XIL_DRP_ADDRESS;                                                    --
+		DRP_WriteEnable : out std_logic;                                                            --
 		DRP_DataIn      : in  T_XIL_DRP_DATA;                                                        --
-		DRP_DataOut      : out T_XIL_DRP_DATA;                                                        --
-		DRP_Ack          : in  std_logic                                                              --
+		DRP_DataOut     : out T_XIL_DRP_DATA;                                                        --
+		DRP_Ack         : in  std_logic                                                              --
 	);
 end entity;
 
@@ -71,7 +71,6 @@ end entity;
 architecture rtl of xil_Reconfigurator is
 	attribute KEEP                : boolean;
 	attribute FSM_ENCODING        : string;
-	attribute signal_ENCODING      : string;
 
 	type T_STATE is (
 		ST_IDLE,

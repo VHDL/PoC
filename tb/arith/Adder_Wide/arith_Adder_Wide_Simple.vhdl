@@ -42,7 +42,6 @@ use     work.arith_Adder_Wide_TestController_pkg.all;
 architecture Simple of arith_Adder_Wide_TestController is
 	signal TestDone : integer_barrier := 1;
 	constant TCID : AlertLogIDType := NewID("Adder_WideTest");
-	constant TPERIOD_CLOCK : time := 10 ns;
 
 begin
 
@@ -73,7 +72,7 @@ begin
 
 	CheckerProc: process
 		constant ProcID : AlertLogIDType := NewID("CheckerProc", TCID);
-		variable ai, bi : integer;
+		
 		variable expected : natural;
 		variable actual_sum : unsigned(9 downto 0);
 	begin

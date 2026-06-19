@@ -114,7 +114,7 @@ architecture rtl of arp_Cache is
 		return result;
 	end function;
 
-	constant INITIAL_TAGS          : T_SLM      := to_TagData(INITIAL_CACHE_CONTENT);
+	constant INITIAL_TAGS         : T_SLM      := to_TagData(INITIAL_CACHE_CONTENT);
 	constant INITIAL_DATALINES    : T_SLVV_8  := to_CacheMemory(INITIAL_CACHE_CONTENT);
 
 
@@ -122,10 +122,10 @@ architecture rtl of arp_Cache is
 
 	type T_FSMREPLACE_STATE is (ST_IDLE, ST_REPLACE);
 
-	signal FSMReplace_State        : T_FSMREPLACE_STATE            := ST_IDLE;
-	signal FSMReplace_NextState    : T_FSMREPLACE_STATE;
+	signal FSMReplace_State       : T_FSMREPLACE_STATE            := ST_IDLE;
+	signal FSMReplace_NextState   : T_FSMREPLACE_STATE;
 
-	signal Insert                  : std_logic;
+	signal Insert                 : std_logic;
 
 	signal TU_NewTag_rst          : std_logic;
 	signal TU_NewTag_nxt          : std_logic;
@@ -133,40 +133,32 @@ architecture rtl of arp_Cache is
 
 	signal NewCacheLine_Data      : T_SLV_8;
 
-	signal TU_Tag_rst              : std_logic;
-	signal TU_Tag_nxt              : std_logic;
+	signal TU_Tag_rst             : std_logic;
+	signal TU_Tag_nxt             : std_logic;
 	signal TU_Tag_Data            : T_SLV_8;
-	signal CacheHit                : std_logic;
+	signal CacheHit               : std_logic;
 	signal CacheMiss              : std_logic;
 
-	signal TU_Index                : std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-	signal TU_Index_d              : std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
---  signal TU_Index_us            : UNSIGNED(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-
+	signal TU_Index               : std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
 	signal TU_NewIndex            : std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-	signal TU_Replaced            : std_logic;
 
 	signal TU_TagHit              : std_logic;
-	signal TU_TagMiss              : std_logic;
+	signal TU_TagMiss             : std_logic;
 
 	constant TICKCOUNTER_RES      : T_TIME                                                                    := 10.0e-3;
 	constant TICKCOUNTER_MAX      : positive                                                                  := TimingToCycles(TICKCOUNTER_RES, CLOCK_FREQ);
-	constant TICKCOUNTER_BITS      : positive                                                                  := log2ceilnz(TICKCOUNTER_MAX);
+	constant TICKCOUNTER_BITS     : positive                                                                  := log2ceilnz(TICKCOUNTER_MAX);
 
 	signal TickCounter_s          : signed(TICKCOUNTER_BITS downto 0)                                          := to_signed(TICKCOUNTER_MAX, TICKCOUNTER_BITS + 1);
-	signal Tick                    : std_logic;
+	signal Tick                   : std_logic;
 
-	signal Exp_Expired            : std_logic;
-	signal Exp_KeyOut              : std_logic_vector(CACHEMEMORY_INDEX_BITS - 1 downto 0);
-
-	signal DataChunkIndex_us          : unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)    := (others => '0');
-	signal DataChunkIndex_l_us        : unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)    := (others => '0');
-	signal NewDataChunkIndex_en        : std_logic;
-	signal NewDataChunkIndex_us        : unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)    := (others => '0');
-	signal NewDataChunkIndex_max_us    : unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)    := (others => '0');
-	signal CacheMemory_we              : std_logic;
-	signal CacheMemory                : T_SLVV_8((CACHE_LINES * T_NET_MAC_ADDRESS'length) - 1 downto 0)            := INITIAL_DATALINES;
-	signal Memory_ReadWrite            : std_logic;
+	signal DataChunkIndex_us        : unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)    := (others => '0');
+	signal DataChunkIndex_l_us      : unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)    := (others => '0');
+	signal NewDataChunkIndex_en     : std_logic;
+	signal NewDataChunkIndex_us     : unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)    := (others => '0');
+	signal NewDataChunkIndex_max_us : unsigned((CACHEMEMORY_INDEX_BITS + DATACHUNK_INDEX_BITS) - 1 downto 0)    := (others => '0');
+	signal CacheMemory_we           : std_logic;
+	signal CacheMemory              : T_SLVV_8((CACHE_LINES * T_NET_MAC_ADDRESS'length) - 1 downto 0)            := INITIAL_DATALINES;
 
 begin
 	process(Clock)
@@ -180,7 +172,7 @@ begin
 		end if;
 	end process;
 
-	process(FSMReplace_State, Command, TU_Replaced, TU_NewTag_rst, TU_NewTag_nxt, NewDataChunkIndex_us, NewDataChunkIndex_max_us)
+	process(FSMReplace_State, Command, TU_NewTag_rst, TU_NewTag_nxt, NewDataChunkIndex_us, NewDataChunkIndex_max_us)
 	begin
 		FSMReplace_NextState              <= FSMReplace_State;
 
@@ -215,8 +207,6 @@ begin
 
 						FSMReplace_NextState      <= ST_REPLACE;
 
-					when others =>
-						null;
 				end case;
 
 			when ST_REPLACE =>
@@ -367,9 +357,6 @@ begin
 			end if;
 		end if;
 	end process;
-
-	-- Cache Memory - port 1
-	Memory_ReadWrite  <= ReadWrite;
 
 	process(Clock)
 	begin
