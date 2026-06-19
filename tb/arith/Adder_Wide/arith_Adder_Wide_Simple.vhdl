@@ -72,7 +72,7 @@ begin
 
 	CheckerProc: process
 		constant ProcID : AlertLogIDType := NewID("CheckerProc", TCID);
-		
+
 		variable expected : natural;
 		variable actual_sum : unsigned(9 downto 0);
 	begin

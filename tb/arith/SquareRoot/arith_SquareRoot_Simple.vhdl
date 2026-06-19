@@ -67,12 +67,12 @@ begin
 
 	CheckerProc: process
 		constant ProcID : AlertLogIDType := NewID("CheckerProc", TCID);
-		
+
 		type test_vector is record
 			input    : natural;
 			expected : natural;
 		end record;
-		
+
 		type test_array is array (natural range <>) of test_vector;
 		constant test_cases : test_array := (
 			(0, 0),     -- sqrt(0) = 0
@@ -93,7 +93,7 @@ begin
 			(225, 15),  -- sqrt(225) = 15
 			(255, 15)   -- sqrt(255) = 15
 		);
-		
+
 	begin
 		wait until Reset = '0';
 		WaitForClock(Clock);
@@ -104,21 +104,21 @@ begin
 			start <= '1';
 			WaitForClock(Clock);
 			start <= '0';
-			
+
 			-- Wait for computation to start (rdy goes low)
 			wait until rdy = '0';
 			-- Wait for computation to complete (rdy goes high)
 			wait until rdy = '1';
 			WaitForClock(Clock);
-			
+
 			-- Check result
-			AffirmIf(ProcID, 
-				unsigned(sqrt) = test_cases(i).expected, 
-				"sqrt(" & integer'image(test_cases(i).input) & ") = " & 
-				integer'image(test_cases(i).expected) & 
+			AffirmIf(ProcID,
+				unsigned(sqrt) = test_cases(i).expected,
+				"sqrt(" & integer'image(test_cases(i).input) & ") = " &
+				integer'image(test_cases(i).expected) &
 				", got " & integer'image(to_integer(unsigned(sqrt)))
 			);
-			
+
 			WaitForClock(Clock);
 		end loop;
 

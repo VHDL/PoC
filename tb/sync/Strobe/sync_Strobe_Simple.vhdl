@@ -43,7 +43,7 @@ architecture Simple of sync_Strobe_TestController is
 	signal TestDone : integer_barrier := 1;
 
 	constant TCID : AlertLogIDType := NewID("TestCtrl");
-	
+
 	constant INIT : std_logic_vector(Output'range) := (others => '0');
 
 begin
@@ -77,7 +77,7 @@ begin
 	begin
 		-- Initialize
 		Input <= INIT;
-		
+
 		WaitForClock(Clock1, 4);
 
 		-- First strobe pulse
@@ -136,7 +136,7 @@ begin
 		end loop;
 
 		-- Should see at least 1 output strobe based on stimuli
-		AffirmIf(ProcID, StrobeCnt >= 1, 
+		AffirmIf(ProcID, StrobeCnt >= 1,
 			"Expected at least 1 output strobe, got " & integer'image(StrobeCnt));
 
 		WaitForBarrier(TestDone);

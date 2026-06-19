@@ -43,7 +43,7 @@ architecture Simple of sync_Command_TestController is
 	signal TestDone : integer_barrier := 1;
 
 	constant TCID : AlertLogIDType := NewID("TestCtrl");
-	
+
 	constant INIT : std_logic_vector(Output'range) := (others => '0');
 
 begin
@@ -77,7 +77,7 @@ begin
 	begin
 		-- Initialize
 		Input <= INIT;
-		
+
 		WaitForClock(Clock1, 4);
 
 		-- Send "01" command
@@ -138,7 +138,7 @@ begin
 		end loop;
 
 		-- Should see at least 3 Changed events based on stimuli
-		AffirmIf(ProcID, ChangedCnt >= 3, 
+		AffirmIf(ProcID, ChangedCnt >= 3,
 			"Expected at least 3 Changed events, got " & integer'image(ChangedCnt));
 
 		WaitForBarrier(TestDone);

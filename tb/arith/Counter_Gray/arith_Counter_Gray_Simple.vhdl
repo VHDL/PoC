@@ -67,19 +67,19 @@ begin
 
 	CheckerProc: process
 		constant ProcID : AlertLogIDType := NewID("CheckerProc", TCID);
-		
+
 		-- Gray code sequence for 4 bits: 0000, 0001, 0011, 0010, 0110, 0111, 0101, 0100, 1100, 1101, 1111, 1110, 1010, 1011, 1001, 1000
 		type gray_sequence_type is array (0 to 15) of std_logic_vector(3 downto 0);
 		constant GRAY_SEQ : gray_sequence_type := (
 			"0000", "0001", "0011", "0010", "0110", "0111", "0101", "0100",
 			"1100", "1101", "1111", "1110", "1010", "1011", "1001", "1000"
 		);
-		
+
 	begin
 		-- Initialize control signals
 		inc <= '0';
 		dec <= '0';
-		
+
 		wait until Reset = '0';
 		WaitForClock(Clock);
 
@@ -94,7 +94,7 @@ begin
 			wait until falling_edge(Clock);
 			inc <= '0';
 			WaitForClock(Clock);
-			AffirmIf(ProcID, val = GRAY_SEQ(i), 
+			AffirmIf(ProcID, val = GRAY_SEQ(i),
 				"Gray increment step " & integer'image(i) & ": expected " & to_string(GRAY_SEQ(i)));
 		end loop;
 

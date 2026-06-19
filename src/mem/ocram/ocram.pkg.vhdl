@@ -111,7 +111,7 @@ package ocram is
 			PortA_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
 			PortA_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);
 			PortA_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0);
-			
+
 			PortB_Clock       : in  std_logic;
 			PortB_ClockEnable : in  std_logic;
 			PortB_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);

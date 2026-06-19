@@ -16,8 +16,8 @@ begin
 	begin
 		-- Initialization of test
 		SetTestName("axi4lite_UART_receive_parity");
-		SetLogEnable(PASSED, TRUE);  --Enable PASSED Logs
-		SetLogEnable(INFO, TRUE);    --Enable INFO  Logs
+		SetLogEnable(PASSED, FALSE);  --Enable PASSED Logs
+		SetLogEnable(INFO, FALSE);    --Enable INFO  Logs
 
 		-- Wait for testbench Initialization
 		wait for 0 ns;
@@ -45,9 +45,9 @@ begin
 		begin
 			return 24x"00" & data;
 		end function;
-	
+
 		variable ReceivedData : AXIDataType;
-		
+
 		procedure CheckIsParity_flag(
 			signal   manager  : inout  AddressBusRecType;
 			constant expected : in  boolean
@@ -59,13 +59,13 @@ begin
 			parity_error := Data(7) = '1';
 			AffirmIf(parity_error = expected, "EmptyBit:     Received: " & to_string(parity_error), " /= Expected: " & to_string(expected));
 		end procedure;
-		
+
 	begin
 		wait until Reset = '0';
 		for j in parityerror'range loop
 			WaitForToggle(ReadByteTrigger);
 			CheckIsParity_flag(AXI_Manager, parityerror(j));
-			
+
 			log("Reading received data byte from UART register ...");
 			Read(AXI_Manager, RX_REG, ReceivedData);
 			AffirmIf(
@@ -85,12 +85,12 @@ begin
 		wait until Reset = '0';
 
 		WaitForClock(UartTxRec, 1);
-		for i in TestData'range loop 
+		for i in TestData'range loop
 			if parityerror(i) then
-				Send(UartTxRec, TestData(i),UARTTB_PARITY_ERROR);        
+				Send(UartTxRec, TestData(i),UARTTB_PARITY_ERROR);
 			else
-				Send(UartTxRec, TestData(i));        
-			end if;  
+				Send(UartTxRec, TestData(i));
+			end if;
 			Toggle(ReadByteTrigger);
 		end loop;
 		WaitForBarrier(TestDone);

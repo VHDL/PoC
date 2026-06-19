@@ -41,7 +41,7 @@ entity arith_FirstOne_TestController is
 	port (
 		Clock : in  std_logic;
 		Reset : in  std_logic;
-		
+
 		-- DUT signals arith_FirstOne
 		tin  : out std_logic;
 		rqst : out std_logic_vector(N-1 downto 0);

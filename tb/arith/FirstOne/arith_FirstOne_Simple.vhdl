@@ -81,14 +81,14 @@ begin
 			-- Test with tin = '0': no token input, should have no grants
 			tin <= '0';
 			WaitForClock(Clock);
-			AffirmIf(ProcID, 
+			AffirmIf(ProcID,
 							 grnt = (grnt'range => '0') and tout = '0',
 							 "Unexpected token output with tin='0' in testcase #" & integer'image(i));
 
 			-- Test with tin = '1': token input, check grant pattern
 			tin <= '1';
 			wait until falling_edge(Clock);
-			
+
 			-- Check each bit of grant output
 			for j in 0 to N-1 loop
 				-- Grant(j) should be '1' if and only if:
@@ -98,17 +98,17 @@ begin
 					-- For bit 0, only check if rqst(0) is '1'
 					AffirmIf(ProcID,
 									 (grnt(j) = '1') = (rqst(j) = '1'),
-									 "Wrong grant for bit " & integer'image(j) & 
+									 "Wrong grant for bit " & integer'image(j) &
 									 " in testcase #" & integer'image(i) &
-									 " (rqst=" & to_hxstring(rqst) & 
+									 " (rqst=" & to_hxstring(rqst) &
 									 ", grnt=" & to_hxstring(grnt) & ")");
 				else
 					-- For higher bits, check if this is the first '1' from the right
 					AffirmIf(ProcID,
 									 (grnt(j) = '1') = ((rqst(j) = '1') and (rqst(j-1 downto 0) = (j-1 downto 0 => '0'))),
-									 "Wrong grant for bit " & integer'image(j) & 
+									 "Wrong grant for bit " & integer'image(j) &
 									 " in testcase #" & integer'image(i) &
-									 " (rqst=" & to_hxstring(rqst) & 
+									 " (rqst=" & to_hxstring(rqst) &
 									 ", grnt=" & to_hxstring(grnt) & ")");
 				end if;
 			end loop;
@@ -117,7 +117,7 @@ begin
 			AffirmIf(ProcID,
 							 (tout = '1') = (rqst = (N-1 downto 0 => '0')),
 							 "Wrong tout in testcase #" & integer'image(i) &
-							 " (rqst=" & to_hxstring(rqst) & 
+							 " (rqst=" & to_hxstring(rqst) &
 							 ", tout=" & std_logic'image(tout) & ")");
 
 			-- Verify binary output bin points to the granted bit
@@ -132,7 +132,7 @@ begin
 					end if;
 				end loop;
 			end if;
-			
+
 		end loop;
 
 		Log(ProcID, "Exhaustively tested all " & integer'image(2**N) & " request patterns", INFO);

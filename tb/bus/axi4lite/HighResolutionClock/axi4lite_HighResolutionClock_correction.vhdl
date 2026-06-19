@@ -32,8 +32,8 @@ begin
 	begin
 		-- Initialization of test
 		SetTestName("axi4lite_HighResolutionClock_correction");
-		SetLogEnable(PASSED, TRUE);  --Enable PASSED Logs
-		SetLogEnable(INFO, TRUE);    --Enable INFO  Logs
+		SetLogEnable(PASSED, FALSE);  --Enable PASSED Logs
+		SetLogEnable(INFO, FALSE);    --Enable INFO  Logs
 
 		-- Wait for testbench Initialization
 		wait for 0 ns;
@@ -56,7 +56,7 @@ begin
 		procedure LoadNanoseconds (
 			signal   manager             : inout AddressBusRecType;
 			constant Nanoseconds_to_load : natural
-		) is 
+		) is
 			variable ns_value_slv : std_logic_vector(63 downto 0) := to_slv(Nanoseconds_to_load, 64);
 		begin
 			log("");
@@ -90,14 +90,14 @@ begin
 			Read(AXI_Manager, Reg_Nanoseconds_lower, ReadData);
 			time_now_a  := now;
 			time_ns_a_l := to_integer(unsigned(ReadData));
-			
+
 			wait for correction_time;
-			
+
 			Read(AXI_Manager, Reg_Nanoseconds_lower, ReadData);
 			time_now_b         := now;
 			time_now_delta     := time_now_b - time_now_a;
 			time_now_delta_val := time_now_delta / 1000 ps;
-			
+
 			case config is
 				when "11" =>    -- increment
 					if correction_threshold = 0 then
@@ -123,7 +123,7 @@ begin
 				"Delta: /= " & to_string(delta_expected - 1) & " to " & to_string(delta_expected + 1) & " (expected)"
 			);
 		end procedure;
-			
+
 	begin
 		wait until Reset = '0';
 		WaitForClock(AXI_Manager, 2);
