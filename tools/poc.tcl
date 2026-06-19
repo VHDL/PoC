@@ -1,5 +1,6 @@
 namespace eval ::poc {
-	variable putsPrefix "\[PoC\]        "
+	variable putsPrefix   "\[PoC\]        "
+	variable putsPrefixNs "\[PoC\] "
 	proc getEnv {var {default ""}} {
 		if {[info exists ::env($var)]} {
 			return $::env($var)
@@ -230,10 +231,10 @@ ${::poc::putsPrefix}======================================
 
 	# New procedures for OSVVM's *.pro files
 	proc disabled {args} {
-		puts "${::poc::putsPrefix}Disabled from analysis: $args"
+		puts "${::poc::putsPrefixNs}Disabled from analysis: $args"
 	}
 	proc duplicate {args} {
-		puts "${::poc::putsPrefix}Duplicate file: $args"
+		puts "${::poc::putsPrefixNs}Duplicate file: $args"
 	}
 
 	namespace export exitScript

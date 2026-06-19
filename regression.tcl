@@ -84,6 +84,8 @@ evaluateRegressionLevel $defaultStep $regressionLevels
 
 if {![file exists $::poc::localConfigurationPath] || $::regression::level == -1} {
 	WriteLocalConfiguration
+} else {
+	puts "${::poc::putsPrefix}Skipping local configuration file generation."
 }
 
 puts "========================================"
