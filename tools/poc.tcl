@@ -178,8 +178,8 @@ ${::poc::putsPrefix}======================================
 		}
 
 		puts "${::poc::putsPrefix}Relative to src/build.pro:"
-		puts "${::poc::putsPrefix}projectConfigurationFile is '$::poc::projectConfigurationFile'"
-		puts "${::poc::putsPrefix}localConfigurationFile is '$::poc::localConfigurationFile'"
+		puts "${::poc::putsPrefix}  projectConfigurationFile is '$::poc::projectConfigurationFile'"
+		puts "${::poc::putsPrefix}  localConfigurationFile is '$::poc::localConfigurationFile'"
 
 		set ::poc::localConfigurationPath   "$::poc::projectRoot/src/$::poc::localConfigurationFile"
 	}
@@ -306,11 +306,9 @@ namespace eval ::regression {
 		set ::regression::level [mapRegressionLevel $selectedStep $regressionLevels]
 
 		# 3. output result
-		puts "${::regression::putsPrefix}=================================="
 		puts "${::regression::putsPrefix}Build configuration"
 		puts "${::regression::putsPrefix}  Level: $::regression::level (set by $buildConfigSource)"
 		puts "${::regression::putsPrefix}  Executing [expr {$::regression::executeSingleStep ? "only" : "starting from"}] step '$selectedStep'"
-		puts "${::regression::putsPrefix}=================================="
 	}
 
 	namespace export createRegressionLevels
