@@ -102,11 +102,11 @@ end entity;
 
 
 architecture rtl of ocram_TrueDualPort is
-	constant DEPTH : positive := 2**ADDRESS_BITS;
+	constant WORDS : positive := 2**ADDRESS_BITS;
 
 begin
 	gen: if not SIMULATION and ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
-		signal ram    : T_SLVV    := mem_InitMemory(FILENAME, DEPTH, DATA_BITS);
+		signal ram    : T_SLVV(0 to WORDS - 1)(DATA_BITS - 1 downto 0) := mem_InitMemory(FILENAME, WORDS, DATA_BITS);
 		signal a1_reg : unsigned(ADDRESS_BITS-1 downto 0) := (others => 'U');
 		signal a2_reg : unsigned(ADDRESS_BITS-1 downto 0) := (others => 'U');
 

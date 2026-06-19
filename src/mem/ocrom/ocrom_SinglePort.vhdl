@@ -61,13 +61,13 @@ end entity;
 
 
 architecture rtl of ocrom_SinglePort is
-	constant DEPTH        : positive := 2**ADDRESS_BITS;
+	constant WORDS        : positive := 2**ADDRESS_BITS;
 
 begin
 	assert (str_length(FILENAME) /= 0) report "Do you really want to generate a block of zeros?" severity FAILURE;
 
 	gen: if gInfer: (VENDOR = VENDOR_GENERIC) or (VENDOR = VENDOR_XILINX) generate
-		constant rom  : T_SLVV    := mem_InitMemory(FILENAME, DEPTH, DATA_BITS);
+		constant rom  : T_SLVV(0 to WORDS - 1)(DATA_BITS - 1 downto 0) := mem_InitMemory(FILENAME, WORDS, DATA_BITS);
 		signal a_reg  : unsigned(ADDRESS_BITS-1 downto 0);
 	begin
 		process (Clock)

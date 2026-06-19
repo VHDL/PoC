@@ -84,7 +84,7 @@ end entity;
 
 
 architecture rtl of ocram_SimpleDualPort is
-	constant DEPTH : positive := 2**ADDRESS_BITS;
+	constant WORDS : positive := 2**ADDRESS_BITS;
 
 begin
 	gen: if not SIMULATION and ((VENDOR = VENDOR_ALTERA) or (VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
@@ -99,7 +99,7 @@ begin
 		--   With two different clocks, synthesis complains about an undefined
 		--   read-write behavior, that can be ignored.
 
-		signal ram : T_SLVV  := mem_InitMemory(FILENAME, DEPTH, DATA_BITS);
+		signal ram : T_SLVV(0 to WORDS - 1)(DATA_BITS - 1 downto 0) := mem_InitMemory(FILENAME, WORDS, DATA_BITS);
 		attribute ramstyle  of ram : signal is get_ramstyle_string(RAM_TYPE);
 		attribute ram_style of ram : signal is get_ram_style_string(RAM_TYPE);
 
