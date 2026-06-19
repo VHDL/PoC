@@ -1,7 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:          Thomas B. Preusser
 --
@@ -52,8 +48,8 @@ architecture tb of fifo_cc_got_tempput_tb is
 	-- component generics
 	constant D_BITS         : positive := 8;
 	constant MIN_DEPTH      : positive := 8;
-	constant ESTATE_WR_BITS : natural  := 2;
-	constant FSTATE_RD_BITS : natural  := 2;
+	constant EMPTY_STATE_BITS : natural  := 2;
+	constant FILL_STATE_BITS : natural  := 2;
 
 	constant ISPEC : string := "C C Cccccpppp pppp c ccc pp         Cppppp ppp rp RpC";
 	constant OSPEC : string := "ggg                      gggggggg  ggg G           G";
@@ -165,8 +161,8 @@ begin
 				DATA_REG       => DATA_REG,
 				STATE_REG      => STATE_REG,
 				OUTPUT_REG     => OUTPUT_REG,
-				ESTATE_WR_BITS => ESTATE_WR_BITS,
-				FSTATE_RD_BITS => FSTATE_RD_BITS
+				EMPTY_STATE_BITS => EMPTY_STATE_BITS,
+				FILL_STATE_BITS => FILL_STATE_BITS
 			)
 			port map (
 				rst       => rst,
@@ -175,14 +171,14 @@ begin
 				put       => put,
 				din       => di,
 				full      => ful,
-				estate_wr => open,
+				EmptyState => open,
 				commit    => commit,
 				rollback  => rollback,
 
 				got       => got,
 				dout      => do,
 				valid     => vld,
-				fstate_rd => open
+				FillState => open
 			);
 
 		-- Reader

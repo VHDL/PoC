@@ -461,7 +461,6 @@ begin
 		genCCA: if ARCH = CCA generate
 			constant M : positive := HI-LO+1;
 			constant D : positive := M/2;
-			constant H : positive := (D+5)/6;
 
 			signal pl : std_logic_vector(M-D-1 downto 0);
 			signal pc : std_logic_vector(M-D   downto 0);

@@ -52,7 +52,7 @@ architecture rtl of arith_Counter_Gray is
 
 	-- purpose: gray constant encoder
 	function gray_encode (val : natural; len : positive) return unsigned is
-		variable bin : unsigned(len-1 downto 0) := to_unsigned(val, len);
+		constant bin : unsigned(len-1 downto 0) := to_unsigned(val, len);
 	begin
 		if len = 1 then
 			return bin;

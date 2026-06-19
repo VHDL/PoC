@@ -1,7 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:          Thomas B. Preusser
 --
@@ -52,8 +48,8 @@ architecture tb of fifo_ic_got_tb is
 	constant D_BITS         : positive := 9;
 	constant MIN_DEPTH      : positive := 8;
 	constant OUTPUT_REG     : boolean  := true;
-	constant ESTATE_WR_BITS : natural  := 2;
-	constant FSTATE_RD_BITS : natural  := 2;
+	constant EMPTY_STATE_BITS : natural  := 2;
+	constant FILL_STATE_BITS : natural  := 2;
 
 	-- Sequence Generator
 	constant GEN : bit_vector       := "100110001";
@@ -155,8 +151,8 @@ begin
 			D_BITS         => D_BITS,
 			MIN_DEPTH      => MIN_DEPTH,
 			OUTPUT_REG     => OUTPUT_REG,
-			ESTATE_WR_BITS => ESTATE_WR_BITS,
-			FSTATE_RD_BITS => FSTATE_RD_BITS
+			EMPTY_STATE_BITS => EMPTY_STATE_BITS,
+			FILL_STATE_BITS => FILL_STATE_BITS
 		)
 		port map (
 			clk_wr    => clk0,
@@ -164,14 +160,14 @@ begin
 			put       => put0,
 			din       => di0,
 			full      => ful0,
-			estate_wr => open,
+			EmptyState => open,
 
 			clk_rd    => clk1,
 			rst_rd    => rst,
 			got       => got1,
 			valid     => vld1,
 			dout      => do1,
-			fstate_rd => open
+			FillState => open
 		);
 
 	-----------------------------------------------------------------------------
@@ -216,8 +212,8 @@ begin
 			DATA_REG       => true,
 			D_BITS         => D_BITS,
 			MIN_DEPTH      => MIN_DEPTH,
-			ESTATE_WR_BITS => ESTATE_WR_BITS,
-			FSTATE_RD_BITS => FSTATE_RD_BITS
+			EMPTY_STATE_BITS => EMPTY_STATE_BITS,
+			FILL_STATE_BITS => FILL_STATE_BITS
 		)
 		port map (
 			clk_wr    => clk1,
@@ -225,14 +221,14 @@ begin
 			put       => put1,
 			din       => di1,
 			full      => ful1,
-			estate_wr => open,
+			EmptyState => open,
 
 			clk_rd    => clk2,
 			rst_rd    => rst,
 			got       => got2,
 			valid     => vld2,
 			dout      => do2,
-			fstate_rd => open
+			FillState => open
 		);
 
 	-----------------------------------------------------------------------------

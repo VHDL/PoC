@@ -15,7 +15,7 @@
 -- := For exmaple:
 -- FLOWCTRL_XOFF_THRESHOLD is set to 0.75,  if fifo filled upto = FIFO_DEPTH*0.75
 -- gives the backpressure based the flow control that being used. To know more about
--- TX_ESTATE_BITS,RX_FSTATE_BITS please refer 'fifo_cc_got' module. User can change the
+-- TX_EMPTY_STATE_BITS, RX_FILL_STATE_BITS please refer 'fifo_cc_got' module. User can change the
 -- SWFC_XON/XOFF_CHAR if needed.
 --
 -- License:
@@ -61,9 +61,9 @@ entity uart_FIFO is
 
 		-- Buffer Dimensioning
 		TX_MIN_DEPTH                    : positive          := 16;
-		TX_EMPTY_STATE_BITS                  : natural           := 0;     -- XXX: adjust to FIFO naming
+		TX_EMPTY_STATE_BITS             : natural           := 0;     -- XXX: adjust to FIFO naming
 		RX_MIN_DEPTH                    : positive          := 16;
-		RX_FILL_STATE_BITS                  : natural           := 0;
+		RX_FILL_STATE_BITS              : natural           := 0;
 
 		FLOWCTRL_XON_THRESHOLD          : real := 0.0625;
 		FLOWCTRL_XOFF_THRESHOLD         : real := 0.75;
@@ -274,8 +274,8 @@ begin
 	-- Hardware Flow Control
 	-- ===========================================================================
 	genHWFC1 : if FLOWCONTROL = UART_FLOWCONTROL_RTS_CTS generate
-		constant RX_FSTATE_UPPER_LIMIT     : integer  := integer(FLOWCTRL_XOFF_THRESHOLD * real(2**RX_FILL_STATE_BITS));
-		constant RX_FSTATE_LOWER_LIMIT     : integer  := integer(FLOWCTRL_XON_THRESHOLD * real(2**RX_FILL_STATE_BITS));
+		constant RX_FILL_STATE_UPPER_LIMIT     : integer  := integer(FLOWCTRL_XOFF_THRESHOLD * real(2**RX_FILL_STATE_BITS));
+		constant RX_FILL_STATE_LOWER_LIMIT     : integer  := integer(FLOWCTRL_XON_THRESHOLD * real(2**RX_FILL_STATE_BITS));
 	begin
 		--assert false report"FLOWCONTROL=" & T_IO_UART_FLOWCONTROL_KIND'image(FLOWCONTROL) & " is currently not supported!" severity failure;
 
@@ -293,9 +293,9 @@ begin
 			if  TXUART_Full = '0' then
 				if Reset = '1' then
 					UART_RTS<='1';
-				elsif (to_integer(unsigned(RX_FillState_int)) >= RX_FSTATE_UPPER_LIMIT)   then
+				elsif (to_integer(unsigned(RX_FillState_int)) >= RX_FILL_STATE_UPPER_LIMIT)   then
 					UART_RTS<='0';
-				elsif (to_integer(unsigned(RX_FillState_int)) <= RX_FSTATE_LOWER_LIMIT)  then
+				elsif (to_integer(unsigned(RX_FillState_int)) <= RX_FILL_STATE_LOWER_LIMIT)  then
 					UART_RTS<='1';
 				end if;
 			end if;

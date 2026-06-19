@@ -1,7 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- =============================================================================
 -- Authors:         Patrick Lehmann
 --
@@ -33,9 +29,9 @@
 
 package project_configuration is
 	-- Change these lines to setup configuration.
-	constant MY_BOARD    : string  := "GENERIC";    -- a generic board
-	constant MY_DEVICE  : string  := "None";      -- infer from MY_BOARD
+	constant MY_BOARD    : string  := "GENERIC";   -- a generic board
+	constant MY_DEVICE   : string  := "None";      -- infer from MY_BOARD
 
 	-- For internal use only
-	 constant MY_VERBOSE  : boolean  := FALSE;
+	 constant MY_VERBOSE : boolean  := FALSE;
 end package;

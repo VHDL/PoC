@@ -23,8 +23,8 @@
 -- architecture. See implementation for details.
 --
 -- ``*STATE_*_BITS`` defines the granularity of the fill state indicator
--- ``*state_*``. ``fstate_rd`` is associated with the read clock domain and outputs
--- the guaranteed number of words available in the FIFO. ``estate_wr`` is
+-- ``*state_*``. ``FillState`` is associated with the read clock domain and outputs
+-- the guaranteed number of words available in the FIFO. ``EmptyState`` is
 -- associated with the write clock domain and outputs the number of words that
 -- is guaranteed to be accepted by the FIFO without a capacity overflow. Note
 -- that both these indicators cannot replace the ``full`` or ``valid`` outputs as
@@ -33,17 +33,17 @@
 --
 -- If a fill state is not of interest, set *STATE_*_BITS = 0.
 --
--- ``fstate_rd`` and ``estate_wr`` are combinatorial outputs and include an address
+-- ``FillState`` and ``EmptyState`` are combinatorial outputs and include an address
 -- comparator (subtractor) in their path.
 --
 -- Examples:
--- - FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
---                       fstate_rd == 1 => 1/2 full (half full)
+-- - FILL_STATE_BITS = 1: FillState == 0 => 0/2 full
+--                       FillState == 1 => 1/2 full (half full)
 --
--- - FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
---                       fstate_rd == 1 => 1/4 full
---                       fstate_rd == 2 => 2/4 full
---                       fstate_rd == 3 => 3/4 full
+-- - FILL_STATE_BITS = 2: FillState == 0 => 0/4 full
+--                       FillState == 1 => 1/4 full
+--                       FillState == 2 => 2/4 full
+--                       FillState == 3 => 3/4 full
 --
 -- License:
 -- =============================================================================
@@ -305,28 +305,26 @@ begin
 	-- Fill State
 	-----------------------------------------------------------------------------
 	-- Write Clock Domain
-	gEstateWr: if EMPTY_STATE_BITS >= 1 generate
+	gEmptyState: if EMPTY_STATE_BITS = 0 generate
+		Write_EmptyState <= "X";
+	else generate
 		signal  d : unsigned(ADDRESS_BITS-1 downto 0);
 	begin
 		d         <= gray2bin(OPc(ADDRESS_BITS-1 downto 0)) + not gray2bin(IP0(ADDRESS_BITS-1 downto 0));
 		Write_EmptyState <= (others => '0') when Ful = '1' else
 								 std_logic_vector(d(d'left downto d'left-EMPTY_STATE_BITS+1));
-	end generate gEstateWr;
-	gNoEstateWr: if EMPTY_STATE_BITS = 0 generate
-		Write_EmptyState <= "X";
-	end generate gNoEstateWr;
+	end generate;
 
 	-- Read Clock Domain
-	gFstateRd: if FILL_STATE_BITS >= 1 generate
+	gFillState: if FILL_STATE_BITS = 0 generate
+		Read_FillState <= "X";
+	else generate
 		signal  d : unsigned(ADDRESS_BITS-1 downto 0);
 	begin
 		d         <= gray2bin(IPc(ADDRESS_BITS-1 downto 0)) + not gray2bin(OP0(ADDRESS_BITS-1 downto 0));
 		Read_FillState <= (others => '0') when Avl = '0' else
 								 std_logic_vector(d(d'left downto d'left-FILL_STATE_BITS+1));
-	end generate gFstateRd;
-	gNoFstateRd: if FILL_STATE_BITS = 0 generate
-		Read_FillState <= "X";
-	end generate gNoFstateRd;
+	end generate;
 
 	-----------------------------------------------------------------------------
 	-- Memory Instantiation

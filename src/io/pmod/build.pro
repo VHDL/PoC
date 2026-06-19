@@ -1,6 +1,5 @@
 # =============================================================================
-# Authors: Adrian Weiland
-#          Stefan Unrein
+# Authors: Patrick Lehmann
 #
 # License:
 # =============================================================================
@@ -19,24 +18,7 @@
 # limitations under the License.
 # =============================================================================
 
-analyze ./io.pkg.vhdl
-analyze ./io_Debounce.vhdl
-analyze ./io_FrequencyCounter.vhdl
-analyze ./io_TimingCounter.vhdl
-analyze ./io_GlitchFilter.vhdl
-analyze ./io_PulseWidthModulation.vhdl
-analyze ./io_KeyPadScanner.vhdl
-analyze ./io_7SegmentMux_BCD.vhdl
-analyze ./io_7SegmentMux_HEX.vhdl
-analyze ./io_FanControl.vhdl
-
-
-include ./ddrio
-disabled ./spi/spi.pro
-include ./uart
-disabled ./iic/iic.pro
-disabled ./fan/fan.pro
-
-include ./pmod
-disabled ./jtag/jtag.pkg.vhdl
-disabled ./led/led.pkg.vhdl
+analyze ./pmod.pkg.vhdl
+analyze ./pmod_KYPD.vhdl
+analyze ./pmod_SSD.vhdl
+analyze ./pmod_USBUART.vhdl
