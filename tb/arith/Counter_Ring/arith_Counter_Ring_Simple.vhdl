@@ -72,7 +72,7 @@ begin
 		-- Initialize control signals
 		inc <= '0';
 		dec <= '0';
-		
+
 		wait until Reset = '0';
 		WaitForClock(Clock);
 
@@ -82,7 +82,7 @@ begin
 
 		-- Test increment (ring counter shift left)
 		-- Use same pattern as BCD counter test: pulse inc for each increment
-		
+
 		-- First increment
 		wait until falling_edge(Clock);
 		inc <= '1';

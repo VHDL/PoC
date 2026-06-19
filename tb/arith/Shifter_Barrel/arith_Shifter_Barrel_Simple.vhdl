@@ -76,7 +76,7 @@ begin
 		ShiftRotate     <= '0';  -- Shift mode
 		LeftRight       <= '0';  -- Left
 		ArithmeticLogic <= '0';  -- Logic (doesn't matter for left shift)
-		
+
 		Input       <= "10110011";
 		ShiftAmount <= "001";  -- Shift by 1
 		wait for 1 ns;
@@ -93,7 +93,7 @@ begin
 		ShiftRotate     <= '0';  -- Shift mode
 		LeftRight       <= '1';  -- Right
 		ArithmeticLogic <= '1';  -- Logic
-		
+
 		Input       <= "10110011";
 		ShiftAmount <= "001";  -- Shift by 1
 		wait for 1 ns;
@@ -110,7 +110,7 @@ begin
 		ShiftRotate     <= '0';  -- Shift mode
 		LeftRight       <= '1';  -- Right
 		ArithmeticLogic <= '0';  -- Arithmetic
-		
+
 		Input       <= "10110011";  -- Negative number
 		ShiftAmount <= "001";  -- Shift by 1
 		wait for 1 ns;
@@ -126,7 +126,7 @@ begin
 		-- Test Rotate Left (RL)
 		ShiftRotate     <= '1';  -- Rotate mode
 		LeftRight       <= '0';  -- Left
-		
+
 		Input       <= "10110011";
 		ShiftAmount <= "001";  -- Rotate by 1
 		wait for 1 ns;
@@ -142,7 +142,7 @@ begin
 		-- Test Rotate Right (RR)
 		ShiftRotate     <= '1';  -- Rotate mode
 		LeftRight       <= '1';  -- Right
-		
+
 		Input       <= "10110011";
 		ShiftAmount <= "001";  -- Rotate by 1
 		wait for 1 ns;

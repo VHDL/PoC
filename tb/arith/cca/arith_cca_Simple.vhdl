@@ -75,7 +75,7 @@ begin
 
 		-- Test basic addition without carry
 		c <= '0';
-		
+
 		a <= x"00";
 		b <= x"00";
 		wait for 1 ns;
@@ -108,7 +108,7 @@ begin
 
 		-- Test addition with carry = 1
 		c <= '1';
-		
+
 		a <= x"00";
 		b <= x"00";
 		wait for 1 ns;

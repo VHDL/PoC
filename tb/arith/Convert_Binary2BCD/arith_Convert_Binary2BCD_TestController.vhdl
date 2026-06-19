@@ -46,14 +46,14 @@ entity arith_Convert_Binary2BCD_TestController is
 	port (
 		Clock     : in  std_logic;
 		Reset     : in  std_logic;
-		
+
 		-- DUT signals
 		Start           : out std_logic;
-		
+
 		Conv1_Binary    : out std_logic_vector(CONV1_BITS - 1 downto 0);
 		Conv1_BCDDigits : in  T_BCD_VECTOR(CONV1_DIGITS - 1 downto 0);
 		Conv1_Sign      : in  std_logic;
-		
+
 		Conv2_Binary    : out std_logic_vector(CONV2_BITS - 1 downto 0);
 		Conv2_BCDDigits : in  T_BCD_VECTOR(CONV2_DIGITS - 1 downto 0);
 		Conv2_Sign      : in  std_logic

@@ -40,7 +40,7 @@ use     PoC.physical.all;
 
 architecture Simple of arith_Counter_BCD_TestController is
 	constant TCID : AlertLogIDType := NewID("CntBCDTest");
-	
+
 	signal TestDone : integer_barrier := 1;
 
 begin

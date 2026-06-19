@@ -43,7 +43,7 @@ architecture Simple of sync_Vector_TestController is
 	signal TestDone : integer_barrier := 1;
 
 	constant TCID : AlertLogIDType := NewID("TestCtrl");
-	
+
 	constant INIT : std_logic_vector(Output'range) := (others => '0');
 
 begin
@@ -77,7 +77,7 @@ begin
 	begin
 		-- Initialize
 		Input <= INIT;
-		
+
 		WaitForClock(Clock1, 4);
 
 		-- Send "01" vector
@@ -133,7 +133,7 @@ begin
 		end loop;
 
 		-- Should see at least 2 Changed events based on stimuli
-		AffirmIf(ProcID, ChangedCnt >= 2, 
+		AffirmIf(ProcID, ChangedCnt >= 2,
 			"Expected at least 2 Changed events, got " & integer'image(ChangedCnt));
 
 		WaitForBarrier(TestDone);

@@ -71,7 +71,7 @@ begin
 	begin
 		-- Initialize control signal
 		inc <= '0';
-		
+
 		wait until Reset = '0';
 		WaitForClock(Clock);
 
@@ -79,7 +79,7 @@ begin
 		WaitForClock(Clock);
 		inc <= '1';
 		WaitForClock(Clock);
-		
+
 		-- Should not assert strobe for first DIVIDER-1 cycles
 		for i in 1 to DIVIDER-1 loop
 			AffirmIf(ProcID, stb = '0', "Strobe should be low before divider count reached (cycle " & integer'image(i) & ")");
@@ -92,7 +92,7 @@ begin
 
 		-- Next cycle, strobe should be low again and start new count
 		AffirmIf(ProcID, stb = '0', "Strobe should return to low after assertion");
-		
+
 		-- Test another cycle
 		for i in 1 to DIVIDER-2 loop
 			WaitForClock(Clock);

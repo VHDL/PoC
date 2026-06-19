@@ -105,7 +105,7 @@ begin
 						end if;
 					end if;
 				end process;
-				
+
 				process (Clock)
 				begin
 					if rising_edge(Clock) then

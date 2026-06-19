@@ -40,7 +40,7 @@ entity arith_Adder_Wide_TestController is
 	port (
 		Clock : in  std_logic;
 		Reset : in  std_logic;
-		
+
 		-- DUT ports (arrays for all variants)
 		a     : out word;
 		b     : out word;
