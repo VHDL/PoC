@@ -21,8 +21,8 @@
 
 library PoC
 
-analyze $::poc::projectConfigurationPath
-analyze $::poc::localConfigurationPath
+analyze $::poc::projectConfigurationFile
+analyze $::poc::localConfigurationFile
 
 include ./common
 disabled ./misc/misc_ClockBuffer.vhdl

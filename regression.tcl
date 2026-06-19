@@ -86,6 +86,11 @@ if {![file exists $::poc::localConfigurationPath] || $::regression::level == -1}
 	WriteLocalConfiguration
 }
 
+puts "========================================"
+puts "End of PoC configuration, start of build"
+puts "========================================"
+puts ""
+
 if {$::regression::level <= 0} {
 	build ${root}/lib/OsvvmLibraries.pro [BuildName "${::poc::buildNamePrefix}OsvvmLibraries"]
 	if {[checkForBuildErrors] || $::regression::executeSingleStep} {
