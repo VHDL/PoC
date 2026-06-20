@@ -50,7 +50,6 @@ end entity;
 
 architecture rtl of arith_CarryChain_inc_Xilinx is
 	signal ci    : std_logic_vector(BITS downto 0);
-	signal co    : std_logic_vector(BITS downto 0);
 
 begin
 	ci(0) <= CarryIn;

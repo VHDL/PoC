@@ -70,7 +70,6 @@ architecture rtl of dstruct_Stack is
 		signal adr : unsigned(ADDRESS_BITS-1 downto 0) := (others => '0');
 		signal s_adr : unsigned(ADDRESS_BITS-1 downto 0) := (others => '0');
 		signal s_dout : std_logic_vector(DATA_BITS-1 downto 0) := (others => '0');
-		signal s_valid : std_logic := '0';
 		signal s_din : std_logic_vector(DATA_BITS-1 downto 0) := (others => '0');
 
 		-- ctrl signal for stackpointer operations

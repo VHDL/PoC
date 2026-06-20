@@ -1,7 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:          Thomas B. Preusser
 --
@@ -53,8 +49,8 @@ architecture tb of fifo_cc_got_tb is
 	-- component generics
 	constant D_BITS         : positive := 8;
 	constant MIN_DEPTH      : positive := 30;
-	constant ESTATE_WR_BITS : natural  := 2;
-	constant FSTATE_RD_BITS : natural  := 2;
+	constant EMPTY_STATE_BITS : natural  := 2;
+	constant FILL_STATE_BITS : natural  := 2;
 
 	-- Clock Control
 	signal rst  : std_logic;
@@ -78,11 +74,11 @@ begin
 		signal put        : std_logic;
 		signal din        : std_logic_vector(D_BITS-1 downto 0);
 		signal full        : std_logic;
-		signal estate_wr  : std_logic_vector(ESTATE_WR_BITS - 1 downto 0);
+		signal EmptyState  : std_logic_vector(EMPTY_STATE_BITS - 1 downto 0);
 		signal got        : std_logic;
 		signal dout        : std_logic_vector(D_BITS-1 downto 0);
 		signal valid      : std_logic;
-		signal fstate_rd  : std_logic_vector(FSTATE_RD_BITS - 1 downto 0);
+		signal FillState  : std_logic_vector(FILL_STATE_BITS - 1 downto 0);
 
 	begin
 
@@ -93,8 +89,8 @@ begin
 				STATE_REG      => STATE_REG,
 				DATA_REG       => DATA_REG,
 				OUTPUT_REG     => OUTPUT_REG,
-				ESTATE_WR_BITS => ESTATE_WR_BITS,
-				FSTATE_RD_BITS => FSTATE_RD_BITS
+				EMPTY_STATE_BITS => EMPTY_STATE_BITS,
+				FILL_STATE_BITS => FILL_STATE_BITS
 			)
 			port map (
 				rst       => rst,
@@ -102,11 +98,11 @@ begin
 				put       => put,
 				din       => din,
 				full      => full,
-				estate_wr => estate_wr,
+				EmptyState => EmptyState,
 				got       => got,
 				dout      => dout,
 				valid     => valid,
-				fstate_rd => fstate_rd
+				FillState => FillState
 			);
 
 		-- Writer

@@ -82,7 +82,7 @@ architecture rtl of stream_FrameGenerator is
 	signal ContentCounter_en          : std_logic;
 	signal ContentCounter_us          : unsigned(WORD_BITS - 1 downto 0)  := (others => '0');
 
-	signal PRNG_rst                   : std_logic;
+	signal PRNG_rst                   : std_logic;  -- FIXME: Why is reset not driven by FSM anymore?
 	signal PRNG_got                   : std_logic;
 	signal PRNG_Data                  : std_logic_vector(DATA_BITS - 1 downto 0);
 begin
@@ -147,8 +147,6 @@ begin
 					when FRAMEGEN_CMD_ALL_FRAMES =>
 						NextState                  <= ST_ERROR;
 
-					when others =>
-						NextState                  <= ST_ERROR;
 				end case;
 
 			-- generate sequential numbers

@@ -1,4 +1,6 @@
 namespace eval ::poc {
+	variable putsPrefix   "\[PoC\]        "
+	variable putsPrefixNs "\[PoC\] "
 	proc getEnv {var {default ""}} {
 		if {[info exists ::env($var)]} {
 			return $::env($var)
@@ -11,11 +13,11 @@ namespace eval ::poc {
 	variable boardName  [getEnv BOARD  "GENERIC"]
 	variable buildNamePrefix ""
 
-	variable localConfigurationFolder "${projectRoot}/tb/common"
-	variable projectConfigurationFile "project_configuration_${::poc::boardName}.vhdl"
-	variable localConfigurationFile   "local_configuration.vhdl"
-	variable projectConfigurationPath [file join $localConfigurationFolder "project_configuration_${::poc::boardName}.vhdl"]
-	variable localConfigurationPath   [file join $localConfigurationFolder "local_configuration.vhdl"]
+	# Relative to the location of src/build.pro
+	variable localConfigurationFolder "../tb/common"
+	variable projectConfigurationFile "$localConfigurationFolder/project_configuration_${::poc::boardName}.vhdl"
+	variable localConfigurationFile   "$localConfigurationFolder/local_configuration.vhdl"
+	variable localConfigurationPath   "$projectRoot/src/$localConfigurationFolder/local_configuration.vhdl"
 
 	variable disableExit 0
 
@@ -29,6 +31,8 @@ namespace eval ::poc {
 		} else {
 			set buildNamePrefix "${::osvvm::ToolName}-"
 		}
+	} elseif {[info exists ::env(GITHUB_ACTIONS)]} {
+		set buildNamePrefix ""
 	} else {
 		set buildNamePrefix "${::osvvm::ToolNameVersion}-"
 	}
@@ -62,7 +66,7 @@ namespace eval ::poc {
 					if {$i < [llength $args]} {
 						set stopCount [lindex $args $i]
 					} else {
-						puts "Option -stopCount requires an integer value."
+						puts "${::poc::putsPrefix}Option -stopCount requires an integer value."
 						exitScript
 					}
 				}
@@ -75,7 +79,7 @@ namespace eval ::poc {
 					SetSaveWaves
 				}
 				default {
-					puts "ERROR: Unknown option $arg"
+					puts "${::poc::putsPrefix}ERROR: Unknown option $arg"
 					exitScript
 				}
 			}
@@ -102,16 +106,16 @@ namespace eval ::poc {
 
 		} else {
 			puts [format {
-======================================
-Unknown simulator selected: %s
-
-Supported simulators:
-  - GHDL
-  - NVC
-  - Riviera-PRO
-Other tools:
-  - Sigasi in VSCode
-======================================
+${::poc::putsPrefix}======================================
+${::poc::putsPrefix}Unknown simulator selected: %s
+${::poc::putsPrefix}
+${::poc::putsPrefix}Supported simulators:
+${::poc::putsPrefix}  - GHDL
+${::poc::putsPrefix}  - NVC
+${::poc::putsPrefix}  - Riviera-PRO
+${::poc::putsPrefix}Other tools:
+${::poc::putsPrefix}  - Sigasi in VSCode
+${::poc::putsPrefix}======================================
 } $::osvvm::ToolName]
 			exitScript
 		}
@@ -149,7 +153,6 @@ Other tools:
 					incr i
 					if {$i < [llength $args]} {
 							set ::poc::projectRoot [lindex $args $i]
-							set ::poc::localConfigurationFolder "${::poc::projectRoot}/tb/common"
 					}
 				}
 
@@ -170,23 +173,37 @@ Other tools:
 				}
 
 				default {
-					puts "ERROR: Unknown option $arg"
+					puts "${::poc::putsPrefix}ERROR: Unknown option $arg"
 					exitScript
 				}
 			}
 			incr i
 		}
 
-		set ::poc::projectConfigurationPath [file join ${::poc::localConfigurationFolder} ${::poc::projectConfigurationFile}]
-		set ::poc::localConfigurationPath   [file join ${::poc::localConfigurationFolder} ${::poc::localConfigurationFile}]
+		puts "${::poc::putsPrefix}Relative to src/build.pro:"
+		puts "${::poc::putsPrefix}  projectConfigurationFile is '$::poc::projectConfigurationFile'"
+		puts "${::poc::putsPrefix}  localConfigurationFile is '$::poc::localConfigurationFile'"
+
+		set ::poc::localConfigurationPath   "$::poc::projectRoot/src/$::poc::localConfigurationFile"
+	}
+
+	proc WriteLocalConfiguration {} {
+		puts "${::poc::putsPrefix}Generate local configuration in '$::poc::localConfigurationFile' with working dir to root '$::poc::projectRoot'"
+		set content "package local_configuration is\n"
+		append content "\tconstant LOCAL_PROJECT_DIR : string := \"$::poc::projectRoot\";\n"
+		append content "end package;\n"
+
+		set fileHandle [open "$::poc::projectRoot/src/$::poc::localConfigurationFile" "w"]
+		puts -nonewline $fileHandle $content
+		close $fileHandle
 	}
 
 	proc checkForBuildErrors {} {
 		if {$::osvvm::AnalyzeErrorCount > 0} {
-			puts "ERROR: While building $::osvvm::LastBuildName"
-			puts "====================================="
-			puts $::osvvm::BuildErrorInfo
-			puts "====================================="
+			puts "${::poc::putsPrefix}ERROR: While building $::osvvm::LastBuildName"
+			puts "${::poc::putsPrefix}====================================="
+			puts "${::poc::putsPrefix}$::osvvm::BuildErrorInfo"
+			puts "${::poc::putsPrefix}====================================="
 
 			exitScript
 			return 1
@@ -196,18 +213,18 @@ Other tools:
 
 	proc checkForRunErrors {} {
 		if {$::osvvm::AnalyzeErrorCount > 0} {
-			puts "ERROR: While building $::osvvm::LastBuildName"
-			puts "====================================="
-			puts $::osvvm::BuildErrorInfo
-			puts "====================================="
+			puts "${::poc::putsPrefix}ERROR: While building $::osvvm::LastBuildName"
+			puts "${::poc::putsPrefix}====================================="
+			puts "${::poc::putsPrefix}$::osvvm::BuildErrorInfo"
+			puts "${::poc::putsPrefix}====================================="
 
 			exitScript 2
 			return 1
 		} elseif {$::osvvm::SimulateErrorCount > 0} {
-			puts "ERROR: While simulating $::osvvm::TestCaseName"
-			puts "====================================="
-			puts $::osvvm::BuildErrorInfo
-			puts "====================================="
+			puts "${::poc::putsPrefix}ERROR: While simulating $::osvvm::TestCaseName"
+			puts "${::poc::putsPrefix}====================================="
+			puts "${::poc::putsPrefix}$::osvvm::BuildErrorInfo"
+			puts "${::poc::putsPrefix}====================================="
 			exitScript 3
 			return 1
 		}
@@ -216,25 +233,28 @@ Other tools:
 
 	# New procedures for OSVVM's *.pro files
 	proc disabled {args} {
-		puts "Disabled from analysis: $args"
+		puts "${::poc::putsPrefixNs}Disabled from analysis: $args"
 	}
 	proc duplicate {args} {
-		puts "Duplicate file: $args"
+		puts "${::poc::putsPrefixNs}Duplicate file: $args"
 	}
 
 	namespace export exitScript
 	namespace export configureOSVVM
 	namespace export configurePoC
+	namespace export WriteLocalConfiguration
 	namespace export checkForBuildErrors
 	namespace export checkForRunErrors
 	namespace export disabled
 	namespace export duplicate
 }
 
-puts "Loaded PoC extensions for OSVVM."
+puts "${::poc::putsPrefix}Loaded tools/poc.tcl poc namespace."
 
 namespace eval ::regression {
+	variable putsPrefix "\[Regression\] "
 	proc createRegressionLevels {args} {
+		set map(clean) -1
 		set map(all) 0
 
 		set i 0
@@ -257,7 +277,7 @@ namespace eval ::regression {
 			return $map($step)
 		}
 
-		puts "\[WARNING\] Unknown build level '$step', using 'all'."
+		puts "${::regression::putsPrefix}\[WARNING\] Unknown build level '$step', using 'all'."
 		return 0
 	}
 
@@ -284,20 +304,18 @@ namespace eval ::regression {
 		} else {
 			set buildConfigSource "default"
 			set selectedStep $defaultStep
-			puts "\[REGRESSION INFO\] Undefined or unknown argument, using default settings."
+			puts "${::regression::putsPrefix}\[REGRESSION INFO\] Undefined or unknown argument, using default settings."
 		}
 		set ::regression::level [mapRegressionLevel $selectedStep $regressionLevels]
 
 		# 3. output result
-		puts "=================================="
-		puts "Build configuration"
-		puts "  Level: $::regression::level (set by $buildConfigSource)"
-		puts "  Executing [expr {$::regression::executeSingleStep ? "only" : "starting from"}] step '$selectedStep'"
-		puts "=================================="
+		puts "${::regression::putsPrefix}Build configuration"
+		puts "${::regression::putsPrefix}  Level: $::regression::level (set by $buildConfigSource)"
+		puts "${::regression::putsPrefix}  Executing [expr {$::regression::executeSingleStep ? "only" : "starting from"}] step '$selectedStep'"
 	}
 
 	namespace export createRegressionLevels
 	namespace export evaluateRegressionLevel
 }
 
-puts "Loaded regression extensions."
+puts "${::regression::putsPrefix}Loaded tools/poc.tcl regression namespace."

@@ -118,7 +118,7 @@ package body mem is
 		DATA_BITS : positive
 	) return T_SLVV is
 		variable memory : T_SLM(WORDS - 1 downto 0, DATA_BITS - 1 downto 0);
-		variable empty  : T_SLVV(0 to WORDS - 1)(DATA_BITS - 1 downto 0) := (others => (others => ite(SIMULATION, 'U', '0')));
+		constant empty  : T_SLVV(0 to WORDS - 1)(DATA_BITS - 1 downto 0) := (others => (others => ite(SIMULATION, 'U', '0')));
 	begin
 		if str_length(FilePath) = 0 then
 			-- shortcut required by Vivado
@@ -171,7 +171,7 @@ package body mem is
 		variable CurrentLine  : LINE;
 		variable Good         : boolean;
 		variable TempWord     : std_logic_vector((div_ceil(BitsPerMemoryLine, 4) * 4) - 1 downto 0);
-		variable Result       : T_SLM(MemoryLines - 1 downto 0, BitsPerMemoryLine - 1 downto 0);
+		variable Result       : T_SLM(0 to MemoryLines - 1, BitsPerMemoryLine - 1 downto 0);
 	begin
 		Result := (others => (others => ite(SIMULATION, 'U', '0')));
 

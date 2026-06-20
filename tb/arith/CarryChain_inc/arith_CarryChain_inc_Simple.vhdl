@@ -74,7 +74,7 @@ begin
 
 		-- Test with CIn = 1 (increment)
 		CIn <= '1';
-		
+
 		X <= x"00";
 		wait for 1 ns;
 		expected := to_unsigned(1, Y'length);
@@ -102,7 +102,7 @@ begin
 
 		-- Test with CIn = 0 (no increment, just pass through)
 		CIn <= '0';
-		
+
 		X <= x"00";
 		wait for 1 ns;
 		expected := to_unsigned(0, Y'length);

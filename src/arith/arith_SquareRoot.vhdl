@@ -34,22 +34,22 @@ use     IEEE.numeric_std.all;
 
 entity arith_SquareRoot is
 	generic (
-		BITS : positive -- := 8                   -- Bit Width of Argument
+		BITS    : positive                       -- Bit Width of Argument
 	);
 	port (
 		-- Global Control
-		Reset : in  std_logic;                 -- Reset (synchronous)
-		Clock : in  std_logic;                 -- Clock
+		Clock    : in  std_logic;                 -- Clock
+		Reset    : in  std_logic;                 -- Reset (synchronous)
 
 		-- Inputs
-		Operand   : in  std_logic_vector(BITS-1 downto 0);  -- Radicand
-		Start : in  std_logic;                       -- Start Strobe
+		Radicand : in  std_logic_vector(BITS-1 downto 0);  -- Radicand
+		Start    : in  std_logic;                          -- Start Strobe
 
 		-- Outputs
-		Result : out std_logic_vector((BITS-1)/2 downto 0);  -- Result
-		Ready   : out std_logic                              -- Ready / Done
+		Result   : out std_logic_vector((BITS-1)/2 downto 0);  -- Result
+		Ready    : out std_logic                               -- Ready / Done
 	);
-end entity arith_SquareRoot;
+end entity;
 
 
 architecture rtl of arith_SquareRoot is
@@ -83,7 +83,7 @@ begin  -- rtl
 				if Start = '1' then
 
 					-- Initilize Computation
-					Rmd <= (Rmd'left downto BITS => '0') & unsigned(Operand);
+					Rmd <= (Rmd'left downto BITS => '0') & unsigned(Radicand);
 					Vld <= (others => '1');
 
 				elsif Vld(Vld'left) = '1' then

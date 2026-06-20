@@ -63,7 +63,7 @@ namespace import ::regression::*
 # Configuration space #
 #---------------------#
 set defaultStep "all"
-set regressionLevels [createRegressionLevels osvvm poc test] ; # all
+set regressionLevels [createRegressionLevels osvvm poc test] ; # clean, all
 
 # -P -projectRoot set project folder root for poc scripting
 # -g -gui         disables system exit (i.e. on errors)
@@ -82,22 +82,33 @@ configureOSVVM -stop 1 ;
 
 evaluateRegressionLevel $defaultStep $regressionLevels
 
+if {![file exists $::poc::localConfigurationPath] || $::regression::level == -1} {
+	WriteLocalConfiguration
+} else {
+	puts "${::poc::putsPrefix}Skipping local configuration file generation."
+}
+
+puts "========================================"
+puts "End of PoC configuration, start of build"
+puts "========================================"
+puts ""
+
 if {$::regression::level <= 0} {
 	build ${root}/lib/OsvvmLibraries.pro [BuildName "${::poc::buildNamePrefix}OsvvmLibraries"]
 	if {[checkForBuildErrors] || $::regression::executeSingleStep} {
-		return
+		return 1
 	}
 }
 
 if {$::regression::level <= 1} {
 	build ${root}/PoC.pro [BuildName "${::poc::buildNamePrefix}PoC"]
 	if {[checkForBuildErrors] || $::regression::executeSingleStep} {
-		return
+		return 1
 	}
 }
 if {$::regression::level <= 2} {
 	build ${root}/tb/RunAllTests.pro [BuildName "${::poc::buildNamePrefix}RunAllTests"]
 	if {[checkForRunErrors] || $::regression::executeSingleStep} {
-		return
+		return 1
 	}
 }

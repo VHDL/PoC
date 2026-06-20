@@ -108,20 +108,20 @@ architecture rtl of axi4_FIFO_CDC is
 	constant B_POS          : natural := 4;
 
 	constant BIT_VEC        : positive_vector := (
-			AW_POS => isum(W_Addr_BIT_VEC),
-			AR_POS => isum(R_Addr_BIT_VEC),
-			W_POS  => isum(W_BIT_VEC),
-			R_POS  => isum(R_BIT_VEC),
-			B_POS  => isum(B_BIT_VEC)
-		);
+		AW_POS => isum(W_Addr_BIT_VEC),
+		AR_POS => isum(R_Addr_BIT_VEC),
+		W_POS  => isum(W_BIT_VEC),
+		R_POS  => isum(R_BIT_VEC),
+		B_POS  => isum(B_BIT_VEC)
+	);
 
 	constant MIN_DEPTH      : positive_vector := (
-			AW_POS => FRAMES,
-			AR_POS => FRAMES,
-			W_POS  => FRAMES * FRAME_DEPTH,
-			R_POS  => FRAMES * FRAME_DEPTH,
-			B_POS  => FRAMES
-		);
+		AW_POS => FRAMES,
+		AR_POS => FRAMES,
+		W_POS  => FRAMES * FRAME_DEPTH,
+		R_POS  => FRAMES * FRAME_DEPTH,
+		B_POS  => FRAMES
+	);
 
 	signal   In_Ready_vec      : std_logic_vector(0 to 4);
 	signal   In_Valid_vec      : std_logic_vector(0 to 4);
@@ -129,8 +129,6 @@ architecture rtl of axi4_FIFO_CDC is
 	signal   Out_Valid_vec     : std_logic_vector(0 to 4);
 	signal   DataFIFO_DataIn   : std_logic_vector(isum(BIT_VEC) -1 downto 0);
 	signal   DataFIFO_DataOut  : std_logic_vector(isum(BIT_VEC) -1 downto 0);
-
-
 
 begin
 	-----INPUT
@@ -370,20 +368,20 @@ begin
 		)
 		port map (
 			-- Writing Interface
-			clk_wr              => ite(i<3,In_Clock,Out_Clock),
-			rst_wr              => ite(i<3,In_Reset,Out_Reset),
-			put                  => DataFIFO_put,
-			din                  => DataFIFO_DataIn_i,
-			full                => DataFIFO_Full,
-			estate_wr            => open,
+			Write_Clock      => ite(i<3,In_Clock,Out_Clock),
+			Write_Reset      => ite(i<3,In_Reset,Out_Reset),
+			Write_Put        => DataFIFO_put,
+			Write_DataIn     => DataFIFO_DataIn_i,
+			Write_Full       => DataFIFO_Full,
+			Write_EmptyState => open,
 
 			-- Reading Interface
-			clk_rd              => ite(i<3,Out_Clock,In_Clock),
-			rst_rd              => ite(i<3,Out_Reset,In_Reset),
-			got                  => DataFIFO_got,
-			dout                => DataFIFO_DataOut_i,
-			valid                => DataFIFO_Valid,
-			fstate_rd            => open
+			Read_Clock       => ite(i<3,Out_Clock,In_Clock),
+			Read_Reset       => ite(i<3,Out_Reset,In_Reset),
+			Read_Valid       => DataFIFO_Valid,
+			Read_DataOut     => DataFIFO_DataOut_i,
+			Read_Got         => DataFIFO_got,
+			Read_FillState   => open
 		);
 
 	end generate;

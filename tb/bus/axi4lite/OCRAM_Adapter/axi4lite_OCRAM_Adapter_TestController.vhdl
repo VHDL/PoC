@@ -61,7 +61,7 @@ entity axi4lite_OCRAM_Adapter_TestController is
 	-- access RAM through external name
 	--alias DATA_BITS is <<constant ^.OCRAM.gSim.sim_tdp.DATA_BITS : positive>>;  -- WORKAROUND: NVC 1.20.1 - Size of unconstrained datatype not propagated through ext. name
 	--alias DEPTH  is <<constant ^.OCRAM.gSim.sim_tdp.DEPTH : positive>>;   -- WORKAROUND: NVC 1.20.1 - Size of unconstrained datatype not propagated through ext. name
-	alias ram    is <<signal ^.OCRAM.gSim.sim_tdp.ram : T_SLVV>>; --(0 to DEPTH - 1)(DATA_BITS - 1 downto 0)>>;
+	alias ram    is <<signal ^.OCRAM.gen.sim_tdp.ram : T_SLVV>>; --(0 to DEPTH - 1)(DATA_BITS - 1 downto 0)>>;
 
 -- Not currently used in the Axi4Lite model - future use for Axi4Lite Burst Emulation modes
 --  alias WriteBurstFifo is <<variable .TbAxi4.Master_1.WriteBurstFifo : osvvm.ScoreboardPkg_slv.ScoreboardPType>> ;

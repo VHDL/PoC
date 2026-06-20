@@ -43,7 +43,7 @@ entity arith_Counter_BCD_TestController is
 		Clock     : in  std_logic;
 		Reset     : in  std_logic;
 		Reset_aux : out std_logic;
-		
+
 		-- DUT signals arith_Counter_BCD
 		inc     : out std_logic;
 		Value   : in  T_BCD_VECTOR(DIGITS - 1 downto 0)

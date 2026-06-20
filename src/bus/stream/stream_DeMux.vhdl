@@ -67,9 +67,6 @@ end entity;
 
 
 architecture rtl of stream_DeMux is
-	attribute KEEP                    : boolean;
-	attribute FSM_ENCODING            : string;
-
 	subtype T_CHANNEL_INDEX is natural range 0 to PORTS - 1;
 
 	type T_STATE    is (ST_IDLE, ST_DATAFLOW, ST_DISCARD_FRAME);

@@ -78,9 +78,9 @@ package ocram is
 	-- Simple-Dual-Port
 	component ocram_SimpleDualPort
 		generic(
+			RAM_TYPE     : T_RAM_TYPE := RAM_TYPE_AUTO;
 			ADDRESS_BITS : positive;
 			DATA_BITS    : positive;
-			RAM_TYPE     : T_RAM_TYPE := RAM_TYPE_AUTO;
 			FILENAME     : string     := ""
 		);
 		port(
@@ -99,23 +99,25 @@ package ocram is
 
 	-- Enhanced-Simple-Dual-Port
 	component ocram_EnhancedSimpleDualPort
-		generic (
+		generic(
 			ADDRESS_BITS : positive;
 			DATA_BITS    : positive;
-			FILENAME     : string    := ""
+			FILENAME     : string := ""
 		);
-		port (
+		port(
 			PortA_Clock       : in  std_logic;
-			PortB_Clock       : in  std_logic;
 			PortA_ClockEnable : in  std_logic;
-			PortB_ClockEnable : in  std_logic;
 			PortA_WriteEnable : in  std_logic;
 			PortA_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
-			PortB_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
 			PortA_DataIn      : in  std_logic_vector(DATA_BITS-1 downto 0);
 			PortA_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0);
-			PortB_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0));
-	end component;
+
+			PortB_Clock       : in  std_logic;
+			PortB_ClockEnable : in  std_logic;
+			PortB_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortB_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)
+		);
+	end component ocram_EnhancedSimpleDualPort;
 
 	-- True-Dual-Port
 	component ocram_TrueDualPort

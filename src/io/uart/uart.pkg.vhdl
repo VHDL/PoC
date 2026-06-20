@@ -128,9 +128,9 @@ package uart is
 			PARITY_ERROR_IDENTIFIER : std_logic_vector(7 downto 0) := 8x"0";
 			ADD_INPUT_SYNCHRONIZERS : boolean                      := TRUE;
 			TX_MIN_DEPTH            : positive                     := 16;
-			TX_ESTATE_BITS          : natural                      := 0;
+			TX_EMPTY_STATE_BITS          : natural                      := 0;
 			RX_MIN_DEPTH            : positive                     := 16;
-			RX_FSTATE_BITS          : natural                      := 0;
+			RX_FILL_STATE_BITS          : natural                      := 0;
 			FLOWCTRL_XON_THRESHOLD  : real                         := 0.0625;
 			FLOWCTRL_XOFF_THRESHOLD : real                         := 0.75;
 			FLOWCONTROL             : T_UART_FLOWCONTROL_KIND   := UART_FLOWCONTROL_NONE;
@@ -144,14 +144,14 @@ package uart is
 			TX_Put           : in  std_logic;
 			TX_Data          : in  std_logic_vector(7 downto 0);
 			TX_Full          : out std_logic;
-			TX_EmptyState    : out std_logic_vector(imax(0, TX_ESTATE_BITS-1) downto 0);
+			TX_EmptyState    : out std_logic_vector(imax(0, TX_EMPTY_STATE_BITS-1) downto 0);
 			TXFIFO_Reset     : in  std_logic;
 			TXFIFO_Empty     : out std_logic;
 
 			RX_Valid         : out std_logic;
 			RX_Data          : out std_logic_vector(7 downto 0);
 			RX_Got           : in  std_logic;
-			RX_FullState     : out std_logic_vector(imax(0, RX_FSTATE_BITS-1) downto 0);
+			RX_FillState     : out std_logic_vector(imax(0, RX_FILL_STATE_BITS-1) downto 0);
 			RX_Overflow      : out std_logic;
 			RXFIFO_Full      : out std_logic;
 			RXFIFO_Reset     : in  std_logic;
@@ -165,9 +165,9 @@ package uart is
 	end component uart_FIFO;
 
 	-- USB-UART
-	component ft245_uart is
+	component uart_FT245 is
 		generic (
-			CLK_FREQ : positive
+			CLOCK_FREQUENCY : positive
 		);
 		port (
 			-- common signals

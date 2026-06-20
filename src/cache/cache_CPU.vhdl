@@ -395,7 +395,7 @@ begin  -- architecture rtl
 				fsm_ns           <= UNKNOWN;
 				cpu_Got          <= 'X';
 				cache_Request    <= 'X';
-				cache_ReadWrite   <= 'X';
+				cache_ReadWrite  <= 'X';
 				cache_Invalidate <= 'X';
 				cache_Replace    <= 'X';
 		end case;

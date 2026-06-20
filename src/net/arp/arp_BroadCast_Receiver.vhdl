@@ -98,9 +98,6 @@ architecture rtl of arp_BroadCast_Receiver is
 	constant PROTOCOL_IPV6_ADDRESS_LENGTH  : positive                                                      := 16;    -- IPv6 -> 16 bytes
 	constant PROTOCOL_ADDRESS_LENGTH      : positive                                                      := ite((ALLOWED_PROTOCOL_IPV6 = FALSE), PROTOCOL_IPV4_ADDRESS_LENGTH, PROTOCOL_IPV6_ADDRESS_LENGTH);    -- IPv4 -> 4 bytes; IPv6 -> 16 bytes
 
-	subtype T_HARDWARE_ADDRESS_INDEX       is natural range 0 to HARDWARE_ADDRESS_LENGTH - 1;
-	subtype T_PROTOCOL_ADDRESS_INDEX       is natural range 0 to PROTOCOL_ADDRESS_LENGTH - 1;
-
 	signal IsIPv4_set                      : std_logic;
 	signal IsIPv4_r                        : std_logic                                                      := '0';
 	signal IsIPv6_set                      : std_logic;
@@ -231,10 +228,10 @@ begin
 					RX_Ack          <= '1';
 
 					if (Is_EOF = '0') then
-						if ((ALLOWED_PROTOCOL_IPV4 = TRUE) and (RX_Data = x"08")) then
+						if (ALLOWED_PROTOCOL_IPV4 and (RX_Data = x"08")) then
 							IsIPv4_set  <= '1';
 							NextState    <= ST_RECEIVE_PROTOCOL_type_1;
-						elsif ((ALLOWED_PROTOCOL_IPV6 = TRUE) and (RX_Data = x"86")) then
+						elsif (ALLOWED_PROTOCOL_IPV6 and (RX_Data = x"86")) then
 							IsIPv6_set  <= '1';
 							NextState    <= ST_RECEIVE_PROTOCOL_type_1;
 						else

@@ -88,16 +88,16 @@ architecture rtl of axi4_DeMux is
 	constant RESPONSE_FIFO_DEPTH : positive := 16; --Using SRL16E, depth is maximum 16
 
 	constant PORTS          : positive := Out_M2S'length;
-	constant PORT_BITS      : positive := log2ceilnz(PORTS);
+	-- constant PORT_BITS      : positive := log2ceilnz(PORTS);
 
 	constant IN_AW_ID_BITS    : natural := In_M2S.AWID'length;
 	constant Out_AW_ID_BITS   : natural := Out_M2S(Out_M2S'low).AWID'length;
-	constant IN_AR_ID_BITS    : natural := In_M2S.ARID'length;
+	-- constant IN_AR_ID_BITS    : natural := In_M2S.ARID'length;
 	constant Out_AR_ID_BITS   : natural := Out_M2S(Out_M2S'low).ARID'length;
 
 	constant ADDRESS_BITS   : natural  := imin(In_M2S.AWAddr'length, Out_M2S(0).AWAddr'length);
 	constant DATA_BITS      : natural  := In_M2S.WData'length;
-	constant STRB_BITS      : natural  := In_M2S.WData'length / 8;
+	-- constant STRB_BITS      : natural  := In_M2S.WData'length / 8;
 	constant CACHE_BITS     : natural  := In_M2S.AWCache'length;
 	constant PROTECT_BITS   : natural  := In_M2S.AWProt'length;
 	constant RESPONSE_BITS  : natural  := In_S2M.RResp'length;
@@ -197,7 +197,7 @@ begin
 		);
 
 		signal Address_hit : std_logic_vector(PORTS -1 downto 0);
-		constant MUX_DATA_BITS          : natural := isum(BACKWARD_BIT_VEC);
+		-- constant MUX_DATA_BITS          : natural := isum(BACKWARD_BIT_VEC);
 
 		signal Mux_In_M2S               : T_AXI4Stream_M2S_VECTOR(0 to PORTS)(Data(isum(BACKWARD_BIT_VEC) - 1 downto 0), Keep(0 downto 0), User(0 downto 0), ID(0 downto 0), Dest(0 downto 0));
 		signal Mux_In_S2M               : T_AXI4Stream_S2M_VECTOR(0 to PORTS)(User(0 downto 0));
@@ -205,7 +205,7 @@ begin
 		signal Mux_Out_S2M              : T_AXI4Stream_S2M(User(0 downto 0));
 
 		signal Response_fifo_put  : std_logic;
-		signal Response_fifo_ful  : std_logic;
+		signal Response_fifo_ful  : std_logic;  -- FIXME: this signal is unused.
 		signal Response_fifo_got  : std_logic;
 		signal Response_fifo_dout : std_logic_vector(ID_BITS-1 downto 0);
 		signal Response_fifo_vld  : std_logic;
@@ -286,7 +286,7 @@ begin
 		begin
 			NextState     <= State;
 
-			In_S2M_write  <= Initialize_AXI4_Bus_S2M(In_M2S.AWAddr'length, In_S2M.RData'length, In_S2M.RUser'length, In_S2M.BID'length, '0');
+			In_S2M_write  <= Initialize_AXI4_Bus_S2M(In_S2M.RData'length, In_S2M.RUser'length, In_S2M.BID'length, '0');
 			Out_M2S_write <= (Out_M2S'range => In_M2S_write);
 
 			for i in 0 to PORTS -1 loop
@@ -397,7 +397,7 @@ begin
 
 		Response_fifo : entity work.fifo_Shift
 		generic map(
-			DATA_BITS    => ID_BITS,
+			DATA_BITS => ID_BITS,
 			MIN_DEPTH => RESPONSE_FIFO_DEPTH
 		)
 		port map(
@@ -406,14 +406,14 @@ begin
 			Reset => Reset,
 
 			-- Writing Interface
-			Put => Response_fifo_put,
-			DataIn => In_M2S_write.ARID,
-			Full => Response_fifo_ful,
+			Put     => Response_fifo_put,
+			DataIn  => In_M2S_write.ARID,
+			Full    => Response_fifo_ful,  -- FIXME: this signal is unused
 
 			-- Reading Interface
-			Got  => Response_fifo_got,
+			Got     => Response_fifo_got,
 			DataOut => Response_fifo_dout,
-			Valid  => Response_fifo_vld
+			Valid   => Response_fifo_vld
 		);
 
 		Mux_In_M2S(PORTS).Valid <= Response_fifo_vld;

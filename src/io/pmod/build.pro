@@ -1,6 +1,5 @@
 # =============================================================================
-# Authors:
-#   Adrian Weiland, Jonas Schreiner, Stefan Unrein
+# Authors: Patrick Lehmann
 #
 # License:
 # =============================================================================
@@ -19,36 +18,7 @@
 # limitations under the License.
 # =============================================================================
 
-library PoC
-
-analyze $::poc::projectConfigurationFile
-analyze $::poc::localConfigurationFile
-
-include ./common
-disabled ./misc/misc_ClockBuffer.vhdl
-include ./sync
-include ./arith
-include ./misc
-
-analyze ./bus/axi4/axi4_Common.pkg.vhdl
-analyze ./bus/axi4/axi4_Full.pkg.vhdl
-analyze ./bus/axi4stream/axi4stream.pkg.vhdl
-analyze ./bus/axi4lite/axi4lite.pkg.vhdl
-analyze ./bus/axi4/axi4.pkg.vhdl
-
-include ./mem
-include ./fifo
-include ./xil
-
-include ./dstruct
-include ./io
-include ./bus
-include ./comm
-include ./sort
-include ./cache
-
-analyze ./list/list_Expire.vhdl
-
-include ./net
-include ./sim
-
+analyze ./pmod.pkg.vhdl
+analyze ./pmod_KYPD.vhdl
+analyze ./pmod_SSD.vhdl
+analyze ./pmod_USBUART.vhdl

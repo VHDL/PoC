@@ -45,13 +45,13 @@ entity pmod_USBUART is
 		Clock     : in  std_logic;
 		Reset     : in  std_logic;
 
-		TX_put    : in  std_logic;
+		TX_Put    : in  std_logic;
 		TX_Data   : in  std_logic_vector(7 downto 0);
 		TX_Full   : out std_logic;
 
 		RX_Valid  : out std_logic;
 		RX_Data   : out std_logic_vector(7 downto 0);
-		RX_got    : in  std_logic;
+		RX_Got    : in  std_logic;
 
 		UART_TX   : out std_logic;
 		UART_RX   : in  std_logic;
@@ -71,9 +71,9 @@ begin
 			ADD_INPUT_SYNCHRONIZERS => TRUE,
 
 			TX_MIN_DEPTH            => 32,
-			TX_ESTATE_BITS          => 0,
+			TX_EMPTY_STATE_BITS     => 0,
 			RX_MIN_DEPTH            => 32,
-			RX_FSTATE_BITS          => 0,
+			RX_FILL_STATE_BITS      => 0,
 
 			FLOWCONTROL             => UART_FLOWCONTROL_RTS_CTS
 		)
@@ -82,14 +82,14 @@ begin
 			Reset        => Reset,
 
 			TXFIFO_Reset => Reset,
-			TX_put       => TX_put,
+			TX_put       => TX_Put,
 			TX_Data      => TX_Data,
 			TX_Full      => TX_Full,
 
 			RXFIFO_Reset => Reset,
 			RX_Valid     => RX_Valid,
 			RX_Data      => RX_Data,
-			RX_got       => RX_got,
+			RX_got       => RX_Got,
 
 			UART_TX      => UART_TX,
 			UART_RX      => UART_RX,

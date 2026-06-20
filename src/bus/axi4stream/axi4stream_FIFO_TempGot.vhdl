@@ -100,16 +100,12 @@ architecture rtl of axi4stream_FIFO_TempGot is
 	signal DataFIFO_DataOut           : std_logic_vector(DataFIFO_DataIn'range);
 	signal DataFIFO_Valid             : std_logic;
 
-	signal FrameCommit                : std_logic;
-
-	signal In_SOF                     : std_logic;
 	signal started                    : std_logic := '0';
 
 	signal Out_M2S_i                  : In_m2s'subtype;
 
 begin
-	In_SOF      <= In_m2s.Valid and not started;
-	started     <= ffrs(q => started, rst => ((In_m2s.Valid and In_m2s.Last) or Reset), set => (In_m2s.Valid)) when rising_edge(Clock);
+	started <= ffrs(q => started, rst => ((In_m2s.Valid and In_m2s.Last) or Reset), set => (In_m2s.Valid)) when rising_edge(Clock);
 
 	process(Clock)
 	begin

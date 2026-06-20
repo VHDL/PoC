@@ -43,7 +43,7 @@ use     PoC.physical.all;
 architecture Simple of arith_Convert_Binary2BCD_TestController is
 	constant TCID : AlertLogIDType := NewID("ConvBin2BCDTest");
 	signal TestDone : integer_barrier := 1;
-	
+
 	constant INPUT_1      : integer          := 38442113;
 	constant INPUT_2      : integer          := 78734531;
 	constant INPUT_3      : integer          := 14902385;
@@ -74,8 +74,8 @@ begin
 	begin
 		SetTestName("arith_Convert_Binary2BCD_Simple");
 
-		SetLogEnable(PASSED, TRUE);
-		SetLogEnable(INFO,   TRUE);
+		SetLogEnable(PASSED, FALSE);
+		SetLogEnable(INFO,   FALSE);
 		SetLogEnable(DEBUG,  FALSE);
 		wait for 0 ns; wait for 0 ns;
 

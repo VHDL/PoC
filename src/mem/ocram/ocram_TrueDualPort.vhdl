@@ -102,11 +102,11 @@ end entity;
 
 
 architecture rtl of ocram_TrueDualPort is
-	constant DEPTH : positive := 2**ADDRESS_BITS;
+	constant WORDS : positive := 2**ADDRESS_BITS;
 
 begin
-	gen: if gInfer: not SIMULATION and ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
-		signal ram    : T_SLVV    := mem_InitMemory(FILENAME, DEPTH, DATA_BITS);
+	gen: if not SIMULATION and ((VENDOR = VENDOR_LATTICE) or (VENDOR = VENDOR_XILINX)) generate
+		signal ram    : T_SLVV(0 to WORDS - 1)(DATA_BITS - 1 downto 0) := mem_InitMemory(FILENAME, WORDS, DATA_BITS);
 		signal a1_reg : unsigned(ADDRESS_BITS-1 downto 0) := (others => 'U');
 		signal a2_reg : unsigned(ADDRESS_BITS-1 downto 0) := (others => 'U');
 
@@ -136,7 +136,7 @@ begin
 
 		PortA_DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a1_reg)) else ram(to_integer(a1_reg));    -- returns new data
 		PortB_DataOut <= (others => 'X') when SIMULATION and is_x(std_logic_vector(a2_reg)) else ram(to_integer(a2_reg));    -- returns new data
-	elsif gAltera: not SIMULATION and (VENDOR = VENDOR_ALTERA) generate
+	elsif not SIMULATION and (VENDOR = VENDOR_ALTERA) generate
 		-- Direct instantiation of altsyncram (including component
 		-- declaration above) is not sufficient for ModelSim.
 		-- That requires also usage of altera_mf library.
@@ -162,7 +162,7 @@ begin
 				PortB_DataIn      => PortB_DataIn,
 				PortB_DataOut     => PortB_DataOut
 			);
-	elsif gSim: SIMULATION generate
+	elsif SIMULATION generate
 		sim_tdp: ocram_TrueDualPort_Simulation
 			generic map (
 				ADDRESS_BITS => ADDRESS_BITS,

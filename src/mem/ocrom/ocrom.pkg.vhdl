@@ -51,21 +51,22 @@ package ocrom is
 	end component;
 
 	-- Dual-Port
-	component ocrom_DualPort is
-		generic (
-			ADDRESS_BITS    : positive;
+	component ocrom_DualPort
+		generic(
+			ADDRESS_BITS : positive;
 			DATA_BITS    : positive;
-			FILENAME  : string    := ""
+			FILENAME     : string := ""
 		);
-		port (
-			PortA_Clock : in  std_logic;
-			PortB_Clock : in  std_logic;
-			PortA_ClockEnable  : in  std_logic;
-			PortB_ClockEnable  : in  std_logic;
-			PortA_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			PortB_Address   : in  unsigned(ADDRESS_BITS-1 downto 0);
-			PortA_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0);
-			PortB_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0)
+		port(
+			PortA_Clock       : in  std_logic;
+			PortA_ClockEnable : in  std_logic;
+			PortA_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortA_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0);
+
+			PortB_Clock       : in  std_logic;
+			PortB_ClockEnable : in  std_logic;
+			PortB_Address     : in  unsigned(ADDRESS_BITS-1 downto 0);
+			PortB_DataOut     : out std_logic_vector(DATA_BITS-1 downto 0)
 		);
-	end component;
+	end component ocrom_DualPort;
 end package;

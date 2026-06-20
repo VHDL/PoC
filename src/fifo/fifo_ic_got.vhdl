@@ -23,8 +23,8 @@
 -- architecture. See implementation for details.
 --
 -- ``*STATE_*_BITS`` defines the granularity of the fill state indicator
--- ``*state_*``. ``fstate_rd`` is associated with the read clock domain and outputs
--- the guaranteed number of words available in the FIFO. ``estate_wr`` is
+-- ``*state_*``. ``FillState`` is associated with the read clock domain and outputs
+-- the guaranteed number of words available in the FIFO. ``EmptyState`` is
 -- associated with the write clock domain and outputs the number of words that
 -- is guaranteed to be accepted by the FIFO without a capacity overflow. Note
 -- that both these indicators cannot replace the ``full`` or ``valid`` outputs as
@@ -33,17 +33,17 @@
 --
 -- If a fill state is not of interest, set *STATE_*_BITS = 0.
 --
--- ``fstate_rd`` and ``estate_wr`` are combinatorial outputs and include an address
+-- ``FillState`` and ``EmptyState`` are combinatorial outputs and include an address
 -- comparator (subtractor) in their path.
 --
 -- Examples:
--- - FSTATE_RD_BITS = 1: fstate_rd == 0 => 0/2 full
---                       fstate_rd == 1 => 1/2 full (half full)
+-- - FILL_STATE_BITS = 1: FillState == 0 => 0/2 full
+--                       FillState == 1 => 1/2 full (half full)
 --
--- - FSTATE_RD_BITS = 2: fstate_rd == 0 => 0/4 full
---                       fstate_rd == 1 => 1/4 full
---                       fstate_rd == 2 => 2/4 full
---                       fstate_rd == 3 => 3/4 full
+-- - FILL_STATE_BITS = 2: FillState == 0 => 0/4 full
+--                       FillState == 1 => 1/4 full
+--                       FillState == 2 => 2/4 full
+--                       FillState == 3 => 3/4 full
 --
 -- License:
 -- =============================================================================
@@ -83,20 +83,20 @@ entity fifo_ic_got is
 	);
 	port (
 		-- Write Interface
-		clk_wr    : in  std_logic;
-		rst_wr    : in  std_logic;
-		put       : in  std_logic;
-		din       : in  std_logic_vector(DATA_BITS-1 downto 0);
-		full      : out std_logic;
-		estate_wr : out std_logic_vector(imax(EMPTY_STATE_BITS-1, 0) downto 0);
+		Write_Clock      : in  std_logic;
+		Write_Reset      : in  std_logic;
+		Write_Put        : in  std_logic;
+		Write_DataIn     : in  std_logic_vector(DATA_BITS-1 downto 0);
+		Write_Full       : out std_logic;
+		Write_EmptyState : out std_logic_vector(imax(EMPTY_STATE_BITS-1, 0) downto 0);
 
 		-- Read Interface
-		clk_rd    : in  std_logic;
-		rst_rd    : in  std_logic;
-		got       : in  std_logic;
-		valid     : out std_logic;
-		dout      : out std_logic_vector(DATA_BITS-1 downto 0);
-		fstate_rd : out std_logic_vector(imax(FILL_STATE_BITS-1, 0) downto 0)
+		Read_Clock     : in  std_logic;
+		Read_Reset     : in  std_logic;
+		Read_Valid     : out std_logic;
+		Read_DataOut   : out std_logic_vector(DATA_BITS-1 downto 0);
+		Read_Got       : in  std_logic;
+		Read_FillState : out std_logic_vector(imax(FILL_STATE_BITS-1, 0) downto 0)
 	);
 end entity;
 
@@ -141,10 +141,10 @@ begin
 	blkIP: block
 		signal Cnt : unsigned(AN-1 downto 0) := to_unsigned(1, AN);
 	begin
-		process(clk_wr)
+		process(Write_Clock)
 		begin
-			if rising_edge(clk_wr) then
-				if rst_wr = '1' then
+			if rising_edge(Write_Clock) then
+				if Write_Reset = '1' then
 					Cnt <= to_unsigned(1, AN);
 				elsif puti = '1' then
 					Cnt <= Cnt + 1;
@@ -155,10 +155,10 @@ begin
 	end block blkIP;
 
 	-- Update Write Pointer upon puti
-	process(clk_wr)
+	process(Write_Clock)
 	begin
-		if rising_edge(clk_wr) then
-			if rst_wr = '1' then
+		if rising_edge(Write_Clock) then
+			if Write_Reset = '1' then
 				IP0 <= (others => '0');
 				Ful <= '0';
 			else
@@ -180,23 +180,23 @@ begin
 			end if;
 		end if;
 	end process;
-	puti <= put and not Ful;
-	full <= Ful;
+	puti <= Write_Put and not Ful;
+	Write_Full <= Ful;
 
-	di <= din;
+	di <= Write_DataIn;
 	wa <= unsigned(IP0(ADDRESS_BITS-1 downto 0));
 
 	-- write pointer needs to be delayed by one CC to asure that data
 	-- is fully stored before giving it free to the other side.
 	-- Problem when clk_rd > 2* clk_wr
-	IP0_d <= IP0 when rising_edge(clk_wr);
+	IP0_d <= IP0 when rising_edge(Write_Clock);
 	Read_pointer_sync : entity work.sync_Bits
 		generic map(
 			BITS            => AN,
 			REGISTER_OUTPUT => false
 		)
 		port map(
-			Clock         => clk_rd,
+			Clock         => Read_Clock,
 			Input         => IP0_d,
 			Output        => IPc
 		);
@@ -207,10 +207,10 @@ begin
 	blkOP: block
 		signal Cnt : unsigned(AN-1 downto 0) := to_unsigned(1, AN);
 	begin
-		process(clk_rd)
+		process(Read_Clock)
 		begin
-			if rising_edge(clk_rd) then
-				if rst_rd = '1' then
+			if rising_edge(Read_Clock) then
+				if Read_Reset = '1' then
 					Cnt <= to_unsigned(1, AN);
 				elsif geti = '1' then
 					Cnt <= Cnt + 1;
@@ -220,10 +220,10 @@ begin
 		OP1 <= std_logic_vector(Cnt(ADDRESS_BITS) & (Cnt(ADDRESS_BITS-1 downto 0) xor ('0' & Cnt(ADDRESS_BITS-1 downto 1))));
 	end block blkOP;
 
-	process(clk_rd)
+	process(Read_Clock)
 	begin
-		if rising_edge(clk_rd) then
-			if rst_rd = '1' then
+		if rising_edge(Read_Clock) then
+			if Read_Reset = '1' then
 				OP0 <= (others => '0');
 				Avl <= '0';
 				Vld <= '0';
@@ -257,14 +257,14 @@ begin
 	-- read pointer needs to be delayed by one CC to asure that data
 	-- is read out before giving it free to the other side
 	-- Problem when clk_wr > 2* clk_rd
-	OP0_d <= OP0 when rising_edge(clk_rd);
+	OP0_d <= OP0 when rising_edge(Read_Clock);
 	Write_pointer_sync : entity work.sync_Bits
 		generic map(
 			BITS            => AN,
 			REGISTER_OUTPUT => false
 		)
 		port map(
-			Clock         => clk_wr,
+			Clock         => Write_Clock,
 			Input         => OP0_d,
 			Output        => OPc
 		);
@@ -276,18 +276,18 @@ begin
 	-- register in that case.
 	-----------------------------------------------------------------------------
 	genRegN: if DATA_REG or not OUTPUT_REG generate
-		goti  <= got;
-		dout  <= do;
-		valid <= Vld;
+		goti  <= Read_Got;
+		Read_DataOut  <= do;
+		Read_Valid <= Vld;
 	end generate genRegN;
 	genRegY: if (not DATA_REG) and OUTPUT_REG generate
 		signal Buf  : std_logic_vector(DATA_BITS-1 downto 0) := (others => '-');
 		signal VldB : std_logic := '0';
 	begin
-	 process(clk_rd)
+	 process(Read_Clock)
 	 begin
-		 if rising_edge(clk_rd) then
-			 if rst_rd = '1' then
+		 if rising_edge(Read_Clock) then
+			 if Read_Reset = '1' then
 				 Buf  <= (others => '-');
 				 VldB <= '0';
 			 elsif goti = '1' then
@@ -296,37 +296,35 @@ begin
 			 end if;
 		 end if;
 	 end process;
-	 goti  <= not VldB or got;
-	 dout  <= Buf;
-	 valid <= VldB;
+	 goti  <= not VldB or Read_Got;
+	 Read_DataOut  <= Buf;
+	 Read_Valid <= VldB;
 	end generate genRegY;
 
 	-----------------------------------------------------------------------------
 	-- Fill State
 	-----------------------------------------------------------------------------
 	-- Write Clock Domain
-	gEstateWr: if EMPTY_STATE_BITS >= 1 generate
+	gEmptyState: if EMPTY_STATE_BITS = 0 generate
+		Write_EmptyState <= "X";
+	else generate
 		signal  d : unsigned(ADDRESS_BITS-1 downto 0);
 	begin
 		d         <= gray2bin(OPc(ADDRESS_BITS-1 downto 0)) + not gray2bin(IP0(ADDRESS_BITS-1 downto 0));
-		estate_wr <= (others => '0') when Ful = '1' else
+		Write_EmptyState <= (others => '0') when Ful = '1' else
 								 std_logic_vector(d(d'left downto d'left-EMPTY_STATE_BITS+1));
-	end generate gEstateWr;
-	gNoEstateWr: if EMPTY_STATE_BITS = 0 generate
-		estate_wr <= "X";
-	end generate gNoEstateWr;
+	end generate;
 
 	-- Read Clock Domain
-	gFstateRd: if FILL_STATE_BITS >= 1 generate
+	gFillState: if FILL_STATE_BITS = 0 generate
+		Read_FillState <= "X";
+	else generate
 		signal  d : unsigned(ADDRESS_BITS-1 downto 0);
 	begin
 		d         <= gray2bin(IPc(ADDRESS_BITS-1 downto 0)) + not gray2bin(OP0(ADDRESS_BITS-1 downto 0));
-		fstate_rd <= (others => '0') when Avl = '0' else
+		Read_FillState <= (others => '0') when Avl = '0' else
 								 std_logic_vector(d(d'left downto d'left-FILL_STATE_BITS+1));
-	end generate gFstateRd;
-	gNoFstateRd: if FILL_STATE_BITS = 0 generate
-		fstate_rd <= "X";
-	end generate gNoFstateRd;
+	end generate;
 
 	-----------------------------------------------------------------------------
 	-- Memory Instantiation
@@ -338,8 +336,8 @@ begin
 				DATA_BITS => DATA_BITS
 				)
 			port map (
-				Write_Clock   => clk_wr,
-				Read_Clock   => clk_rd,
+				Write_Clock   => Write_Clock,
+				Read_Clock   => Read_Clock,
 				Write_ClockEnable    => '1',
 				Read_ClockEnable    => geti,
 				Write_WriteEnable     => puti,
@@ -367,11 +365,11 @@ begin
 	begin
 
 		-- Memory State
-		process(clk_wr)
+		process(Write_Clock)
 		begin
-			if rising_edge(clk_wr) then
+			if rising_edge(Write_Clock) then
 				--synthesis translate_off
-				if SIMULATION and (rst_wr = '1') then
+				if SIMULATION and (Write_Reset = '1') then
 					regfile <= (others => (others => '-'));
 				else
 				--synthesis translate_on
@@ -385,10 +383,10 @@ begin
 		end process;
 
 		-- Memory Output
-		process (clk_rd)
+		process (Read_Clock)
 		begin  -- process
-			if rising_edge(clk_rd) then
-				if SIMULATION and (rst_rd = '1') then
+			if rising_edge(Read_Clock) then
+				if SIMULATION and (Read_Reset = '1') then
 					do <= (others => 'U');
 				elsif geti = '1' then
 					if Is_X(std_logic_vector(ra)) then

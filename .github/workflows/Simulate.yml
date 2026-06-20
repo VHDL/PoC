@@ -35,12 +35,17 @@ on:
       osvvm-artifact-prefix:
         description: 'Prefix of OSVVM artifacts.'
         required: false
-        default: 'OSVVM'
+        default: 'BuildOSVVM'
         type: string
       poc-artifact-prefix:
         description: 'Prefix of PoC artifacts.'
         required: false
-        default: 'PoC'
+        default: 'BuildPoC'
+        type: string
+      sim-artifact-prefix:
+        description: 'Prefix of PoC artifacts.'
+        required: false
+        default: 'SimPoC'
         type: string
 
 jobs:
@@ -51,15 +56,19 @@ jobs:
       tempDirectory:   ${{ steps.Variables.outputs.tempDirectory }}
       startScript:     ${{ steps.Variables.outputs.startScript }}
       artifactSuffix:  ${{ steps.Variables.outputs.artifactSuffix }}
+      osvvmGenerated:  ${{ steps.ArtifactNames.outputs.osvvmGenerated }}
       osvvmLibraries:  ${{ steps.ArtifactNames.outputs.osvvmLibraries }}
       osvvmReportHTML: ${{ steps.ArtifactNames.outputs.osvvmReportHTML }}
       osvvmReportYAML: ${{ steps.ArtifactNames.outputs.osvvmReportYAML }}
       osvvmReportXML:  ${{ steps.ArtifactNames.outputs.osvvmReportXML }}
-      osvvmGenerated:  ${{ steps.ArtifactNames.outputs.osvvmGenerated }}
+      pocGenerated:    ${{ steps.ArtifactNames.outputs.pocGenerated }}
       pocLibraries:    ${{ steps.ArtifactNames.outputs.pocLibraries }}
       pocReportHTML:   ${{ steps.ArtifactNames.outputs.pocReportHTML }}
       pocReportYAML:   ${{ steps.ArtifactNames.outputs.pocReportYAML }}
       pocReportXML:    ${{ steps.ArtifactNames.outputs.pocReportXML }}
+      simReportHTML:   ${{ steps.ArtifactNames.outputs.simReportHTML }}
+      simReportYAML:   ${{ steps.ArtifactNames.outputs.simReportYAML }}
+      simReportXML:    ${{ steps.ArtifactNames.outputs.simReportXML }}
 
     steps:
       - name: 🖉 Compute variables
@@ -87,15 +96,19 @@ jobs:
         id: ArtifactNames
         run: |
           tee --append "${GITHUB_OUTPUT}" <<EOF
+          osvvmGenerated=${{ inputs.osvvm-artifact-prefix }}-Generated-${{ steps.Variables.outputs.artifactSuffix }}
           osvvmLibraries=${{ inputs.osvvm-artifact-prefix }}-Libraries-${{ steps.Variables.outputs.artifactSuffix }}
           osvvmReportHTML=${{ inputs.osvvm-artifact-prefix }}-Report-HTML-${{ steps.Variables.outputs.artifactSuffix }}
           osvvmReportXML=${{ inputs.osvvm-artifact-prefix }}-Report-XML-${{ steps.Variables.outputs.artifactSuffix }}
           osvvmReportYAML=${{ inputs.osvvm-artifact-prefix }}-Report-YAML-${{ steps.Variables.outputs.artifactSuffix }}
-          osvvmGenerated=${{ inputs.osvvm-artifact-prefix }}-Generated-${{ steps.Variables.outputs.artifactSuffix }}
+          pocGenerated=${{ inputs.poc-artifact-prefix }}-Generated-${{ steps.Variables.outputs.artifactSuffix }}
           pocLibraries=${{ inputs.poc-artifact-prefix }}-Libraries-${{ steps.Variables.outputs.artifactSuffix }}
           pocReportHTML=${{ inputs.poc-artifact-prefix }}-Report-HTML-${{ steps.Variables.outputs.artifactSuffix }}
           pocReportXML=${{ inputs.poc-artifact-prefix }}-Report-XML-${{ steps.Variables.outputs.artifactSuffix }}
           pocReportYAML=${{ inputs.poc-artifact-prefix }}-Report-YAML-${{ steps.Variables.outputs.artifactSuffix }}
+          simReportHTML=${{ inputs.sim-artifact-prefix }}-Report-HTML-${{ steps.Variables.outputs.artifactSuffix }}
+          simReportXML=${{ inputs.sim-artifact-prefix }}-Report-XML-${{ steps.Variables.outputs.artifactSuffix }}
+          simReportYAML=${{ inputs.sim-artifact-prefix }}-Report-YAML-${{ steps.Variables.outputs.artifactSuffix }}
           EOF
 
   Build-OSVVM:
@@ -144,18 +157,26 @@ jobs:
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
           REGRESSION_STEP=osvvm nvc --do ../../regression.tcl
 
-      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportHTML }}' artifacts
+      - name: 🪳 Debugging
+        run: |
+          tree temp
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmGenerated }}' artifacts
         uses: pyTooling/upload-artifact@v7
         continue-on-error: true
         with:
-          name: ${{ needs.Parameters.outputs.osvvmReportHTML }}
+          name: ${{ needs.Parameters.outputs.osvvmGenerated }}
+          path: |
+            lib/osvvm/*_generated.vhd
+          retention-days: 1
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmLibraries }}' artifacts
+        uses: pyTooling/upload-artifact@v7
+        with:
+          name: ${{ needs.Parameters.outputs.osvvmLibraries }}
           working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
           path: |
-            OsvvmLibraries/logs
-            OsvvmLibraries/reports
-            OsvvmLibraries/*.html
-            *.html
-            *.yml
+            VHDL_LIBS
           retention-days: 1
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportYAML }}' artifacts
@@ -178,22 +199,18 @@ jobs:
             *.xml
           retention-days: 1
 
-      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmLibraries }}' artifacts
-        uses: pyTooling/upload-artifact@v7
-        with:
-          name: ${{ needs.Parameters.outputs.osvvmLibraries }}
-          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
-          path: |
-            VHDL_LIBS
-          retention-days: 1
-
-      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmGenerated }}' artifacts
+      - name: 📤 Upload '${{ needs.Parameters.outputs.osvvmReportHTML }}' artifacts
         uses: pyTooling/upload-artifact@v7
         continue-on-error: true
         with:
-          name: ${{ needs.Parameters.outputs.osvvmGenerated }}
+          name: ${{ needs.Parameters.outputs.osvvmReportHTML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
           path: |
-            lib/osvvm/*_generated.vhd
+            OsvvmLibraries/logs
+            OsvvmLibraries/reports
+            OsvvmLibraries/*.html
+            *.html
+            *.yml
           retention-days: 1
 
   Build-PoC:
@@ -231,8 +248,6 @@ jobs:
         run: |
           mkdir -p "${{ needs.Parameters.outputs.tempDirectory }}"
 
-          mv src/common/local_configuration.vhdl.template tb/common/local_configuration.vhdl
-
       - name: 📥 Download artifacts '${{ needs.Parameters.outputs.osvvmLibraries }}' from 'Build-OSVVM' job
         uses: pyTooling/download-artifact@v8
         with:
@@ -256,35 +271,26 @@ jobs:
           cd "${{ needs.Parameters.outputs.tempDirectory }}"
           REGRESSION_STEP=poc nvc --do ../../regression.tcl
 
-      - name: 📈 Simulate PoC (GHDL)
-        if: inputs.simulator == 'ghdl'
+      - name: 🪳 Debugging
         run: |
-          cd "${{ needs.Parameters.outputs.tempDirectory }}"
-          REGRESSION_STEP=test tclsh ../../regression.tcl
+          tree temp
 
-      - name: 📈 Simulate PoC (NVC)
-        if: always() && inputs.simulator == 'nvc'
-        run: |
-          cd "${{ needs.Parameters.outputs.tempDirectory }}"
-          REGRESSION_STEP=test nvc --do ../../regression.tcl
-
-      - name: 📤 Upload '${{ needs.Parameters.outputs.pocReportHTML }}' artifacts
+      - name: 📤 Upload '${{ needs.Parameters.outputs.pocGenerated }}' artifacts
         uses: pyTooling/upload-artifact@v7
         continue-on-error: true
         with:
-          name: ${{ needs.Parameters.outputs.pocReportHTML }}
+          name: ${{ needs.Parameters.outputs.pocGenerated }}
+          path: |
+            tb/common/local_configuration.vhdl
+          retention-days: 1
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.pocLibraries }}' artifacts
+        uses: pyTooling/upload-artifact@v7
+        with:
+          name: ${{ needs.Parameters.outputs.pocLibraries }}
           working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
           path: |
-            OsvvmLibraries/logs
-            OsvvmLibraries/reports
-            OsvvmLibraries/*.html
-            PoC/logs
-            PoC/reports
-            PoC/*.html
-            RunAllTests/logs
-            RunAllTests/reports
-            RunAllTests/*.html
-            *.html
+            VHDL_LIBS
           retention-days: 1
 
       - name: 📤 Upload '${{ needs.Parameters.outputs.pocReportYAML }}' artifacts
@@ -307,11 +313,134 @@ jobs:
             *.xml
           retention-days: 1
 
-#      - name: 📤 Upload '${{ needs.Parameters.outputs.pocLibraries }}' artifacts
-#        uses: pyTooling/upload-artifact@v7
-#        with:
-#          name: ${{ needs.Parameters.outputs.pocLibraries }}
-#          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
-#          path: |
-#            VHDL_LIBS
-#          retention-days: 1
+      - name: 📤 Upload '${{ needs.Parameters.outputs.pocReportHTML }}' artifacts
+        uses: pyTooling/upload-artifact@v7
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.pocReportHTML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          path: |
+            OsvvmLibraries/logs
+            OsvvmLibraries/reports
+            OsvvmLibraries/*.html
+            PoC/logs
+            PoC/reports
+            PoC/*.html
+            RunAllTests/logs
+            RunAllTests/reports
+            RunAllTests/*.html
+            *.html
+          retention-days: 1
+
+  Sim-PoC:
+    name: Simulate PoC
+    runs-on: ${{ inputs.ubuntu-version }}
+    needs:
+      - Parameters
+      - Build-OSVVM
+      - Build-PoC
+    continue-on-error: ${{ inputs.can-fail }}
+    steps:
+      - name: ⏬ Checkout repository
+        uses: actions/checkout@v6
+        with:
+          lfs: true
+          submodules: true
+
+      - name: 🔧 Install tcllib (GHDL)
+        if: inputs.simulator == 'ghdl'
+        run: sudo apt-get install -y --no-install-recommends tcllib
+
+      - name: Setup GHDL - ${{ inputs.ghdl-backend }}
+        uses: ghdl/setup-ghdl@v1
+        if: inputs.simulator == 'ghdl'
+        with:
+          version: ${{ inputs.ghdl-version }}
+          backend: ${{ inputs.ghdl-backend }}
+
+      - name: Setup NVC
+        uses: nickg/setup-nvc@v1
+        if: inputs.simulator == 'nvc'
+        with:
+          version: ${{ inputs.nvc-version }}
+
+      - name: Prepare
+        run: |
+          mkdir -p "${{ needs.Parameters.outputs.tempDirectory }}"
+
+      - name: 📥 Download artifacts '${{ needs.Parameters.outputs.osvvmLibraries }}' from 'Build-OSVVM' job
+        uses: pyTooling/download-artifact@v8
+        with:
+          name: ${{ needs.Parameters.outputs.osvvmLibraries }}
+          path: "${{ needs.Parameters.outputs.tempDirectory }}"
+
+      - name: 📥 Download artifacts '${{ needs.Parameters.outputs.osvvmGenerated }}' from 'Build-OSVVM' job
+        uses: pyTooling/download-artifact@v8
+        with:
+          name: ${{ needs.Parameters.outputs.osvvmGenerated }}
+
+      - name: 📥 Download artifacts '${{ needs.Parameters.outputs.pocLibraries }}' from 'Build-PoC' job
+        uses: pyTooling/download-artifact@v8
+        with:
+          name: ${{ needs.Parameters.outputs.pocLibraries }}
+          path: "${{ needs.Parameters.outputs.tempDirectory }}"
+
+      - name: 📥 Download artifacts '${{ needs.Parameters.outputs.pocGenerated }}' from 'Build-PoC' job
+        uses: pyTooling/download-artifact@v8
+        with:
+          name: ${{ needs.Parameters.outputs.pocGenerated }}
+
+      - name: 📈 Simulate PoC (GHDL)
+        if: inputs.simulator == 'ghdl'
+        run: |
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+          REGRESSION_STEP=test tclsh ../../regression.tcl
+
+      - name: 📈 Simulate PoC (NVC)
+        if: always() && inputs.simulator == 'nvc'
+        run: |
+          cd "${{ needs.Parameters.outputs.tempDirectory }}"
+          REGRESSION_STEP=test nvc --do ../../regression.tcl
+
+      - name: 🪳 Debugging
+        run: |
+          tree temp
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.simReportYAML }}' artifacts
+        uses: pyTooling/upload-artifact@v7
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.simReportYAML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}/RunAllTests'
+          path: |
+            *.yml
+          retention-days: 1
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.simReportXML }}' artifacts
+        uses: pyTooling/upload-artifact@v7
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.simReportXML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}/RunAllTests'
+          path: |
+            *.xml
+          retention-days: 1
+
+      - name: 📤 Upload '${{ needs.Parameters.outputs.simReportHTML }}' artifacts
+        uses: pyTooling/upload-artifact@v7
+        continue-on-error: true
+        with:
+          name: ${{ needs.Parameters.outputs.simReportHTML }}
+          working-directory: '${{ needs.Parameters.outputs.tempDirectory }}'
+          path: |
+            OsvvmLibraries/logs
+            OsvvmLibraries/reports
+            OsvvmLibraries/*.html
+            PoC/logs
+            PoC/reports
+            PoC/*.html
+            RunAllTests/logs
+            RunAllTests/reports
+            RunAllTests/*.html
+            *.html
+          retention-days: 1

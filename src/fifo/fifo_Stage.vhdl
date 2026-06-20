@@ -104,6 +104,10 @@ begin
 							Full  <= Avail and not got_v(i) and (Full or put_v(i));
 						end if;
 					end if;
+				end process;
+
+				process (Clock)
+				begin
 					if rising_edge(Clock) then
 						if Full = '0' then
 							A <= di_v(i);

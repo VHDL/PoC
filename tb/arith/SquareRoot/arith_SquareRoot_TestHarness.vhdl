@@ -84,7 +84,7 @@ begin
 		port map (
 			Reset   => Reset,
 			Clock   => Clock,
-			Operand   => arg,
+			Radicand   => arg,
 			Start => start,
 			Result  => sqrt,
 			Ready   => rdy

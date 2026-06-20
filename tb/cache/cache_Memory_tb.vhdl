@@ -1,7 +1,3 @@
--- EMACS settings: -*-  tab-width: 2; indent-tabs-mode: t -*-
--- vim: tabstop=2:shiftwidth=2:noexpandtab
--- kate: tab-width 2; replace-tabs off; indent-width 2;
---
 -- ============================================================================
 -- Authors:         Martin Zabel
 --
@@ -223,11 +219,11 @@ begin
 			put       => mem2_rstb,
 			din       => mem2_rdata,
 			full      => open, -- should not overflow
-			estate_wr => open,
+			EmptyState => open,
 			got       => cache_rstb,
 			dout      => rply2_rdata,
 			valid     => rply2_valid,
-			fstate_rd => open);
+			FillState => open);
 
 	-- The Write-Data Generator of the CPU
 	wdata_prng: entity poc.arith_PRNG

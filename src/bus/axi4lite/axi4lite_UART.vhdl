@@ -76,7 +76,7 @@ end entity;
 
 architecture rtl of axi4lite_UART is
 	constant TX_EMPTY_STATE_BITS : natural := 4;
-	constant RX_FULL_STATE_BITS  : natural := 4;
+	constant RX_FILL_STATE_BITS  : natural := 4;
 
 	constant Reg_config : T_AXI4_Register_Vector := (
 		to_AXI4_Register(Name => "Rx",      Address => 32x"00", RegisterMode => ReadOnly_NotRegistered,  Init_Value => x"00000000"),
@@ -95,8 +95,6 @@ architecture rtl of axi4lite_UART is
 	--user required axi registers
 	signal RX_Data : std_logic_vector(7 downto 0);
 	signal TX_Data : std_logic_vector(7 downto 0);
-	signal Status  : std_logic_vector(31 downto 0);
-	signal Control : std_logic_vector(31 downto 0);
 
 	--Bit positions of the above registers
 	signal Status_RX_Valid        : std_logic;
@@ -119,8 +117,6 @@ architecture rtl of axi4lite_UART is
 	signal Control_TX_Reset        : std_logic;
 	signal Control_InterruptEnable : std_logic;
 
-	signal Status_TX_EmptyState : std_logic_vector(imax(0, TX_EMPTY_STATE_BITS - 1) downto 0);
-	signal Status_RX_FullState  : std_logic_vector(imax(0, RX_FULL_STATE_BITS - 1) downto 0);
 begin
 	Reg : entity work.axi4lite_Register
 	generic map(
@@ -187,10 +183,10 @@ begin
 		ADD_INPUT_SYNCHRONIZERS => ADD_INPUT_SYNCHRONIZERS,
 
 		-- Buffer Dimensioning
-		TX_MIN_DEPTH   => TX_FIFO_DEPTH,
-		TX_ESTATE_BITS => TX_EMPTY_STATE_BITS,
-		RX_MIN_DEPTH   => RX_FIFO_DEPTH,
-		RX_FSTATE_BITS => RX_FULL_STATE_BITS,
+		TX_MIN_DEPTH        => TX_FIFO_DEPTH,
+		TX_EMPTY_STATE_BITS => TX_EMPTY_STATE_BITS,
+		RX_MIN_DEPTH        => RX_FIFO_DEPTH,
+		RX_FILL_STATE_BITS  => RX_FILL_STATE_BITS,
 
 		-- Flow Control
 		FLOWCONTROL    => FLOWCONTROL,
@@ -205,13 +201,13 @@ begin
 		TX_Put        => TX_Put,
 		TX_Data       => TX_Data,
 		TX_Full       => Status_TX_Full,
-		TX_EmptyState => Status_TX_EmptyState,
+		TX_EmptyState => open,
 		TXFIFO_Reset  => Control_TX_Reset,
 		TXFIFO_Empty  => TXFIFO_Empty,
 		RX_Valid      => Status_RX_Valid,
 		RX_Data       => RX_Data,
 		RX_Got        => RX_Got,
-		RX_FullState  => Status_RX_FullState,
+		RX_FillState  => open,
 		RX_Overflow   => RX_OverFlow,
 		RXFIFO_Full   => Status_RX_Full,
 		RXFIFO_Reset  => Control_RX_Reset,

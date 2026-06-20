@@ -106,17 +106,18 @@ package sync is
 		);
 	end component;
 
-	component sync_Reset_Xilinx is
-		generic (
-			SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := T_MISC_SYNC_DEPTH'low  -- generate SYNC_DEPTH many stages, at least 2
+	component sync_Reset_Xilinx
+		generic(
+			REGISTER_OUTPUT : boolean           := true;
+			SYNC_DEPTH      : T_MISC_SYNC_DEPTH := T_MISC_SYNC_DEPTH'low
 		);
-		port (
-			Clock         : in  std_logic;                                -- <Clock>  output clock domain
-			Input         : in  std_logic;                                -- @async:  reset input
-			D             : in  std_logic := '0';
-			Output        : out std_logic                                 -- @Clock:  reset output
+		port(
+			Clock  : in  std_logic;
+			Input  : in  std_logic;
+			D      : in  std_logic := '0';
+			Output : out std_logic
 		);
-	end component;
+	end component sync_Reset_Xilinx;
 
 	component sync_Pulse is
 		generic (

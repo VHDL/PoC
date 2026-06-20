@@ -73,7 +73,7 @@ begin
 
 		-- Test with guard = 1 (active)
 		g <= '1';
-		
+
 		-- Test all zeros
 		x <= (x'range => '0');
 		WaitForClock(Clock);
@@ -103,7 +103,7 @@ begin
 
 		-- Test with guard = 0 (inactive, should always return 0)
 		g <= '0';
-		
+
 		x <= (x'range => '0');
 		WaitForClock(Clock);
 		AffirmIf(ProcID, y = '0', "Guard=0 should return '0' even for all zeros");

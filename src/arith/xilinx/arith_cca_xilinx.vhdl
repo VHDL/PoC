@@ -70,11 +70,10 @@ architecture rtl of arith_cca is
 
 	function compact return tLevels is
 		variable res : tLevels(0 to 31);
-		variable base, core, done : integer;
+		variable base : integer := 0;
+		variable core : integer := (BITS - L) / 2;
+		variable done : integer := BITS - 2*core;
 	begin
-		base := 0;
-		core := (BITS-L)/2;
-		done := BITS-2*core;
 		for i in res'range loop
 			res(i) := (base, core, done);
 			if core <= 0 then
@@ -92,8 +91,9 @@ architecture rtl of arith_cca is
 			end if;
 		end loop;
 	end function compact;
+
 	constant LEVELS : tLevels := compact;
-	constant CCA : boolean := LEVELS'length > 1;
+	constant CCA    : boolean := LEVELS'length > 1;
 
 begin
 	genRCA: if not CCA generate

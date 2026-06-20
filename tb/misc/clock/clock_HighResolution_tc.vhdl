@@ -31,7 +31,7 @@ use     PoC.physical.all;
 use     PoC.math.all;
 use     PoC.clock.all;
 
-library OSVVM; 
+library OSVVM;
 context OSVVM.OsvvmContext;
 
 library osvvm_Axi4;
@@ -46,12 +46,12 @@ entity clock_HighResolution_tc is
 			Clock       : in  std_logic;
 			Reset       : in  std_logic;
 			AXI_Manager : inout AddressBusRecType;
-			
+
 			Load_nanoseconds    : out std_logic;
 			Load_datetime       : out std_logic;
 			Nanoseconds_to_load : out unsigned(63 downto 0);
 			Datetime_to_load    : out T_CLOCK_Datetime;
-			
+
 			Nanoseconds : in  unsigned(63 downto 0);
 			Datetime    : in  T_CLOCK_Datetime
 		);

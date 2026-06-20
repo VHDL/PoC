@@ -16,7 +16,7 @@ is available on the output. Asserting the `got`-input, acknoledge the processing
 the current output signals and moves the read-pointer to the next value, if available.
 
 All FIFOs implement a bidirectional flow control (`put`/`full` and `valid`/`got`).
-Each FIFO also offers a EmptyState (write-side) and FullState (read-side) to indicate
+Each FIFO also offers a EmptyState (write-side) and FillState (read-side) to indicate
 the current fill-state.
 
 The prefixes `cc_` (common clock), `dc_` (dependent clock) and `ic_` (independent

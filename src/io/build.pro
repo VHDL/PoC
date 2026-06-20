@@ -37,9 +37,6 @@ include ./uart
 disabled ./iic/iic.pro
 disabled ./fan/fan.pro
 
-analyze ./pmod/pmod.pkg.vhdl
-analyze ./pmod/pmod_KYPD.vhdl
-analyze ./pmod/pmod_SSD.vhdl
-disabled ./pmod/pmod_USBUART.vhdl
+include ./pmod
 disabled ./jtag/jtag.pkg.vhdl
 disabled ./led/led.pkg.vhdl

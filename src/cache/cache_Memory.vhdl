@@ -218,9 +218,6 @@ begin
 		signal cpu_addr_r  : unsigned(CPU_ADDR_BITS-1 downto 0);
 		signal cpu_wdata_r : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 		signal cpu_wmask_r : std_logic_vector(CPU_DATA_BITS/8-1 downto 0);
-		signal cpu_rdy_r   : std_logic;
-		signal cpu_rstb_r  : std_logic;
-		signal cpu_rdata_r : std_logic_vector(CPU_DATA_BITS-1 downto 0);
 	begin
 		-- cpu_rdy should have a short clock-to-output delay, but int_got has a large
 		-- propagation delay. Thus, do not depend cpu_rdy and int_got.

@@ -49,22 +49,22 @@ end entity;
 
 architecture rtl of io_GlitchFilter is
 	-- Timing table ID
-	constant TTID_HIGH_SPIKE        : natural    := 0;
-	constant TTID_LOW_SPIKE          : natural    := 1;
+	constant TTID_HIGH_SPIKE : natural    := 0;
+	constant TTID_LOW_SPIKE  : natural    := 1;
 
 	-- Timing table
-	constant TIMING_TABLE            : natural_vector  := (
-		TTID_HIGH_SPIKE      => HIGH_SPIKE_SUPPRESSION_CYCLES,
-		TTID_LOW_SPIKE      => LOW_SPIKE_SUPPRESSION_CYCLES
+	constant TIMING_TABLE    : natural_vector  := (
+		TTID_HIGH_SPIKE => HIGH_SPIKE_SUPPRESSION_CYCLES,
+		TTID_LOW_SPIKE  => LOW_SPIKE_SUPPRESSION_CYCLES
 	);
 
-	signal State                    : std_logic                        := '0';
-	signal NextState                : std_logic;
+	signal State      : std_logic   := '0';
+	signal NextState  : std_logic;
 
-	signal TC_en                    : std_logic;
-	signal TC_Load                  : std_logic;
-	signal TC_Slot                  : natural;
-	signal TC_Timeout                : std_logic;
+	signal TC_en      : std_logic;
+	signal TC_Load    : std_logic;
+	signal TC_Slot    : natural;
+	signal TC_Timeout : std_logic;
 
 begin
 	assert FALSE

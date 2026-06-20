@@ -180,7 +180,7 @@ begin
 						nextState   <= st_await_write_data;
 
 					when "011" | "101" | "111" => -- read and write address at the same time
-						if (PREFFERED_READ_ACCESS = TRUE) then
+						if PREFFERED_READ_ACCESS then
 							nextAddress <= unsigned(AXI4L_m2s_int.ARAddr(OCRAM_ADDRESS_BITS + ADDR_LSB -1 downto ADDR_LSB));
 							nextState <= st_read_data_ack;
 

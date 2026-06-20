@@ -47,8 +47,8 @@ begin
 		TranscriptOpen;
 		SetTranscriptMirror(TRUE);
 
-		SetLogEnable(PASSED, TRUE); -- Enable PASSED logs
-		SetLogEnable(INFO, TRUE);    -- Enable INFO logs
+		SetLogEnable(PASSED, FALSE);  -- Enable PASSED logs
+		SetLogEnable(INFO, FALSE);    -- Enable INFO logs
 
 		-- Wait for testbench initialization
 
