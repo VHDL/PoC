@@ -31,6 +31,8 @@ namespace eval ::poc {
 		} else {
 			set buildNamePrefix "${::osvvm::ToolName}-"
 		}
+	} elseif {[info exists ::env(GITHUB_ACTIONS)]} {
+		set buildNamePrefix ""
 	} else {
 		set buildNamePrefix "${::osvvm::ToolNameVersion}-"
 	}

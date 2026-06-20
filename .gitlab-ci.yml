@@ -19,14 +19,15 @@ variables:
       if [[ "${SIMULATOR_TOOL}" == "NVC" ]]; then
         CreateAndChangeDirectory "temp/NVC" "Simulation working directory"
         # before_script and script are running in the same shell; therefore no need to change the directory
-        nvc --do ../../regression.tcl
+        REGRESSION_STEP=${STEP} nvc --do ../../regression.tcl
       else
-        exec-${SIMULATOR_TOOL}.sh -n --tcl-file=regression.tcl
+        REGRESSION_STEP=${STEP} exec-${SIMULATOR_TOOL}.sh -n --tcl-file=regression.tcl
       fi
   after_script:
     - mkdir -p temp/junit
     - CopyFile temp/${SIMULATOR_TOOL}/*/*.xml "temp/junit"
     - CopyFile temp/${SIMULATOR_TOOL}/*/*.yml "temp/junit"
+    - rm -vrf temp/${SIMULATOR_TOOL}/VHDL_LIBS/${SIMULATOR_TOOL}-*/TB_*
     - tree temp
   artifacts:
     paths:
@@ -55,7 +56,7 @@ OSVVM-build:
       - IMAGE:     "ghdl"
         VERSION:   ["llvm", "mcode"]
   variables:
-    REGRESSION_STEP: "osvvm"
+    STEP: "osvvm"
 
 PoC-build:
   extends:
@@ -78,7 +79,7 @@ PoC-build:
           - IMAGE: $[[ matrix.IMAGE ]]
             VERSION: $[[ matrix.VERSION ]]
   variables:
-    REGRESSION_STEP: "poc"
+    STEP: "poc"
 
 .OSVVM-sim:  # step has to be added to regression.tcl
   extends:
@@ -105,7 +106,7 @@ PoC-build:
     - master
     - dev
   variables:
-    REGRESSION_STEP: "osvvm_test"  # todo: add this to regression.tcl
+    STEP: "osvvm_test"  # todo: add this to regression.tcl
 
 PoC-sim:
   extends:
@@ -129,7 +130,7 @@ PoC-sim:
             VERSION: $[[ matrix.VERSION ]]
   allow_failure: true
   variables:
-    REGRESSION_STEP: "test"
+    STEP: "test"
 
 # --------------------------
 # ----- Documentation ------

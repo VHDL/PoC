@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {ubuntu-version: 'ubuntu-24.04', simulator: 'nvc',  backend: '',      version: 'latest',  can-fail: false}
+          - {ubuntu-version: 'ubuntu-26.04', simulator: 'nvc',  backend: '',      version: 'latest',  can-fail: false}
           - {ubuntu-version: 'ubuntu-26.04', simulator: 'ghdl', backend: 'mcode', version: 'nightly', can-fail: false}
           - {ubuntu-version: 'ubuntu-26.04', simulator: 'ghdl', backend: 'llvm',  version: 'nightly', can-fail: false}
     with:
@@ -41,7 +41,7 @@ jobs:
       - Simulate
 #    if: success() || failure()
     with:
-      unittest_artifacts_pattern: 'PoC-Report-XML-*'
+      unittest_artifacts_pattern: 'SimPoC-Report-XML-*'
       testsuite-summary-name:     'The PoC Library'
       merge-input-dialect:        'Any-JUnit'
       merged_junit_filename:      'unittest.xml'
