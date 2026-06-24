@@ -95,13 +95,13 @@ architecture rtl of axi4_Sink is
 	signal nxt_wstate : T_wstate;
 	signal nxt_rstate : T_rstate;
 
-	signal AWLen_d : std_logic_vector(7 downto 0);
+	signal AWLen_d : std_logic_vector(7 downto 0) := (others => '0');
 	signal AWLen   : std_logic_vector(7 downto 0);
-	signal ARLen_d : std_logic_vector(7 downto 0);
+	signal ARLen_d : std_logic_vector(7 downto 0) := (others => '0');
 	signal ARLen   : std_logic_vector(7 downto 0);
-	signal AWID_d  : std_logic_vector(IDBits - 1 downto 0);
+	signal AWID_d  : std_logic_vector(IDBits - 1 downto 0) := (others => '0');
 	signal AWID    : std_logic_vector(IDBits - 1 downto 0);
-	signal ARID_d  : std_logic_vector(IDBits - 1 downto 0);
+	signal ARID_d  : std_logic_vector(IDBits - 1 downto 0) := (others => '0');
 	signal ARID    : std_logic_vector(IDBits - 1 downto 0);
 
 	signal Is_WriteData : std_logic;
