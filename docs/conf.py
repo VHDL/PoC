@@ -163,24 +163,13 @@ latex_use_xindy = False
 latex_elements = {
 	"papersize":   "a4paper",      # The paper size ('letterpaper' or 'a4paper').
 	"pointsize":   "10pt",         # The font size ('10pt', '11pt' or '12pt').
-	"inputenc":    "",            # Let LuaLaTeX handle input encoding
+	"inputenc":    "",             # Let LuaLaTeX handle input encoding
 	"utf8extra":   "",
 	"polyglossia": "",
 	"babel":      r"\usepackage[english]{babel}",
 	"fontenc":    r"\usepackage{fontspec}",  # Disable the default T1 font encoding (Essential for LuaLaTeX)
 	"fontpkg":    dedent("""\
-		\\usepackage{unicode-math}
-
-		% Set the Text Fonts (Libertinus)
-		\\setmainfont{Libertinus Serif}
-		\\setsansfont{Libertinus Sans}
-		\\setmonofont{Libertinus Mono}
-		\\setmathfont{Libertinus Math}
-
-		% Set Symbol font
-		\\usepackage{newunicodechar}
-		\\newfontfamily{\\emojifont}[Renderer=OpenType]{NotoColorEmoji.ttf}
-		\\usepackage{pytooling}
+		\\usepackage[fontfamily=libertinus]{pytooling}
 	"""),
 	"passoptionstopackages": dedent("""\
 		\\PassOptionsToPackage{verbatimvisiblespace=\\ }{sphinx}
