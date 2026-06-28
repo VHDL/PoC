@@ -1,7 +1,7 @@
 -- =============================================================================
--- Authors:					Patrick Lehmann
+-- Authors:          Patrick Lehmann
 --
--- Entity:					TODO
+-- Entity:          TODO
 --
 -- Description:
 -- -------------------------------------
@@ -10,13 +10,13 @@
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +25,7 @@
 -- limitations under the License.
 -- =============================================================================
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
+use     IEEE.std_logic_1164.all;
 
 use     work.utils.all;
 use     work.vectors.all;
@@ -33,38 +33,38 @@ use     work.vectors.all;
 
 entity misc_Delay is
 	generic (
-		BITS					: positive;
-		TAPS					: T_NATVEC					-- select one or multiple delay tap points
+		BITS          : positive;
+		TAPS          : natural_vector          -- select one or multiple delay tap points
 	);
 	port (
-		Clock					: in	std_logic;																					-- clock
-		Reset					: in	std_logic		:= '0';																	-- reset; avoid reset to enable SRL16/SRL32 usage
-		Enable				: in	std_logic		:= '1';																	-- enable
-		DataIn				: in	std_logic_vector(BITS - 1 downto 0);								-- data to delay
-		DataOut				: out	T_SLM(TAPS'length - 1 downto 0, BITS - 1 downto 0)	-- delayed ouputs, tapped at TAPS(i)
+		Clock          : in  std_logic;                                          -- clock
+		Reset          : in  std_logic    := '0';                                  -- reset; avoid reset to enable SRL16/SRL32 usage
+		Enable        : in  std_logic    := '1';                                  -- enable
+		DataIn        : in  std_logic_vector(BITS - 1 downto 0);                -- data to delay
+		DataOut        : out T_SLM(TAPS'length - 1 downto 0, BITS - 1 downto 0)  -- delayed ouputs, tapped at TAPS(i)
 	);
 end entity;
 
 
 architecture rtl of misc_Delay is
-	constant MAX_DELAY		: natural			:= imax(TAPS);
+	constant MAX_DELAY    : natural      := imax(TAPS);
 
-	type T_DELAY_VECTOR		is array (natural range <>) of std_logic_vector(BITS - 1 downto 0);
+	type T_DELAY_VECTOR    is array (natural range <>) of std_logic_vector(BITS - 1 downto 0);
 
-	signal Shifter_nxt		: T_DELAY_VECTOR(MAX_DELAY downto 0);
-	signal Shifter_d			: T_DELAY_VECTOR(MAX_DELAY - 1 downto 0)									:= (others => (others => '0'));
-	signal DataOut_i			: T_SLM(TAPS'length - 1 downto 0, BITS - 1 downto 0)	:= (others => (others => 'Z'));
+	signal Shifter_nxt    : T_DELAY_VECTOR(MAX_DELAY downto 0);
+	signal Shifter_d      : T_DELAY_VECTOR(MAX_DELAY - 1 downto 0)                  := (others => (others => '0'));
+	signal DataOut_i      : T_SLM(TAPS'length - 1 downto 0, BITS - 1 downto 0)  := (others => (others => 'Z'));
 begin
 
-	Shifter_nxt		<= Shifter_d & DataIn;
+	Shifter_nxt    <= Shifter_d & DataIn;
 
 	process(Clock)
 	begin
 		if rising_edge(Clock) then
 			if (Reset = '1') then
-				Shifter_d		<= (others => (others => '0'));
+				Shifter_d    <= (others => (others => '0'));
 			elsif (Enable = '1') then
-				Shifter_d		<= Shifter_nxt(Shifter_d'range);
+				Shifter_d    <= Shifter_nxt(Shifter_d'range);
 			end if;
 		end if;
 	end process;
@@ -73,5 +73,5 @@ begin
 		assign_row(DataOut_i, Shifter_nxt(TAPS(i)), i);
 	end generate;
 
-	DataOut		<= DataOut_i;
-end;
+	DataOut    <= DataOut_i;
+end architecture;

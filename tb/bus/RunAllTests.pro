@@ -26,4 +26,6 @@
 library tb_bus
 
 include ./axi4/RunAllTests.pro
+include ./axi4stream/RunAllTests.pro
+include ./axi4lite/RunAllTests.pro
 disabled ./stream/RunAllTests.pro

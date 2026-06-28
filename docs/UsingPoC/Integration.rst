@@ -26,7 +26,7 @@ On Linux
    cd ProjectRoot
    mkdir lib
    cd lib
-   git submodule add https://github.com/VLSI-EDA/PoC.git PoC
+   git submodule add https://github.com/VHDL/PoC.git PoC
    cd PoC
    git remote rename origin github
    cd ../..
@@ -54,7 +54,7 @@ On Windows
 
    cd ProjectRoot
    mkdir lib | cd
-   git submodule add https://github.com/VLSI-EDA/PoC.git PoC
+   git submodule add https://github.com/VHDL/PoC.git PoC
    cd PoC
    git remote rename origin github
    cd ..\..
@@ -70,18 +70,18 @@ On Windows
 
 
 .. #
-   ## 3. Creating PoC's my_config and my_project Files
+   ## 3. Creating PoC's project_configuration and local_configuration Files
 
    The PoC-Library needs two VHDL files for it's configuration. These files are used
    to determine the most suitable implementation depending on the provided platform
    information.
 
-    1. The **my_config** file can easily be created from a template file provided by
-       PoC in `<PoCRoot>\src\common\my_config.vhdl.template`.
+    1. The **project_configuration** file can easily be created from a template file provided by
+       PoC in `<PoCRoot>\src\common\project_configuration.vhdl.template`.
 
        The file should to be copyed into a projects source directory and rename into
-       `my_config.vhdl`. This file should be included into version control systems
-       and shared with other systems. my_config.vhdl defines two global constants,
+       `project_configuration.vhdl`. This file should be included into version control systems
+       and shared with other systems. project_configuration.vhdl defines two global constants,
        which need to be adjusted:
 
        ```VHDL
@@ -90,7 +90,7 @@ On Windows
        ```
 
 
-   Source file: `common/my_config.vhdl.template <https://github.com/VLSI-EDA/PoC/blob/master/src/common/my_config.vhdl.template>`_
+   Source file: `common/project_configuration.vhdl.template <https://github.com/VHDL/PoC/blob/main/src/common/project_configuration.vhdl.template>`_
 
 
        The easiest way is to define a board name and set `MY_DEVICE` to `None`. So
@@ -112,31 +112,28 @@ On Windows
        constant MY_DEVICE : string	:= "XC6SLX45-3CSG324";
        ```
 
-    2. The **my_project** file can also be created from a template provided by PoC
-       in `<PoCRoot>\src\common\my_project.vhdl.template`.
+    2. The **local_configuration** file can also be created from a template provided by PoC
+       in `<PoCRoot>\src\common\local_configuration.vhdl.template`.
 
        The file should to be copyed into a projects source directory and rename into
-       `my_project.vhdl`. This file **must not** be included into version control
-       systems - it's private to a host computer. my_project.vhdl defines two global
+       `local_configuration.vhdl`. This file **must not** be included into version control
+       systems - it's private to a host computer. local_configuration.vhdl defines two global
        constants, which need to be adjusted:
 
        ```VHDL
-       constant MY_PROJECT_DIR       : string  := "CHANGE THIS";   -- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
-   	constant MY_OPERATING_SYSTEM  : string  := "CHANGE THIS";   -- e.g. "WINDOWS", "LINUX"
+       constant LOCAL_PROJECT_DIR       : string  := "CHANGE THIS";   -- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
        ```
 
        ##### Example 1: A Windows System:
 
        ```VHDL
-       constant MY_PROJECT_DIR       : string  := "D:/git/GitHub/PoC/";
-   	constant MY_OPERATING_SYSTEM  : string  := "WINDOWS";
+       constant LOCAL_PROJECT_DIR       : string  := "D:/git/GitHub/PoC/";
        ```
 
        ##### Example 2: A Debian System:
 
        ```VHDL
-       constant MY_PROJECT_DIR       : string  := "/home/lehmann/git/GitHub/PoC/";
-   	constant MY_OPERATING_SYSTEM  : string  := "LINUX";
+       constant LOCAL_PROJECT_DIR       : string  := "/home/lehmann/git/GitHub/PoC/";
        ```
 
    ## 4. Compiling shipped Xilinx IP cores to Netlists

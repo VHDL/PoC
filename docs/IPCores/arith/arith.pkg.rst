@@ -2,7 +2,7 @@
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/arith/arith.pkg.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/arith/arith.pkg.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
@@ -24,23 +24,23 @@ This package holds all component declarations for this namespace.
 
 .. rubric:: Exported Functions
 
-* ``arith_div_latency``
+* ``arith_Divider_latency``
 
 .. rubric:: Exported Components
 
-* :ref:`PoC.arith.addw <IP/arith_addw>`
+* :ref:`PoC.arith.Adder_Wide <IP/arith_Adder_Wide>`
 * PoC.arith.carrychain_inc_xilinx
-* :ref:`PoC.arith.counter_bcd <IP/arith_counter_bcd>`
-* :ref:`PoC.arith.counter_gray <IP/arith_counter_gray>`
-* :ref:`PoC.arith.div <IP/arith_div>`
-* :ref:`PoC.arith.firstone <IP/arith_firstone>`
+* :ref:`PoC.arith.Counter_BCD <IP/arith_Counter_BCD>`
+* :ref:`PoC.arith.Counter_Gray <IP/arith_Counter_Gray>`
+* :ref:`PoC.arith.Divider <IP/arith_Divider>`
+* :ref:`PoC.arith.firstone <IP/arith_FirstOne>`
 * PoC.arith.inc_ovcy_xilinx
 * :ref:`PoC.arith.muls_wide <IP/arith_muls_wide>`
 * PoC.arith.prefix_and_xilinx
 * PoC.arith.prefix_or_xilinx
-* :ref:`PoC.arith.prng <IP/arith_prng>`
-* :ref:`PoC.arith.same <IP/arith_same>`
-* :ref:`PoC.arith.sqrt <IP/arith_sqrt>`
+* :ref:`PoC.arith.prng <IP/arith_PRNG>`
+* :ref:`PoC.arith.same <IP/arith_Same>`
+* :ref:`PoC.arith.sqrt <IP/arith_SquareRoot>`
 
 .. only:: latex
 

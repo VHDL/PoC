@@ -1,7 +1,7 @@
 .. _USING/VHDLConf:
 
-Creating my_config/my_project.vhdl
-##################################
+Creating project_configuration/local_configuration.vhdl
+#######################################################
 
 The PoC-Library needs two VHDL files for its configuration. These files are
 used to determine the most suitable implementation depending on the provided
@@ -11,17 +11,17 @@ arounds.
 
 .. _USING/VHDLConf/myconfig:
 
-Create my_config.vhdl
-*********************
+Create project_configuration.vhdl
+*********************************
 
-The **my_config.vhdl** file can easily be created from the template file
-``my_config.vhdl.template`` provided by PoC in ``PoCRoot\src\common``.
-(View source on `GitHub <https://github.com/VLSI-EDA/PoC/blob/master/src/common/my_config.vhdl.template>`_.)
+The **project_configuration.vhdl** file can easily be created from the template file
+``project_configuration.vhdl.template`` provided by PoC in ``PoCRoot\src\common``.
+(View source on `GitHub <https://github.com/VHDL/PoC/blob/main/src/common/project_configuration.vhdl.template>`_.)
 Copy this file into the project's source directory and rename it to
-``my_config.vhdl``.
+``project_configuration.vhdl``.
 
 This file should be included in version control systems and shared with other
-systems. ``my_config.vhdl`` defines three global constants, which need to be
+systems. ``project_configuration.vhdl`` defines three global constants, which need to be
 adjusted:
 
 .. code-block:: VHDL
@@ -52,35 +52,32 @@ If the requested board is not known to PoC or it's custom made, then set
 
 .. _USING/VHDLConf/myproject:
 
-Create my_project.vhdl
-**********************
+Create local_configuration.vhdl
+*******************************
 
-The **my_project.vhdl** file can also be created from a template file
-``my_project.vhdl.template`` provided by PoC in ``PoCRoot\src\common``.
+The **local_configuration.vhdl** file can also be created from a template file
+``local_configuration.vhdl.template`` provided by PoC in ``PoCRoot\src\common``.
 
 The file should to be copyed into a projects source directory and renamed
-into ``my_project.vhdl``. This file **must not** be included into version
-control systems -- it's private to a computer. ``my_project.vhdl`` defines two
+into ``local_configuration.vhdl``. This file **must not** be included into version
+control systems -- it's private to a computer. ``local_configuration.vhdl`` defines two
 global constants, which need to be adjusted:
 
 .. code-block:: VHDL
 
-   constant MY_PROJECT_DIR      : string := "CHANGE THIS"; -- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
-   constant MY_OPERATING_SYSTEM : string := "CHANGE THIS"; -- e.g. "WINDOWS", "LINUX"
+   constant LOCAL_PROJECT_DIR      : string := "CHANGE THIS"; -- e.g. "d:/vhdl/myproject/", "/home/me/projects/myproject/"
 
 **Example 1: A Windows System:**
 
 .. code-block:: VHDL
 
-   constant MY_PROJECT_DIR      : string := "D:/git/GitHub/PoC/";
-   constant MY_OPERATING_SYSTEM : string := "WINDOWS";
+   constant LOCAL_PROJECT_DIR      : string := "D:/git/GitHub/PoC/";
 
 **Example 2: A Debian System:**
 
 .. code-block:: VHDL
 
-   constant MY_PROJECT_DIR      : string := "/home/paebbels/git/GitHub/PoC/";
-   constant MY_OPERATING_SYSTEM : string := "LINUX";
+   constant LOCAL_PROJECT_DIR      : string := "/home/paebbels/git/GitHub/PoC/";
 
 .. seealso::
    :doc:`Running one or more testbenches </UsingPoC/Simulation>`

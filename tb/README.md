@@ -47,7 +47,7 @@ Table of Content:
 ## Quick Example
 
 The following quick example uses the Xilinx ISE Simulator to compile a testbench for the module
-`arith_prng.vhdl` (Pseudo Random Number Generator - PRNG). The VHDL file is located at
+`arith_PRNG.vhdl` (Pseudo Random Number Generator - PRNG). The VHDL file is located at
 `<PoCRoot>/src/arith/` and virtually a member in the `PoC.arith` namespace. So the module can be
 identified by an unique name: `PoC.arith.prng`, which is passed to the testbench script.
 
@@ -62,10 +62,10 @@ The CLI option switch `isim` chooses *ISE Simulator* (iSim) as the simulator and
 to the tool. All required source file are gathered and "fused" to an executable. Afterwards this
 executable is launched in CLI mode and it's outputs are displayed in console:
 
-[![PowerShell console output for PoC.arith.prng][arith_prng_tb]][arith_prng_tb]
+[![PowerShell console output for PoC.arith.prng][arith_PRNG_tb]][arith_PRNG_tb]
 (click to enlarge)
 
- [arith_prng_tb]: https://github.com/VLSI-EDA/PoC/wiki/images/arith_prng_tb.png
+ [arith_PRNG_tb]: https://github.com/VHDL/PoC/wiki/images/arith_PRNG_tb.png
 
 ##### Example 2:
 
@@ -79,10 +79,10 @@ cd <PoCRoot>
 See the red frame in the lower left corner: If everything was ok: `SIMULATION RESULT = PASSED` is
 printed onto the simulator console.
 
-[![iSim GUI for PoC.arith.prng][arith_prng_tb_isim]][arith_prng_tb_isim]
+[![iSim GUI for PoC.arith.prng][arith_PRNG_tb_isim]][arith_PRNG_tb_isim]
 (click to enlarge)
 
- [arith_prng_tb_isim]: https://github.com/VLSI-EDA/PoC/wiki/images/arith_prng_tb_isim.png
+ [arith_PRNG_tb_isim]: https://github.com/VHDL/PoC/wiki/images/arith_PRNG_tb_isim.png
 
 
 ## Running a Testbench
@@ -215,5 +215,5 @@ cd <PoCRoot>
 ```
 
 
- [wiki_Requirements]:	https://github.com/VLSI-EDA/PoC/wiki/Requirements
- [wiki_Configuration]:	https://github.com/VLSI-EDA/PoC/wiki/Configuration
+ [wiki_Requirements]:	https://github.com/VHDL/PoC/wiki/Requirements
+ [wiki_Configuration]:	https://github.com/VHDL/PoC/wiki/Configuration

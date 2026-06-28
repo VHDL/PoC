@@ -4,8 +4,9 @@
 from sys import path as sys_path
 from os.path import abspath
 from pathlib import Path
+from textwrap import dedent
 
-from pyTooling.Packaging import extractVersionInformation
+# from pyTooling.Packaging import extractVersionInformation
 
 ROOT = Path(__file__).resolve().parent
 
@@ -157,34 +158,18 @@ modindex_common_prefix = [
 # ==============================================================================
 # Options for LaTeX / PDF output
 # ==============================================================================
-from textwrap import dedent
-
-# ==============================================================================
-# Options for LaTeX / PDF output
-# ==============================================================================
 latex_engine = "lualatex"
 latex_use_xindy = False
 latex_elements = {
 	"papersize":   "a4paper",      # The paper size ('letterpaper' or 'a4paper').
 	"pointsize":   "10pt",         # The font size ('10pt', '11pt' or '12pt').
-	"inputenc":    "",            # Let LuaLaTeX handle input encoding
+	"inputenc":    "",             # Let LuaLaTeX handle input encoding
 	"utf8extra":   "",
 	"polyglossia": "",
 	"babel":      r"\usepackage[english]{babel}",
 	"fontenc":    r"\usepackage{fontspec}",  # Disable the default T1 font encoding (Essential for LuaLaTeX)
 	"fontpkg":    dedent("""\
-		\\usepackage{unicode-math}
-
-		% Set the Text Fonts (Libertinus)
-		\\setmainfont{Libertinus Serif}
-		\\setsansfont{Libertinus Sans}
-		\\setmonofont{Libertinus Mono}
-		\\setmathfont{Libertinus Math}
-
-		% Set Symbol font
-		\\usepackage{newunicodechar}
-		\\newfontfamily{\\emojifont}[Renderer=OpenType]{NotoColorEmoji.ttf}
-		\\usepackage{pytooling}
+		\\usepackage[fontfamily=libertinus]{pytooling}
 	"""),
 	"passoptionstopackages": dedent("""\
 		\\PassOptionsToPackage{verbatimvisiblespace=\\ }{sphinx}
@@ -272,13 +257,13 @@ extlinks = {
 	"gh":       (f"https://GitHub.com/%s", "gh:%s"),
 	"ghissue":  (f"https://GitHub.com/{githubNamespace}/{project}/issues/%s", "issue #%s"),
 	"ghpull":   (f"https://GitHub.com/{githubNamespace}/{project}/pull/%s", "pull request #%s"),
-	"ghsrc":    (f"https://GitHub.com/{githubNamespace}/{project}/blob/master/%s", None),
+	"ghsrc":    (f"https://GitHub.com/{githubNamespace}/{project}/blob/main/%s", None),
 	"wiki":     (f"https://en.wikipedia.org/wiki/%s", None),
 
 	"pocissue": (f"https://github.com/{githubNamespace}/{project}/issues/%s", 'issue #%s'),           # => replace by ghissue
 	"pocpull":  (f"https://github.com/{githubNamespace}/{project}/pull/%s", 'pull request #%s'),      # => replace by ghpull
-	"pocsrc":   (f"https://github.com/{githubNamespace}/{project}/blob/master/src/%s?ts=2", None),  # => replace by ghsrc
-	"poctb":    (f"https://github.com/{githubNamespace}/{project}/blob/master/tb/%s?ts=2", None)
+	"pocsrc":   (f"https://github.com/{githubNamespace}/{project}/blob/main/src/%s?ts=2", None),  # => replace by ghsrc
+	"poctb":    (f"https://github.com/{githubNamespace}/{project}/blob/main/tb/%s?ts=2", None)
 }
 
 

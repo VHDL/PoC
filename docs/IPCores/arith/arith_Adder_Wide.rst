@@ -1,0 +1,53 @@
+.. _IP/arith_Adder_Wide:
+
+PoC.arith.Adder_Wide
+####################
+
+.. only:: html
+
+   .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VHDL/PoC/blob/main/src/arith/arith_Adder_Wide.vhdl
+               :alt: Source Code on GitHub
+   .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VHDL/PoC/blob/main/tb/arith/arith_Adder_Wide_tb.vhdl
+               :alt: Source Code on GitHub
+
+   .. sidebar:: GitHub Links
+
+      * |gh-src| :pocsrc:`Sourcecode <arith/arith_Adder_Wide.vhdl>`
+      * |gh-tb| :poctb:`Testbench <arith/arith_Adder_Wide_tb.vhdl>`
+
+Implements wide addition providing several options all based
+on an adaptation of a carry-select approach.
+
+References:
+
+* Hong Diep Nguyen and Bogdan Pasca and Thomas B. Preusser:
+  FPGA-Specific Arithmetic Optimizations of Short-Latency Adders,
+  FPL 2011.
+  -> ARCH:     AAM, CAI, CCA
+  -> SKIPPING: CCC
+
+* Marcin Rogawski, Kris Gaj and Ekawat Homsirikamol:
+  A Novel Modular Adder for One Thousand Bits and More
+  Using Fast Carry Chains of Modern FPGAs, FPL 2014.
+  -> ARCH:		 PAI
+  -> SKIPPING: PPN_KS, PPN_BK
+
+
+
+.. rubric:: Entity Declaration:
+
+.. literalinclude:: ../../../src/arith/arith_Adder_Wide.vhdl
+   :language: vhdl
+   :tab-width: 2
+   :linenos:
+   :lines: 54-71
+
+
+
+.. only:: latex
+
+   Source file: :pocsrc:`arith/arith_Adder_Wide.vhdl <arith/arith_Adder_Wide.vhdl>`

@@ -19,7 +19,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,7 +43,7 @@ architecture Simple of sync_Bits_TestController is
 	signal TestDone : integer_barrier := 1;
 
 	constant TCID : AlertLogIDType := NewID("TestCtrl");
-	
+
 	constant INIT : std_logic_vector(Sync_out'range) := (others => '0');
 
 begin
@@ -77,32 +77,32 @@ begin
 	begin
 		-- Initialize
 		Sync_in <= INIT;
-		
+
 		wait until Reset = '0';
 		WaitForClock(Clock1, 4);
 
 		-- Toggle input several times with different patterns
 		Sync_in <= "1";
 		WaitForClock(Clock1, 2);
-		
+
 		Sync_in <= "0";
 		WaitForClock(Clock1, 2);
-		
+
 		Sync_in <= "1";
 		WaitForClock(Clock1, 2);
-		
+
 		Sync_in <= "0";
 		WaitForClock(Clock1, 6);
-		
+
 		Sync_in <= "1";
 		WaitForClock(Clock1, 16);
-		
+
 		Sync_in <= "0";
 		WaitForClock(Clock1, 2);
-		
+
 		Sync_in <= "1";
 		WaitForClock(Clock1, 2);
-		
+
 		Sync_in <= "0";
 		WaitForClock(Clock1, 6);
 
@@ -116,7 +116,7 @@ begin
 	begin
 		wait until Reset = '0';
 		WaitForClock(Clock2);
-		
+
 		-- Check initial value
 		AffirmIf(ProcID, Sync_out = INIT, "Initial value should be " & to_string(INIT));
 		Sync_out_old := Sync_out;
@@ -131,7 +131,7 @@ begin
 		end loop;
 
 		-- Should see 8 toggle events based on stimuli
-		AffirmIf(ProcID, toggled = 8, 
+		AffirmIf(ProcID, toggled = 8,
 			"Expected 8 toggle events, got " & integer'image(toggled));
 
 		WaitForBarrier(TestDone);

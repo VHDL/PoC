@@ -7,11 +7,11 @@ PoC.io.GlitchFilter
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VHDL/PoC/blob/master/src/io/io_GlitchFilter.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/io/io_GlitchFilter.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/io/io_GlitchFilter_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/io/io_GlitchFilter_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links

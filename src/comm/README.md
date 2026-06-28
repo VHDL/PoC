@@ -10,11 +10,11 @@ The package [`PoC.comm`][comm.pkg] holds all component declarations for this nam
 
 ## Entities
 
- -  [`comm_crc`][comm_crc] - implements a generic Cyclic Redundancy Check (CRC).
- -  [`comm_scramble`][comm_scramble] - implements a generic LFSR based scrambler.
+ -  [`comm_CRC`][comm_CRC] - implements a generic Cyclic Redundancy Check (CRC).
+ -  [`comm_Scramble`][comm_Scramble] - implements a generic LFSR based scrambler.
 
 
  [comm.pkg]:			comm.pkg.vhdl
 
- [comm_crc]:			comm_crc.vhdl
- [comm_scramble]:		comm_scramble.vhdl
+ [comm_CRC]:			comm_CRC.vhdl
+ [comm_Scramble]:		comm_Scramble.vhdl

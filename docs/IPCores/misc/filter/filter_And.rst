@@ -1,0 +1,38 @@
+.. _IP/filter_And:
+
+PoC.misc.filter.And
+###################
+
+.. only:: html
+
+   .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VHDL/PoC/blob/main/src/misc/filter/filter_And.vhdl
+               :alt: Source Code on GitHub
+   .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
+               :scale: 40
+               :target: https://github.com/VHDL/PoC/blob/main/tb/misc/filter/filter_And_tb.vhdl
+               :alt: Source Code on GitHub
+
+   .. sidebar:: GitHub Links
+
+      * |gh-src| :pocsrc:`Sourcecode <misc/filter/filter_And.vhdl>`
+      * |gh-tb| :poctb:`Testbench <misc/filter/filter_And_tb.vhdl>`
+
+.. TODO:: No documentation available.
+
+
+
+.. rubric:: Entity Declaration:
+
+.. literalinclude:: ../../../../src/misc/filter/filter_And.vhdl
+   :language: vhdl
+   :tab-width: 2
+   :linenos:
+   :lines: 37-48
+
+
+
+.. only:: latex
+
+   Source file: :pocsrc:`misc/filter/filter_And.vhdl <misc/filter/filter_And.vhdl>`

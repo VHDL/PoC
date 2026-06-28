@@ -12,7 +12,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -59,12 +59,12 @@ begin
 
 	-- Generate transaction for AXI manager
 	ManagerProc : process
-		
+
 		procedure LoadNanoseconds (
 			signal   manager       : inout AddressBusRecType;
 			constant ns_load_value : natural;
 			constant waitTime      : time
-		) is 
+		) is
 			variable ns_value_slv     : std_logic_vector(63 downto 0) := to_slv(ns_load_value, 64);
 			variable time_now_a       : time;
 			variable time_now_b       : time;
@@ -86,7 +86,7 @@ begin
 			time_elapsed_nat := time_elapsed / 1 ns;
 			AffirmIfEqual(ns_elapsed, time_elapsed_nat);
 		end procedure;
-		
+
 		procedure LoadDatetime (
 			signal   manager  : inout AddressBusRecType;
 			constant s        : natural;  -- second
@@ -99,11 +99,11 @@ begin
 		) is
 			variable Datetime_to_load_i : T_CLOCK_DATETIME := (
 				secondsResolution => to_unsigned(0, 32),
-				seconds           => to_unsigned(s, 6), 
-				minutes           => to_unsigned(m, 6),  
-				hours             => to_unsigned(h, 5), 
-				day               => to_unsigned(d, 5), 
-				month             => to_unsigned(mo, 4),  
+				seconds           => to_unsigned(s, 6),
+				minutes           => to_unsigned(m, 6),
+				hours             => to_unsigned(h, 5),
+				day               => to_unsigned(d, 5),
+				month             => to_unsigned(mo, 4),
 				year              => to_unsigned(y, 13)
 			);
 			variable Datetime_read : T_CLOCK_DATETIME := (others => (others => '0'));
@@ -135,7 +135,7 @@ begin
 		variable randTime : time := 0 ns;
 		type T_RandTimes is record
 			randNs    : positive;
-			randT     : positive;
+			-- randT     : positive;
 			randSec   : positive;
 			randMin   : positive;
 			randHour  : positive;
@@ -152,24 +152,25 @@ begin
 		Load_datetime    <= '0';
 		wait until Reset = '0';
 		WaitForClock(AXI_Manager, 2);
-		
+
 		log("Checking nanosecond load");
 		for i in 0 to 5 loop
 			randTime         := RV.RandTime(1 ns, 500 ns);  -- in ns
 			RandTimes.randNs := RV.RandInt(1, 999);
 			LoadNanoseconds(AXI_Manager, RandTimes.randNs, randTime);
 
-			RandTimes.randT     := RV.RandInt(1, 1000);
-			RandTimes.randSec   := RV.RandInt(1, 59);
-			RandTimes.randMin   := RV.RandInt(1, 59); 
-			RandTimes.randHour  := RV.RandInt(1, 24);
-			RandTimes.randDay   := RV.RandInt(1, 12);
+			-- RandTimes.randT     := RV.RandInt(0, 1000);
+			RandTimes.randSec   := RV.RandInt(0, 59);
+			RandTimes.randMin   := RV.RandInt(0, 59);
+			RandTimes.randHour  := RV.RandInt(0, 23);
+			RandTimes.randDay   := RV.RandInt(1, 31);
 			RandTimes.randMonth := RV.RandInt(1, 12);
 			RandTimes.randYear  := RV.RandInt(2000, 4000);
-			LoadDatetime(AXI_Manager, RandTimes.randT, RandTimes.randSec, RandTimes.randMin, RandTimes.randHour, RandTimes.randDay, RandTimes.randYear, randTime);
+
+			LoadDatetime(AXI_Manager, RandTimes.randSec, RandTimes.randMin, RandTimes.randHour, RandTimes.randDay, RandTimes.randMonth, RandTimes.randYear, randTime);
 		end loop;
 		-- todo: check for changes in datetime
-		
+
 		wait for 1 ms;
 		WaitForClock(AXI_Manager);
 		WaitForBarrier(TestDone);

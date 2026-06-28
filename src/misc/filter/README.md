@@ -10,12 +10,12 @@ The package [`PoC.filter`][filter.pkg] holds all component declarations for this
 
 ## Entities
 
- - [`filter_and`][filter_and]
- - [`filter_or`][filter_or]
- - [`filter_mean`][filter_mean]
+ - [`filter_And`][filter_And]
+ - [`filter_Or`][filter_Or]
+ - [`filter_Mean`][filter_Mean]
 
 
  [filter.pkg]:	filter.pkg.vhdl
- [filter_and]:	filter_and.vhdl
- [filter_or]:	  filter_or.vhdl
- [filter_mean]:	filter_mean.vhdl
+ [filter_And]:	filter_And.vhdl
+ [filter_Or]:	  filter_Or.vhdl
+ [filter_Mean]:	filter_Mean.vhdl

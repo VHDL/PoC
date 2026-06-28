@@ -26,8 +26,8 @@ also referred to as ``PoCRoot``.
     like \*.xco files from Xilinx Core Generator. Generated IP cores are stored
     in device sub-directories, because most netlists formats are device specific.
     For example the IP core ``PoC.arith.prng`` created from source file
-    ``src\arith\arith_prng.vhdl`` generated for a Kintex-7 325T mounted on a
-    KC705 board will be copied to ``netlist\XC7K325T-2FFG900\arith\arith_prng.ngc``
+    ``src\arith\arith_PRNG.vhdl`` generated for a Kintex-7 325T mounted on a
+    KC705 board will be copied to ``netlist\XC7K325T-2FFG900\arith\arith_PRNG.ngc``
     if Xilinx ISE XST is used for synthesis.
 * ``py``
     The supporting Python infrastructure, the configuration files and the IP
@@ -152,19 +152,19 @@ Other implementation variants are:
 +============================+===============================================+
 | Fully Qualified Name       | PoC.mem.ocram.tdp                             |
 +----------------------------+-----------------------------------------------+
-| VHDL entity name           | ocram_tdp                                     |
+| VHDL entity name           | ocram_TrueDualPort                            |
 +----------------------------+-----------------------------------------------+
-| File name                  | ocram_tdp.vhdl                                |
+| File name                  | ocram_TrueDualPort.vhdl                       |
 +----------------------------+-----------------------------------------------+
-| IP Core Description File   | \\src\\mem\\ocram\\ocram_tdp.files            |
+| IP Core Description File   | \\src\\mem\\ocram\\ocram_TrueDualPort.files   |
 +----------------------------+-----------------------------------------------+
-| Source File Location       | \\src\\mem\\ocram\\ocram_tdp.vhdl             |
+| Source File Location       | \\src\\mem\\ocram\\ocram_TrueDualPort.vhdl    |
 +----------------------------+-----------------------------------------------+
-| Testbench Location         | \\tb\\mem\\ocram\\ocram_tdp_tb.vhdl           |
+| Testbench Location         | \\tb\\mem\\ocram\\ocram_TrueDualPort_tb.vhdl  |
 +----------------------------+-----------------------------------------------+
-| Testbench Description File | \\tb\\mem\\ocram\\ocram_tdp_tb.files          |
+| Testbench Description File | \\tb\\mem\\ocram\\ocram_TrueDualPort_tb.files |
 +----------------------------+-----------------------------------------------+
-| Waveform Description Files | \\sim\\mem\\ocram\\ocram_tdp_tb.*             |
+| Waveform Description Files | \\sim\\mem\\ocram\\ocram_TrueDualPort_tb.*    |
 +----------------------------+-----------------------------------------------+
 
 

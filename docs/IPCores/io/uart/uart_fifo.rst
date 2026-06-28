@@ -1,22 +1,22 @@
-.. _IP/uart_fifo:
+.. _IP/uart_FIFO:
 
-PoC.io.uart.fifo
+PoC.io.uart.FIFO
 ################
 
 .. only:: html
 
    .. |gh-src| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/src/io/uart/uart_fifo.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/src/io/uart/uart_FIFO.vhdl
                :alt: Source Code on GitHub
    .. |gh-tb| image:: /_static/logos/GitHub-Mark-32px.png
                :scale: 40
-               :target: https://github.com/VLSI-EDA/PoC/blob/master/tb/io/uart/uart_fifo_tb.vhdl
+               :target: https://github.com/VHDL/PoC/blob/main/tb/io/uart/uart_fifo_tb.vhdl
                :alt: Source Code on GitHub
 
    .. sidebar:: GitHub Links
 
-      * |gh-src| :pocsrc:`Sourcecode <io/uart/uart_fifo.vhdl>`
+      * |gh-src| :pocsrc:`Sourcecode <io/uart/uart_FIFO.vhdl>`
       * |gh-tb| :poctb:`Testbench <io/uart/uart_fifo_tb.vhdl>`
 
 Small :abbr:`FIFO (first-in, first-out)` s are included in this module, if
@@ -33,7 +33,7 @@ old comments:
 
 .. rubric:: Entity Declaration:
 
-.. literalinclude:: ../../../../src/io/uart/uart_fifo.vhdl
+.. literalinclude:: ../../../../src/io/uart/uart_FIFO.vhdl
    :language: vhdl
    :tab-width: 2
    :linenos:
@@ -43,4 +43,4 @@ old comments:
 
 .. only:: latex
 
-   Source file: :pocsrc:`io/uart/uart_fifo.vhdl <io/uart/uart_fifo.vhdl>`
+   Source file: :pocsrc:`io/uart/uart_FIFO.vhdl <io/uart/uart_FIFO.vhdl>`

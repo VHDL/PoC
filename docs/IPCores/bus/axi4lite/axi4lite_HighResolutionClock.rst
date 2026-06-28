@@ -3,7 +3,7 @@
    single: AXI4-Lite; axi4lite_HighResolutionClock
 
 axi4lite_HighResolutionClock
-###########################
+############################
 
 Based on :ref:`IP/axi4lite_Register`, :ref:`IP/clock_highresolution`
 

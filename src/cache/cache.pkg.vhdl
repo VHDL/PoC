@@ -1,22 +1,22 @@
 -- =============================================================================
--- Authors:					Patrick Lehmann
+-- Authors:          Patrick Lehmann
 --
--- Package:					Cache functions and types
+-- Package:          Cache functions and types
 --
 -- Description:
 -- -------------------------------------
---		For detailed documentation see below.
+--    For detailed documentation see below.
 --
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
---										 Chair of VLSI-Design, Diagnostics and Architecture
+--                     Chair of VLSI-Design, Diagnostics and Architecture
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,13 +25,13 @@
 -- limitations under the License.
 -- =============================================================================
 
-library	IEEE;
+library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
 package cache is
 	-- cache-lookup Result
-	type T_CACHE_RESULT	is (CACHE_RESULT_NONE, CACHE_RESULT_HIT, CACHE_RESULT_MISS);
+	type T_CACHE_RESULT  is (CACHE_RESULT_NONE, CACHE_RESULT_HIT, CACHE_RESULT_MISS);
 
 	function to_Cache_Result(CacheHit : std_logic; CacheMiss : std_logic) return T_CACHE_RESULT;
 

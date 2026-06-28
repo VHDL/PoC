@@ -28,8 +28,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     IEEE.NUMERIC_STD.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.vectors.all;
@@ -580,15 +580,15 @@ package net is
 		Ingress : T_NET_UDP_PORT;           -- incoming port number
 		Egress  : T_NET_UDP_PORT;           -- outgoing port number
 	end record;
-	type		T_NET_UDP_PORTRANGE is record
-		Lower			: T_NET_UDP_PORT;				-- incoming port number
-		Upper			: T_NET_UDP_PORT;				-- outgoing port number
+	type    T_NET_UDP_PORTRANGE is record
+		Lower      : T_NET_UDP_PORT;        -- incoming port number
+		Upper      : T_NET_UDP_PORT;        -- outgoing port number
 	end record;
 
 	type T_NET_UDP_PORTPAIR_VECTOR is array(natural range <>) of T_NET_UDP_PORTPAIR;
 
-	type		T_NET_UDP_PORTRANGE_V         is array(natural range <>) of T_NET_UDP_PORTRANGE;
-	type		T_NET_UDP_PORTRANGE_M					is array(natural range <>, natural range <>) of T_NET_UDP_PORTRANGE;
+	type    T_NET_UDP_PORTRANGE_V         is array(natural range <>) of T_NET_UDP_PORTRANGE;
+	type    T_NET_UDP_PORTRANGE_M          is array(natural range <>, natural range <>) of T_NET_UDP_PORTRANGE;
 
 
 	function get_NET_UDP_Ingress_Ports (Portpair : T_NET_UDP_PORTPAIR_VECTOR) return T_NET_UDP_PORT_VECTOR;
@@ -740,7 +740,7 @@ package net is
 	-- ==========================================================================================================================================================
 	-- MAC Control, Pause Frames, Ethernet Flow Control
 	-- ==========================================================================================================================================================
---	C_NET_MAC_ETHERNETTYPE_MACCONTROL --Ethernet type
+--  C_NET_MAC_ETHERNETTYPE_MACCONTROL --Ethernet type
 	constant C_NET_MAC_MAC_CONTROL                    : T_NET_MAC_ADDRESS  ;
 	constant C_NET_MAC_MAC_CONTROL_OPCODE_PAUSE_FRAME : T_SLV_16               := 16x"1";
 	constant C_NET_MAC_PAUSE_FRAME                    : std_logic_vector(16 * 8 -1 downto 0) ;
@@ -758,7 +758,7 @@ package net is
 		Open_Interface      : T_Open_Interface;           -- Describe if Interface should open a new underlying Port
 	end record;
 
-	type		T_Interface_Description    is array(natural range <>) of T_Interface_Description_i;
+	type    T_Interface_Description    is array(natural range <>) of T_Interface_Description_i;
 
 end package;
 
@@ -772,37 +772,37 @@ package body net is
 	function init return T_NET_ETH_PHY_INTERFACE_GMII_F2P is
 	begin
 		return (
-		  TX_Clock => 'Z',
-		  TX_Valid => 'Z',
-		  TX_Data  => (others => 'Z'),
-		  TX_Error => 'Z'
-		  );
+			TX_Clock => 'Z',
+			TX_Valid => 'Z',
+			TX_Data  => (others => 'Z'),
+			TX_Error => 'Z'
+			);
 	end function;
 	function init return T_NET_ETH_PHY_INTERFACE_GMII_P2F is
 	begin
 		return (
-		  RX_RefClock => 'Z',
-		  RX_Clock    => 'Z',
-		  RX_Valid    => 'Z',
-		  RX_Data     => (others => 'Z'),
-		  RX_Error    => 'Z'
-		  );
+			RX_RefClock => 'Z',
+			RX_Clock    => 'Z',
+			RX_Valid    => 'Z',
+			RX_Data     => (others => 'Z'),
+			RX_Error    => 'Z'
+			);
 	end function;
 	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_F2P is
 		variable temp : T_NET_ETH_PHY_INTERFACE_SGMII_F2P(TX_Lane(0 to Lanes -1)) := (
-		  DGB_AutoNeg_Restart  => 'Z',
-		  SGMII_TXRefClock_Out => 'Z',
-		  SGMII_RXRefClock_Out => 'Z',
-		  TX_Lane              => (0 to Lanes -1 => C_IO_LVDS_INIT)
+			DGB_AutoNeg_Restart  => 'Z',
+			SGMII_TXRefClock_Out => 'Z',
+			SGMII_RXRefClock_Out => 'Z',
+			TX_Lane              => (0 to Lanes -1 => C_IO_LVDS_INIT)
 		);
 	begin
 		return temp;
 	end function;
 	function init(Lanes : natural) return T_NET_ETH_PHY_INTERFACE_SGMII_P2F is
 		variable temp : T_NET_ETH_PHY_INTERFACE_SGMII_P2F(RX_Lane(0 to Lanes -1)) := (
-		  DGB_SystemClock_In  => 'Z',
-		  SGMII_RefClock_In   => C_IO_LVDS_INIT,
-		  RX_Lane             => (0 to Lanes -1 => C_IO_LVDS_INIT)
+			DGB_SystemClock_In  => 'Z',
+			SGMII_RefClock_In   => C_IO_LVDS_INIT,
+			RX_Lane             => (0 to Lanes -1 => C_IO_LVDS_INIT)
 		);
 	begin
 		return temp;
@@ -810,32 +810,32 @@ package body net is
 	function init return T_NET_ETH_PHY_INTERFACE_RGMII_F2P is
 	begin
 		return (
-		  RX_RefClock => 'Z',
-		  TX_Clock    => 'Z',
-		  TX_Data     => (others => 'Z'),
-		  TX_Control  => 'Z'
-		  );
+			RX_RefClock => 'Z',
+			TX_Clock    => 'Z',
+			TX_Data     => (others => 'Z'),
+			TX_Control  => 'Z'
+			);
 	end function;
 	function init return T_NET_ETH_PHY_INTERFACE_RGMII_P2F is
 	begin
 		return (
 		--      RX_RefClock => 'Z',
-		  RX_Clock   => 'Z',
-		  RX_Data    => (others => 'Z'),
-		  RX_Control => 'Z'
-		  );
+			RX_Clock   => 'Z',
+			RX_Data    => (others => 'Z'),
+			RX_Control => 'Z'
+			);
 	end function;
 
 
 	function to_net_eth_RSDataInterface(str : string) return T_NET_ETH_RS_DATA_INTERFACE is
 	begin
 		for i in T_NET_ETH_RS_DATA_INTERFACE loop
-		  --report "Trimmed RS_DATA_INTERFACE: '" & T_NET_ETH_RS_DATA_INTERFACE'image(i)(27 to str_length(T_NET_ETH_RS_DATA_INTERFACE'image(i))) & "'" severity warning;  --test
-		  if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_RS_DATA_INTERFACE'image(i)))
+			--report "Trimmed RS_DATA_INTERFACE: '" & T_NET_ETH_RS_DATA_INTERFACE'image(i)(27 to str_length(T_NET_ETH_RS_DATA_INTERFACE'image(i))) & "'" severity warning;  --test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_RS_DATA_INTERFACE'image(i)))
 			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_RS_DATA_INTERFACE'image(i)(str_low(T_NET_ETH_RS_DATA_INTERFACE'image(i))+26 to str_low(T_NET_ETH_RS_DATA_INTERFACE'image(i))+str_length(T_NET_ETH_RS_DATA_INTERFACE'image(i))-1))) then  --start from char 26 to get rid of prefix
 			--report "RS_DATA_INTERFACE: '" & T_NET_ETH_RS_DATA_INTERFACE'image(i) & "'" severity warning;  --test
 			return i;
-		  end if;
+			end if;
 		end loop;
 		report "Unknown RS_DATA_INTERFACE: '" & str & "'" severity failure;
 		return NET_ETH_RS_DATA_INTERFACE_EMPTY;
@@ -844,12 +844,12 @@ package body net is
 	function to_net_eth_PHYDataInterface(str : string) return T_NET_ETH_PHY_DATA_INTERFACE is
 	begin
 		for i in T_NET_ETH_PHY_DATA_INTERFACE loop
-		  --report "Trimmed PHY_DATA_INTERFACE: '" & T_NET_ETH_PHY_DATA_INTERFACE'image(i)(28 to str_length(T_NET_ETH_PHY_DATA_INTERFACE'image(i))) & "'" severity warning; --test
-		  if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DATA_INTERFACE'image(i)))
+			--report "Trimmed PHY_DATA_INTERFACE: '" & T_NET_ETH_PHY_DATA_INTERFACE'image(i)(28 to str_length(T_NET_ETH_PHY_DATA_INTERFACE'image(i))) & "'" severity warning; --test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DATA_INTERFACE'image(i)))
 			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DATA_INTERFACE'image(i)(str_low(T_NET_ETH_PHY_DATA_INTERFACE'image(i))+27 to str_low(T_NET_ETH_PHY_DATA_INTERFACE'image(i))+str_length(T_NET_ETH_PHY_DATA_INTERFACE'image(i))-1))) then  --start from char 27 to get rid of prefix
 			--report "PHY_DATA_INTERFACE: '" & T_NET_ETH_PHY_DATA_INTERFACE'image(i) & "'" severity warning;  --test
 			return i;
-		  end if;
+			end if;
 		end loop;
 		report "Unknown PHY_DATA_INTERFACE: '" & str & "'" severity failure;
 		return NET_ETH_PHY_DATA_INTERFACE_EMPTY;
@@ -858,12 +858,12 @@ package body net is
 	function to_net_eth_PHYManagementInterface(str : string) return T_NET_ETH_PHY_MANAGEMENT_INTERFACE is
 	begin
 		for i in T_NET_ETH_PHY_MANAGEMENT_INTERFACE loop
-		  --report "Trimmed PHY_MANAGEMENT_INTERFACE: '" & T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)(34 to str_length(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))) & "'" severity warning; --test
-		  if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)))
+			--report "Trimmed PHY_MANAGEMENT_INTERFACE: '" & T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)(34 to str_length(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))) & "'" severity warning; --test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)))
 			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i)(str_low(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))+33 to str_low(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))+str_length(T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i))-1))) then  --start from char 33 to get rid of prefix
 			--report "PHY_MANAGEMENT_INTERFACE: '" & T_NET_ETH_PHY_MANAGEMENT_INTERFACE'image(i) & "'" severity warning;  --test
 			return i;
-		  end if;
+			end if;
 		end loop;
 		report "Unknown PHY_MANAGEMENT_INTERFACE: '" & str & "'" severity failure;
 		return NET_ETH_PHY_MANAGEMENT_INTERFACE_EMPTY;
@@ -872,12 +872,12 @@ package body net is
 	function to_net_eth_PHYDevice(str : string) return T_NET_ETH_PHY_DEVICE is
 	begin
 		for i in T_NET_ETH_PHY_DEVICE loop
-		  --report "Trimmed PHY_DEVICE: '" & T_NET_ETH_PHY_DEVICE'image(i)(20 to str_length(T_NET_ETH_PHY_DEVICE'image(i))) & "'" severity warning; --test
-		  if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DEVICE'image(i)))
+			--report "Trimmed PHY_DEVICE: '" & T_NET_ETH_PHY_DEVICE'image(i)(20 to str_length(T_NET_ETH_PHY_DEVICE'image(i))) & "'" severity warning; --test
+			if str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DEVICE'image(i)))
 			or str_imatch(str_toUpper(str), str_toUpper(T_NET_ETH_PHY_DEVICE'image(i)(str_low(T_NET_ETH_PHY_DEVICE'image(i))+19 to str_low(T_NET_ETH_PHY_DEVICE'image(i))+str_length(T_NET_ETH_PHY_DEVICE'image(i))-1))) then  --start from char 19 to get rid of prefix
 			--report "PHY_DEVICE: '" & T_NET_ETH_PHY_DEVICE'image(i) & "'" severity warning;  --test
 			return i;
-		  end if;
+			end if;
 		end loop;
 		report "Unknown PHY_DEVICE: '" & str & "'" severity failure;
 		return NET_ETH_PHY_DEVICE_EMPTY;
@@ -888,11 +888,11 @@ package body net is
 		variable count : natural := 0;
 	begin
 		for i in MACConfiguration'range loop
-		  for j in MACConfiguration(i).TypeSwitch'range loop
+			for j in MACConfiguration(i).TypeSwitch'range loop
 			if (MACConfiguration(i).TypeSwitch(j) /= C_NET_MAC_ETHERNETTYPE_EMPTY) then
-			  count := count + 1;
+				count := count + 1;
 			end if;
-		  end loop;
+			end loop;
 		end loop;
 
 		return count;
@@ -905,7 +905,7 @@ package body net is
 		variable mac : T_NET_MAC_ADDRESS;
 	begin
 		for i in 0 to 5 loop
-		  mac(i) := slv(((i * 8) + 7) downto (i * 8));
+			mac(i) := slv(((i * 8) + 7) downto (i * 8));
 		end loop;
 		return mac;
 	end function;
@@ -915,7 +915,7 @@ package body net is
 	begin
 		if (slvv'length /= 6) then report "to_net_mac_address: vector-length mismatch - slvv'length=" & integer'image(slvv'length) severity error; end if;
 		for i in slvv'range loop
-		  mac(i) := slvv(i);
+			mac(i) := slvv(i);
 		end loop;
 		return mac;
 	end function;
@@ -932,16 +932,16 @@ package body net is
 		--    report "mac_split of " & str severity NOTE;
 		for i in str'reverse_range loop
 		--      report "  char=" & input(i) severity NOTE;
-		  if (to_digit(input(i), 'h') /= -1) then
+			if (to_digit(input(i), 'h') /= -1) then
 			Segments(SegmentPointer)(CharPointer) := input(i);
 		--        report "    copy to seg=" & INTEGER'image(SegmentPointer) & "  pos=" & INTEGER'image(CharPointer) severity NOTE;
 			CharPointer                           := CharPointer - 1;
-		  elsif ((input(i) = ':') or (input(i) = '-')) then
+			elsif ((input(i) = ':') or (input(i) = '-')) then
 			SegmentPointer := SegmentPointer + 1;
 			CharPointer    := 2;
-		  else
+			else
 			report "ERROR - unknown char [" & input(i) & "]" severity error;
-		  end if;
+			end if;
 		end loop;
 
 		return Segments;
@@ -954,7 +954,7 @@ package body net is
 		variable MAC      : T_NET_MAC_ADDRESS;
 	begin
 		for i in Segments'range loop
-		  MAC(i) := to_slv(to_natural_hex(Segments(i)), 8);
+			MAC(i) := to_slv(to_natural_hex(Segments(i)), 8);
 		end loop;
 		return MAC;
 	end function;
@@ -963,7 +963,7 @@ package body net is
 		variable EthType : T_NET_MAC_ETHERNETTYPE;
 	begin
 		for i in 0 to 1 loop
-		  EthType(i) := slv(((i * 8) + 7) downto (i * 8));
+			EthType(i) := slv(((i * 8) + 7) downto (i * 8));
 		end loop;
 		return EthType;
 	end function;
@@ -972,7 +972,7 @@ package body net is
 		variable slv : T_SLV_48;
 	begin
 		for i in 0 to 5 loop
-		  slv(((i * 8) + 7) downto (i * 8)) := mac(i);
+			slv(((i * 8) + 7) downto (i * 8)) := mac(i);
 		end loop;
 		return slv;
 	end function;
@@ -981,7 +981,7 @@ package body net is
 		variable slv : T_SLV_16;
 	begin
 		for i in 0 to 1 loop
-		  slv(((i * 8) + 7) downto (i * 8)) := EthType(i);
+			slv(((i * 8) + 7) downto (i * 8)) := EthType(i);
 		end loop;
 		return slv;
 	end function;
@@ -1000,7 +1000,7 @@ package body net is
 		variable slvv : T_SLVV_8(mac'range);
 	begin
 		for i in mac'range loop
-		  slvv(i) := mac(i);
+			slvv(i) := mac(i);
 		end loop;
 		return slvv;
 	end function;
@@ -1009,7 +1009,7 @@ package body net is
 		variable slvv : T_SLVV_8(EthType'range);
 	begin
 		for i in EthType'range loop
-		  slvv(i) := EthType(i);
+			slvv(i) := EthType(i);
 		end loop;
 		return slvv;
 	end function;
@@ -1018,7 +1018,7 @@ package body net is
 		variable str : string(1 to 18) := (others => ':');
 	begin
 		for i in 0 to 5 loop
-		  str((i * 3) + 1 to (i * 3) + 2) := to_string(mac(5 - i), 'h');
+			str((i * 3) + 1 to (i * 3) + 2) := to_string(mac(5 - i), 'h');
 		end loop;
 		return str(1 to 17);
 	end function;
@@ -1040,31 +1040,31 @@ package body net is
 	function to_string(EthType : T_NET_MAC_ETHERNETTYPE) return string is
 	begin
 		if EthType = C_NET_MAC_ETHERNETTYPE_EMPTY then
-		  return "Empty";
+			return "Empty";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_ARP then
-		  return "ARP";
+			return "ARP";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_IPV4 then
-		  return "IPv4";
+			return "IPv4";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_IPV6 then
-		  return "IPv6";
+			return "IPv6";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_JUMBOFRAMES then
-		  return "Jumbo";
+			return "Jumbo";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_MACCONTROL then
-		  return "MACControl";
+			return "MACControl";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_QINQ then
-		  return "QinQ";
+			return "QinQ";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_SNMP then
-		  return "SNMP";
+			return "SNMP";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_VLAN then
-		  return "VLAN";
+			return "VLAN";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_WOL then
-		  return "WOL";
+			return "WOL";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_SWAP then
-		  return "Swap";
+			return "Swap";
 		elsif EthType = C_NET_MAC_ETHERNETTYPE_LOOPBACK then
-		  return "LoopBack";
+			return "LoopBack";
 		else
-		  return "0x" & to_string(to_slv(EthType), 'h');
+			return "0x" & to_string(to_slv(EthType), 'h');
 		end if;
 	end function;
 
@@ -1074,11 +1074,11 @@ package body net is
 	function get_IP_Address_Bits(version : integer) return integer is
 	begin
 		if version = 4 then
-		  return 32;
+			return 32;
 		elsif version = 6 then
-		  return 128;
+			return 128;
 		else
-		  return 0;
+			return 0;
 		end if;
 	end function;
 	-- ==========================================================================================================================================================
@@ -1088,7 +1088,7 @@ package body net is
 		variable ip : T_NET_IPV4_ADDRESS;
 	begin
 		for i in 0 to 3 loop
-		  ip(i) := slv(((i * 8) + 7) downto (i * 8));
+			ip(i) := slv(((i * 8) + 7) downto (i * 8));
 		end loop;
 		return ip;
 	end function;
@@ -1105,16 +1105,16 @@ package body net is
 		--    report "ipv4_split of " & str severity NOTE;
 		for i in str'reverse_range loop
 		--      report "  char=" & input(i) severity NOTE;
-		  if (to_digit(input(i), 'd') /= -1) then
+			if (to_digit(input(i), 'd') /= -1) then
 			Segments(SegmentPointer)(CharPointer) := input(i);
 		--        report "    copy to seg=" & INTEGER'image(SegmentPointer) & "  pos=" & INTEGER'image(CharPointer) severity NOTE;
 			CharPointer                           := CharPointer - 1;
-		  elsif (input(i) = '.') then
+			elsif (input(i) = '.') then
 			SegmentPointer := SegmentPointer + 1;
 			CharPointer    := 3;
-		  else
+			else
 			report "ERROR - unknown char" severity error;
-		  end if;
+			end if;
 		end loop;
 
 		return Segments;
@@ -1128,7 +1128,7 @@ package body net is
 		variable IP       : T_NET_IPV4_ADDRESS;
 	begin
 		for i in Segments'range loop
-		  IP(i) := to_slv(to_natural_dec(Segments(i)), 8);
+			IP(i) := to_slv(to_natural_dec(Segments(i)), 8);
 		end loop;
 		return IP;
 	end function;
@@ -1147,7 +1147,7 @@ package body net is
 		variable slv : T_SLV_32;
 	begin
 		for i in 0 to 3 loop
-		  slv(((i * 8) + 7) downto (i * 8)) := ip(i);
+			slv(((i * 8) + 7) downto (i * 8)) := ip(i);
 		end loop;
 		return slv;
 	end function;
@@ -1179,7 +1179,7 @@ package body net is
 		variable slvv : T_SLVV_8(ip'range);
 	begin
 		for i in ip'range loop
-		  slvv(i) := ip(i);
+			slvv(i) := ip(i);
 		end loop;
 		return slvv;
 	end function;
@@ -1195,10 +1195,10 @@ package body net is
 		for i in 3 downto 0 loop
 		--      report "  I=" & INTEGER'image(i) & "  IP(i)=" & INTEGER'image(to_integer(unsigned(IP(i)))) & "  CP=" & INTEGER'image(CharPointer) severity NOTE;
 
-		  str                                        := resize(integer'image(to_integer(unsigned(IP(i)))), str'length);
-		  len                                        := str_length(str);
-		  temp(CharPointer to CharPointer + len - 1) := str(1 to len);
-		  CharPointer                                := CharPointer + len + 1;
+			str                                        := resize(integer'image(to_integer(unsigned(IP(i)))), str'length);
+			len                                        := str_length(str);
+			temp(CharPointer to CharPointer + len - 1) := str(1 to len);
+			CharPointer                                := CharPointer + len + 1;
 		end loop;
 
 		return temp(1 to CharPointer - 2);
@@ -1211,7 +1211,7 @@ package body net is
 		variable ip : T_NET_IPV6_ADDRESS;
 	begin
 		for i in 0 to 15 loop
-		  ip(i) := slv(((i * 8) + 7) downto (i * 8));
+			ip(i) := slv(((i * 8) + 7) downto (i * 8));
 		end loop;
 
 		return ip;
@@ -1232,31 +1232,31 @@ package body net is
 
 		for i in str'reverse_range loop
 		--      report "  char=" & input(i) severity NOTE;
-		  if (to_digit(input(i), 'h') /= -1) then
+			if (to_digit(input(i), 'h') /= -1) then
 			Segments(SegmentPointer)(CharPointer) := input(i);
 		--        report "    copy to seg=" & INTEGER'image(SegmentPointer) & "  pos=" & INTEGER'image(CharPointer) severity NOTE;
 			CharPointer                           := CharPointer - 1;
 			DelimiterPointer                      := 0;
-		  elsif (input(i) = ':') then
+			elsif (input(i) = ':') then
 			if (DelimiterPointer = 0) then
-			  SegmentPointer   := SegmentPointer + 1;
-			  CharPointer      := 4;
-			  DelimiterPointer := i;
+				SegmentPointer   := SegmentPointer + 1;
+				CharPointer      := 4;
+				DelimiterPointer := i;
 			else
-			  -- count remaining segments-delimiters
-			  for j in i - 1 downto input'low loop
+				-- count remaining segments-delimiters
+				for j in i - 1 downto input'low loop
 				if (input(j) = ':') then
-				  RemainingDelimiters := RemainingDelimiters + 1;
+					RemainingDelimiters := RemainingDelimiters + 1;
 				end if;
-			  end loop;
+				end loop;
 		--          report "    lookahead rem-del=" & INTEGER'image(RemainingDelimiters) severity NOTE;
-			  SegmentPointer   := 7 - RemainingDelimiters;
-			  CharPointer      := 4;
-			  DelimiterPointer := 0;
+				SegmentPointer   := 7 - RemainingDelimiters;
+				CharPointer      := 4;
+				DelimiterPointer := 0;
 			end if;
-		  else
+			else
 			report "    ERROR - unknown char" severity error;
-		  end if;
+			end if;
 		end loop;
 
 		return Segments;
@@ -1268,9 +1268,9 @@ package body net is
 		variable IP       : T_NET_IPV6_ADDRESS;
 	begin
 		for i in Segments'range loop
-		  Segment         := to_slv(to_natural_hex(Segments(i)), 16);
-		  IP(i * 2)       := Segment(7 downto 0);
-		  IP((i * 2) + 1) := Segment(15 downto 8);
+			Segment         := to_slv(to_natural_hex(Segments(i)), 16);
+			IP(i * 2)       := Segment(7 downto 0);
+			IP((i * 2) + 1) := Segment(15 downto 8);
 		end loop;
 		return IP;
 	end function;
@@ -1282,10 +1282,10 @@ package body net is
 		variable Len         : natural;
 	begin
 		for i in str'reverse_range loop
-		  if (str(i) = '/') then
+			if (str(i) = '/') then
 			Pos := i;
 			exit;
-		  end if;
+			end if;
 		end loop;
 
 		if (Pos = str'high) then report "syntax error in IPv6 prefix: " & str severity error; end if;
@@ -1305,7 +1305,7 @@ package body net is
 		variable slv : T_SLV_128;
 	begin
 		for i in 0 to 15 loop
-		  slv(((i * 8) + 7) downto (i * 8)) := ip(i);
+			slv(((i * 8) + 7) downto (i * 8)) := ip(i);
 		end loop;
 		return slv;
 	end function;
@@ -1314,7 +1314,7 @@ package body net is
 		variable slvv : T_SLVV_8(ip'range);
 	begin
 		for i in ip'range loop
-		  slvv(i) := ip(i);
+			slvv(i) := ip(i);
 		end loop;
 		return slvv;
 	end function;
@@ -1327,9 +1327,9 @@ package body net is
 		variable copy : boolean := false;
 	begin
 		for i in 7 downto 0 loop
-		  temp(CharPointer + 0 to CharPointer + 1) := to_string(IP((i * 2) + 1), 'h');
-		  temp(CharPointer + 2 to CharPointer + 3) := to_string(IP(i * 2), 'h');
-		  CharPointer                              := CharPointer + 5;
+			temp(CharPointer + 0 to CharPointer + 1) := to_string(IP((i * 2) + 1), 'h');
+			temp(CharPointer + 2 to CharPointer + 3) := to_string(IP(i * 2), 'h');
+			CharPointer                              := CharPointer + 5;
 		end loop;
 
 		-- compress string - remove leading zeros
@@ -1338,21 +1338,21 @@ package body net is
 		for i in temp'range loop
 		--      report "  I=" & INTEGER'image(i) & "  char=" & temp(i) & "  CP=" & INTEGER'image(CharPointer) & "  copy=" & to_string(copy) severity NOTE;
 
-		  if (copy = false) then
+			if (copy = false) then
 			if ((temp(i) = '0') and (temp(i + 1) /= ':')) then
-			  null;
+				null;
 			else
-			  temp(CharPointer) := temp(i);
-			  CharPointer       := CharPointer + 1;
-			  copy              := true;
+				temp(CharPointer) := temp(i);
+				CharPointer       := CharPointer + 1;
+				copy              := true;
 			end if;
-		  else
+			else
 			if (temp(i) = ':') then
-			  copy := false;
+				copy := false;
 			end if;
 			temp(CharPointer) := temp(i);
 			CharPointer       := CharPointer + 1;
-		  end if;
+			end if;
 		end loop;
 
 		return temp(1 to CharPointer - 2);
@@ -1370,7 +1370,7 @@ package body net is
 		variable result : T_NET_UDP_PORT_VECTOR(Portpair'range);
 	begin
 		for i in Portpair'range loop
-		  result(i) := Portpair(i).Ingress;
+			result(i) := Portpair(i).Ingress;
 		end loop;
 
 		return result;
@@ -1380,7 +1380,7 @@ package body net is
 		variable result : T_NET_UDP_PORT_VECTOR(Portpair'range);
 	begin
 		for i in Portpair'range loop
-		  result(i) := Portpair(i).Egress;
+			result(i) := Portpair(i).Egress;
 		end loop;
 
 		return result;
@@ -1408,20 +1408,20 @@ package body net is
 
 	constant C_TEST_NET_MAC_CONFIGURATION : T_NET_MAC_CONFIGURATION_VECTOR := (
 	0                    => (  -----eth0--------------------------------------------------
-	  --MAC Address = AA:BB:CC:DD:EE:FF
-	  Interface          => (Address => (x"AA", x"BB", x"CC", x"DD", x"EE", x"FF"),
+		--MAC Address = AA:BB:CC:DD:EE:FF
+		Interface          => (Address => (x"AA", x"BB", x"CC", x"DD", x"EE", x"FF"),
 					Mask => C_NET_MAC_MASK_DEFAULT),
-	  SourceFilter       => (
+		SourceFilter       => (
 		0                => (Address => (x"50", x"E5", x"49", x"52", x"F1", x"C8"),
-			  Mask       => C_NET_MAC_MASK_EMPTY),
+				Mask       => C_NET_MAC_MASK_EMPTY),
 		others           => (Address => C_NET_MAC_ADDRESS_EMPTY,
-				   Mask  => C_NET_MAC_MASK_EMPTY)),
-	  TypeSwitch         => (
+					 Mask  => C_NET_MAC_MASK_EMPTY)),
+		TypeSwitch         => (
 		--0 =>          C_NET_MAC_ETHERNETTYPE_LOOPBACK,
 		--1 =>          C_NET_MAC_ETHERNETTYPE_ARP,
 		0                => C_NET_MAC_ETHERNETTYPE_IPV4,
 		others           => C_NET_MAC_ETHERNETTYPE_EMPTY)
-	  )
+		)
 	);
 
 

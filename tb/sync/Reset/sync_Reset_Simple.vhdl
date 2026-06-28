@@ -19,7 +19,7 @@
 -- you may not use this file except in compliance with the License.
 -- You may obtain a copy of the License at
 --
---		http://www.apache.org/licenses/LICENSE-2.0
+--    http://www.apache.org/licenses/LICENSE-2.0
 --
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
@@ -75,7 +75,7 @@ begin
 	begin
 		-- Initialize
 		Input <= '0';
-		
+
 		WaitForClock(Clock1, 4);
 
 		-- Short reset pulse
@@ -130,7 +130,7 @@ begin
 		end loop;
 
 		-- Should see at least 1 Output high transition based on stimuli
-		AffirmIf(ProcID, OutputHighCnt >= 1, 
+		AffirmIf(ProcID, OutputHighCnt >= 1,
 			"Expected at least 1 Output high transition, got " & integer'image(OutputHighCnt));
 
 		WaitForBarrier(TestDone);

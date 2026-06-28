@@ -1,0 +1,125 @@
+-- =============================================================================
+-- Authors:         Thomas B. Preusser
+--                  Gustavo Martin
+--
+-- Entity:          arith_Scaler_TestHarness
+--
+-- Description:
+-- -------------------------------------
+-- Test harness for arith_Scaler
+--
+-- License:
+-- =============================================================================
+-- Copyright 2025-2026 The PoC-Library Authors
+-- Copyright 2007-2016 Technische Universität Dresden - Germany
+--                     Chair of VLSI-Design, Diagnostics and Architecture
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--    http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- =============================================================================
+
+library IEEE;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
+
+library osvvm;
+context osvvm.OsvvmContext;
+
+library PoC;
+use     PoC.utils.all;
+use     PoC.physical.all;
+
+entity arith_Scaler_TestHarness is
+end entity;
+
+architecture TestHarness of arith_Scaler_TestHarness is
+	constant TPERIOD_CLOCK : time := 10 ns;
+	constant MULS : positive_vector := (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+	constant DIVS : positive_vector := (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+	constant ARG_WIDTH : positive := 8;
+
+	signal Clock : std_logic := '1';
+	signal Reset : std_logic := '1';
+
+	signal start : std_logic := '0';
+	signal arg   : std_logic_vector(ARG_WIDTH-1 downto 0) := (others => '0');
+	signal msel  : std_logic_vector(log2ceil(MULS'length)-1 downto 0) := (others => '0');
+	signal dsel  : std_logic_vector(log2ceil(DIVS'length)-1 downto 0) := (others => '0');
+	signal done  : std_logic;
+	signal res   : std_logic_vector(ARG_WIDTH-1 downto 0);
+
+	component arith_Scaler_TestController is
+		generic (
+			MULS      : positive_vector;
+			DIVS      : positive_vector;
+			ARG_WIDTH : positive
+		);
+		port (
+			Clock : in  std_logic;
+			Reset : in  std_logic;
+			start : out std_logic;
+			arg   : out std_logic_vector(ARG_WIDTH-1 downto 0);
+			msel  : out std_logic_vector(log2ceil(MULS'length)-1 downto 0);
+			dsel  : out std_logic_vector(log2ceil(DIVS'length)-1 downto 0);
+			done  : in  std_logic;
+			res   : in  std_logic_vector(ARG_WIDTH-1 downto 0)
+		);
+	end component;
+
+begin
+
+	Osvvm.ClockResetPkg.CreateClock(
+		Clk    => Clock,
+		Period => TPERIOD_CLOCK
+	);
+
+	Osvvm.ClockResetPkg.CreateReset(
+		Reset       => Reset,
+		ResetActive => '1',
+		Clk         => Clock,
+		Period      => 5 * TPERIOD_CLOCK,
+		tpd         => 0 ns
+	);
+
+	UUT: entity PoC.arith_Scaler
+		generic map (
+			MULTIPLIERS => MULS,
+			DIVISORS => DIVS
+		)
+		port map (
+			Clock   => Clock,
+			Reset   => Reset,
+			Start => start,
+			Operand   => arg,
+			MultiplierSelect  => msel,
+			DivisorSelect  => dsel,
+			Done  => done,
+			Result   => res
+		);
+
+	TestCtrl: component arith_Scaler_TestController
+		generic map (
+			MULS      => MULS,
+			DIVS      => DIVS,
+			ARG_WIDTH => ARG_WIDTH
+		)
+		port map (
+			Clock => Clock,
+			Reset => Reset,
+			start => start,
+			arg   => arg,
+			msel  => msel,
+			dsel  => dsel,
+			done  => done,
+			res   => res
+		);
+end architecture;

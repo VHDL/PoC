@@ -27,8 +27,8 @@
 -- =============================================================================
 
 library IEEE;
-use     IEEE.STD_LOGIC_1164.all;
-use     ieee.numeric_std.all;
+use     IEEE.std_logic_1164.all;
+use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 use     work.vectors.all;
@@ -82,7 +82,7 @@ architecture rtl of stream_FrameGenerator is
 	signal ContentCounter_en          : std_logic;
 	signal ContentCounter_us          : unsigned(WORD_BITS - 1 downto 0)  := (others => '0');
 
-	signal PRNG_rst                   : std_logic;
+	signal PRNG_rst                   : std_logic;  -- FIXME: Why is reset not driven by FSM anymore?
 	signal PRNG_got                   : std_logic;
 	signal PRNG_Data                  : std_logic_vector(DATA_BITS - 1 downto 0);
 begin
@@ -147,8 +147,6 @@ begin
 					when FRAMEGEN_CMD_ALL_FRAMES =>
 						NextState                  <= ST_ERROR;
 
-					when others =>
-						NextState                  <= ST_ERROR;
 				end case;
 
 			-- generate sequential numbers
@@ -279,7 +277,7 @@ begin
 	arith_gen : for i in 0 to N_arith -1 generate
 		constant high : natural := ite(i = (N_arith -1), DATA_BITS -1, (i * 168) + 167);
 	begin
-		PRNG : entity work.arith_prng
+		PRNG : entity work.arith_PRNG
 			generic map (
 				BITS => ite(i = (N_arith -1), DATA_BITS -(i * 168), 168),
 				SEED => std_logic_vector(unsigned'("110001100011101100101111110")+i)

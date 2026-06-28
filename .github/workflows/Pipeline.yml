@@ -15,8 +15,8 @@ jobs:
   Prepare:
     uses: pyTooling/Actions/.github/workflows/PrepareJob.yml@r7
     with:
-      main_branch:    'master'
-      release_branch: 'master'
+      main_branch:    'main'
+      release_branch: 'main'
 
   Simulate:
     uses: ./.github/workflows/Simulate.yml
@@ -24,15 +24,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { simulator: 'nvc',  backend: '',      version: 'latest', can-fail: false }
-#          - { simulator: 'ghdl', backend: 'mcode', version: 'latest', can-fail: false }
-          - { simulator: 'ghdl', backend: 'llvm',  version: 'latest', can-fail: false }
+          - {ubuntu-version: 'ubuntu-26.04', simulator: 'nvc',  backend: '',      version: 'latest',  can-fail: false}
+          - {ubuntu-version: 'ubuntu-26.04', simulator: 'ghdl', backend: 'mcode', version: 'nightly', can-fail: false}
+          - {ubuntu-version: 'ubuntu-26.04', simulator: 'ghdl', backend: 'llvm',  version: 'nightly', can-fail: false}
     with:
-      simulator:    ${{ matrix.simulator }}
-      ghdl-version: ${{ matrix.version }}
-      ghdl-backend: ${{ matrix.backend }}
-      nvc-version:  ${{ matrix.version }}
-      can-fail:     ${{ matrix.can-fail }}
+      ubuntu-version: ${{ matrix.ubuntu-version }}
+      simulator:      ${{ matrix.simulator }}
+      ghdl-version:   ${{ matrix.version }}
+      ghdl-backend:   ${{ matrix.backend }}
+      nvc-version:    ${{ matrix.version }}
+      can-fail:       ${{ matrix.can-fail }}
 
   PublishTestResults:
     uses: pyTooling/Actions/.github/workflows/PublishTestResults.yml@r7
@@ -40,7 +41,7 @@ jobs:
       - Simulate
 #    if: success() || failure()
     with:
-      unittest_artifacts_pattern: 'PoC-Report-XML-*'
+      unittest_artifacts_pattern: 'SimPoC-Report-XML-*'
       testsuite-summary-name:     'The PoC Library'
       merge-input-dialect:        'Any-JUnit'
       merged_junit_filename:      'unittest.xml'
@@ -52,14 +53,14 @@ jobs:
 
   IntermediateCleanUp:
     name: 🗑️ Intermediate Artifact Cleanup
-    runs-on: 'ubuntu-24.04'
+    runs-on: 'ubuntu-26.04'
     needs:
       - Simulate
       - PublishTestResults
 #    if: success() || failure()
     steps:
       - name: 🗑️ Delete YAML artifacts from matrix jobs
-        uses: geekyeggo/delete-artifact@v5
+        uses: geekyeggo/delete-artifact@v6
         continue-on-error: true
         with:
           name: |
@@ -67,12 +68,22 @@ jobs:
             PoC-Report-YAML-*
 
       - name: 🗑️ Delete JUnit XML artifacts from matrix jobs
-        uses: geekyeggo/delete-artifact@v5
+        uses: geekyeggo/delete-artifact@v6
         continue-on-error: true
         with:
           name: |
             OSVVM-Report-XML-*
             PoC-Report-XML-*
+
+#  IntermediateCleanUp:
+#    uses: pyTooling/Actions/.github/workflows/CleanupArtifacts.yml@r7
+#    needs:
+#      - PublishCoverageResults
+#      - PublishPytestResults
+#    with:
+#      others: |
+#        pyGHDL-Coverage-SQLite-*
+#        pyGHDL-Unittest-XML-*
 
   Documentation:
     uses: pyTooling/Actions/.github/workflows/SphinxDocumentation.yml@r7
@@ -87,7 +98,7 @@ jobs:
       latex_artifact:        'PoC-LaTeX'
 
   Test:
-    runs-on: 'ubuntu-24.04'
+    runs-on: 'ubuntu-26.04'
     needs:
       - Simulate
       - PublishTestResults
@@ -137,6 +148,7 @@ jobs:
   Release:
     uses: pyTooling/Actions/.github/workflows/PublishReleaseNotes.yml@r7
     needs:
+      - Prepare
       - PublishToGitHubPages
     if: needs.Prepare.outputs.is_release_tag == 'true'
     permissions:

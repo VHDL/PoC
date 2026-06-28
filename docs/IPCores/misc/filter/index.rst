@@ -7,13 +7,13 @@ These are filter entities....
 
 **Entities**
 
- * :ref:`IP/filter_and`
- * :ref:`IP/filter_mean`
- * :ref:`IP/filter_or`
+ * :ref:`IP/filter_And`
+ * :ref:`IP/filter_Mean`
+ * :ref:`IP/filter_Or`
 
 .. toctree::
    :hidden:
 
-   filter_and <filter_and>
-   filter_mean <filter_mean>
-   filter_or <filter_or>
+   filter_And <filter_And>
+   filter_Mean <filter_Mean>
+   filter_Or <filter_Or>

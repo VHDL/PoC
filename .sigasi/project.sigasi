@@ -26,9 +26,12 @@
 			],
 			"dependencies": [
 				{
-					"Quartus25.3": [
-						"altera_mf"
-					]
+					"Quartus": {
+						"version": "Quartus26.1",
+						"targets": [
+							"altera_mf"
+						]
+					}
 				}
 			]
 		},

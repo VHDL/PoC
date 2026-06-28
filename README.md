@@ -114,16 +114,10 @@ SSH      | `git clone --recursive ssh://git@github.com:VHDL/PoC.git PoC`
 To explore PoC's full potential, it's required to configure some paths and synthesis or simulation tool
 chains. The following commands start a guided configuration process. Please follow the instructions on
 screen. It's possible to relaunch the process at any time, for example to register new tools or to update
-tool versions. See [Configuration][231] for more details. Run the following command line instructions to
-configure PoC on your local system:
+tool versions. See [Configuration][231] for more details.
 
-```PowerShell
-cd PoCRoot
-.\poc.ps1 configure
-```
-
-Use the keyboard buttons: `Y` to accept, `N` to decline, `P` to skip/pass a step and `Return` to accept
-a default value displayed in brackets.
+> [!CAUTION]
+> Outdated, needs refinement
 
 [231]: http://VHDL.github.io/PoC/UsingPoC/PoCConfiguration.html
 
@@ -154,19 +148,7 @@ git commit -m "Added new git submodule PoC in 'lib\PoC' (PoC-Library)."
 [2411]: http://git-scm.com/book/en/v2/Git-Tools-Submodules
 [2412]: http://VHDL.github.io/PoC/UsingPoC/Integration.html
 
-#### b) Configuring PoC
-
-The PoC-Library should be configured to explore its full potential. See [Configuration][2421] for more
-details. The following command lines will start the configuration process:
-
-```powershell
-cd ProjectRoot
-.\lib\PoC\poc.ps1 configure
-```
-
-[2421]: http://VHDL.github.io/PoC/UsingPoC/PoCConfiguration.html
-
-#### c) Creating PoC's `my_config.vhdl` and `my_project.vhdl` Files
+#### b) Creating PoC's `project_configuration.vhdl` and `local_configuration.vhdl` Files
 
 The PoC-Library needs two VHDL files for its configuration. These files are used to determine the most
 suitable implementation depending on the provided target information. Copy the following two template
@@ -175,11 +157,11 @@ in the files:
 
 ```powershell
 cd ProjectRoot
-cp lib\PoC\src\common\my_config.vhdl.template src\common\my_config.vhdl
-cp lib\PoC\src\common\my_project.vhdl.template src\common\my_project.vhdl
+cp lib\PoC\src\common\project_configuration.vhdl.template src\common\project_configuration.vhdl
+cp lib\PoC\src\common\local_configuration.vhdl.template src\common\local_configuration.vhdl
 ```
 
-[my_config.vhdl](https://github.com/VHDL/PoC/blob/Vivado/src/common/my_config.vhdl.template) defines
+[project_configuration.vhdl](https://github.com/VHDL/PoC/blob/Vivado/src/common/project_configuration.vhdl.template) defines
 two global constants, which need to be adjusted:
 
 ```vhdl
@@ -187,34 +169,25 @@ constant MY_BOARD            : string := "CHANGE THIS"; -- e.g. Custom, ML505, K
 constant MY_DEVICE           : string := "CHANGE THIS"; -- e.g. None, XC5VLX50T-1FF1136, EP2SGX90FF1508C3
 ```
 
-[my_project.vhdl](https://github.com/VHDL/PoC/blob/Vivado/src/common/my_project.vhdl.template) also
+[local_configuration.vhdl](https://github.com/VHDL/PoC/blob/Vivado/src/common/local_configuration.vhdl.template) also
 defines two global constants, which need to be adjusted:
 
 ```vhdl
-constant MY_PROJECT_DIR      : string := "CHANGE THIS"; -- e.g. d:/vhdl/myproject/, /home/me/projects/myproject/"
-constant MY_OPERATING_SYSTEM : string := "CHANGE THIS"; -- e.g. WINDOWS, LINUX
+constant LOCAL_PROJECT_DIR      : string := "CHANGE THIS"; -- e.g. d:/vhdl/myproject/, /home/me/projects/myproject/"
 ```
 
-Further informations are provided at [Creating my_config/my_project.vhdl][2431].
+Further informations are provided at [Creating project_configuration/local_configuration.vhdl][2431].
 
 [2431]: http://VHDL.github.io/PoC/UsingPoC/VHDLConfiguration.html
 
-#### d) Adding PoC's Common Packages to a Synthesis or Simulation Project
+#### c) Adding PoC's Common Packages to a Synthesis or Simulation Project
 
 PoC is shipped with a set of common packages, which are used by most of its modules. These packages are
 stored in the `PoCRoot\src\common` directory. PoC also provides a VHDL context in `common.vhdl` , which
 can be used to reference all packages at once.
 
 
-#### e) Adding PoC's Simulation Packages to a Simulation Project
-
-Simulation projects additionally require PoC's simulation helper packages, which are located in the
-`PoCRoot\src\sim` directory. Because some VHDL version are incompatible among each other, PoC uses
-version suffixes like `*.v93.vhdl` or `*.v08.vhdl` in the file name to denote the supported VHDL version
-of a file.
-
-
-#### f) Compiling Shipped IP Cores
+#### d) Compiling Shipped IP Cores
 
 Some IP Cores are shipped as pre-configured vendor IP Cores. If such IP cores shall be used in a HDL
 project, it's recommended to use PoC to create, compile and if needed patch these IP cores. See
@@ -256,17 +229,11 @@ is always the same and based on PoC's sub-namespace tree.
 **Main directory overview:**
 
  -  [`lib`](lib) - Embedded or linked external libraries.
- -  [`netlist`](netlist) - Configuration files and output directory for pre-configured netlist synthesis
-    results from vendor IP cores or from complex PoC controllers.
- -  [`py`](py) - Supporting Python scripts.
- -  [`sim`](sim) - Pre-configured waveform views for selected testbenches.
  -  [`src`](src) - PoC's source files grouped into sub-folders according to the sub-namespace tree.
  -  [`tb`](tb) - Testbench files.
- -  [`tcl`](tcl) - Tcl files.
  -  [`temp`](temp) - Automatically created temporary directors for various tools used by PoC's Python scripts.
  -  [`tools`](tools) - Settings/highlighting files and helpers for supported tools.
  -  [`ucf`](ucf) - Pre-configured constraint files (\*.ucf, \*.xdc, \*.sdc) for supported FPGA boards.
- -  [`xst`](xst) - Configuration files to synthesize PoC modules with Xilinx XST into a netlist.
 
 
 All VHDL source files should be compiled into the VHDL library `PoC`. If not indicated otherwise, all
