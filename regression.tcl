@@ -66,12 +66,11 @@ set defaultStep "all"
 set regressionLevels [createRegressionLevels osvvm poc test] ; # clean, all
 
 # -P -projectRoot set project folder root for poc scripting
-# -g -gui         disables system exit (i.e. on errors)
 # -v -vendor      Vendor name
 # -b -board       Board name
 # -p -projectFile Path to the local_configuration file
 # -c -configFile  Path to the project_configuration file
-configurePoC -P ${root} -g
+configurePoC -P ${root}
 
 # -s -stop <i>    set the stop counts to <i>
 # -d -debug       enable debugging

@@ -1,6 +1,7 @@
 namespace eval ::poc {
 	variable putsPrefix   "\[PoC\]        "
 	variable putsPrefixNs "\[PoC\] "
+
 	proc getEnv {var {default ""}} {
 		if {[info exists ::env($var)]} {
 			return $::env($var)
@@ -19,8 +20,6 @@ namespace eval ::poc {
 	variable localConfigurationFile   "$localConfigurationFolder/local_configuration.vhdl"
 	variable localConfigurationPath   "$projectRoot/src/$localConfigurationFolder/local_configuration.vhdl"
 
-	variable disableExit 0
-
 	# Skip report generation if executed within Sigasi/VS Code
 	if {[info exists ::env(OSVVM_TOOL)] && $::env(OSVVM_TOOL) eq "Sigasi"} {
 		set ::osvvm::GenerateOsvvmReports "false"
@@ -31,17 +30,29 @@ namespace eval ::poc {
 		} else {
 			set buildNamePrefix "${::osvvm::ToolName}-"
 		}
+
+		# WORKAROUND for Riviera-PRO: tcl_interactive is always 1 (even on CI server)
+		if {$::osvvm::ToolName eq "RivieraPRO"} {
+			global tcl_interactive
+			set tcl_interactive 0
+		}
+
 	} elseif {[info exists ::env(GITHUB_ACTIONS)]} {
 		set buildNamePrefix ""
 	} else {
 		set buildNamePrefix "${::osvvm::ToolNameVersion}-"
 	}
 
+	# WORKAROUND for NVC: tcl_interactive is not implemented yet (https://github.com/nickg/nvc/issues/1608)
+	if {$::osvvm::ToolName eq "NVC"} {
+		set ::tcl_interactive 0
+	}
+
 	proc exitScript {{code 1}} {
-		if {$::poc::disableExit == 1} {
+		global tcl_interactive
+		if {$tcl_interactive == 1} {
 			return
 		}
-
 		set toolsWithDashCode {ActiveHDL ModelSim NVC QuestaSim RivieraPRO}
 
 		if {[lsearch -exact $toolsWithDashCode $::osvvm::ToolName] >= 0} {
@@ -127,11 +138,6 @@ ${::poc::putsPrefix}======================================
 			set arg [lindex $args $i]
 
 			switch -glob -- $arg {
-				"-gui" -
-				"-g" {
-					set ::poc::disableExit 1
-				}
-
 				"-vendor" -
 				"-v" {
 					incr i
