@@ -189,7 +189,7 @@ attribute Count : integer;
 
 	constant C_SIM_STREAM_FRAMEGROUP_8_EMPTY : T_SIM_STREAM_FRAMEGROUP_8 := (
 		Active    => FALSE,
-		Name      => (others => C_POC_NUL),
+		Name      => (others => NUL),
 		PrePause  => 0,
 		PostPause => 0,
 		DataCount => 0,
@@ -197,7 +197,7 @@ attribute Count : integer;
 	);
 	constant C_SIM_STREAM_FRAMEGROUP_32_EMPTY : T_SIM_STREAM_FRAMEGROUP_32 := (
 		Active    => FALSE,
-		Name      => (others => C_POC_NUL),
+		Name      => (others => NUL),
 		PrePause  => 0,
 		PostPause => 0,
 		DataCount => 0,

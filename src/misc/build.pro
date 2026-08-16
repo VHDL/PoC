@@ -19,7 +19,7 @@
 # limitations under the License.
 # =============================================================================
 
-# ./misc_ClockBuffer.vhdl        ;  # Already analyzed in PoC.pro
+# analyze ./misc_ClockBuffer.vhdl # Added in src/build.pro
 disabled ./misc_ConditionCounter.vhdl
 disabled ./misc_Data_Swapper.vhdl
 analyze ./misc_Delay.vhdl

@@ -1,0 +1,16 @@
+source -quiet [file join [file dirname [info script]] "../lib/PoC/tools/poc.tcl"]
+namespace import ::poc::synth::*
+
+# Vivado_init.tcl is Vivado's global startup script -- it runs on every
+# single Vivado process launch (GUI or batch), not just when this project
+# is opened. That includes incidental nested launches, e.g. typing the bare
+# word "vivado" at a Tcl console: Tcl's unknown-command handling execs
+# anything on PATH matching the typed word, and the vivado launcher itself
+# is on PATH (that's how the current session started). Guard poc_Init
+# behind an actually-open project so those don't try to run it against
+# nothing.
+if {![catch {current_project}]} {
+    # poc_Init                       ;# uses default library "PoC"
+    # poc_Init {} MyLib               ;# override library name
+    poc_Init
+}

@@ -1,14 +1,14 @@
--- ===========================================================================
+-- =============================================================================
 -- Testbench:   Basic testbench for LZ-based bitstream compressor misc_bit_lz.
 --
 -- Authors:     Thomas B. Preusser
 --
 -- Description:
 -- ------------
---              Basic testbench for PoC.misc_bit_lz.
+--              Basic testbench for PoC.misc_bit_lz. Converted to OSVVM style.
 --
 -- License:
--- ===========================================================================
+-- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
 --
@@ -25,17 +25,22 @@
 -- limitations under the License.
 -- =============================================================================
 
-entity misc_bit_lz_tb is
-end entity;
-
-
 use     std.textio.all;
 
 library IEEE;
 use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
-architecture tb of misc_bit_lz_tb is
+library osvvm;
+context osvvm.OsvvmContext;
+
+
+entity Tb_misc_bit_lz is
+end entity;
+
+
+architecture tb of Tb_misc_bit_lz is
+	constant TestName    : string   := "Tb_misc_bit_lz";
 	constant COUNT_BITS  : positive := 7;
 	constant OFFSET_BITS : positive := 8;
 
@@ -47,80 +52,70 @@ architecture tb of misc_bit_lz_tb is
 			OFFSET_BITS : positive
 		);
 		port(
-			-- Global Control
-			clk : in  std_logic;
-			rst : in  std_logic;
-
-			-- Data Input
+			clk   : in  std_logic;
+			rst   : in  std_logic;
 			din   : in  std_logic;
 			put   : in  std_logic;
 			flush : in  std_logic;
-
-			-- Data Output
-			odat : out std_logic_vector(COUNT_BITS+OFFSET_BITS downto 0);
-			ostb : out std_logic
+			odat  : out std_logic_vector(COUNT_BITS+OFFSET_BITS downto 0);
+			ostb  : out std_logic
 		);
 	end component;
 
-	signal clk : std_logic;
-	signal rst : std_logic;
-
-	signal din : std_logic;
-	signal put : std_logic;
+	signal clk   : std_logic;
+	signal rst   : std_logic;
+	signal din   : std_logic;
+	signal put   : std_logic;
 	signal flush : std_logic;
+	signal odat  : std_logic_vector(COUNT_BITS+OFFSET_BITS downto 0);
+	signal ostb  : std_logic;
 
-	signal odat : std_logic_vector(COUNT_BITS+OFFSET_BITS downto 0);
-	signal ostb : std_logic;
+	signal TestDone : integer_barrier := 1;
 
 begin
 
-	DUT: misc_bit_lz
-		generic map (
-			COUNT_BITS  => COUNT_BITS,
-			OFFSET_BITS => OFFSET_BITS
-		)
-		port map (
-			clk   => clk,
-			rst   => rst,
-			din   => din,
-			put   => put,
-			flush => flush,
-			odat  => odat,
-			ostb  => ostb
-		);
+	Osvvm.ClockResetPkg.CreateClock(Clk => clk, Period => 10 ns);
+
+	ControlProc : process
+	begin
+		SetTestName(TestName);
+		TranscriptOpen;
+		SetTranscriptMirror(TRUE);
+		Log("NOTE: This is a mechanically converted old-style testbench and needs a proper OSVVM port.", INFO);
+		wait until rst = '0';
+		ClearAlerts;
+		WaitForBarrier(TestDone, 10 ms);
+		AlertIf(now >= 10 ms, "Test timed out");
+		EndOfTestReports;
+		std.env.stop;
+	end process;
 
 	-- Stimuli
 	process
-		procedure cycle is
-		begin
-			clk <= '0';
-			wait for 5 ns;
-			clk <= '1';
-			wait for 5 ns;
-		end procedure cycle;
 	begin
 		rst   <= '1';
-		cycle;
+		wait until rising_edge(clk);
 		rst   <= '0';
 		put   <= '0';
 		flush <= '0';
-		cycle;
+		wait until rising_edge(clk);
 
 		put <= '1';
 		for i in DATA'range loop
 			din <= DATA(i);
-			cycle;
+			wait until rising_edge(clk);
 		end loop;
 
 		put   <= '0';
 		flush <= '1';
-		cycle;
+		wait until rising_edge(clk);
 
 		flush <= '0';
-		cycle;
-		cycle;
+		wait until rising_edge(clk);
+		wait until rising_edge(clk);
 
-		wait;  -- forever
+		WaitForBarrier(TestDone);
+		wait;
 	end process;
 
 	-- Output Parsing
@@ -128,9 +123,7 @@ begin
 		variable l : line;
 	begin
 		wait until rising_edge(clk);
-		assert rst = '1' or not Is_X(ostb)
-			report "Unknown ostb output."
-			severity error;
+		AlertIf(not (rst = '1' or not Is_X(ostb)), "Unknown ostb output.");
 
 		if ostb = '1' then
 			if odat(odat'left) = '1' then
@@ -151,12 +144,27 @@ begin
 				if odat(OFFSET_BITS-1) = '0' then
 					write(l, std_logic'image(odat(0)));
 				else
-		write(l, '<');
+					write(l, '<');
 					write(l, to_integer(unsigned(not odat(OFFSET_BITS-1 downto 0))));
 				end if;
 			end if;
 			writeline(output, l);
 		end if;
 	end process;
+
+	DUT: misc_bit_lz
+		generic map (
+			COUNT_BITS  => COUNT_BITS,
+			OFFSET_BITS => OFFSET_BITS
+		)
+		port map (
+			clk   => clk,
+			rst   => rst,
+			din   => din,
+			put   => put,
+			flush => flush,
+			odat  => odat,
+			ostb  => ostb
+		);
 
 end architecture tb;

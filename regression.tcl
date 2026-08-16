@@ -57,6 +57,7 @@ source ${root}/lib/OSVVM-Scripts/StartUp.tcl
 source ${root}/tools/poc.tcl
 
 namespace import ::poc::*
+namespace import ::poc::OSVVM::*
 namespace import ::regression::*
 
 #---------------------#
@@ -81,10 +82,10 @@ configureOSVVM -stop 1 ;
 
 evaluateRegressionLevel $defaultStep $regressionLevels
 
-if {![file exists $::poc::localConfigurationPath] || $::regression::level == -1} {
+if {![file exists $::poc::OSVVM::localConfigurationPath] || $::regression::level == -1} {
 	WriteLocalConfiguration
 } else {
-	puts "${::poc::putsPrefix}Skipping local configuration file generation."
+	puts "${::poc::OSVVM::prefix}Skipping local configuration file generation."
 }
 
 puts "========================================"
@@ -93,20 +94,20 @@ puts "========================================"
 puts ""
 
 if {$::regression::level <= 0} {
-	build ${root}/lib/OsvvmLibraries.pro [BuildName "${::poc::buildNamePrefix}OsvvmLibraries"]
+	build ${root}/lib/OsvvmLibraries.pro [BuildName "${::poc::OSVVM::buildNamePrefix}OsvvmLibraries"]
 	if {[checkForBuildErrors] || $::regression::executeSingleStep} {
 		return 1
 	}
 }
 
 if {$::regression::level <= 1} {
-	build ${root}/PoC.pro [BuildName "${::poc::buildNamePrefix}PoC"]
+	build ${root}/PoC.pro [BuildName "${::poc::OSVVM::buildNamePrefix}PoC"]
 	if {[checkForBuildErrors] || $::regression::executeSingleStep} {
 		return 1
 	}
 }
 if {$::regression::level <= 2} {
-	build ${root}/tb/RunAllTests.pro [BuildName "${::poc::buildNamePrefix}RunAllTests"]
+	build ${root}/tb/RunAllTests.pro [BuildName "${::poc::OSVVM::buildNamePrefix}RunAllTests"]
 	if {[checkForRunErrors] || $::regression::executeSingleStep} {
 		return 1
 	}

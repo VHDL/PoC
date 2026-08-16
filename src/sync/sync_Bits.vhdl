@@ -142,8 +142,6 @@ begin
 				end if;
 			end process;
 
-			Output(i)  <= Data_sync(Data_sync'high);
-
 			reg_out_gen : if REGISTER_OUTPUT generate
 			begin
 				Output(i) <= Data_sync(Data_sync'high) when rising_edge(Clock);

@@ -1,7 +1,8 @@
 -- =============================================================================
--- Authors:           Patrick Lehmann
+-- Authors:         Patrick Lehmann
+--                  Stefan Unrein
 --
--- Entity:           A generic buffer module for the PoC.Stream protocol.
+-- Entity:          A generic de-multiplexer module for the PoC.Stream protocol.
 --
 -- Description:
 -- -------------------------------------

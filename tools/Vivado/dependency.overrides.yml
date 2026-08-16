@@ -1,0 +1,11 @@
+  PoC.mem.ocram.TrueDualPort_Simulation:
+    sources:
+      - file: src/mem/ocram/ocram_TrueDualPort_Simulation.vhdl
+        attributes:
+          USED_IN_SYNTHESIS: 0
+
+  PoC.mem.ocram.TrueDualPort:
+    sources:
+      - file: src/mem/ocram/ocram_TrueDualPort.vhdl
+        attributes:
+          USED_IN_SIMULATION: 0

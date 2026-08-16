@@ -24,13 +24,16 @@ analyze ./bus_Arbiter.vhdl
 analyze ./stream/stream.pkg.vhdl
 analyze ./stream/stream_DeMux.vhdl
 analyze ./stream/stream_Mux.vhdl
-disabled ./stream/stream_To_AXI4Stream.vhdl
 disabled ./stream/stream_Delay.vhdl
 
 include ./axi4stream
 include ./axi4
 include ./axi4lite
 include ./stream
+
+analyze ./stream/stream_To_AXI4Stream.vhdl
+analyze ./axi4stream/axi4stream_To_Stream.vhdl
+disabled ./axi4stream/axi4stream_Delay.vhdl
 
 analyze ./drp/drp.pkg.vhdl
 analyze ./drp/drp.generic.vhdl

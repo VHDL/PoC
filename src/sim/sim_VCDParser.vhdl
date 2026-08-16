@@ -69,7 +69,7 @@ package body sim_VCDParser is
 		readline(VCDFile, vcdFileLine);
 
 		-- clear VCDLine
-		VCDLine := (VCDLine'range => C_POC_NUL);
+		VCDLine := (VCDLine'range => NUL);
 
 		-- TODO: use imin of ranges, not 'range
 		for i in VCDLine'range loop

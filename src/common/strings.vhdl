@@ -34,25 +34,10 @@ use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 use     IEEE.math_real.all;
 
-use     work.config.all;
 use     work.utils.all;
 
 
 package strings is
-	-- default fill and string termination character for fixed size strings
-	-- ===========================================================================
-	-- WORKAROUND: for Altera Quartus-II
-	--  Version:  15.0
-	--  Issue:
-	--    character 0 (NUL) causes Quartus-II to crash, if uses to pad STRINGs
-	--    characters < 32 (control characters) are not supported in Quartus-II
-	--    characters > 127 are not supported in VHDL files (strict ASCII files)
-	--    character 255 craches ISE log window (created by 'CHARACTER'val(255)')
-	--  Solution:
-	--    PoC uses backtick "`" as a fill and termination symbol, if a Quartus-II
-	--    synthesis environment is detected.
-	constant C_POC_NUL      : character    := ite((SYNTHESIS_TOOL /= SYNTHESIS_TOOL_ALTERA_QUARTUS2), NUL, '`');
-
 	-- Type declarations
 	-- ===========================================================================
 	subtype T_RAWCHAR        is std_logic_vector(7 downto 0);
@@ -132,7 +117,7 @@ package strings is
 	function to_RawString(str : string)   return T_RAWSTRING;
 
 	-- resize
-	function resize(str : string; size : positive; FillChar : character := C_POC_NUL)      return string;
+	function resize(str : string; size : positive; FillChar : character := NUL)      return string;
 --  function resize(rawstr : T_RAWSTRING; size : POSITIVE; FillChar : T_RAWCHAR := x"00")  return T_RAWSTRING;
 
 	-- Character functions
@@ -166,7 +151,6 @@ package strings is
 	function str_toLower(str : string)                        return string;
 	function str_toUpper(str : string)                        return string;
 
-	--Function has a copy in PoC.config_private
 	function normalizePath(path : string) return string;
 end package;
 
@@ -686,8 +670,8 @@ package body strings is
 
 	-- resize
 	-- ===========================================================================
-	function resize(str : string; Size : positive; FillChar : character := C_POC_NUL) return string is
-		constant ConstNUL    : string(1 to 1)        := (others => C_POC_NUL);
+	function resize(str : string; Size : positive; FillChar : character := NUL) return string is
+		constant ConstNUL    : string(1 to 1)        := (others => NUL);
 		variable Result      : string(1 to Size);
 	begin
 		Result := (others => FillChar);
@@ -748,7 +732,7 @@ package body strings is
 	function str_length(str : string) return natural is
 	begin
 		for i in str'range loop
-			if str(i) = C_POC_NUL then
+			if str(i) = NUL then
 				return i - str'low;
 			end if;
 		end loop;
@@ -777,9 +761,9 @@ package body strings is
 		for i in str1'low to str1'low + len - 1 loop
 			if (str1(i) /= str2(str2'low + (i - str1'low))) then
 				return FALSE;
-			elsif ((str1(i) = C_POC_NUL) xor (str2(str2'low + (i - str1'low)) = C_POC_NUL)) then
+			elsif ((str1(i) = NUL) xor (str2(str2'low + (i - str1'low)) = NUL)) then
 				return FALSE;
-			elsif ((str1(i) = C_POC_NUL) and (str2(str2'low + (i - str1'low)) = C_POC_NUL)) then
+			elsif ((str1(i) = NUL) and (str2(str2'low + (i - str1'low)) = NUL)) then
 				return TRUE;
 			end if;
 		end loop;
@@ -794,15 +778,15 @@ package body strings is
 
 		-- check special cases
 		if (((str1'length = len) and (str2'length = len)) or                    -- both strings are fully consumed and equal
-				((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or      -- str1 is longer, but str_length equals len
-				((str2'length > len) and (str2(str2'low + len) = C_POC_NUL))) then  -- str2 is longer, but str_length equals len
+				((str1'length > len) and (str1(str1'low + len) = NUL)) or      -- str1 is longer, but str_length equals len
+				((str2'length > len) and (str2(str2'low + len) = NUL))) then  -- str2 is longer, but str_length equals len
 			return true;
 		else
 			return false;
 		end if;
 --    return (((str1'length = len) and (str2'length = len)) or                            -- both strings are fully consumed and equal
---            ((str1'length > len) and (str1(str1'low + len) = C_POC_NUL)) or     -- str1 is longer, but str_length equals len
---            ((str2'length > len) and (str2(str2'low + len) = C_POC_NUL)));      -- str2 is longer, but str_length equals len
+--            ((str1'length > len) and (str1(str1'low + len) = NUL)) or     -- str1 is longer, but str_length equals len
+--            ((str2'length > len) and (str2(str2'low + len) = NUL)));      -- str2 is longer, but str_length equals len
 	end function;
 
 	-- compare two POC_NUL terminated STRINGs; case insentitve
@@ -815,7 +799,7 @@ package body strings is
 	function str_pos(str : string; chr : character; start : natural := 0) return integer is
 	begin
 		for i in imax(str'low, start) to str'high loop
-			exit when (str(i) = C_POC_NUL);
+			exit when (str(i) = NUL);
 			if str(i) = chr then
 				return i;
 			end if;
@@ -828,7 +812,7 @@ package body strings is
 	function str_pos(str : string; pattern : string; start : natural := 0) return integer is
 	begin
 		for i in imax(str'low, start) to (str'high - pattern'length + 1) loop
-			exit when (str(i) = C_POC_NUL);
+			exit when (str(i) = NUL);
 			if (str(i to i + pattern'length - 1) = pattern) then
 				return i;
 			end if;
@@ -849,7 +833,7 @@ package body strings is
 	end function;
 
 --  function str_pos(str1 : STRING; str2 : STRING) return INTEGER is
---    variable PrefixTable  : T_INTVEC(0 to str2'length);
+--    variable PrefixTable  : integer_vector(0 to str2'length);
 --    variable j            : INTEGER;
 --  begin
 --    -- construct prefix table for KMP algorithm

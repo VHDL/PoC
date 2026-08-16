@@ -21,14 +21,14 @@
 
 library PoC
 
-analyze $::poc::projectConfigurationFile
-analyze $::poc::localConfigurationFile
+analyze $::poc::OSVVM::projectConfigurationPath
+analyze $::poc::OSVVM::localConfigurationPath
 
 include ./common
-disabled ./misc/misc_ClockBuffer.vhdl
+analyze ./xil/./xil.pkg.vhdl
+analyze ./misc/misc_ClockBuffer.vhdl
 include ./sync
 include ./arith
-include ./misc
 
 analyze ./bus/axi4/axi4_Common.pkg.vhdl
 analyze ./bus/axi4/axi4_Full.pkg.vhdl
@@ -36,12 +36,13 @@ analyze ./bus/axi4stream/axi4stream.pkg.vhdl
 analyze ./bus/axi4lite/axi4lite.pkg.vhdl
 analyze ./bus/axi4/axi4.pkg.vhdl
 
+include ./misc
 include ./mem
 include ./fifo
-include ./xil
+include ./io
 
 include ./dstruct
-include ./io
+include ./xil
 include ./bus
 include ./comm
 include ./sort

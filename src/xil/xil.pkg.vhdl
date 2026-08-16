@@ -112,6 +112,15 @@ package xil is
 
 	function get_DNABITS return natural;
 
+	type T_ALARM_MODE is (ALARM_MODE_HYSTERESIS, ALARM_MODE_WINDOW);
+
+	function get_valueSysMon_SYSMONE4_USplus_OverTempUpper(temp : real) return std_logic_vector;
+	function get_valueSysMon_SYSMONE4_USplus_TempLower(temp : real; mode : T_ALARM_MODE) return std_logic_vector;
+	function get_valueSysMon_SYSMONE4_USplus_UserTempUpper(temp : real) return std_logic_vector;
+
+	-- helper function to compute UG580 Equation 2-11
+	function temp_to_adc_SYSMONE4(temp : real; bits : positive) return std_logic_vector;
+
 ------------COMPONENTS---------------------------
 	component xil_SystemMonitor is
 		port (
@@ -136,6 +145,14 @@ package xil is
 			DataOut : out std_logic_vector(get_DNABITS -1 downto 0)
 		);
 	end component;
+
+	component xil_ClockBuffer is
+	port (
+		Clock_In     : in  std_logic;
+		Clock_Enable : in  std_logic := '1';
+		Clock_Out    : out std_logic
+	);
+	end component;
 end package;
 
 
@@ -147,8 +164,45 @@ package body xil is
 			when DEVICE_SERIES_7_SERIES     => return 64;
 			when DEVICE_SERIES_ULTRASCALE_PLUS |
 				 DEVICE_SERIES_ULTRASCALE   => return 96;
-			when others => return 0;
+			when others => 
+				report "DNABITS not implemented for selected device!" severity failure;
+				return 0;
 		end case;
+	end function;
+
+	--calculations based on UG580, section "Over Temperature Automatic Shutdown"
+
+	function get_valueSysMon_SYSMONE4_USplus_OverTempUpper(temp : real) return std_logic_vector is
+		variable var : std_logic_vector(15 downto 0);
+	begin
+		var := temp_to_adc_SYSMONE4(temp, 12) & 4x"3";
+		return var;
+	end function;
+
+	function get_valueSysMon_SYSMONE4_USplus_TempLower(temp : real; mode : T_ALARM_MODE) return std_logic_vector
+	is
+		variable var      : real;
+		variable ret      : std_logic_vector(15 downto 0);
+		variable mode_bit : std_logic;
+	begin
+		with mode select mode_bit :=
+		'0' when ALARM_MODE_HYSTERESIS,
+		'1' when ALARM_MODE_WINDOW;
+		ret := temp_to_adc_SYSMONE4(temp, 15) & mode_bit;
+		return ret;
+	end function;
+
+	function get_valueSysMon_SYSMONE4_USplus_UserTempUpper(temp : real) return std_logic_vector is
+	begin
+		return temp_to_adc_SYSMONE4(temp, 16);
+	end function;
+
+	function temp_to_adc_SYSMONE4(temp : real; bits : positive) return std_logic_vector
+	is
+		variable var : real;
+	begin
+		var := ((temp + 280.2308787) * (2.0 ** bits) / 509.3140064) + 0.5;
+		return std_logic_vector(to_unsigned(integer(var), bits));
 	end function;
 
 end package body;

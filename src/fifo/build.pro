@@ -23,7 +23,7 @@ analyze fifo.pkg.vhdl
 analyze fifo_Shift.vhdl
 disabled fifo_stageFar.vhdl
 analyze fifo_Stage.vhdl
-analyze fifo_ic_got.vhdl
+analyze fifo_ic_got.vhdl [ConstraintFile fifo_ic_got.xdc [ScopeToRef fifo_ic_got]]
 analyze fifo_ic_assembly.vhdl
 analyze fifo_cc_got.vhdl
 disabled fifo_cc_got_commit.vhdl

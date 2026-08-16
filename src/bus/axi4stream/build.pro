@@ -26,7 +26,6 @@ analyze ./axi4stream_FIFO_CDC.vhdl
 analyze ./axi4stream_FIFO_TempGot.vhdl
 analyze ./axi4stream_FIFO_TempPut.vhdl
 analyze ./axi4stream_Stage.vhdl
-disabled ./axi4stream_Mirror.vhdl
 analyze ./axi4stream_Mux.vhdl
 analyze ./axi4stream_Pause.vhdl
 analyze ./axi4stream_DeMux.vhdl
@@ -34,15 +33,21 @@ analyze ./axi4stream_Termination_Transmitter.vhdl
 analyze ./axi4stream_Termination_Receiver.vhdl
 disabled ./axi4stream_DataExtractor.vhdl
 disabled ./axi4stream_PatternFinder.vhdl
-disabled ./axi4stream_FieldReplacer.vhd
-disabled ./axi4stream_Crossbar.vhdl
+disabled ./axi4stream_FieldReplacer.vhdl
+# WORKAROUND: Failing since Riviera-PRO 2025.10 (see https://gitlab.plc2.de/Docker-Images/RivieraPRO/-/work_items/2)
+if {($::osvvm::ToolName eq "RivieraPRO") && ([::version::compare $::osvvm::ToolVersion lt "2025.10"])} {
+    disabled ./axi4stream_Crossbar.vhdl
+} else {
+    disabled ./axi4stream_Crossbar.vhdl
+}
 # disabled ./axi4stream_Frame_Buffer.vhdl # Does not work right now
 disabled ./axi4stream_PRBSGenerator.vhdl
 disabled ./axi4stream_Buffer_no_backpressure.vhdl
-disabled ./axi4stream_To_Stream.vhdl
+# analyze ./axi4stream_To_Stream.vhdl # analyzed in bus/build.pro
 disabled ./axi4stream_Splitter.vhdl
-disabled ./axi4stream_Delay.vhdl
+# disabled ./axi4stream_Delay.vhdl # analyzed in bus/build.pro
 disabled ./axi4stream_Realign.vhdl
+
 analyze ../../misc/gearbox/gearbox_Down_cc.vhdl
 analyze ../../misc/gearbox/gearbox_Up_cc.vhdl
 disabled ./axi4stream_Gearbox.vhdl

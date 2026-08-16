@@ -1,5 +1,4 @@
 stages:
-#  - prepare
   - Build-OSVVM
   - Build-PoC
   - Simulate
@@ -10,10 +9,20 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   SIMULATOR_PAGES:        "nvc"      # simulator from which the results should be published on GitLab pages (GHDL, Riviera-PRO)
 
+
 # --------------------
 # ---- Templates -----
 # --------------------
 .run:
+  image: ${CI_REGISTRY}/docker-images/${IMAGE}:${VERSION}
+  parallel:
+    matrix:
+      - IMAGE:     "rivierapro"
+        VERSION:   "latest"
+      - IMAGE:     "nvc"
+        VERSION:   "latest"
+      - IMAGE:     "ghdl"
+        VERSION:   ["llvm", "mcode"]
   script:
     - |
       if [[ "${SIMULATOR_TOOL}" == "NVC" ]]; then
@@ -28,7 +37,6 @@ variables:
     - CopyFile temp/${SIMULATOR_TOOL}/*/*.xml "temp/junit"
     - CopyFile temp/${SIMULATOR_TOOL}/*/*.yml "temp/junit"
     - rm -vrf temp/${SIMULATOR_TOOL}/VHDL_LIBS/${SIMULATOR_TOOL}-*/TB_*
-    - tree temp
   artifacts:
     paths:
       - temp/[GNR]*
@@ -39,22 +47,14 @@ variables:
     expire_in: 1 week
     when: always
 
-# ---------------
-# ---- GHDL -----
-# ---------------
+
+# --------------------
+# ------ Jobs --------
+# --------------------
 OSVVM-build:
   extends:
     - .run
   stage: Build-OSVVM
-  image: ${CI_REGISTRY}/docker-images/${IMAGE}:${VERSION}
-  parallel:
-    matrix:
-      - IMAGE:     "rivierapro"
-        VERSION:   "2024.10"
-      - IMAGE:     "nvc"
-        VERSION:   "latest"
-      - IMAGE:     "ghdl"
-        VERSION:   ["llvm", "mcode"]
   variables:
     STEP: "osvvm"
 
@@ -62,15 +62,6 @@ PoC-build:
   extends:
     - .run
   stage: Build-PoC
-  image: ${CI_REGISTRY}/docker-images/${IMAGE}:${VERSION}
-  parallel:
-    matrix:
-      - IMAGE:     "rivierapro"
-        VERSION:   "2024.10"
-      - IMAGE:     "nvc"
-        VERSION:   "latest"
-      - IMAGE:     "ghdl"
-        VERSION:   ["llvm", "mcode"]
   needs:
     - job: OSVVM-build
       artifacts: true
@@ -85,15 +76,6 @@ PoC-build:
   extends:
     - .run
   stage: Simulate
-  image: ${CI_REGISTRY}/docker-images/${IMAGE}:${VERSION}
-  parallel:
-    matrix:
-      - IMAGE:     "rivierapro"
-        VERSION:   "2024.10"
-      - IMAGE:     "nvc"
-        VERSION:   "latest"
-      - IMAGE:     "ghdl"
-        VERSION:   ["llvm", "mcode"]
   needs:
     - job: OSVVM-build
       artifacts: true
@@ -112,15 +94,6 @@ PoC-sim:
   extends:
     - .run
   stage: Simulate
-  image: ${CI_REGISTRY}/docker-images/${IMAGE}:${VERSION}
-  parallel:
-    matrix:
-      - IMAGE:     "rivierapro"
-        VERSION:   "2024.10"
-      - IMAGE:     "nvc"
-        VERSION:   "latest"
-      - IMAGE:     "ghdl"
-        VERSION:   ["llvm", "mcode"]
   needs:
     - job: PoC-build
       artifacts: true
@@ -131,6 +104,7 @@ PoC-sim:
   allow_failure: true
   variables:
     STEP: "test"
+
 
 # --------------------------
 # ----- Documentation ------
@@ -222,7 +196,7 @@ pages:
   script:
     - CopyDir docs/_build/html public
     #- CopyFile PoC.pdf  public
-    - tree public
+    #- tree public
   after_script:
     - echo "Pages accessible at ${CI_PAGES_URL}"
   artifacts:

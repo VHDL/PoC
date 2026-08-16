@@ -22,3 +22,6 @@
 library tb_common
 
 include ./utils-pkg/RunAllTests.pro
+include ./config-pkg/RunAllTests.pro
+include ./physical-pkg/RunAllTests.pro
+include ./strings-pkg/RunAllTests.pro

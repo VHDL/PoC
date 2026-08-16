@@ -66,6 +66,7 @@ entity axi4_DeMux is
 	generic(
 		BASE_ADDRESS      : T_SLUV;
 		BASE_ADDRESS_MASK : BASE_ADDRESS'subtype;
+		MASK_ADDRESS      : boolean                       := true;
 		PIPELINE_IN       : natural                       := 0;
 		PIPELINE_OUT      : natural_vector(BASE_ADDRESS'range)  := (others => 0);
 		NUM_OUTSTANDING_READS  : natural   := 0; -- if zero, use full ID width (2**ID)
@@ -196,7 +197,9 @@ begin
 			B_User_POS => USER_BITS
 		);
 
-		signal Address_hit : std_logic_vector(PORTS -1 downto 0);
+		signal Address_hit     : std_logic_vector(PORTS -1 downto 0);
+		signal SelectIndex_d   : unsigned(log2ceilnz(PORTS) -1 downto 0);
+		signal SelectIndex_nxt : unsigned(log2ceilnz(PORTS) -1 downto 0);
 		-- constant MUX_DATA_BITS          : natural := isum(BACKWARD_BIT_VEC);
 
 		signal Mux_In_M2S               : T_AXI4Stream_M2S_VECTOR(0 to PORTS)(Data(isum(BACKWARD_BIT_VEC) - 1 downto 0), Keep(0 downto 0), User(0 downto 0), ID(0 downto 0), Dest(0 downto 0));
@@ -280,11 +283,14 @@ begin
 				end if;
 			end if;
 		end process;
+		
+		SelectIndex_d <= SelectIndex_nxt when rising_edge(Clock);
 
 		process(all)
 			variable SelectIndex : integer;
 		begin
-			NextState     <= State;
+			NextState       <= State;
+			SelectIndex_nxt <= SelectIndex_d;
 
 			In_S2M_write  <= Initialize_AXI4_Bus_S2M(In_S2M.RData'length, In_S2M.RUser'length, In_S2M.BID'length, '0');
 			Out_M2S_write <= (Out_M2S'range => In_M2S_write);
@@ -293,6 +299,9 @@ begin
 				Out_M2S_write(i).AWValid <= '0';
 				Out_M2S_write(i).WValid  <= '0';
 				Out_M2S_write(i).AWID   <= to_slv(resize(IndexOut(i), Out_AW_ID_BITS)); -- Have AWID always connected to OoO Index
+				if MASK_ADDRESS then
+					Out_M2S_write(i).AWAddr <= resize(In_M2S_write.AWAddr(lssb_idx(to_slv(not BASE_ADDRESS_MASK(i))) -1 downto 0), ADDR_BITS_SLAVE);
+				end if;
 			end loop;
 
 			Response_fifo_put <= '0';
@@ -301,7 +310,8 @@ begin
 
 			case State is
 				when St_Idle =>
-					SelectIndex := lssb_idx(Address_hit);
+					SelectIndex     := lssb_idx(Address_hit);
+					SelectIndex_nxt <= to_unsigned(SelectIndex, SelectIndex_d'length);
 
 					if In_M2S_write.AWValid = '1' then
 						if unsigned(Address_hit) = 0 then
@@ -331,33 +341,33 @@ begin
 					end if;
 
 				when ST_Dataflow =>
-					In_S2M_write <= Out_S2M_write(SelectIndex);
-					Out_M2S_write(SelectIndex).AWValid <= In_M2S_write.AWValid;
-					Out_M2S_write(SelectIndex).WValid  <= In_M2S_write.WValid;
+					In_S2M_write <= Out_S2M_write(to_integer(SelectIndex_d));
+					Out_M2S_write(to_integer(SelectIndex_d)).AWValid <= In_M2S_write.AWValid;
+					Out_M2S_write(to_integer(SelectIndex_d)).WValid  <= In_M2S_write.WValid;
 
-					if (In_M2S_write.AWValid and Out_S2M_write(SelectIndex).AWReady and In_M2S_write.WValid and In_M2S_write.WLast and Out_S2M_write(SelectIndex).WReady) = '1' then -- Full transaction closed
+					if (In_M2S_write.AWValid and Out_S2M_write(to_integer(SelectIndex_d)).AWReady and In_M2S_write.WValid and In_M2S_write.WLast and Out_S2M_write(to_integer(SelectIndex_d)).WReady) = '1' then -- Full transaction closed
 						NextState <= St_Idle;
-					elsif (In_M2S_write.AWValid and Out_S2M_write(SelectIndex).AWReady) = '1' then -- Address transmitted
+					elsif (In_M2S_write.AWValid and Out_S2M_write(to_integer(SelectIndex_d)).AWReady) = '1' then -- Address transmitted
 						NextState <= ST_DataOnly;
-					elsif (In_M2S_write.WValid and In_M2S_write.WLast and Out_S2M_write(SelectIndex).WReady) = '1' then -- Data transmitted
+					elsif (In_M2S_write.WValid and In_M2S_write.WLast and Out_S2M_write(to_integer(SelectIndex_d)).WReady) = '1' then -- Data transmitted
 						NextState <= ST_AddressOnly;
 					end if;
 
 				when ST_DataOnly =>
-					In_S2M_write         <= Out_S2M_write(SelectIndex);
+					In_S2M_write         <= Out_S2M_write(to_integer(SelectIndex_d));
 					In_S2M_write.AWReady <= '0';
-					Out_M2S_write(SelectIndex).WValid  <= In_M2S_write.WValid;
+					Out_M2S_write(to_integer(SelectIndex_d)).WValid  <= In_M2S_write.WValid;
 
-					if (In_M2S_write.WValid and In_M2S_write.WLast and Out_S2M_write(SelectIndex).WReady) = '1' then -- Data transmitted
+					if (In_M2S_write.WValid and In_M2S_write.WLast and Out_S2M_write(to_integer(SelectIndex_d)).WReady) = '1' then -- Data transmitted
 						NextState <= St_Idle;
 					end if;
 
 				when ST_AddressOnly =>
-					In_S2M_write        <= Out_S2M_write(SelectIndex);
+					In_S2M_write        <= Out_S2M_write(to_integer(SelectIndex_d));
 					In_S2M_write.WReady <= '0';
-					Out_M2S_write(SelectIndex).AWValid <= In_M2S_write.AWValid;
+					Out_M2S_write(to_integer(SelectIndex_d)).AWValid <= In_M2S_write.AWValid;
 
-					if (In_M2S_write.AWValid and Out_S2M_write(SelectIndex).AWReady) = '1' then -- Address transmitted
+					if (In_M2S_write.AWValid and Out_S2M_write(to_integer(SelectIndex_d)).AWReady) = '1' then -- Address transmitted
 						NextState <= St_Idle;
 					end if;
 
@@ -500,8 +510,10 @@ begin
 
 			Out_M2S_read(i).ARID             <= std_logic_vector(resize(IndexOut, Out_AR_ID_BITS));
 			Out_M2S_read(i).ARValid          <= DeMux_Out_M2S(i).Valid and not Full;
-
-			Out_M2S_read(i).ARAddr           <= resize(DeMux_Out_M2S(i).Data(high(FORWARD_BIT_VEC, AR_Addr_POS) downto low(FORWARD_BIT_VEC, AR_Addr_POS)), ADDR_BITS_SLAVE);
+			Out_M2S_read(i).ARAddr           <= 
+				resize(DeMux_Out_M2S(i).Data(high(FORWARD_BIT_VEC, AR_Addr_POS) downto low(FORWARD_BIT_VEC, AR_Addr_POS)), ADDR_BITS_SLAVE) 
+				when not MASK_ADDRESS else 
+				resize(DeMux_Out_M2S(i).Data(low(FORWARD_BIT_VEC, AR_Addr_POS) + lssb_idx(to_slv(not BASE_ADDRESS_MASK(i))) -1 downto low(FORWARD_BIT_VEC, AR_Addr_POS)), ADDR_BITS_SLAVE);
 			Out_M2S_read(i).ARCache          <= DeMux_Out_M2S(i).Data(high(FORWARD_BIT_VEC, AR_Cache_POS) downto low(FORWARD_BIT_VEC, AR_Cache_POS));
 			Out_M2S_read(i).ARProt           <= DeMux_Out_M2S(i).Data(high(FORWARD_BIT_VEC, AR_Protect_POS) downto low(FORWARD_BIT_VEC, AR_Protect_POS));
 			Out_M2S_read(i).ARLen            <= DeMux_Out_M2S(i).Data(high(FORWARD_BIT_VEC, AR_Len_POS) downto low(FORWARD_BIT_VEC, AR_Len_POS));

@@ -21,8 +21,8 @@
 analyze ./sync.pkg.vhdl
 
 if { $::poc::vendorName eq "Xilinx" } {
-	analyze ./sync_Bits_Xilinx.vhdl
-	analyze ./sync_Reset_Xilinx.vhdl
+	analyze ./sync_Bits_Xilinx.vhdl [ConstraintFile sync_Bits_Xilinx.xdc [ScopeToRef sync_Bits_Xilinx]]
+	analyze ./sync_Reset_Xilinx.vhdl [ConstraintFile sync_Reset_Xilinx.xdc [ScopeToRef sync_Reset_Xilinx]]
 	analyze ./sync_Pulse_Xilinx.vhdl
 
 } elseif { $::poc::vendorName eq "Altera" } {
@@ -40,7 +40,7 @@ analyze ./sync_Reset.vhdl
 analyze ./sync_Pulse.vhdl
 
 analyze ./sync_Strobe.vhdl
-analyze ./sync_Vector.vhdl
-analyze ./sync_Command.vhdl
+analyze ./sync_Vector.vhdl [ConstraintFile sync_Vector.xdc [ScopeToRef sync_Vector]]
+analyze ./sync_Command.vhdl [ConstraintFile sync_Command.xdc [ScopeToRef sync_Command]]
 
 disabled ./sync_Resets.vhdl

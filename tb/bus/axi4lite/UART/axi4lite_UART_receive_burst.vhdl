@@ -30,8 +30,8 @@ architecture receive_burst of axi4lite_UART_tc is
 		4 => (17, 16,  TRUE,  TRUE)
 	);
 
-	function toTransmitLengths(sequences : SequencesType) return T_POSVEC is
-		variable lengths : T_POSVEC(sequences'range);
+	function toTransmitLengths(sequences : SequencesType) return positive_vector is
+		variable lengths : positive_vector(sequences'range);
 	begin
 		for i in sequences'range loop
 			lengths(i) := sequences(i).TransmitLength;
@@ -39,8 +39,8 @@ architecture receive_burst of axi4lite_UART_tc is
 		return lengths;
 	end function;
 
-	function toReadoutLengths(sequences : SequencesType) return T_POSVEC is
-		variable lengths : T_POSVEC(sequences'range);
+	function toReadoutLengths(sequences : SequencesType) return positive_vector is
+		variable lengths : positive_vector(sequences'range);
 	begin
 		for i in sequences'range loop
 			lengths(i) := sequences(i).ReadoutLength;
@@ -48,8 +48,8 @@ architecture receive_burst of axi4lite_UART_tc is
 		return lengths;
 	end function;
 
-	constant TransmitLengths : T_POSVEC := toTransmitLengths(Sequences);
-	constant ReadoutLengths  : T_POSVEC := toReadoutLengths(Sequences);
+	constant TransmitLengths : positive_vector := toTransmitLengths(Sequences);
+	constant ReadoutLengths  : positive_vector := toReadoutLengths(Sequences);
 
 	signal   TestDone        : integer_barrier := 1;
 	signal   ReadByteTrigger : natural := 0;
