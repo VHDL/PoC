@@ -22,7 +22,7 @@
 
 analyze ./xil.pkg.vhdl
 if { $::poc::vendorName eq "Xilinx" } {
-	disabled ./xil_ClockBuffer.vhdl
+	analyze ./xil_ClockBuffer.vhdl
 	disabled ./xil_Trans_config.vhdl
 	analyze ./xil_DNAPort.vhdl
 	analyze ./xil_ICAP.vhdl
@@ -37,6 +37,7 @@ if { $::poc::vendorName eq "Xilinx" } {
 	}
 	analyze ./reconfig/reconfig_ICAP_FSM.vhdl
 	analyze ./reconfig/reconfig_ICAP_Wrapper.vhdl
+	disabled ./clknet/clknet_ClockNetwork_KC705.vhdl
 
 } elseif { $::poc::vendorName eq "Altera" } {
 	puts "No Altera files in this namespace."

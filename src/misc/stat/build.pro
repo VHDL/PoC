@@ -21,6 +21,7 @@
 disabled ./stat.pkg.vhdl
 analyze ./stat_Average.vhdl
 analyze ./stat_Histogram.vhdl
+disabled ./stat_Histogram_auto_boundary.vhdl
 disabled ./stat_Histogram_man_boundary.vhdl
 analyze ./stat_Maximum.vhdl
 analyze ./stat_Minimum.vhdl

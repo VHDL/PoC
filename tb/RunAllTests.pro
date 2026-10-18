@@ -23,13 +23,13 @@ library tb_common
 
 include ./arith/RunAllTests.pro
 include ./bus/RunAllTests.pro
-# include ./cache/RunAllTests.pro  # Not a OSVVM TB, needs coco TB
+# include ./cache/RunAllTests.pro   # Not a OSVVM TB, needs coco TB
 include ./common/RunAllTests.pro
 include ./dstruct/RunAllTests.pro
-# include ./fifo/RunAllTests.pro   # Not a OSVVM TB
-# include ./io/RunAllTests.pro     # Not a OSVVM TB
-# include ./mem/RunAllTests.pro    # Not a OSVVM TB
+include ./fifo/RunAllTests.pro
+include ./io/RunAllTests.pro
+# include ./mem/RunAllTests.pro     # Not a OSVVM TB
 include ./misc/RunAllTests.pro
-# include ./sim/RunAllTests.pro    # Not a OSVVM TB
-# include ./sort/RunAllTests.pro   # Not a OSVVM TB
+# include ./sim/RunAllTests.pro     # Not a OSVVM TB
+# include ./sort/RunAllTests.pro    # Not a OSVVM TB
 include ./sync/RunAllTests.pro

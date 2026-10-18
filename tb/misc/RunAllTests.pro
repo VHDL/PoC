@@ -19,10 +19,10 @@
 # limitations under the License.
 # =============================================================================
 
-# TestSuite PoC.misc
-# Deactivated to avoid failure on non-existing testcases
-
 library tb_misc
 
-#include ./gearbox/RunAllTests.pro
 include ./clock/RunAllTests.pro
+# include ./gearbox/RunAllTests.pro  # TB_COMMON.OsvvmTestCommonPkg not pre-compiled
+disabled ./stat/RunAllTests.pro
+include ./StrobeStretcher/RunAllTests.pro
+include ./bit_lz/RunAllTests.pro

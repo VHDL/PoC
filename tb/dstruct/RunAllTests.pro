@@ -19,7 +19,8 @@
 # limitations under the License.
 # =============================================================================
 
-# TestSuite PoC.dstruct
-# Deactivated to avoid failure on non-existing testcases
+library tb_dstruct
 
 include ./OutOfOrderBuffer/RunAllTests.pro
+include ./Stack/RunAllTests.pro
+include ./DoubleEndedQueue/RunAllTests.pro

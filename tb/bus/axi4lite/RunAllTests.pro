@@ -24,5 +24,7 @@ include ./Demux/RunAllTests.pro
 include ./HighResolutionClock/RunAllTests.pro
 include ./OCRAM_Adapter/RunAllTests.pro
 include ./Register/RunAllTests.pro
+# disabled ./UART/RunAllTests.pro  # uses PoC.net (net namespace excluded)
+
 disabled ./SimpleInterface/RunAllTests.pro
-include ./UART/RunAllTests.pro
+# disabled ./InterruptController/RunAllTests.pro  # TB not working yet

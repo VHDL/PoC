@@ -35,10 +35,9 @@ use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
 use     work.utils.all;
+use     work.strings.all;
 
 package config_private is
-	-- TODO:
-	-- ===========================================================================
 	subtype T_BOARD_STRING        is string(1 to 16);
 	subtype T_BOARD_CONFIG_STRING is string(1 to 64);
 	subtype T_DEVICE_STRING       is string(1 to 32);
@@ -75,30 +74,25 @@ package config_private is
 
 	type T_BOARD_INFO_VECTOR  is array (natural range <>) of T_BOARD_INFO;
 
-	constant C_POC_NUL                    : character;
 	constant C_BOARD_STRING_EMPTY         : T_BOARD_STRING;
 	constant C_BOARD_CONFIG_STRING_EMPTY  : T_BOARD_CONFIG_STRING;
 	constant C_DEVICE_STRING_EMPTY        : T_DEVICE_STRING;
 	constant C_BOARD_INFO_LIST            : T_BOARD_INFO_VECTOR;
 
 	function conf(str : string) return T_BOARD_CONFIG_STRING;
-
-	--Copy of Funktion from PoC.strings.normalizePath
-	function normalizePath(path : string) return string;
 end package;
 
 
 package body config_private is
-	constant C_POC_NUL                    : character             := '~';
-	constant C_BOARD_STRING_EMPTY         : T_BOARD_STRING        := (others => C_POC_NUL);
-	constant C_BOARD_CONFIG_STRING_EMPTY  : T_BOARD_CONFIG_STRING := (others => C_POC_NUL);
-	constant C_DEVICE_STRING_EMPTY        : T_DEVICE_STRING       := (others => C_POC_NUL);
+	constant C_BOARD_STRING_EMPTY         : T_BOARD_STRING        := (others => NUL);
+	constant C_BOARD_CONFIG_STRING_EMPTY  : T_BOARD_CONFIG_STRING := (others => NUL);
+	constant C_DEVICE_STRING_EMPTY        : T_DEVICE_STRING       := (others => NUL);
 
 	function conf(str : string) return T_BOARD_CONFIG_STRING is
-		constant ConstNUL    : string(1 to 1)        := (others => C_POC_NUL);
+		constant ConstNUL    : string(1 to 1)        := (others => NUL);
 		variable Result      : string(1 to T_BOARD_CONFIG_STRING'length);
 	begin
-		Result := (others => C_POC_NUL);
+		Result := (others => NUL);
 		if (str'length > 0) then
 			Result(1 to bound(T_BOARD_CONFIG_STRING'length, 1, str'length)) := ite((str'length > 0), str(1 to imin(T_BOARD_CONFIG_STRING'length, str'length)), ConstNUL);
 		end if;
@@ -118,7 +112,7 @@ package body config_private is
 	function brd_CreateUART(IsDTE : boolean; FlowControl : string; BaudRate : string; BaudRate_Max : string := "") return T_BOARD_UART_DESC is
 		variable Result     : T_BOARD_UART_DESC;
 	begin
-			Result.IsDTE        := IsDTE;
+		Result.IsDTE        := IsDTE;
 		Result.FlowControl  := conf(FlowControl);
 		Result.BaudRate     := conf(BaudRate);
 		Result.BaudRate_Max := ite((BaudRate_Max = ""), conf(BaudRate), conf(BaudRate_Max));
@@ -393,25 +387,6 @@ package body config_private is
 			EthernetCount =>  0
 		)
 	);
-
-	--Copy of Funktion from PoC.strings.normalizePath
-	function normalizePath(path : string) return string is
-		variable temp : string(path'range) := path;
-	begin
-		if path'length = 0 then
-			return path;
-		else
-			for i in path'range loop
-				if temp(i) = '\' then
-					temp(i) := '/';
-				end if;
-			end loop;
-			if temp(temp'high) = '/' then
-				return temp;
-			end if;
-			return temp & '/';
-		end if;
-	end function;
 end package body;
 
 
@@ -423,6 +398,7 @@ use     work.project_configuration.all;
 use     work.local_configuration.all;
 use     work.config_private.all;
 use     work.utils.all;
+use     work.strings.all;
 
 
 package config is
@@ -619,129 +595,15 @@ end package;
 
 
 package body config is
-	-- inlined function from PoC.utils, to break dependency
-	-- ===========================================================================
-	function ite(cond : boolean; value1 : string; value2 : string) return string is
-	begin
-		if cond then
-			return value1;
-		else
-			return value2;
-		end if;
-	end function;
-
-		-- chr_is* function
-	function chr_isDigit(chr : character) return boolean is
-	begin
-		return ((character'pos('0') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('9')));
-	end function;
-
-	function chr_isAlpha(chr : character) return boolean is
-		begin
-		return (((character'pos('a') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('z'))) or
-						((character'pos('A') <= CHARACTER'pos(chr)) and (character'pos(chr) <= CHARACTER'pos('Z'))));
-	end function;
-
-	function chr_isLowerAlpha(chr : character) return boolean is
-	begin
-		return (character'pos('a') <= character'pos(chr)) and (character'pos(chr) <= character'pos('z'));
-	end function;
-
-	function str_length(str : string) return natural is
-	begin
-		for i in str'range loop
-			if str(i) = C_POC_NUL then
-				return i - str'low;
-			end if;
-		end loop;
-		return str'length;
-	end function;
-
-	function str_trim(str : string) return string is
-	begin
-		for i in str'range loop
-			if str(i) = C_POC_NUL then
-				return str(str'low to i-1);
-			end if;
-		end loop;
-		return str;
-	end function;
-
-	function str_imatch(str1 : string; str2 : string) return boolean is
-		constant len    : natural     := imin(str1'length, str2'length);
-		variable chr1    : character;
-		variable chr2    : character;
-	begin
-		-- if both strings are empty
-		if ((str1'length = 0 ) and (str2'length = 0)) then
-			return TRUE;
-		end if;
-		-- compare char by char
-		for i in 0 to len-1 loop
-			chr1  := str1(str1'low + i);
-			chr2  := str2(str2'low + i);
-			if (character'pos('A') <= CHARACTER'pos(chr1)) and (character'pos(chr1) <= CHARACTER'pos('Z')) then
-				chr1  := character'val(CHARACTER'pos(chr1) - character'pos('A') + CHARACTER'pos('a'));
-			end if;
-			if (character'pos('A') <= CHARACTER'pos(chr2)) and (character'pos(chr2) <= CHARACTER'pos('Z')) then
-				chr2  := character'val(CHARACTER'pos(chr2) - character'pos('A') + CHARACTER'pos('a'));
-			end if;
-			if chr1 /= chr2 then
-				return FALSE;
-			elsif (chr1 = C_POC_NUL) xor (chr2 = C_POC_NUL) then
-				return FALSE;
-			elsif (chr1 = C_POC_NUL) and (chr2 = C_POC_NUL) then
-				return TRUE;
-			end if;
-		end loop;
-		-- check special cases,
-		if ((str1'length = len) and (str2'length = len)) then   -- both strings are fully consumed and equal
-			return TRUE;
-		elsif (str1'length > len) then
-			return (str1(str1'low + len) = C_POC_NUL);            -- str1 is longer, but str_length equals len
-		else
-			return (str2(str2'low + len) = C_POC_NUL);            -- str2 is longer, but str_length equals len
-		end if;
-	end function;
-
-	function str_find(str : string; pattern : string; start : natural := 0) return boolean is
-	begin
-		for i in imax(str'low, start) to (str'high - pattern'length + 1) loop
-			exit when (str(i) = C_POC_NUL);
-			if (str(i to i + pattern'length - 1) = pattern) then
-				return TRUE;
-			end if;
-		end loop;
-		return FALSE;
-	end function;
-
-	function chr_toUpper(chr : character) return character is
-	begin
-		if chr_isLowerAlpha(chr) then
-			return character'val(character'pos(chr) - character'pos('a') + character'pos('A'));
-		else
-			return chr;
-		end if;
-	end function;
-
-	function str_toUpper(str : string) return string is
-		variable Result    : string(str'range);
-	begin
-		for i in str'range loop
-			Result(i)  := chr_toUpper(str(i));
-		end loop;
-		return Result;
-	end function;
-
 	-- private functions required by board description
 	-- ModelSim requires that this functions is defined before it is used below.
 	-- ===========================================================================
 	function getLocalDeviceString(DeviceString : string) return string is
-		constant ConstNUL        : string(1 to 1)        := (others => C_POC_NUL);
+		constant ConstNUL        : string(1 to 1)        := (others => NUL);
 		constant MY_DEVICE_STR  : string                := BOARD_DEVICE;
 		variable Result          : string(1 to T_DEVICE_STRING'length);
 	begin
-		Result := (others => C_POC_NUL);
+		Result := (others => NUL);
 		-- report DeviceString for debugging
 		if POC_VERBOSE then
 			report "getLocalDeviceString: DeviceString='" & str_trim(DeviceString) & "' MY_DEVICE='" & str_trim(MY_DEVICE) & "' MY_DEVICE_STR='" & str_trim(MY_DEVICE_STR) & "'"  severity NOTE;
@@ -756,7 +618,7 @@ package body config is
 		else
 			Result(1 to bound(T_DEVICE_STRING'length, 1, MY_DEVICE_STR'length))  := ite((MY_DEVICE_STR'length > 0), MY_DEVICE_STR(1 to imin(T_DEVICE_STRING'length, MY_DEVICE_STR'length)), ConstNUL);
 		end if;
-		return Result;
+		return str_toUpper(Result);
 	end function;
 
 	function extractFirstNumber(str : string) return natural is
@@ -878,7 +740,7 @@ package body config is
 
 	-- purpose: extract vendor from MY_DEVICE
 	function VENDOR(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_VENDOR is
-		constant MY_DEV    : string(1 to 32) := getLocalDeviceString(DeviceString);
+		constant MY_DEV   : string(1 to 32) := getLocalDeviceString(DeviceString);
 		constant VEN_STR2 : string(1 to 2)  := MY_DEV(1 to 2);      -- TODO: test if alias declarations also work out on all platforms
 		constant VEN_STR3 : string(1 to 3)  := MY_DEV(1 to 3);      -- TODO: test if alias declarations also work out on all platforms
 	begin
@@ -890,7 +752,7 @@ package body config is
 		end case;
 		case VEN_STR3 is
 			when "MPF" =>   return VENDOR_MICROSEMI;  -- PolarFire devices
-			when "iCE" =>   return VENDOR_LATTICE;    -- iCE devices
+			when "ICE" =>   return VENDOR_LATTICE;    -- iCE devices
 			when "LCM" =>   return VENDOR_LATTICE;    -- MachXO device
 			when "LFE" =>   return VENDOR_LATTICE;    -- ECP devices
 			when others =>  report "Unknown vendor in MY_DEVICE = '" & MY_DEV & "'" severity failure;
@@ -924,9 +786,9 @@ package body config is
 
 	-- purpose: extract device from MY_DEVICE
 	function DEVICE(DeviceString : string := C_DEVICE_STRING_EMPTY) return T_DEVICE is
-		constant MY_DEV    : string(1 to 32)  := getLocalDeviceString(DeviceString);
+		constant MY_DEV   : string(1 to 32) := getLocalDeviceString(DeviceString);
 		constant VEN      : T_VENDOR        := VENDOR(DeviceString);
-		constant DEV_STR  : string(3 to  4)  := MY_DEV(3 to 4);      -- TODO: test if alias declarations also work out on all platforms
+		constant DEV_STR  : string(3 to  4) := MY_DEV(3 to 4);      -- TODO: test if alias declarations also work out on all platforms
 	begin
 		case VEN is
 			when VENDOR_GENERIC =>
@@ -1058,7 +920,7 @@ package body config is
 	end function;
 
 	function DEVICE_NUMBER(DeviceString : string := C_DEVICE_STRING_EMPTY) return natural is
-		constant MY_DEV    : string(1 to 32)  := getLocalDeviceString(DeviceString);
+		constant MY_DEV   : string(1 to 32) := getLocalDeviceString(DeviceString);
 		constant VEN      : T_VENDOR        := VENDOR(DeviceString);
 	begin
 		case VEN is
@@ -1307,7 +1169,16 @@ package body config is
 		Result.DevNumber        := DEVICE_NUMBER(DeviceString);
 		Result.TransceiverType  := TRANSCEIVER_TYPE(DeviceString);
 		Result.LUT_FanIn        := LUT_FANIN(DeviceString);
-
+		
+		report "PoC.config:: DEVICE_INFO.Vendor         = " & T_VENDOR'image(Result.Vendor         )      severity note;
+		report "PoC.config:: DEVICE_INFO.Device         = " & T_DEVICE'image(Result.Device         )      severity note;
+		report "PoC.config:: DEVICE_INFO.DevFamily      = " & T_DEVICE_FAMILY'image(Result.DevFamily    ) severity note;
+		report "PoC.config:: DEVICE_INFO.DevSubType     = " & T_DEVICE_SUBTYPE'image(Result.DevSubType  ) severity note;
+		report "PoC.config:: DEVICE_INFO.DevSeries      = " & T_DEVICE_SERIES'image(Result.DevSeries    ) severity note;
+		report "PoC.config:: DEVICE_INFO.DevGeneration  = " & integer'image(Result.DevGeneration  )       severity note;
+		report "PoC.config:: DEVICE_INFO.DevNumber      = " & integer'image(Result.DevNumber      )       severity note;
+		report "PoC.config:: DEVICE_INFO.TransceiverType= " & T_TRANSCEIVER'image(Result.TransceiverType) severity note;
+		report "PoC.config:: DEVICE_INFO.LUT_FanIn      = " & integer'image(Result.LUT_FanIn      )       severity note;
 		return Result;
 	end function;
 

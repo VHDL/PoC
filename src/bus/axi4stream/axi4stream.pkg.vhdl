@@ -119,7 +119,7 @@ package body axi4stream is
 	function EnableTransaction(EnableTransaction : std_logic; In_M2S : T_axi4stream_M2S) return T_axi4stream_M2S is
 		variable temp : In_M2S'subtype;
 	begin
-		temp.Valid := In_M2S.Valid and not EnableTransaction;
+		temp.Valid := In_M2S.Valid and EnableTransaction;
 		temp.Data  := In_M2S.Data;
 		temp.Keep  := In_M2S.Keep;
 		temp.Last  := In_M2S.Last;
@@ -132,7 +132,7 @@ package body axi4stream is
 	function EnableTransaction(EnableTransaction : std_logic; In_S2M : T_axi4stream_S2M) return T_axi4stream_S2M is
 		variable temp : In_S2M'subtype;
 	begin
-		temp.Ready := In_S2M.Ready and not EnableTransaction;
+		temp.Ready := In_S2M.Ready and EnableTransaction;
 		temp.User  := In_S2M.User;
 		return temp;
 	end function;

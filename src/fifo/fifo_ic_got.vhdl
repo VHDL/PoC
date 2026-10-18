@@ -346,7 +346,7 @@ begin
 				Write_DataIn      => di,
 				Read_DataOut      => do
 				);
-	end generate gLarge;
+	end generate;
 
 	gSmall: if DATA_REG generate
 		-- Memory modelled as Array
@@ -397,6 +397,6 @@ begin
 				end if;
 			end if;
 		end process;
-	end generate gSmall;
+	end generate;
 
 end architecture;

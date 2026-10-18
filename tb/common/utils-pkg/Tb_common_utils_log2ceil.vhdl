@@ -51,6 +51,7 @@ begin
 		SetTestName(TestName);
 		TranscriptOpen;
 		SetTranscriptMirror(TRUE);
+		Log("NOTE: This is a mechanically converted old-style testbench and needs a proper OSVVM port.", INFO);
 
 		Log("Test utils.log2ceil");
 		Log("INTEGER_BITS = " & to_string(INTEGER_BITS));

@@ -20,8 +20,8 @@
 # =============================================================================
 
 analyze utils.vhdl
-analyze config.vhdl
 analyze strings.vhdl
+analyze config.vhdl
 analyze protected.v08.vhdl
 analyze math.vhdl
 analyze vectors.vhdl

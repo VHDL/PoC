@@ -1,11 +1,11 @@
 -- ============================================================================
 -- Authors:     Jens Voss
 --
--- Entity:      dstruct_Stack_tb
+-- Entity:      Tb_dstruct_Stack
 --
 -- Description:
 -- ------------
---   Testbench for dstruct_Stack.
+--   Testbench for dstruct_Stack. Converted to OSVVM style.
 --
 -- License:
 -- ============================================================================
@@ -25,7 +25,7 @@
 -- limitations under the License.
 -- ============================================================================
 
-entity dstruct_Stack_tb is
+entity Tb_dstruct_Stack is
 end entity;
 
 
@@ -34,70 +34,56 @@ use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
 library PoC;
-use     PoC.physical.all;
 use     PoC.dstruct.all;
--- simulation only packages
-use     PoC.sim_types.all;
-use     PoC.simulation.all;
-use     PoC.waveform.all;
 
-architecture tb of dstruct_Stack_tb is
+library osvvm;
+context osvvm.OsvvmContext;
 
-	-- component generics
-	constant MIN_DEPTH : positive :=  8;
-	constant D_BITS    : positive := 16;
+architecture tb of Tb_dstruct_Stack is
 
-	-- Clock Control
-	constant CLK_FREQ : FREQ := 50 MHz;
+	constant MIN_DEPTH  : positive := 8;
+	constant D_BITS     : positive := 16;
+	constant CLK_PERIOD : time     := 20 ns;
 
-	signal clk  : std_logic;
-	signal rst  : std_logic;
-
-	-- DUT Connectivity
-	-- inputs
-	signal din : std_logic_vector(D_BITS-1 downto 0);
-	signal put : std_logic;
-	signal got : std_logic;
-
-	-- outputs
-	signal dout : std_logic_vector(D_BITS-1 downto 0);
-	signal full : std_logic;
+	signal clk   : std_logic;
+	signal rst   : std_logic;
+	signal din   : std_logic_vector(D_BITS-1 downto 0);
+	signal put   : std_logic;
+	signal got   : std_logic;
+	signal dout  : std_logic_vector(D_BITS-1 downto 0);
+	signal full  : std_logic;
 	signal valid : std_logic;
-	signal empty : std_logic;
+
+	signal TestDone : integer_barrier := 1;
 
 begin
 
-	-- Simulation Setup
-	simInitialize;
-	simGenerateClock(clk, CLK_FREQ);
+	Osvvm.ClockResetPkg.CreateClock(Clk => clk, Period => CLK_PERIOD);
 
-	-- DUT
-	DUT : dstruct_Stack
+	DUT : entity PoC.dstruct_Stack
 		generic map (
-			D_BITS    => D_BITS,
+			DATA_BITS => D_BITS,
 			MIN_DEPTH => MIN_DEPTH
 		)
-		port map(
-			clk   => clk,
-			rst   => rst,
-			din   => din,
-			put   => put,
-			full  => full,
-			got   => got,
-			dout  => dout,
-			valid => valid
+		port map (
+			Clock   => clk,
+			Reset   => rst,
+			Put     => put,
+			DataIn  => din,
+			Full    => full,
+			Got     => got,
+			DataOut => dout,
+			Valid   => valid
 		);
 
-	-- Stimuli
 	process
 		procedure checkTOS(constant EXPECT : in integer) is
 		begin
-			simAssertion(to_integer(unsigned(dout)) = EXPECT, "Wrong top of stack: "&
-									 integer'image(to_integer(unsigned(dout)))&
-									 " instead of "&integer'image(EXPECT));
+			AffirmIf(to_integer(unsigned(dout)) = EXPECT,
+				"Wrong top of stack: " & integer'image(to_integer(unsigned(dout))) &
+				" instead of " & integer'image(EXPECT));
 		end procedure checkTOS;
 
-		constant PID  : T_SIM_PROCESS_ID := simRegisterProcess("main");
 		variable high : integer;
 	begin
 
@@ -108,25 +94,25 @@ begin
 		put <= '0';
 		got <= '0';
 		wait until falling_edge(clk);
-		simAssertion(valid = '0', "valid != 0!");
-		simAssertion(full = '0', "full != 0!");
+		AffirmIf(valid = '0', "valid != 0!");
+		AffirmIf(full = '0', "full != 0!");
 
 		-- Fill stack with data
 		put <= '1';
 		din <= (others => '0');
 		while full = '0' loop
 			wait until falling_edge(clk);
-			simAssertion(valid = '1', "valid != 1!");
+			AffirmIf(valid = '1', "valid != 1!");
 			din <= std_logic_vector(unsigned(din)+1);
 		end loop;
 		high := to_integer(unsigned(din));
 
-		-- One more, which should not be accepted!
+		-- One more, which should not be accepted
 		din <= (others => 'X');
 		wait until falling_edge(clk);
 		put <= '0';
-		simAssertion(valid = '1', "valid != 1!");
-		simAssertion(full = '1', "full != 1!");
+		AffirmIf(valid = '1', "valid != 1!");
+		AffirmIf(full = '1', "full != 1!");
 
 		-- Idle
 		wait until falling_edge(clk);
@@ -137,14 +123,14 @@ begin
 
 		wait until falling_edge(clk);
 		high := high - 1;
-		simAssertion(full = '0', "full != 0");
-		simAssertion(valid = '1', "valid != 1");
+		AffirmIf(full = '0', "full != 0");
+		AffirmIf(valid = '1', "valid != 1");
 		checkTOS(high);
 
 		wait until falling_edge(clk);
 		high := high - 1;
-		simAssertion(full = '0', "full != 0");
-		simAssertion(valid = '1', "valid != 1");
+		AffirmIf(full = '0', "full != 0");
+		AffirmIf(valid = '1', "valid != 1");
 		checkTOS(high);
 
 		got <= '0';
@@ -153,13 +139,13 @@ begin
 		din <= (others => '0');
 		put <= '1';
 		wait until falling_edge(clk);
-		simAssertion(full = '0', "full != 0");
-		simAssertion(valid = '1', "valid != 1");
+		AffirmIf(full = '0', "full != 0");
+		AffirmIf(valid = '1', "valid != 1");
 		wait until falling_edge(clk);
-		simAssertion(full = '1', "full != 1");
-		simAssertion(valid = '1', "valid != 1");
+		AffirmIf(full = '1', "full != 1");
+		AffirmIf(valid = '1', "valid != 1");
 
-		-- One more, which should not be accepted!
+		-- One more, which should not be accepted
 		din <= (others => 'X');
 		wait until falling_edge(clk);
 		put <= '0';
@@ -167,28 +153,44 @@ begin
 		-- Pop two (2) zeroes
 		got <= '1';
 
-		simAssertion(valid = '1', "valid != 1!");
-		simAssertion(full = '1', "full != 1!");
+		AffirmIf(valid = '1', "valid != 1!");
+		AffirmIf(full = '1', "full != 1!");
 		checkTOS(0);
 		wait until falling_edge(clk);
 
-		simAssertion(valid = '1', "valid != 1");
-		simAssertion(full = '0', "full != 0");
+		AffirmIf(valid = '1', "valid != 1");
+		AffirmIf(full = '0', "full != 0");
 		checkTOS(0);
 		wait until falling_edge(clk);
 
 		-- Drain whole stack
 		while valid = '1' loop
-			simAssertion(full = '0', "full != 0");
+			AffirmIf(full = '0', "full != 0");
 			checkTOS(high);
 			wait until falling_edge(clk);
 			high := high - 1;
 		end loop;
-		simAssertion(high = -1, "Failed to drain stack.");
+		AffirmIf(high = -1, "Failed to drain stack.");
 		got <= '0';
 
-		simDeactivateProcess(PID);
-		wait;  -- forever
+		WaitForBarrier(TestDone);
+		wait;
 	end process;
 
-end tb;
+	ControlProc : process
+	begin
+		SetTestName("Tb_dstruct_Stack");
+		SetLogEnable(PASSED, FALSE);
+		TranscriptOpen;
+		SetTranscriptMirror(TRUE);
+		Log("NOTE: This is a mechanically converted old-style testbench and needs a proper OSVVM port.", INFO);
+		wait until rst = '0';
+		ClearAlerts;
+		WaitForBarrier(TestDone, 100 ms);
+		AlertIf(now >= 100 ms, "Test timed out");
+		AlertIf(GetAffirmCount < 1, "Test is not Self-Checking");
+		EndOfTestReports;
+		std.env.stop;
+	end process;
+
+end architecture tb;

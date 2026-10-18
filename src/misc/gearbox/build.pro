@@ -18,7 +18,7 @@
 # limitations under the License.
 # =============================================================================
 
-# analyze ./gearbox_Down_cc.vhdl    listed in axi4.pro
+# analyze ./gearbox_Down_cc.vhdl # analyzed in axi4stream/build.pro
 analyze ./gearbox_Down_dc.vhdl
-# analyze ./gearbox_Up_cc.vhdl      listed in axi4.pro
+# analyze ./gearbox_Up_cc.vhdl # analyzed in axi4stream/build.pro
 analyze ./gearbox_Up_dc.vhdl

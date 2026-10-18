@@ -1,12 +1,11 @@
 -- =============================================================================
--- Testbench:        Testing the physical package.
+-- Authors:          Patrick Lehmann
 --
--- Authors:          Thomas B. Preusser
---                  Patrick Lehmann
+-- Testbench:        Tests physical type arithmetic (FREQ, time)
 --
 -- Description:
 -- ------------------------------------
---    TODO
+--    Converted to OSVVM style.
 --
 -- License:
 -- =============================================================================
@@ -26,38 +25,40 @@
 -- limitations under the License.
 -- =============================================================================
 
-entity physical_tb is
-end entity;
-
-
 library PoC;
 use     PoC.physical.all;
 
--- simulation only packages
-use     PoC.sim_types.all;
-use     PoC.simulation.all;
+library osvvm;
+context osvvm.OsvvmContext;
 
-architecture tb of physical_tb is
-	constant simTestID : T_SIM_TEST_ID := simCreateTest("Physical types test.");
+
+entity Tb_common_physical is
+end entity;
+
+
+architecture tb of Tb_common_physical is
+	constant TestName : string := "Tb_common_physical";
 begin
-	simInitialize;
 
-	process
-		constant simProcessID : T_SIM_PROCESS_ID := simRegisterProcess(simTestID, "");
-
+	ControlProc : process
 		variable t : time;
 		variable f : FREQ;
 	begin
+		SetTestName(TestName);
+		TranscriptOpen;
+		SetTranscriptMirror(TRUE);
+		Log("NOTE: This is a mechanically converted old-style testbench and needs a proper OSVVM port.", INFO);
+
 		t := 20 ns;
-		simAssertion(integer(10.0 * to_real(t, 1 ns))  = 200, "Failed stripping of time unit.");
+		AffirmIf(integer(10.0 * to_real(t, 1 ns))  = 200, "Failed stripping of time unit.");
 		f := 1.0 / t;
-		simAssertion(integer(10.0 * to_real(f, 1 MHz)) = 500, "Failed stripping of FREQ unit.");
+		AffirmIf(integer(10.0 * to_real(f, 1 MHz)) = 500, "Failed stripping of FREQ unit.");
 
-		simAssertion(integer(10.0 * t*f) = 10, "Failed cycle computation.");
-		simAssertion(integer(10.0 * f*t) = 10, "Failed cycle computation.");
+		AffirmIf(integer(10.0 * t*f) = 10, "Failed cycle computation t*f.");
+		AffirmIf(integer(10.0 * f*t) = 10, "Failed cycle computation f*t.");
 
-		simDeactivateProcess(simProcessID);
-		wait;   --forever
+		EndOfTestReports;
+		std.env.stop;
+		wait;
 	end process;
-
 end architecture;

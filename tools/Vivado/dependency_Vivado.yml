@@ -1,0 +1,2458 @@
+version: "1.3"
+dependencies:
+
+  PoC.common.utils:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/common/utils.vhdl
+
+  PoC.common.config:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/common/config.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.common.strings:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/common/strings.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+
+  PoC.common.protected.v08:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/common/protected.v08.vhdl
+
+  PoC.common.math:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/common/math.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.common.vectors:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/common/vectors.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.strings
+
+  PoC.common.physical:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/common/physical.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+
+  PoC.common.components:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/common/components.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.common.common:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/common/common.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.components
+      - PoC.common.math
+      - PoC.common.physical
+      - PoC.common.strings
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.xil.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/xil.pkg.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.misc.ClockBuffer:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/misc_ClockBuffer.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.xil.pkg
+      - PoC.xil.ClockBuffer
+
+  PoC.sync.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync.pkg.vhdl
+
+  PoC.sync.Bits_Xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync_Bits_Xilinx.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.sync.pkg
+      - PoC.sync.Bits_Xilinx.xdc
+
+  PoC.sync.Reset_Xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync_Reset_Xilinx.vhdl
+    dependsOn:
+      - PoC.sync.pkg
+      - PoC.sync.Reset_Xilinx.xdc
+
+  PoC.sync.Pulse_Xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync_Pulse_Xilinx.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.sync.pkg
+      - PoC.sync.Bits_Xilinx
+
+  PoC.sync.Bits:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync_Bits.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.sync.pkg
+      - PoC.sync.Bits_Xilinx
+
+  PoC.sync.Reset:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync_Reset.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.sync.pkg
+      - PoC.sync.Reset_Xilinx
+
+  PoC.sync.Pulse:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync_Pulse.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.sync.pkg
+      - PoC.sync.Pulse_Xilinx
+
+  PoC.sync.Strobe:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync_Strobe.vhdl
+    dependsOn:
+      - PoC.sync.pkg
+      - PoC.sync.Bits
+
+  PoC.sync.Vector:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync_Vector.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.sync.pkg
+      - PoC.sync.Bits
+      - PoC.sync.Vector.xdc
+
+  PoC.sync.Command:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync_Command.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.sync.pkg
+      - PoC.sync.Bits
+      - PoC.sync.Command.xdc
+
+  PoC.sync.Resets:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sync/sync_Resets.vhdl
+    dependsOn:
+      - PoC.sync.pkg
+      - PoC.common.utils
+      - PoC.common.components
+      - PoC.sync.Reset
+      - PoC.sync.Bits
+      - PoC.misc.ClockBuffer
+
+  PoC.arith.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.arith.xilinx.arith_CarryChain_inc_Xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/xilinx/arith_CarryChain_inc_Xilinx.vhdl
+
+  PoC.arith.xilinx.arith_cca_xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/xilinx/arith_cca_xilinx.vhdl
+
+  PoC.arith.xilinx.arith_Adder_Wide_Xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/xilinx/arith_Adder_Wide_Xilinx.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.arith.pkg
+
+  PoC.arith.xilinx.arith_inc_ovcy_xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/xilinx/arith_inc_ovcy_xilinx.vhdl
+
+  PoC.arith.xilinx.arith_Prefix_And_Xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/xilinx/arith_Prefix_And_Xilinx.vhdl
+
+  PoC.arith.xilinx.arith_Prefix_Or_Xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/xilinx/arith_Prefix_Or_Xilinx.vhdl
+
+  PoC.arith.accumulator:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_accumulator.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.arith.Adder_Wide:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Adder_Wide.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.arith.pkg
+
+  PoC.arith.CarryChain_inc:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_CarryChain_inc.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.arith.pkg
+      - PoC.arith.xilinx.arith_CarryChain_inc_Xilinx
+
+  PoC.arith.Convert_Binary2BCD:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Convert_Binary2BCD.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.components
+
+  PoC.arith.Counter_BCD:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Counter_BCD.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.arith.Counter_Free:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Counter_Free.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.arith.Counter_Gray:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Counter_Gray.vhdl
+
+  PoC.arith.Counter_Ring:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Counter_Ring.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.arith.Divider:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Divider.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.arith.Prefix_And:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Prefix_And.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.arith.pkg
+      - PoC.arith.xilinx.arith_Prefix_And_Xilinx
+
+  PoC.arith.Prefix_Or:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Prefix_Or.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.arith.pkg
+      - PoC.arith.xilinx.arith_Prefix_Or_Xilinx
+
+  PoC.arith.PRNG:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_PRNG.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.arith.pkg
+
+  PoC.arith.Same:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Same.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.arith.pkg
+      - PoC.arith.xilinx.arith_inc_ovcy_xilinx
+
+  PoC.arith.SquareRoot:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_SquareRoot.vhdl
+
+  PoC.arith.Scaler:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Scaler.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.arith.Shifter_Barrel:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_Shifter_Barrel.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.arith.TRNG:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/arith/arith_TRNG.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.sync.Bits
+
+  PoC.misc.ConditionCounter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/misc_ConditionCounter.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.misc.Data_Swapper:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/misc_Data_Swapper.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.misc.Delay:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/misc_Delay.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.misc.FrequencyMeasurement:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/misc_FrequencyMeasurement.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.sync.Strobe
+
+  PoC.misc.Sequencer:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/misc_Sequencer.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.misc.StrobeGenerator:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/misc_StrobeGenerator.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.components
+
+  PoC.misc.StrobeLimiter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/misc_StrobeLimiter.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.misc.StrobeStretcher:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/misc_StrobeStretcher.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.components
+
+  PoC.misc.bit_lz:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/misc_bit_lz.vhdl
+
+  PoC.misc.clock.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/clock/clock.pkg.vhdl
+    dependsOn:
+      - PoC.common.physical
+      - PoC.common.utils
+
+  PoC.misc.clock.Counter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/clock/clock_Counter.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.misc.clock.Timer:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/clock/clock_Timer.vhdl
+    dependsOn:
+      - PoC.common.math
+      - PoC.common.utils
+      - PoC.common.physical
+
+  PoC.misc.clock.HighResolution:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/clock/clock_HighResolution.vhdl
+    dependsOn:
+      - PoC.common.physical
+      - PoC.common.utils
+      - PoC.misc.clock.pkg
+      - PoC.misc.clock.Timer
+      - PoC.misc.clock.Counter
+
+  PoC.misc.filter.And:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/filter/filter_And.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.misc.filter.Or:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/filter/filter_Or.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.misc.filter.Mean:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/filter/filter_Mean.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.misc.filter.PatternFinder:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/filter/filter_PatternFinder.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+
+  PoC.misc.stat.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/stat/stat.pkg.vhdl
+
+  PoC.misc.stat.Average:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/stat/stat_Average.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.arith.pkg
+      - PoC.arith.Divider
+
+  PoC.misc.stat.Histogram:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/stat/stat_Histogram.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.misc.stat.Histogram_man_boundary:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/stat/stat_Histogram_man_boundary.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.misc.stat.Histogram
+
+  PoC.misc.stat.Maximum:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/stat/stat_Maximum.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.misc.stat.Minimum:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/stat/stat_Minimum.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.misc.stat.MinMaxCounter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/stat/stat_MinMaxCounter.vhdl
+    dependsOn:
+      - PoC.misc.stat.pkg
+
+  PoC.misc.gearbox.Down_cc:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/gearbox/gearbox_Down_cc.vhdl
+    dependsOn:
+      - PoC.common.math
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4stream.pkg
+
+  PoC.misc.gearbox.Down_dc:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/gearbox/gearbox_Down_dc.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.components
+
+  PoC.misc.gearbox.Up_cc:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/gearbox/gearbox_Up_cc.vhdl
+    dependsOn:
+      - PoC.common.math
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4stream.pkg
+
+  PoC.misc.gearbox.Up_dc:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/misc/gearbox/gearbox_Up_dc.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.components
+
+  PoC.bus.axi4.Common.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Common.pkg.vhdl
+
+  PoC.bus.axi4.Full.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Full.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.bus.axi4.Common.pkg
+
+  PoC.bus.axi4stream.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream.pkg.vhdl
+
+  PoC.bus.axi4lite.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite.pkg.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.bus.axi4.Common.pkg
+
+  PoC.bus.axi4.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4.Common.pkg
+      - PoC.bus.axi4stream.pkg
+      - PoC.bus.axi4lite.pkg
+      - PoC.bus.axi4.Full.pkg
+
+  PoC.mem.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/mem.pkg.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+
+  PoC.mem.ocram.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocram/ocram.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.mem.pkg
+
+  PoC.mem.ocram.TrueDualPort_Simulation:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocram/ocram_TrueDualPort_Simulation.vhdl
+        attributes:
+          USED_IN_SYNTHESIS: 0
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.mem.pkg
+
+  PoC.mem.ocram.TrueDualPort:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocram/ocram_TrueDualPort.vhdl
+        attributes:
+          USED_IN_SIMULATION: 0
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.mem.pkg
+      - PoC.mem.ocram.pkg
+      - PoC.mem.ocram.TrueDualPort_Simulation
+
+  PoC.mem.ocram.TrueDualPort_WriteFirst:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocram/ocram_TrueDualPort_WriteFirst.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.mem.pkg
+      - PoC.mem.ocram.pkg
+      - PoC.mem.ocram.TrueDualPort
+
+  PoC.mem.ocram.EnhancedSimpleDualPort:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocram/ocram_EnhancedSimpleDualPort.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.mem.pkg
+      - PoC.mem.ocram.pkg
+      - PoC.mem.ocram.TrueDualPort
+      - PoC.mem.ocram.TrueDualPort_Simulation
+
+  PoC.mem.ocram.SimpleDualPort:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocram/ocram_SimpleDualPort.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.mem.pkg
+      - PoC.mem.ocram.pkg
+      - PoC.mem.ocram.TrueDualPort_Simulation
+
+  PoC.mem.ocram.SimpleDualPort_Optimized:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocram/ocram_SimpleDualPort_Optimized.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.mem.pkg
+      - PoC.mem.ocram.SimpleDualPort
+
+  PoC.mem.ocram.SimpleDualPort_WriteFirst:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocram/ocram_SimpleDualPort_WriteFirst.vhdl
+    dependsOn:
+      - PoC.mem.ocram.pkg
+      - PoC.mem.ocram.SimpleDualPort
+
+  PoC.mem.ocram.SinglePort:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocram/ocram_SinglePort.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.mem.pkg
+
+  PoC.mem.ocrom.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocrom/ocrom.pkg.vhdl
+
+  PoC.mem.ocrom.DualPort:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocrom/ocrom_DualPort.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.mem.pkg
+      - PoC.mem.ocram.pkg
+
+  PoC.mem.ocrom.SinglePort:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/ocrom/ocrom_SinglePort.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.mem.pkg
+      - PoC.mem.ocram.pkg
+
+  PoC.mem.sdram.ctrl_fsm:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/sdram/sdram_ctrl_fsm.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.mem.sdram.ctrl_phy_s3esk:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/sdram/sdram_ctrl_phy_s3esk.vhdl
+
+  PoC.mem.sdram.ctrl_s3esk:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/sdram/sdram_ctrl_s3esk.vhdl
+    dependsOn:
+      - PoC.mem.sdram.ctrl_fsm
+      - PoC.mem.sdram.ctrl_phy_s3esk
+
+  PoC.mem.GitVersionRegister.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/mem_GitVersionRegister.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.config
+      - PoC.common.vectors
+      - PoC.common.strings
+      - PoC.bus.axi4lite.pkg
+
+  PoC.mem.lut.Sine:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/mem/lut/lut_Sine.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.strings
+
+  PoC.fifo.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/fifo/fifo.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.fifo.Shift:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/fifo/fifo_Shift.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.fifo.StageFar:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/fifo/fifo_StageFar.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.fifo.Shift
+
+  PoC.fifo.Stage:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/fifo/fifo_Stage.vhdl
+    dependsOn:
+      - PoC.fifo.StageFar
+
+  PoC.fifo.ic_got:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/fifo/fifo_ic_got.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.mem.ocram.pkg
+      - PoC.sync.Bits
+      - PoC.mem.ocram.SimpleDualPort
+      - PoC.fifo.ic_got.xdc
+
+  PoC.fifo.ic_assembly:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/fifo/fifo_ic_assembly.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.mem.ocram.pkg
+      - PoC.mem.ocram.SimpleDualPort
+
+  PoC.fifo.cc_got:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/fifo/fifo_cc_got.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.mem.pkg
+      - PoC.mem.ocram.pkg
+      - PoC.fifo.Shift
+
+  PoC.fifo.cc_got_tempgot:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/fifo/fifo_cc_got_tempgot.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.mem.pkg
+      - PoC.common.utils
+      - PoC.mem.ocram.pkg
+      - PoC.mem.ocram.SimpleDualPort_Optimized
+
+  PoC.fifo.cc_got_tempput:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/fifo/fifo_cc_got_tempput.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.mem.pkg
+      - PoC.mem.ocram.pkg
+      - PoC.mem.ocram.SimpleDualPort_Optimized
+
+  PoC.xil.ClockBuffer:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/xil_ClockBuffer.vhdl
+
+  PoC.xil.Trans_config:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/xil_Trans_config.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+
+  PoC.xil.DNAPort:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/xil_DNAPort.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.xil.pkg
+      - PoC.common.components
+
+  PoC.xil.ICAP:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/xil_ICAP.vhdl
+    dependsOn:
+      - PoC.common.config
+
+  PoC.xil.BSCAN:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/xil_BSCAN.vhdl
+    dependsOn:
+      - PoC.common.config
+
+  PoC.xil.Reconfigurator:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/xil_Reconfigurator.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.xil.pkg
+
+  PoC.xil.SystemMonitor:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/xil_SystemMonitor.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.strings
+      - PoC.xil.pkg
+
+  PoC.xil.reconfig.ICAP_FSM:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/reconfig/reconfig_ICAP_FSM.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.xil.reconfig.ICAP_Wrapper:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/reconfig/reconfig_ICAP_Wrapper.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.fifo.ic_got
+      - PoC.xil.reconfig.ICAP_FSM
+      - PoC.xil.ICAP
+      - PoC.sync.Strobe
+      - PoC.sync.Bits
+      - PoC.sync.Vector
+
+  PoC.xil.clknet.ClockNetwork_KC705:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/xil/clknet/clknet_ClockNetwork_KC705.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.io.pkg
+      - PoC.sync.Bits_Xilinx
+
+  PoC.dstruct.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/dstruct/dstruct.pkg.vhdl
+
+  PoC.dstruct.DoubleEndedQueue:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/dstruct/dstruct_DoubleEndedQueue.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.mem.ocram.pkg
+      - PoC.mem.ocram.TrueDualPort_WriteFirst
+
+  PoC.dstruct.OutOfOrderBuffer:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/dstruct/dstruct_OutOfOrderBuffer.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.mem.ocram.pkg
+
+  PoC.dstruct.Stack:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/dstruct/dstruct_Stack.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.mem.ocram.pkg
+      - PoC.mem.ocram.SinglePort
+
+  PoC.io.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/io.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+
+  PoC.io.Debounce:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/io_Debounce.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+      - PoC.sync.Bits
+
+  PoC.io.FrequencyCounter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/io_FrequencyCounter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+
+  PoC.io.TimingCounter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/io_TimingCounter.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+
+  PoC.io.GlitchFilter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/io_GlitchFilter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.io.TimingCounter
+
+  PoC.io.PulseWidthModulation:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/io_PulseWidthModulation.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+
+  PoC.io.KeyPadScanner:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/io_KeyPadScanner.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.sync.Bits
+
+  PoC.io.7SegmentMux_BCD:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/io_7SegmentMux_BCD.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.io.pkg
+      - PoC.misc.StrobeGenerator
+
+  PoC.io.7SegmentMux_HEX:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/io_7SegmentMux_HEX.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.io.pkg
+      - PoC.misc.StrobeGenerator
+
+  PoC.io.FanControl:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/io_FanControl.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.xil.pkg
+      - PoC.io.PulseWidthModulation
+      - PoC.sync.Bits
+      - PoC.io.TimingCounter
+      - PoC.xil.SystemMonitor
+      - PoC.io.FrequencyCounter
+
+  PoC.io.ddrio.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/ddrio/ddrio.pkg.vhdl
+
+  PoC.io.ddrio.In:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/ddrio/ddrio_In.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.io.ddrio.pkg
+      - PoC.io.ddrio.In_Xilinx
+
+  PoC.io.ddrio.InOut:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/ddrio/ddrio_InOut.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.config
+      - PoC.io.ddrio.pkg
+      - PoC.io.ddrio.InOut_Xilinx
+
+  PoC.io.ddrio.Out:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/ddrio/ddrio_Out.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.io.ddrio.pkg
+      - PoC.io.ddrio.Out_Xilinx
+
+  PoC.io.ddrio.In_Xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/ddrio/ddrio_In_Xilinx.vhdl
+
+  PoC.io.ddrio.InOut_Xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/ddrio/ddrio_InOut_Xilinx.vhdl
+
+  PoC.io.ddrio.Out_Xilinx:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/ddrio/ddrio_Out_Xilinx.vhdl
+
+  PoC.io.spi.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/spi/spi.pkg.vhdl
+
+  PoC.io.spi.Slave:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/spi/spi_Slave.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.io.pkg
+      - PoC.io.spi.pkg
+
+  PoC.io.spi.Master:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/spi/spi_Master.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.io.pkg
+      - PoC.io.spi.pkg
+      - PoC.io.TimingCounter
+      - PoC.io.spi.Slave
+
+  PoC.io.uart.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/uart/uart.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+
+  PoC.io.uart.BitClock:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/uart/uart_BitClock.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.io.uart.pkg
+
+  PoC.io.uart.RX:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/uart/uart_RX.vhdl
+    dependsOn:
+      - PoC.io.uart.pkg
+      - PoC.sync.Bits
+
+  PoC.io.uart.TX:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/uart/uart_TX.vhdl
+    dependsOn:
+      - PoC.io.uart.pkg
+
+  PoC.io.uart.FIFO:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/uart/uart_FIFO.vhdl
+    dependsOn:
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.common.utils
+      - PoC.io.uart.pkg
+      - PoC.fifo.cc_got
+      - PoC.io.uart.BitClock
+      - PoC.io.uart.TX
+      - PoC.io.uart.RX
+      - PoC.sync.Bits
+
+  PoC.io.uart.FT245:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/uart/uart_FT245.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.io.iic.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/iic/iic.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+      - PoC.io.pkg
+
+  PoC.io.iic.BusController:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/iic/iic_BusController.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.io.pkg
+      - PoC.io.iic.pkg
+      - PoC.io.TimingCounter
+      - PoC.io.GlitchFilter
+
+  PoC.io.iic.Controller:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/iic/iic_Controller.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.io.pkg
+      - PoC.io.iic.pkg
+      - PoC.io.iic.BusController
+
+  PoC.io.iic.Passthrough:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/iic/iic_Passthrough.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+      - PoC.common.vectors
+      - PoC.io.pkg
+      - PoC.io.iic.pkg
+
+  PoC.io.iic.RawDemux:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/iic/iic_RawDemux.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.io.iic.pkg
+
+  PoC.io.iic.RawMux:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/iic/iic_RawMux.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.io.iic.pkg
+
+  PoC.io.fan.TachoCalculator:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/fan/fan_TachoCalculator.vhdl
+    dependsOn:
+      - PoC.common.physical
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.io.Debounce
+      - PoC.arith.Divider
+
+  PoC.io.pmod.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/pmod/pmod.pkg.vhdl
+
+  PoC.io.pmod.KYPD:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/pmod/pmod_KYPD.vhdl
+    dependsOn:
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.io.pmod.pkg
+      - PoC.io.KeyPadScanner
+      - PoC.io.Debounce
+
+  PoC.io.pmod.SSD:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/pmod/pmod_SSD.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.io.pkg
+      - PoC.io.pmod.pkg
+
+  PoC.io.pmod.USBUART:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/pmod/pmod_USBUART.vhdl
+    dependsOn:
+      - PoC.common.physical
+      - PoC.io.uart.pkg
+      - PoC.io.uart.FIFO
+
+  PoC.io.jtag.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/jtag/jtag.pkg.vhdl
+
+  PoC.io.led.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/io/led/led.pkg.vhdl
+
+  PoC.bus.Arbiter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/bus_Arbiter.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.bus.stream.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.strings
+
+  PoC.bus.stream.DeMux:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_DeMux.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.stream.pkg
+      - PoC.common.vectors
+
+  PoC.bus.stream.Mux:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Mux.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.stream.pkg
+      - PoC.common.vectors
+
+  PoC.bus.stream.Delay:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Delay.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.stream.pkg
+
+  PoC.bus.axi4stream.FIFO:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_FIFO.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.mem.pkg
+      - PoC.bus.axi4.pkg
+      - PoC.bus.axi4stream.pkg
+      - PoC.fifo.cc_got
+
+  PoC.bus.axi4stream.FIFO_CDC:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_FIFO_CDC.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4stream.pkg
+      - PoC.fifo.ic_got
+
+  PoC.bus.axi4stream.FIFO_TempGot:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_FIFO_TempGot.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4stream.pkg
+      - PoC.fifo.cc_got_tempgot
+
+  PoC.bus.axi4stream.FIFO_TempPut:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_FIFO_TempPut.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4.pkg
+      - PoC.bus.axi4stream.pkg
+      - PoC.mem.pkg
+      - PoC.fifo.cc_got_tempput
+
+  PoC.bus.axi4stream.Stage:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_Stage.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.axi4stream.pkg
+      - PoC.fifo.Stage
+
+  PoC.bus.axi4stream.Mux:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_Mux.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.axi4stream.pkg
+
+  PoC.bus.axi4stream.Pause:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_Pause.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.axi4stream.pkg
+
+  PoC.bus.axi4stream.DeMux:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_DeMux.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4stream.pkg
+      - PoC.bus.axi4stream.Stage
+
+  PoC.bus.axi4stream.Termination_Transmitter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_Termination_Transmitter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4stream.pkg
+
+  PoC.bus.axi4stream.Termination_Receiver:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_Termination_Receiver.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4stream.pkg
+
+  PoC.bus.axi4stream.DataExtractor:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_DataExtractor.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4stream.pkg
+      - PoC.common.vectors
+
+  PoC.bus.axi4stream.PatternFinder:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_PatternFinder.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.components
+      - PoC.bus.axi4stream.pkg
+      - PoC.common.vectors
+      - PoC.misc.filter.PatternFinder
+
+  PoC.bus.axi4stream.FieldReplacer:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_FieldReplacer.vhdl
+    dependsOn:
+      - PoC.bus.axi4stream.pkg
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+
+  PoC.bus.axi4stream.PRBSGenerator:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_PRBSGenerator.vhdl
+    dependsOn:
+      - PoC.bus.axi4stream.pkg
+      - PoC.arith.PRNG
+
+  PoC.bus.axi4stream.Buffer_no_backpressure:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_Buffer_no_backpressure.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4.pkg
+      - PoC.bus.axi4stream.pkg
+      - PoC.mem.pkg
+      - PoC.fifo.cc_got_tempput
+
+  PoC.bus.axi4stream.Splitter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_Splitter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.components
+      - PoC.bus.axi4stream.pkg
+
+  PoC.bus.axi4stream.Realign:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_Realign.vhdl
+    dependsOn:
+      - PoC.mem.pkg
+      - PoC.bus.axi4.pkg
+      - PoC.common.utils
+      - PoC.bus.stream.pkg
+      - PoC.common.vectors
+      - PoC.bus.axi4stream.pkg
+
+  PoC.bus.axi4stream.Gearbox:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_Gearbox.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4.pkg
+      - PoC.bus.axi4stream.pkg
+      - PoC.misc.gearbox.Down_cc
+      - PoC.misc.gearbox.Up_cc
+
+  PoC.bus.axi4.Address_Data_Aligner:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Address_Data_Aligner.vhdl
+    dependsOn:
+      - PoC.bus.axi4.Full.pkg
+      - PoC.common.utils
+      - PoC.common.components
+      - PoC.common.vectors
+
+  PoC.bus.axi4.Address_Translate:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Address_Translate.vhdl
+    dependsOn:
+      - PoC.bus.axi4.Full.pkg
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.io.TimingCounter
+
+  PoC.bus.axi4.Address_Translate_n_Filter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Address_Translate_n_Filter.vhdl
+    dependsOn:
+      - PoC.bus.axi4.Full.pkg
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.bus.axi4.Data_Swapper:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Data_Swapper.vhdl
+    dependsOn:
+      - PoC.bus.axi4.Full.pkg
+      - PoC.common.utils
+      - PoC.common.components
+      - PoC.common.vectors
+      - PoC.misc.Data_Swapper
+
+  PoC.bus.axi4.FIFO:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_FIFO.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4.Full.pkg
+      - PoC.bus.axi4.Common.pkg
+      - PoC.fifo.cc_got
+
+  PoC.bus.axi4.FIFO_CDC:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_FIFO_CDC.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4.Full.pkg
+      - PoC.bus.axi4.Common.pkg
+      - PoC.fifo.ic_got
+
+  PoC.bus.axi4.DeMux:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_DeMux.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4.Full.pkg
+      - PoC.bus.axi4stream.pkg
+      - PoC.bus.axi4.FIFO
+
+  PoC.bus.axi4.Mux:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Mux.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4.Full.pkg
+      - PoC.bus.axi4stream.pkg
+      - PoC.bus.axi4.FIFO
+
+  PoC.bus.axi4.Packet_FIFO:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Packet_FIFO.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4.Full.pkg
+      - PoC.bus.axi4.Common.pkg
+      - PoC.fifo.cc_got_tempput
+
+  PoC.bus.axi4.Sink:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Sink.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.axi4.Full.pkg
+
+  PoC.bus.axi4.Termination_Manager:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Termination_Manager.vhdl
+    dependsOn:
+      - PoC.bus.axi4.Full.pkg
+
+  PoC.bus.axi4.Termination_Subordinate:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_Termination_Subordinate.vhdl
+    dependsOn:
+      - PoC.bus.axi4.Full.pkg
+      - PoC.fifo.pkg
+      - PoC.fifo.cc_got
+
+  PoC.bus.axi4.AXI4Lite_Converter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_AXI4Lite_Converter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4.Full.pkg
+      - PoC.bus.axi4lite.pkg
+      - PoC.fifo.Shift
+
+  PoC.bus.axi4.OSVVM.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4/axi4_OSVVM.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4.pkg
+      - PoC.bus.axi4.Full.pkg
+
+  PoC.bus.axi4lite.AddressMask:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_AddressMask.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4lite.pkg
+
+  PoC.bus.axi4lite.AddressTruncate:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_AddressTruncate.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4lite.pkg
+
+  PoC.bus.axi4lite.Writer:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_Writer.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4lite.pkg
+
+  PoC.bus.axi4lite.Reader:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_Reader.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4lite.pkg
+
+  PoC.bus.axi4lite.DeMux:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_DeMux.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4.pkg
+      - PoC.bus.axi4.Full.pkg
+      - PoC.bus.axi4lite.pkg
+      - PoC.bus.axi4.DeMux
+
+  PoC.bus.axi4lite.ErrorFilter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_ErrorFilter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4lite.pkg
+
+  PoC.bus.axi4lite.FIFO:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_FIFO.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4lite.pkg
+      - PoC.bus.axi4.Common.pkg
+      - PoC.fifo.cc_got
+
+  PoC.bus.axi4lite.FIFO_CDC:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_FIFO_CDC.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.axi4lite.pkg
+      - PoC.bus.axi4.Common.pkg
+      - PoC.fifo.ic_got
+
+  PoC.bus.axi4lite.Register:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_Register.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.strings
+      - PoC.bus.axi4lite.pkg
+
+  PoC.bus.axi4lite.Register_split:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_Register_split.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.strings
+      - PoC.common.vectors
+      - PoC.bus.axi4lite.pkg
+      - PoC.bus.axi4lite.DeMux
+      - PoC.bus.axi4lite.Register
+
+  PoC.bus.axi4lite.Termination_Manager:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_Termination_Manager.vhdl
+    dependsOn:
+      - PoC.bus.axi4lite.pkg
+
+  PoC.bus.axi4lite.Termination_Subordinate:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_Termination_Subordinate.vhdl
+    dependsOn:
+      - PoC.bus.axi4lite.pkg
+      - PoC.fifo.pkg
+      - PoC.fifo.cc_got
+
+  PoC.bus.axi4lite.HighResolutionClock:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_HighResolutionClock.vhdl
+    dependsOn:
+      - PoC.common.physical
+      - PoC.common.vectors
+      - PoC.bus.axi4lite.pkg
+      - PoC.misc.clock.pkg
+      - PoC.bus.axi4lite.Register
+      - PoC.misc.clock.HighResolution
+      - PoC.bus.axi4lite.FIFO_CDC
+
+  PoC.bus.axi4lite.OCRAM_Adapter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_OCRAM_Adapter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4lite.pkg
+      - PoC.bus.axi4lite.FIFO
+
+  PoC.bus.axi4lite.OSVVM.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_OSVVM.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4lite.pkg
+
+  PoC.bus.axi4lite.GitVersionRegister:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_GitVersionRegister.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.strings
+      - PoC.bus.axi4lite.pkg
+      - PoC.xil.pkg
+      - PoC.mem.GitVersionRegister.pkg
+      - PoC.bus.axi4lite.Register
+      - PoC.xil.DNAPort
+
+  PoC.bus.axi4lite.SimpleInterface:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_SimpleInterface.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.strings
+      - PoC.bus.axi4lite.pkg
+
+  PoC.bus.axi4lite.UART:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4lite/axi4lite_UART.vhdl
+    dependsOn:
+      - PoC.bus.axi4lite.pkg
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.common.components
+      - PoC.common.utils
+      - PoC.io.uart.pkg
+      - PoC.bus.axi4lite.Register
+      - PoC.io.uart.FIFO
+
+  PoC.bus.stream.FIFO:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_FIFO.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.fifo.cc_got
+      - PoC.fifo.cc_got_tempgot
+
+  PoC.bus.stream.FIFO_tempput:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_FIFO_tempput.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.bus.stream.pkg
+      - PoC.fifo.cc_got_tempput
+
+  PoC.bus.stream.fast_cutter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_fast_cutter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.bus.stream.pkg
+
+  PoC.bus.stream.fast_to_stream_adapter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_fast_to_stream_adapter.vhdl
+    dependsOn:
+      - PoC.common.vectors
+      - PoC.common.utils
+      - PoC.bus.stream.pkg
+      - PoC.misc.gearbox.Down_cc
+
+  PoC.bus.stream.FrameGenerator:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_FrameGenerator.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.stream.pkg
+      - PoC.arith.PRNG
+
+  PoC.bus.stream.Frame_checker:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Frame_checker.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.stream.pkg
+      - PoC.arith.PRNG
+
+  PoC.bus.stream.Stage:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Stage.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.stream.pkg
+      - PoC.fifo.Stage
+
+  PoC.bus.stream.Stage_vector:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Stage_vector.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.stream.pkg
+      - PoC.bus.stream.Stage
+
+  PoC.bus.stream.Mirror:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Mirror.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.fifo.Stage
+
+  PoC.bus.stream.PacketGenerator:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_PacketGenerator.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.stream.pkg
+
+  PoC.bus.stream.Padder:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Padder.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.stream.pkg
+      - PoC.common.config
+      - PoC.common.vectors
+      - PoC.common.components
+
+  PoC.bus.stream.Source:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Source.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.strings
+      - PoC.bus.stream.pkg
+
+  PoC.bus.stream.Statistics:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Statistics.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.stream.pkg
+      - PoC.common.vectors
+      - PoC.common.physical
+
+  PoC.bus.stream.to_stream_fast_adapter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_to_stream_fast_adapter.vhdl
+    dependsOn:
+      - PoC.common.vectors
+      - PoC.bus.stream.pkg
+      - PoC.common.utils
+      - PoC.misc.gearbox.Up_cc
+
+  PoC.bus.stream.utils.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_utils.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.strings
+
+  PoC.bus.stream.Presplitter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Presplitter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.stream.pkg
+      - PoC.common.vectors
+
+  PoC.bus.stream.Prepender:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_Prepender.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.bus.stream.pkg
+      - PoC.bus.stream.utils.pkg
+      - PoC.bus.stream.Stage
+
+  PoC.bus.stream.generic_fast_appender:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/generic_fast_appender.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+
+  PoC.bus.stream.generic_fast_post_splitter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/generic_fast_post_splitter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+
+  PoC.bus.stream.generic_fast_pre_splitter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/generic_fast_pre_splitter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.physical
+      - PoC.fifo.Stage
+
+  PoC.bus.stream.To_AXI4Stream:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/stream/stream_To_AXI4Stream.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.components
+      - PoC.common.vectors
+      - PoC.bus.stream.pkg
+      - PoC.bus.axi4stream.pkg
+
+  PoC.bus.axi4stream.To_Stream:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_To_Stream.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.components
+      - PoC.bus.stream.pkg
+      - PoC.bus.axi4stream.pkg
+      - PoC.common.vectors
+
+  PoC.bus.axi4stream.Delay:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/axi4stream/axi4stream_Delay.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.bus.stream.pkg
+      - PoC.bus.axi4stream.pkg
+      - PoC.bus.axi4stream.To_Stream
+      - PoC.bus.stream.Delay
+      - PoC.bus.stream.To_AXI4Stream
+
+  PoC.bus.drp.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/drp/drp.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.bus.drp.drp.generic:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/drp/drp.generic.vhdl
+    dependsOn:
+      - PoC.bus.drp.pkg
+
+  PoC.bus.drp.AXI4Lite_Bridge:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/bus/drp/drp_AXI4Lite_Bridge.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.bus.axi4lite.pkg
+      - PoC.bus.drp.pkg
+
+  PoC.comm.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/comm/comm.pkg.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.comm.CRC:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/comm/comm_CRC.vhdl
+    dependsOn:
+      - PoC.common.utils
+
+  PoC.comm.crc_parallel:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/comm/comm_crc_parallel.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+
+  PoC.comm.Scramble:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/comm/comm_Scramble.vhdl
+
+  PoC.sort.LeastRecentlyUsed_Cache:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sort/sort_LeastRecentlyUsed_Cache.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.arith.Prefix_And
+
+  PoC.sort.LeastRecentlyUsed_List:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sort/sort_LeastRecentlyUsed_List.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.arith.Prefix_And
+
+  PoC.sort.sortnet.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sort/sortnet/sortnet.pkg.vhdl
+
+  PoC.sort.sortnet.BitonicSort:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sort/sortnet/sortnet_BitonicSort.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.math
+      - PoC.common.vectors
+      - PoC.common.components
+
+  PoC.sort.sortnet.MergeSort_Streamed:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sort/sortnet/sortnet_MergeSort_Streamed.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.fifo.cc_got
+
+  PoC.sort.sortnet.OddEvenMergeSort:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sort/sortnet/sortnet_OddEvenMergeSort.vhdl
+    dependsOn:
+      - PoC.common.math
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+
+  PoC.sort.sortnet.OddEvenSort:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sort/sortnet/sortnet_OddEvenSort.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+
+  PoC.sort.sortnet.Transform:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sort/sortnet/sortnet_Transform.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+
+  PoC.sort.sortnet.Stream_Adapter:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sort/sortnet/sortnet_Stream_Adapter.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.sort.sortnet.pkg
+      - PoC.misc.gearbox.Up_cc
+      - PoC.misc.gearbox.Down_cc
+      - PoC.sort.sortnet.OddEvenSort
+      - PoC.sort.sortnet.OddEvenMergeSort
+      - PoC.sort.sortnet.BitonicSort
+
+  PoC.sort.sortnet.Stream_Adapter2:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sort/sortnet/sortnet_Stream_Adapter2.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.components
+      - PoC.sort.sortnet.pkg
+      - PoC.misc.gearbox.Up_cc
+      - PoC.misc.gearbox.Down_cc
+      - PoC.sort.sortnet.OddEvenSort
+      - PoC.sort.sortnet.OddEvenMergeSort
+      - PoC.sort.sortnet.BitonicSort
+
+  PoC.cache.pkg:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/cache/cache.pkg.vhdl
+
+  PoC.cache.ReplacementPolicy:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/cache/cache_ReplacementPolicy.vhdl
+    dependsOn:
+      - PoC.common.config
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.common.strings
+      - PoC.sort.LeastRecentlyUsed_Cache
+
+  PoC.cache.TagUnit_Sequential:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/cache/cache_TagUnit_Sequential.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.cache.ReplacementPolicy
+
+  PoC.cache.TagUnit_Parallel:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/cache/cache_TagUnit_Parallel.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.cache.ReplacementPolicy
+
+  PoC.cache.Parallel:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/cache/cache_Parallel.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.cache.TagUnit_Parallel
+
+  PoC.cache.Parallel2:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/cache/cache_Parallel2.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.vectors
+      - PoC.cache.TagUnit_Parallel
+      - PoC.mem.ocram.SinglePort
+
+  PoC.cache.CPU:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/cache/cache_CPU.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.cache.Parallel2
+
+  PoC.cache.Memory:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/cache/cache_Memory.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.cache.CPU
+      - PoC.fifo.Stage
+      - PoC.fifo.cc_got
+
+  PoC.list.Expire:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/list/list_Expire.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.fifo.cc_got
+
+  PoC.sim.VCDParser:
+    kind: VHDLSourceFile
+    sources:
+      - file: src/sim/sim_VCDParser.vhdl
+    dependsOn:
+      - PoC.common.utils
+      - PoC.common.strings
+
+  PoC.fifo.ic_got.xdc:
+    kind: XDCConstraintFile
+    sources:
+      - file: ucf/fifo/fifo_ic_got.xdc
+        attributes:
+          SCOPED_TO_REF: fifo_ic_got
+
+  PoC.sync.Bits_Xilinx.xdc:
+    kind: XDCConstraintFile
+    sources:
+      - file: ucf/sync/sync_Bits_Xilinx.xdc
+        attributes:
+          SCOPED_TO_REF: sync_Bits_Xilinx
+
+  PoC.sync.Command.xdc:
+    kind: XDCConstraintFile
+    sources:
+      - file: ucf/sync/sync_Command.xdc
+        attributes:
+          SCOPED_TO_REF: sync_Command
+
+  PoC.sync.Reset_Xilinx.xdc:
+    kind: XDCConstraintFile
+    sources:
+      - file: ucf/sync/sync_Reset_Xilinx.xdc
+        attributes:
+          SCOPED_TO_REF: sync_Reset_Xilinx
+
+  PoC.sync.Vector.xdc:
+    kind: XDCConstraintFile
+    sources:
+      - file: ucf/sync/sync_Vector.xdc
+        attributes:
+          SCOPED_TO_REF: sync_Vector
