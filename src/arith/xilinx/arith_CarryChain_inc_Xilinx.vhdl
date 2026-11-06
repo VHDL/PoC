@@ -1,15 +1,6 @@
 -- =============================================================================
 -- Authors:  Patrick Lehmann
 --
--- Entity:   Carry-chain abstraction for increment by one operations
---
--- Description:
--- -------------------------------------
---  This is a Xilinx specific carry-chain abstraction for increment by one
---  operations.
---
---  Sum <= A + (0...0) & CarryIn
---
 -- License:
 -- =============================================================================
 -- Copyright 2025-2026 The PoC-Library Authors
@@ -36,14 +27,18 @@ library Unisim;
 use     Unisim.VComponents.all;
 
 
+-- Xilinx-specific carry-chain implementation of an increment-by-one operation.
+--
+-- Combinational: ``Sum`` is ``A + CarryIn`` modulo ``2**BITS``; the carry out of the MSB is dropped. Each bit is
+-- built from one ``MUXCY`` and one ``XORCY`` primitive of the dedicated carry chain.
 entity arith_CarryChain_inc_Xilinx is
 	generic (
-		BITS      : positive
+		BITS      : positive  -- Width of ``A`` and ``Sum`` in bits.
 	);
 	port (
-		A       : in  std_logic_vector(BITS - 1 downto 0);
-		CarryIn : in  std_logic                              := '1';
-		Sum     : out std_logic_vector(BITS - 1 downto 0)
+		A       : in  std_logic_vector(BITS - 1 downto 0);            -- Operand.
+		CarryIn : in  std_logic                              := '1';  -- Value added to ``A`` (``'1'``: increment).
+		Sum     : out std_logic_vector(BITS - 1 downto 0)             -- ``A + CarryIn``, truncated to ``BITS`` bits.
 	);
 end entity;
 
