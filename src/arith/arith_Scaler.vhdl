@@ -1,26 +1,6 @@
 -- =============================================================================
 -- Authors:         Thomas B. Preusser
 --
--- Entity:          A flexible scaler for fixed-point values.
---
--- Description:
--- -------------------------------------
--- A flexible scaler for fixed-point values. The scaler is implemented for a set
--- of multiplier and divider values. Each individual scaling operation can
--- arbitrarily select one value from each these sets.
---
--- The computation calculates: ``unsigned(arg) * MULS(msel) / DIVS(dsel)``
--- rounded to the nearest (tie upwards) fixed-point result of the same precision
--- as ``arg``.
---
--- The computation is started by asserting ``start`` to high for one cycle. If a
--- computation is running, it will be restarted. The completion of a calculation
--- is signaled via ``done``. ``done`` is high when no computation is in progress.
--- The result of the last scaling operation is stable and can be read from
--- ``res``. The weight of the LSB of ``res`` is the same as the LSB of ``arg``.
--- Make sure to tap a sufficient number of result bits in accordance to the
--- highest scaling ratio to be used in order to avoid a truncation overflow.
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
@@ -45,22 +25,41 @@ use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 
+-- A flexible scaler for fixed-point values.
+--
+-- The scaler is implemented for a set of multiplier and divisor values. Each individual scaling operation can
+-- arbitrarily select one value from each of these sets.
+--
+-- The computation calculates: ``unsigned(Operand) * MULTIPLIERS(MultiplierSelect) / DIVISORS(DivisorSelect)``
+-- rounded to the nearest (tie upwards) fixed-point result of the same precision as ``Operand``.
+--
+-- The computation is started by asserting ``Start`` to high for one cycle; ``Operand``, ``MultiplierSelect`` and
+-- ``DivisorSelect`` are sampled with it. If a computation is running, it will be restarted. The computation takes one
+-- ``Clock`` cycle per bit of ``Operand`` for the multiplication, followed by the division steps. The completion of a
+-- calculation is signaled via ``Done``. ``Done`` is high when no computation is in progress. The result of the last
+-- scaling operation is stable and can be read from ``Result``. The weight of the LSB of ``Result`` is the same as the
+-- LSB of ``Operand``. Make sure to tap a sufficient number of result bits in accordance to the highest scaling ratio to
+-- be used in order to avoid a truncation overflow.
+--
+-- ``Reset`` is synchronous; it aborts a computation, sets ``Done`` and clears ``Result``.
 entity arith_Scaler is
 	generic (
 		MULTIPLIERS : positive_vector := (0 => 1);  -- The set of multipliers to choose from in scaling operations.
 		DIVISORS    : positive_vector := (0 => 1)   -- The set of divisors to choose from in scaling operations.
 	);
 	port (
-		Clock            : in  std_logic;
-		Reset            : in  std_logic;
+		Clock            : in  std_logic;                                                 -- Rising-edge clock.
+		Reset            : in  std_logic;                                                 -- Synchronous reset.
 
-		Start            : in  std_logic;          -- Start of Computation
-		Operand          : in  std_logic_vector;   -- Fixed-point value to be scaled
-		MultiplierSelect : in  std_logic_vector(log2ceil(MULTIPLIERS'length)-1 downto 0) := (others => '0');
-		DivisorSelect    : in  std_logic_vector(log2ceil(DIVISORS'length)-1 downto 0)    := (others => '0');
+		Start            : in  std_logic;                                                 -- Start a computation.
+		Operand          : in  std_logic_vector;                                          -- Unsigned value to be scaled.
+		MultiplierSelect : in  std_logic_vector(log2ceil(MULTIPLIERS'length)-1 downto 0)  -- Index into ``MULTIPLIERS``.
+		                       := (others => '0');
+		DivisorSelect    : in  std_logic_vector(log2ceil(DIVISORS'length)-1 downto 0)     -- Index into ``DIVISORS``.
+		                       := (others => '0');
 
-		Result           : out std_logic_vector;    -- Result
-		Done             : out std_logic          -- Completion
+		Result           : out std_logic_vector;                                          -- Scaled value.
+		Done             : out std_logic                                                  -- No computation in progress.
 	);
 end entity;
 

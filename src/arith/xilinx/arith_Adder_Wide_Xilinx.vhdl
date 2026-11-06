@@ -1,28 +1,6 @@
 -- =============================================================================
 -- Authors:          Thomas B. Preusser
 --
--- Entity:          arith_Adder_Wide_xilinx
---
--- Description:
--- -------------------------------------
---  Implements wide addition providing several options all based
---  on an adaptation of a carry-select approach.
---
---  Xilinx-specific optimizations.
---
---  References:
---    * Hong Diep Nguyen and Bogdan Pasca and Thomas B. Preusser:
---      FPGA-Specific Arithmetic Optimizations of Short-Latency Adders,
---      FPL 2011.
---      -> ARCH:     AAM, CAI, CCA
---      -> SKIPPING: CCC
---
---    * Marcin Rogawski, Kris Gaj and Ekawat Homsirikamol:
---      A Novel Modular Adder for One Thousand Bits and More
---      Using Fast Carry Chains of Modern FPGAs, FPL 2014.
---      -> ARCH:     PAI
---      -> SKIPPING: PPN_KS, PPN_BK
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -53,22 +31,50 @@ use     UNISIM.vcomponents.all;
 use     work.utils.all;
 use     work.arith.all;
 
+-- Xilinx-specific wide adder providing several options, all based on an adaptation of a carry-select approach.
+--
+-- The adder is combinational: ``Sum`` and ``CarryOut`` are ``A + B + CarryIn``. The operands are split into ``K``
+-- blocks. The rightmost block is added on the carry chain (``MUXCY`` and ``XORCY`` primitives). For each other block, a
+-- block generate and a block propagate signal are computed, from which the block carry-ins are derived.
+--
+-- ``ARCH`` selects the implementation of all but the rightmost block: ``AAM`` (add-add-multiplex), ``CAI``
+-- (compare-add-increment) or ``CCA`` (compare-compare-add). These are built from ``MUXCY``, ``XORCY`` and ``LUT6_2``
+-- primitives.
+--
+-- ``BLOCKING`` selects the block sizes: ``FIX`` (equal sizes), ``ASC`` (growing by one bit per block towards the MSB),
+-- ``DESC`` (shrinking by one bit per block towards the MSB) or ``DFLT`` (``ASC`` for ``AAM`` and ``CAI``, ``DESC``
+-- otherwise).
+--
+-- ``SKIPPING`` selects the carry computation across the blocks: ``CCC`` (on the carry chain, continuing the rightmost
+-- block), ``PLAIN`` (linear LUT-based carry forwarding), ``PPN_KS`` (Kogge-Stone parallel prefix network) or
+-- ``PPN_BK`` (Brent-Kung parallel prefix network).
+--
+-- The simulation reports the chosen block layout.
+--
+-- References:
+--
+-- * Hong Diep Nguyen and Bogdan Pasca and Thomas B. Preusser: *FPGA-Specific Arithmetic Optimizations of Short-Latency
+--   Adders*, FPL 2011. |br|
+--   ``ARCH``: ``AAM``, ``CAI``, ``CCA``; ``SKIPPING``: ``CCC``
+-- * Marcin Rogawski, Kris Gaj and Ekawat Homsirikamol: *A Novel Modular Adder for One Thousand Bits and More Using Fast
+--   Carry Chains of Modern FPGAs*, FPL 2014. |br|
+--   ``SKIPPING``: ``PPN_KS``, ``PPN_BK``
 entity arith_Adder_Wide_Xilinx is
 	generic (
-		N : positive;                    -- Operand Width
-		K : positive;                    -- Block Count
+		N : positive;                                -- Width of the operands and of ``Sum`` in bits.
+		K : positive;                                -- Number of blocks.
 
-		ARCH     : T_Adder_Architecture    := CAI;        -- Architecture
-		BLOCKING : T_Adder_BlockingScheme  := DFLT;       -- Blocking Scheme
-		SKIPPING : T_Adder_CarrySkipScheme := CCC         -- Carry Skip Scheme
+		ARCH     : T_Adder_Architecture    := CAI;   -- Implementation of all but the rightmost block.
+		BLOCKING : T_Adder_BlockingScheme  := DFLT;  -- Block size scheme.
+		SKIPPING : T_Adder_CarrySkipScheme := CCC    -- Carry computation across the blocks.
 	);
 	port (
-		A        : in  std_logic_vector(N-1 downto 0);
-		B        : in  std_logic_vector(N-1 downto 0);
-		CarryIn  : in  std_logic;
+		A        : in  std_logic_vector(N-1 downto 0);  -- First operand.
+		B        : in  std_logic_vector(N-1 downto 0);  -- Second operand.
+		CarryIn  : in  std_logic;                       -- Carry input.
 
-		Sum      : out std_logic_vector(N-1 downto 0);
-		CarryOut : out std_logic
+		Sum      : out std_logic_vector(N-1 downto 0);  -- Sum ``A + B + CarryIn``, truncated to ``N`` bits.
+		CarryOut : out std_logic                        -- Carry output.
 	);
 end entity;
 

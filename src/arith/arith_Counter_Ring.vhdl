@@ -1,15 +1,6 @@
 -- =============================================================================
 -- Authors:           Patrick Lehmann
 --
--- Entity:           Ring counter/Johnson Counter
---
--- Description:
--- -------------------------------------
--- This module implements an up/down ring-counter with loadable initial value
--- (``seed``) on reset. The counter can be configured to a Johnson counter by
--- enabling ``INVERT_FEEDBACK``. The number of counter bits is configurable with
--- ``BITS``.
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universitaet Dresden - Germany
@@ -34,18 +25,26 @@ use     IEEE.std_logic_1164.all;
 use     work.utils.all;
 
 
+-- Up/down ring counter or Johnson counter with a loadable start pattern.
+--
+-- The counter rotates its ``BITS``-wide state by one position per ``Clock`` cycle: ``Increment`` shifts towards the
+-- MSB and feeds the old MSB into the LSB, ``Decrement`` shifts towards the LSB and feeds the old LSB into the MSB.
+-- ``Increment`` has priority over ``Decrement``. With ``INVERT_FEEDBACK`` enabled, the fed-back bit is inverted, which
+-- turns the ring counter into a Johnson counter.
+--
+-- ``Reset`` is synchronous and loads ``Seed``. ``Value`` is the registered counter state.
 entity arith_Counter_Ring is
 	generic (
-		BITS            : positive;
-		INVERT_FEEDBACK  : boolean    := FALSE                                  -- FALSE -> ring counter;    TRUE -> johnson counter
+		BITS            : positive;            -- Width of the counter in bits.
+		INVERT_FEEDBACK : boolean    := FALSE  -- ``FALSE``: ring counter; ``TRUE``: Johnson counter.
 	);
 	port (
-		Clock      : in  std_logic;                                              -- Clock
-		Reset      : in  std_logic;                                              -- Reset
-		Seed      : in  std_logic_vector(BITS - 1 downto 0)  := (others => '0');  -- initial counter vector / load value
-		Increment  : in  std_logic                            := '0';              -- increment counter
-		Decrement  : in  std_logic                            := '0';              -- decrement counter
-		Value       : out std_logic_vector(BITS - 1 downto 0)                      -- counter value
+		Clock     : in  std_logic;                                               -- Clock; inputs sampled on rising edge.
+		Reset     : in  std_logic;                                               -- Synchronous reset; loads ``Seed``.
+		Seed      : in  std_logic_vector(BITS - 1 downto 0) := (others => '0');  -- Counter pattern loaded by ``Reset``.
+		Increment : in  std_logic                           := '0';              -- Rotate towards the MSB.
+		Decrement : in  std_logic                           := '0';              -- Rotate towards the LSB.
+		Value     : out std_logic_vector(BITS - 1 downto 0)                      -- Counter state.
 	);
 end entity;
 

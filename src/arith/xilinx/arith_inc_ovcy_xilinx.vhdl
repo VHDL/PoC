@@ -1,11 +1,6 @@
 -- =============================================================================
 -- Authors:          Thomas B. Preusser
 --
--- Entity:          TODO
--- Description:
--- -------------------------------------
--- .. TODO:: No documentation available.
---
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universität Dresden - Germany,
 --                     Chair of VLSI-Design, Diagnostics and Architecture
@@ -30,14 +25,18 @@ library UNISIM;
 use     UNISIM.vComponents.all;
 
 
+-- Xilinx-specific overflow detection of a guarded increment on the carry chain.
+--
+-- Combinational: ``v`` is ``'1'`` if incrementing ``p`` by ``g`` overflows, i.e. if ``g`` is ``'1'`` and all bits of
+-- ``p`` are ``'1'``. The guard ``g`` feeds a chain of one ``MUXCY`` primitive per bit of ``p``.
 entity arith_inc_ovcy_xilinx is
 	generic (
-		BITS : positive                             -- Bit Width
+		BITS : positive  -- Width of ``p`` in bits.
 	);
 	port (
-		p : in  std_logic_vector(BITS-1 downto 0);  -- Argument
-		g : in  std_logic;                       -- Increment Guard
-		v : out std_logic                        -- Overflow Output
+		p : in  std_logic_vector(BITS-1 downto 0);  -- Argument to increment.
+		g : in  std_logic;                          -- Increment guard: ``'1'`` increments ``p``.
+		v : out std_logic                           -- Overflow: ``g`` is ``'1'`` and ``p`` is all ones.
 	);
 end entity;
 

@@ -1,28 +1,4 @@
 -- =============================================================================
--- Description: Carry-Compact Adder for Xilinx Virtex-5 architectures and newer.
---
---   A carry-compact adder (CCA) utilizes the fast carry chain of contemporary
---   FPGA devices to implement a fast and even compacted binary word addition.
---   For wide operands, it accounts for the delay encountered even on this fast
---   signal path and uses the associated time to perform a significantly
---   shorter but effective LUT-based parallel computation that reduces the
---   length of the internal ripple-carry adder without affecting the critical
---   path length.
---   The compaction performed by the CCA is performed hierarchical on
---   potentially multiple levels. The number of levels may be restricted by the
---   optional generic parameter X. A linear compaction on a single level may
---   be of special interest as it typically does not increase the LUT demand
---   in comparison to a standard RCA implementation.
---   The parameter L is architecture-dependent and estimates the delay of a LUT
---   stage in terms of carry-chain hops. It is a tuning parameter. Values
---   around 20 are a good starting point.
---
---   For a detailed description see:    http://dx.doi.org/10.1109/ARITH.2011.22
---
---      Preusser, T.B.; Zabel, M.; Spallek, R.G.:
---      "Accelerating Computations on FPGA Carry Chains by Operand Compaction",
---      20th IEEE Symposium on Computer Arithmetic (ARITH), 2011.
---
 -- Author:      Thomas B. Preusser
 -- ================================================================================
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,17 +17,39 @@
 library IEEE;
 use     IEEE.std_logic_1164.all;
 
+-- Carry-compact adder (CCA).
+--
+-- A carry-compact adder (CCA) utilizes the fast carry chain of contemporary FPGA devices to implement a fast and even
+-- compacted binary word addition. For wide operands, it accounts for the delay encountered even on this fast signal
+-- path and uses the associated time to perform a significantly shorter but effective LUT-based parallel computation
+-- that reduces the length of the internal ripple-carry adder (RCA) without affecting the critical path length.
+--
+-- The compaction performed by the CCA is performed hierarchically on potentially multiple levels. The number of levels
+-- may be restricted by the optional generic ``X``. A linear compaction on a single level may be of special interest as
+-- it typically does not increase the LUT demand in comparison to a standard RCA implementation. The generic ``L`` is
+-- architecture-dependent and estimates the delay of a LUT stage in terms of carry-chain hops. It is a tuning
+-- parameter. Values around 20 are a good starting point. If ``BITS`` is too small for a compaction, a standard RCA is
+-- used and a note is reported.
+--
+-- The adder is combinational: ``s`` is ``a + b + c`` modulo ``2**BITS``; there is no carry output.
+--
+-- For a detailed description see:
+--
+--   Preusser, T.B.; Zabel, M.; Spallek, R.G.:
+--   `"Accelerating Computations on FPGA Carry Chains by Operand Compaction"
+--   <http://dx.doi.org/10.1109/ARITH.2011.22>`__,
+--   20th IEEE Symposium on Computer Arithmetic (ARITH), 2011.
 entity arith_cca is
 	generic(
-		BITS : positive;          -- bit width
-		L : natural;           -- CC length equivalent per LUT stage
-		X : natural := 0       -- max expansion depth; default: zero (0) - unlimited
+		BITS : positive;     -- Width of the operands and of the sum in bits.
+		L    : natural;      -- Carry-chain length equivalent to the delay of one LUT stage.
+		X    : natural := 0  -- Maximum compaction depth; ``0``: unlimited.
 	);
 	port(
-		a : in  std_logic_vector(BITS-1 downto 0);
-		b : in  std_logic_vector(BITS-1 downto 0);
-		c : in  std_logic := '0';
-		s : out std_logic_vector(BITS-1 downto 0)
+		a : in  std_logic_vector(BITS-1 downto 0);  -- First operand.
+		b : in  std_logic_vector(BITS-1 downto 0);  -- Second operand.
+		c : in  std_logic := '0';                   -- Carry input.
+		s : out std_logic_vector(BITS-1 downto 0)   -- Sum ``a + b + c``, truncated to ``BITS`` bits.
 	);
 end entity;
 

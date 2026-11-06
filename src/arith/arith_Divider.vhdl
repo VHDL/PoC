@@ -1,16 +1,6 @@
 -- =============================================================================
 -- Authors:          Thomas B. Preusser
 --
--- Entity:          Multi-cycle Non-Performing Restoring Divider
---
--- Description:
--- -------------------------------------
--- Implementation of a Non-Performing restoring divider with a configurable radix.
--- The multi-cycle division is controlled by 'start' / 'rdy'. A new division is
--- started by asserting 'start'. The result Q = A/D is available when 'rdy'
--- returns to '1'. A division by zero is identified by output Z. The Q and R
--- outputs are undefined in this case.
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universität Dresden - Germany,
@@ -32,28 +22,47 @@
 library IEEE;
 use     IEEE.std_logic_1164.all;
 
+-- Multi-cycle non-performing restoring divider with a configurable radix.
+--
+-- Divides the unsigned ``Dividend`` by the unsigned ``Divisor`` by an iterative digit recurrence and computes
+-- ``Quotient`` and ``Remainder``. The basic approach is radix 2 (``RADIX_EXPONENT = 1``). A higher ``RADIX_EXPONENT``
+-- unrolls the corresponding number of elementary radix-2 steps into one clock cycle. A division then takes
+-- ``ceil(DIVIDEND_BITS / RADIX_EXPONENT)`` cycles (see function ``arith_DividerLatency``), but the amount of
+-- combinational logic increases and the critical path will eventually be affected.
+--
+-- The division is controlled by ``Start`` / ``Ready``; ``Dividend`` and ``Divisor`` are sampled with ``Start``:
+--
+-- * Sequential (``PIPELINED = false``): ``Ready`` is high while the divider is idle; it falls after ``Start`` and
+--   returns to ``'1'`` when the result is available. ``Quotient`` and ``Remainder`` are valid only in the first cycle
+--   with ``Ready`` high; afterwards, the divider samples new arguments. ``Start`` restarts a running division.
+-- * Pipelined (``PIPELINED = true``): all iteration steps are unrolled in space, so that every stage uses its own set
+--   of registers. The pipeline accepts new arguments in every cycle. ``Ready`` is a one-cycle strobe marking the result
+--   of each ``Start``.
+--
+-- A division by zero is identified by ``DivisionByZero``. The ``Quotient`` and ``Remainder`` outputs are undefined in
+-- this case. ``Reset`` is synchronous; it aborts all divisions and leaves the data outputs undefined.
 entity arith_Divider is
 	generic (
-		DIVIDEND_BITS      : positive;          -- Dividend Width
-		DIVISOR_BITS       : positive;          -- Divisor Width
-		RADIX_EXPONENT     : positive := 1;     -- Power of Compute Radix (2**RAPOW)
-		PIPELINED          : boolean  := false  -- Computation Pipeline
+		DIVIDEND_BITS      : positive;          -- Width of ``Dividend`` and ``Quotient`` in bits.
+		DIVISOR_BITS       : positive;          -- Width of ``Divisor`` and ``Remainder`` in bits.
+		RADIX_EXPONENT     : positive := 1;     -- Radix-2 steps per cycle; the radix is ``2**RADIX_EXPONENT``.
+		PIPELINED          : boolean  := false  -- Unroll all steps into a pipeline.
 	);
 	port (
 		-- Global Reset/Clock
-		Clock : in  std_logic;
-		Reset : in  std_logic;
+		Clock : in  std_logic;                                            -- Clock; inputs sampled on rising edge.
+		Reset : in  std_logic;                                            -- Synchronous reset; aborts all divisions.
 
 		-- Ready / Start
-		Start : in  std_logic;
-		Ready : out std_logic;
+		Start : in  std_logic;                                            -- Start a division.
+		Ready : out std_logic;                                            -- Result available; depends on ``PIPELINED``.
 
 		-- Arguments / Result (2's complement)
-		Dividend       : in  std_logic_vector(DIVIDEND_BITS-1 downto 0);
-		Divisor        : in  std_logic_vector(DIVISOR_BITS-1 downto 0);
-		Quotient       : out std_logic_vector(DIVIDEND_BITS-1 downto 0);
-		Remainder      : out std_logic_vector(DIVISOR_BITS-1 downto 0);
-		DivisionByZero : out std_logic
+		Dividend       : in  std_logic_vector(DIVIDEND_BITS-1 downto 0);  -- Unsigned dividend; sampled with ``Start``.
+		Divisor        : in  std_logic_vector(DIVISOR_BITS-1 downto 0);   -- Unsigned divisor; sampled with ``Start``.
+		Quotient       : out std_logic_vector(DIVIDEND_BITS-1 downto 0);  -- Quotient ``Dividend / Divisor``.
+		Remainder      : out std_logic_vector(DIVISOR_BITS-1 downto 0);   -- Remainder ``Dividend mod Divisor``.
+		DivisionByZero : out std_logic                                    -- ``Divisor`` is zero; results are undefined.
 	);
 end entity arith_Divider;
 

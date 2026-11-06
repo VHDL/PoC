@@ -2,14 +2,6 @@
 -- Authors:          Thomas B. Preusser
 --                  Patrick Lehmann
 --
--- Entity:          Prefix AND computation
---
--- Description:
--- -------------------------------------
--- Prefix AND computation:
--- ``y(i) <= '1' when x(i downto 0) = (i downto 0 => '1') else '0';``
--- This implementation uses carry chains for wider implementations.
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universität Dresden - Germany
@@ -36,13 +28,20 @@ use     work.config.all;
 use     work.arith.all;
 
 
+-- Prefix AND computation.
+--
+-- Combinational: ``y(i)`` is the AND of ``x(i downto 0)``, i.e.
+-- ``y(i) <= '1' when x(i downto 0) = (i downto 0 => '1') else '0';``.
+--
+-- The prefix is computed on a carry chain. On Xilinx devices, ``arith_Prefix_And_Xilinx`` instantiates the carry-chain
+-- primitives; on other devices, the carry chain is inferred from an addition.
 entity arith_Prefix_And is
 	generic (
-		BITS : positive
+		BITS : positive  -- Width of ``x`` and ``y`` in bits.
 	);
 	port (
-		x : in  std_logic_vector(BITS-1 downto 0);
-		y : out std_logic_vector(BITS-1 downto 0)
+		x : in  std_logic_vector(BITS-1 downto 0);  -- Input vector.
+		y : out std_logic_vector(BITS-1 downto 0)   -- Prefix AND: ``y(i)`` is the AND of ``x(i downto 0)``.
 	);
 end entity;
 

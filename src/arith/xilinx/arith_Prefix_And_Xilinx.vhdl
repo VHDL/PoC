@@ -2,14 +2,6 @@
 -- Authors:          Thomas B. Preusser
 --                  Patrick Lehmann
 --
--- Entity:          Prefix AND computation
---
--- Description:
--- -------------------------------------
---  Prefix AND computation:
---    y(i) <= '1' when x(i downto 0) = (i downto 0 => '1') else '0'
---  This implementation uses carry chains for wider implementations.
---
 -- =============================================================================
 -- Copyright 2007-2016 Technische Universität Dresden - Germany
 --                     Chair of VLSI-Design, Diagnostics and Architecture
@@ -35,13 +27,20 @@ library UniSim;
 use     UniSim.VComponents.all;
 
 
+-- Xilinx-specific prefix AND computation on the carry chain.
+--
+-- Combinational: ``y(i)`` is the AND of ``x(i downto 0)``, i.e.
+-- ``y(i) <= '1' when x(i downto 0) = (i downto 0 => '1') else '0';``.
+--
+-- ``y(0)`` and ``y(1)`` are computed in logic. For ``BITS > 2``, the remaining bits are built from one ``MUXCY``
+-- primitive per bit.
 entity arith_Prefix_And_Xilinx is
 	generic (
-		BITS : positive
+		BITS : positive  -- Width of ``x`` and ``y`` in bits.
 	);
 	port (
-		x : in  std_logic_vector(BITS-1 downto 0);
-		y : out std_logic_vector(BITS-1 downto 0)
+		x : in  std_logic_vector(BITS-1 downto 0);  -- Input vector.
+		y : out std_logic_vector(BITS-1 downto 0)   -- Prefix AND: ``y(i)`` is the AND of ``x(i downto 0)``.
 	);
 end entity;
 
