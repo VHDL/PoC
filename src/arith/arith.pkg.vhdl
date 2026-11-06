@@ -84,7 +84,6 @@ package arith is
 	-- result to become ready.
 	function arith_DividerLatency(dividendBits : positive; radixExponent : positive) return positive;
 
-	-- XXX: discuss generic and port names
 	-- Multi-cycle non-performing restoring divider with a configurable radix.
 	component arith_Divider
 		generic (
@@ -109,6 +108,8 @@ package arith is
 			Remainder      : out std_logic_vector(DIVISOR_BITS - 1 downto 0);   -- Remainder ``Dividend mod Divisor``.
 			DivisionByZero : out std_logic                                      -- ``Divisor`` is zero; results are undefined.
 		);
+
+		-- XXX: discuss generic and port names
 	end component;
 
 	-- Pseudo-random number generator (PRNG) based on a linear-feedback shift register (LFSR).
@@ -127,7 +128,6 @@ package arith is
 		);
 	end component;
 
-	-- XXX: discuss generic and port names
 	-- True random number generator (TRNG) based on sampling combinational loops of interleaved X(N)OR gates.
 	component arith_TRNG is
 		generic (
@@ -137,6 +137,8 @@ package arith is
 			Clock : in  std_logic;                         -- Sampling clock.
 			Value : out std_logic_vector(BITS-1 downto 0)  -- Synchronized oscillator samples.
 		);
+
+		-- XXX: discuss generic and port names
 	end component;
 
 	-- Iterative square root extractor.
