@@ -43,8 +43,8 @@ namespace eval ::poc {
 		set buildNamePrefix "${::osvvm::ToolNameVersion}-"
 	}
 
-	# WORKAROUND for NVC: tcl_interactive is not implemented yet (https://github.com/nickg/nvc/issues/1608)
-	if {$::osvvm::ToolName eq "NVC"} {
+	# WORKAROUND for older NVC versions: tcl_interactive is not implemented (https://github.com/nickg/nvc/issues/1608)
+	if {$::osvvm::ToolName eq "NVC" && ![info exists ::tcl_interactive]} {
 		set ::tcl_interactive 0
 	}
 
