@@ -2,23 +2,6 @@
 -- Authors:           Martin Zabel
 --                  Thomas B. Preusser
 --
--- Entity:           BCD counter.
---
--- Description:
--- -------------------------------------
--- Counter with output in binary coded decimal (BCD). The number of BCD digits
--- is configurable by ``DIGITS``.
---
--- All control signals (``Reset``, ``Increment``) are high-active and
--- synchronous to ``Clock``. The output ``Value`` is the current counter
--- state. Groups of 4 bit represent one BCD digit. The lowest significant digit
--- is specified by ``Value(3 downto 0)``.
---
--- .. TODO::
---
---    * implement a ``Decrement`` input for decrementing
---    * implement a ``Load`` input to load a value
---
 -- License:
 -- =============================================================================
 -- Copyright 2025-2026 The PoC-Library Authors
@@ -45,15 +28,28 @@ use     IEEE.numeric_std.all;
 use     work.utils.all;
 
 
+-- Up counter with its value in binary-coded decimal (BCD).
+--
+-- The number of BCD digits is configurable by ``DIGITS``. All control signals (``Reset``, ``Increment``) are
+-- high-active and synchronous to ``Clock``; ``Reset`` has priority. Each cycle with ``Increment`` high counts up by
+-- one; the counter wraps from all nines to zero.
+--
+-- The output ``Value`` is the registered counter state, one 4-bit BCD digit per element. The least significant digit is
+-- ``Value(0)``.
+--
+-- .. TODO::
+--
+--    * implement a ``Decrement`` input for decrementing
+--    * implement a ``Load`` input to load a value
 entity arith_Counter_BCD is
 	generic (
-		DIGITS    : positive                            -- Number of BCD digits
+		DIGITS    : positive  -- Number of BCD digits.
 	);
 	port (
-		Clock     : in  std_logic;
-		Reset     : in  std_logic;                        -- Reset to 0
-		Increment : in  std_logic;                        -- Increment
-		Value     : out T_BCD_VECTOR(DIGITS-1 downto 0)   -- Value output
+		Clock     : in  std_logic;                       -- Clock; all inputs are sampled on its rising edge.
+		Reset     : in  std_logic;                       -- Synchronous reset; clears the counter to zero.
+		Increment : in  std_logic;                       -- Count up by one.
+		Value     : out T_BCD_VECTOR(DIGITS-1 downto 0)  -- Counter state; lowest digit at index 0.
 	);
 end entity;
 

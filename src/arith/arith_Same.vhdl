@@ -1,19 +1,6 @@
 -- =============================================================================
 -- Authors:          Thomas B. Preusser
 --
--- Entity:          This module detects whether all bit positions of a std_logic_vector have the same value.
---
--- Description:
--- -------------------------------------
--- This circuit may, for instance, be used to detect the first sign change
--- and, thus, the range of a two's complement number.
---
--- These components may be chained by using the output of the predecessor as
--- guard input. This chaining allows to have intermediate results available
--- while still ensuring the use of a fast carry chain on supporting FPGA
--- architectures. When chaining, make sure to overlap both vector slices by one
--- bit position as to avoid an undetected sign change between the slices.
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universität Dresden - Germany,
@@ -41,14 +28,27 @@ use     work.utils.all;
 use     work.arith.all;
 
 
+-- Detects whether all bit positions of a ``std_logic_vector`` have the same value.
+--
+-- Combinational: ``y`` is ``'1'`` if ``g`` is ``'1'`` and all bits of ``x`` are equal. This circuit may, for instance,
+-- be used to detect the first sign change and, thus, the range of a two's complement number.
+--
+-- ``x`` is split into overlapping slices that fit into one LUT each; their results are combined on a carry chain. On
+-- Xilinx devices, the carry chain is instantiated by ``arith_inc_ovcy_xilinx``; otherwise, it is inferred from an
+-- addition.
+--
+-- These components may be chained by using the output of the predecessor as guard input. This chaining allows to have
+-- intermediate results available while still ensuring the use of a fast carry chain on supporting FPGA architectures.
+-- When chaining, make sure to overlap both vector slices by one bit position as to avoid an undetected sign change
+-- between the slices.
 entity arith_Same is
 	generic (
-		BITS : positive                             -- Input width
+		BITS : positive  -- Width of ``x`` in bits.
 	);
 	port (
-		g : in  std_logic := '1';                -- Guard Input (!g => !y)
-		x : in  std_logic_vector(BITS-1 downto 0);  -- Input Vector
-		y : out std_logic                        -- All-same Output
+		g : in  std_logic := '1';                   -- Guard input; ``'0'`` forces ``y`` to ``'0'``.
+		x : in  std_logic_vector(BITS-1 downto 0);  -- Input vector.
+		y : out std_logic                           -- ``g`` is high and all bits of ``x`` are equal.
 	);
 end entity;
 

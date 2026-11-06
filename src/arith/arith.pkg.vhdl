@@ -3,13 +3,6 @@
 --           Martin Zabel
 --           Patrick Lehmann
 --
--- Package:  VHDL package for component declarations, types and functions
---           associated to the PoC.arith namespace
---
--- Description:
--- -------------------------------------
---    For detailed documentation see below.
---
 -- License:
 -- =============================================================================
 -- Copyright 2025-2026 The PoC-Library Authors
@@ -36,45 +29,52 @@ use     IEEE.numeric_std.all;
 use     work.utils.all;
 
 
+-- Component declarations, types and functions of the ``PoC.arith`` namespace.
+--
+-- Besides the components of the namespace's entities, the package provides the configuration types of
+-- ``arith_Adder_Wide``, the latency function of ``arith_Divider`` and the LFSR step function used by ``arith_PRNG``.
 package arith is
 	function arith_prbs_lfsr (value : std_logic_vector) return std_logic_vector;
 
+	-- Isolates the rightmost set bit of a word, e.g. for a fixed-priority arbitration.
 	component arith_FirstOne is
 		generic (
-			BITS : positive                                             -- Length of Token Chain
+			BITS : positive  -- Width of ``Request`` and ``Grant`` in bits.
 		);
 		port (
-			TokenIn  : in  std_logic := '1';                            -- Enable:    Fed Token
-			Request  : in  std_logic_vector(BITS-1 downto 0);           -- Request:    Token Requests
-			Grant    : out std_logic_vector(BITS-1 downto 0);           -- Grant:      Token Output
-			TokenOut : out std_logic;                                   -- Inactive:  Unused Token
-			Index    : out std_logic_vector(log2ceil(BITS)-1 downto 0)  -- Binary Grant Index
+			TokenIn  : in  std_logic := '1';                            -- Input token; ``'0'`` disallows all grants.
+			Request  : in  std_logic_vector(BITS-1 downto 0);           -- Requests; bit 0 has the highest priority.
+			Grant    : out std_logic_vector(BITS-1 downto 0);           -- One-hot grant of the rightmost request, or zero.
+			TokenOut : out std_logic;                                   -- Unused token: ``TokenIn`` is high but no request.
+			Index    : out std_logic_vector(log2ceil(BITS)-1 downto 0)  -- Binary index of the granted bit.
 		);
 	end component;
 
+	-- Up counter with its value in binary-coded decimal (BCD).
 	component arith_Counter_BCD is
 		generic (
-			DIGITS  : positive
+			DIGITS  : positive  -- Number of BCD digits.
 		);
 		port (
-			Clock     : in  std_logic;
-			Reset     : in  std_logic;
-			Increment : in  std_logic;
-			Value     : out T_BCD_VECTOR(DIGITS-1 downto 0));
+			Clock     : in  std_logic;                         -- Clock; all inputs are sampled on its rising edge.
+			Reset     : in  std_logic;                         -- Synchronous reset; clears the counter to zero.
+			Increment : in  std_logic;                         -- Count up by one.
+			Value     : out T_BCD_VECTOR(DIGITS-1 downto 0));  -- Counter state; lowest digit at index 0.
 	end component;
 
+	-- Up/down counter whose ``Value`` is in Gray code.
 	component arith_Counter_Gray is
 		generic (
-			BITS  : positive;                -- Bit width of the counter
-			INIT  : natural          := 0    -- Initial/reset counter value
+			BITS  : positive;              -- Width of ``Value`` in bits.
+			INIT  : natural          := 0  -- Binary counter value after ``Reset``.
 		);
 		port (
-			Clock     : in  std_logic;
-			Reset     : in  std_logic;
-			Increment : in  std_logic;
-			Decrement : in  std_logic    := '0';
-			Value     : out std_logic_vector(BITS-1 downto 0);
-			CarryOut  : out std_logic
+			Clock     : in  std_logic;                          -- Clock; all inputs are sampled on its rising edge.
+			Reset     : in  std_logic;                          -- Synchronous reset; loads ``INIT``.
+			Increment : in  std_logic;                          -- Count up by one.
+			Decrement : in  std_logic    := '0';                -- Count down by one.
+			Value     : out std_logic_vector(BITS-1 downto 0);  -- Counter state in Gray code.
+			CarryOut  : out std_logic                           -- Next step wraps around (carry up, borrow down).
 		);
 	end component;
 
@@ -85,68 +85,72 @@ package arith is
 	function arith_DividerLatency(dividendBits : positive; radixExponent : positive) return positive;
 
 	-- XXX: discuss generic and port names
+	-- Multi-cycle non-performing restoring divider with a configurable radix.
 	component arith_Divider
 		generic (
-			DIVIDEND_BITS      : positive;          -- Dividend Width
-			DIVISOR_BITS       : positive;          -- Divisor Width
-			RADIX_EXPONENT              : positive := 1;     -- Power of Compute Radix (2**RAPOW)
-			PIPELINED          : boolean  := false  -- Computation Pipeline
+			DIVIDEND_BITS      : positive;          -- Width of ``Dividend`` and ``Quotient`` in bits.
+			DIVISOR_BITS       : positive;          -- Width of ``Divisor`` and ``Remainder`` in bits.
+			RADIX_EXPONENT     : positive := 1;     -- Radix-2 steps per cycle; the radix is ``2**RADIX_EXPONENT``.
+			PIPELINED          : boolean  := false  -- Unroll all steps into a pipeline.
 		);
 		port (
 			-- Global Reset/Clock
-			Clock : in  std_logic;
-			Reset : in  std_logic;
+			Clock : in  std_logic;                                              -- Clock; inputs sampled on rising edge.
+			Reset : in  std_logic;                                              -- Synchronous reset; aborts all divisions.
 
 			-- Ready / Start
-			Start : in  std_logic;
-			Ready : out std_logic;
+			Start : in  std_logic;                                              -- Start a division.
+			Ready : out std_logic;                                              -- Result available; depends on ``PIPELINED``.
 
 			-- Arguments / Result (2's complement)
-			Dividend       : in  std_logic_vector(DIVIDEND_BITS - 1 downto 0);
-			Divisor        : in  std_logic_vector(DIVISOR_BITS - 1 downto 0);
-			Quotient       : out std_logic_vector(DIVIDEND_BITS - 1 downto 0);
-			Remainder      : out std_logic_vector(DIVISOR_BITS - 1 downto 0);
-			DivisionByZero : out std_logic
+			Dividend       : in  std_logic_vector(DIVIDEND_BITS - 1 downto 0);  -- Unsigned dividend; sampled with ``Start``.
+			Divisor        : in  std_logic_vector(DIVISOR_BITS - 1 downto 0);   -- Unsigned divisor; sampled with ``Start``.
+			Quotient       : out std_logic_vector(DIVIDEND_BITS - 1 downto 0);  -- Quotient ``Dividend / Divisor``.
+			Remainder      : out std_logic_vector(DIVISOR_BITS - 1 downto 0);   -- Remainder ``Dividend mod Divisor``.
+			DivisionByZero : out std_logic                                      -- ``Divisor`` is zero; results are undefined.
 		);
 	end component;
 
+	-- Pseudo-random number generator (PRNG) based on a linear-feedback shift register (LFSR).
 	component arith_PRNG
 		generic (
-			BITS         : positive;
-			SEED         : std_logic_vector := "0"
+			BITS         : positive;                -- Width of ``Value`` in bits (3 to 168).
+			SEED         : std_logic_vector := "0"  -- Power-up value; default of ``InitialValue``.
 		);
 		port (
-			Clock        : in  std_logic;
-			Reset        : in  std_logic; -- reset value to seed
+			Clock        : in  std_logic;                           -- Clock; all inputs are sampled on its rising edge.
+			Reset        : in  std_logic;                           -- Synchronous reset; loads ``InitialValue``.
 
-			InitialValue : in  std_logic_vector := SEED;            -- Is loaded when Reset = '1'
-			Got          : in  std_logic;                           -- the current value has been got, and a new value should be calculated
-			Value        : out std_logic_vector(BITS - 1 downto 0) -- the pseudo-random number
+			InitialValue : in  std_logic_vector := SEED;            -- Value loaded by ``Reset``; must not be all-ones.
+			Got          : in  std_logic;                           -- ``Value`` was consumed; advance to the next one.
+			Value        : out std_logic_vector(BITS - 1 downto 0)  -- Current pseudo-random number.
 		);
 	end component;
 
 	-- XXX: discuss generic and port names
+	-- True random number generator (TRNG) based on sampling combinational loops of interleaved X(N)OR gates.
 	component arith_TRNG is
 		generic (
-			BITS  : positive   -- Width: Number of Oscillators
+			BITS  : positive  -- Number of oscillators; width of ``Value``.
 		);
 		port (
-			Clock : in  std_logic;                         -- Clock
-			Value : out std_logic_vector(BITS-1 downto 0)  -- Random Oscillator Samples
+			Clock : in  std_logic;                         -- Sampling clock.
+			Value : out std_logic_vector(BITS-1 downto 0)  -- Synchronized oscillator samples.
 		);
 	end component;
 
+	-- Iterative square root extractor.
 	component arith_SquareRoot
 		generic(
-			BITS     : positive
+			BITS     : positive  -- Width of ``Radicand`` in bits.
 		);
 		port(
-			Clock    : in  std_logic;
-			Reset    : in  std_logic;
-			Radicand : in  std_logic_vector(BITS-1 downto 0);
-			Start    : in  std_logic;
-			Result   : out std_logic_vector((BITS-1)/2 downto 0);
-			Ready    : out std_logic
+			Clock    : in  std_logic;                              -- Clock; all inputs are sampled on its rising edge.
+			Reset    : in  std_logic;                              -- Synchronous reset; aborts a computation.
+			Radicand : in  std_logic_vector(BITS-1 downto 0);      -- Unsigned argument; sampled with ``Start``.
+			Start    : in  std_logic;                              -- Start a computation with ``Radicand``.
+			Result   : out std_logic_vector((BITS-1)/2 downto 0);  -- Integer square root of ``Radicand``.
+			Ready    : out std_logic                               -- Idle; ``Result`` is valid after a computation.
 		);
 	end component;
 
@@ -156,76 +160,82 @@ package arith is
 
 	type T_Adder_BlockingScheme_Vector is array(T_Adder_Architecture) of T_Adder_BlockingScheme;
 
+	-- Wide adder providing several options, all based on an adaptation of a carry-select approach.
 	component arith_Adder_Wide is
 		generic (
-			BITS         : positive;            -- Operand Width
-			BLOCKS       : positive;            -- Block Count
+			BITS         : positive;                         -- Width of the operands and of ``Sum`` in bits.
+			BLOCKS       : positive;                         -- Number of blocks.
 
-			ARCH         : T_Adder_Architecture    := AAM;   -- Architecture
-			BLOCKING     : T_Adder_BlockingScheme  := DFLT;  -- Blocking Scheme
-			SKIPPING     : T_Adder_CarrySkipScheme := CCC;   -- Carry Skip Scheme
-			P_INCLUSIVE  : boolean                 := false  -- Use Inclusive Propagate, i.e. c^1
+			ARCH         : T_Adder_Architecture    := AAM;   -- Implementation of all but the rightmost block.
+			BLOCKING     : T_Adder_BlockingScheme  := DFLT;  -- Block size scheme.
+			SKIPPING     : T_Adder_CarrySkipScheme := CCC;   -- Carry computation across the blocks.
+			P_INCLUSIVE  : boolean                 := false  -- Use inclusive block propagates (carry-out for carry-in 1).
 		);
 		port (
-			A        : in  std_logic_vector(BITS - 1 downto 0);
-			B        : in  std_logic_vector(BITS - 1 downto 0);
-			CarryIn  : in  std_logic;
+			A        : in  std_logic_vector(BITS - 1 downto 0);  -- First operand.
+			B        : in  std_logic_vector(BITS - 1 downto 0);  -- Second operand.
+			CarryIn  : in  std_logic;                            -- Carry input.
 
-			Sum      : out std_logic_vector(BITS - 1 downto 0);
-			CarryOut : out std_logic
+			Sum      : out std_logic_vector(BITS - 1 downto 0);  -- Sum ``A + B + CarryIn``, truncated to ``BITS`` bits.
+			CarryOut : out std_logic                             -- Carry output.
 		);
 	end component;
 
+	-- Detects whether all bit positions of a ``std_logic_vector`` have the same value.
 	component arith_Same is
 		generic (
-			BITS    : positive                            -- Input width
+			BITS    : positive  -- Width of ``x`` in bits.
 		);
 		port (
-			g    : in  std_logic    := '1';              -- Guard Input (!g => !y)
-			x    : in  std_logic_vector(BITS-1 downto 0);  -- Input Vector
-			y    : out std_logic                        -- All-same Output
+			g    : in  std_logic    := '1';                -- Guard input; ``'0'`` forces ``y`` to ``'0'``.
+			x    : in  std_logic_vector(BITS-1 downto 0);  -- Input vector.
+			y    : out std_logic                           -- ``g`` is high and all bits of ``x`` are equal.
 		);
 	end component;
 
+	-- Xilinx-specific carry-chain implementation of an increment-by-one operation.
 	component arith_CarryChain_inc_Xilinx is
 		generic (
-			BITS      : positive
+			BITS      : positive  -- Width of ``A`` and ``Sum`` in bits.
 		);
 		port (
-			A       : in  std_logic_vector(BITS - 1 downto 0);
-			CarryIn : in  std_logic                              := '1';
-			Sum       : out std_logic_vector(BITS - 1 downto 0)
+			A       : in  std_logic_vector(BITS - 1 downto 0);            -- Operand.
+			CarryIn : in  std_logic                              := '1';  -- Value added to ``A`` (``'1'``: increment).
+			Sum     : out std_logic_vector(BITS - 1 downto 0)             -- ``A + CarryIn``, truncated to ``BITS`` bits.
 		);
 	end component;
 
+	-- Xilinx-specific prefix AND computation on the carry chain.
 	component arith_Prefix_And_Xilinx is
 		generic (
-			BITS : positive
+			BITS : positive  -- Width of ``x`` and ``y`` in bits.
 		);
 		port (
-			x : in  std_logic_vector(BITS-1 downto 0);
-			y : out std_logic_vector(BITS-1 downto 0)
+			x : in  std_logic_vector(BITS-1 downto 0);  -- Input vector.
+			y : out std_logic_vector(BITS-1 downto 0)   -- Prefix AND: ``y(i)`` is the AND of ``x(i downto 0)``.
 		);
 	end component;
 
+	-- Xilinx-specific prefix OR computation on the carry chain.
 	component arith_Prefix_Or_Xilinx is
 		generic (
-			BITS : positive
+			BITS : positive  -- Width of ``x`` and ``y`` in bits.
 		);
 		port (
-			x : in  std_logic_vector(BITS-1 downto 0);
-			y : out std_logic_vector(BITS-1 downto 0)
+			x : in  std_logic_vector(BITS-1 downto 0);  -- Input vector.
+			y : out std_logic_vector(BITS-1 downto 0)   -- Prefix OR: ``y(i)`` is the OR of ``x(i downto 0)``.
 		);
 	end component;
 
+	-- Xilinx-specific overflow detection of a guarded increment on the carry chain.
 	component arith_inc_ovcy_xilinx is
 		generic (
-			BITS    : positive                             -- Bit Width
+			BITS    : positive  -- Width of ``p`` in bits.
 		);
 		port (
-			p    : in  std_logic_vector(BITS-1 downto 0);  -- Argument
-			g    : in  std_logic;                      -- Increment Guard
-			v    : out std_logic                        -- Overflow Output
+			p    : in  std_logic_vector(BITS-1 downto 0);  -- Argument to increment.
+			g    : in  std_logic;                          -- Increment guard: ``'1'`` increments ``p``.
+			v    : out std_logic                           -- Overflow: ``g`` is ``'1'`` and ``p`` is all ones.
 		);
 	end component;
 end package;

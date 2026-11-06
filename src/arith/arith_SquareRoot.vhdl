@@ -1,14 +1,6 @@
 -- =============================================================================
 -- Authors:          Thomas B. Preußer
 --
--- Entity:          Iterative Square Root Extractor.
---
--- Description:
--- -------------------------------------
--- Iterative Square Root Extractor.
---
--- Its computation requires (N+1)/2 steps for an argument bit width of N.
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2014 Technische Universität Dresden - Germany,
@@ -32,22 +24,30 @@ use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
 
+-- Iterative square root extractor.
+--
+-- Computes the integer square root of the unsigned ``Radicand``. A cycle with ``Start`` high loads ``Radicand`` and
+-- clears ``Ready``; ``Start`` also restarts a running computation. The computation then requires ``(BITS+1)/2`` steps,
+-- one per ``Clock`` cycle, and computes one result bit per step. ``Ready`` is high when the computation has finished;
+-- ``Result`` is then valid and holds its value until the next ``Start``.
+--
+-- ``Reset`` is synchronous and sets ``Ready``; ``Result`` is undefined until the first computation has finished.
 entity arith_SquareRoot is
 	generic (
-		BITS    : positive                       -- Bit Width of Argument
+		BITS    : positive  -- Width of ``Radicand`` in bits.
 	);
 	port (
 		-- Global Control
-		Clock    : in  std_logic;                 -- Clock
-		Reset    : in  std_logic;                 -- Reset (synchronous)
+		Clock    : in  std_logic;                              -- Clock; all inputs are sampled on its rising edge.
+		Reset    : in  std_logic;                              -- Synchronous reset; aborts a computation.
 
 		-- Inputs
-		Radicand : in  std_logic_vector(BITS-1 downto 0);  -- Radicand
-		Start    : in  std_logic;                          -- Start Strobe
+		Radicand : in  std_logic_vector(BITS-1 downto 0);      -- Unsigned argument; sampled with ``Start``.
+		Start    : in  std_logic;                              -- Start a computation with ``Radicand``.
 
 		-- Outputs
-		Result   : out std_logic_vector((BITS-1)/2 downto 0);  -- Result
-		Ready    : out std_logic                               -- Ready / Done
+		Result   : out std_logic_vector((BITS-1)/2 downto 0);  -- Integer square root of ``Radicand``.
+		Ready    : out std_logic                               -- Idle; ``Result`` is valid after a computation.
 	);
 end entity;
 

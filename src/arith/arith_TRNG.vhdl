@@ -1,26 +1,6 @@
 -- =============================================================================
 -- Authors:          Thomas B. Preusser
 --
--- Entity:          TRNG - True Random Number Generator.
---
--- Description:
--- ------------
--- This module implements a true random number generator based on sampling
--- combinational loops of interleaved X(N)OR gates.
---
--- Always verify the randomness of this TRNG implementation for your concrete
--- target platform, for instance, using the dieharder test by Robert G. Brown
--- [http://www.phy.duke.edu/~rgb/General/dieharder.php], which is also
--- directly available for many GNU/Linux distributions, e.g. Debian. Ideally,
--- randomness would be verified for varying operating conditions.
---
--- This design involves fast-switching combinational loops on purpose so as
--- to serve as sources of entropoy. This implies a relevant local power
--- consumption. Do not cramp large parts of a chip with these TRNGs without
--- ensuring appropriate heat dissipation. It often requires special
--- constraints or directives to enforce the proper synthesis of these
--- combinational loops by the tools.
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2017 Technische Universitaet Dresden - Germany
@@ -44,13 +24,27 @@ use     IEEE.std_logic_1164.all;
 
 use     work.utils.all;
 
+-- True random number generator (TRNG) based on sampling combinational loops of interleaved X(N)OR gates.
+--
+-- ``BITS`` oscillators form a ring: each one is the XOR (the first three: XNOR) of itself and its two neighbors. Their
+-- outputs are sampled into the ``Clock`` domain by ``sync_Bits``; ``Value`` carries these synchronized samples.
+--
+-- Always verify the randomness of this TRNG implementation for your concrete target platform, for instance, using the
+-- `dieharder <http://www.phy.duke.edu/~rgb/General/dieharder.php>`__ test by Robert G. Brown, which is also directly
+-- available for many GNU/Linux distributions, e.g. Debian. Ideally, randomness would be verified for varying operating
+-- conditions.
+--
+-- This design involves fast-switching combinational loops on purpose so as to serve as sources of entropy. This implies
+-- a relevant local power consumption. Do not cramp large parts of a chip with these TRNGs without ensuring appropriate
+-- heat dissipation. It often requires special constraints or directives to enforce the proper synthesis of these
+-- combinational loops by the tools.
 entity arith_TRNG is
 	generic (
-		BITS : positive                               -- Width: Number of Oscillators
+		BITS : positive  -- Number of oscillators; width of ``Value``.
 	);
 	port (
-		Clock : in  std_logic;                         -- Clock
-		Value : out std_logic_vector(BITS-1 downto 0)  -- Random Oscillator Samples
+		Clock : in  std_logic;                         -- Sampling clock.
+		Value : out std_logic_vector(BITS-1 downto 0)  -- Synchronized oscillator samples.
 	);
 end entity;
 

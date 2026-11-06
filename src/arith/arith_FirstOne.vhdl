@@ -1,25 +1,6 @@
 -- =============================================================================
 -- Authors:          Thomas B. Preusser
 --
--- Entity:          TODO
---
--- Description:
--- -------------------------------------
--- Computes from an input word, a word of the same size that has, at most,
--- one bit set. The output contains a set bit at the position of the rightmost
--- set bit of the input if and only if such a set bit exists in the input.
---
--- A typical use case for this computation would be an arbitration over
--- requests with a fixed and strictly ordered priority. The terminology of
--- the interface assumes this use case and provides some useful extras:
---
--- * Set tin <= '0' (no input token) to disallow grants altogether.
--- * Read tout (unused token) to see whether or any grant was issued.
--- * Read bin to obtain the binary index of the rightmost detected one bit.
---   The index starts at zero (0) in the rightmost bit position.
---
--- This implementation uses carry chains for wider implementations.
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universität Dresden - Germany
@@ -45,16 +26,31 @@ use     IEEE.numeric_std.all;
 use     work.config.all;
 use     work.utils.all;
 
+-- Isolates the rightmost set bit of a word, e.g. for a fixed-priority arbitration.
+--
+-- Computes from an input word, a word of the same size that has, at most, one bit set. The output contains a set bit
+-- at the position of the rightmost set bit of the input if and only if such a set bit exists in the input.
+--
+-- A typical use case for this computation would be an arbitration over requests with a fixed and strictly ordered
+-- priority. The terminology of the interface assumes this use case and provides some useful extras:
+--
+-- * Set ``TokenIn <= '0'`` (no input token) to disallow grants altogether.
+-- * Read ``TokenOut`` (unused token) to see whether any grant was issued.
+-- * Read ``Index`` to obtain the binary index of the rightmost detected one bit. The index starts at zero (0) in the
+--   rightmost bit position; it is zero if no grant was issued.
+--
+-- The circuit is combinational. It computes the token forwarding on a carry chain: on Xilinx devices with
+-- ``BITS >= 6``, by instantiating ``MUXCY`` primitives; otherwise, inferred from an addition.
 entity arith_FirstOne is
 	generic (
-		BITS : positive                                -- Length of Token Chain
+		BITS : positive  -- Width of ``Request`` and ``Grant`` in bits.
 	);
 	port (
-		TokenIn  : in  std_logic := '1';                -- Enable:   Fed Token
-		Request  : in  std_logic_vector(BITS-1 downto 0);  -- Request:  Token Requests
-		Grant    : out std_logic_vector(BITS-1 downto 0);  -- Grant:    Token Output
-		TokenOut : out std_logic;                       -- Inactive: Unused Token
-		Index    : out std_logic_vector(log2ceil(BITS)-1 downto 0)  -- Binary Grant Index
+		TokenIn  : in  std_logic := '1';                            -- Input token; ``'0'`` disallows all grants.
+		Request  : in  std_logic_vector(BITS-1 downto 0);           -- Requests; bit 0 has the highest priority.
+		Grant    : out std_logic_vector(BITS-1 downto 0);           -- One-hot grant of the rightmost request, or zero.
+		TokenOut : out std_logic;                                   -- Unused token: ``TokenIn`` is high but no request.
+		Index    : out std_logic_vector(log2ceil(BITS)-1 downto 0)  -- Binary index of the granted bit.
 	);
 end entity;
 

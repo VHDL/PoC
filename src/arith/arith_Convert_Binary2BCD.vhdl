@@ -1,12 +1,6 @@
 -- =============================================================================
 -- Authors:          Patrick Lehmann
 --
--- Entity:          Converter binary numbers to BCD encoded numbers.
---
--- Description:
--- -------------------------------------
--- .. TODO:: No documentation available.
---
 -- License:
 -- =============================================================================
 -- Copyright 2025-2026 The PoC-Library Authors
@@ -34,24 +28,39 @@ use     work.utils.all;
 use     work.components.all;
 
 
+-- Sequential converter from binary numbers to binary-coded decimal (BCD) numbers.
+--
+-- A cycle with ``Start`` high samples ``Binary`` and ``IsSigned``. If ``IsSigned`` is high and ``Binary`` is negative
+-- (two's complement), its magnitude is converted and ``Sign`` is set; otherwise, ``Binary`` is converted as an unsigned
+-- number and ``Sign`` is cleared.
+--
+-- The conversion shifts ``log2ceil(RADIX)`` bits per ``Clock`` cycle into a chain of ``DIGITS`` BCD digit stages. It
+-- takes ``ceil(BITS / log2ceil(RADIX))`` cycles, during which ``Busy`` is high. ``DIGITS`` must be large enough for the
+-- largest magnitude of ``Binary``; higher digits are lost.
+--
+-- If ``REGISTER_OUTPUT`` is ``FALSE``, ``BCDDigits`` shows the digit stages and changes during a conversion; the
+-- result is valid while ``Busy`` is low. If ``REGISTER_OUTPUT`` is ``TRUE``, ``BCDDigits`` is registered: it holds the
+-- previous result during a conversion and shows the new result one cycle after ``Busy`` went low.
+--
+-- ``Reset`` is synchronous and clears the digits; it does not clear ``Busy`` or ``Sign``.
 entity arith_Convert_Binary2BCD is
 	generic (
-		BITS                : positive := 8;
-		DIGITS              : positive := 3;
-		RADIX               : positive := 2;
-		REGISTER_OUTPUT     : boolean  := FALSE
+		BITS                : positive := 8;     -- Width of ``Binary`` in bits.
+		DIGITS              : positive := 3;     -- Number of BCD digits.
+		RADIX               : positive := 2;     -- Conversion radix; ``log2ceil(RADIX)`` bits per cycle.
+		REGISTER_OUTPUT     : boolean  := FALSE  -- Register ``BCDDigits``; update it only while idle.
 	);
 	port (
-		Clock               : in  std_logic;
-		Reset               : in  std_logic;
+		Clock               : in  std_logic;                            -- Clock; all inputs are sampled on its rising edge.
+		Reset               : in  std_logic;                            -- Synchronous reset; clears the digits.
 
-		Start               : in  std_logic;
-		Busy                : out std_logic;
+		Start               : in  std_logic;                            -- Start a conversion of ``Binary``.
+		Busy                : out std_logic;                            -- Conversion in progress.
 
-		Binary              : in  std_logic_vector(BITS - 1 downto 0);
-		IsSigned            : in  std_logic  := '0';
-		BCDDigits           : out T_BCD_VECTOR(DIGITS - 1 downto 0);
-		Sign                : out std_logic
+		Binary              : in  std_logic_vector(BITS - 1 downto 0);  -- Binary number; sampled with ``Start``.
+		IsSigned            : in  std_logic  := '0';                    -- ``Binary`` is a two's complement number.
+		BCDDigits           : out T_BCD_VECTOR(DIGITS - 1 downto 0);    -- Magnitude in BCD; lowest digit at index 0.
+		Sign                : out std_logic                             -- Converted number is negative.
 	);
 end entity;
 

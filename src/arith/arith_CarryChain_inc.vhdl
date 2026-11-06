@@ -1,14 +1,6 @@
 -- =============================================================================
 -- Authors:  Patrick Lehmann
 --
--- Entity:   Carry-chain abstraction for increment by one operations
---
--- Description:
--- -------------------------------------
--- This is a generic carry-chain abstraction for increment by one operations.
---
--- Sum <= A + (0...0) & CarryIn
---
 -- License:
 -- =============================================================================
 -- Copyright 2025-2026 The PoC-Library Authors
@@ -37,14 +29,20 @@ use     work.utils.all;
 use     work.arith.all;
 
 
+-- Carry-chain abstraction for increment-by-one operations.
+--
+-- Combinational: ``Sum`` is ``A + CarryIn`` modulo ``2**BITS``; the carry out of the MSB is dropped.
+--
+-- On Xilinx devices, synthesis (not simulation) with ``BITS > 4`` instantiates ``arith_CarryChain_inc_Xilinx`` to force
+-- the use of the dedicated carry chain. Otherwise, the increment is a plain ``numeric_std`` addition.
 entity arith_CarryChain_inc is
 	generic (
-		BITS      : positive
+		BITS      : positive  -- Width of ``A`` and ``Sum`` in bits.
 	);
 	port (
-		A       : in  std_logic_vector(BITS - 1 downto 0);
-		CarryIn : in  std_logic                              := '1';
-		Sum     : out std_logic_vector(BITS - 1 downto 0)
+		A       : in  std_logic_vector(BITS - 1 downto 0);            -- Operand.
+		CarryIn : in  std_logic                              := '1';  -- Value added to ``A`` (``'1'``: increment).
+		Sum     : out std_logic_vector(BITS - 1 downto 0)             -- ``A + CarryIn``, truncated to ``BITS`` bits.
 	);
 end entity;
 

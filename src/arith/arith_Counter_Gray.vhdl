@@ -3,12 +3,6 @@
 --                  Martin Zabel
 --                  Steffen Koehler
 --
--- Entity:           Gray-Code counter.
---
--- Description:
--- -------------------------------------
--- .. TODO:: No documentation available.
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2014 Technische Universitaet Dresden - Germany
@@ -32,18 +26,24 @@ use     IEEE.std_logic_1164.all;
 use     IEEE.numeric_std.all;
 
 
+-- Up/down counter whose ``Value`` is in Gray code.
+--
+-- Two consecutive values differ in exactly one bit. The counter steps once per ``Clock`` cycle in which exactly one of
+-- ``Increment`` and ``Decrement`` is high; both high leave it unchanged. ``Reset`` is synchronous and loads the Gray
+-- encoding of ``INIT``. ``CarryOut`` is combinational: it flags that the next step in the direction selected by
+-- ``Decrement`` wraps around (carry when counting up, borrow when counting down).
 entity arith_Counter_Gray is
 	generic (
-		BITS : positive;                              -- Bit width of the counter
-		INIT : natural         := 0                    -- Initial/reset counter value
+		BITS : positive;                                    -- Width of ``Value`` in bits.
+		INIT : natural      := 0                            -- Binary counter value after ``Reset``.
 	);
 	port (
-		Clock     : in  std_logic;
-		Reset     : in  std_logic;                          -- Reset to INIT value
-		Increment : in  std_logic;                          -- Increment
-		Decrement : in  std_logic    := '0';                  -- Decrement
-		Value     : out std_logic_vector(BITS-1 downto 0);  -- Value output
-		CarryOut  : out std_logic                            -- Carry output
+		Clock     : in  std_logic;                          -- Clock; all inputs are sampled on its rising edge.
+		Reset     : in  std_logic;                          -- Synchronous reset; loads ``INIT``.
+		Increment : in  std_logic;                          -- Count up by one.
+		Decrement : in  std_logic := '0';                   -- Count down by one.
+		Value     : out std_logic_vector(BITS-1 downto 0);  -- Counter state in Gray code.
+		CarryOut  : out std_logic                           -- Next step wraps around (carry up, borrow down).
 	);
 end entity;
 

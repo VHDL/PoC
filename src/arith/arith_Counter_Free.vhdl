@@ -1,19 +1,6 @@
 -- =============================================================================
 -- Authors:           Thomas B. Preusser
 --
--- Entity:           Poc.arith_Counter_Free
---
--- Description:
--- -------------------------------------
--- Implements a free-running counter that generates a strobe signal every
--- DIVIDER-th cycle the increment input was asserted. There is deliberately no
--- output or specification of the counter value so as to allow an implementation
--- to optimize as much as possible.
---
--- The implementation guarantees a strobe output directly from a register. It is
--- asserted exactly for one clock after DIVIDER cycles of an asserted increment
--- input have been observed.
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany
@@ -38,19 +25,29 @@ use     IEEE.numeric_std.all;
 
 use     work.utils.all;
 
--- XXX: discuss generic
+-- Free-running counter that generates a strobe every ``DIVIDER``-th cycle in which ``Increment`` is asserted.
+--
+-- There is deliberately no output or specification of the counter value so as to allow an implementation to optimize
+-- as much as possible.
+--
+-- ``Strobe`` is driven directly from a register. It is asserted for exactly one ``Clock`` cycle after ``DIVIDER``
+-- cycles with an asserted ``Increment`` have been observed; an ``Increment`` in the strobe cycle already counts towards
+-- the next period. ``Reset`` is synchronous. After ``Reset``, the first strobe follows ``DIVIDER - 1`` increments. For
+-- ``DIVIDER = 1``, ``Strobe`` is ``Increment`` delayed by one cycle and ``Reset`` has no effect.
 entity arith_Counter_Free is
 	generic (
-		DIVIDER   : positive
+		DIVIDER   : positive  -- Number of ``Increment`` cycles per ``Strobe``.
 	);
 	port (
 		-- Global Control
-		Clock     : in  std_logic;
-		Reset     : in  std_logic;
+		Clock     : in  std_logic;  -- Clock; all inputs are sampled on its rising edge.
+		Reset     : in  std_logic;  -- Synchronous reset; restarts the period.
 
-		Increment : in  std_logic;
-		Strobe    : out std_logic                  -- End-of-Period Strobe
+		Increment : in  std_logic;  -- Count this cycle.
+		Strobe    : out std_logic   -- End-of-period strobe; high for one cycle.
 	);
+
+	-- XXX: discuss generic
 end entity;
 
 

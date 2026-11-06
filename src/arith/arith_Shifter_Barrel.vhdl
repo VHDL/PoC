@@ -1,18 +1,6 @@
 -- =============================================================================
 -- Authors:          Patrick Lehmann
 --
--- Entity:          Universal Barrel-Shifter
---
--- Description:
--- -------------------------------------
--- This Barrel-Shifter supports:
---
--- * shifting and rotating
--- * right and left operations
--- * arithmetic and logic mode (only valid for shift operations)
---
--- This is equivalent to the CPU instructions: SLL, SLA, SRL, SRA, RL, RR
---
 -- License:
 -- =============================================================================
 -- Copyright 2007-2015 Technische Universitaet Dresden - Germany,
@@ -38,17 +26,30 @@ use     IEEE.numeric_std.all;
 use     work.utils.all;
 
 
+-- Universal barrel shifter.
+--
+-- This barrel shifter supports:
+--
+-- * shifting and rotating
+-- * right and left operations
+-- * arithmetic and logic mode (only valid for right shift operations)
+--
+-- This is equivalent to the CPU instructions: SLL, SLA, SRL, SRA, RL, RR
+--
+-- The shifter is combinational. It consists of one stage per bit of ``ShiftAmount``; stage ``i`` shifts or rotates by
+-- ``2**i`` positions if ``ShiftAmount(i)`` is set. Shifts fill vacated positions with ``'0'``, except an arithmetic
+-- right shift, which replicates the sign bit ``Input(BITS - 1)``.
 entity arith_Shifter_Barrel is
 	generic (
-		BITS        : positive    := 32
+		BITS        : positive    := 32  -- Width of ``Input`` and ``Output``.
 	);
 	port (
-		Input            : in  std_logic_vector(BITS - 1 downto 0);
-		ShiftAmount      : in  std_logic_vector(log2ceilnz(BITS) - 1 downto 0);
-		ShiftRotate      : in  std_logic;
-		LeftRight        : in  std_logic;
-		ArithmeticLogic  : in  std_logic;
-		Output          : out std_logic_vector(BITS - 1 downto 0)
+		Input           : in  std_logic_vector(BITS - 1 downto 0);              -- Operand.
+		ShiftAmount     : in  std_logic_vector(log2ceilnz(BITS) - 1 downto 0);  -- Distance to shift or rotate.
+		ShiftRotate     : in  std_logic;                                        -- ``'0'``: shift; ``'1'``: rotate.
+		LeftRight       : in  std_logic;                                        -- ``'0'``: left; ``'1'``: right.
+		ArithmeticLogic : in  std_logic;                                        -- ``'0'``: arithmetic; ``'1'``: logic.
+		Output          : out std_logic_vector(BITS - 1 downto 0)               -- Shifted or rotated ``Input``.
 	);
 end entity;
 
